@@ -41,7 +41,24 @@ enum stmt_type {
     STMT_INCLUDE,
     STMT_KEYCODE,
     STMT_ALIAS,
-    STMT_EXPR,
+    STMT_EXPR_VALUE,
+    STMT_EXPR_IDENT,
+    STMT_EXPR_ACTION_DECL,
+    STMT_EXPR_FIELD_REF,
+    STMT_EXPR_ARRAY_REF,
+    /* Needed because of the ambiguity between keysym and action empty lists */
+    STMT_EXPR_EMPTY_LIST,
+    STMT_EXPR_KEYSYM_LIST,
+    STMT_EXPR_ACTION_LIST,
+    STMT_EXPR_ADD,
+    STMT_EXPR_SUBTRACT,
+    STMT_EXPR_MULTIPLY,
+    STMT_EXPR_DIVIDE,
+    STMT_EXPR_ASSIGN,
+    STMT_EXPR_NOT,
+    STMT_EXPR_NEGATE,
+    STMT_EXPR_INVERT,
+    STMT_EXPR_UNARY_PLUS,
     STMT_VAR,
     STMT_TYPE,
     STMT_INTERP,
@@ -68,29 +85,6 @@ enum expr_value_type {
     _EXPR_TYPE_NUM_VALUES
 };
 
-enum expr_op_type {
-    EXPR_VALUE,
-    EXPR_IDENT,
-    EXPR_ACTION_DECL,
-    EXPR_FIELD_REF,
-    EXPR_ARRAY_REF,
-    /* Needed because of the ambiguity between keysym and action empty lists */
-    EXPR_EMPTY_LIST,
-    EXPR_KEYSYM_LIST,
-    EXPR_ACTION_LIST,
-    EXPR_ADD,
-    EXPR_SUBTRACT,
-    EXPR_MULTIPLY,
-    EXPR_DIVIDE,
-    EXPR_ASSIGN,
-    EXPR_NOT,
-    EXPR_NEGATE,
-    EXPR_INVERT,
-    EXPR_UNARY_PLUS,
-
-    _EXPR_NUM_VALUES
-};
-
 enum merge_mode {
     MERGE_DEFAULT,
     MERGE_AUGMENT,
@@ -103,9 +97,6 @@ xkb_file_type_to_string(enum xkb_file_type type);
 
 const char *
 stmt_type_to_string(enum stmt_type type);
-
-const char *
-expr_op_type_to_string(enum expr_op_type type);
 
 const char *
 expr_value_type_to_string(enum expr_value_type type);
@@ -127,7 +118,6 @@ typedef struct _IncludeStmt {
 
 typedef struct {
     ParseCommon common;
-    enum expr_op_type op;
     enum expr_value_type value_type;
 } ExprCommon;
 

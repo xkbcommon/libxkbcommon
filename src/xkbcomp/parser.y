@@ -641,27 +641,27 @@ ExprList        :       ExprList COMMA Expr
                 ;
 
 Expr            :       Expr DIVIDE Expr
-                        { $$ = ExprCreateBinary(EXPR_DIVIDE, $1, $3); }
+                        { $$ = ExprCreateBinary(STMT_EXPR_DIVIDE, $1, $3); }
                 |       Expr PLUS Expr
-                        { $$ = ExprCreateBinary(EXPR_ADD, $1, $3); }
+                        { $$ = ExprCreateBinary(STMT_EXPR_ADD, $1, $3); }
                 |       Expr MINUS Expr
-                        { $$ = ExprCreateBinary(EXPR_SUBTRACT, $1, $3); }
+                        { $$ = ExprCreateBinary(STMT_EXPR_SUBTRACT, $1, $3); }
                 |       Expr TIMES Expr
-                        { $$ = ExprCreateBinary(EXPR_MULTIPLY, $1, $3); }
+                        { $$ = ExprCreateBinary(STMT_EXPR_MULTIPLY, $1, $3); }
                 |       Lhs EQUALS Expr
-                        { $$ = ExprCreateBinary(EXPR_ASSIGN, $1, $3); }
+                        { $$ = ExprCreateBinary(STMT_EXPR_ASSIGN, $1, $3); }
                 |       Term
                         { $$ = $1; }
                 ;
 
 Term            :       MINUS Term
-                        { $$ = ExprCreateUnary(EXPR_NEGATE, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_NEGATE, $2->expr.value_type, $2); }
                 |       PLUS Term
-                        { $$ = ExprCreateUnary(EXPR_UNARY_PLUS, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_UNARY_PLUS, $2->expr.value_type, $2); }
                 |       EXCLAM Term
-                        { $$ = ExprCreateUnary(EXPR_NOT, EXPR_TYPE_BOOLEAN, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_NOT, EXPR_TYPE_BOOLEAN, $2); }
                 |       INVERT Term
-                        { $$ = ExprCreateUnary(EXPR_INVERT, $2->expr.value_type, $2); }
+                        { $$ = ExprCreateUnary(STMT_EXPR_INVERT, $2->expr.value_type, $2); }
                 |       Lhs
                         { $$ = $1;  }
                 |       FieldSpec OPAREN OptExprList CPAREN %prec OPAREN

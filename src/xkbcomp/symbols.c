@@ -788,16 +788,16 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi = &darray_item(keyi->groups, ndx);
 
-    if (value->expr.op == EXPR_EMPTY_LIST) {
+    if (value->common.type == STMT_EXPR_EMPTY_LIST) {
         groupi->defined |= GROUP_FIELD_SYMS;
         return true;
     }
 
-    if (value->expr.op != EXPR_KEYSYM_LIST) {
+    if (value->common.type != STMT_EXPR_KEYSYM_LIST) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Expected a list of symbols, found %s; "
                 "Ignoring symbols for group %u of %s\n",
-                expr_op_type_to_string(value->expr.op), ndx + 1,
+                stmt_type_to_string(value->common.type), ndx + 1,
                 KeyInfoText(info, keyi));
         return false;
     }
@@ -870,16 +870,16 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     groupi = &darray_item(keyi->groups, ndx);
 
-    if (value->expr.op == EXPR_EMPTY_LIST) {
+    if (value->common.type == STMT_EXPR_EMPTY_LIST) {
         groupi->defined |= GROUP_FIELD_ACTS;
         return true;
     }
 
-    if (value->expr.op != EXPR_ACTION_LIST) {
+    if (value->common.type != STMT_EXPR_ACTION_LIST) {
         log_wsgo(info->ctx, XKB_ERROR_INVALID_EXPRESSION_TYPE,
                  "Bad expression type (%d) for action list value; "
                  "Ignoring actions for group %u of %s\n",
-                 value->expr.op, ndx, KeyInfoText(info, keyi));
+                 value->common.type, ndx, KeyInfoText(info, keyi));
         return false;
     }
 
@@ -1017,7 +1017,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                     "Expected a virtual modifier mask, found %s; "
                     "Ignoring virtual modifiers definition for key %s\n",
-                    expr_op_type_to_string(value->expr.op),
+                    stmt_type_to_string(value->common.type),
                     KeyInfoText(info, keyi));
             return false;
         }
@@ -1235,7 +1235,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
         bool ok = true;
 
         if (!def->name) {
-            if (unlikely(!def->value) || def->value->expr.op != EXPR_ACTION_LIST)
+            if (unlikely(!def->value) || def->value->common.type != STMT_EXPR_ACTION_LIST)
                 field = "symbols"; /* Default to symbols field */
             else
                 field = "actions";
@@ -1368,7 +1368,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
         xkb_keysym_t sym;
 
-        if (key->expr.op == EXPR_VALUE &&
+        if (key->common.type == STMT_EXPR_VALUE &&
             key->expr.value_type == EXPR_TYPE_KEYNAME) {
             tmp.haveSymbol = false;
             tmp.u.keyName = key->key_name.key_name;

@@ -231,7 +231,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
     }
 
     *pred_rtrn = MATCH_EXACTLY;
-    if (expr->expr.op == EXPR_ACTION_DECL) {
+    if (expr->common.type == STMT_EXPR_ACTION_DECL) {
         const char *pred_txt = xkb_atom_text(info->ctx, expr->action.name);
         unsigned int pred = 0;
         if (!LookupString(symInterpretMatchMaskNames, pred_txt, &pred) ||
@@ -243,7 +243,7 @@ ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
         *pred_rtrn = (enum xkb_match_operation) pred;
         expr = expr->action.args;
     }
-    else if (expr->expr.op == EXPR_IDENT) {
+    else if (expr->common.type == STMT_EXPR_IDENT) {
         const char *pred_txt = xkb_atom_text(info->ctx, expr->ident.ident);
         if (pred_txt && istreq(pred_txt, "any")) {
             *pred_rtrn = MATCH_ANY;

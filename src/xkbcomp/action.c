@@ -21,8 +21,7 @@
 
 static const ExprBoolean constTrue = {
     .expr = {
-        .common = { .type = STMT_EXPR, .next = NULL },
-        .op = EXPR_VALUE,
+        .common = { .type = STMT_EXPR_VALUE, .next = NULL },
         .value_type = EXPR_TYPE_BOOLEAN,
     },
     .set = true,
@@ -30,8 +29,7 @@ static const ExprBoolean constTrue = {
 
 static const ExprBoolean constFalse = {
     .expr = {
-        .common = { .type = STMT_EXPR, .next = NULL },
-        .op = EXPR_VALUE,
+        .common = { .type = STMT_EXPR_VALUE, .next = NULL },
         .value_type = EXPR_TYPE_BOOLEAN,
     },
     .set = false,
@@ -231,7 +229,7 @@ CheckModifierField(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (array_ndx)
         return ReportActionNotArray(ctx, action, ACTION_FIELD_MODIFIERS);
 
-    if (value->expr.op == EXPR_IDENT) {
+    if (value->common.type == STMT_EXPR_IDENT) {
         const char *valStr;
         valStr = xkb_atom_text(ctx, value->ident.ident);
         if (valStr && (istreq(valStr, "usemodmapmods") ||
@@ -318,7 +316,7 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
     if (array_ndx)
         return ReportActionNotArray(ctx, action, ACTION_FIELD_GROUP);
 
-    if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
+    if (value->common.type == STMT_EXPR_NEGATE || value->common.type == STMT_EXPR_UNARY_PLUS) {
         flags &= ~ACTION_ABSOLUTE_SWITCH;
         spec = value->unary.child;
     }
@@ -332,9 +330,9 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
                               ACTION_FIELD_GROUP, "integer (range 1..8)");
 
     /* +n, -n are relative, n is absolute. */
-    if (value->expr.op == EXPR_NEGATE || value->expr.op == EXPR_UNARY_PLUS) {
+    if (value->common.type == STMT_EXPR_NEGATE || value->common.type == STMT_EXPR_UNARY_PLUS) {
         *group_rtrn = (int32_t) idx;
-        if (value->expr.op == EXPR_NEGATE)
+        if (value->common.type == STMT_EXPR_NEGATE)
             *group_rtrn = -*group_rtrn;
     }
     else {
@@ -378,8 +376,8 @@ HandleMovePtr(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
         int val;
-        const bool absolute = (value->expr.op != EXPR_NEGATE &&
-                               value->expr.op != EXPR_UNARY_PLUS);
+        const bool absolute = (value->common.type != STMT_EXPR_NEGATE &&
+                               value->common.type != STMT_EXPR_UNARY_PLUS);
 
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
@@ -506,8 +504,8 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
 
-        if (value->expr.op == EXPR_NEGATE ||
-            value->expr.op == EXPR_UNARY_PLUS) {
+        if (value->common.type == STMT_EXPR_NEGATE ||
+            value->common.type == STMT_EXPR_UNARY_PLUS) {
             act->flags &= ~ACTION_ABSOLUTE_SWITCH;
             button = value->unary.child;
         }
@@ -533,7 +531,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->value = (int8_t)(value->expr.op == EXPR_NEGATE ? -btn: btn);
+        act->value = (int8_t)(value->common.type == STMT_EXPR_NEGATE ? -btn: btn);
         return true;
     }
 
@@ -554,8 +552,8 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
 
-        if (value->expr.op == EXPR_NEGATE ||
-            value->expr.op == EXPR_UNARY_PLUS) {
+        if (value->common.type == STMT_EXPR_NEGATE ||
+            value->common.type == STMT_EXPR_UNARY_PLUS) {
             act->flags &= ~ACTION_ABSOLUTE_SWITCH;
             scrn = value->unary.child;
         }
@@ -568,7 +566,7 @@ HandleSwitchScreen(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "integer (-128..127)");
 
-        val = (value->expr.op == EXPR_NEGATE ? -val : val);
+        val = (value->common.type == STMT_EXPR_NEGATE ? -val : val);
         if (val < INT8_MIN || val > INT8_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Screen index must be in the range %d..%d; "
@@ -756,10 +754,10 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
                 const struct xkb_mod_set *mods, ExprDef *def,
                 union xkb_action *action)
 {
-    if (def->expr.op != EXPR_ACTION_DECL) {
+    if (def->common.type != STMT_EXPR_ACTION_DECL) {
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Expected an action definition, found %s\n",
-                expr_op_type_to_string(def->expr.op));
+                stmt_type_to_string(def->common.type));
         return false;
     }
 
@@ -788,11 +786,11 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
         ExprDef *field, *arrayRtrn;
         const char *elemRtrn, *fieldRtrn;
 
-        if (arg->expr.op == EXPR_ASSIGN) {
+        if (arg->common.type == STMT_EXPR_ASSIGN) {
             field = arg->binary.left;
             value = arg->binary.right;
         }
-        else if (arg->expr.op == EXPR_NOT || arg->expr.op == EXPR_INVERT) {
+        else if (arg->common.type == STMT_EXPR_NOT || arg->common.type == STMT_EXPR_INVERT) {
             field = arg->unary.child;
             value = (const ExprDef *) &constFalse;
         }
