@@ -1,16 +1,18 @@
- /*
-  * For MIT-open-group:
-  * Copyright 1985, 1987, 1990, 1998  The Open Group
-  *
-  * For MIT:
-  * Copyright © 2009 Dan Nicholson
-  *
-  * SPDX-License-Identifier: MIT-open-group AND MIT
-  */
+/*
+ * For MIT-open-group:
+ * Copyright 1985, 1987, 1990, 1998  The Open Group
+ *
+ * For MIT:
+ * Copyright © 2009 Dan Nicholson
+ *
+ * SPDX-License-Identifier: MIT-open-group AND MIT
+ */
 #pragma once
 
 #include <stdbool.h>
+
 #include "xkbcommon/xkbcommon.h"
+
 #include "utils.h"
 
 /*
