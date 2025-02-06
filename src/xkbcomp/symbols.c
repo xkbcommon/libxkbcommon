@@ -821,7 +821,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     xkb_level_index_t level = 0;
     for (ExprKeysymList *keysymList = (ExprKeysymList *) value;
          keysymList;
-         keysymList = (ExprKeysymList *) keysymList->expr.common.next, level++) {
+         keysymList = (ExprKeysymList *) keysymList->common.next, level++) {
         struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_syms == 0);
 
@@ -901,7 +901,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     xkb_level_index_t level = 0;
     for (ExprActionList *actionList = (ExprActionList *) value;
          actionList;
-         actionList = (ExprActionList *) actionList->expr.common.next, level++) {
+         actionList = (ExprActionList *) actionList->common.next, level++) {
         struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_actions == 0);
 

@@ -139,7 +139,7 @@ ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 ExprDef *
 ExprEmptyList(void)
 {
-    return ExprCreate(STMT_EXPR_EMPTY_LIST, sizeof(ExprCommon));
+    return ExprCreate(STMT_EXPR_EMPTY_LIST, sizeof(ParseCommon));
 }
 
 ExprDef *

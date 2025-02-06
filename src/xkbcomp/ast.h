@@ -104,88 +104,83 @@ typedef struct _IncludeStmt {
     struct _IncludeStmt *next_incl;
 } IncludeStmt;
 
-typedef struct {
-    ParseCommon common;
-} ExprCommon;
-
 typedef union ExprDef ExprDef;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t ident;
 } ExprIdent;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t str;
 } ExprString;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     bool set;
 } ExprBoolean;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     int ival;
 } ExprInteger;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     /* We don't support floats, but we still represnt them in the AST, in
      * order to provide proper error messages. */
 } ExprFloat;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t key_name;
 } ExprKeyName;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     ExprDef *left;
     ExprDef *right;
 } ExprBinary;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     ExprDef *child;
 } ExprUnary;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t element;
     xkb_atom_t field;
 } ExprFieldRef;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t element;
     xkb_atom_t field;
     ExprDef *entry;
 } ExprArrayRef;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     xkb_atom_t name;
     ExprDef *args;
 } ExprAction;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     /* List of actions for a single level. */
     ExprDef *actions;
 } ExprActionList;
 
 typedef struct {
-    ExprCommon expr;
+    ParseCommon common;
     /* List of keysym for a single level. */
     darray(xkb_keysym_t) syms;
 } ExprKeysymList;
 
 union ExprDef {
     ParseCommon common;
-    ExprCommon expr;
     ExprIdent ident;
     ExprString string;
     ExprBoolean boolean;
