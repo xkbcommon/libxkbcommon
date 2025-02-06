@@ -25,11 +25,11 @@ ExprDef *
 ExprCreateIdent(xkb_atom_t ident);
 
 ExprDef *
-ExprCreateUnary(enum expr_op_type op, enum expr_value_type type,
+ExprCreateUnary(enum stmt_type op, enum expr_value_type type,
                 ExprDef *child);
 
 ExprDef *
-ExprCreateBinary(enum expr_op_type op, ExprDef *left, ExprDef *right);
+ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right);
 
 ExprDef *
 ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field);
