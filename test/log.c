@@ -196,7 +196,7 @@ test_keymaps(void)
         xkb_keymap_unref(keymap);
         assert_printf(streq_not_null(darray_items(log_string), keymaps[k].log),
                       "Expected:\n%s\nGot:\n%s\n",
-                      darray_items(log_string), keymaps[k].log);
+                      keymaps[k].log, darray_items(log_string));
         darray_free(log_string);
     }
 
