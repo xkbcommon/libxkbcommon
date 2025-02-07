@@ -1,0 +1,8 @@
+CompileFlags:
+  # Treat files as C, not C++.
+  Add: [-xc]
+Diagnostics:
+  Includes:
+    # config.h should be included at the top of files, even if not needed.
+    # Don't consider it unused.
+    IgnoreHeader: config\.h
