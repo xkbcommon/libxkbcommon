@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Generate headers related to keysyms bounds
+"""
+
 import argparse
 import itertools
 import re
