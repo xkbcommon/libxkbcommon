@@ -270,10 +270,13 @@ print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 }
 
 static int
-print_kccgst(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
+print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
 #if ENABLE_PRIVATE_APIS
         struct xkb_component_names kccgst;
+
+        /* Resolve default RMLVO values */
+        xkb_context_sanitize_rule_names(ctx, rmlvo);
 
         if (!xkb_components_from_rules(ctx, rmlvo, &kccgst, NULL))
             return EXIT_FAILURE;
