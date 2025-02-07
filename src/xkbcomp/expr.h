@@ -28,10 +28,6 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
                    bool *set_rtrn);
 
 bool
-ExprResolveKeyCode(struct xkb_context *ctx, const ExprDef *expr,
-                   xkb_keycode_t *kc);
-
-bool
 ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
                    int *val_rtrn);
 
