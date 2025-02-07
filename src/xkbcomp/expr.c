@@ -186,16 +186,6 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     return false;
 }
 
-/**
- * This function returns ... something.  It's a bit of a guess, really.
- *
- * If an integer is given in value ctx, it will be returned in ival.
- * If an ident or field reference is given, the lookup function (if given)
- * will be called.  At the moment, only SimpleLookup use this, and they both
- * return the results in uval.  And don't support field references.
- *
- * Cool.
- */
 static bool
 ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
                          int *val_rtrn, IdentLookupFunc lookup,
