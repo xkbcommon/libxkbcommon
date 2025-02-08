@@ -19,9 +19,9 @@
 #include "include.h"
 
 static ExprDef *
-ExprCreate(enum stmt_type op, size_t size)
+ExprCreate(enum stmt_type op)
 {
-    ExprDef *expr = malloc(size);
+    ExprDef *expr = malloc(sizeof(*expr));
     if (!expr)
         return NULL;
 
@@ -34,7 +34,7 @@ ExprCreate(enum stmt_type op, size_t size)
 ExprDef *
 ExprCreateString(xkb_atom_t str)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_STRING_LITERAL, sizeof(ExprString));
+    ExprDef *expr = ExprCreate(STMT_EXPR_STRING_LITERAL);
     if (!expr)
         return NULL;
     expr->string.str = str;
@@ -44,7 +44,7 @@ ExprCreateString(xkb_atom_t str)
 ExprDef *
 ExprCreateInteger(int ival)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_INTEGER_LITERAL, sizeof(ExprInteger));
+    ExprDef *expr = ExprCreate(STMT_EXPR_INTEGER_LITERAL);
     if (!expr)
         return NULL;
     expr->integer.ival = ival;
@@ -54,7 +54,7 @@ ExprCreateInteger(int ival)
 ExprDef *
 ExprCreateFloat(void)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_FLOAT_LITERAL, sizeof(ExprFloat));
+    ExprDef *expr = ExprCreate(STMT_EXPR_FLOAT_LITERAL);
     if (!expr)
         return NULL;
     return expr;
@@ -63,7 +63,7 @@ ExprCreateFloat(void)
 ExprDef *
 ExprCreateBoolean(bool set)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_BOOLEAN_LITERAL, sizeof(ExprBoolean));
+    ExprDef *expr = ExprCreate(STMT_EXPR_BOOLEAN_LITERAL);
     if (!expr)
         return NULL;
     expr->boolean.set = set;
@@ -73,7 +73,7 @@ ExprCreateBoolean(bool set)
 ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_KEYNAME_LITERAL, sizeof(ExprKeyName));
+    ExprDef *expr = ExprCreate(STMT_EXPR_KEYNAME_LITERAL);
     if (!expr)
         return NULL;
     expr->key_name.key_name = key_name;
@@ -83,7 +83,7 @@ ExprCreateKeyName(xkb_atom_t key_name)
 ExprDef *
 ExprCreateIdent(xkb_atom_t ident)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_IDENT, sizeof(ExprIdent));
+    ExprDef *expr = ExprCreate(STMT_EXPR_IDENT);
     if (!expr)
         return NULL;
     expr->ident.ident = ident;
@@ -93,7 +93,7 @@ ExprCreateIdent(xkb_atom_t ident)
 ExprDef *
 ExprCreateUnary(enum stmt_type op, ExprDef *child)
 {
-    ExprDef *expr = ExprCreate(op, sizeof(ExprUnary));
+    ExprDef *expr = ExprCreate(op);
     if (!expr)
         return NULL;
     expr->unary.child = child;
@@ -103,7 +103,7 @@ ExprCreateUnary(enum stmt_type op, ExprDef *child)
 ExprDef *
 ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right)
 {
-    ExprDef *expr = ExprCreate(op, sizeof(ExprBinary));
+    ExprDef *expr = ExprCreate(op);
     if (!expr)
         return NULL;
 
@@ -116,7 +116,7 @@ ExprCreateBinary(enum stmt_type op, ExprDef *left, ExprDef *right)
 ExprDef *
 ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_FIELD_REF, sizeof(ExprFieldRef));
+    ExprDef *expr = ExprCreate(STMT_EXPR_FIELD_REF);
     if (!expr)
         return NULL;
     expr->field_ref.element = element;
@@ -127,7 +127,7 @@ ExprCreateFieldRef(xkb_atom_t element, xkb_atom_t field)
 ExprDef *
 ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ARRAY_REF, sizeof(ExprArrayRef));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ARRAY_REF);
     if (!expr)
         return NULL;
     expr->array_ref.element = element;
@@ -139,13 +139,13 @@ ExprCreateArrayRef(xkb_atom_t element, xkb_atom_t field, ExprDef *entry)
 ExprDef *
 ExprEmptyList(void)
 {
-    return ExprCreate(STMT_EXPR_EMPTY_LIST, sizeof(ParseCommon));
+    return ExprCreate(STMT_EXPR_EMPTY_LIST);
 }
 
 ExprDef *
 ExprCreateAction(xkb_atom_t name, ExprDef *args)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_DECL, sizeof(ExprAction));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_DECL);
     if (!expr)
         return NULL;
     expr->action.name = name;
@@ -156,7 +156,7 @@ ExprCreateAction(xkb_atom_t name, ExprDef *args)
 ExprDef *
 ExprCreateActionList(ExprDef *actions)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_LIST, sizeof(ExprActionList));
+    ExprDef *expr = ExprCreate(STMT_EXPR_ACTION_LIST);
     if (!expr)
         return NULL;
     expr->actions.actions = actions;
@@ -166,7 +166,7 @@ ExprCreateActionList(ExprDef *actions)
 ExprDef *
 ExprCreateKeysymList(xkb_keysym_t sym)
 {
-    ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LIST, sizeof(ExprKeysymList));
+    ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LIST);
     if (!expr)
         return NULL;
     darray_init(expr->keysym_list.syms);
