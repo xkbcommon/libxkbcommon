@@ -19,14 +19,14 @@
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {
-    keymap->refcnt++;
+    atomic_fetch_add(&keymap->refcnt, 1);
     return keymap;
 }
 
 void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
-    if (!keymap || --keymap->refcnt > 0)
+    if (!keymap || atomic_fetch_sub(&keymap->refcnt, 1) > 1)
         return;
 
     if (keymap->keys) {

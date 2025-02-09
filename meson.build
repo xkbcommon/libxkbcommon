@@ -152,6 +152,12 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
         configh_data.set('PATH_MAX', 4096)
     endif
 endif
+if cc.get_argument_syntax() == 'msvc'
+    add_project_arguments(
+        cc.get_supported_arguments(['/experimental:c11atomics']),
+        language: 'c'
+    )
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
