@@ -142,7 +142,7 @@ test_keymaps(void)
         {
             .input = "xkb_keymap {\n",
             .log =
-                "error: [XKB-769] (input string):1:12: syntax error\n"
+                "error: [XKB-769] (input string):1:12: syntax error, unexpected end of file\n"
                 "error: [XKB-822] Failed to parse input xkb string\n",
             .error = true
         },
@@ -153,7 +153,7 @@ test_keymaps(void)
                 "};",
             .log =
                 "warning: [XKB-645] (input string):1:12: unknown escape sequence (\\j) in string literal\n"
-                "error: [XKB-769] (input string):2:4: syntax error\n"
+                "error: [XKB-769] (input string):2:4: syntax error, unexpected identifier\n"
                 "error: [XKB-822] Failed to parse input xkb string\n",
             .error = true
         },
