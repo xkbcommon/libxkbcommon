@@ -1,4 +1,4 @@
-// NOTE: This file has been generated automatically by “update-unicode.py”.
+// NOTE: This file has been generated automatically by “update-case-mappings.py”.
 //       Do not edit manually!
 
 /*

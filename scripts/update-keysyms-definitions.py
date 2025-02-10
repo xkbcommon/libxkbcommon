@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+"""
+Convert X11 keysyms headers into our keysyms header.
+"""
+
 from __future__ import print_function
 import re
 import os
@@ -47,7 +52,7 @@ def make_keysym_entry(m: re.Match[str]) -> str:
             value = 0x10081000 + int(m.group("value"), 16)
             value_str = f"{value:#x}    "
         else:
-            value_str = f"""_EVDEVK({m.group('value')})"""
+            value_str = f"""_EVDEVK({m.group("value")})"""
     else:
         value_str = m.group("value")
     define = m.group("define")
