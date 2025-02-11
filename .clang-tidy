@@ -11,6 +11,8 @@ Checks:
   - -bugprone-reserved-identifier
   - -bugprone-multi-level-implicit-pointer-conversion
   - modernize-*
+  - -modernize-use-nullptr
+  - -modernize-macro-to-enum
   - performance-*
   - google-*
   - -google-readability-braces-around-statements
