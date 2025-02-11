@@ -1051,7 +1051,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "repeating") ||
              istreq(field, "repeats") ||
              istreq(field, "repeat")) {
-        unsigned int val;
+        uint32_t val;
 
         if (!ExprResolveEnum(info->ctx, value, &val, repeatEntries)) {
             log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
