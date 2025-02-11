@@ -46,8 +46,6 @@ number(struct scanner *s, int64_t *out, int *out_tok)
 int
 _xkbcommon_lex(YYSTYPE *yylval, struct scanner *s)
 {
-    int tok;
-
 skip_more_whitespace_and_comments:
     /* Skip spaces. */
     while (is_space(scanner_peek(s))) scanner_next(s);
@@ -142,6 +140,8 @@ skip_more_whitespace_and_comments:
     if (scanner_chr(s, '/')) return DIVIDE;
     if (scanner_chr(s, '!')) return EXCLAM;
     if (scanner_chr(s, '~')) return INVERT;
+
+    int tok = ERROR_TOK;
 
     /* Identifier. */
     if (is_alpha(scanner_peek(s)) || scanner_peek(s) == '_') {

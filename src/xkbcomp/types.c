@@ -243,7 +243,7 @@ static bool
 SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
              ExprDef *value)
 {
-    xkb_mod_mask_t mods;
+    xkb_mod_mask_t mods = 0;
 
     if (arrayNdx)
         log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -420,11 +420,11 @@ static bool
 SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
             ExprDef *value)
 {
-    xkb_mod_mask_t mods, preserve_mods;
 
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "preserve entry");
 
+    xkb_mod_mask_t mods = 0;
     if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods, &mods))
         return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                                  type, "preserve entry", "modifier mask");
@@ -442,6 +442,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                 TypeTxt(info, type), before, after);
     }
 
+    xkb_mod_mask_t preserve_mods = 0;
     if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->mods,
                             &preserve_mods)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
@@ -516,16 +517,15 @@ static bool
 SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
              ExprDef *value)
 {
-    xkb_level_index_t level;
-    xkb_atom_t level_name;
-
     if (arrayNdx == NULL)
         return ReportTypeShouldBeArray(info, type, "level name");
 
+    xkb_level_index_t level = 0;
     if (!ExprResolveLevel(info->ctx, arrayNdx, &level))
         return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
                                  type, "level name", "integer");
 
+    xkb_atom_t level_name = XKB_ATOM_NONE;
     if (!ExprResolveString(info->ctx, value, &level_name)) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Non-string name for level %d in key type %s; "
