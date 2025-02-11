@@ -434,7 +434,7 @@ HandlePtrBtn(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->button = btn;
+        act->button = (uint8_t) btn;
         return true;
     }
     else if (action->type == ACTION_TYPE_PTR_LOCK &&
@@ -525,7 +525,7 @@ HandleSetPtrDflt(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             return false;
         }
 
-        act->value = (int8_t)(value->common.type == STMT_EXPR_NEGATE ? -btn: btn);
+        act->value = (int8_t) (value->common.type == STMT_EXPR_NEGATE ? -btn: btn);
         return true;
     }
 
