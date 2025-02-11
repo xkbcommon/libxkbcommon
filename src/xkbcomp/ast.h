@@ -123,7 +123,7 @@ typedef struct {
 
 typedef struct {
     ParseCommon common;
-    int ival;
+    int64_t ival;
 } ExprInteger;
 
 typedef struct {
