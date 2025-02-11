@@ -487,7 +487,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
     }
     else if (istreq(field, "usemodmap") ||
              istreq(field, "usemodmapmods")) {
-        unsigned int val;
+        uint32_t val;
 
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
@@ -523,7 +523,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         ledi->defined |= LED_FIELD_MODS;
     }
     else if (istreq(field, "groups")) {
-        unsigned int mask;
+        uint32_t mask;
 
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
@@ -535,7 +535,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         ledi->defined |= LED_FIELD_GROUPS;
     }
     else if (istreq(field, "controls") || istreq(field, "ctrls")) {
-        unsigned int mask;
+        uint32_t mask;
 
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
@@ -553,7 +553,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
     }
     else if (istreq(field, "whichmodstate") ||
              istreq(field, "whichmodifierstate")) {
-        unsigned int mask;
+        uint32_t mask;
 
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
@@ -566,7 +566,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         ledi->led.which_mods = mask;
     }
     else if (istreq(field, "whichgroupstate")) {
-        unsigned mask;
+        uint32_t mask;
 
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
