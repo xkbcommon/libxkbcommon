@@ -89,6 +89,9 @@ xkb_file_type_to_string(enum xkb_file_type type);
 const char *
 stmt_type_to_string(enum stmt_type type);
 
+char
+stmt_type_to_operator_char(enum stmt_type type);
+
 typedef struct _ParseCommon  {
     struct _ParseCommon *next;
     enum stmt_type type;

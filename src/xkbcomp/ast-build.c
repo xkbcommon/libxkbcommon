@@ -718,3 +718,28 @@ stmt_type_to_string(enum stmt_type type)
         return NULL;
     return stmt_type_strings[type];
 }
+
+char
+stmt_type_to_operator_char(enum stmt_type type)
+{
+    switch (type) {
+    case STMT_EXPR_ADD:
+        return '+';
+    case STMT_EXPR_SUBTRACT:
+        return '-';
+    case STMT_EXPR_MULTIPLY:
+        return '*';
+    case STMT_EXPR_DIVIDE:
+        return '/';
+    case STMT_EXPR_NOT:
+        return '!';
+    case STMT_EXPR_NEGATE:
+        return '-';
+    case STMT_EXPR_INVERT:
+        return '~';
+    case STMT_EXPR_UNARY_PLUS:
+        return '+';
+    default:
+        return '\0';
+    }
+}

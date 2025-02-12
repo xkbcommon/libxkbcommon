@@ -549,14 +549,15 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_NOT:
         left = expr->unary.child;
         if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
-            log_err(ctx, XKB_ERROR_INVALID_OPERATION,
-                    "The %s operator cannot be used with a mask\n",
-                    (expr->common.type == STMT_EXPR_NEGATE ? "-" : "!"));
+            return false;
+        log_err(ctx, XKB_ERROR_INVALID_OPERATION,
+                "The '%c' unary operator cannot be used with a mask\n",
+                stmt_type_to_operator_char(expr->common.type));
         return false;
 
     default:
         log_wsgo(ctx, XKB_ERROR_UNKNOWN_OPERATOR,
-                 "Unknown operator %d in ResolveMask\n",
+                 "Unknown operator type %d in ResolveMask\n",
                  expr->common.type);
         break;
     }
