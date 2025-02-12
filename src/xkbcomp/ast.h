@@ -251,7 +251,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    unsigned group;
+    int64_t group;
     ExprDef *def;
 } GroupCompatDef;
 
