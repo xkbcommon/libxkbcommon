@@ -13,6 +13,9 @@
 
 #include "config.h"
 
+#include <assert.h>
+#include <stdint.h>
+
 #include "keymap.h"
 #include "text.h"
 
@@ -35,7 +38,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
             if (key->groups) {
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
-                        for (unsigned j = 0; j < XkbKeyNumLevels(key, i); j++) {
+                        for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
                             if (key->groups[i].levels[j].num_syms > 1)
                                 free(key->groups[i].levels[j].s.syms);
                             if (key->groups[i].levels[j].num_actions > 1)
@@ -336,7 +339,8 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
@@ -398,7 +402,8 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
     if (!key)
         return 0;
 
-    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
@@ -461,7 +466,8 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     if (!key)
         goto err;
 
-    layout = XkbWrapGroupIntoRange(layout, key->num_groups,
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
                                    key->out_of_range_group_action,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
