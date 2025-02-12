@@ -451,10 +451,32 @@ test_compile_output(struct xkb_context *ctx,
 
     struct xkb_keymap *keymap =
         compile_buffer(ctx, keymap_str, keymap_len, compile_buffer_private);
-    assert(keymap);
+
+    if (!rel_path) {
+        /* No path given: expect compilation failure */
+        if (keymap) {
+            char *got =
+                xkb_keymap_get_as_string(keymap,
+                                         XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+            xkb_keymap_unref(keymap);
+            assert(got);
+            fprintf(stderr,
+                    "Unexpected keymap compilation success:\n%s\n", got);
+            free(got);
+        }
+        return !keymap;
+    }
+
+    if (!keymap) {
+        fprintf(stderr, "Unexpected keymap compilation failure\n");
+        return false;
+    }
 
     char *got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-    assert(got);
+    if (!got) {
+        fprintf(stderr, "Unexpected keymap serialization failure\n");
+        return false;
+    }
 
     xkb_keymap_unref(keymap);
 
@@ -481,10 +503,19 @@ test_compile_output(struct xkb_context *ctx,
                 free(got);
                 keymap = compile_buffer(ctx, expected, strlen(expected),
                                         compile_buffer_private);
-                assert(keymap);
+                if (!keymap) {
+                    fprintf(stderr,
+                            "Unexpected keymap roundtrip compilation failure\n");
+                    success = false;
+                    break;
+                }
                 got = xkb_keymap_get_as_string(keymap,
                                                XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-                assert(got);
+                if (!got) {
+                    fprintf(stderr,
+                            "Unexpected keymap roundtrip serialization failure\n");
+                    success = false;
+                }
                 xkb_keymap_unref(keymap);
             } else {
                 fprintf(stderr,
