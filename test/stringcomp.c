@@ -66,7 +66,7 @@ main(int argc, char *argv[])
             /* Update files with *obtained* results */
             update_output_files = true;
         } else {
-            fprintf(stderr, "ERROR: unsupported argument: \"%s\n\".", argv[1]);
+            fprintf(stderr, "ERROR: unsupported argument: \"%s\".\n", argv[1]);
             exit(EXIT_FAILURE);
         }
     }

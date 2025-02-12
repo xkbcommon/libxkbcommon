@@ -11,7 +11,7 @@
 
 #include "test.h"
 
-#define DATA_PATH "keymaps/stringcomp.data"
+#define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
 static void
 test_encodings(struct xkb_context *ctx)
@@ -220,6 +220,111 @@ test_alloc_limits(struct xkb_context *ctx)
     }
 }
 
+struct test_masks_data {
+    const char * const keymap;
+    const char * const expected;
+};
+
+/* Our keymap compiler is the xkbcommon buffer compiler */
+static struct xkb_keymap *
+compile_buffer(struct xkb_context *context, const char *buf, size_t len,
+                     void *private)
+{
+    return test_compile_buffer(context, buf, len);
+}
+
+static void
+test_masks(struct xkb_context *ctx, bool update_output_files) {
+    const struct test_masks_data keymaps[] = {
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes { };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat {\n"
+                    /* Cannot be negative */
+                    "    virtual_modifiers Test1 = -1;\n"
+                    "  };\n"
+                    "  xkb_symbols { };\n"
+                    "};",
+                .expected = NULL
+        },
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes { };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat {\n"
+                    /* Out of range (expect 32bits) */
+                    "    virtual_modifiers Test1 = 0x100000000;\n"
+                    "  };\n"
+                    "  xkb_symbols { };\n"
+                    "};",
+                .expected = NULL
+        },
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes { };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat {\n"
+                    /* Out of range (expect 32bits) */
+                    "    virtual_modifiers Test1 = ~0x100000000;\n"
+                    "  };\n"
+                    "  xkb_symbols { };\n"
+                    "};",
+                .expected = NULL
+        },
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes { };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat {\n"
+                    /* Unsupported operator */
+                    "    virtual_modifiers Test1 = !Mod1;\n"
+                    "  };\n"
+                    "  xkb_symbols { };\n"
+                    "};",
+                .expected = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types {\n"
+                /* Try range */
+                "    virtual_modifiers Test01 = 0;\n"
+                "    virtual_modifiers Test02 = 0xffffffff;\n"
+                /* Try various operations on masks */
+                "    virtual_modifiers Test11 = 0xf0 + 0x0f;\n"
+                "    virtual_modifiers Test12 = 0xff - 0x0f;\n"
+                "    virtual_modifiers Test13 = ~0xf;\n"
+                "    virtual_modifiers Test14 = ~none;\n"
+                "    virtual_modifiers Test15 = ~all;\n"
+                "    virtual_modifiers Test16 = ~0xffffffff;\n"
+                "    virtual_modifiers Test17 = all - ~Mod1 + Mod2;\n"
+                "    type \"XXX\" {\n"
+                "      modifiers = Test12;\n"
+                /* Masks mappings are not resolved here, so:
+                 *   map[Test12 - Mod5] <=> map[Test12] */
+                "      map[Test12 - Mod5] = 2;\n"
+                "    };\n"
+                "  };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "masks.xkb"
+        }
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
 /* Test various multi-{keysym,action} syntaxes */
 static void
 test_multi_keysyms_actions(struct xkb_context *ctx)
@@ -370,41 +475,22 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
 }
 
 static void
-test_prebuilt_keymap_roundtrip(struct xkb_context *ctx)
+test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
      * then compare it to make sure we get the same result when dumping it
      * to a string. */
-    char *original = test_read_file(DATA_PATH);
+    const char * const path = GOLDEN_TESTS_OUTPUTS "stringcomp.data";
+    char *original = test_read_file(path);
     assert(original);
 
     /* Load a prebuild keymap, once without, once with the trailing \0 */
     for (unsigned int i = 0; i <= 1; i++) {
-        fprintf(stderr, "------\n*** %s, trailing \\0: %d ***\n", __func__, i);
-        struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, original, strlen(original) + i);
-        assert(keymap);
+        fprintf(stderr, "------\n*** %s, trailing '\\0': %d ***\n", __func__, i);
 
-        char *dump =
-            xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-        assert(dump);
-
-        if (!streq(original, dump)) {
-            fprintf(stderr,
-                    "round-trip test failed: dumped map differs from original\n");
-            fprintf(stderr, "path to original file: %s\n",
-                    test_get_path(DATA_PATH));
-            fprintf(stderr, "length: dumped %lu, original %lu\n",
-                    (unsigned long) strlen(dump),
-                    (unsigned long) strlen(original));
-            fprintf(stderr, "dumped map:\n");
-            fprintf(stderr, "%s\n", dump);
-            fflush(stderr);
-            assert(0);
-        }
-
-        free(dump);
-        xkb_keymap_unref(keymap);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   original, strlen(original) + i, path,
+                                   update_output_files));
     }
 
     free(original);
@@ -433,6 +519,17 @@ main(int argc, char *argv[])
 {
     test_init();
 
+    bool update_output_files = false;
+    if (argc > 1) {
+        if (streq(argv[1], "update")) {
+            /* Update files with *obtained* results */
+            update_output_files = true;
+        } else {
+            fprintf(stderr, "ERROR: unsupported argument: \"%s\".\n", argv[1]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
     struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
@@ -444,9 +541,10 @@ main(int argc, char *argv[])
     test_component_syntax_error(ctx);
     test_recursive(ctx);
     test_alloc_limits(ctx);
+    test_masks(ctx, update_output_files);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
-    test_prebuilt_keymap_roundtrip(ctx);
+    test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 
     xkb_context_unref(ctx);
