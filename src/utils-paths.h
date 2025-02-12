@@ -6,6 +6,8 @@
 
 #include <stdbool.h>
 
+#include "utils.h"
+
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'
 #define ALT_PATH_SEPARATOR '/'
