@@ -9,13 +9,21 @@
  * in both!
  */
 
+/* The following goes in the header */
+%code requires {
+#include "config.h"
+
+#include "scanner-utils.h"
+#include "xkbcomp/ast.h"
+}
+
 %{
 #include "config.h"
 
-#include "xkbcomp/xkbcomp-priv.h"
-#include "xkbcomp/ast-build.h"
-#include "xkbcomp/parser-priv.h"
 #include "keysym.h"
+#include "xkbcomp/xkbcomp-priv.h"
+#include "xkbcomp/parser-priv.h"
+#include "xkbcomp/ast-build.h"
 
 struct parser_param {
     struct xkb_context *ctx;
