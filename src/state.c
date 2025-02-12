@@ -22,6 +22,9 @@
 
 #include "config.h"
 
+#include <assert.h>
+#include <stdint.h>
+
 #include "keymap.h"
 #include "keysym.h"
 #include "utf8.h"
@@ -132,7 +135,9 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
     if (!key)
         return XKB_LAYOUT_INVALID;
 
-    return XkbWrapGroupIntoRange(state->components.group, key->num_groups,
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    return XkbWrapGroupIntoRange((int32_t) state->components.group,
+                                 key->num_groups,
                                  key->out_of_range_group_action,
                                  key->out_of_range_group_number);
 }
@@ -219,6 +224,8 @@ enum xkb_filter_result {
 static void
 xkb_filter_group_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
+    static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
+                  "Max groups don't fit");
     filter->priv = state->components.base_group;
     apply_group_delta(filter, state, base_group);
 }
@@ -242,7 +249,9 @@ xkb_filter_group_set_func(struct xkb_state *state,
         return XKB_FILTER_CONSUME;
     }
 
-    state->components.base_group = filter->priv;
+    static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
+                  "Max groups don't fit");
+    state->components.base_group = (int32_t) filter->priv;
 
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
         state->components.locked_group = 0;
@@ -788,8 +797,9 @@ xkb_state_update_derived(struct xkb_state *state)
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
                                     RANGE_WRAP, 0);
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.locked_group =
-        (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
+        (int32_t) (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
     /* Effective group must be adjusted */
     wrapped = XkbWrapGroupIntoRange(state->components.base_group +
@@ -928,9 +938,10 @@ xkb_state_update_mask(struct xkb_state *state,
     state->components.locked_mods |=
         mod_mask_get_effective(state->keymap, state->components.locked_mods);
 
-    state->components.base_group = base_group;
-    state->components.latched_group = latched_group;
-    state->components.locked_group = locked_group;
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    state->components.base_group = (int32_t) base_group;
+    state->components.latched_group = (int32_t) latched_group;
+    state->components.locked_group = (int32_t) locked_group;
 
     xkb_state_update_derived(state);
 

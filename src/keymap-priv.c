@@ -8,6 +8,9 @@
 
 #include "config.h"
 
+#include <assert.h>
+#include <stdint.h>
+
 #include "xkbcommon/xkbcommon-names.h"
 #include "keymap.h"
 
@@ -174,10 +177,12 @@ XkbWrapGroupIntoRange(int32_t group,
          * C99 says a negative dividend in a modulo operation always
          * gives a negative result.
          */
-        if (group < 0)
-            return ((int) num_groups + (group % (int) num_groups));
-        else
+        if (group < 0) {
+            static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+            return ((int32_t) num_groups + (group % (int32_t) num_groups));
+        } else {
             return group % num_groups;
+        }
     }
 }
 
