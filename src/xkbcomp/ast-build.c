@@ -366,7 +366,7 @@ LedMapCreate(xkb_atom_t name, VarDef *body)
 }
 
 LedNameDef *
-LedNameCreate(unsigned ndx, ExprDef *name, bool virtual)
+LedNameCreate(int64_t ndx, ExprDef *name, bool virtual)
 {
     LedNameDef *def = malloc(sizeof(*def));
     if (!def)
