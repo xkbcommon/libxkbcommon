@@ -234,6 +234,70 @@ compile_buffer(struct xkb_context *context, const char *buf, size_t len,
 }
 
 static void
+test_integers(struct xkb_context *ctx, bool update_output_files) {
+    const struct test_masks_data keymaps[] = {
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes {\n"
+                    /* Out of range (expect 32 bits, got > 64 bits) */
+                    "    <> = 0x10000000000000000;\n"
+                    "  };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat { };\n"
+                    "  xkb_symbols { };\n"
+                    "};",
+                .expected = NULL
+        },
+        {
+                .keymap =
+                    "xkb_keymap {\n"
+                    "  xkb_keycodes { <> = 1; };\n"
+                    "  xkb_types { };\n"
+                    "  xkb_compat {\n"
+                    "  };\n"
+                    "  xkb_symbols {\n"
+                    "    key <> {\n"
+                    /* FIXME: Unchecked overflow */
+                    "      [MovePointer(x=0xffffffff + 1,\n"
+                    "                   y=0x80000000 * 2)]\n"
+                    "    };\n"
+                    "  };\n"
+                    "};",
+                .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <> = 1;\n"
+                "    indicator 32 = \"xxx\";\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    group 0xffffffff = Mod5;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                /* Computations with 64 bit ints that then fit into 16 bits */
+                "    key <> {\n"
+                "      actions[1 + -~0x100000001 / 0x100000000]=\n"
+                "      [MovePointer(x=0x100000000 - 0xfffffffe,\n"
+                "                   y=~-0x7fff * 0x30000 / 0x2ffff)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "integers.xkb"
+        }
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
 test_masks(struct xkb_context *ctx, bool update_output_files) {
     const struct test_masks_data keymaps[] = {
         {
@@ -541,6 +605,7 @@ main(int argc, char *argv[])
     test_component_syntax_error(ctx);
     test_recursive(ctx);
     test_alloc_limits(ctx);
+    test_integers(ctx, update_output_files);
     test_masks(ctx, update_output_files);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
