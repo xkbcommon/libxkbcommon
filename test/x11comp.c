@@ -77,9 +77,9 @@ X11_TEST(test_basic)
     if (!streq(original, dump)) {
         fprintf(stderr,
                 "round-trip test failed: dumped map differs from original\n");
-        fprintf(stderr, "length: dumped %lu, original %lu\n",
-                (unsigned long) strlen(dump),
-                (unsigned long) strlen(original));
+        fprintf(stderr, "length: dumped %zu, original %zu\n",
+                strlen(dump),
+                strlen(original));
         fprintf(stderr, "dumped map:\n");
         fprintf(stderr, "%s\n", dump);
         ret = 1;

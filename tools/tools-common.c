@@ -88,17 +88,17 @@ print_key_modmaps(struct xkb_keymap *keymap, xkb_keycode_t keycode) {
         if (key->modmap) {
             for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
                 if (key->modmap & (UINT32_C(1) << mod)) {
-                    printf("%-*s", (int) MODMAP_PADDING,
+                    printf("%-*s", MODMAP_PADDING,
                            xkb_keymap_mod_get_name(keymap, mod));
                     break;
                 }
             }
         } else {
-            printf("%*c", (int) MODMAP_PADDING, ' ');
+            printf("%*c", MODMAP_PADDING, ' ');
         }
 
         printf(" ] vmodmap [ ");
-        int length = 0;
+        size_t length = 0;
         const char *mod_name;
         for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
             if (key->vmodmap & (UINT32_C(1) << mod)) {
@@ -108,7 +108,7 @@ print_key_modmaps(struct xkb_keymap *keymap, xkb_keycode_t keycode) {
             }
         }
         if (length < VMODMAP_PADDING) {
-            printf("%*c", (int) VMODMAP_PADDING - length, ' ');
+            printf("%*c", (unsigned int)(VMODMAP_PADDING - length), ' ');
         }
         printf("] ");
     }
