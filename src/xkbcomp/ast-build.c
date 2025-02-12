@@ -318,7 +318,7 @@ SymbolsCreate(xkb_atom_t keyName, VarDef *symbols)
 }
 
 GroupCompatDef *
-GroupCompatCreate(unsigned group, ExprDef *val)
+GroupCompatCreate(int64_t group, ExprDef *val)
 {
     GroupCompatDef *def = malloc(sizeof(*def));
     if (!def)

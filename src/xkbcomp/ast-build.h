@@ -76,7 +76,7 @@ SymbolsDef *
 SymbolsCreate(xkb_atom_t keyName, VarDef *symbols);
 
 GroupCompatDef *
-GroupCompatCreate(unsigned group, ExprDef *def);
+GroupCompatCreate(int64_t group, ExprDef *def);
 
 ModMapDef *
 ModMapCreate(xkb_atom_t modifier, ExprDef *keys);
