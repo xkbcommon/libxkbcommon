@@ -246,13 +246,12 @@ log_level(const char *level) {
 
 static int
 log_verbosity(const char *verbosity) {
-    char *endptr;
-    int v;
-
     errno = 0;
-    v = strtol(verbosity, &endptr, 10);
-    if (errno == 0)
-        return v;
+    const long int v = strtol(verbosity, NULL, 10);
+    if (errno == 0) {
+        /* Truncate */
+        return (int) v;
+    }
 
     return 0;
 }

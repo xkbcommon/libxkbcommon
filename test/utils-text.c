@@ -168,7 +168,7 @@ shuffle_lines(struct text_line *lines, size_t length, char *output)
          */
         for (size_t i = length - 1; i > 0; i--) {
             /* Swap current line with random line before it */
-            size_t j = (size_t)(rand() % (i+1));
+            size_t j = rand() % (i+1);
             struct text_line tmp = lines[j];
             lines[j] = lines[i];
             lines[i] = tmp;

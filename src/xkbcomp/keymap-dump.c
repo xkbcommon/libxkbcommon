@@ -398,7 +398,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
     for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
          level++) {
         const union xkb_action *actions;
-        int count;
+        unsigned int count;
 
         if (level != 0)
             write_buf(buf, ", ");
@@ -418,7 +418,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         }
         else {
             write_buf(buf2, "{ ");
-            for (int k = 0; k < count; k++) {
+            for (unsigned int k = 0; k < count; k++) {
                 if (k != 0)
                     write_buf(buf2, ", ");
                 size_t old_size = buf2->size;
