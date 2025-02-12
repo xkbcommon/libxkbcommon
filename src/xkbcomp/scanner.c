@@ -28,18 +28,25 @@ number(struct scanner *s, int64_t *out, int *out_tok)
         return false;
 
     errno = 0;
+    /* We use an intermediate variable, as we may have LLONG_MAX > INT64_MAX */
+    long long int x;
     if (is_hex)
-        *out = strtoul(start, &end, 16);
-    else if (is_float)
+        x = strtoll(start, &end, 16);
+    else if (is_float) {
         /* The parser currently just ignores floats, so the cast is
          * fine - the value doesn't matter. */
-        *out = strtod(start, &end);
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wbad-function-cast"
+        x = (long long int) strtold(start, &end);
+        #pragma GCC diagnostic pop
+    }
     else
-        *out = strtoul(start, &end, 10);
-    if (errno != 0 || s->s + s->pos != end)
+        x = strtoll(start, &end, 10);
+    if (errno != 0 || s->s + s->pos != end || x > INT64_MAX)
         *out_tok = ERROR_TOK;
     else
         *out_tok = (is_float ? FLOAT : INTEGER);
+    *out = (int64_t) x;
     return true;
 }
 
