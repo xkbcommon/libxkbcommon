@@ -458,22 +458,22 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
     if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
         info->errorCount++;
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Illegal indicator index (%d) specified; must be between 1 .. %d; "
-                "Ignored\n", def->ndx, XKB_MAX_LEDS);
+                "Illegal indicator index (%"PRId64") specified; "
+                "must be between 1 .. %u; Ignored\n", def->ndx, XKB_MAX_LEDS);
         return false;
     }
 
     xkb_atom_t name = XKB_ATOM_NONE;
     if (!ExprResolveString(info->ctx, def->name, &name)) {
         char buf[20];
-        snprintf(buf, sizeof(buf), "%u", def->ndx);
+        snprintf(buf, sizeof(buf), "%"PRId64, def->ndx);
         info->errorCount++;
         return ReportBadType(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                              "indicator", "name", buf, "string");
     }
 
     LedNameInfo ledi = {.merge = merge, .name = name};
-    return AddLedName(info, merge, true, &ledi, def->ndx - 1);
+    return AddLedName(info, merge, true, &ledi, (xkb_led_index_t) def->ndx - 1);
 }
 
 static void

@@ -85,7 +85,7 @@ LedMapDef *
 LedMapCreate(xkb_atom_t name, VarDef *body);
 
 LedNameDef *
-LedNameCreate(unsigned ndx, ExprDef *name, bool virtual);
+LedNameCreate(int64_t ndx, ExprDef *name, bool virtual);
 
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);

@@ -266,7 +266,7 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
-    unsigned ndx;
+    int64_t ndx;
     ExprDef *name;
     bool virtual;
 } LedNameDef;
