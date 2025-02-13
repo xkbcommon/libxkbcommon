@@ -197,7 +197,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_SET_GROUP:
         action->type = ACTION_TYPE_GROUP_SET;
 
-        action->group.group = wire->setgroup.group;
+        action->group.group = (int32_t) wire->setgroup.group;
 
         if (wire->setmods.flags & XCB_XKB_SA_CLEAR_LOCKS)
             action->group.flags |= ACTION_LOCK_CLEAR;
@@ -210,7 +210,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_LATCH_GROUP:
         action->type = ACTION_TYPE_GROUP_LATCH;
 
-        action->group.group = wire->latchgroup.group;
+        action->group.group = (int32_t) wire->latchgroup.group;
 
         if (wire->latchmods.flags & XCB_XKB_SA_CLEAR_LOCKS)
             action->group.flags |= ACTION_LOCK_CLEAR;
@@ -223,7 +223,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire)
     case XCB_XKB_SA_TYPE_LOCK_GROUP:
         action->type = ACTION_TYPE_GROUP_LOCK;
 
-        action->group.group = wire->lockgroup.group;
+        action->group.group = (int32_t) wire->lockgroup.group;
 
         if (wire->lockgroup.flags & XCB_XKB_SA_ISO_LOCK_FLAG_GROUP_ABSOLUTE)
             action->group.flags |= ACTION_ABSOLUTE_SWITCH;

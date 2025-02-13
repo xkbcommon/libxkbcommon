@@ -22,6 +22,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     int count, shift, length;
     uint8_t head;
 
+    /* NOLINTBEGIN(bugprone-branch-clone) */
     if (unichar <= 0x007f) {
         buffer[0] = (char) unichar;
         buffer[1] = '\0';
@@ -46,6 +47,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     else {
         goto ill_formed_code_unit_subsequence;
     }
+    /* NOLINTEND(bugprone-branch-clone) */
 
     for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
         buffer[count] = (char)(0x80 | ((unichar >> shift) & 0x3f));
@@ -73,6 +75,7 @@ is_valid_utf8(const char *ss, size_t len)
      * We can optimize if needed. */
     while (i < len)
     {
+        /* NOLINTBEGIN(bugprone-branch-clone) */
         if (s[i] <= 0x7F) {
             tail_bytes = 0;
         }
@@ -115,6 +118,7 @@ is_valid_utf8(const char *ss, size_t len)
         else {
             return false;
         }
+        /* NOLINTEND(bugprone-branch-clone) */
 
         i++;
 

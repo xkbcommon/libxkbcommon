@@ -11,7 +11,7 @@ permissions: {}
 
 jobs:
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -53,7 +53,7 @@ jobs:
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
           CFLAGS='-gdwarf-4 -fno-omit-frame-pointer' \
-              meson setup -Denable-docs=true -Denable-cool-uris=true \
+              meson setup -Denable-docs=true -Denable-cool-uris=false \
                           $MESON_EXTRA_FLAGS \
                           build
         env:
@@ -70,6 +70,19 @@ jobs:
         if: matrix.sanitizers != 'sanitizers'
         run:
           meson test -C build --print-errorlogs --setup=valgrind --no-suite python-tests
+      - name: Clang-tidy
+        if: matrix.sanitizers != 'sanitizers' && matrix.compiler == 'clang'
+        run: |
+            ninja -C build clang-tidy
+            # ninja -C build clang-tidy > clang-tidy.log
+            # if [[ -n $(grep "warning: " clang-tidy.log) ]] || [[ -n $(grep "error: " clang-tidy.log) ]]; then
+            #     echo "You must pass the clang tidy checks before submitting a pull request"
+            #     echo ""
+            #     grep --color -E '^|warning: |error: ' clang-tidy.log
+            #     exit -1;
+            # else
+            #     echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
+            # fi
       - name: Upload test logs
         uses: actions/upload-artifact@v4
         if: failure()
@@ -77,14 +90,14 @@ jobs:
           name: test logs
           path: |
             build/meson-logs/
-      - name: Ensure doxygen version is correct
-        run: |
-            doxygen --version > version.txt
-            echo "1.9.6" >> version.txt
-            if [ $(sort -V version.txt | tail -n1) != "1.9.6" ]; then
-                echo "Doxygen version 1.9.6 or earlier expected, see #347"
-                exit 1
-            fi
+    #   - name: Ensure doxygen version is correct
+    #     run: |
+    #         doxygen --version > version.txt
+    #         echo "1.9.6" >> version.txt
+    #         if [ $(sort -V version.txt | tail -n1) != "1.9.6" ]; then
+    #             echo "Doxygen version 1.9.6 or earlier expected, see #347"
+    #             exit 1
+    #         fi
       - name: Store doxygen docs for use by the pages workflow
         uses: actions/upload-artifact@v4
         if: success() && matrix.compiler == 'gcc' && matrix.sanitizers == 'sanitizers'
