@@ -240,34 +240,54 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
         break;
     default:
         fprintf(stderr, "Unsupported SHM format %d\n", inter->shm_format);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
-    size = stride * height;
-    fd = os_create_anonymous_file(size);
+    size = (size_t)(stride) * height;
+
+    const off_t offset = (off_t) size;
+    if ((size_t) offset != size) {
+        fprintf(stderr, "Couldn't create surface buffer (buffer size error)\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fd = os_create_anonymous_file(offset);
     if (fd < 0) {
-        fprintf(stderr, "Couldn't create surface buffer\n");
-        exit(1);
+        fprintf(stderr, "Couldn't create surface buffer (buffer file error)\n");
+        exit(EXIT_FAILURE);
     }
 
     map = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (map == MAP_FAILED) {
         fprintf(stderr, "Couldn't mmap surface buffer\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     memset(map, 0xff, size);
     munmap(map, size);
 
-    pool = wl_shm_create_pool(inter->shm, fd, size);
-    buf = wl_shm_pool_create_buffer(pool, 0, width, height, stride,
+    if (size > INT32_MAX) {
+        fprintf(stderr, "Couldn't create surface pool\n");
+        exit(EXIT_FAILURE);
+    }
+    pool = wl_shm_create_pool(inter->shm, fd, (int32_t) size);
+
+    if (width > INT32_MAX || height > INT32_MAX || stride > INT32_MAX) {
+        fprintf(stderr, "Couldn't create surface pool buffer\n");
+        exit(EXIT_FAILURE);
+    }
+    const int32_t iwidth = (int32_t) width;
+    const int32_t iheight = (int32_t) height;
+    const int32_t istride = (int32_t) stride;
+
+    buf = wl_shm_pool_create_buffer(pool, 0, iwidth, iheight, istride,
                                     inter->shm_format);
     wl_buffer_add_listener(buf, &buffer_listener, inter);
 
     wl_surface_attach(inter->wl_surf, buf, 0, 0);
-    wl_surface_damage(inter->wl_surf, 0, 0, width, height);
+    wl_surface_damage(inter->wl_surf, 0, 0, iwidth, iheight);
 
     opaque = wl_compositor_create_region(inter->compositor);
-    wl_region_add(opaque, 0, 0, width, height);
+    wl_region_add(opaque, 0, 0, iwidth, iheight);
     wl_surface_set_opaque_region(inter->wl_surf, opaque);
     wl_region_destroy(opaque);
 
