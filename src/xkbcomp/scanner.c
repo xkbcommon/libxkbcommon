@@ -35,10 +35,14 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     else if (is_float) {
         /* The parser currently just ignores floats, so the cast is
          * fine - the value doesn't matter. */
+        #ifdef __GNUC__
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wbad-function-cast"
+        #endif
         x = (long long int) strtold(start, &end);
+        #ifdef __GNUC__
         #pragma GCC diagnostic pop
+        #endif
     }
     else
         x = strtoll(start, &end, 10);

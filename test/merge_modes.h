@@ -123,7 +123,7 @@ enum update_files {
                                               : ARRAY_SIZE(keymap_test_str),           \
         /* Local and global merge modes use the same result file */                    \
         GOLDEN_TESTS_OUTPUTS #merge_mode map file_suffix ".xkb",                       \
-        !!update));                                                                    \
+        !!(update)));                                                                  \
 } while (0)
 
 /* Helper to create a test for each merge mode */

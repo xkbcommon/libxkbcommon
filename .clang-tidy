@@ -16,6 +16,7 @@ Checks:
   - performance-*
   - google-*
   - -google-readability-braces-around-statements
+  - -google-readability-todo
   # - misc-*
   # - -misc-include-cleaner
 # ExtraArgs:
@@ -47,5 +48,6 @@ CheckOptions:
   llvm-else-after-return.WarnOnUnfixable: 'false'
   llvm-qualified-auto.AddConstToQualified: 'false'
   bugprone-suspicious-enum-usage.StrictMode: 'true'
+  bugprone-signed-char-misuse.CharTypdefsToIgnore: 'int8_t'
 SystemHeaders:   false
 ...

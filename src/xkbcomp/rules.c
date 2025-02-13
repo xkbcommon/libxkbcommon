@@ -496,14 +496,14 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     }
     /* Numeric index */
 
-#define parse_layout_int_index(s, endptr, index, out)              \
-    char *endptr;                                                  \
-    long index = strtol(&(s)[1], &endptr, 10);                     \
-    if (index < 0 || endptr[0] != ']' || index > XKB_MAX_GROUPS)   \
-        return -1;                                                 \
-    /* To zero-based index. */                                     \
-    *(out) = (xkb_layout_index_t)index - 1;                        \
-    return (int)(endptr - (s) + 1) /* == length "[index]" */
+#define parse_layout_int_index(s, endptr, index, out)                  \
+    char *(endptr);                                                    \
+    long (index) = strtol(&(s)[1], &(endptr), 10);                     \
+    if ((index) < 0 || (endptr)[0] != ']' || (index) > XKB_MAX_GROUPS) \
+        return -1;                                                     \
+    /* To zero-based index. */                                         \
+    *(out) = (xkb_layout_index_t)(index) - 1;                          \
+    return (int)((endptr) - (s) + 1) /* == length "[index]" */
 
     parse_layout_int_index(s, endptr, index, out);
 }
@@ -1135,9 +1135,9 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
      * Appending +bar to +foo -> +foo+bar
      */
 
-    ch = (darray_empty(expanded) ? '\0' : darray_item(expanded, 0));
+    ch = (char) (darray_empty(expanded) ? '\0' : darray_item(expanded, 0));
     expanded_plus = is_merge_mode_prefix(ch);
-    ch = (darray_empty(*to) ? '\0' : darray_item(*to, 0));
+    ch = (char) (darray_empty(*to) ? '\0' : darray_item(*to, 0));
     to_plus = is_merge_mode_prefix(ch);
 
     if (expanded_plus || darray_empty(*to))

@@ -13,6 +13,7 @@
 
 #include "evdev-scancodes.h"
 #include "test.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "keymap.h"
 
 #define KEY_LVL3 84
@@ -334,6 +335,10 @@ test_multiple_actions_per_level(void)
     assert(keymap);
 
     kc = xkb_keymap_key_by_name(keymap, "LCTL");
+    keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 0, &keysyms);
+    assert(keysyms_count == 2);
+    assert(keysyms[0] == XKB_KEY_Control_L);
+    assert(keysyms[1] == XKB_KEY_ISO_Group_Shift);
     ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     level3 = xkb_keymap_mod_get_index(keymap, "Mod5");
     state = xkb_state_new(keymap);
