@@ -1160,8 +1160,10 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         return false;
     }
 
-    if (group_to_use >= darray_size(info->group_names))
+    if (group_to_use >= darray_size(info->group_names)) {
+        assert(darray_size(info->group_names) < group_to_use + 1);
         darray_resize0(info->group_names, group_to_use + 1);
+    }
     darray_item(info->group_names, group_to_use) = name;
 
     return true;

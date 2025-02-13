@@ -206,8 +206,9 @@ scanner_hex(struct scanner *s, uint8_t *out)
     int i;
     for (i = 0, *out = 0; is_xdigit(scanner_peek(s)) && i < 2; i++) {
         const char c = scanner_next(s);
-        const char offset = (c >= '0' && c <= '9' ? '0' :
-                             c >= 'a' && c <= 'f' ? 'a' - 10 : 'A' - 10);
+        const char offset = (char) (c >= '0' && c <= '9' ? '0' :
+                                    c >= 'a' && c <= 'f' ? 'a' - 10
+                                                         : 'A' - 10);
         *out = *out * 16 + c - offset;
     }
     return i > 0;
