@@ -175,11 +175,11 @@ keysym_name_hash_f(const char *key, const char *T)
 {
     size_t sum = 0;
     for (size_t i = 0; key[i] != '\0'; i++)
-        sum += T[i % $NS] * key[i];
+        sum += (size_t) (T[i % $NS] * key[i]);
     return sum % $NG;
 }
 
-static size_t
+static inline size_t
 keysym_name_perfect_hash(const char *key)
 {
     return (

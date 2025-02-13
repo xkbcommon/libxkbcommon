@@ -266,7 +266,7 @@ main(int argc, char *argv[])
 
 #define ENTRY2(_rules, _model, _layout, _variant, _options,                \
                _keycodes, _types, _compat, _symbols, _count, _should_fail) \
-    { .rules = (_rules), .model = _model,                                  \
+    { .rules = (_rules), .model = (_model),                                \
       .layout = (_layout), .variant = (_variant), .options = (_options),   \
       .keycodes = (_keycodes), .types = (_types), .compat = (_compat),     \
       .symbols = (_symbols) , .explicit_layouts = (_count),                \

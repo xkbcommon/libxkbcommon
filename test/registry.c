@@ -323,7 +323,8 @@ find_models(struct rxkb_context *ctx, ...)
     va_start(args, ctx);
     name = va_arg(args, const char *);
     while(name) {
-        assert(++idx < 20); /* safety guard */
+        ++idx;
+        assert(idx < 20); /* safety guard */
         if (!find_model(ctx, name))
             goto out;
         name = va_arg(args, const char *);
@@ -371,7 +372,8 @@ find_layouts(struct rxkb_context *ctx, ...)
     name = va_arg(args, const char *);
     variant = va_arg(args, const char *);
     while(name) {
-        assert(++idx < 20); /* safety guard */
+        ++idx;
+        assert(idx < 20); /* safety guard */
         if (!find_layout(ctx, name, variant))
             goto out;
         name = va_arg(args, const char *);
@@ -398,7 +400,8 @@ check_layouts_order(struct rxkb_context *ctx, ...)
     layout = va_arg(args, const char *);
     variant = va_arg(args, const char *);
     while(layout) {
-        assert(++idx < 20); /* safety guard */
+        ++idx;
+        assert(idx < 20); /* safety guard */
         if (!l) {
             fprintf(stderr, "ERROR: expected layout #%d \"%s(%s)\", got none\n",
                     idx, layout, variant ? variant : "-");
@@ -478,7 +481,8 @@ find_options(struct rxkb_context *ctx, ...)
     grp = va_arg(args, const char *);
     opt = va_arg(args, const char *);
     while(grp) {
-        assert(++idx < 20); /* safety guard */
+        ++idx;
+        assert(idx < 20); /* safety guard */
         if (!find_option(ctx, grp, opt))
             goto out;
         grp = va_arg(args, const char *);

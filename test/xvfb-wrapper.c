@@ -99,7 +99,7 @@ xvfb_wrapper(int (*test_func)(char* display))
 
     /* Retrieve the display number: Xvfd writes the display number as a newline-
      * terminated string; copy this number to form a proper display string. */
-    rewind(display_fd);
+    fseek(display_fd, 0, SEEK_SET);
     length = fread(&display[1], 1, sizeof(display) - 1, display_fd);
     if (length <= 0) {
         fprintf(stderr, "fread error: length=%zu\n", length);

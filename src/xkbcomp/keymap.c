@@ -118,6 +118,8 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
                 struct xkb_sym_interpret const **previous_interp;
                 darray_foreach(previous_interp, *interprets) {
                     if (*previous_interp == interp) {
+                        /* Keep as a safeguard against refactoring
+                         * NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores) */
                         found = false;
                         log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                                  "Repeated interpretation ignored for keysym "

@@ -55,6 +55,8 @@ main(void)
                     functions[f].toLower(ks);
                     functions[f].toUpper(ks);
                 }
+                /* Avoid dangling pointers
+                 * NOLINTNEXTLINE(clang-analyzer-deadcode.DeadStores) */
                 iter = xkb_keysym_iterator_unref(iter);
             }
             bench_stop(&bench);

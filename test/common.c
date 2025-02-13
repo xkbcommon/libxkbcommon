@@ -37,7 +37,7 @@ void
 test_init(void)
 {
     /* Make stdout always unbuffered, to ensure we always get it entirely */
-    setbuf(stdout, NULL);
+    setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 }
 
 void
@@ -500,7 +500,6 @@ test_compile_output(struct xkb_context *ctx,
                 if (k > 0)
                     continue;
                 /* Test round trip */
-                free(got);
                 keymap = compile_buffer(ctx, expected, strlen(expected),
                                         compile_buffer_private);
                 if (!keymap) {
@@ -509,6 +508,7 @@ test_compile_output(struct xkb_context *ctx,
                     success = false;
                     break;
                 }
+                free(got);
                 got = xkb_keymap_get_as_string(keymap,
                                                XKB_KEYMAP_USE_ORIGINAL_FORMAT);
                 if (!got) {
