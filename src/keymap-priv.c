@@ -137,14 +137,72 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
     return memcmp(a->s.syms, b->s.syms, sizeof(*a->s.syms) * a->num_syms) == 0;
 }
 
+static bool
+action_equal(const union xkb_action *a, const union xkb_action *b)
+{
+    if (a->type != b->type)
+        return false;
+
+    /* Ensure we support all action types */
+    static_assert(ACTION_TYPE_PRIVATE == 15 &&
+                  ACTION_TYPE_PRIVATE + 1 == _ACTION_TYPE_NUM_ENTRIES,
+                  "Missing action type");
+
+    switch (a->type) {
+    case ACTION_TYPE_NONE:
+        return true;
+    case ACTION_TYPE_MOD_SET:
+    case ACTION_TYPE_MOD_LATCH:
+    case ACTION_TYPE_MOD_LOCK:
+        return (a->mods.flags == b->mods.flags &&
+                a->mods.mods.mask == b->mods.mods.mask &&
+                a->mods.mods.mods == b->mods.mods.mods);
+    case ACTION_TYPE_GROUP_SET:
+    case ACTION_TYPE_GROUP_LATCH:
+    case ACTION_TYPE_GROUP_LOCK:
+        return (a->group.flags == b->group.flags &&
+                a->group.group == b->group.group);
+    case ACTION_TYPE_PTR_MOVE:
+        return (a->ptr.flags == b->ptr.flags &&
+                a->ptr.x == b->ptr.x &&
+                a->ptr.y == b->ptr.y);
+    case ACTION_TYPE_PTR_BUTTON:
+    case ACTION_TYPE_PTR_LOCK:
+        return (a->btn.flags == b->btn.flags &&
+                a->btn.button == b->btn.button &&
+                a->btn.count == b->btn.count);
+    case ACTION_TYPE_PTR_DEFAULT:
+        return (a->dflt.flags == b->dflt.flags &&
+                a->dflt.value == b->dflt.value);
+    case ACTION_TYPE_TERMINATE:
+        return true;
+    case ACTION_TYPE_SWITCH_VT:
+        return (a->screen.flags == b->screen.flags &&
+                a->screen.screen == b->screen.screen);
+    case ACTION_TYPE_CTRL_SET:
+    case ACTION_TYPE_CTRL_LOCK:
+        return (a->ctrls.flags == b->ctrls.flags &&
+                a->ctrls.ctrls == b->ctrls.ctrls);
+    case ACTION_TYPE_PRIVATE:
+        return (a->priv.data == b->priv.data);
+    default:
+        assert(!"Unsupported action");
+        return false;
+    }
+}
+
 bool
 XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
 {
     if (a->num_actions != b->num_actions)
         return false;
     if (a->num_actions <= 1)
-        return memcmp(&a->a.action, &b->a.action, sizeof(a->a.action)) == 0;
-    return memcmp(a->a.actions, b->a.actions, sizeof(*a->a.actions) * a->num_actions) == 0;
+        return action_equal(&a->a.action, &b->a.action);
+    for (unsigned int k = 0; k < a->num_actions; k++) {
+        if (!action_equal(&a->a.actions[k], &b->a.actions[k]))
+            return false;
+    }
+    return true;
 }
 
 xkb_layout_index_t
