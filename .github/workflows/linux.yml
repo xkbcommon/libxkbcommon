@@ -70,6 +70,18 @@ jobs:
         if: matrix.sanitizers != 'sanitizers'
         run:
           meson test -C build --print-errorlogs --setup=valgrind --no-suite python-tests
+      - name: Clang-tidy
+        if: matrix.sanitizers != 'sanitizers' && matrix.compiler == 'clang'
+        run: |
+            ninja -C build clang-tidy > clang-tidy.log
+            if [[ -n $(grep "warning: " clang-tidy.log) ]] || [[ -n $(grep "error: " clang-tidy.log) ]]; then
+                echo "You must pass the clang tidy checks before submitting a pull request"
+                echo ""
+                grep --color -E '^|warning: |error: ' clang-tidy.log
+                exit -1;
+            else
+                echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
+            fi
       - name: Upload test logs
         uses: actions/upload-artifact@v4
         if: failure()
