@@ -33,19 +33,6 @@ except KeyError:
         file=sys.stderr,
     )
 
-
-# Unset some environment variables, so that tools that rely on them for missing
-# arguments default have the expected behavior.
-for key in (
-    "XKB_DEFAULT_RULES",
-    "XKB_DEFAULT_MODEL",
-    "XKB_DEFAULT_LAYOUT",
-    "XKB_DEFAULT_VARIANT",
-    "XKB_DEFAULT_OPTIONS",
-):
-    if key in os.environ:
-        del os.environ[key]
-
 # Ensure locale is C, so we can check error messages in English
 os.environ["LC_ALL"] = "C.UTF-8"
 

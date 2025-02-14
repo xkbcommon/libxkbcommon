@@ -362,7 +362,8 @@ usage(FILE *fp, char *progname)
 {
         fprintf(fp, "Usage: %s [--include=<path>] [--include-defaults] "
                 "[--rules=<rules>] [--model=<model>] [--layout=<layout>] "
-                "[--variant=<variant>] [--options=<options>]\n",
+                "[--variant=<variant>] [--options=<options>] "
+                "[--enable-environment-names]\n",
                 progname);
         fprintf(fp, "   or: %s --keymap <path to keymap file>\n",
                 progname);
@@ -391,6 +392,7 @@ main(int argc, char *argv[])
     struct xkb_compose_table *compose_table = NULL;
     const char *includes[64];
     size_t num_includes = 0;
+    bool use_env_names = false;
     const char *rules = NULL;
     const char *model = NULL;
     const char *layout = NULL;
@@ -403,6 +405,7 @@ main(int argc, char *argv[])
         OPT_VERBOSE,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
+        OPT_ENABLE_ENV_NAMES,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -423,6 +426,7 @@ main(int argc, char *argv[])
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"include",              required_argument,      0, OPT_INCLUDE},
         {"include-defaults",     no_argument,            0, OPT_INCLUDE_DEFAULTS},
+        {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
         {"rules",                required_argument,      0, OPT_RULES},
         {"model",                required_argument,      0, OPT_MODEL},
         {"layout",               required_argument,      0, OPT_LAYOUT},
@@ -462,6 +466,9 @@ main(int argc, char *argv[])
             if (num_includes >= ARRAY_SIZE(includes))
                 goto too_many_includes;
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
+            break;
+        case OPT_ENABLE_ENV_NAMES:
+            use_env_names = true;
             break;
         case OPT_RULES:
             if (keymap_path)
@@ -548,7 +555,11 @@ too_much_arguments:
         }
     }
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
+    if (!use_env_names)
+        ctx_flags |= XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
+
+    ctx = xkb_context_new(ctx_flags);
     if (!ctx) {
         fprintf(stderr, "ERROR: Couldn't create xkb context\n");
         goto out;
@@ -584,11 +595,11 @@ too_much_arguments:
     }
     else {
         struct xkb_rule_names rmlvo = {
-            .rules = (rules == NULL || rules[0] == '\0') ? NULL : rules,
-            .model = (model == NULL || model[0] == '\0') ? NULL : model,
-            .layout = (layout == NULL || layout[0] == '\0') ? NULL : layout,
-            .variant = (variant == NULL || variant[0] == '\0') ? NULL : variant,
-            .options = (options == NULL || options[0] == '\0') ? NULL : options
+            .rules = (isempty(rules)) ? NULL : rules,
+            .model = (isempty(model)) ? NULL : model,
+            .layout = (isempty(layout)) ? NULL : layout,
+            .variant = (isempty(variant)) ? NULL : variant,
+            .options = (isempty(options)) ? NULL : options
         };
 
         if (!rules && !model && !layout && !variant && !options)

@@ -70,6 +70,22 @@ The XKB layout variant
 .It Fl \-option Ar options
 The XKB options
 .
+.It Fl \-enable\-environment\-names
+Allow to set the default RMLVO values via the following environment variables:
+.Bl -dash -compact -hang
+.It
+.Ev XKB_DEFAULT_RULES
+.It
+.Ev XKB_DEFAULT_MODEL
+.It
+.Ev XKB_DEFAULT_LAYOUT
+.It
+.Ev XKB_DEFAULT_VARIANT
+.It
+.Ev XKB_DEFAULT_OPTIONS
+.El
+Note that this option may affect the default values of the previous options.
+.
 .It Fl \-keymap Ar file
 Specify a keymap path.
 This option is mutually exclusive with the RMLVO options.

@@ -14,7 +14,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
-#if ENABLE_PRIVATE_APIS
+#ifdef ENABLE_PRIVATE_APIS
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/rules.h"
 #endif
@@ -49,7 +49,7 @@ usage(FILE *file, const char *progname)
            "    Enable verbose debugging output\n"
            " --test\n"
            "    Test compilation but do not print the keymap.\n"
-#if ENABLE_PRIVATE_APIS
+#ifdef ENABLE_PRIVATE_APIS
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
 #endif
@@ -59,7 +59,7 @@ usage(FILE *file, const char *progname)
            " --from-xkb <file>\n"
            "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
            "    is \"-\" or missing, then load from stdin."
-#if ENABLE_PRIVATE_APIS
+#ifdef ENABLE_PRIVATE_APIS
            "    This option must not be used with --kccgst.\n"
 #endif
            " --include\n"
@@ -84,6 +84,14 @@ usage(FILE *file, const char *progname)
            "    The XKB layout variant (default: '%s')\n"
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
+           " --enable-environment-names\n"
+           "    Allow to set the default RMLVO values via the following environment variables:\n"
+           "    - XKB_DEFAULT_RULES\n"
+           "    - XKB_DEFAULT_MODEL\n"
+           "    - XKB_DEFAULT_LAYOUT\n"
+           "    - XKB_DEFAULT_VARIANT\n"
+           "    - XKB_DEFAULT_OPTIONS\n"
+           "    Note that this option may affect the default values of the previous options.\n"
            "\n",
            progname, DEFAULT_XKB_RULES,
            DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
@@ -92,7 +100,8 @@ usage(FILE *file, const char *progname)
 }
 
 static bool
-parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
+parse_options(int argc, char **argv, bool *use_env_names,
+              char **path, struct xkb_rule_names *names)
 {
     enum options {
         OPT_VERBOSE,
@@ -102,6 +111,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         OPT_FROM_XKB,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
+        OPT_ENABLE_ENV_NAMES,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -112,7 +122,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         {"help",             no_argument,            0, 'h'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
         {"test",             no_argument,            0, OPT_TEST},
-#if ENABLE_PRIVATE_APIS
+#ifdef ENABLE_PRIVATE_APIS
         {"kccgst",           no_argument,            0, OPT_KCCGST},
 #endif
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
@@ -121,6 +131,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         {"from-xkb",         optional_argument,      0, OPT_FROM_XKB},
         {"include",          required_argument,      0, OPT_INCLUDE},
         {"include-defaults", no_argument,            0, OPT_INCLUDE_DEFAULTS},
+        {"enable-environment-names", no_argument,    0, OPT_ENABLE_ENV_NAMES},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
         {"layout",           required_argument,      0, OPT_LAYOUT},
@@ -130,6 +141,7 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
     };
 
     bool has_rmlvo_options = false;
+    *use_env_names = false;
     while (1) {
         int option_index = 0;
         int c = getopt_long(argc, argv, "h", opts, &option_index);
@@ -154,6 +166,10 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
         case OPT_RMLVO:
             if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
                 goto output_format_error;
+#ifndef ENABLE_PRIVATE_APIS
+            if (*use_env_names)
+                goto rmlvo_env_error;
+#endif
             output_format = FORMAT_RMLVO;
             break;
         case OPT_FROM_XKB:
@@ -181,6 +197,13 @@ parse_options(int argc, char **argv, char **path, struct xkb_rule_names *names)
             if (num_includes >= ARRAY_SIZE(includes))
                 goto too_many_includes;
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
+            break;
+        case OPT_ENABLE_ENV_NAMES:
+#ifndef ENABLE_PRIVATE_APIS
+            if (output_format == FORMAT_RMLVO)
+                goto rmlvo_env_error;
+#endif
+            *use_env_names = true;
             break;
         case OPT_RULES:
             if (output_format == FORMAT_KEYMAP_FROM_XKB)
@@ -243,6 +266,14 @@ too_much_arguments:
 
     return true;
 
+#ifndef ENABLE_PRIVATE_APIS
+rmlvo_env_error:
+    /* See comment in print_rmlvo */
+    fprintf(stderr, "ERROR: --rmlvo is not compatible with "
+                    "--enable-environment-names yet\n");
+    exit(EXIT_INVALID_USAGE);
+#endif
+
 output_format_error:
     fprintf(stderr, "ERROR: Cannot mix output formats\n");
     usage(stderr, argv[0]);
@@ -260,9 +291,36 @@ too_many_includes:
 }
 
 static int
-print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
+print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
-    printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\noptions: \"%s\"\n",
+    /* Fill defaults */
+#ifndef ENABLE_PRIVATE_APIS
+    /* FIXME: We should use `xkb_context_sanitize_rule_names`, but this is
+     *        not a public API yet. Instead we just do not support names from
+     *        environment variables. */
+    if (isempty(rmlvo->rules))
+        rmlvo->rules = DEFAULT_XKB_RULES;
+    if (isempty(rmlvo->model))
+        rmlvo->model = DEFAULT_XKB_MODEL;
+    /* Layout and variant are tied together, so we either get user-supplied for
+     * both or default for both */
+    if (isempty(rmlvo->layout)) {
+        if (!isempty(rmlvo->variant)) {
+            fprintf(stderr, "ERROR: a variant requires a layout\n");
+            return EXIT_INVALID_USAGE;
+        }
+        rmlvo->layout = DEFAULT_XKB_LAYOUT;
+        rmlvo->variant = DEFAULT_XKB_VARIANT;
+    }
+    if (isempty(rmlvo->options))
+        rmlvo->options = DEFAULT_XKB_OPTIONS;
+#else
+    /* Resolve default RMLVO values */
+    xkb_context_sanitize_rule_names(ctx, rmlvo);
+#endif
+
+    printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\n"
+           "options: \"%s\"\n",
            rmlvo->rules, rmlvo->model, rmlvo->layout,
            rmlvo->variant ? rmlvo->variant : "",
            rmlvo->options ? rmlvo->options : "");
@@ -272,7 +330,7 @@ print_rmlvo(struct xkb_context *ctx, const struct xkb_rule_names *rmlvo)
 static int
 print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
-#if ENABLE_PRIVATE_APIS
+#ifdef ENABLE_PRIVATE_APIS
         struct xkb_component_names kccgst;
 
         /* Resolve default RMLVO values */
@@ -377,15 +435,8 @@ main(int argc, char **argv)
 {
     struct xkb_context *ctx;
     char *keymap_path = NULL;
-    struct xkb_rule_names names = {
-        .rules = DEFAULT_XKB_RULES,
-        .model = DEFAULT_XKB_MODEL,
-        /* layout and variant are tied together, so we either get user-supplied for
-         * both or default for both, see below */
-        .layout = NULL,
-        .variant = NULL,
-        .options = DEFAULT_XKB_OPTIONS,
-    };
+    struct xkb_rule_names names = { 0 };
+    bool use_env_names = false;
     int rc = 1;
 
     if (argc < 1) {
@@ -393,20 +444,14 @@ main(int argc, char **argv)
         return EXIT_INVALID_USAGE;
     }
 
-    if (!parse_options(argc, argv, &keymap_path, &names))
+    if (!parse_options(argc, argv, &use_env_names, &keymap_path, &names))
         return EXIT_INVALID_USAGE;
 
-    /* Now fill in the layout */
-    if (!names.layout || !*names.layout) {
-        if (names.variant && *names.variant) {
-            fprintf(stderr, "ERROR: a variant requires a layout\n");
-            return EXIT_INVALID_USAGE;
-        }
-        names.layout = DEFAULT_XKB_LAYOUT;
-        names.variant = DEFAULT_XKB_VARIANT;
-    }
+    enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
+    if (!use_env_names)
+        ctx_flags |= XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    ctx = xkb_context_new(ctx_flags);
     assert(ctx);
 
     if (verbose) {
