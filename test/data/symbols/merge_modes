@@ -1502,3 +1502,7 @@ xkb_symbols "override" {
 	////// Drop NoSymbol/NoAction and invalid keysyms //////
 	key <T210> { [NoSymbol] };
 };
+
+xkb_symbols "replace" {
+	include "merge_modes(new)"
+};
