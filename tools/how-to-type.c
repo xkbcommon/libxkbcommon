@@ -63,9 +63,10 @@ parse_char_or_codepoint(const char *raw) {
 static void
 usage(const char *argv0, FILE *fp)
 {
-    fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] [--model <model>] "
-                "[--layout <layout>] [--variant <variant>] [--options <options>]"
-                " <character/codepoint/keysym>\n", argv0);
+    fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] "
+                "[--model <model>] [--layout <layout>] [--variant <variant>] "
+                "[--options <options>] [--enable-environment-names] "
+                "<character/codepoint/keysym>\n", argv0);
     fprintf(
         fp,
         "\n"
@@ -96,6 +97,14 @@ usage(const char *argv0, FILE *fp)
         "    The XKB layout variant (default: '%s')\n"
         " --options <options>\n"
         "    The XKB options (default: '%s')\n"
+        " --enable-environment-names\n"
+        "    Allow to set the default RMLVO values via the following environment variables:\n"
+        "    - XKB_DEFAULT_RULES\n"
+        "    - XKB_DEFAULT_MODEL\n"
+        "    - XKB_DEFAULT_LAYOUT\n"
+        "    - XKB_DEFAULT_VARIANT\n"
+        "    - XKB_DEFAULT_OPTIONS\n"
+        "    Note that this option may affect the default values of the previous options.\n"
         "\n",
         DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
         DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
@@ -110,6 +119,7 @@ main(int argc, char *argv[])
     const char *layout_ = NULL;
     const char *variant = NULL;
     const char *options = NULL;
+    bool use_env_names = false;
     bool keysym_mode = false;
     int err = EXIT_FAILURE;
     struct xkb_context *ctx = NULL;
@@ -124,6 +134,7 @@ main(int argc, char *argv[])
     xkb_mod_index_t num_mods;
     enum options {
         OPT_KEYSYM,
+        OPT_ENABLE_ENV_NAMES,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -133,6 +144,7 @@ main(int argc, char *argv[])
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
         {"keysym",               no_argument,            0, OPT_KEYSYM},
+        {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
         {"rules",                required_argument,      0, OPT_RULES},
         {"model",                required_argument,      0, OPT_MODEL},
         {"layout",               required_argument,      0, OPT_LAYOUT},
@@ -152,6 +164,9 @@ main(int argc, char *argv[])
         switch (opt) {
         case OPT_KEYSYM:
             keysym_mode = true;
+            break;
+        case OPT_ENABLE_ENV_NAMES:
+            use_env_names = true;
             break;
         case OPT_RULES:
             rules = optarg;
@@ -211,7 +226,12 @@ main(int argc, char *argv[])
         goto err;
     }
 
-    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+
+    const enum xkb_context_flags ctx_flags = (use_env_names)
+                                           ? XKB_CONTEXT_NO_FLAGS
+                                           : XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
+
+    ctx = xkb_context_new(ctx_flags);
     if (!ctx) {
         fprintf(stderr, "ERROR: Failed to create XKB context\n");
         goto err;

@@ -66,6 +66,23 @@ The XKB layout variant
 .
 .It Fl \-options Ar options
 The XKB options
+.
+.It Fl \-enable\-environment\-names
+Allow to set the default RMLVO values via the following environment variables:
+.Bl -dash -compact -hang
+.It
+.Ev XKB_DEFAULT_RULES
+.It
+.Ev XKB_DEFAULT_MODEL
+.It
+.Ev XKB_DEFAULT_LAYOUT
+.It
+.Ev XKB_DEFAULT_VARIANT
+.It
+.Ev XKB_DEFAULT_OPTIONS
+.El
+Note that this option may affect the default values of the previous options.
+.
 .El
 .
 .Sh SEE ALSO
