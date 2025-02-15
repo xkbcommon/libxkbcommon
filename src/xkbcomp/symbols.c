@@ -140,7 +140,6 @@ static void
 InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
 {
     memset(keyi, 0, sizeof(*keyi));
-    keyi->merge = MERGE_OVERRIDE;
     keyi->name = xkb_atom_intern_literal(ctx, "*");
     keyi->out_of_range_group_action = RANGE_WRAP;
 }
@@ -172,7 +171,6 @@ typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned int include_depth;
-    enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo default_key;
@@ -195,7 +193,6 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
     info->ctx = keymap->ctx;
     info->include_depth = include_depth;
     info->keymap = keymap;
-    info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
     info->mods = *mods;
@@ -459,8 +456,7 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
         if (report)
             *collide |= field;
 
-        if (clobber)
-            return true;
+        return clobber;
     }
 
     return false;
@@ -715,7 +711,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file, stmt->merge);
 
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
@@ -1776,8 +1772,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 }
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
-               enum merge_mode merge)
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 {
     SymbolsInfo info;
     ActionsInfo *actions;
@@ -1787,9 +1782,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         return false;
 
     InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
-    info.default_key.merge = merge;
 
-    HandleSymbolsFile(&info, file, merge);
+    HandleSymbolsFile(&info, file, MERGE_DEFAULT);
 
     if (info.errorCount != 0)
         goto err_info;
