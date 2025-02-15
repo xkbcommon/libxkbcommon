@@ -47,7 +47,7 @@ While libxkbcommon’s API is somewhat derived from the classic XKB API as found
 in `X11/extensions/XKB.h` and friends, it has been substantially reworked to
 expose fewer internal details to clients.
 
-See the [API Documentation](https://xkbcommon.org/doc/current/modules.html).
+See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
 
 ## Dataset
 
