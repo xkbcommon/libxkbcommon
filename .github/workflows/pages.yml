@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Download doxygen from Linux build
-        uses: dawidd6/action-download-artifact@v8
+        uses: dawidd6/action-download-artifact@v9
         with:
           workflow: linux.yml
           workflow_conclusion: success
