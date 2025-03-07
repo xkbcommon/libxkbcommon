@@ -205,6 +205,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
     return true;
 }
 
+/* See: XkbAdjustGroup in Xorg xserver */
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
@@ -230,17 +231,26 @@ XkbWrapGroupIntoRange(int32_t group,
             return num_groups - 1;
 
     case RANGE_WRAP:
-    default:
+    default: {
         /*
-         * C99 says a negative dividend in a modulo operation always
-         * gives a negative result.
+         * Ensure conversion xkb_layout_index_t → int32_t is lossless.
+         *
+         * NOTE: C11 requires a compound statement because it does not allow
+         * a declaration after a label (C23 does allow it).
          */
-        if (group < 0) {
-            static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
-            return ((int32_t) num_groups + (group % (int32_t) num_groups));
-        } else {
-            return group % num_groups;
-        }
+        static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups max don't fit");
+        /*
+         * % returns the *remainder* of the division, not the modulus (see C11
+         * standard 6.5.5 “Multiplicative operators”: a % b = a - (a/b)*b. While
+         * both operators return the same result for positive operands, they do
+         * not for e.g. a negative dividend: remainder may be negative (in the
+         * open interval ]-num_groups, num_groups[) while the modulus is always
+         * positive. So if the remainder is negative, we must add `num_groups`
+         * to get the modulus.
+         */
+        const int32_t rem = group % (int32_t) num_groups;
+        return (rem >= 0) ? rem : rem + (int32_t) num_groups;
+    }
     }
 }
 
