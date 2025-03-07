@@ -12,11 +12,336 @@
 #include <stdlib.h>
 
 #include "evdev-scancodes.h"
+#include "keymap.h"
 #include "test.h"
+#include "utils.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
  * keycode set (where ESC is 9). */
 #define EVDEV_OFFSET 8
+
+/* Reference implementation from XkbAdjustGroup in Xorg xserver */
+static int32_t
+group_wrap_ref(int32_t g, int32_t num_groups)
+{
+    assert(num_groups >= 0);
+    if (num_groups == 0) {
+        return 0;
+    } else if (g < 0) {
+        while (g < 0)
+            g += num_groups;
+    } else if (g >= num_groups) {
+        g %= num_groups;
+    }
+    return g;
+}
+
+/* Function extracted from XkbWrapGroupIntoRange (current) */
+static int32_t
+group_wrap(int32_t g, int32_t num_groups)
+{
+    assert(num_groups >= 0);
+    if (num_groups == 0)
+        return 0;
+    if (g >= 0 && g < num_groups)
+        return g;
+    const int32_t remainder = g % num_groups;
+    return (remainder < 0) ? num_groups + remainder : remainder;
+}
+
+/* Old bogus implementation */
+static int32_t
+group_wrap_old(int32_t g, int32_t num_groups)
+{
+    assert(num_groups >= 0);
+    if (num_groups == 0)
+        return 0;
+    if (g >= 0 && g < num_groups)
+        return g;
+    /* Invalid modulus arithmetic (see comment in XkbWrapGroupIntoRange) */
+    const int32_t remainder = g % num_groups;
+    return (g < 0) ? num_groups + remainder : remainder;
+}
+
+static bool
+is_valid_group(int32_t g, int32_t num_groups)
+{
+    assert(num_groups >= 0);
+    return (num_groups > 0 && g >= 0 && g < num_groups);
+}
+
+static void
+test_group_wrap(struct xkb_context *ctx)
+{
+    /* Compare wrap function with reference implementation */
+    for (int32_t G = 0; G <= XKB_MAX_GROUPS; G++) {
+        for (int32_t g = - 3 * (G + 1); g <= 3 * (G + 1); g++) {
+            /* Same as xserver */
+            assert(group_wrap(g, G) == group_wrap_ref(g, G));
+            /* Old implementation */
+            const int32_t old = group_wrap_old(g, G);
+            const int32_t new = group_wrap(g, G);
+            assert((old == new) ^ (G > 0 && g < 0 && ((-g) % G == 0)));
+        }
+    }
+
+    /* Check some special cases */
+    assert(group_wrap(-2, 0) == 0);
+    assert(group_wrap(-1, 0) == 0);
+    assert(group_wrap(0, 0) == 0);
+    assert(group_wrap(1, 0) == 0);
+    assert(group_wrap(2, 0) == 0);
+
+    assert(group_wrap(-2, 1) == 0);
+    assert(group_wrap(-1, 1) == 0);
+    assert(group_wrap(0, 1) == 0);
+    assert(group_wrap(1, 1) == 0);
+    assert(group_wrap(2, 1) == 0);
+
+    assert(group_wrap(-6, 2) == 0);
+    assert(group_wrap(-5, 2) == 1);
+    assert(group_wrap(-4, 2) == 0);
+    assert(group_wrap(-3, 2) == 1);
+    assert(group_wrap(-2, 2) == 0);
+    assert(group_wrap(-1, 2) == 1);
+    assert(group_wrap(0, 2) == 0);
+    assert(group_wrap(1, 2) == 1);
+    assert(group_wrap(2, 2) == 0);
+    assert(group_wrap(3, 2) == 1);
+    assert(group_wrap(4, 2) == 0);
+    assert(group_wrap(5, 2) == 1);
+    assert(group_wrap(6, 2) == 0);
+
+    assert(group_wrap(-7, 3) == 2);
+    assert(group_wrap(-6, 3) == 0);
+    assert(group_wrap(-5, 3) == 1);
+    assert(group_wrap(-4, 3) == 2);
+    assert(group_wrap(-3, 3) == 0);
+    assert(group_wrap(-2, 3) == 1);
+    assert(group_wrap(-1, 3) == 2);
+    assert(group_wrap(0, 3) == 0);
+    assert(group_wrap(1, 3) == 1);
+    assert(group_wrap(2, 3) == 2);
+    assert(group_wrap(3, 3) == 0);
+    assert(group_wrap(4, 3) == 1);
+    assert(group_wrap(5, 3) == 2);
+    assert(group_wrap(6, 3) == 0);
+    assert(group_wrap(7, 3) == 1);
+
+    assert(group_wrap(-9, 4) == 3);
+    assert(group_wrap(-8, 4) == 0);
+    assert(group_wrap(-7, 4) == 1);
+    assert(group_wrap(-6, 4) == 2);
+    assert(group_wrap(-5, 4) == 3);
+    assert(group_wrap(-4, 4) == 0);
+    assert(group_wrap(-3, 4) == 1);
+    assert(group_wrap(-2, 4) == 2);
+    assert(group_wrap(-1, 4) == 3);
+    assert(group_wrap(0, 4) == 0);
+    assert(group_wrap(1, 4) == 1);
+    assert(group_wrap(2, 4) == 2);
+    assert(group_wrap(3, 4) == 3);
+    assert(group_wrap(4, 4) == 0);
+    assert(group_wrap(5, 4) == 1);
+    assert(group_wrap(6, 4) == 2);
+    assert(group_wrap(7, 4) == 3);
+    assert(group_wrap(8, 4) == 0);
+    assert(group_wrap(9, 4) == 1);
+
+    /* Check state group computation */
+    const char* keymaps[] = {
+        /* 0 group */
+        "default xkb_keymap {\n"
+        "    xkb_keycodes { <> = 1; };\n"
+        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+        "    xkb_compat {};\n"
+        "    xkb_symbols {};\n"
+        "};",
+        /* 1 group */
+        "default xkb_keymap {\n"
+        "    xkb_keycodes { <> = 1; };\n"
+        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+        "    xkb_compat {};\n"
+        "    xkb_symbols {\n"
+        "        key <> { [a] };\n"
+        "    };\n"
+        "};",
+        /* 2 groups */
+        "default xkb_keymap {\n"
+        "    xkb_keycodes { <> = 1; };\n"
+        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+        "    xkb_compat {};\n"
+        "    xkb_symbols {\n"
+        "        key <> { [a], [b] };\n"
+        "    };\n"
+        "};",
+        /* 3 groups */
+        "default xkb_keymap {\n"
+        "    xkb_keycodes { <> = 1; };\n"
+        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+        "    xkb_compat {};\n"
+        "    xkb_symbols {\n"
+        "        key <> { [a], [b], [c] };\n"
+        "    };\n"
+        "};",
+        /* 4 groups */
+        "default xkb_keymap {\n"
+        "    xkb_keycodes { <> = 1; };\n"
+        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+        "    xkb_compat {};\n"
+        "    xkb_symbols {\n"
+        "        key <> { [a], [b], [c], [d] };\n"
+        "    };\n"
+        "};",
+    };
+
+    for (int32_t g = 0; g < (int32_t)ARRAY_SIZE(keymaps); g++) {
+        fprintf(stderr, "------\n*** %s: #%"PRId32" groups ***\n", __func__, g);
+        struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, keymaps[g], strlen(keymaps[g]));
+        assert(keymap);
+        struct xkb_state *state = xkb_state_new(keymap);
+        assert(state);
+
+        const xkb_keycode_t keycode = xkb_keymap_key_by_name(keymap, "");
+        assert(keycode == 1);
+
+        for (int32_t base = -2*(g + 1); base <= 2*(g + 1); base++) {
+            for (int32_t latched = -2*(g + 1); latched <= 2*(g + 1); latched++) {
+                for (int32_t locked = -2*(g + 1); locked <= 2*(g + 2); locked++) {
+                    xkb_state_update_mask(state, 0, 0, 0, base, latched, locked);
+
+                    xkb_layout_index_t got;
+                    xkb_layout_index_t expected;
+
+                    /* Base layout should be unchanged */
+                    got = xkb_state_serialize_layout(state,
+                                                     XKB_STATE_LAYOUT_DEPRESSED);
+                    expected = (xkb_layout_index_t) base;
+                    assert_printf(got == expected,
+                                  "Base layout: expected %"PRIu32", "
+                                  "got: %"PRIu32"\n",
+                                  expected, got);
+
+                    /* Latched layout should be unchanged */
+                    got = xkb_state_serialize_layout(state,
+                                                     XKB_STATE_LAYOUT_LATCHED);
+                    expected = (xkb_layout_index_t) latched;
+                    assert_printf(got == expected,
+                                  "Latched layout: expected %"PRIu32", "
+                                  "got: %"PRIu32"\n",
+                                  expected, got);
+
+                    /* Locked layout should be wrapped */
+                    got = xkb_state_serialize_layout(state,
+                                                     XKB_STATE_LAYOUT_LOCKED);
+                    const xkb_layout_index_t locked_expected =
+                        group_wrap(locked, g);
+                    expected = locked_expected;
+                    assert_printf(got == expected,
+                                  "Locked layout: expected %"PRIu32", "
+                                  "got: %"PRIu32"\n",
+                                  expected, got);
+
+                    /* Effective layout should be wrapped */
+                    got = xkb_state_serialize_layout(state,
+                                                     XKB_STATE_LAYOUT_EFFECTIVE);
+                    const xkb_layout_index_t effective_expected =
+                        group_wrap(base + latched + (int32_t) locked_expected, g);
+                    expected = effective_expected;
+                    assert_printf(got == expected,
+                                  "Effective layout: expected %"PRIu32", "
+                                  "got: %"PRIu32"\n",
+                                  expected, got);
+
+                    /*
+                     * Ensure all API using a layout index do not segfault
+                     */
+
+                    xkb_keymap_layout_get_name(keymap, base);
+
+                    const xkb_level_index_t num_levels =
+                        xkb_keymap_num_levels_for_key(keymap, keycode, base);
+
+                    const xkb_level_index_t num_levels_expected = (g > 0);
+                    assert_printf(num_levels == num_levels_expected,
+                                  "Group=%"PRId32"/%"PRId32": "
+                                  "Expected %"PRIu32", got: %"PRIu32"\n",
+                                  base + 1, g, num_levels_expected, num_levels);
+
+                    xkb_mod_mask_t masks[1] = {0};
+                    const size_t size =
+                        xkb_keymap_key_get_mods_for_level(keymap, keycode, base, 0,
+                                                          masks, ARRAY_SIZE(masks));
+                    const size_t size_expected = (g > 0);
+                    assert(size == size_expected && masks[0] == 0);
+
+                    const xkb_keysym_t *keysyms = NULL;
+                    const int num_keysyms =
+                        xkb_keymap_key_get_syms_by_level(keymap, keycode, base,
+                                                         0, &keysyms);
+                    const int num_keysyms_expected = (g > 0);
+                    assert(num_keysyms == num_keysyms_expected &&
+                           (g == 0 || keysyms[0] != XKB_KEY_NoSymbol));
+
+                    const xkb_level_index_t level =
+                        xkb_state_key_get_level(state, keycode, base);
+                    const xkb_level_index_t level_expected =
+                        is_valid_group(base, g) ? 0 : XKB_LEVEL_INVALID;
+                    assert_printf(level == level_expected,
+                                  "Group=%"PRId32"/%"PRId32": "
+                                  "Expected %"PRIu32", got: %"PRIu32"\n",
+                                  base + 1, g, level_expected, level);
+
+                    int is_active, is_active_expected;
+                    is_active = xkb_state_layout_index_is_active(
+                        state, base, XKB_STATE_LAYOUT_DEPRESSED
+                    );
+                    is_active_expected = is_valid_group(base, g) ? 1 : -1;
+                    assert(is_active == is_active_expected);
+
+                    is_active = xkb_state_layout_index_is_active(
+                        state, latched, XKB_STATE_LAYOUT_LATCHED
+                    );
+                    is_active_expected = is_valid_group(latched, g) ? 1 : -1;
+                    assert(is_active == is_active_expected);
+
+                    is_active = xkb_state_layout_index_is_active(
+                        state, locked, XKB_STATE_LAYOUT_LOCKED
+                    );
+                    is_active_expected =
+                        is_valid_group(locked, g) ? 1 : -1;
+                    assert(is_active == is_active_expected);
+
+                    is_active = xkb_state_layout_index_is_active(
+                        state, locked_expected, XKB_STATE_LAYOUT_LOCKED
+                    );
+                    assert(
+                        is_valid_group((int32_t) locked_expected, g) == (g > 0)
+                    );
+                    is_active_expected =
+                        is_valid_group((int32_t) locked_expected, g) ? 1 : -1;
+                    assert(is_active == is_active_expected);
+
+                    is_active = xkb_state_layout_index_is_active(
+                        state, effective_expected, XKB_STATE_LAYOUT_EFFECTIVE
+                    );
+                    assert(
+                        is_valid_group((int32_t) effective_expected, g) == (g > 0)
+                    );
+                    is_active_expected =
+                        is_valid_group((int32_t) effective_expected, g) ? 1 : -1;
+                    assert(is_active == is_active_expected);
+                }
+            }
+        }
+
+        xkb_state_unref(state);
+        xkb_keymap_unref(keymap);
+    }
+}
 
 static inline xkb_mod_index_t
 _xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
@@ -1269,6 +1594,8 @@ main(void)
     xkb_context_unref(NULL);
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
+
+    test_group_wrap(context);
 
     keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL,
                                 "grp:menu_toggle");
