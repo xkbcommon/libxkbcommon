@@ -337,6 +337,11 @@ is resolved and the file is parsed to get the [rule sets].
 Then *each rule set* is checked against the provided [MLVO] configuration,
 following their *order* in the rules file.
 
+@important @anchor irrelevant-options-order Contrary to layouts and variants,
+the *options order* in a [MLVO] configuration (e.g. via `xkbcli`) is irrelevant
+for its resolution: only the order of the rules matters. See
+“@ref rules-options-example ""” for an illustration.
+
 If a [rule] matches in a @ref rule-set-def "rule set", then:
 
 <!--
