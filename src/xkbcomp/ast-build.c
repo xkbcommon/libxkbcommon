@@ -17,6 +17,7 @@
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "include.h"
+#include "utf8-decoding.h"
 
 static ExprDef *
 ExprCreate(enum stmt_type op, size_t size)
@@ -187,6 +188,40 @@ ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
         darray_append(expr->keysym_list.syms, sym);
     }
     return expr;
+}
+
+ExprDef *
+ExprKeysymListAppendString(struct scanner *scanner,
+                           ExprDef *expr, const char *string)
+{
+    /* TODO: use strnlen with max len = 4 * MAX_KEYSYMS_LIST_LENGTH */
+    size_t len = strlen(string);
+    while (len) {
+        size_t count = 0;
+        uint32_t cp = utf8_next_code_point(string, len, &count);
+        if (cp == INVALID_UTF8_CODE_POINT) {
+            scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                        "Cannot convert string to keysyms: "
+                        "Invalid UTF-8 encoding.");
+            goto error;
+        }
+        xkb_keysym_t sym = xkb_utf32_to_keysym(cp);
+        if (sym == XKB_KEY_NoSymbol) {
+            scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                        "Cannot convert string to keysyms: Unicode code point "
+                        "U+%"PRIX32" has no keysym equivalent.",
+                        cp);
+            goto error;
+        }
+        darray_append(expr->keysym_list.syms, sym);
+        len -= count;
+        string += count;
+    }
+    assert(len == 0);
+    return expr;
+error:
+    FreeStmt((ParseCommon*) expr);
+    return NULL;
 }
 
 KeycodeDef *
