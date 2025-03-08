@@ -62,15 +62,18 @@ the addition should be filed in the upstream [xkeyboard-config] project.
 ## RMLVO vs KcCGST
 
 Due to how XKB is configured, there is no such thing as a "layout" in XKB
-itself, or, indeed, any of the rules, models, variant, options (RMLVO) described
-in `struct xkb_rule_names`. RMLVO names are merely lookup keys in the
+itself, or, indeed, any of the rules, models, variant, options ([RMLVO]) described
+in `struct xkb_rule_names`. [RMLVO] names are merely lookup keys in the
 rules file provided by [xkeyboard-config] to map to the correct keycode, compat,
-geometry (ignored by libxkbcommon), symbols and types (KcCGST). The KcCGST data
-is the one used by XKB and libxkbcommon to map keys to actual symbols.
+geometry (ignored by libxkbcommon), symbols and types ([KcCGST]). The [KcCGST]
+data is the one used by XKB and libxkbcommon to map keys to actual symbols.
 
-For example, a common RMLVO configuration is layout "us", variant "dvorak" and
+[RMLVO]: @ref RMLVO-intro
+[KcCGST]: @ref KcCGST-intro
+
+For example, a common [RMLVO] configuration is layout "us", variant "dvorak" and
 option "terminate:ctrl_alt_bksp". Using the default rules file and model
-this maps into the following KcCGST components:
+this maps into the following [KcCGST] components:
 
 ```
 xkb_keymap {
@@ -82,7 +85,7 @@ xkb_keymap {
 };
 ```
 
-A detailed explanation of how rules files convert RMLVO to KcCGST is out of
+A detailed explanation of how rules files convert [RMLVO] to [KcCGST] is out of
 scope for this document. See [the rules file](md_doc_rules-format.html) page
 instead.
 
@@ -149,20 +152,29 @@ custom rules file must usually be named `evdev`.
 
 ```
 $ cat $XDG_CONFIG_HOME/xkb/rules/evdev
+// Mandatory to extend the
+! include %S/evdev
+
 ! option = symbols
   custom:foo    = +custom(bar)
   custom:baz    = +other(baz)
-
-! include %S/evdev
 ```
 
-This rules file maps the RMLVO option "custom:foo" to the "bar" section in the
+The `include` statement includes the system-provided `evdev` ruleset. This
+allows users to only override those options they need afterwards.
+
+This rules file maps the [RMLVO] option "custom:foo" to the "bar" section in the
 `symbols/custom` file and the "custom:baz" option to the "baz" section in the
-`symbols/other` file. Note how the RMLVO option name may be different to the
+`symbols/other` file. Note how the [RMLVO] option name may be different to the
 file or section name.
 
-The `include` statement includes the system-provided `evdev` ruleset. This
-allows users to only override those options they need.
+@important The *order* of the options matter! In this example, `custom:foo` will
+*always* be applied *before* `custom:baz` and both options will *always* be
+applied *after* the system ones, even if the order is different in the [RMLVO]
+configuration passed to libxkbcommon (e.g. with `xkbcli`). See the
+[related section][options-order] in the rules documentation for further details.
+
+[options-order]: @ref irrelevant-options-order
 
 The files themselves are similar to the layout examples in the previous section:
 
