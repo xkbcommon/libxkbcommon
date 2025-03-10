@@ -382,7 +382,7 @@ endif
 if get_option('enable-xkbregistry')
     dep_libxml = dependency('libxml-2.0')
     if cc.has_header_symbol(
-        'libxml/xmlerror.h',
+        'libxml/parser.h',
         'xmlCtxtSetErrorHandler',
         prefix: system_ext_define
     )
