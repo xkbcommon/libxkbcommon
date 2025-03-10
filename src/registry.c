@@ -1142,13 +1142,16 @@ xml_structured_error_func(void *userData, const xmlError * error)
 }
 #endif
 
+#ifdef XML_PARSE_NO_XXE
+#define _XML_OPTIONS (XML_PARSE_NONET | XML_PARSE_NOENT | XML_PARSE_NO_XXE)
+#else
+#define _XML_OPTIONS (XML_PARSE_NONET)
+#endif
+
 static bool
 validate(struct rxkb_context *ctx, xmlDoc *doc)
 {
     bool success = false;
-    xmlValidCtxt *dtdvalid = NULL;
-    xmlDtd *dtd = NULL;
-    xmlParserInputBufferPtr buf = NULL;
     /* This is a modified version of the xkeyboard-config xkb.dtd:
      * • xkeyboard-config requires modelList, layoutList and optionList,
      *   but we allow for any of those to be missing.
@@ -1183,34 +1186,53 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
         "<!ELEMENT hwList (hwId+)>\n"
         "<!ELEMENT hwId (#PCDATA)>\n";
 
+#ifdef HAVE_XML_CTXT_PARSE_DTD
+    /* Use safer function with context if available, and set
+     * the contextual error handler. */
+    xmlParserCtxtPtr xmlCtxt = xmlNewParserCtxt();
+    if (!xmlCtxt)
+        return false;
+    xmlCtxtSetErrorHandler(xmlCtxt, xml_structured_error_func, ctx);
+    xmlCtxtSetOptions(xmlCtxt, _XML_OPTIONS | XML_PARSE_DTDLOAD);
+
+    xmlParserInputPtr pinput =
+        xmlNewInputFromMemory(NULL, dtdstr, sizeof(dtdstr),
+                              XML_INPUT_BUF_STATIC);
+    if (!pinput)
+        goto dtd_error;
+
+    xmlDtd *dtd = xmlCtxtParseDtd(xmlCtxt, pinput, NULL, NULL);
+#else
     /* Note: do not use xmlParserInputBufferCreateStatic, it generates random
      * DTD validity errors for unknown reasons */
-    buf = xmlParserInputBufferCreateMem(dtdstr, sizeof(dtdstr),
-                                        XML_CHAR_ENCODING_NONE);
+    xmlParserInputBufferPtr buf =
+        xmlParserInputBufferCreateMem(dtdstr, sizeof(dtdstr),
+                                      XML_CHAR_ENCODING_NONE);
     if (!buf)
-        return false;
+        goto dtd_error;
+    xmlDtd *dtd = dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
+#endif
 
-    /* TODO: use safer function with context, once published, and set
-     * the contextual error handler.
-     * See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
-    dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
     if (!dtd) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Failed to load DTD\n");
-        return false;
+        goto dtd_error;
     }
 
-    dtdvalid = xmlNewValidCtxt();
-    /* TODO: use safer function with context, once published, then set
-     * the contextual error handler.
-     * See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
-    if (xmlValidateDtd(dtdvalid, doc, dtd))
-        success = true;
-
-    if (dtd)
-        xmlFreeDtd(dtd);
+#ifdef HAVE_XML_CTXT_PARSE_DTD
+    success = xmlCtxtValidateDtd(xmlCtxt, doc, dtd);
+#else
+    xmlValidCtxt *dtdvalid = xmlNewValidCtxt();
+    success = xmlValidateDtd(dtdvalid, doc, dtd);
     if (dtdvalid)
         xmlFreeValidCtxt(dtdvalid);
+#endif
 
+    xmlFreeDtd(dtd);
+
+dtd_error:
+#ifdef HAVE_XML_CTXT_PARSE_DTD
+    xmlFreeParserCtxt(xmlCtxt);
+#endif
     return success;
 }
 
@@ -1243,8 +1265,10 @@ parse(struct rxkb_context *ctx, const char *path,
      * the global generic handler. */
     xmlCtxtSetErrorHandler(xmlCtxt, xml_structured_error_func, ctx);
 #endif
-    /* This is still unconditionnally needed for the DTD validation (for now) */
+#ifndef HAVE_XML_CTXT_PARSE_DTD
+    /* This is needed for the DTD validation */
     xmlSetGenericErrorFunc(ctx, xml_error_func);
+#endif
 
     doc = xmlCtxtReadFile(xmlCtxt, path, NULL, 0);
     if (!doc)
@@ -1263,6 +1287,8 @@ parse(struct rxkb_context *ctx, const char *path,
 validate_error:
     xmlFreeDoc(doc);
 parse_error:
+
+#ifndef HAVE_XML_CTXT_PARSE_DTD
     /*
      * Reset the default libxml2 error handler to default, because this handler
      * is global and may be used on an invalid rxkb_context, e.g. *after* the
@@ -1272,9 +1298,8 @@ parse_error:
      *     rxkb_context_parse();
      *     rxkb_context_unref();
      */
-    /* TODO: remove once safer variants of xmlIOParseDTD and xmlValidateDtd are
-     * published. See: https://gitlab.gnome.org/GNOME/libxml2/-/issues/808 */
     xmlSetGenericErrorFunc(NULL, NULL);
+#endif
 #ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
     xmlCtxtSetErrorHandler(xmlCtxt, NULL, NULL);
 #endif
