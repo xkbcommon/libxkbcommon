@@ -45,6 +45,10 @@ xkb_symbols "{{ tests_group.name }}base" {
 {{ make_symbols(tests_group, "augment", "augment", false) }}
 
 {{ make_symbols(tests_group, "override", "override", false) }}
+
+xkb_symbols "{{ tests_group.name }}replace" {
+	include "{{ filename }}({{ tests_group.name }}new)"
+};
 {% endfor %}
 {% for g in range(extra_groups) %}
 
