@@ -1,3 +1,38 @@
+libxkbcommon [1.8.1] - 2025-03-12
+=================================
+
+[1.8.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.8.1
+
+## API
+
+### Fixes
+
+- Fixed segfault due to invalid arithmetic to bring *negative* layout indexes
+  into range. It triggers with the following settings:
+
+  - layouts count (per key or total) N: `N > 0`, and
+  - layout index n: `n = - k * N` (`k > 0`)
+
+  Note that these settings are unlikely in usual use cases.
+
+
+## Tools
+
+### Breaking changes
+
+- The tools do not load the *default* RMLVO (rules, model, layout, variant, options)
+  values from the environment anymore. The previous behavior may be restored by using
+  the new `--enable-environment-names` option.
+
+
+## Build system
+
+### New
+
+- Source files are now annotated with SPDX short license identifiers.
+  The LICENSE file was updated to accommodate this. ([#628](https://github.com/xkbcommon/libxkbcommon/issues/628))
+
+
 libxkbcommon [1.8.0] - 2025-02-04
 =================================
 
