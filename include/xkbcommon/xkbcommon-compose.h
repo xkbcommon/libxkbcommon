@@ -66,11 +66,7 @@ extern "C" {
  * @parblock
  *
  * To avoid ambiguity, a sequence is not allowed to be a prefix of another.
- * In such a case, the conflict is resolved thus:
- *
- * 1. A longer sequence overrides a shorter one.
- * 2. An equal sequence overrides an existing one.
- * 3. A shorter sequence does not override a longer one.
+ * When such a conflict occurs, the sequence defined last is the one retained.
  *
  * Sequences of length 1 are allowed.
  *
