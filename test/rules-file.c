@@ -5,8 +5,9 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 #include "test.h"
-#include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/rules.h"
 
 struct test_data {
@@ -24,6 +25,7 @@ struct test_data {
     const char *types;
     const char *compat;
     const char *symbols;
+    const char *geometry;
     xkb_layout_index_t explicit_layouts;
 
     /* Or set this if xkb_components_from_rules() should fail. */
@@ -33,42 +35,55 @@ struct test_data {
 static bool
 test_rules(struct xkb_context *ctx, struct test_data *data)
 {
-    bool passed;
-    const struct xkb_rule_names rmlvo = {
-        data->rules, data->model, data->layout, data->variant, data->options
-    };
-    struct xkb_component_names kccgst;
-
     fprintf(stderr, "\n\nChecking : %s\t%s\t%s\t%s\t%s\n", data->rules,
             data->model, data->layout, data->variant, data->options);
 
     if (data->should_fail)
         fprintf(stderr, "Expecting: FAILURE\n");
     else
-        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%u\n",
+        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%s\t%u\n",
                 data->keycodes, data->types, data->compat, data->symbols,
-                data->explicit_layouts);
+                data->geometry, data->explicit_layouts);
 
+    bool passed = true;
     xkb_layout_index_t explicit_layouts;
-    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst, &explicit_layouts)) {
-        fprintf(stderr, "Received : FAILURE\n");
-        return data->should_fail;
+    for (int k = 0; k < 2; k++) {
+        bool ok;
+        const struct xkb_rule_names rmlvo = {
+            data->rules, data->model, data->layout, data->variant, data->options
+        };
+        struct xkb_component_names kccgst;
+
+        if (k == 0) {
+            /* Private API */
+            ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst,
+                                           &explicit_layouts);
+        } else {
+            /* Public API */
+            ok = xkb_components_names_from_rules(ctx, &rmlvo, NULL, &kccgst);
+        }
+        if (ok) {
+            fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%s\t%u\n",
+                    kccgst.keycodes, kccgst.types, kccgst.compatibility,
+                    kccgst.symbols, kccgst.geometry, explicit_layouts);
+        } else {
+            fprintf(stderr, "Received : FAILURE\n");
+            return data->should_fail;
+        }
+
+        passed &= streq_not_null(kccgst.keycodes, data->keycodes) &&
+                  streq_not_null(kccgst.types, data->types) &&
+                  streq_not_null(kccgst.compatibility, data->compat) &&
+                  streq_not_null(kccgst.symbols, data->symbols) &&
+                  streq_null(kccgst.geometry, data->geometry) &&
+                  explicit_layouts == data->explicit_layouts;
+
+        free(kccgst.keycodes);
+        free(kccgst.types);
+        free(kccgst.compatibility);
+        free(kccgst.symbols);
+        free(kccgst.geometry);
     }
-
-    fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%u\n",
-            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols,
-            explicit_layouts);
-
-    passed = streq_not_null(kccgst.keycodes, data->keycodes) &&
-             streq_not_null(kccgst.types, data->types) &&
-             streq_not_null(kccgst.compat, data->compat) &&
-             streq_not_null(kccgst.symbols, data->symbols) &&
-             explicit_layouts == data->explicit_layouts;
-
-    free(kccgst.keycodes);
-    free(kccgst.types);
-    free(kccgst.compat);
-    free(kccgst.symbols);
 
     return passed;
 }
@@ -222,7 +237,8 @@ main(int argc, char *argv[])
     { .rules = "wildcard", .model = (_model),                                 \
       .layout = (_layout), .variant = (_variant), .options = (_options),      \
       .keycodes = "evdev", .types = "complete", .compat = "complete",         \
-      .symbols = (_symbols) , .explicit_layouts = (_layouts), .should_fail = (_fail) }
+      .symbols = (_symbols) , .geometry = "pc(pc104)",                        \
+      .explicit_layouts = (_layouts), .should_fail = (_fail) }
     struct test_data wildcard_data[] = {
         /* OK: empty model and options and at least one layout+variant combo */
         ENTRY(NULL, "a"  , "1"  , NULL, "pc+a(1)", 1, false),
@@ -264,13 +280,14 @@ main(int argc, char *argv[])
     }
     too_much_symbols[--i] = '\0';
 
-#define ENTRY2(_rules, _model, _layout, _variant, _options,                \
-               _keycodes, _types, _compat, _symbols, _count, _should_fail) \
-    { .rules = (_rules), .model = (_model),                                \
-      .layout = (_layout), .variant = (_variant), .options = (_options),   \
-      .keycodes = (_keycodes), .types = (_types), .compat = (_compat),     \
-      .symbols = (_symbols) , .explicit_layouts = (_count),                \
-      .should_fail = (_should_fail) }
+#define ENTRY2(_rules, _model, _layout, _variant, _options,                 \
+               _keycodes, _types, _compat, _symbols, _count, _should_fail)  \
+    { .rules = (_rules), .model = (_model),                                 \
+      .layout = (_layout), .variant = (_variant), .options = (_options),    \
+      .keycodes = (_keycodes), .types = (_types), .compat = (_compat),      \
+      .symbols = (_symbols),                                                \
+      .geometry = (strncmp((_rules), "evdev", 5) == 0) ? "pc(pc104)" : NULL,\
+      .explicit_layouts = (_count), .should_fail = (_should_fail) }
 #define ENTRY(layout, variant, options, symbols, count, should_fail)           \
         ENTRY2("special_indexes", NULL, layout, variant, options,              \
                "default_keycodes", "default_types", "default_compat", symbols, \

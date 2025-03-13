@@ -119,3 +119,7 @@ global:
     xkb_compose_table_iterator_free;
     xkb_compose_table_iterator_next;
 } V_1.0.0;
+
+V_1.9.0 {
+    xkb_components_names_from_rules;
+} V_1.6.0;

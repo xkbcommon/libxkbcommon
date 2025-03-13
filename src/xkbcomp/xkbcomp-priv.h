@@ -7,13 +7,6 @@
 #include "keymap.h"
 #include "ast.h"
 
-struct xkb_component_names {
-    char *keycodes;
-    char *types;
-    char *compat;
-    char *symbols;
-};
-
 char *
 text_v1_keymap_get_as_string(struct xkb_keymap *keymap);
 

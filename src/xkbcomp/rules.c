@@ -1529,9 +1529,9 @@ xkb_components_from_rules(struct xkb_context *ctx,
 
     darray_steal(matcher->kccgst[KCCGST_KEYCODES], &out->keycodes, NULL);
     darray_steal(matcher->kccgst[KCCGST_TYPES], &out->types, NULL);
-    darray_steal(matcher->kccgst[KCCGST_COMPAT], &out->compat, NULL);
+    darray_steal(matcher->kccgst[KCCGST_COMPAT], &out->compatibility, NULL);
     darray_steal(matcher->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
-    darray_free(matcher->kccgst[KCCGST_GEOMETRY]);
+    darray_steal(matcher->kccgst[KCCGST_GEOMETRY], &out->geometry, NULL);
 
     mval = &matcher->rmlvo.model;
     if (!mval->matched && mval->sval.len > 0)
