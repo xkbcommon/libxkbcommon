@@ -14,10 +14,6 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
-#ifdef ENABLE_PRIVATE_APIS
-#include "xkbcomp/xkbcomp-priv.h"
-#include "xkbcomp/rules.h"
-#endif
 #include "tools-common.h"
 #include "src/utils.h"
 
@@ -49,19 +45,15 @@ usage(FILE *file, const char *progname)
            "    Enable verbose debugging output\n"
            " --test\n"
            "    Test compilation but do not print the keymap.\n"
-#ifdef ENABLE_PRIVATE_APIS
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
-#endif
            " --rmlvo\n"
            "    Print the full RMLVO with the defaults filled in for missing elements\n"
            " --keymap <file>\n"
            " --from-xkb <file>\n"
            "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
            "    is \"-\" or missing, then load from stdin."
-#ifdef ENABLE_PRIVATE_APIS
            "    This option must not be used with --kccgst.\n"
-#endif
            " --include\n"
            "    Add the given path to the include path list. This option is\n"
            "    order-dependent, include paths given first are searched first.\n"
@@ -122,9 +114,7 @@ parse_options(int argc, char **argv, bool *use_env_names,
         {"help",             no_argument,            0, 'h'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
         {"test",             no_argument,            0, OPT_TEST},
-#ifdef ENABLE_PRIVATE_APIS
         {"kccgst",           no_argument,            0, OPT_KCCGST},
-#endif
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
         {"keymap",           optional_argument,      0, OPT_FROM_XKB},
         /* Alias maintained for backward compatibility */
@@ -166,10 +156,6 @@ parse_options(int argc, char **argv, bool *use_env_names,
         case OPT_RMLVO:
             if (output_format != FORMAT_KEYMAP_FROM_RMLVO)
                 goto output_format_error;
-#ifndef ENABLE_PRIVATE_APIS
-            if (*use_env_names)
-                goto rmlvo_env_error;
-#endif
             output_format = FORMAT_RMLVO;
             break;
         case OPT_FROM_XKB:
@@ -177,6 +163,8 @@ parse_options(int argc, char **argv, bool *use_env_names,
                 goto output_format_error;
             if (has_rmlvo_options)
                 goto input_format_error;
+            if (*use_env_names)
+                goto keymap_env_error;
             output_format = FORMAT_KEYMAP_FROM_XKB;
             /* Optional arguments require `=`, but we want to make this
              * requirement optional too, so that both `--keymap=xxx` and
@@ -199,11 +187,10 @@ parse_options(int argc, char **argv, bool *use_env_names,
             includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_ENABLE_ENV_NAMES:
-#ifndef ENABLE_PRIVATE_APIS
-            if (output_format == FORMAT_RMLVO)
-                goto rmlvo_env_error;
-#endif
+            if (output_format == FORMAT_KEYMAP_FROM_XKB)
+                goto keymap_env_error;
             *use_env_names = true;
+            has_rmlvo_options = true;
             break;
         case OPT_RULES:
             if (output_format == FORMAT_KEYMAP_FROM_XKB)
@@ -266,13 +253,10 @@ too_much_arguments:
 
     return true;
 
-#ifndef ENABLE_PRIVATE_APIS
-rmlvo_env_error:
-    /* See comment in print_rmlvo */
-    fprintf(stderr, "ERROR: --rmlvo is not compatible with "
+keymap_env_error:
+    fprintf(stderr, "ERROR: --keymap is not compatible with "
                     "--enable-environment-names yet\n");
     exit(EXIT_INVALID_USAGE);
-#endif
 
 output_format_error:
     fprintf(stderr, "ERROR: Cannot mix output formats\n");
@@ -293,50 +277,29 @@ too_many_includes:
 static int
 print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
-    /* Fill defaults */
-#ifndef ENABLE_PRIVATE_APIS
-    /* FIXME: We should use `xkb_context_sanitize_rule_names`, but this is
-     *        not a public API yet. Instead we just do not support names from
-     *        environment variables. */
-    if (isempty(rmlvo->rules))
-        rmlvo->rules = DEFAULT_XKB_RULES;
-    if (isempty(rmlvo->model))
-        rmlvo->model = DEFAULT_XKB_MODEL;
-    /* Layout and variant are tied together, so we either get user-supplied for
-     * both or default for both */
-    if (isempty(rmlvo->layout)) {
-        if (!isempty(rmlvo->variant)) {
-            fprintf(stderr, "ERROR: a variant requires a layout\n");
-            return EXIT_INVALID_USAGE;
-        }
-        rmlvo->layout = DEFAULT_XKB_LAYOUT;
-        rmlvo->variant = DEFAULT_XKB_VARIANT;
-    }
-    if (isempty(rmlvo->options))
-        rmlvo->options = DEFAULT_XKB_OPTIONS;
-#else
     /* Resolve default RMLVO values */
-    xkb_context_sanitize_rule_names(ctx, rmlvo);
-#endif
+    struct xkb_rule_names resolved = { NULL };
+    xkb_components_names_from_rules(ctx, rmlvo, &resolved, NULL);
+
+    if (test)
+        return EXIT_SUCCESS;
 
     printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\n"
            "options: \"%s\"\n",
-           rmlvo->rules, rmlvo->model, rmlvo->layout,
-           rmlvo->variant ? rmlvo->variant : "",
-           rmlvo->options ? rmlvo->options : "");
+           resolved.rules, resolved.model, resolved.layout,
+           resolved.variant ? resolved.variant : "",
+           resolved.options ? resolved.options : "");
     return EXIT_SUCCESS;
 }
 
 static int
 print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
-#ifdef ENABLE_PRIVATE_APIS
-        struct xkb_component_names kccgst;
+        struct xkb_component_names kccgst = { 0 };
 
-        /* Resolve default RMLVO values */
-        xkb_context_sanitize_rule_names(ctx, rmlvo);
-
-        if (!xkb_components_from_rules(ctx, rmlvo, &kccgst, NULL))
+        /* Resolve missing RMLVO values, then resolve the RMLVO names to
+         * KcCGST components */
+        if (!xkb_components_names_from_rules(ctx, rmlvo, NULL, &kccgst))
             return EXIT_FAILURE;
         if (test)
             goto out;
@@ -345,20 +308,22 @@ print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
                "  xkb_keycodes { include \"%s\" };\n"
                "  xkb_types { include \"%s\" };\n"
                "  xkb_compat { include \"%s\" };\n"
-               "  xkb_symbols { include \"%s\" };\n"
-               "};\n",
+               "  xkb_symbols { include \"%s\" };\n",
                kccgst.keycodes, kccgst.types, kccgst.compatibility,
                kccgst.symbols);
+        /* Contrary to the previous components, geometry can be empty */
+        if (!isempty(kccgst.geometry)) {
+            printf("  xkb_geometry { include \"%s\" };\n", kccgst.geometry);
+        }
+        printf("};\n");
 out:
         free(kccgst.keycodes);
         free(kccgst.types);
         free(kccgst.compatibility);
         free(kccgst.symbols);
+        free(kccgst.geometry);
 
         return EXIT_SUCCESS;
-#else
-        return EXIT_FAILURE;
-#endif
 }
 
 static int
