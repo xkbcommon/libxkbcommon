@@ -347,11 +347,12 @@ print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
                "  xkb_compat { include \"%s\" };\n"
                "  xkb_symbols { include \"%s\" };\n"
                "};\n",
-               kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
+               kccgst.keycodes, kccgst.types, kccgst.compatibility,
+               kccgst.symbols);
 out:
         free(kccgst.keycodes);
         free(kccgst.types);
-        free(kccgst.compat);
+        free(kccgst.compatibility);
         free(kccgst.symbols);
 
         return EXIT_SUCCESS;
