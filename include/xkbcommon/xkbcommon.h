@@ -20,6 +20,7 @@
 #ifndef _XKBCOMMON_H_
 #define _XKBCOMMON_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -282,13 +283,26 @@ typedef uint32_t xkb_led_mask_t;
 #define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
 /**
- * Names to compile a keymap with, also known as RMLVO.
+ * @defgroup rules-api Rules
+ * Utility functions related to *rules*, whose purpose is introduced in:
+ * @ref xkb-the-config "".
+ *
+ * @{
+ */
+
+/**
+ * Names to compile a keymap with, also known as [RMLVO].
  *
  * The names are the common configuration values by which a user picks
  * a keymap.
  *
  * If the entire struct is NULL, then each field is taken to be NULL.
  * You should prefer passing NULL instead of choosing your own defaults.
+ *
+ * @see [Introduction to RMLVO][RMLVO]
+ * @see @ref rules-api ""
+ *
+ * [RMLVO]: @ref RMLVO-intro
  */
 struct xkb_rule_names {
     /**
@@ -343,6 +357,67 @@ struct xkb_rule_names {
      */
     const char *options;
 };
+
+/**
+ * Keymap components, also known as [KcCGST].
+ *
+ * The components are the result of the [RMLVO] resolution.
+ *
+ * @see [Introduction to RMLVO][RMLVO]
+ * @see [Introduction to KcCGST][KcCGST]
+ * @see @ref rules-api ""
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ * [KcCGST]: @ref KcCGST-intro
+ */
+struct xkb_component_names {
+    char *keycodes;
+    char *compatibility;
+    char *geometry;
+    char *symbols;
+    char *types;
+};
+
+/**
+ * Resolve [RMLVO] names to [KcCGST] components.
+ *
+ * This function is used primarily for *debugging*. See
+ * xkb_keymap::xkb_keymap_new_from_names() for creating keymaps from
+ * [RMLVO] names.
+ *
+ * @param[in]  context    The context in which to resolve the names.
+ * @param[in]  rmlvo_in   The [RMLVO] names to use.
+ * @param[out] rmlvo_out  The [RMLVO] names actually used after resolving
+ * missing values.
+ * @param[out] components_out The [KcCGST] components resulting of the [RMLVO]
+ * resolution.
+ *
+ * @c rmlvo_out and @c components can be omitted by using `NULL`, but not both.
+ *
+ * If @c components is not `NULL`, it is filled with dynamically-allocated
+ * strings that should be freed by the caller.
+ *
+ * @returns `true` if the [RMLVO] names could be resolved, `false` otherwise.
+ *
+ * @see [Introduction to RMLVO][RMLVO]
+ * @see [Introduction to KcCGST][KcCGST]
+ * @see xkb_rule_names
+ * @see xkb_component_names
+ * @see xkb_keymap::xkb_keymap_new_from_names()
+ *
+ * @since 1.9.0
+ * @memberof xkb_component_names
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ * [KcCGST]: @ref KcCGST-intro
+ */
+XKB_EXPORT bool
+xkb_components_names_from_rules(struct xkb_context *context,
+                                const struct xkb_rule_names *rmlvo_in,
+                                struct xkb_rule_names *rmlvo_out,
+                                struct xkb_component_names *components_out);
+
+/** @} */
 
 /**
  * @defgroup keysyms Keysyms

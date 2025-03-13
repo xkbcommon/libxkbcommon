@@ -11,8 +11,35 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include "xkbcomp-priv.h"
 #include "rules.h"
+
+bool
+xkb_components_names_from_rules(struct xkb_context *ctx,
+                                const struct xkb_rule_names *rmlvo_in,
+                                struct xkb_rule_names *rmlvo_out,
+                                struct xkb_component_names *components_out)
+{
+    /* Resolve default RMLVO values. We need a mutable copy of the input. */
+    struct xkb_rule_names rmlvo = *rmlvo_in;
+    xkb_context_sanitize_rule_names(ctx, &rmlvo);
+
+    if (rmlvo_out) {
+        /* Copy the sanitized RMLVO, if required. */
+        *rmlvo_out = rmlvo;
+    }
+    if (!components_out) {
+        /* KcCGST not required.
+         * While RMLVO and KcCGST outputs are both optional, at least one must
+         * be provided. */
+        return !!rmlvo_out;
+    }
+
+    /* Resolve the RMLVO names to KcCGST components */
+    *components_out = (struct xkb_component_names){ 0 };
+    return xkb_components_from_rules(ctx, &rmlvo, components_out, NULL);
+}
 
 static bool
 compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
@@ -47,7 +74,7 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
             rmlvo->rules, rmlvo->model, rmlvo->layout, rmlvo->variant,
             rmlvo->options);
 
-    /* Resolve the RMLVO component to KcCGST components and get the
+    /* Resolve the RMLVO components to KcCGST components and get the
      * expected number of layouts */
     ok = xkb_components_from_rules(keymap->ctx, rmlvo, &kccgst,
                                    &keymap->num_groups);
@@ -63,14 +90,15 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
     log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Compiling from KcCGST: keycodes '%s', types '%s', "
             "compat '%s', symbols '%s'\n",
-            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
+            kccgst.keycodes, kccgst.types, kccgst.compatibility, kccgst.symbols);
 
     file = XkbFileFromComponents(keymap->ctx, &kccgst);
 
     free(kccgst.keycodes);
     free(kccgst.types);
-    free(kccgst.compat);
+    free(kccgst.compatibility);
     free(kccgst.symbols);
+    free(kccgst.geometry);
 
     if (!file) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,

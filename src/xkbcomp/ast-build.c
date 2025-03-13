@@ -495,7 +495,7 @@ XkbFileFromComponents(struct xkb_context *ctx,
 {
     char *const components[] = {
         kkctgs->keycodes, kkctgs->types,
-        kkctgs->compat, kkctgs->symbols,
+        kkctgs->compatibility, kkctgs->symbols,
     };
     enum xkb_file_type type;
     IncludeStmt *include = NULL;
