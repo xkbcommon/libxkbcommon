@@ -15,6 +15,7 @@ import unittest
 from abc import ABCMeta, abstractmethod
 from collections.abc import Generator
 from dataclasses import dataclass
+from functools import reduce
 from pathlib import Path
 
 try:
@@ -370,6 +371,51 @@ class TestXkbcli(unittest.TestCase):
                         assert ("virtual_modifiers Test01" in stdout) ^ (
                             target.use_rmlvo
                         ), (target, stdout, stderr)
+
+    def test_compile_keymap_mutually_exclusive_args(self):
+        xkb_root = Path(os.environ["XKB_CONFIG_ROOT"])
+        keymap_path = xkb_root / "keymaps/basic.xkb"
+        keymap_string = keymap_path.read_text(encoding="utf-8")
+        keymap_from_stdin = KeymapTarget(arg=True, stdin=keymap_string)
+        keymap_from_path1 = KeymapTarget(arg=True, path=Path(keymap_path))
+        keymap_from_path2 = KeymapTarget(arg=False, path=Path(keymap_path))
+        rmlvo = RmlvoTarget()
+        for args in (
+            # --keymap does not use RMLVO options
+            ("--rules", "some-rules", keymap_from_stdin),
+            ("--model", "some-model", keymap_from_stdin),
+            ("--layout", "some-layout", keymap_from_stdin),
+            ("--variant", "some-variant", keymap_from_stdin),
+            ("--options", "some-option", keymap_from_stdin),
+            ("--rules", "some-rules", keymap_from_path1),
+            ("--model", "some-model", keymap_from_path1),
+            ("--layout", "some-layout", keymap_from_path1),
+            ("--variant", "some-variant", keymap_from_path1),
+            ("--options", "some-option", keymap_from_path1),
+            # Trailing keymap file with RMLVO options
+            ("--rules", "some-rules", keymap_from_path2),
+            ("--model", "some-model", keymap_from_path2),
+            ("--layout", "some-layout", keymap_from_path2),
+            ("--variant", "some-variant", keymap_from_path2),
+            ("--options", "some-option", keymap_from_path2),
+            # Incompatible output types
+            (rmlvo, keymap_from_stdin),
+            (rmlvo, keymap_from_path1),
+            (rmlvo, keymap_from_path2),
+        ):
+            with self.subTest(args=args):
+                args = list(
+                    itertools.chain.from_iterable(
+                        arg.args if isinstance(arg, Target) else arg for arg in args
+                    )
+                )
+                input = reduce(
+                    lambda acc, arg: acc
+                    or (arg.stdin if isinstance(arg, Target) else None),
+                    args,
+                    None,
+                )
+                self.xkbcli_compile_keymap.run_command_invalid(args, input=input)
 
     def test_compile_keymap_rmlvo(self):
         def run(target, rmlvo):
