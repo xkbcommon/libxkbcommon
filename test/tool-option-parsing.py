@@ -132,6 +132,12 @@ class RmlvoTarget(Target):
         return ["--rmlvo"]
 
 
+class KccgstTarget(Target):
+    @property
+    def args(self) -> list[str]:
+        return ["--kccgst"]
+
+
 @dataclass
 class KeymapTarget(Target, RMLVO):
     arg: bool = False
@@ -337,7 +343,7 @@ class TestXkbcli(unittest.TestCase):
         target: Target
         for target in (
             RmlvoTarget(),
-            # TODO: --kccgst
+            KccgstTarget(),
             # Keymap from RMLVO
             KeymapTarget(),
             # Keymap from RMLVO (stdin ignored)
@@ -380,6 +386,7 @@ class TestXkbcli(unittest.TestCase):
         keymap_from_path1 = KeymapTarget(arg=True, path=Path(keymap_path))
         keymap_from_path2 = KeymapTarget(arg=False, path=Path(keymap_path))
         rmlvo = RmlvoTarget()
+        kccgst = KccgstTarget()
         for args in (
             # --keymap does not use RMLVO options
             ("--rules", "some-rules", keymap_from_stdin),
@@ -402,6 +409,13 @@ class TestXkbcli(unittest.TestCase):
             (rmlvo, keymap_from_stdin),
             (rmlvo, keymap_from_path1),
             (rmlvo, keymap_from_path2),
+            [kccgst, keymap_from_stdin],
+            [kccgst, keymap_from_path1],
+            [kccgst, keymap_from_path2],
+            [kccgst, rmlvo],
+            [kccgst, rmlvo, keymap_from_stdin],
+            [kccgst, rmlvo, keymap_from_path1],
+            [kccgst, rmlvo, keymap_from_path2],
         ):
             with self.subTest(args=args):
                 args = list(
@@ -424,7 +438,7 @@ class TestXkbcli(unittest.TestCase):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = {
                 executor.submit(run, target.args, rmlvo): (target, rmlvo)
-                for target in (RmlvoTarget(), KeymapTarget())
+                for target in (RmlvoTarget(), KccgstTarget(), KeymapTarget())
                 for rmlvo in rmlvos
             }
             for future in concurrent.futures.as_completed(futures, TIMEOUT):
