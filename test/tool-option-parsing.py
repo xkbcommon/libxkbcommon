@@ -3,15 +3,15 @@
 # Copyright © 2020 Red Hat, Inc.
 # SPDX-License-Identifier: MIT
 
+import concurrent.futures
 import itertools
+import logging
 import os
 import resource
-import sys
 import subprocess
-import logging
+import sys
 import tempfile
 import unittest
-
 
 try:
     top_builddir = os.environ["top_builddir"]
@@ -32,6 +32,8 @@ except KeyError:
         'Using srcdir "{}", builddir "{}"'.format(top_srcdir, top_builddir),
         file=sys.stderr,
     )
+
+TIMEOUT = 10.0  # seconds
 
 # Ensure locale is C, so we can check error messages in English
 os.environ["LC_ALL"] = "C.UTF-8"
@@ -223,9 +225,15 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_compile_keymap.run_command_success(args)
 
     def test_compile_keymap_rmlvo(self):
-        for rmlvo in rmlvos:
-            with self.subTest(rmlvo=rmlvo):
-                self.xkbcli_compile_keymap.run_command_success(rmlvo)
+        def run(rmlvo):
+            return self.xkbcli_compile_keymap.run_command_success(rmlvo)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = {executor.submit(run, rmlvo): rmlvo for rmlvo in rmlvos}
+            for future in concurrent.futures.as_completed(futures, TIMEOUT):
+                rmlvo = futures[future]
+                with self.subTest(rmlvo=rmlvo):
+                    future.result()
 
     def test_compile_keymap_include(self):
         for args in (
@@ -262,10 +270,16 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_how_to_type.run_command_success(args)
 
     def test_how_to_type_rmlvo(self):
-        for rmlvo in rmlvos:
-            with self.subTest(rmlvo=rmlvo):
-                args = rmlvo + ["0x1234"]
-                self.xkbcli_how_to_type.run_command_success(args)
+        def run(rmlvo):
+            args = rmlvo + ["0x1234"]
+            return self.xkbcli_how_to_type.run_command_success(args)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = {executor.submit(run, rmlvo): rmlvo for rmlvo in rmlvos}
+            for future in concurrent.futures.as_completed(futures, TIMEOUT):
+                rmlvo = futures[future]
+                with self.subTest(rmlvo=rmlvo):
+                    future.result()
 
     def test_list_rmlvo(self):
         for args in (
@@ -296,9 +310,15 @@ class TestXkbcli(unittest.TestCase):
         assert "Failed to parse XKB description" in stderr
 
     def test_interactive_evdev_rmlvo(self):
-        for rmlvo in rmlvos:
-            with self.subTest(rmlvo=rmlvo):
-                self.xkbcli_interactive_evdev.run_command_success(rmlvo)
+        def run(rmlvo):
+            return self.xkbcli_interactive_evdev.run_command_success(rmlvo)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = {executor.submit(run, rmlvo): rmlvo for rmlvo in rmlvos}
+            for future in concurrent.futures.as_completed(futures, TIMEOUT):
+                rmlvo = futures[future]
+                with self.subTest(rmlvo=rmlvo):
+                    future.result()
 
     def test_interactive_evdev(self):
         # Note: --enable-compose fails if $prefix doesn't have the compose tables
