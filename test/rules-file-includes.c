@@ -7,8 +7,9 @@
 #include "config.h"
 #include "test-config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "test.h"
-#include "xkbcomp/xkbcomp-priv.h"
+#include "utils.h"
 #include "xkbcomp/rules.h"
 
 struct test_data {
@@ -26,6 +27,7 @@ struct test_data {
     const char *types;
     const char *compat;
     const char *symbols;
+    const char *geometry;
 
     /* Or set this if xkb_components_from_rules() should fail. */
     bool should_fail;
@@ -34,12 +36,6 @@ struct test_data {
 static bool
 test_rules(struct xkb_context *ctx, struct test_data *data)
 {
-    bool passed;
-    const struct xkb_rule_names rmlvo = {
-        data->rules, data->model, data->layout, data->variant, data->options
-    };
-    struct xkb_component_names kccgst;
-
     fprintf(stderr, "\n\nChecking : %s\t%s\t%s\t%s\t%s\n", data->rules,
             data->model, data->layout, data->variant, data->options);
 
@@ -49,23 +45,42 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
         fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\n",
                 data->keycodes, data->types, data->compat, data->symbols);
 
-    if (!xkb_components_from_rules(ctx, &rmlvo, &kccgst, NULL)) {
-        fprintf(stderr, "Received : FAILURE\n");
-        return data->should_fail;
+    bool passed = true;
+    for (int k = 0; k < 2; k++) {
+        bool ok = false;
+        const struct xkb_rule_names rmlvo = {
+            data->rules, data->model, data->layout, data->variant, data->options
+        };
+        struct xkb_component_names kccgst;
+
+        if (k == 0) {
+            /* Private API */
+            ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst, NULL);
+        } else {
+            /* Public API */
+            ok = xkb_components_names_from_rules(ctx, &rmlvo, NULL, &kccgst);
+        }
+        if (ok) {
+            fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
+                    kccgst.keycodes, kccgst.types, kccgst.compatibility,
+                    kccgst.symbols);
+        } else {
+            fprintf(stderr, "Received : FAILURE\n");
+            return data->should_fail;
+        }
+
+        passed &= streq_not_null(kccgst.keycodes, data->keycodes) &&
+                  streq_not_null(kccgst.types, data->types) &&
+                  streq_not_null(kccgst.compatibility, data->compat) &&
+                  streq_not_null(kccgst.symbols, data->symbols) &&
+                  streq_null(kccgst.geometry, data->geometry);
+
+        free(kccgst.keycodes);
+        free(kccgst.types);
+        free(kccgst.compatibility);
+        free(kccgst.symbols);
+        free(kccgst.geometry);
     }
-
-    fprintf(stderr, "Received : %s\t%s\t%s\t%s\n",
-            kccgst.keycodes, kccgst.types, kccgst.compat, kccgst.symbols);
-
-    passed = streq(kccgst.keycodes, data->keycodes) &&
-             streq(kccgst.types, data->types) &&
-             streq(kccgst.compat, data->compat) &&
-             streq(kccgst.symbols, data->symbols);
-
-    free(kccgst.keycodes);
-    free(kccgst.types);
-    free(kccgst.compat);
-    free(kccgst.symbols);
 
     return passed;
 }
