@@ -63,8 +63,8 @@ HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
                          "Virtual modifier %s defined multiple times; "
                          "Using %s, ignoring %s\n",
                          xkb_atom_text(ctx, stmt->name),
-                         ModMaskText(ctx, mods, use),
-                         ModMaskText(ctx, mods, ignore));
+                         ModMaskText(ctx, MOD_REAL, mods, use),
+                         ModMaskText(ctx, MOD_REAL, mods, ignore));
 
                 mapping = use;
             }

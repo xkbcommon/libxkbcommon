@@ -110,12 +110,9 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
         if (keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) {
             /* Can only pretty-print real modifiers in this context */
-            if (mod->mapping & ~MOD_REAL_MASK_ALL) {
-                write_buf(buf, "=0x%"PRIx32, mod->mapping);
-            } else {
-                write_buf(buf, "=%s",
-                          ModMaskText(keymap->ctx, &keymap->mods, mod->mapping));
-            }
+            write_buf(buf, "=%s",
+                      ModMaskText(keymap->ctx, MOD_REAL, &keymap->mods,
+                                  mod->mapping));
         }
     }
 
@@ -186,7 +183,8 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                   xkb_atom_text(keymap->ctx, type->name));
 
         write_buf(buf, "\t\tmodifiers= %s;\n",
-                  ModMaskText(keymap->ctx, &keymap->mods, type->mods.mods));
+                  ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
+                              type->mods.mods));
 
         for (unsigned j = 0; j < type->num_entries; j++) {
             const char *str;
@@ -199,13 +197,14 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
             if (entry->level == 0 && entry->preserve.mods == 0)
                 continue;
 
-            str = ModMaskText(keymap->ctx, &keymap->mods, entry->mods.mods);
+            str = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
+                              entry->mods.mods);
             write_buf(buf, "\t\tmap[%s]= %u;\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
                 write_buf(buf, "\t\tpreserve[%s]= %s;\n",
-                          str, ModMaskText(keymap->ctx, &keymap->mods,
+                          str, ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                                            entry->preserve.mods));
         }
 
@@ -243,7 +242,8 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
                       LedStateMaskText(keymap->ctx, led->which_mods));
         }
         write_buf(buf, "\t\tmodifiers= %s;\n",
-                  ModMaskText(keymap->ctx, &keymap->mods, led->mods.mods));
+                  ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
+                              led->mods.mods));
     }
 
     if (led->ctrls) {
@@ -297,7 +297,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         if (action->mods.flags & ACTION_MODS_LOOKUP_MODMAP)
             args = "modMapMods";
         else
-            args = ModMaskText(keymap->ctx, &keymap->mods,
+            args = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                                action->mods.mods.mods);
         write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
@@ -464,7 +464,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "\tinterpret %s+%s(%s) {\n",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),
-                  ModMaskText(keymap->ctx, &keymap->mods, si->mods));
+                  ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, si->mods));
 
         if (si->virtual_mod != XKB_MOD_INVALID)
             write_buf(buf, "\t\tvirtualModifier= %s;\n",
@@ -597,7 +597,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
      * field, so make it explicit. */
     if (key->vmodmap && ((key->explicit & EXPLICIT_VMODMAP) || show_actions))
         write_buf(buf, "\n\t\tvirtualMods= %s,",
-                  ModMaskText(keymap->ctx, &keymap->mods, key->vmodmap));
+                  ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
+                              key->vmodmap));
 
     switch (key->out_of_range_group_action) {
     case RANGE_SATURATE:

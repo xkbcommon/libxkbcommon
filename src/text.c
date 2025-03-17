@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "keymap.h"
 #include "keysym.h"
 #include "text.h"
 
@@ -238,12 +239,15 @@ SIMatchText(enum xkb_match_operation type)
 }
 
 const char *
-ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
-            xkb_mod_mask_t mask)
+ModMaskText(struct xkb_context *ctx, enum mod_type type,
+            const struct xkb_mod_set *mods, xkb_mod_mask_t mask)
 {
     char buf[1024] = {0};
     size_t pos = 0;
     const struct xkb_mod *mod;
+
+    /* We want to avoid boolean blindness, but we expected only 2 values */
+    assert(type == MOD_REAL || type == MOD_BOTH);
 
     if (mask == 0)
         return "none";
@@ -251,9 +255,10 @@ ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
     if (mask == MOD_REAL_MASK_ALL)
         return "all";
 
-    if (unlikely(mask & ~((UINT64_C(1) << mods->num_mods) - 1))) {
-        /* If we get a mask that cannot be expressed with the known modifiers,
-         * print it as hexadecimal */
+    if ((type == MOD_REAL && (mask & ~MOD_REAL_MASK_ALL)) ||
+        unlikely(mask & ~((UINT64_C(1) << mods->num_mods) - 1))) {
+        /* If we get a mask that cannot be expressed with the known modifiers
+         * of the given type, print it as hexadecimal */
         const int ret = snprintf(buf, sizeof(buf), "0x%"PRIx32, mask);
         static_assert(sizeof(mask) == 4 && sizeof(buf) >= sizeof("0xffffffff"),
                       "Buffer too small");
