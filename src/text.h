@@ -34,8 +34,8 @@ extern const LookupEntry actionTypeNames[];
 extern const LookupEntry symInterpretMatchMaskNames[];
 
 const char *
-ModMaskText(struct xkb_context *ctx, const struct xkb_mod_set *mods,
-            xkb_mod_mask_t mask);
+ModMaskText(struct xkb_context *ctx, enum mod_type type,
+            const struct xkb_mod_set *mods, xkb_mod_mask_t mask);
 
 const char *
 ModIndexText(struct xkb_context *ctx, const struct xkb_mod_set *mods,

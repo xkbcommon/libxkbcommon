@@ -71,7 +71,7 @@ siText(SymInterpInfo *si, CompatInfo *info)
     snprintf(buf, 128, "%s+%s(%s)",
              KeysymText(info->ctx, si->interp.sym),
              SIMatchText(si->interp.match),
-             ModMaskText(info->ctx, &info->mods, si->interp.mods));
+             ModMaskText(info->ctx, MOD_BOTH, &info->mods, si->interp.mods));
 
     return buf;
 }
