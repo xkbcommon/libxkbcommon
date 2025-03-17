@@ -43,8 +43,14 @@ jobs:
           # HACK: We use meson to install, while it would be cleaner
           #       to create a proper package to install or use some PPA.
           pushd ~
-          git clone --depth=1 https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git
-          cd "xkeyboard-config"
+          # FIXME: gitlab.freedesktop.org is currently migrating.
+          #        Use latest release instead.
+          # git clone --depth=1 https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git
+          # pushd "xkeyboard-config"
+          XKEYBOARD_CONFIG_VERSION="2.44"
+          wget http://www.x.org/releases/individual/data/xkeyboard-config/xkeyboard-config-$XKEYBOARD_CONFIG_VERSION.tar.xz
+          tar -xf xkeyboard-config-$XKEYBOARD_CONFIG_VERSION.tar.xz
+          pushd "xkeyboard-config-$XKEYBOARD_CONFIG_VERSION"
           BUILDDIR=build
           meson setup $BUILDDIR -Dprefix=/usr
           meson install -C $BUILDDIR
