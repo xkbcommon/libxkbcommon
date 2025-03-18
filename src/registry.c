@@ -1210,7 +1210,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
                                       XML_CHAR_ENCODING_NONE);
     if (!buf)
         goto dtd_error;
-    xmlDtd *dtd = dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
+    xmlDtd *dtd = xmlIOParseDTD(NULL, buf, XML_CHAR_ENCODING_UTF8);
 #endif
 
     if (!dtd) {
