@@ -7,8 +7,8 @@
 
 #include <time.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "../test/test.h"
-#include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/rules.h"
 #include "bench.h"
 
@@ -38,8 +38,9 @@ main(int argc, char *argv[])
         assert(xkb_components_from_rules(ctx, &rmlvo, &kccgst, NULL));
         free(kccgst.keycodes);
         free(kccgst.types);
-        free(kccgst.compat);
+        free(kccgst.compatibility);
         free(kccgst.symbols);
+        free(kccgst.geometry);
     }
     bench_stop(&bench);
 
