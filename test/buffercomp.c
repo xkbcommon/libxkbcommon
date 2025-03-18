@@ -220,7 +220,7 @@ test_alloc_limits(struct xkb_context *ctx)
     }
 }
 
-struct test_masks_data {
+struct keymap_test_data {
     const char * const keymap;
     const char * const expected;
 };
@@ -235,7 +235,7 @@ compile_buffer(struct xkb_context *context, const char *buf, size_t len,
 
 static void
 test_integers(struct xkb_context *ctx, bool update_output_files) {
-    const struct test_masks_data keymaps[] = {
+    const struct keymap_test_data keymaps[] = {
         {
                 .keymap =
                     "xkb_keymap {\n"
@@ -298,8 +298,154 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
 }
 
 static void
+test_keycodes(struct xkb_context *ctx, bool update_output_files) {
+    const struct keymap_test_data keymaps[] = {
+        /*
+         * Ensure keycodes bound are correctly updated.
+         *
+         * Since expanding bounds is tested in the rest of the code, we test
+         * only shrinking here.
+         */
+
+        /* Single keycode */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 0;\n"
+                "    override <A> = 1;\n"
+                "    augment  <A> = 300;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 300;\n"
+                "    override <A> = 1;\n"
+                "    augment  <A> = 0;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            /* NOTE: same as previous */
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 0;\n"
+                "    override <A> = 1;\n"
+                "    override <A> = 301;\n"
+                "    override <A> = 300;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-2.xkb"
+        },
+
+        /* Multiple keycodes to single keycode */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 300;\n"
+                "    <B> = 1;\n"
+                "    augment  <B> = 301;\n"
+                "    override <A> = 1;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            /* NOTE: same as previous */
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 0;\n"
+                "    <B> = 1;\n"
+                "    augment  <B> = 300;\n"
+                "    override <A> = 1;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            /* NOTE: same as previous */
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+
+        /* Multiple keycodes to multiple keycodes */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 1;\n"
+                "    <B> = 0;\n"
+                "    override <B> = 300;\n"
+                "    augment  <A> = 0;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 301;\n"
+                "    <B> = 300;\n"
+                "    override <A> = 1;\n"
+                "    augment  <B> = 302;\n"
+                "  };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat {\n"
+                "    interpret.repeat= False;\n"
+                "  };\n"
+                "  xkb_symbols { };\n"
+                "};",
+            /* NOTE: same as previous */
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
 test_masks(struct xkb_context *ctx, bool update_output_files) {
-    const struct test_masks_data keymaps[] = {
+    const struct keymap_test_data keymaps[] = {
         {
                 .keymap =
                     "xkb_keymap {\n"
@@ -606,6 +752,7 @@ main(int argc, char *argv[])
     test_recursive(ctx);
     test_alloc_limits(ctx);
     test_integers(ctx, update_output_files);
+    test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);

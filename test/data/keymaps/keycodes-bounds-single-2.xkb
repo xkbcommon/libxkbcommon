@@ -1,0 +1,22 @@
+xkb_keymap {
+xkb_keycodes "(unnamed)" {
+	minimum = 8;
+	maximum = 300;
+	<A>                  = 300;
+};
+
+xkb_types "(unnamed)" {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility "(unnamed)" {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+};
+
+xkb_symbols "(unnamed)" {
+};
+
+};
