@@ -87,7 +87,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
     info->include_depth = include_depth;
-    info->mods = *mods;
+    InitVMods(&info->mods, mods, include_depth > 0);
 }
 
 static void
@@ -169,7 +169,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -194,7 +194,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 }
 
 static void
-HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge);
+HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
@@ -206,7 +206,8 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitKeyTypesInfo(&included, info->ctx, 0 /* unused */, &info->mods);
+    InitKeyTypesInfo(&included, info->ctx, info->include_depth + 1,
+                     &info->mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -223,7 +224,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         InitKeyTypesInfo(&next_incl, info->ctx, info->include_depth + 1,
                          &included.mods);
 
-        HandleKeyTypesFile(&next_incl, file, stmt->merge);
+        HandleKeyTypesFile(&next_incl, file);
 
         MergeIncludedKeyTypes(&included, &next_incl, stmt->merge);
 
@@ -635,7 +636,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def)
 }
 
 static void
-HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
+HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -657,7 +658,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         default:
             log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
@@ -738,7 +739,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap)
     InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
 
     if (file != NULL)
-        HandleKeyTypesFile(&info, file, MERGE_DEFAULT);
+        HandleKeyTypesFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;
