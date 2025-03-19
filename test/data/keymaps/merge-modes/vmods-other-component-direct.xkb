@@ -1,0 +1,25 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+};
+
+xkb_types {
+	virtual_modifiers U1,U2,U3=0x300000,U4,U5,U6=0x600000,Z1,Z2,Z3,Z4,Z5,Z6=0x610000,M1=0x1000,M2=0x2000,M3=0x3000,M4=0x4000,M5,M6=0x620000;
+
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility "" {
+	virtual_modifiers U1,U2,U3=0x300000,U4,U5,U6=0x600000,Z1,Z2,Z3,Z4,Z5,Z6=0x610000,M1=0x1000,M2=0x2000,M3=0x3000,M4=0x4000,M5,M6=0x620000;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+};
+
+xkb_symbols {
+};
+
+};
