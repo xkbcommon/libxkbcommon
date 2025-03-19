@@ -118,7 +118,7 @@ InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
     info->ctx = ctx;
     info->include_depth = include_depth;
     info->actions = actions;
-    info->mods = *mods;
+    InitVMods(&info->mods, mods, include_depth > 0);
     info->default_interp.merge = MERGE_DEFAULT; /* Unused */
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
     info->default_led.merge = MERGE_DEFAULT; /* Unused */
@@ -357,7 +357,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -392,7 +392,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
 }
 
 static void
-HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge);
+HandleCompatMapFile(CompatInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
@@ -404,7 +404,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitCompatInfo(&included, info->ctx, 0 /* unused */,
+    InitCompatInfo(&included, info->ctx, info->include_depth + 1,
                    info->actions, &info->mods);
     included.name = steal(&include->stmt);
 
@@ -424,7 +424,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         next_incl.default_interp = info->default_interp;
         next_incl.default_led = info->default_led;
 
-        HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleCompatMapFile(&next_incl, file);
 
         MergeIncludedCompatMaps(&included, &next_incl, stmt->merge);
 
@@ -720,7 +720,7 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def)
 }
 
 static void
-HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
+HandleCompatMapFile(CompatInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -748,7 +748,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         default:
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -882,7 +882,7 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap)
 
     InitCompatInfo(&info, keymap->ctx, 0, actions, &keymap->mods);
 
-    HandleCompatMapFile(&info, file, MERGE_DEFAULT);
+    HandleCompatMapFile(&info, file);
     if (info.errorCount != 0)
         goto err_info;
 

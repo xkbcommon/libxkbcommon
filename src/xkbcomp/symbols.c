@@ -14,6 +14,7 @@
 
 #include "config.h"
 
+#include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -195,7 +196,7 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
     info->keymap = keymap;
     InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
-    info->mods = *mods;
+    InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
 
@@ -609,7 +610,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -658,7 +659,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge);
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
@@ -670,7 +671,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
+    InitSymbolsInfo(&included, info->keymap, info->include_depth + 1,
                     info->actions, &info->mods);
     included.name = steal(&include->stmt);
 
@@ -711,7 +712,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file);
 
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
@@ -1385,7 +1386,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -1404,7 +1405,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
@@ -1783,7 +1784,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 
     InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
 
-    HandleSymbolsFile(&info, file, MERGE_DEFAULT);
+    HandleSymbolsFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;
