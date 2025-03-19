@@ -800,17 +800,40 @@ test(
     executable('test-buffercomp', 'test/buffercomp.c', dependencies: test_dep),
     env: test_env,
 )
-test(
-    'merge-modes',
-    executable(
-        'test-merge-modes',
-        'test/merge_modes.c',
-        'test/merge_modes.h',
-        'src/messages-codes.h',
-        dependencies: test_dep
-    ),
-    env: test_env,
-)
+
+# The merge modes tests are optional and generated locally on-the-fly
+pymod = import('python')
+python = pymod.find_installation('python3', modules: ['jinja2'], required: false)
+has_merge_modes_tests = python.found() and python.language_version().version_compare('>=3.11')
+if has_merge_modes_tests
+    script = find_program('scripts/update-merge-modes-tests.py')
+    filename = 'merge-modes.c'
+    merge_modes_c = custom_target(
+        filename,
+        build_by_default: true,
+        command: [
+            script,
+            '--root', meson.project_source_root(),
+            '--c-out', '@OUTPUT@',
+            '--no-xkb',
+        ],
+        depend_files: ['test/merge_modes.c.jinja'],
+        output: filename,
+        capture: false,
+        install: false
+    )
+    test(
+        'merge-modes',
+        executable(
+            'test-merge-modes',
+            merge_modes_c,
+            dependencies: test_dep,
+            include_directories: ['test'],
+        ),
+        env: test_env,
+    )
+endif
+
 test(
     'log',
     executable('test-log', 'test/log.c', dependencies: test_dep),
@@ -1187,4 +1210,7 @@ if meson.version().version_compare('>=0.62.0')
       'rules': get_option('default-rules'),
       'variant': get_option('default-variant'),
     }, section: 'Defaults')
+    summary({
+      'merge-modes': has_merge_modes_tests,
+    }, section: 'Tests')
 endif

@@ -1,0 +1,16 @@
+xkb_types "base" {
+	virtual_modifiers U1, U2, U3, U4, U5, U6;
+	virtual_modifiers Z1=none, Z2=none, Z3=none, Z4=none, Z5=none, Z6=none;
+	virtual_modifiers M1=0x1000, M2=0x2000, M3=0x3000, M4=0x4000, M5=0x5000, M6=0x6000;
+};
+
+xkb_types "new" {
+	virtual_modifiers U7, Z7=0, M7=0x70000;
+
+	augment  virtual_modifiers U1, U2=none, U3=0x300000;
+	override virtual_modifiers U4, U5=none, U6=0x600000;
+	augment  virtual_modifiers Z1, Z2=none, Z3=0x310000;
+	override virtual_modifiers Z4, Z5=none, Z6=0x610000;
+	augment  virtual_modifiers M1, M2=none, M3=0x320000;
+	override virtual_modifiers M4, M5=none, M6=0x620000;
+};
