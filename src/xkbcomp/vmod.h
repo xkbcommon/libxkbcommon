@@ -4,9 +4,19 @@
  */
 #pragma once
 
+#include "xkbcommon/xkbcommon.h"
+
+#include <stdbool.h>
+
 #include "ast.h"
 #include "keymap.h"
 
+void
+InitVMods(struct xkb_mod_set *info, const struct xkb_mod_set *mods, bool reset);
+
+void
+MergeModSets(struct xkb_context *ctx, struct xkb_mod_set *into,
+             const struct xkb_mod_set *from, enum merge_mode merge);
+
 bool
-HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods,
-              VModDef *stmt, enum merge_mode merge);
+HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods, VModDef *stmt);
