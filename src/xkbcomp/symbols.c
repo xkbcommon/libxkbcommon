@@ -14,6 +14,7 @@
 
 #include "config.h"
 
+#include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -177,7 +178,7 @@ typedef struct {
     ActionsInfo *actions;
     darray(xkb_atom_t) group_names;
     darray(ModMapEntry) modmaps;
-    struct xkb_mod_set mods;
+    struct xkb_mod_set_info mods;
 
     struct xkb_context *ctx;
     /* Needed for AddKeySymbols. */
@@ -195,7 +196,7 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
     info->keymap = keymap;
     InitKeyInfo(keymap->ctx, &info->default_key);
     info->actions = actions;
-    info->mods = *mods;
+    InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
 
@@ -577,15 +578,15 @@ AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
                      "Symbol \"%s\" added to modifier map for multiple modifiers; "
                      "Using %s, ignoring %s\n",
                      KeysymText(info->ctx, new->u.keySym),
-                     ModIndexText(info->ctx, &info->mods, use),
-                     ModIndexText(info->ctx, &info->mods, ignore));
+                     ModIndexText(info->ctx, &info->mods.mods, use),
+                     ModIndexText(info->ctx, &info->mods.mods, ignore));
         } else {
             log_warn(info->ctx, XKB_WARNING_CONFLICTING_MODMAP,
                      "Key \"%s\" added to modifier map for multiple modifiers; "
                      "Using %s, ignoring %s\n",
                      KeyNameText(info->ctx, new->u.keyName),
-                     ModIndexText(info->ctx, &info->mods, use),
-                     ModIndexText(info->ctx, &info->mods, ignore));
+                     ModIndexText(info->ctx, &info->mods.mods, use),
+                     ModIndexText(info->ctx, &info->mods.mods, ignore));
         }
         old->modifier = use;
         return true;
@@ -609,7 +610,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -658,7 +659,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge);
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
@@ -670,8 +671,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
-                    info->actions, &info->mods);
+    InitSymbolsInfo(&included, info->keymap, info->include_depth + 1,
+                    info->actions, &info->mods.mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -686,7 +687,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         }
 
         InitSymbolsInfo(&next_incl, info->keymap, info->include_depth + 1,
-                        info->actions, &included.mods);
+                        info->actions, &included.mods.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -711,7 +712,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file);
 
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
@@ -906,7 +907,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         unsigned int act_index = 0;
         for (ExprDef *act = actionList->actions; act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
+            if (!HandleActionDef(info->ctx, info->actions, &info->mods.mods, act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
@@ -1004,7 +1005,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "virtualmodifiers")) {
         xkb_mod_mask_t mask = 0;
 
-        if (!ExprResolveModMask(info->ctx, value, MOD_VIRT, &info->mods,
+        if (!ExprResolveModMask(info->ctx, value, MOD_VIRT, &info->mods.mods,
                                 &mask)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                     "Expected a virtual modifier mask, found %s; "
@@ -1209,7 +1210,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else {
-        ret = SetActionField(info->ctx, info->actions, &info->mods,
+        ret = SetActionField(info->ctx, info->actions, &info->mods.mods,
                              elem, field, arrayNdx, stmt->value);
     }
 
@@ -1346,7 +1347,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
         ndx = XKB_MOD_NONE;
     } else {
         // Handle normal entry
-        ndx = XkbModNameToIndex(&info->mods, def->modifier, MOD_REAL);
+        ndx = XkbModNameToIndex(&info->mods.mods, def->modifier, MOD_REAL);
         if (ndx == XKB_MOD_INVALID) {
             log_err(info->ctx, XKB_ERROR_INVALID_REAL_MODIFIER,
                     "Illegal modifier map definition; "
@@ -1375,7 +1376,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
             log_err(info->ctx, XKB_ERROR_INVALID_MODMAP_ENTRY,
                     "Modmap entries may contain only key names or keysyms; "
                     "Illegal definition for %s modifier ignored\n",
-                    ModIndexText(info->ctx, &info->mods, tmp.modifier));
+                    ModIndexText(info->ctx, &info->mods.mods, tmp.modifier));
             continue;
         }
 
@@ -1385,7 +1386,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -1404,7 +1405,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
@@ -1706,7 +1707,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
                     KeyNameText(info->ctx, entry->u.keyName),
-                    ModIndexText(info->ctx, &info->mods, entry->modifier));
+                    ModIndexText(info->ctx, &info->mods.mods, entry->modifier));
             return false;
         }
     }
@@ -1717,7 +1718,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
                     KeysymText(info->ctx, entry->u.keySym),
-                    ModIndexText(info->ctx, &info->mods, entry->modifier));
+                    ModIndexText(info->ctx, &info->mods.mods, entry->modifier));
             return false;
         }
     }
@@ -1740,7 +1741,7 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
     keymap->symbols_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->symbols_section_name);
 
-    keymap->mods = info->mods;
+    keymap->mods = info->mods.mods;
 
     darray_steal(info->group_names,
                  &keymap->group_names, &keymap->num_group_names);
@@ -1783,7 +1784,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 
     InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
 
-    HandleSymbolsFile(&info, file, MERGE_DEFAULT);
+    HandleSymbolsFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;
