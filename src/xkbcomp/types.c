@@ -127,7 +127,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new, bool same_file)
 
     old = FindMatchingKeyType(info, new->name);
     if (old) {
-        if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
+        if (new->merge != MERGE_AUGMENT) {
             if ((same_file && verbosity > 0) || verbosity > 9) {
                 log_warn(info->ctx,
                          XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS,
@@ -183,7 +183,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     else {
         KeyTypeInfo *type;
         darray_foreach(type, from->types) {
-            type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
+            type->merge = merge;
             if (!AddKeyType(into, type, false))
                 into->errorCount++;
         }
@@ -609,11 +609,11 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 }
 
 static bool
-HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
+HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def)
 {
     KeyTypeInfo type = {
         .defined = 0,
-        .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
+        .merge = def->merge,
         .name = def->name,
         .mods = 0,
         .num_levels = 1,
@@ -648,7 +648,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleIncludeKeyTypes(info, (IncludeStmt *) stmt);
             break;
         case STMT_TYPE:
-            ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);
+            ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt);
             break;
         case STMT_VAR:
             log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
@@ -731,15 +731,14 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 /***====================================================================***/
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap)
 {
     KeyTypesInfo info;
 
     InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
 
     if (file != NULL)
-        HandleKeyTypesFile(&info, file, merge);
+        HandleKeyTypesFile(&info, file, MERGE_DEFAULT);
 
     if (info.errorCount != 0)
         goto err_info;
