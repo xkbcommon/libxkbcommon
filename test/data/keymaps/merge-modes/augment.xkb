@@ -1,7 +1,10 @@
 xkb_keymap {
 xkb_keycodes "(unnamed)" {
-	minimum = 8;
+	minimum = 1;
 	maximum = 255;
+	<1>                  = 1;
+	<2>                  = 2;
+	<3>                  = 3;
 	<T001>               = 9;
 	<T002>               = 10;
 	<T003>               = 11;
@@ -40,7 +43,6 @@ xkb_keycodes "(unnamed)" {
 	<T037>               = 45;
 	<T038>               = 46;
 	<T039>               = 47;
-	<LFSH>               = 50;
 	<T043>               = 51;
 	<T044>               = 52;
 	<T045>               = 53;
@@ -93,7 +95,6 @@ xkb_keycodes "(unnamed)" {
 	<T097>               = 105;
 	<T098>               = 106;
 	<T099>               = 107;
-	<RALT>               = 108;
 	<T103>               = 111;
 	<T104>               = 112;
 	<T105>               = 113;
@@ -157,10 +158,19 @@ xkb_keycodes "(unnamed)" {
 	<T204>               = 212;
 	<T207>               = 215;
 	<T210>               = 218;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "Compose";
+	indicator 5 = "Kana";
+	indicator 7 = "Suspend";
+	alias <A>            = <1>;
+	alias <B>            = <2>;
+	alias <C>            = <3>;
 };
 
 xkb_types "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock=Mod2,LevelThree=Mod5,LevelFive=Mod3,U1,U2,U3=0x300000,U4,U5,U6=0x600000,Z1,Z2,Z3=0x310000,Z4,Z5,Z6=0x610000,M1=0x1000,M2=0x2000,M3=0x3000,M4=0x4000,M5=0x5000,M6=0x6000,U7,Z7,M7=0x700000;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
@@ -178,6 +188,13 @@ xkb_types "(unnamed)" {
 		map[Lock]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Caps";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
 	};
 	type "FOUR_LEVEL" {
 		modifiers= Shift+LevelThree;
@@ -217,13 +234,35 @@ xkb_types "(unnamed)" {
 		level_name[3]= "Alt Base";
 		level_name[4]= "Shift Alt";
 	};
+	type "XXX" {
+		modifiers= none;
+		level_name[1]= "New";
+	};
 };
 
 xkb_compatibility "(unnamed)" {
-	virtual_modifiers NumLock,LevelThree;
+	virtual_modifiers NumLock=Mod2,LevelThree=Mod5,LevelFive=Mod3,U1,U2,U3=0x300000,U4,U5,U6=0x600000,Z1,Z2,Z3=0x310000,Z4,Z5,Z6=0x610000,M1=0x1000,M2=0x2000,M3=0x3000,M4=0x4000,M5=0x5000,M6=0x6000,U7,Z7,M7=0x700000;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Num Lock" {
+		whichModState= locked;
+		modifiers= NumLock;
+	};
+	indicator "Kana" {
+		whichModState= locked;
+		modifiers= Control;
+	};
 };
 
 xkb_symbols "(unnamed)" {
