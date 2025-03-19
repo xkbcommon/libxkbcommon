@@ -24,7 +24,8 @@ jobs:
       - name: Install dependencies
         shell: powershell
         run: |
-          python -m pip install --upgrade meson
+          # Jinja2 is needed for merge-modes tests
+          python -m pip install --upgrade meson Jinja2
           Invoke-WebRequest -Uri https://github.com/lexxmark/winflexbison/releases/download/v2.5.23/win_flex_bison-2.5.23.zip -OutFile win_flex_bison.zip
           Expand-Archive -Path win_flex_bison.zip -DestinationPath bin
           Write-Output ((Get-Location).ToString() + "./bin") | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8

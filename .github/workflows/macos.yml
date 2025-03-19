@@ -29,12 +29,14 @@ jobs:
           # https://docs.brew.sh/Homebrew-and-Python#pep-668-python312-and-virtual-environments
           python3 -m venv venv
           source venv/bin/activate
-          pip3 install PyYaml
+          # Jinja2 is needed for merge-modes tests
+          pip3 install PyYaml Jinja2
         env:
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
       - name: Setup
         run: |
+          source venv/bin/activate
           PATH="/usr/local/opt/bison/bin:${PATH}" \
             meson setup \
               -Denable-wayland=false \
@@ -44,7 +46,9 @@ jobs:
               build
       - name: Build
         run: |
+          source venv/bin/activate
           PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
       - name: Test
         run: |
+          source venv/bin/activate
           meson test -C build --print-errorlogs
