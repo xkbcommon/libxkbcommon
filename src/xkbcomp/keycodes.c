@@ -72,16 +72,16 @@ FindLedByName(KeyNamesInfo *info, xkb_atom_t name,
 }
 
 static bool
-AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
+AddLedName(KeyNamesInfo *info, bool same_file,
            LedNameInfo *new, xkb_led_index_t new_idx)
 {
     xkb_led_index_t old_idx;
     LedNameInfo *old;
+    const bool replace = (new->merge != MERGE_AUGMENT);
     const int verbosity = xkb_context_get_log_verbosity(info->ctx);
     const bool report = (same_file && verbosity > 0) || verbosity > 9;
-    const bool replace = (merge == MERGE_REPLACE || merge == MERGE_OVERRIDE);
 
-    /* LED with the same name already exists. */
+    /* Check if LED with the same name already exists. */
     old = FindLedByName(info, new->name, &old_idx);
     if (old) {
         if (old_idx == new_idx) {
@@ -93,27 +93,29 @@ AddLedName(KeyNamesInfo *info, enum merge_mode merge, bool same_file,
         }
 
         if (report) {
-            xkb_led_index_t use = (replace ? new_idx + 1 : old_idx + 1);
+            xkb_led_index_t use    = (replace ? new_idx + 1 : old_idx + 1);
             xkb_led_index_t ignore = (replace ? old_idx + 1 : new_idx + 1);
             log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Multiple indicators named %s; Using %d, ignoring %d\n",
                      xkb_atom_text(info->ctx, new->name), use, ignore);
         }
 
-        if (replace)
-            *old = *new;
-
-        return true;
+        if (replace) {
+            /* Unset previous */
+            old->name = XKB_ATOM_NONE;
+        } else {
+            return true;
+        }
     }
 
     if (new_idx >= info->num_led_names)
         info->num_led_names = new_idx + 1;
 
-    /* LED with the same index already exists. */
+    /* Check if LED with the same index already exists. */
     old = &info->led_names[new_idx];
     if (old->name != XKB_ATOM_NONE) {
         if (report) {
-            const xkb_atom_t use = (replace ? new->name : old->name);
+            const xkb_atom_t use    = (replace ? new->name : old->name);
             const xkb_atom_t ignore = (replace ? old->name : new->name);
             log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Multiple names for indicator %d; "
@@ -219,26 +221,25 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 
     if (old_kc != XKB_KEYCODE_INVALID && old_kc != kc) {
         /* There is already a different key with this name. */
-        if (merge == MERGE_AUGMENT) {
-            if (report)
-                log_vrb(info->ctx, 3, XKB_WARNING_CONFLICTING_KEY_NAME,
-                        "Key name %s assigned to multiple keys; "
-                        "Using %"PRIu32", ignoring %"PRIu32"\n",
-                        KeyNameText(info->ctx, name), old_kc, kc);
-            return true;
-        } else {
+        const bool clobber = (merge != MERGE_AUGMENT);
+        if (report) {
+            const xkb_keycode_t use    = (clobber) ? kc : old_kc;
+            const xkb_keycode_t ignore = (clobber) ? old_kc : kc;
+            log_vrb(info->ctx, 3, XKB_WARNING_CONFLICTING_KEY_NAME,
+                    "Key name %s assigned to multiple keys; "
+                    "Using %"PRIu32", ignoring %"PRIu32"\n",
+                    KeyNameText(info->ctx, name), use, ignore);
+        }
+
+        if (clobber) {
             /* Remove conflicting key name mapping */
             darray_item(info->key_names, old_kc) = XKB_ATOM_NONE;
             /* Detect bounds change here but correct bounds later, to ensure
              * there is at least one keycode */
             shrink = (old_kc == info->min_key_code ||
                       old_kc == info->max_key_code);
-
-            if (report)
-                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
-                         "Key name %s assigned to multiple keys; "
-                         "Using %"PRIu32", ignoring %"PRIu32"\n",
-                         KeyNameText(info->ctx, name), kc, old_kc);
+        } else {
+            return true;
         }
     }
 
@@ -259,23 +260,19 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
                          KeyNameText(info->ctx, old_name), kc);
             return true;
         }
-        else if (merge == MERGE_AUGMENT) {
-            if (report)
-                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                         "Multiple names for keycode %"PRIu32"; "
-                         "Using %s, ignoring %s\n", kc,
-                         KeyNameText(info->ctx, old_name),
-                         KeyNameText(info->ctx, name));
+
+        const bool clobber = (merge != MERGE_AUGMENT);
+        if (report) {
+            const char* const kname     = KeyNameText(info->ctx, name);
+            const char* const old_kname = KeyNameText(info->ctx, old_name);
+            const char* const use    = (clobber) ? kname : old_kname;
+            const char* const ignore = (clobber) ? old_kname : kname;
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Multiple names for keycode %"PRIu32"; "
+                     "Using %s, ignoring %s\n", kc, use, ignore);
+        }
+        if (!clobber)
             return true;
-        }
-        else {
-            if (report)
-                log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                         "Multiple names for keycode %"PRIu32"; "
-                         "Using %s, ignoring %s\n", kc,
-                         KeyNameText(info->ctx, name),
-                         KeyNameText(info->ctx, old_name));
-        }
     } else {
         /* No previous keycode, resize if relevant */
         if (kc >= darray_size(info->key_names))
@@ -298,7 +295,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
 /***====================================================================***/
 
 static bool
-HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge);
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def);
 
 static void
 MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
@@ -345,11 +342,11 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         darray_foreach(alias, from->aliases) {
             KeyAliasDef def;
 
-            def.merge = (merge == MERGE_DEFAULT ? alias->merge : merge);
+            def.merge = merge;
             def.alias = alias->alias;
             def.real = alias->real;
 
-            if (!HandleAliasDef(into, &def, def.merge))
+            if (!HandleAliasDef(into, &def))
                 into->errorCount++;
         }
     }
@@ -368,15 +365,15 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
             if (ledi->name == XKB_ATOM_NONE)
                 continue;
 
-            ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
-            if (!AddLedName(into, ledi->merge, false, ledi, idx))
+            ledi->merge = merge;
+            if (!AddLedName(into, false, ledi, idx))
                 into->errorCount++;
         }
     }
 }
 
 static void
-HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge);
+HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
@@ -404,7 +401,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 
         InitKeyNamesInfo(&next_incl, info->ctx, info->include_depth + 1);
 
-        HandleKeycodesFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleKeycodesFile(&next_incl, file);
 
         MergeIncludedKeycodes(&included, &next_incl, stmt->merge);
 
@@ -419,15 +416,8 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include)
 }
 
 static bool
-HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
+HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt)
 {
-    if (stmt->merge != MERGE_DEFAULT) {
-        if (stmt->merge == MERGE_REPLACE)
-            merge = MERGE_OVERRIDE;
-        else
-            merge = stmt->merge;
-    }
-
     if (stmt->value < 0 || stmt->value > XKB_KEYCODE_MAX) {
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Illegal keycode %lld: must be between 0..%u; "
@@ -436,11 +426,11 @@ HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, enum merge_mode merge)
     }
 
     return AddKeyName(info, (xkb_keycode_t) stmt->value,
-                      stmt->name, merge, false, true);
+                      stmt->name, stmt->merge, false, true);
 }
 
 static bool
-HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
+HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def)
 {
     AliasInfo *old, new;
 
@@ -455,10 +445,9 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
                         KeyNameText(info->ctx, def->real));
             }
             else {
-                xkb_atom_t use, ignore;
-
-                use = (merge == MERGE_AUGMENT ? old->real : def->real);
-                ignore = (merge == MERGE_AUGMENT ? def->real : old->real);
+                const bool clobber = (def->merge != MERGE_AUGMENT);
+                const xkb_atom_t use    = (clobber ? def->real : old->real);
+                const xkb_atom_t ignore = (clobber ? old->real : def->real);
 
                 log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
                          "Multiple definitions for alias %s; "
@@ -470,12 +459,11 @@ HandleAliasDef(KeyNamesInfo *info, KeyAliasDef *def, enum merge_mode merge)
                 old->real = use;
             }
 
-            old->merge = merge;
             return true;
         }
     }
 
-    InitAliasInfo(&new, merge, def->alias, def->real);
+    InitAliasInfo(&new, def->merge, def->alias, def->real);
     darray_append(info->aliases, new);
     return true;
 }
@@ -508,8 +496,7 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
 }
 
 static bool
-HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
-                 enum merge_mode merge)
+HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def)
 {
     if (def->ndx < 1 || def->ndx > XKB_MAX_LEDS) {
         info->errorCount++;
@@ -528,12 +515,12 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def,
                              "indicator", "name", buf, "string");
     }
 
-    LedNameInfo ledi = {.merge = merge, .name = name};
-    return AddLedName(info, merge, true, &ledi, (xkb_led_index_t) def->ndx - 1);
+    LedNameInfo ledi = {.merge = def->merge, .name = name};
+    return AddLedName(info, true, &ledi, (xkb_led_index_t) def->ndx - 1);
 }
 
 static void
-HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
+HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -546,16 +533,16 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleIncludeKeycodes(info, (IncludeStmt *) stmt);
             break;
         case STMT_KEYCODE:
-            ok = HandleKeycodeDef(info, (KeycodeDef *) stmt, merge);
+            ok = HandleKeycodeDef(info, (KeycodeDef *) stmt);
             break;
         case STMT_ALIAS:
-            ok = HandleAliasDef(info, (KeyAliasDef *) stmt, merge);
+            ok = HandleAliasDef(info, (KeyAliasDef *) stmt);
             break;
         case STMT_VAR:
             ok = HandleKeyNameVar(info, (VarDef *) stmt);
             break;
         case STMT_LED_NAME:
-            ok = HandleLedNameDef(info, (LedNameDef *) stmt, merge);
+            ok = HandleLedNameDef(info, (LedNameDef *) stmt);
             break;
         default:
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -703,15 +690,14 @@ CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 /***====================================================================***/
 
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge)
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap)
 {
     KeyNamesInfo info;
 
     InitKeyNamesInfo(&info, keymap->ctx, 0);
 
     if (file != NULL)
-        HandleKeycodesFile(&info, file, merge);
+        HandleKeycodesFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;
