@@ -1,0 +1,100 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<A>                  = 38;
+	<S>                  = 39;
+	<D>                  = 40;
+	<F>                  = 41;
+	<G>                  = 42;
+	indicator 1 = "A";
+	indicator 2 = "B";
+	indicator 3 = "C";
+};
+
+xkb_types {
+	virtual_modifiers M1=0x1001,M2=0x2004,M3=0x4020,M4=0x8001;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers M1=0x1001,M2=0x2004,M3=0x4020,M4=0x8001;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret a+AnyOfOrNone(all) {
+		virtualModifier= M4;
+		repeat= True;
+		action= SetGroup(group=1);
+	};
+	interpret A+AnyOfOrNone(all) {
+		virtualModifier= M1;
+		action= SetMods(modifiers=M1);
+	};
+	interpret s+AnyOfOrNone(all) {
+		virtualModifier= M2;
+		useModMapMods=level1;
+		action= SetGroup(group=2);
+	};
+	interpret S+AnyOfOrNone(all) {
+		virtualModifier= M2;
+		repeat= True;
+		action= SetGroup(group=4);
+	};
+	interpret g+AnyOfOrNone(all) {
+		virtualModifier= M3;
+		action= SetGroup(group=3);
+	};
+	indicator "A" {
+		whichGroupState= locked;
+		groups= 0xfe;
+		whichModState= locked;
+		modifiers= M2;
+		controls= SlowKeys;
+	};
+	indicator "B" {
+		groups= 0xfe;
+		whichModState= base;
+		modifiers= M4;
+		controls= AudibleBell;
+	};
+	indicator "C" {
+		whichModState= locked;
+		modifiers= M3;
+	};
+};
+
+xkb_symbols {
+	name[Group1]="yyy";
+
+	key <A>                  {	[               a,               A ] };
+	key <S>                  {	[               s,               S ] };
+	key <D>                  {
+		repeat= No,
+		virtualMods= M4,
+		[               d,               D ]
+	};
+	key <F>                  {
+		repeat= No,
+		virtualMods= M4,
+		[               f,               F ]
+	};
+	key <G>                  {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		symbols[Group1]= [               g ]
+	};
+	modifier_map Shift { <A> };
+	modifier_map Control { <S> };
+	modifier_map Mod3 { <G> };
+};
+
+};

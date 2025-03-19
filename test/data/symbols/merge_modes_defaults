@@ -1,0 +1,20 @@
+default
+xkb_symbols {
+	name[1] = "xxx";
+	name[1] = "yyy";
+	augment name[1] = "zzz";
+
+	key <A> { [a, A] };
+	key <S> { [s, S] };
+	modifier_map Shift   { <A> };
+	modifier_map Control { <S> };
+
+	key.repeat = false;
+	key.vmods = M1;
+	key.vmods = M2;
+	augment key.vmods = M3;
+
+	key <D>         { vmods = M4, [d, D] };
+	augment key <F> { vmods = M4, [f, F] };
+	augment key <F> { vmods = M1, repeat = true };
+};

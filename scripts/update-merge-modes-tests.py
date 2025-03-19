@@ -1,23 +1,1111 @@
 #!/usr/bin/env python3
 
+# Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+# SPDX-License-Identifier: MIT
+
 """
-This script generate tests for symbols.
+This script generate tests for merge modes.
 """
 
 from __future__ import annotations
 
+from abc import ABCMeta, abstractmethod
 import argparse
+from collections import defaultdict
+from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 import dataclasses
 import itertools
-from abc import ABCMeta, abstractmethod
+import re
+import textwrap
 from dataclasses import dataclass
-from enum import Flag, IntFlag, auto, unique
+from enum import Flag, IntFlag, StrEnum, auto, unique
 from pathlib import Path
-from typing import Any, ClassVar, Iterable, Iterator, NewType, Self
+from string import Template
+from typing import Any, ClassVar, NewType, Self
 
 import jinja2
 
 SCRIPT = Path(__file__)
+# Root of the project
+ROOT = SCRIPT.parent.parent
+
+
+################################################################################
+#
+# Merge modes
+#
+################################################################################
+
+
+@unique
+class MergeMode(StrEnum):
+    Default = auto()
+    Augment = auto()
+    Override = auto()
+    Replace = auto()
+
+    @property
+    def include(self) -> str:
+        if self is self.__class__.Default:
+            return "include"
+        else:
+            return self
+
+    @property
+    def char(self) -> str:
+        match self:
+            case self.__class__.Default:
+                return "+"
+            case self.__class__.Augment:
+                return "|"
+            case self.__class__.Override:
+                return "+"
+            case self.__class__.Replace:
+                return "^"
+            case _:
+                raise ValueError(self)
+
+
+INDENT = "\t"
+
+
+################################################################################
+#
+# Components
+#
+################################################################################
+
+
+@unique
+class Component(StrEnum):
+    keycodes = auto()
+    types = auto()
+    compat = auto()
+    symbols = auto()
+
+    def render_keymap(self, content) -> Generator[str]:
+        yield "xkb_keymap {"
+        for component in self.__class__:
+            yield from (
+                textwrap.indent(t, INDENT)
+                for t in self.render(component, content if component is self else "")
+            )
+        yield "};"
+
+    @classmethod
+    def render(cls, component: Self, content: str, name: str = "") -> Generator[str]:
+        if not content:
+            match component:
+                case cls.keycodes:
+                    pass
+                case cls.types:
+                    pass
+                case cls.compat:
+                    content = "interpret.repeat= True;"
+                case cls.symbols:
+                    pass
+        if name:
+            name = f' "{name}"'
+        if content:
+            yield f'xkb_{component}{name} "" {{'
+            yield textwrap.indent(content, INDENT)
+            yield "};"
+        else:
+            yield f'xkb_{component}{name} "" {{}};'
+
+
+class ComponentTemplate(Template):
+    def __init__(self, template) -> Self:
+        super().__init__(textwrap.dedent(template).strip())
+
+    def __bool__(self) -> bool:
+        return bool(self.template)
+
+    def render(self, merge: MergeMode) -> str:
+        mode = "" if merge is MergeMode.Default else f"{merge} "
+        return self.substitute(mode=mode)
+
+    def __add__(self, other: Any) -> Self:
+        if isinstance(other, str):
+            return self.__class__(self.template + "\n" + other)
+        elif isinstance(other, Template):
+            return self.__class__(self.template + "\n" + other.template)
+        else:
+            return NotImplemented
+
+    def __radd__(self, other: Any) -> Self:
+        if isinstance(other, str):
+            return self.__class__(other + "\n" + self.template)
+        elif isinstance(other, Template):
+            return self.__class__(other.template + "\n" + self.template)
+        else:
+            return NotImplemented
+
+
+################################################################################
+#
+# Test templates
+#
+################################################################################
+
+
+@dataclass
+class Test:
+    title: str
+    file: Path
+    content: str
+    expected: str
+
+
+@dataclass
+class TestGroup:
+    title: str
+    tests: Sequence[Test]
+
+    c_template: ClassVar[Path] = Path("test/merge_modes.c.jinja")
+
+    SLUG_PATTERN: ClassVar[re.Pattern[str]] = re.compile(r"[^-\w()]+")
+
+    @classmethod
+    def file(cls, title: str) -> Path:
+        return Path(cls.SLUG_PATTERN.sub("-", title.lower().replace(" ", "_")))
+
+    @classmethod
+    def _write(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        path: Path,
+        **kwargs,
+    ) -> None:
+        template_path = root / cls.c_template
+        template = jinja_env.get_template(template_path.relative_to(root).as_posix())
+
+        with path.open("wt", encoding="utf-8") as fd:
+            fd.writelines(template.generate(script=SCRIPT.relative_to(ROOT), **kwargs))
+
+    @classmethod
+    def write_c(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        path: Path,
+        tests: Sequence[TestGroup],
+    ) -> None:
+        return cls._write(root=root, jinja_env=jinja_env, path=path, tests=tests)
+
+    @classmethod
+    def write_data(
+        cls,
+        root: Path,
+        tests: Sequence[TestGroup],
+    ) -> None:
+        tests_: dict[str, list[Test]] = defaultdict(list)
+        for group in tests:
+            for test in group.tests:
+                file = test.file.parent
+                tests_[file].append(test)
+        for file, group_ in tests_.items():
+            path = root / "test" / "data" / file
+            with path.open("wt", encoding="utf-8") as fd:
+                fd.write(
+                    "// WARNING: This file was auto-generated by: "
+                    f"{SCRIPT.relative_to(ROOT)}\n"
+                )
+                for test in group_:
+                    fd.write(test.content)
+
+
+@dataclass
+class TestTemplate(metaclass=ABCMeta):
+    title: str
+
+    _plain: ClassVar[str] = "plain"
+    _include: ClassVar[str] = "include"
+    _base: ClassVar[str] = "base"
+    _update: ClassVar[str] = "update"
+    _file: ClassVar[str] = "merge_modes"
+
+    def make_title(self, name: str) -> str:
+        return f"{self.title}: {name}"
+
+    @classmethod
+    def make_file(cls, name: str) -> Path:
+        return TestGroup.file(name)
+
+    @abstractmethod
+    def generate_tests(self) -> TestGroup: ...
+
+    @abstractmethod
+    def generate_data(self) -> TestGroup: ...
+
+    @classmethod
+    @abstractmethod
+    def write(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        c_file: Path | None,
+        xkb: bool,
+        tests: Sequence[Self],
+        debug: bool,
+    ): ...
+
+
+@dataclass
+class ComponentTestTemplate(TestTemplate):
+    component: Component
+    # Templates to test
+    base_template: ComponentTemplate
+    update_template: ComponentTemplate
+    # Expected result
+    augment: str
+    override: str
+    replace: str = ""
+
+    def __post_init__(self):
+        self.augment = textwrap.dedent(self.augment).strip()
+        self.override = textwrap.dedent(self.override).strip()
+        if not self.replace:
+            self.replace = self.override
+        else:
+            self.replace = textwrap.dedent(self.replace).strip()
+
+    def expected(self, mode: MergeMode) -> str:
+        match mode:
+            case MergeMode.Default:
+                return self.override
+            case MergeMode.Augment:
+                return self.augment
+            case MergeMode.Override:
+                return self.override
+            case MergeMode.Replace:
+                return self.replace
+            case _:
+                raise ValueError(mode)
+
+    def _make_section_name(self, type: str, mode: MergeMode) -> str:
+        file = self.make_file(f"{self.title}-{mode}" if self.title else mode)
+        return f"{type}-{file}"
+
+    def _make_file(self, type: str, mode: MergeMode) -> Path:
+        section_name = self._make_section_name(type, mode)
+        return Path(self.component) / self._file / section_name
+
+    def render_section(self, content: str, name: str = "") -> str:
+        return "\n".join(self.component.render(self.component, content, name))
+
+    def render_keymap(self, content: str) -> str:
+        return "\n".join(self.component.render_keymap(content))
+
+    def _generate_tests(self, render: Callable[[str], str]) -> Generator[Test]:
+        for base_mode, update_mode in itertools.product(MergeMode, MergeMode):
+            # Plain
+            content = (
+                self.base_template.render(base_mode)
+                + ("\n" if self.base_template else "")
+                + self.update_template.render(update_mode)
+            )
+            yield Test(
+                title=self.make_title(
+                    f"{self._plain} ({base_mode}) - {self._plain} ({update_mode})"
+                ),
+                file=self.make_file(self.title) / self.make_file(update_mode),
+                content=render(content),
+                expected=render(self.expected(update_mode)),
+            )
+
+        for base_mode, update_mode in itertools.product(
+            (MergeMode.Default,), MergeMode
+        ):
+            # Plain + Include
+            file = self._make_file(self._update, update_mode)
+            section = file.name
+            file = file.parent.name
+            for mode in MergeMode:
+                yield Test(
+                    title=self.make_title(
+                        f"{self._plain} ({base_mode}) - {mode.include} ({update_mode})"
+                    ),
+                    file=self.make_file(self.title) / self.make_file(mode),
+                    content=render(
+                        self.base_template.render(base_mode)
+                        + (
+                            f'\n{mode.include} "{file}({section})"'
+                            if self.base_template
+                            else ""
+                        )
+                    ),
+                    # Include does not leak local merge modes
+                    expected=render(self.expected(mode)),
+                )
+
+        # for base_mode, update_mode in itertools.product(MergeMode, MergeMode):
+        #     # Include + Plain
+        #     file = self._make_file(self.base, base_mode)
+        #     section = file.name
+        #     file = file.parent.name
+        #     for mode in (MergeMode.default,):
+        #         yield Test(
+        #             title=self.make_title(
+        #                 f"{mode.include} ({base_mode}) - {self.plain} ({update_mode})"
+        #             ),
+        #             file=self.make_file(self.title)
+        #             / self.make_file(
+        #                 f"{mode.include}({base_mode})-{self.plain}({update_mode})"
+        #             ),
+        #             content=render(
+        #                 f'{mode.include} "{file}({section})"\n'
+        #                 + self.update_template.render(update_mode)
+        #             ),
+        #             expected=render(self.expected(update_mode)),
+        #         )
+
+        # for base_mode, update_mode in itertools.product((MergeMode.Default,), MergeMode):
+        #     # Include + Include
+        #     mode = MergeMode.Default
+        #     base_file = self._make_file(self.base, mode)
+        #     base_section = base_file.name
+        #     base_file = base_file.parent.name
+        #     update_file = self._make_file(self.update, mode)
+        #     update_section = update_file.name
+        #     update_file = update_file.parent.name
+        #     yield Test(
+        #         title=self.make_title(
+        #             f"{base_mode.include} ({mode}) - {update_mode.include} ({mode})"
+        #         ),
+        #         file=self.make_file(self.title)
+        #         / self.make_file(
+        #             f"{base_mode.include}({mode})-{update_mode.include}({mode})"
+        #         ),
+        #         content=render(
+        #             f'{base_mode.include} "{base_file}({base_section})"\n'
+        #             + f'{update_mode.include} "{update_file}({update_section})"'
+        #         ),
+        #         expected=render(self.expected(update_mode)),
+        #     )
+
+        for base_mode, update_mode in itertools.product(MergeMode, MergeMode):
+            # Multi-include
+            base_file = self._make_file(self._base, base_mode)
+            base_section = base_file.name
+            base_file = base_file.parent.name
+            update_file = self._make_file(self._update, update_mode)
+            update_section = update_file.name
+            update_file = update_file.parent.name
+            for mode in (MergeMode.Override, MergeMode.Augment, MergeMode.Replace):
+                yield Test(
+                    title=self.make_title(
+                        f"{self._include} ({base_mode} {mode.char} {update_mode})"
+                    ),
+                    file=self.make_file(self.title) / self.make_file(mode),
+                    content=render(
+                        f'{base_mode.include} "{base_file}({base_section})'
+                        + mode.char
+                        + f'{update_file}({update_section})"'
+                    ),
+                    expected=render(self.expected(mode)),
+                )
+
+    def _generate_data(self) -> Generator[Test]:
+        for type, template in (
+            (self._base, self.base_template),
+            (self._update, self.update_template),
+        ):
+            for mode in MergeMode:
+                section_name = self._make_section_name(type, mode)
+                file = self._make_file(type, mode)
+                content = template.render(mode)
+                content = self.render_section(content=content, name=section_name) + "\n"
+                yield Test(title="", file=file, content=content, expected="")
+
+    def generate_tests(self, as_keymap: bool = False) -> TestGroup:
+        if as_keymap:
+
+            def render(content: str) -> str:
+                return self.render_keymap(content)
+        else:
+
+            def render(content: str) -> str:
+                return self.render_section(content)
+
+        return TestGroup(self.title, tuple(self._generate_tests(render)))
+
+    def generate_data(self) -> TestGroup:
+        return TestGroup(self.title, tuple(self._generate_data()))
+
+    @classmethod
+    def write(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        c_file: Path | None,
+        xkb: bool,
+        tests: Sequence[Self],
+        debug: bool = False,
+    ):
+        if c_file is not None and c_file.name:
+            c_data = tuple(t.generate_tests(as_keymap=True) for t in tests)
+            TestGroup.write_c(root=root, jinja_env=jinja_env, path=c_file, tests=c_data)
+        if xkb:
+            xkb_data = tuple(t.generate_data() for t in tests)
+            TestGroup.write_data(root=root, tests=xkb_data)
+
+
+KeymapTemplate = Template(
+    """\
+xkb_keymap {
+${keycodes}
+${types}
+${compat}
+${symbols}
+};"""
+)
+
+
+@dataclass
+class KeymapTestTemplate(TestTemplate):
+    keycodes: ComponentTestTemplate | None = None
+    types: ComponentTestTemplate | None = None
+    compat: ComponentTestTemplate | None = None
+    symbols: ComponentTestTemplate | None = None
+
+    def __post_init__(self):
+        if self.keycodes:
+            self.keycodes = dataclasses.replace(self.keycodes, title="")
+        if self.types:
+            self.types = dataclasses.replace(self.types, title="")
+        if self.compat:
+            self.compat = dataclasses.replace(self.compat, title="")
+        if self.symbols:
+            self.symbols = dataclasses.replace(self.symbols, title="")
+
+    def __iter__(self) -> Generator[ComponentTestTemplate]:
+        def make_empty_template(component: Component) -> ComponentTestTemplate:
+            return ComponentTestTemplate(
+                title="",
+                component=component,
+                base_template=ComponentTemplate(""),
+                update_template=ComponentTemplate(""),
+                augment="",
+                override="",
+            )
+
+        yield self.keycodes or make_empty_template(Component.keycodes)
+        yield self.types or make_empty_template(Component.types)
+        yield self.compat or make_empty_template(Component.compat)
+        yield self.symbols or make_empty_template(Component.symbols)
+
+    def _generate_tests(self) -> Generator[Test]:
+        groups = tuple(c.generate_tests(as_keymap=False) for c in self)
+        keycodes: Test
+        types: Test
+        compat: Test
+        symbols: Test
+        for keycodes, types, compat, symbols in zip(*(g.tests for g in groups)):
+            title = self.title + keycodes.title
+            file = keycodes.file
+            content = KeymapTemplate.substitute(
+                keycodes=textwrap.indent(keycodes.content, INDENT),
+                types=textwrap.indent(types.content, INDENT),
+                compat=textwrap.indent(compat.content, INDENT),
+                symbols=textwrap.indent(symbols.content, INDENT),
+            )
+            expected = KeymapTemplate.substitute(
+                keycodes=textwrap.indent(keycodes.expected, INDENT),
+                types=textwrap.indent(types.expected, INDENT),
+                compat=textwrap.indent(compat.expected, INDENT),
+                symbols=textwrap.indent(symbols.expected, INDENT),
+            )
+            yield Test(title=title, file=file, content=content, expected=expected)
+
+    def generate_tests(self) -> TestGroup:
+        return TestGroup(self.title, tuple(self._generate_tests()))
+
+    def _generate_data(self) -> Generator[Test]:
+        for component in self:
+            yield from component.generate_data().tests
+
+    def generate_data(self) -> TestGroup:
+        return TestGroup(self.title, tuple(self._generate_data()))
+
+    @classmethod
+    def write(
+        cls,
+        root: Path,
+        jinja_env: jinja2.Environment,
+        c_file: Path | None,
+        xkb: bool,
+        tests: Sequence[Self],
+        debug: bool = False,
+    ):
+        if c_file is not None and c_file.name:
+            c_data = tuple(t.generate_tests() for t in tests)
+            TestGroup.write_c(root=root, jinja_env=jinja_env, path=c_file, tests=c_data)
+        if xkb:
+            xkb_data = tuple(t.generate_data() for t in tests)
+            TestGroup.write_data(root=root, tests=xkb_data)
+
+
+################################################################################
+#
+# Key types tests
+#
+################################################################################
+
+TYPES_TESTS = ComponentTestTemplate(
+    "Types",
+    component=Component.types,
+    base_template=ComponentTemplate(
+        """
+        ${mode}virtual_modifiers NumLock, LevelThree=none, LevelFive=Mod3;
+        ${mode}virtual_modifiers U1, U2, U3;
+        // ${mode}virtual_modifiers U4, U5, U6;
+        ${mode}virtual_modifiers Z1=none, Z2=none, Z3=none;
+        // ${mode}virtual_modifiers Z4=none, Z5=none, Z6=none;
+        ${mode}virtual_modifiers M1=0x1000, M2=0x2000, M3=0x3000;
+        // ${mode}virtual_modifiers M4=0x4000, M5=0x5000, M6=0x6000;
+
+        ${mode}type "ONE_LEVEL" {
+        	modifiers = None;
+        	map[None] = Level1;
+        	level_name[Level1]= "Any";
+        };
+
+        ${mode}type "TWO_LEVEL" {
+        	modifiers = Shift;
+        	map[Shift] = Level2;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        };
+
+        ${mode}type "ALPHABETIC" {
+        	modifiers = Shift+Lock;
+        	map[Shift] = Level2;
+        	map[Lock] = Level2;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Caps";
+        };
+
+        ${mode}type "KEYPAD" {
+        	modifiers = Shift+NumLock;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[NumLock] = Level2;
+        	map[Shift+NumLock] = Level1;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Number";
+        };
+
+        ${mode}type "FOUR_LEVEL" {
+        	modifiers = Shift+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "FOUR_LEVEL_ALPHABETIC" {
+        	modifiers = Shift+Lock+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[Lock]  = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	map[Lock+LevelThree] =  Level4;
+        	map[Lock+Shift+LevelThree] =  Level3;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "FOUR_LEVEL_SEMIALPHABETIC" {
+        	modifiers = Shift+Lock+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[Lock]  = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	map[Lock+LevelThree] =  Level3;
+        	map[Lock+Shift+LevelThree] = Level4;
+        	preserve[Lock+LevelThree] = Lock;
+        	preserve[Lock+Shift+LevelThree] = Lock;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "XXX" {
+        	modifiers = Shift+Lock+LevelThree;
+            map[None]       = 1;
+            map[Shift]      = 2;
+            map[Lock]       = 2;
+            map[LevelThree] = 3;
+            level_name[1] = "1";
+            level_name[2] = "2";
+            level_name[3] = "3";
+        };
+        """
+    ),
+    update_template=ComponentTemplate(
+        """\
+        ${mode}virtual_modifiers NumLock=Mod2;    // Changed: now mapped
+        ${mode}virtual_modifiers LevelThree=Mod5; // Changed: altered mapping (from 0)
+        ${mode}virtual_modifiers LevelFive=Mod3;  // Unhanged: same mapping
+
+        ${mode}virtual_modifiers U7, Z7=0, M7=0x700000; // Changed: new
+
+        ${mode}virtual_modifiers U1;            // Unchanged (unmapped)
+        ${mode}virtual_modifiers U2 = none;     // Changed: now mapped
+        ${mode}virtual_modifiers U3 = 0x300000; // Changed: now mapped
+        // ${mode}virtual_modifiers U4;            // Unchanged (unmapped)
+        // ${mode}virtual_modifiers U5 = none;     // Changed: now mapped
+        // ${mode}virtual_modifiers U6 = 0x600000; // Changed: now mapped
+        ${mode}virtual_modifiers Z1;            // Unchanged (= 0)
+        ${mode}virtual_modifiers Z2 = none;     // Unchanged (same mapping)
+        ${mode}virtual_modifiers Z3 = 0x310000; // Changed: altered mapping (from 0)
+        // ${mode}virtual_modifiers Z4;            // Unchanged (= 0)
+        // ${mode}virtual_modifiers Z5 = none;     // Unchanged (same mapping)
+        // ${mode}virtual_modifiers Z6 = 0x610000; // Changed: altered mapping (from 0)
+        ${mode}virtual_modifiers M1;            // Unchanged (≠ 0)
+        ${mode}virtual_modifiers M2 = none;     // Changed: reset
+        ${mode}virtual_modifiers M3 = 0x320000; // Changed: altered mapping (from ≠ 0)
+        // ${mode}virtual_modifiers M4;            // Unchanged (≠ 0)
+        // ${mode}virtual_modifiers M5 = none;     // Changed: reset
+        // ${mode}virtual_modifiers M6 = 0x620000; // Changed: altered mapping (from ≠ 0)
+
+        ${mode}type "ONE_LEVEL" {
+        	modifiers = None;
+        	map[None] = Level1;
+        	level_name[Level1]= "New"; // Change name
+        };
+
+        ${mode}type "TWO_LEVEL" {
+        	modifiers = Shift+M1; // Changed
+        	map[Shift] = Level2;
+        	map[M1] = Level2; // Changed
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        };
+
+        ${mode}type "ALPHABETIC" {
+        	modifiers = Lock; // Changed
+        	map[None] = Level2; // Changed
+        	map[Lock] = Level1; // Changed
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Caps";
+        };
+
+        ${mode}type "KEYPAD" {
+        	modifiers = Shift+NumLock;
+        	map[None] = Level1;
+        	map[Shift] = Level2; // Changed
+        	map[NumLock] = Level2;
+        	map[Shift+NumLock] = Level1;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Number";
+        };
+
+        // Unchanged
+        ${mode}type "FOUR_LEVEL" {
+        	modifiers = Shift+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "FOUR_LEVEL_ALPHABETIC" {
+        	modifiers = Shift+Lock+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[Lock]  = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	map[Lock+LevelThree] =  Level4;
+        	map[Lock+Shift+LevelThree] =  Level3;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "FOUR_LEVEL_SEMIALPHABETIC" {
+        	modifiers = Shift+Lock+LevelThree;
+        	map[None] = Level1;
+        	map[Shift] = Level2;
+        	map[Lock]  = Level2;
+        	map[LevelThree] = Level3;
+        	map[Shift+LevelThree] = Level4;
+        	map[Lock+LevelThree] =  Level3;
+        	map[Lock+Shift+LevelThree] = Level4;
+        	preserve[Lock+LevelThree] = Lock;
+        	preserve[Lock+Shift+LevelThree] = Lock;
+        	level_name[Level1] = "Base";
+        	level_name[Level2] = "Shift";
+        	level_name[Level3] = "Alt Base";
+        	level_name[Level4] = "Shift Alt";
+        };
+
+        ${mode}type "XXX" {
+        	modifiers = Shift+Lock+LevelThree;
+            map[None]       = 1;
+            map[Shift]      = 2;
+            // map[Lock]       = 2;    // Changed
+            // map[LevelThree] = 3;
+            map[LevelThree] = 1;       // Changed
+            map[Shift+LevelThree] = 4; // Changed
+            level_name[1] = "A"; // Changed
+            level_name[2] = "2";
+            level_name[3] = "3";
+            level_name[4] = "4"; // Changed
+        };
+
+        // New
+        ${mode}type "YYY" {
+        	modifiers = None;
+        	map[None] = Level1;
+        	level_name[Level1]= "New";
+        };
+        """
+    ),
+    augment="""
+        virtual_modifiers NumLock=Mod2,LevelThree=none,LevelFive=Mod3;
+
+        virtual_modifiers U1,U2=0,U3=0x300000;
+        // virtual_modifiers U4,U5=0,U6=0x600000;
+        virtual_modifiers Z1=0,Z2=0,Z3=0;
+        // virtual_modifiers Z4=0,Z5=0,Z6=0;
+        virtual_modifiers M1=0x1000,M2=0x2000,M3=0x3000;
+        // virtual_modifiers M4=0x4000,M5=0x5000,M6=0x6000;
+        virtual_modifiers U7,Z7=0,M7=0x700000;
+
+        type "ONE_LEVEL" {
+        	modifiers= none;
+            map[none]= 1;
+        	level_name[1]= "Any";
+        };
+        type "TWO_LEVEL" {
+        	modifiers= Shift;
+        	map[Shift]= 2;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        };
+        type "ALPHABETIC" {
+        	modifiers= Shift+Lock;
+        	map[Shift]= 2;
+        	map[Lock]= 2;
+        	level_name[1]= "Base";
+        	level_name[2]= "Caps";
+        };
+        type "KEYPAD" {
+        	modifiers= Shift+NumLock;
+        	map[Shift]= 2;
+        	map[NumLock]= 2;
+        	level_name[1]= "Base";
+        	level_name[2]= "Number";
+        };
+        type "FOUR_LEVEL" {
+        	modifiers= Shift+LevelThree;
+            map[none]= 1;
+        	map[Shift]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree]= 4;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "FOUR_LEVEL_ALPHABETIC" {
+        	modifiers= Shift+Lock+LevelThree;
+            map[none]= 1;
+        	map[Shift]= 2;
+        	map[Lock]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree]= 4;
+        	map[Lock+LevelThree]= 4;
+        	map[Shift+Lock+LevelThree]= 3;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "FOUR_LEVEL_SEMIALPHABETIC" {
+        	modifiers= Shift+Lock+LevelThree;
+        	map[None]= 1;
+        	map[Shift]= 2;
+        	map[Lock]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree]= 4;
+        	map[Lock+LevelThree]= 3;
+        	preserve[Lock+LevelThree]= Lock;
+        	map[Shift+Lock+LevelThree]= 4;
+        	preserve[Shift+Lock+LevelThree]= Lock;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "XXX" {
+        	modifiers = Shift+Lock+LevelThree;
+            map[None]       = 1;
+            map[Shift]      = 2;
+            map[Lock]       = 2;
+            map[LevelThree] = 3;
+            level_name[1] = "1";
+            level_name[2] = "2";
+            level_name[3] = "3";
+        };
+        type "YYY" {
+        	modifiers = None;
+        	map[None] = Level1;
+        	level_name[Level1]= "New";
+        };
+        """,
+    override="""
+        virtual_modifiers NumLock=Mod2,LevelThree=Mod5,LevelFive=Mod3;
+
+        virtual_modifiers U1,U2=0,U3=0x300000;
+        // virtual_modifiers U4,U5=0,U6=0x600000;
+        virtual_modifiers Z1=0,Z2=0,Z3=0x310000;
+        // virtual_modifiers Z4=0,Z5=0,Z6=0x610000;
+        virtual_modifiers M1=0x1000,M2=0,M3=0x320000;
+        // virtual_modifiers M4=0x4000,M5=0,M6=0x620000;
+        virtual_modifiers U7,Z7=0,M7=0x700000;
+
+        type "ONE_LEVEL" {
+        	modifiers= none;
+        	map[None] = Level1;
+        	level_name[1]= "New";
+        };
+        type "TWO_LEVEL" {
+        	modifiers= Shift+M1;
+        	map[Shift]= 2;
+        	map[M1]= 2;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        };
+        type "ALPHABETIC" {
+        	modifiers= Lock;
+        	map[none]= 2;
+        	map[Lock]= 1;
+        	level_name[1]= "Base";
+        	level_name[2]= "Caps";
+        };
+        type "KEYPAD" {
+        	modifiers= Shift+NumLock;
+        	map[Shift] = Level2;
+        	map[NumLock]= 2;
+        	level_name[1]= "Base";
+        	level_name[2]= "Number";
+        };
+        type "FOUR_LEVEL" {
+        	modifiers= Shift+LevelThree;
+        	map[None]= 1;
+        	map[Shift]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree] = Level4;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "FOUR_LEVEL_ALPHABETIC" {
+        	modifiers= Shift+Lock+LevelThree;
+        	map[Shift]= 2;
+        	map[Lock]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree]= 4;
+        	map[Lock+LevelThree]= 4;
+        	map[Shift+Lock+LevelThree]= 3;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "FOUR_LEVEL_SEMIALPHABETIC" {
+        	modifiers= Shift+Lock+LevelThree;
+        	map[None]= 1;
+        	map[Shift]= 2;
+        	map[Lock]= 2;
+        	map[LevelThree]= 3;
+        	map[Shift+LevelThree]= 4;
+        	map[Lock+LevelThree]= 3;
+        	preserve[Lock+LevelThree]= Lock;
+        	map[Shift+Lock+LevelThree]= 4;
+        	preserve[Shift+Lock+LevelThree]= Lock;
+        	level_name[1]= "Base";
+        	level_name[2]= "Shift";
+        	level_name[3]= "Alt Base";
+        	level_name[4]= "Shift Alt";
+        };
+        type "XXX" {
+        	modifiers = Shift+Lock+LevelThree;
+            map[None]       = 1;
+            map[Shift]      = 2;
+            // map[LevelThree] = 3;
+            map[LevelThree] = 1;
+            map[Shift+LevelThree] = 4;
+            level_name[1] = "A";
+            level_name[2] = "2";
+            level_name[3] = "3";
+            level_name[4] = "4";
+        };
+        type "YYY" {
+        	modifiers = None;
+        	map[None] = Level1;
+        	level_name[Level1]= "New";
+        };
+        """,
+)
+
+
+################################################################################
+#
+# Compat tests
+#
+################################################################################
+
+COMPAT_TESTS = ComponentTestTemplate(
+    "Compat",
+    component=Component.compat,
+    base_template=ComponentTemplate(
+        """
+        ${mode}virtual_modifiers NumLock;
+
+        interpret.repeat= False;
+        setMods.clearLocks= True;
+        latchMods.clearLocks= True;
+        latchMods.latchToLock= True;
+
+        ${mode}interpret Any + Any {
+        	action= SetMods(modifiers=modMapMods);
+        };
+
+        ${mode}interpret Caps_Lock {
+        	action = LockMods(modifiers = Lock);
+        };
+
+        ${mode}indicator "Caps Lock" {
+        	!allowExplicit;
+        	whichModState= Locked;
+        	modifiers= Lock;
+        };
+
+        ${mode}indicator "Num Lock" {
+        	!allowExplicit;
+        	whichModState= Locked;
+        	modifiers= NumLock;
+        };
+        """
+    ),
+    update_template=ComponentTemplate(
+        """
+        ${mode}virtual_modifiers NumLock;
+
+        ${mode}interpret.repeat= False;
+        ${mode}setMods.clearLocks= False; // Changed
+
+        // Unchanged
+        ${mode}interpret Any + Any {
+        	action= SetMods(modifiers=modMapMods);
+        };
+
+        // Changed
+        ${mode}interpret Caps_Lock {
+        	action = LockMods(modifiers = NumLock);
+        };
+
+        // Unchanged
+        ${mode}indicator "Caps Lock" {
+        	!allowExplicit;
+        	whichModState= Locked;
+        	modifiers= Lock;
+        };
+
+        // Changed
+        ${mode}indicator "Num Lock" {
+        	!allowExplicit;
+        	whichModState= Base;
+        	modifiers= Lock;
+        };
+
+        // New
+        ${mode}indicator "Kana" {
+        	!allowExplicit;
+        	whichModState= Locked;
+        	modifiers= Control;
+        };
+        """
+    ),
+    augment="""
+        virtual_modifiers NumLock;
+
+        interpret.useModMapMods= AnyLevel;
+        interpret.repeat= False;
+        interpret Caps_Lock+AnyOfOrNone(all) {
+        	action= LockMods(modifiers=Lock);
+        };
+        interpret Any+AnyOf(all) {
+        	action= SetMods(modifiers=modMapMods,clearLocks);
+        };
+        indicator "Caps Lock" {
+        	whichModState= locked;
+        	modifiers= Lock;
+        };
+        indicator "Num Lock" {
+        	whichModState= locked;
+        	modifiers= NumLock;
+        };
+        indicator "Kana" {
+        	whichModState= locked;
+        	modifiers= Control;
+	    };
+        """,
+    override="""
+        virtual_modifiers NumLock;
+
+        interpret.repeat= False;
+        setMods.clearLocks= False;
+        interpret Caps_Lock+AnyOfOrNone(all) {
+        	action= LockMods(modifiers=NumLock);
+        };
+        interpret Any+AnyOf(all) {
+        	action= SetMods(modifiers=modMapMods);
+        };
+        indicator "Caps Lock" {
+        	whichModState= locked;
+        	modifiers= Lock;
+        };
+        indicator "Kana" {
+        	whichModState= locked;
+        	modifiers= Control;
+        };
+        indicator "Num Lock" {
+        	whichModState= base;
+        	modifiers= Lock;
+        };
+        """,
+)
+
+
+################################################################################
+#
+# Symbols tests
+#
+################################################################################
+
+
 LINUX_EVENT_CODES = (
     None,
     "ESC",
@@ -236,12 +1324,7 @@ LINUX_EVENT_CODES = (
     "QUESTION",
 )
 
-
 Comment = NewType("Comment", str)
-
-
-def is_not_comment(x: Any) -> bool:
-    return not isinstance(x, str)
 
 
 @dataclass(frozen=True)
@@ -687,7 +1770,7 @@ class TestEntry:
 
 
 @dataclass
-class TestGroup:
+class SymbolsTestGroup:
     name: str
     tests: tuple[TestEntry | Comment, ...]
 
@@ -735,209 +1818,64 @@ class TestGroup:
         else:
             return NotImplemented
 
+    def get_keycodes(self, base: ComponentTestTemplate) -> ComponentTestTemplate:
+        ids: set[TestId] = set(t.id for t in self.tests if isinstance(t, TestEntry))
 
-C_HEADER_TEMPLATE = r"""// WARNING: This file was auto-generated by: {{ script }}
-#include "evdev-scancodes.h"
-#include <xkbcommon/xkbcommon.h>
+        base_template = Template(
+            "\n".join(f"${{mode}}<{id.xkb_key}> = {id.id + 8};" for id in ids) + "\n"
+        )
+        keycodes = base_template.substitute(mode="")
 
-#include "src/utils.h"
-#include "test.h"
-
-{%- macro key_seq(entry, type, level) -%}
-        {% if entry[type].levels|length == 0 %}
-        {{- entry.id.id }}, BOTH, XKB_KEY_NoSymbol{# -#}
-        {% else %}
-        {% if entry[type].levels[level].target_group < 2 %}
-        {{- entry.id.id }}, BOTH, {{ entry[type].levels[level].keysyms_c -}}
-        {% else %}
-        {{- entry.id.id }}, DOWN, {{ entry[type].levels[level].keysyms_c }}, NEXT,
-        {{ entry.id.id }}, UP, {{
-            alt_keysym(entry[type].levels[level].target_group,
-                       entry[type].levels[level].target_level + level).c
-        -}}
-        {% endif %}
-        {% endif %}
-{% endmacro %}
-
-{% macro make_test(mode, ref, tests_group, compile_buffer) -%}
-    {% set keymap_str = "keymap_" + tests_group.name.replace("-", "_") + mode -%}
-    const char {{ keymap_str }}[] =
-        "xkb_keymap {\n"
-        "  xkb_keycodes { include \"merge_modes\" };\n"
-        "  xkb_types { include \"basic+numpad+extra\" };\n"
-        "  xkb_compat { include \"basic+iso9995\" };\n"
-        "  xkb_symbols {\n"
-        "    key <LFSH> { [Shift_L] };\n"
-        "    key <RALT> { [ISO_Level3_Shift] };\n"
-        "    modifier_map Shift { <LFSH> };\n"
-        "    modifier_map Mod5 { <RALT> };\n"
-        // NOTE: Separate statements so that *all* the merge modes *really* work.
-        //       Using + and | separators downgrades `replace key` to `override/
-        //       augment key`.
-        "    include \"{{symbols_file}}({{ tests_group.name }}base)\"\n"
-        "    {{ mode }} \"{{symbols_file}}({{ tests_group.name }}new)\"\n"
-        "    include \"{{symbols_file}}(group2):2+{{symbols_file}}(group3):3\"\n"
-        "  };\n"
-        "};";
-    fprintf(stderr, "*** test_merge_modes: {{ tests_group.name }}, {{ mode }} ***\n");
-    keymap = compile_buffer(ctx, {{ keymap_str }},
-                            ARRAY_SIZE({{ keymap_str }}),
-                            private);
-    assert(keymap);
-    assert_printf(test_key_seq(keymap,
-        {%- for entry in tests_group.tests +%}
-        {% if is_not_comment(entry) %}
-        {{ key_seq(entry, ref, 0) }}, {%- if entry[ref].levels|length > 1 %} NEXT,
-        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L, NEXT,
-        {{ key_seq(entry, ref, 1) }}, NEXT,
-        KEY_LEFTSHIFT, UP, XKB_KEY_Shift_L,
-        {%- endif %}{%- if entry[ref].levels|length > 2 %} NEXT,
-        KEY_RIGHTALT, DOWN, XKB_KEY_ISO_Level3_Shift, NEXT,
-        {{ key_seq(entry, ref, 2) }}, NEXT,
-        KEY_RIGHTALT, UP, XKB_KEY_ISO_Level3_Shift,
-        {%- endif %}{% if not loop.last %} NEXT,{% endif %}
-        {% else %}
-        // {{ entry -}}
-        {% endif %}
-        {% endfor %} FINISH
-    ), "test_merge_modes: {{ tests_group.name }}, {{ mode }}\n");
-    xkb_keymap_unref(keymap);
-{%- endmacro %}
-
-static void
-{{ test_func }}(struct xkb_context *ctx,
-{{ " "*(test_func|length + 1) }}test_compile_buffer_t compile_buffer, void *private)
-{
-    struct xkb_keymap *keymap;
-    {% for tests_group in tests_groups %}
-    {% if tests_group.tests %}
-    {% if tests_group.name %}
-
-    /****************************************************************
-     * Test group: {{ tests_group.name }}
-     ****************************************************************/
-    {% endif %}
-
-    /* Mode: Default */
-    {{ make_test("include", "default", tests_group, "compile_buffer") }}
-
-    /* Mode: Augment */
-    {{ make_test("augment", "augment", tests_group, "compile_buffer") }}
-
-    /* Mode: Override */
-    {{ make_test("override", "override", tests_group, "compile_buffer") }}
-
-    /* Mode: Replace */
-    {{ make_test("replace", "replace", tests_group, "compile_buffer") }}
-    {% endif %}
-    {% endfor %}
-}
-"""
-
-
-@dataclass
-class TestFile:
-    suffix: str
-    tests: tuple[TestGroup, ...]
-    symbols_file: ClassVar[str] = "merge_modes"
-    test_file: ClassVar[str] = "merge_modes_symbols.h"
-
-    @classmethod
-    def write_keycodes(
-        cls, root: Path, jinja_env: jinja2.Environment, tests: tuple[TestFile, ...]
-    ) -> None:
-        """
-        XKB custom keycodes
-        """
-        path = root / f"test/data/keycodes/{cls.symbols_file}"
-        template_path = path.with_suffix(f"{path.suffix}.jinja")
-        template = jinja_env.get_template(str(template_path.relative_to(root)))
-        ids: set[TestId] = set(
-            t.id
-            for f in tests
-            for ts in f.tests
-            for t in ts.tests
-            if isinstance(t, TestEntry)
+        return dataclasses.replace(
+            base,
+            base_template=base_template + base.base_template,
+            update_template=base.update_template,
+            augment=keycodes + base.augment,
+            override=keycodes + base.override,
+            replace=keycodes + base.replace,
         )
 
-        with path.open("wt", encoding="utf-8") as fd:
-            fd.writelines(
-                template.generate(
-                    ids=sorted(ids, key=lambda id: id.xkb_key),
-                    script=SCRIPT.relative_to(root),
-                )
-            )
+    def _get_symbols(self, type: str, debug: bool) -> Generator[str]:
+        for entry in self.tests:
+            if isinstance(entry, str):
+                if type == "update":
+                    yield f"\n////// {entry} //////"
+            else:
+                data: KeyEntry = getattr(entry, type)
+                if debug:
+                    yield f"// base:     {''.join(entry.base.xkb) or '(empty)'}"
+                    yield "// key to merge / replace result"
+                yield f"${{mode}}key {entry.key.xkb} {{ {''.join(data.xkb)} }};"
+                if debug:
+                    yield f"// override: {''.join(entry.override.xkb) or '(empty)'}"
+                    yield f"// augment:  {''.join(entry.augment.xkb) or '(empty)'}"
 
-    @classmethod
-    def write_symbols(
-        cls,
-        root: Path,
-        jinja_env: jinja2.Environment,
-        tests: tuple[TestFile, ...],
-        use_extra_groups: bool,
-        debug: bool,
-    ) -> None:
-        """
-        XKB Symbols data for all merge modes
-        """
-        path = root / f"test/data/symbols/{cls.symbols_file}"
-        template_path = path.with_suffix(f"{path.suffix}.jinja")
-        template = jinja_env.get_template(str(template_path.relative_to(root)))
-        for t in tests:
-            _path = path.with_stem(path.stem + t.suffix)
-            _tests = t.tests
-            keycodes = sorted(
-                frozenset(
-                    t.key for g in _tests for t in filter(is_not_comment, g.tests)
-                ),
-                key=lambda x: x._xkb,
-            )
-            with _path.open("wt", encoding="utf-8") as fd:
-                fd.writelines(
-                    template.generate(
-                        keycodes=keycodes,
-                        tests_groups=_tests,
-                        script=SCRIPT.relative_to(root),
-                        extra_groups=2 if use_extra_groups else 0,
-                        filename=_path.name,
-                        debug=debug,
-                    )
-                )
-
-    @classmethod
-    def write_c_tests(
-        cls,
-        root: Path,
-        jinja_env: jinja2.Environment,
-        tests: tuple[TestFile, ...],
-    ) -> None:
-        """
-        C headers for alternative tests
-        """
-        path = root / f"test/{cls.test_file}"
-        template_path = path.with_suffix(f"{path.suffix}.jinja")
-        # Write jinja template
-        with template_path.open("wt", encoding="utf-8") as fd:
-            fd.write(C_HEADER_TEMPLATE)
-        # Write C headers
-        template = jinja_env.get_template(str(template_path.relative_to(root)))
-        for t in tests:
-            _path = path.with_stem(path.stem + t.suffix)
-            _tests = t.tests
-            symbols_file = cls.symbols_file + t.suffix
-            test_func = f"test_symbols_merge_modes{t.suffix}"
-            with _path.open("wt", encoding="utf-8") as fd:
-                fd.writelines(
-                    template.generate(
-                        symbols_file=symbols_file,
-                        test_func=test_func,
-                        tests_groups=_tests,
-                        script=SCRIPT.relative_to(root),
-                    )
-                )
+    def get_symbols(self, debug: bool = False) -> ComponentTestTemplate:
+        base_template = ComponentTemplate("\n".join(self._get_symbols("base", False)))
+        update_template = ComponentTemplate(
+            "\n".join(self._get_symbols("update", debug))
+        )
+        augment = ComponentTemplate(
+            "\n".join(self._get_symbols("augment", False))
+        ).substitute(mode="")
+        override = ComponentTemplate(
+            "\n".join(self._get_symbols("override", False))
+        ).substitute(mode="")
+        replace = ComponentTemplate(
+            "\n".join(self._get_symbols("replace", False))
+        ).substitute(mode="")
+        return ComponentTestTemplate(
+            title=self.name,
+            component=Component.symbols,
+            base_template=base_template,
+            update_template=update_template,
+            augment=augment,
+            override=override,
+            replace=replace,
+        )
 
 
-TESTS_BOTH = TestGroup(
+SYMBOLS_TESTS_BOTH = SymbolsTestGroup(
     "",
     (
         Comment("Trivial cases"),
@@ -1741,18 +2679,95 @@ TESTS_BOTH = TestGroup(
     ),
 ).add_keysyms()
 
-TESTS_XKBCOMMON = TestFile(
-    "", (TESTS_BOTH.with_implementation(Implementation.xkbcommon),)
+SYMBOLS_TESTS_XKBCOMMON = SYMBOLS_TESTS_BOTH.with_implementation(
+    Implementation.xkbcommon
 )
-TESTS = (TESTS_XKBCOMMON,)
 
+SYMBOLS_TESTS = SYMBOLS_TESTS_XKBCOMMON
+
+
+################################################################################
+#
+# Keycodes tests
+#
+################################################################################
+
+KEYCODES_TESTS_BASE = ComponentTestTemplate(
+    "Keycodes",
+    component=Component.keycodes,
+    base_template=ComponentTemplate(
+        """
+        ${mode}<1> = 241;
+        ${mode}<2> = 242;
+
+        ${mode}alias <A> = <1>;
+        ${mode}alias <B> = <2>;
+
+        ${mode}indicator 1 = "Caps Lock";
+        ${mode}indicator 2 = "Num Lock";
+        ${mode}indicator 3 = "Scroll Lock";
+        ${mode}indicator 4 = "Compose";
+        ${mode}indicator 5 = "Kana";
+        """
+    ),
+    update_template=ComponentTemplate(
+        """
+        ${mode}<1> = 241;            // Unchanged
+        ${mode}<2> = 244;            // Changed
+        ${mode}<3> = 243;            // New
+
+        ${mode}alias <A> = <1>;    // Unchanged
+        ${mode}alias <B> = <3>;    // Changed
+        ${mode}alias <C> = <3>;    // New
+
+        ${mode}indicator 1 = "Caps Lock";   // Unchanged
+        ${mode}indicator 6 = "Num Lock";    // Changed index (free)
+        ${mode}indicator 5 = "Scroll Lock"; // Changed index (not free)
+        ${mode}indicator 4 = "XXXX";        // Changed name
+        ${mode}indicator 7 = "Suspend";     // New
+        """
+    ),
+    augment="""
+        <1> = 241;
+        <2> = 242;
+        <3> = 243;
+        alias <A> = <1>;
+        alias <B> = <2>;
+        alias <C> = <3>;
+        indicator 1 = "Caps Lock";
+        indicator 2 = "Num Lock";
+        indicator 3 = "Scroll Lock";
+        indicator 4 = "Compose";
+        indicator 5 = "Kana";
+        indicator 7 = "Suspend";
+        """,
+    override="""
+        <1> = 241;
+        <2> = 244;
+        <3> = 243;
+        alias <A> = <1>;
+        alias <B> = <3>;
+        alias <C> = <3>;
+        indicator 1 = "Caps Lock";
+        indicator 4 = "XXXX";
+        indicator 5 = "Scroll Lock";
+        indicator 6 = "Num Lock";
+        indicator 7 = "Suspend";
+        """,
+)
+
+KEYCODES_TESTS = SYMBOLS_TESTS.get_keycodes(KEYCODES_TESTS_BASE)
+
+
+################################################################################
+#
+# Main
+#
+################################################################################
 
 if __name__ == "__main__":
-    # Root of the project
-    ROOT = Path(__file__).parent.parent
-
     # Parse commands
-    parser = argparse.ArgumentParser(description="Generate symbols tests")
+    parser = argparse.ArgumentParser(description="Generate merge mode tests")
     parser.add_argument(
         "--root",
         type=Path,
@@ -1760,13 +2775,16 @@ if __name__ == "__main__":
         help="Path to the root of the project (default: %(default)s)",
     )
     parser.add_argument(
-        "--alternative-tests",
-        action="store_true",
-        help="Write the C headers for alternative tests",
+        "--c-out",
+        type=Path,
+        # default=ROOT / TestGroup.c_template.stem,
+        help="Path to the output C test file (default: %(default)s)",
     )
+    parser.add_argument("--no-xkb", action="store_true", help="Do not update XKB data")
     parser.add_argument("--debug", action="store_true", help="Activate debug mode")
-
     args = parser.parse_args()
+
+    # Prepare data
     template_loader = jinja2.FileSystemLoader(args.root, encoding="utf-8")
     jinja_env = jinja2.Environment(
         loader=template_loader,
@@ -1774,17 +2792,27 @@ if __name__ == "__main__":
         trim_blocks=True,
         lstrip_blocks=True,
     )
-    jinja_env.globals["alt_keysym"] = TestEntry.alt_keysym
-    jinja_env.globals["alt_keysyms"] = TestEntry.alt_keysyms
-    jinja_env.globals["is_not_comment"] = is_not_comment
-    jinja_env.tests["is_not_comment"] = is_not_comment
-    TestFile.write_keycodes(root=args.root, jinja_env=jinja_env, tests=TESTS)
-    TestFile.write_symbols(
+
+    def escape_quotes(s: str) -> str:
+        return s.replace('"', '\\"')
+
+    jinja_env.filters["escape_quotes"] = escape_quotes
+
+    TESTS = (
+        KeymapTestTemplate(
+            title="",
+            keycodes=KEYCODES_TESTS,
+            types=TYPES_TESTS,
+            compat=COMPAT_TESTS,
+            symbols=SYMBOLS_TESTS.get_symbols(debug=args.debug),
+        ),
+    )
+
+    # Write tests
+    TESTS[0].write(
         root=args.root,
         jinja_env=jinja_env,
+        c_file=args.c_out,
+        xkb=not args.no_xkb,
         tests=TESTS,
-        use_extra_groups=args.alternative_tests,
-        debug=args.debug,
     )
-    if args.alternative_tests:
-        TestFile.write_c_tests(root=args.root, jinja_env=jinja_env, tests=TESTS)

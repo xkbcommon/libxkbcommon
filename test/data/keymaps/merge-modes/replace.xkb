@@ -1,5 +1,5 @@
 xkb_keymap {
-xkb_keycodes "merge_modes" {
+xkb_keycodes "" {
 	minimum = 8;
 	maximum = 255;
 	<T001>               = 9;
@@ -40,7 +40,6 @@ xkb_keycodes "merge_modes" {
 	<T037>               = 45;
 	<T038>               = 46;
 	<T039>               = 47;
-	<LFSH>               = 50;
 	<T043>               = 51;
 	<T044>               = 52;
 	<T045>               = 53;
@@ -93,7 +92,6 @@ xkb_keycodes "merge_modes" {
 	<T097>               = 105;
 	<T098>               = 106;
 	<T099>               = 107;
-	<RALT>               = 108;
 	<T103>               = 111;
 	<T104>               = 112;
 	<T105>               = 113;
@@ -157,27 +155,46 @@ xkb_keycodes "merge_modes" {
 	<T204>               = 212;
 	<T207>               = 215;
 	<T210>               = 218;
+	<1>                  = 241;
+	<3>                  = 243;
+	<2>                  = 244;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Kana";
+	indicator 4 = "XXXX";
+	indicator 5 = "Scroll Lock";
+	indicator 6 = "Num Lock";
+	indicator 7 = "Suspend";
+	alias <A>            = <1>;
+	alias <B>            = <3>;
+	alias <C>            = <3>;
 };
 
-xkb_types "basic" {
-	virtual_modifiers NumLock,LevelThree;
+xkb_types "" {
+	virtual_modifiers NumLock=Mod2,LevelThree=Mod5,LevelFive=Mod3,U1,U2,U3=0x300000,Z1,Z2,Z3=0x310000,M1=0x1000,M2,M3=0x320000,U7,Z7,M7=0x700000;
 
 	type "ONE_LEVEL" {
 		modifiers= none;
-		level_name[1]= "Any";
+		level_name[1]= "New";
 	};
 	type "TWO_LEVEL" {
-		modifiers= Shift;
+		modifiers= Shift+M1;
 		map[Shift]= 2;
+		map[M1]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Shift";
 	};
 	type "ALPHABETIC" {
-		modifiers= Shift+Lock;
-		map[Shift]= 2;
-		map[Lock]= 2;
+		modifiers= Lock;
+		map[none]= 2;
 		level_name[1]= "Base";
 		level_name[2]= "Caps";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
 	};
 	type "FOUR_LEVEL" {
 		modifiers= Shift+LevelThree;
@@ -217,13 +234,44 @@ xkb_types "basic" {
 		level_name[3]= "Alt Base";
 		level_name[4]= "Shift Alt";
 	};
+	type "XXX" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Shift+LevelThree]= 4;
+		level_name[1]= "A";
+		level_name[2]= "2";
+		level_name[3]= "3";
+		level_name[4]= "4";
+	};
+	type "YYY" {
+		modifiers= none;
+		level_name[1]= "New";
+	};
 };
 
-xkb_compatibility {
-	virtual_modifiers NumLock,LevelThree;
+xkb_compatibility "" {
+	virtual_modifiers NumLock=Mod2,LevelThree=Mod5,LevelFive=Mod3,U1,U2,U3=0x300000,Z1,Z2,Z3=0x310000,M1=0x1000,M2,M3=0x320000,U7,Z7,M7=0x700000;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Kana" {
+		whichModState= locked;
+		modifiers= Control;
+	};
+	indicator "Num Lock" {
+		whichModState= base;
+		modifiers= Lock;
+	};
 };
 
 xkb_symbols "" {
