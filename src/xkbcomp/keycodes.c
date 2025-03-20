@@ -35,7 +35,6 @@ typedef struct {
     unsigned int include_depth;
 
     xkb_keycode_t min_key_code;
-    xkb_keycode_t max_key_code;
     darray(xkb_atom_t) key_names;
     LedNameInfo led_names[XKB_MAX_LEDS];
     unsigned int num_led_names;
@@ -158,11 +157,11 @@ InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
 static xkb_keycode_t
 FindKeyByName(KeyNamesInfo *info, xkb_atom_t name)
 {
-    xkb_keycode_t i;
-
-    for (i = info->min_key_code; i <= info->max_key_code; i++)
-        if (darray_item(info->key_names, i) == name)
-            return i;
+    for (xkb_keycode_t kc = info->min_key_code;
+         kc < (xkb_keycode_t) darray_size(info->key_names);
+         kc++)
+        if (darray_item(info->key_names, kc) == name)
+            return kc;
 
     return XKB_KEYCODE_INVALID;
 }
@@ -171,15 +170,16 @@ static void
 ShrinkKeycodeBounds(KeyNamesInfo *info)
 {
     static_assert(XKB_KEYCODE_MAX < UINT32_MAX, "Overflow can occur");
-    if (unlikely(info->min_key_code > XKB_KEYCODE_MAX)) {
+    if (unlikely(darray_empty(info->key_names))) {
         /* No keycode defined */
         assert(info->min_key_code == XKB_KEYCODE_INVALID);
         return;
     }
 
     /* Update lower bound */
+    assert(info->min_key_code <= XKB_KEYCODE_MAX);
     for (xkb_keycode_t low = info->min_key_code;
-         low <= info->max_key_code;
+         low < (xkb_keycode_t) darray_size(info->key_names);
          low++) {
         if (darray_item(info->key_names, low) != XKB_ATOM_NONE) {
             info->min_key_code = low;
@@ -188,10 +188,11 @@ ShrinkKeycodeBounds(KeyNamesInfo *info)
     }
 
     /* Update upper bound */
-    for (xkb_keycode_t high = info->max_key_code + 1;
+    assert(darray_size(info->key_names) > 0);
+    for (xkb_keycode_t high = (xkb_keycode_t) darray_size(info->key_names);
          high-- > info->min_key_code;) {
         if (darray_item(info->key_names, high) != XKB_ATOM_NONE) {
-            info->max_key_code = high;
+            darray_size(info->key_names) = high + 1;
             break;
         }
     }
@@ -213,9 +214,10 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         return false;
     }
 
-    const xkb_atom_t old_name = (kc >= darray_size(info->key_names))
-        ? XKB_ATOM_NONE
-        : darray_item(info->key_names, kc);
+    const xkb_atom_t old_name =
+        (kc >= (xkb_keycode_t) darray_size(info->key_names))
+            ? XKB_ATOM_NONE
+            : darray_item(info->key_names, kc);
     const xkb_keycode_t old_kc = FindKeyByName(info, name);
     bool shrink = false;
 
@@ -236,8 +238,9 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
             darray_item(info->key_names, old_kc) = XKB_ATOM_NONE;
             /* Detect bounds change here but correct bounds later, to ensure
              * there is at least one keycode */
-            shrink = (old_kc == info->min_key_code ||
-                      old_kc == info->max_key_code);
+            shrink =
+                (old_kc == info->min_key_code ||
+                 old_kc + 1 == (xkb_keycode_t) darray_size(info->key_names));
         } else {
             return true;
         }
@@ -247,9 +250,8 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         /* There is already a key with this keycode. */
 
         /* No need to update bounds */
-        assert(kc < darray_size(info->key_names));
         assert(kc >= info->min_key_code);
-        assert(kc <= info->max_key_code);
+        assert(kc < (xkb_keycode_t) darray_size(info->key_names));
 
         if (old_name == name) {
             assert (old_kc == kc);
@@ -275,12 +277,11 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
             return true;
     } else {
         /* No previous keycode, resize if relevant */
-        if (kc >= darray_size(info->key_names))
+        if (kc >= (xkb_keycode_t) darray_size(info->key_names))
             darray_resize0(info->key_names, kc + 1);
 
         /* Update the keycode bounds */
         info->min_key_code = MIN(info->min_key_code, kc);
-        info->max_key_code = MAX(info->max_key_code, kc);
     }
 
     darray_item(info->key_names, kc) = name;
@@ -315,18 +316,19 @@ MergeIncludedKeycodes(KeyNamesInfo *into, KeyNamesInfo *from,
         into->key_names = from->key_names;
         darray_init(from->key_names);
         into->min_key_code = from->min_key_code;
-        into->max_key_code = from->max_key_code;
     }
     else {
         if (darray_size(into->key_names) < darray_size(from->key_names))
             darray_resize0(into->key_names, darray_size(from->key_names));
 
-        for (xkb_keycode_t i = from->min_key_code; i <= from->max_key_code; i++) {
-            xkb_atom_t name = darray_item(from->key_names, i);
+        for (xkb_keycode_t kc = from->min_key_code;
+             kc < (xkb_keycode_t) darray_size(from->key_names);
+             kc++) {
+            xkb_atom_t name = darray_item(from->key_names, kc);
             if (name == XKB_ATOM_NONE)
                 continue;
 
-            if (!AddKeyName(into, i, name, merge, true, false))
+            if (!AddKeyName(into, kc, name, merge, true, false))
                 into->errorCount++;
         }
     }
@@ -569,25 +571,29 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file)
 static bool
 CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
-    struct xkb_key *keys;
-    xkb_keycode_t min_key_code, max_key_code, kc;
+    xkb_keycode_t min_key_code, max_key_code;
 
-    min_key_code = info->min_key_code;
-    max_key_code = info->max_key_code;
-    /* If the keymap has no keys, let's just use the safest pair we know. */
-    if (min_key_code == XKB_KEYCODE_INVALID) {
+    /* If the keymap has no keys, let’s just use the safest pair we know. */
+    if (darray_empty(info->key_names)) {
+        assert(info->min_key_code == XKB_KEYCODE_INVALID);
         min_key_code = 8;
         max_key_code = 255;
+    } else {
+        assert(info->min_key_code <= XKB_KEYCODE_MAX);
+        min_key_code = info->min_key_code;
+        max_key_code = darray_size(info->key_names) - 1;
     }
 
-    keys = calloc(max_key_code + 1, sizeof(*keys));
+    struct xkb_key *keys = calloc(max_key_code + 1, sizeof(*keys));
     if (!keys)
         return false;
 
-    for (kc = min_key_code; kc <= max_key_code; kc++)
+    for (xkb_keycode_t kc = min_key_code; kc <= max_key_code; kc++)
         keys[kc].keycode = kc;
 
-    for (kc = info->min_key_code; kc <= info->max_key_code; kc++)
+    for (xkb_keycode_t kc = info->min_key_code;
+         kc < (xkb_keycode_t) darray_size(info->key_names);
+         kc++)
         keys[kc].name = darray_item(info->key_names, kc);
 
     keymap->min_key_code = min_key_code;
