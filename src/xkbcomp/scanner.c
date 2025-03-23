@@ -7,6 +7,7 @@
 
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
+#include "utils-numbers.h"
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -39,7 +40,7 @@ number(struct scanner *s, int64_t *out, int *out_tok)
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wbad-function-cast"
         #endif
-        x = (long long int) strtold(start, &end);
+        x = (long long int) strtold_lc(start, s->s + s->pos, &end);
         #ifdef __GNUC__
         #pragma GCC diagnostic pop
         #endif

@@ -1,6 +1,6 @@
 project(
     'libxkbcommon',
-    'c',
+    'c', 'cpp',
     version: '1.8.1',
     default_options: [
         'c_std=c11',
@@ -258,6 +258,8 @@ libxkbcommon_sources = [
     'src/util-mem.h',
     'src/utils-paths.c',
     'src/utils-paths.h',
+    'src/utils-numbers.cpp',
+    'src/utils-numbers.h',
 ]
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []
@@ -277,6 +279,7 @@ libxkbcommon = library(
     'xkbcommon',
     'include/xkbcommon/xkbcommon.h',
     libxkbcommon_sources,
+    link_language: 'c',
     link_args: libxkbcommon_link_args,
     link_depends: libxkbcommon_link_deps,
     gnu_symbol_visibility: 'hidden',
