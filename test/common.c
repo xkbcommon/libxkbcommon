@@ -11,6 +11,7 @@
 
 #include "config.h"
 
+#include <stdlib.h>
 #include <limits.h>
 #include <locale.h>
 #include <fcntl.h>
@@ -523,6 +524,80 @@ test_compile_output(struct xkb_context *ctx,
                 }
                 xkb_keymap_unref(keymap);
             } else {
+                fprintf(stderr,
+                        "%s failed: dumped map differs from expected.\n",
+                        label[k]);
+                fprintf(stderr, "Path to expected file: %s\n", path);
+                fprintf(stderr, "Length: expected %zu, got: %zu\n",
+                        strlen(expected), strlen(got));
+                fprintf(stderr, "Dumped map:\n");
+                fprintf(stderr, "%s\n", got);
+                success = false;
+            }
+        }
+        free(expected);
+    }
+    free(got);
+    free(path);
+    return success;
+}
+
+bool
+test_third_pary_compile_output(test_third_party_compile_buffer_t compile_buffer,
+                               void *compile_buffer_private,
+                               const char *test_title,
+                               const char *keymap_in, size_t keymap_in_size,
+                               const char *rel_path, bool update_output_files)
+{
+    int success = true;
+    fprintf(stderr, "*** %s ***\n", test_title);
+    char* got = NULL;
+    size_t got_size = 0;
+
+    int ret = compile_buffer(keymap_in, keymap_in_size, compile_buffer_private,
+                             &got, &got_size);
+
+    if (!rel_path) {
+        /* No path given: expect compilation failure */
+        if (ret == EXIT_SUCCESS) {
+            fprintf(stderr,
+                    "Unexpected keymap compilation success:\nstdout:\n%s\n",
+                    got);
+        }
+        free(got);
+        return (ret != EXIT_SUCCESS);
+    }
+
+    if (ret != EXIT_SUCCESS || isempty(got)) {
+        fprintf(stderr, "Unexpected keymap compilation failure.\nstdout:\n%s\n",
+                got);
+        free(got);
+        return false;
+    }
+
+    char *path = test_get_path(rel_path);
+    assert(path);
+
+    if (update_output_files) {
+        fprintf(stderr, "Writing golden test output to: %s\n", path);
+        FILE *file = fopen(path, "wb");
+        assert(file);
+        fwrite(got, 1, got_size, file);
+        fclose(file);
+    } else {
+        fprintf(stderr, "Reading golden test output: %s\n", path);
+        char *expected = test_read_file(rel_path);
+        assert(expected);
+        const char *label[2] = {"Golden test", "Roundtrip"};
+        for (unsigned int k = 0; k < ARRAY_SIZE(label) && success; k++) {
+            if (streq(expected, got)) {
+                fprintf(stderr, "%s succeeded.\n", label[k]);
+                if (k > 0)
+                    continue;
+                /* Test round trip */
+                // TODO
+                break;
+            }else {
                 fprintf(stderr,
                         "%s failed: dumped map differs from expected.\n",
                         label[k]);

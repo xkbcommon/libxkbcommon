@@ -29,6 +29,40 @@ SCRIPT = Path(__file__)
 # Root of the project
 ROOT = SCRIPT.parent.parent
 
+################################################################################
+#
+# XKB compiler
+#
+################################################################################
+
+
+@dataclass
+class XkbCompiler:
+    name: str
+    extended_syntax: bool
+
+    default: ClassVar[str] = "xkbcommon"
+
+    @property
+    def is_default(self) -> bool:
+        return self.name == self.default
+
+    @property
+    def suffix(self) -> str:
+        return "" if self.is_default else "-" + self.name
+
+    @classmethod
+    def parse(cls, name: str) -> Self:
+        match name:
+            case cls.default:
+                return cls(name=name, extended_syntax=True)
+            case "xkbcomp":
+                return cls(name=name, extended_syntax=False)
+            case "kbvm":
+                return cls(name=name, extended_syntax=True)
+            case _:
+                raise ValueError(f"Invalid XKB compiler: {name}")
+
 
 ################################################################################
 #
@@ -190,20 +224,26 @@ class TestGroup:
         root: Path,
         jinja_env: jinja2.Environment,
         path: Path,
+        compiler: XkbCompiler,
         tests: Sequence[TestGroup],
     ) -> None:
-        return cls._write(root=root, jinja_env=jinja_env, path=path, tests=tests)
+        return cls._write(
+            root=root, jinja_env=jinja_env, path=path, compiler=compiler, tests=tests
+        )
 
     @classmethod
     def write_data(
         cls,
         root: Path,
+        compiler: XkbCompiler,
         tests: Sequence[TestGroup],
     ) -> None:
-        tests_: dict[str, list[Test]] = defaultdict(list)
+        tests_: dict[Path, list[Test]] = defaultdict(list)
+        suffix = compiler.suffix
         for group in tests:
             for test in group.tests:
                 file = test.file.parent
+                file = file.with_name(file.name + suffix)
                 tests_[file].append(test)
         for file, group_ in tests_.items():
             path = root / "test" / "data" / file
@@ -247,6 +287,7 @@ class TestTemplate(metaclass=ABCMeta):
         jinja_env: jinja2.Environment,
         c_file: Path | None,
         xkb: bool,
+        compiler: XkbCompiler,
         tests: Sequence[Self],
         debug: bool,
     ): ...
@@ -298,7 +339,10 @@ class ComponentTestTemplate(TestTemplate):
     def render_keymap(self, content: str) -> str:
         return "\n".join(self.component.render_keymap(content))
 
-    def _generate_tests(self, render: Callable[[str], str]) -> Generator[Test]:
+    def _generate_tests(
+        self, render: Callable[[str], str], compiler: XkbCompiler
+    ) -> Generator[Test]:
+        include_suffix = compiler.suffix
         for base_mode, update_mode in itertools.product(MergeMode, MergeMode):
             # Plain
             content = (
@@ -331,7 +375,7 @@ class ComponentTestTemplate(TestTemplate):
                     content=render(
                         self.base_template.render(base_mode)
                         + (
-                            f'\n{mode.include} "{file}({section})"'
+                            f'\n{mode.include} "{file}{include_suffix}({section})"'
                             if self.base_template
                             else ""
                         )
@@ -355,7 +399,7 @@ class ComponentTestTemplate(TestTemplate):
         #                 f"{mode.include}({base_mode})-{self.plain}({update_mode})"
         #             ),
         #             content=render(
-        #                 f'{mode.include} "{file}({section})"\n'
+        #                 f'{mode.include} "{file}{include_suffix}({section})"\n'
         #                 + self.update_template.render(update_mode)
         #             ),
         #             expected=render(self.expected(update_mode)),
@@ -379,8 +423,8 @@ class ComponentTestTemplate(TestTemplate):
         #             f"{base_mode.include}({mode})-{update_mode.include}({mode})"
         #         ),
         #         content=render(
-        #             f'{base_mode.include} "{base_file}({base_section})"\n'
-        #             + f'{update_mode.include} "{update_file}({update_section})"'
+        #             f'{base_mode.include} "{base_file}{include_suffix}({base_section})"\n'
+        #             + f'{update_mode.include} "{update_file}{include_suffix}({update_section})"'
         #         ),
         #         expected=render(self.expected(update_mode)),
         #     )
@@ -400,9 +444,9 @@ class ComponentTestTemplate(TestTemplate):
                     ),
                     file=self.make_file(self.title) / self.make_file(mode),
                     content=render(
-                        f'{base_mode.include} "{base_file}({base_section})'
+                        f'{base_mode.include} "{base_file}{include_suffix}({base_section})'
                         + mode.char
-                        + f'{update_file}({update_section})"'
+                        + f'{update_file}{include_suffix}({update_section})"'
                     ),
                     expected=render(self.expected(mode)),
                 )
@@ -419,7 +463,9 @@ class ComponentTestTemplate(TestTemplate):
                 content = self.render_section(content=content, name=section_name) + "\n"
                 yield Test(title="", file=file, content=content, expected="")
 
-    def generate_tests(self, as_keymap: bool = False) -> TestGroup:
+    def generate_tests(
+        self, compiler: XkbCompiler, as_keymap: bool = False
+    ) -> TestGroup:
         if as_keymap:
 
             def render(content: str) -> str:
@@ -429,7 +475,7 @@ class ComponentTestTemplate(TestTemplate):
             def render(content: str) -> str:
                 return self.render_section(content)
 
-        return TestGroup(self.title, tuple(self._generate_tests(render)))
+        return TestGroup(self.title, tuple(self._generate_tests(render, compiler)))
 
     def generate_data(self) -> TestGroup:
         return TestGroup(self.title, tuple(self._generate_data()))
@@ -441,15 +487,24 @@ class ComponentTestTemplate(TestTemplate):
         jinja_env: jinja2.Environment,
         c_file: Path | None,
         xkb: bool,
+        compiler: XkbCompiler,
         tests: Sequence[Self],
         debug: bool = False,
     ):
         if c_file is not None and c_file.name:
-            c_data = tuple(t.generate_tests(as_keymap=True) for t in tests)
-            TestGroup.write_c(root=root, jinja_env=jinja_env, path=c_file, tests=c_data)
+            c_data = tuple(
+                t.generate_tests(as_keymap=True, compiler=compiler) for t in tests
+            )
+            TestGroup.write_c(
+                root=root,
+                jinja_env=jinja_env,
+                path=c_file,
+                compiler=compiler,
+                tests=c_data,
+            )
         if xkb:
             xkb_data = tuple(t.generate_data() for t in tests)
-            TestGroup.write_data(root=root, tests=xkb_data)
+            TestGroup.write_data(root=root, compiler=compiler, tests=xkb_data)
 
 
 KeymapTemplate = Template(
@@ -496,8 +551,10 @@ class KeymapTestTemplate(TestTemplate):
         yield self.compat or make_empty_template(Component.compat)
         yield self.symbols or make_empty_template(Component.symbols)
 
-    def _generate_tests(self) -> Generator[Test]:
-        groups = tuple(c.generate_tests(as_keymap=False) for c in self)
+    def _generate_tests(self, compiler: XkbCompiler) -> Generator[Test]:
+        groups = tuple(
+            c.generate_tests(as_keymap=False, compiler=compiler) for c in self
+        )
         keycodes: Test
         types: Test
         compat: Test
@@ -519,8 +576,8 @@ class KeymapTestTemplate(TestTemplate):
             )
             yield Test(title=title, file=file, content=content, expected=expected)
 
-    def generate_tests(self) -> TestGroup:
-        return TestGroup(self.title, tuple(self._generate_tests()))
+    def generate_tests(self, compiler: XkbCompiler) -> TestGroup:
+        return TestGroup(self.title, tuple(self._generate_tests(compiler)))
 
     def _generate_data(self) -> Generator[Test]:
         for component in self:
@@ -536,15 +593,22 @@ class KeymapTestTemplate(TestTemplate):
         jinja_env: jinja2.Environment,
         c_file: Path | None,
         xkb: bool,
+        compiler: XkbCompiler,
         tests: Sequence[Self],
         debug: bool = False,
     ):
         if c_file is not None and c_file.name:
-            c_data = tuple(t.generate_tests() for t in tests)
-            TestGroup.write_c(root=root, jinja_env=jinja_env, path=c_file, tests=c_data)
+            c_data = tuple(t.generate_tests(compiler) for t in tests)
+            TestGroup.write_c(
+                root=root,
+                jinja_env=jinja_env,
+                path=c_file,
+                compiler=compiler,
+                tests=c_data,
+            )
         if xkb:
             xkb_data = tuple(t.generate_data() for t in tests)
-            TestGroup.write_data(root=root, tests=xkb_data)
+            TestGroup.write_data(root=root, compiler=compiler, tests=xkb_data)
 
 
 ################################################################################
@@ -2679,12 +2743,6 @@ SYMBOLS_TESTS_BOTH = SymbolsTestGroup(
     ),
 ).add_keysyms()
 
-SYMBOLS_TESTS_XKBCOMMON = SYMBOLS_TESTS_BOTH.with_implementation(
-    Implementation.xkbcommon
-)
-
-SYMBOLS_TESTS = SYMBOLS_TESTS_XKBCOMMON
-
 
 ################################################################################
 #
@@ -2756,8 +2814,6 @@ KEYCODES_TESTS_BASE = ComponentTestTemplate(
         """,
 )
 
-KEYCODES_TESTS = SYMBOLS_TESTS.get_keycodes(KEYCODES_TESTS_BASE)
-
 
 ################################################################################
 #
@@ -2768,6 +2824,13 @@ KEYCODES_TESTS = SYMBOLS_TESTS.get_keycodes(KEYCODES_TESTS_BASE)
 if __name__ == "__main__":
     # Parse commands
     parser = argparse.ArgumentParser(description="Generate merge mode tests")
+    parser.add_argument(
+        "compiler",
+        type=XkbCompiler.parse,
+        nargs="?",
+        default="xkbcommon",
+        help="XKB compiler to use",
+    )
     parser.add_argument(
         "--root",
         type=Path,
@@ -2797,6 +2860,13 @@ if __name__ == "__main__":
         return s.replace('"', '\\"')
 
     jinja_env.filters["escape_quotes"] = escape_quotes
+    compiler: XkbCompiler = args.compiler
+
+    SYMBOLS_TESTS = SYMBOLS_TESTS_BOTH.with_implementation(
+        Implementation.xkbcommon if compiler.extended_syntax else Implementation.x11
+    )
+
+    KEYCODES_TESTS = SYMBOLS_TESTS.get_keycodes(KEYCODES_TESTS_BASE)
 
     TESTS = (
         KeymapTestTemplate(
@@ -2814,5 +2884,6 @@ if __name__ == "__main__":
         jinja_env=jinja_env,
         c_file=args.c_out,
         xkb=not args.no_xkb,
+        compiler=compiler,
         tests=TESTS,
     )
