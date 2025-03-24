@@ -96,6 +96,17 @@ test_compile_output(struct xkb_context *ctx,
                     const char *keymap_str, size_t keymap_len,
                     const char *rel_path, bool update_output_files);
 
+typedef int (*test_third_party_compile_buffer_t)(const char *buf, size_t len,
+                                                 void *private,
+                                                 char **out, size_t *size_out);
+
+bool
+test_third_pary_compile_output(test_third_party_compile_buffer_t compile_buffer,
+                               void *compile_buffer_private,
+                               const char *test_title,
+                               const char *keymap_str, size_t keymap_len,
+                               const char *rel_path, bool update_output_files);
+
 struct xkb_keymap *
 test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout, const char *variant,

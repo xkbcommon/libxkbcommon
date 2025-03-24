@@ -12,11 +12,15 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "test.h"
 #include "utils.h"
+{% if not compiler.is_default %}
+#include "external_xkb_compilers.h"
+{% endif %}
 
 
 enum update_files {
@@ -27,14 +31,63 @@ enum update_files {
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/merge-modes/"
 
+{% if compiler.is_default %}
 
-/* Our keymap compiler is the xkbcommon buffer compiler */
+/* xkbcommon buffer compiler */
 static struct xkb_keymap *
 compile_buffer(struct xkb_context *context, const char *buf, size_t len,
-                     void *private)
+               void *private)
 {
     return test_compile_buffer(context, buf, len);
 }
+
+static bool
+test_compile(struct xkb_context *ctx, const char* xkb_root,
+             const char *test_title,
+             const char *keymap_str, size_t keymap_len,
+             const char *path, bool update)
+{
+    return test_compile_output(ctx, compile_buffer, NULL,
+                               test_title, keymap_str, keymap_len,
+                               path, !!update);
+}
+
+{% else %}
+
+/* Third-party compiler: {{ compiler.name }} */
+struct compile_buffer_{{ compiler.name }}_data {
+    const char* xkb_root;
+};
+
+static int
+compile_buffer_{{ compiler.name }}(const char *buf, size_t len, void *private,
+                                   char* *out, size_t *out_size)
+{
+    struct compile_buffer_{{ compiler.name }}_data *data = private;
+    {% if compiler.name == "xkbcomp" %}
+    /* Xorg xkbcomp */
+    return compile_with_xkbcomp(NULL, data->xkb_root, buf, len, out, out_size);
+    {% elif compiler.name == "kbvm" %}
+    /* kbvm */
+    return compile_with_kbvm(data->xkb_root, buf, len, out, out_size);
+    {% else %}
+    #error "Unsupported compiler: {{ compiler.name }}"
+    {% endif %}
+}
+
+static bool
+test_compile(struct xkb_context *ctx, const char* xkb_root,
+             const char *test_title,
+             const char *keymap_str, size_t keymap_len,
+             const char *path, bool update)
+{
+    struct compile_buffer_{{ compiler.name }}_data data = { .xkb_root = xkb_root };
+    return test_third_pary_compile_output(compile_buffer_{{ compiler.name}},
+                                          &data, test_title,
+                                          keymap_str, keymap_len,
+                                          path, !!update);
+}
+{% endif %}
 
 struct keymap_test_data {
     const char* title;
@@ -43,8 +96,10 @@ struct keymap_test_data {
     const char* expected;
 };
 
+{% if compiler.extended_syntax %}
 static void
-test_vmods(struct xkb_context *ctx, enum update_files update) {
+test_vmods(struct xkb_context *ctx, const char* xkb_root,
+           enum update_files update) {
 
 #define BASE_VMODS                                                             \
     "virtual_modifiers U1, U2, U3, U4, U5, U6;\n"                              \
@@ -155,17 +210,20 @@ test_vmods(struct xkb_context *ctx, enum update_files update) {
         snprintf(title, sizeof(title), "%s #%u: %s", __func__, k, test->title);
 
         char path[PATH_MAX] = { 0 };
-        snprintf(path, sizeof(path), GOLDEN_TESTS_OUTPUTS "vmods-%s.xkb",
+        snprintf(path, sizeof(path),
+                 GOLDEN_TESTS_OUTPUTS "vmods-%s{{ compiler.suffix }}.xkb",
                  test->file);
 
-        assert(test_compile_output(ctx, compile_buffer, NULL,
-                                   title, test->keymap, strlen(test->keymap),
-                                   path, !!update));
+        assert(test_compile(ctx, xkb_root, title,
+                            test->keymap, strlen(test->keymap),
+                            path, !!update));
     }
 }
+{% endif %}
 
 static void
-test_compat(struct xkb_context *ctx, enum update_files update)
+test_compat(struct xkb_context *ctx, const char* xkb_root,
+            enum update_files update)
 {
     // Github Issue #566
     const char keymap_str[] =
@@ -201,15 +259,15 @@ test_compat(struct xkb_context *ctx, enum update_files update)
         "  xkb_symbols { key <> { }; };\n"
         "};\n";
 
-    assert(test_compile_output(ctx, compile_buffer, NULL,
-                               "test_merge_mode: compat",
-                               keymap_str, ARRAY_SIZE(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "compat.xkb",
-                               !!update));
+    assert(test_compile(ctx, xkb_root, "test_merge_mode: compat",
+                        keymap_str, ARRAY_SIZE(keymap_str) - 1,
+                        GOLDEN_TESTS_OUTPUTS "compat{{ compiler.suffix }}.xkb",
+                        !!update));
 }
 
 static void
-test_merge_modes(struct xkb_context *ctx, enum update_files update) {
+test_merge_modes(struct xkb_context *ctx, const char* xkb_root,
+                 enum update_files update) {
     const struct keymap_test_data tests[] = {
     {% for group in tests %}
         /*
@@ -239,18 +297,25 @@ test_merge_modes(struct xkb_context *ctx, enum update_files update) {
         snprintf(title, sizeof(title), "%s #%u: %s", __func__, k, test->title);
 
         char path[PATH_MAX] = { 0 };
+    {% if compiler.is_default %}
         snprintf(path, sizeof(path), GOLDEN_TESTS_OUTPUTS "%s.xkb", test->file);
+    {% else %}
+        snprintf(path, sizeof(path),
+                 GOLDEN_TESTS_OUTPUTS "%02u-%s{{ compiler.suffix }}.xkb",
+                 k, test->file);
+    {% endif %}
 
         const char* const keymap = (update == UPDATE_USING_TEST_INPUT)
             ? test->expected
             : test->keymap;
-        assert(test_compile_output(ctx, compile_buffer, NULL, title,
-                                   keymap, strlen(keymap), path, !!update));
+        assert(test_compile(ctx, xkb_root, title, keymap, strlen(keymap),
+                            path, !!update));
     }
 }
 
 static void
-test_defaults(struct xkb_context *ctx, enum update_files update)
+test_defaults(struct xkb_context *ctx, const char* xkb_root,
+              enum update_files update)
 {
     const struct keymap_test_data tests[] = {
         {
@@ -601,12 +666,12 @@ test_defaults(struct xkb_context *ctx, enum update_files update)
         snprintf(title, sizeof(title), "%s #%u: %s", __func__, k, test->title);
 
         char path[PATH_MAX] = { 0 };
-        snprintf(path, sizeof(path), GOLDEN_TESTS_OUTPUTS "defaults-%s.xkb",
+        snprintf(path, sizeof(path), GOLDEN_TESTS_OUTPUTS "defaults-%s{{ compiler.suffix }}.xkb",
                  test->file);
 
-        assert(test_compile_output(ctx, compile_buffer, NULL,
-                                   title, test->keymap, strlen(test->keymap),
-                                   path, !!update));
+        assert(test_compile(ctx, xkb_root, title,
+                            test->keymap, strlen(test->keymap),
+                            path, !!update));
     }
 }
 
@@ -633,11 +698,17 @@ main(int argc, char *argv[])
     struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
-    test_vmods(ctx, update_output_files);
-    test_compat(ctx, update_output_files);
-    test_merge_modes(ctx, update_output_files);
-    test_defaults(ctx, update_output_files);
+    char* xkb_root = test_get_path("");
+    assert(xkb_root);
 
+    {% if compiler.extended_syntax %}
+    test_vmods(ctx, xkb_root, update_output_files);
+    {% endif %}
+    test_compat(ctx, xkb_root, update_output_files);
+    test_merge_modes(ctx, xkb_root, update_output_files);
+    test_defaults(ctx, xkb_root, update_output_files);
+
+    free(xkb_root);
     xkb_context_unref(ctx);
 
     return EXIT_SUCCESS;
