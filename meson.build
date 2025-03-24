@@ -807,31 +807,48 @@ python = pymod.find_installation('python3', modules: ['jinja2'], required: false
 has_merge_modes_tests = python.found() and python.language_version().version_compare('>=3.11')
 if has_merge_modes_tests
     script = find_program('scripts/update-merge-modes-tests.py')
-    filename = 'merge-modes.c'
-    merge_modes_c = custom_target(
-        filename,
-        build_by_default: true,
-        command: [
-            script,
-            '--root', meson.project_source_root(),
-            '--c-out', '@OUTPUT@',
-            '--no-xkb',
-        ],
-        depend_files: ['test/merge_modes.c.jinja'],
-        output: filename,
-        capture: false,
-        install: false
-    )
-    test(
-        'merge-modes',
-        executable(
-            'test-merge-modes',
-            merge_modes_c,
-            dependencies: test_dep,
-            include_directories: ['test'],
-        ),
-        env: test_env,
-    )
+    merge_modes_tests = [meson.project_name()]
+    # NOTE: The following tests deal with third-party XKB compilers and are
+    #       reserved for debugging purposes. Uncomment to enable them.
+    # merge_modes_tests += 'xkbcomp' # Xorg XKB compiler
+    # merge_modes_tests += 'kbvm'    # Jay compositor XKB compiler
+    foreach xkb_compiler: merge_modes_tests
+        if xkb_compiler == meson.project_name()
+            suffix = ''
+            extra_args = []
+            extra_source_files = []
+        else
+            suffix = '-' + xkb_compiler
+            extra_args = [xkb_compiler]
+            extra_source_files = ['test/external_xkb_compilers.h']
+        endif
+        filename = f'merge-modes@suffix@.c'
+        merge_modes_c = custom_target(
+            filename,
+            build_by_default: true,
+            command: [
+                script,
+                '--root', meson.project_source_root(),
+                '--c-out', '@OUTPUT@',
+                '--no-xkb',
+            ] + extra_args,
+            depend_files: ['test/merge_modes.c.jinja'],
+            output: filename,
+            capture: false,
+            install: false
+        )
+        test(
+            f'merge-modes@suffix@',
+            executable(
+                f'test-merge-modes@suffix@',
+                merge_modes_c,
+                extra_source_files,
+                dependencies: test_dep,
+                include_directories: ['test'],
+            ),
+            env: test_env,
+        )
+    endforeach
 endif
 
 test(
