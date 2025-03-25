@@ -54,7 +54,8 @@ const char *
 SIMatchText(enum xkb_match_operation type);
 
 const char *
-LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask);
+LedStateMaskText(struct xkb_context *ctx, const LookupEntry *lookup,
+                 enum xkb_state_component mask);
 
 const char *
 ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask);
