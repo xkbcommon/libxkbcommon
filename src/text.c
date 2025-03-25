@@ -282,7 +282,8 @@ ModMaskText(struct xkb_context *ctx, enum mod_type type,
 }
 
 const char *
-LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask)
+LedStateMaskText(struct xkb_context *ctx, const LookupEntry *lookup,
+                 enum xkb_state_component mask)
 {
     char buf[1024];
     size_t pos = 0;
@@ -298,9 +299,10 @@ LedStateMaskText(struct xkb_context *ctx, enum xkb_state_component mask)
 
         mask &= ~(1u << i);
 
+        const char* const maskText = LookupValue(lookup, 1u << i);
+        assert(maskText != NULL);
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
-                       pos == 0 ? "" : "+",
-                       LookupValue(modComponentMaskNames, 1u << i));
+                       pos == 0 ? "" : "+", maskText);
         if (ret <= 0 || pos + ret >= sizeof(buf))
             break;
         else
@@ -331,9 +333,10 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
 
         mask &= ~(1u << i);
 
+        const char* const maskText = LookupValue(ctrlMaskNames, 1u << i);
+        assert(maskText != NULL);
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
-                       pos == 0 ? "" : "+",
-                       LookupValue(ctrlMaskNames, 1u << i));
+                       pos == 0 ? "" : "+", maskText);
         if (ret <= 0 || pos + ret >= sizeof(buf))
             break;
         else
