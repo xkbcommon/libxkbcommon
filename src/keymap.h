@@ -497,6 +497,9 @@ bool
 XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b);
 
 bool
+action_equal(const union xkb_action *a, const union xkb_action *b);
+
+bool
 XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b);
 
 xkb_layout_index_t

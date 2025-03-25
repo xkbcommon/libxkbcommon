@@ -169,7 +169,7 @@ typedef struct {
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo default_key;
-    ActionsInfo *actions;
+    ActionsInfo default_actions;
     darray(xkb_atom_t) group_names;
     darray(ModMapEntry) modmaps;
     struct xkb_mod_set mods;
@@ -181,15 +181,14 @@ typedef struct {
 
 static void
 InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
-                unsigned int include_depth,
-                ActionsInfo *actions, const struct xkb_mod_set *mods)
+                unsigned int include_depth, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = keymap->ctx;
     info->include_depth = include_depth;
     info->keymap = keymap;
     InitKeyInfo(keymap->ctx, &info->default_key);
-    info->actions = actions;
+    InitActionsInfo(&info->default_actions);
     InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
@@ -666,7 +665,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
     }
 
     InitSymbolsInfo(&included, info->keymap, info->include_depth + 1,
-                    info->actions, &info->mods);
+                    &info->mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -681,7 +680,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         }
 
         InitSymbolsInfo(&next_incl, info->keymap, info->include_depth + 1,
-                        info->actions, &included.mods);
+                        &included.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -918,7 +917,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
+            if (!HandleActionDef(info->ctx, &info->default_actions, &info->mods,
+                                 act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
@@ -1257,8 +1257,9 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else {
-        ret = SetActionField(info->ctx, info->actions, &info->mods,
-                             elem, field, arrayNdx, stmt->value);
+        ret = SetDefaultActionField(info->ctx, &info->default_actions,
+                                    &info->mods, elem, field, arrayNdx,
+                                    stmt->value, stmt->merge);
     }
 
     return ret;
@@ -1837,13 +1838,8 @@ bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 {
     SymbolsInfo info;
-    ActionsInfo *actions;
 
-    actions = NewActionsInfo();
-    if (!actions)
-        return false;
-
-    InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
+    InitSymbolsInfo(&info, keymap, 0, &keymap->mods);
 
     if (file !=NULL)
         HandleSymbolsFile(&info, file);
@@ -1855,11 +1851,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
         goto err_info;
 
     ClearSymbolsInfo(&info);
-    FreeActionsInfo(actions);
     return true;
 
 err_info:
-    FreeActionsInfo(actions);
     ClearSymbolsInfo(&info);
     return false;
 }
