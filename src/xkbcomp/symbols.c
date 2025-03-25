@@ -1131,7 +1131,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
-                "Unknown field %s in a symbol interpretation; "
+                "Unknown field \"%s\" in a symbol interpretation; "
                 "Definition ignored\n",
                 field);
         return false;

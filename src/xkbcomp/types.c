@@ -565,7 +565,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
         ok = SetLevelName(info, type, arrayNdx, value);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
-                "Unknown field %s in key type %s; Definition ignored\n",
+                "Unknown field \"%s\" in key type \"%s\"; Definition ignored\n",
                 field, TypeTxt(info, type));
     }
 
