@@ -1141,7 +1141,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 }
 
 static bool
-SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
+SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
+             enum merge_mode merge)
 {
     if (!arrayNdx) {
         log_vrb(info->ctx, 1, XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX,
@@ -1187,6 +1188,20 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         /* Avoid clang-tidy false positive */
         assert(darray_size(info->group_names) < group_to_use + 1);
         darray_resize0(info->group_names, group_to_use + 1);
+    } else {
+        const xkb_atom_t old_name = darray_item(info->group_names, group_to_use);
+        if (old_name != XKB_ATOM_NONE && old_name != name) {
+            const bool replace = (merge != MERGE_AUGMENT);
+            const xkb_atom_t use    = (replace ? name : old_name);
+            const xkb_atom_t ignore = (replace ? old_name : name);
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Multiple definitions of group %"PRIu32" name "
+                     "in map '%s'; Using '%s', ignoring '%s'\n",
+                     group_to_use, info->name,
+                     xkb_atom_text(info->ctx, use),
+                     xkb_atom_text(info->ctx, ignore));
+            name = use;
+        }
     }
     darray_item(info->group_names, group_to_use) = name;
 
@@ -1204,12 +1219,18 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         return false;
 
     if (elem && istreq(elem, "key")) {
-        ret = SetSymbolsField(info, &info->default_key, field, arrayNdx,
-                              stmt->value);
+        KeyInfo temp = {0};
+        InitKeyInfo(info->ctx, &temp);
+        /* Do not replace the whole key, only the current field */
+        temp.merge = (temp.merge == MERGE_REPLACE)
+            ? MERGE_OVERRIDE
+            : stmt->merge;
+        ret = SetSymbolsField(info, &temp, field, arrayNdx, stmt->value);
+        MergeKeys(info, &info->default_key, &temp, true);
     }
     else if (!elem && (istreq(field, "name") ||
                        istreq(field, "groupname"))) {
-        ret = SetGroupName(info, arrayNdx, stmt->value);
+        ret = SetGroupName(info, arrayNdx, stmt->value, stmt->merge);
     }
     else if (!elem && (istreq(field, "groupswrap") ||
                        istreq(field, "wrapgroups"))) {
