@@ -7,6 +7,7 @@
 
 #include "evdev-scancodes.h"
 #include "test.h"
+#include "utils.h"
 
 static int
 test_rmlvo_va(struct xkb_context *context, const char *rules,
@@ -166,6 +167,20 @@ main(int argc, char *argv[])
     /* Ensure a keymap with an empty xkb_keycodes compiles fine. */
     assert(test_rmlvo_env(ctx, "base", "empty", "empty", "", "",
                           KEY_A,          BOTH, XKB_KEY_NoSymbol,         FINISH));
+
+    /* Check replace merge mode: it should replace the whole <RALT> key */
+    const char* replace_options[] = {
+        "replace:single,grp:menu_toggle",
+        "replace:first,grp:menu_toggle",
+        "replace:later,grp:menu_toggle",
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(replace_options); k++) {
+        const char* const options = replace_options[k];
+        assert(test_rmlvo(ctx, "merge-mode-replace", "", "us,de", "", options,
+                          KEY_RIGHTALT,        BOTH, XKB_KEY_Alt_R,           NEXT,
+                          KEY_COMPOSE,         BOTH, XKB_KEY_ISO_Next_Group,  NEXT,
+                          KEY_RIGHTALT,        BOTH, XKB_KEY_Alt_R,           FINISH));
+    }
 
     /* Has an illegal escape sequence, but shouldn't fail. */
     assert(test_rmlvo_env(ctx, "evdev", "", "cz", "bksl", "",

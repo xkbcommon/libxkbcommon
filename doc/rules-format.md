@@ -280,9 +280,9 @@ or %%H seems to do the job though.
         `%+v`, `%+v[1]`, `%+v[2]`, …
     </dt>
     <dd>
-        As above, but prefixed with ‘+’. Similarly, ‘|’, ‘-’, ‘_’ may be
+        As above, but prefixed with ‘+’. Similarly, ‘|’, ‘^’, ‘-’, ‘_’ may be
         used instead of ‘+’. See the [merge mode] documentation for the
-        special meaning of ‘+’ and ‘|’.
+        special meaning of ‘+’, ‘|’ and ‘^’.
     </dd>
     <dt>
         `%(m)`,
@@ -395,7 +395,8 @@ inside lists.
     The *KcCGST* value of the rule is used to update the [KcCGST]
     configuration, using the following instructions. Note that `foo`
     and `bar` are placeholders; ‘+’ specifies the *override* [merge mode]
-    and can be replaced by ‘|’ to specify the *augment* merge mode instead.
+    and can be replaced by ‘|’ or ‘^’ to specify respectively the *augment*
+    or *replace* merge mode instead.
 
     | Rule value        | Old KcCGST value | New KcCGST value      |
     | ----------------- | ---------------- | --------------------- |

@@ -117,6 +117,10 @@ skip_more_whitespace_and_comments:
         return TOK_INCLUDE;
 
     /* Identifier. */
+    /* Ensure that we can parse KcCGST values with merge modes */
+    assert(is_ident(MERGE_OVERRIDE_PREFIX));
+    assert(is_ident(MERGE_AUGMENT_PREFIX));
+    assert(is_ident(MERGE_REPLACE_PREFIX));
     if (is_ident(scanner_peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
@@ -1148,6 +1152,7 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
             /* New item */
             case MERGE_OVERRIDE_PREFIX:
             case MERGE_AUGMENT_PREFIX:
+            case MERGE_REPLACE_PREFIX:
                 darray_appends_nullterminate(expanded, &str[i++], 1);
                 last_item_idx = darray_size(expanded) - 1;
                 has_separator = true;

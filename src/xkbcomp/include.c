@@ -34,9 +34,10 @@
  * xkb_symbols "basic" { ... }) , as opposed to the default map of the file.
  *
  * @param nextop_rtrn Set to the next operation in the complete statement,
- * which is '\0' if it's the last file or '+' or '|' if there are more.
- * Separating the files with '+' sets the merge mode to MERGE_MODE_OVERRIDE,
- * while '|' sets the merge mode to MERGE_MODE_AUGMENT.
+ * which is '\0' if it's the last file or '+' or '|' or '^' if there are more.
+ * Separating the files with '+' sets the merge mode to `MERGE_MODE_OVERRIDE`,
+ * while '|' sets the merge mode to `MERGE_MODE_AUGMENT` and '^' sets the merge
+ * mode to `MERGE_REPLACE`.
  *
  * @param extra_data Set to the string after ':', if any. Currently the
  * extra data is only used for setting an explicit group index for a symbols
@@ -71,7 +72,7 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
      * Find the position in the string where the next file is included,
      * if there is more than one left in the statement.
      */
-    next = strpbrk(str, "|+");
+    next = strpbrk(str, MERGE_MODE_PREFIXES);
     if (next) {
         /* Got more files, this function will be called again. */
         *nextop_rtrn = *next;

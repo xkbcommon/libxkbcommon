@@ -44,6 +44,9 @@ unused in the standard dataset.
 - xkbcommon has stronger type checks, so floating-point numbers cannot
   be used where an integer is expected.
 - exponent syntax for floating-point numbers is not supported.
+- support the merge mode *replace* in include statements via the
+  prefix `^`, in addition to the standard *merge* `|` and *override*
+  `+` modes.
 
 On the other hand, some features and extensions were added.
 
@@ -61,6 +64,8 @@ On the other hand, some features and extensions were added.
 ### Additions
 
 - `! include` statement.
+- Support the merge mode *replace* via the prefix `^`, in addition to
+  the standard *merge* `|` and *override* `+` modes.
 - Additional wild cards:
   - `<none>` matches *empty* value;
   - `<some>` matches *non-empty* value in *every* context.

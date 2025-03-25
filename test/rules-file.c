@@ -232,6 +232,19 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test7));
 
+    struct test_data test_merge_mode_replace = {
+        .rules = "merge-mode-replace",
+
+        .model = "my_model", .layout = "us,de", .variant = "",
+        .options = "replace:first",
+
+        .keycodes = "evdev", .types = "complete",
+        .compat = "complete",
+        .symbols = "pc+us+de:2^level3(ralt_alt)|empty",
+        .explicit_layouts = 2,
+    };
+    assert(test_rules(ctx, &test_merge_mode_replace));
+
     /* Wild card does not match empty entries for layouts and variants */
 #define ENTRY(_model, _layout, _variant, _options, _symbols, _layouts, _fail) \
     { .rules = "wildcard", .model = (_model),                                 \
