@@ -11,9 +11,13 @@
 
 #define MERGE_OVERRIDE_PREFIX '+'
 #define MERGE_AUGMENT_PREFIX  '|'
+#define MERGE_REPLACE_PREFIX  '^'
 #define MERGE_DEFAULT_PREFIX  MERGE_OVERRIDE_PREFIX
 #define is_merge_mode_prefix(ch) \
-    ((ch) == MERGE_OVERRIDE_PREFIX || (ch) == MERGE_AUGMENT_PREFIX)
+    ((ch) == MERGE_OVERRIDE_PREFIX || (ch) == MERGE_AUGMENT_PREFIX || \
+     (ch) == MERGE_REPLACE_PREFIX)
+static const char MERGE_MODE_PREFIXES[] =
+    { MERGE_OVERRIDE_PREFIX, MERGE_AUGMENT_PREFIX, MERGE_REPLACE_PREFIX, 0 };
 
 bool
 ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,

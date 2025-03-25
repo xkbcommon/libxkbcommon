@@ -449,10 +449,16 @@ IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge)
         incl->modifier = extra_data;
         incl->next_incl = NULL;
 
-        if (nextop == MERGE_AUGMENT_PREFIX)
+        switch (nextop) {
+        case MERGE_AUGMENT_PREFIX:
             merge = MERGE_AUGMENT;
-        else
+            break;
+        case MERGE_REPLACE_PREFIX:
+            merge = MERGE_REPLACE;
+            break;
+        default:
             merge = MERGE_OVERRIDE;
+        }
     }
 
     if (first)
