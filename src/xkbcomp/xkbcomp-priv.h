@@ -81,7 +81,7 @@ ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
                const char *name)
 {
     log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-            "Unknown %s field %s in %s; "
+            "Unknown %s field \"%s\" in %s; "
             "Ignoring assignment to unknown field in %s\n",
             type, field, name, name);
     return false;

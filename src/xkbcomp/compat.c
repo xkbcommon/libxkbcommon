@@ -593,7 +593,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
     }
     else {
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Unknown field %s in map for %s indicator; "
+                "Unknown field \"%s\" in map for %s indicator; "
                 "Definition ignored\n",
                 field, xkb_atom_text(info->ctx, ledi->led.name));
         ok = false;
