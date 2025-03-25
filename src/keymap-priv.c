@@ -137,7 +137,7 @@ XkbLevelsSameSyms(const struct xkb_level *a, const struct xkb_level *b)
     return memcmp(a->s.syms, b->s.syms, sizeof(*a->s.syms) * a->num_syms) == 0;
 }
 
-static bool
+bool
 action_equal(const union xkb_action *a, const union xkb_action *b)
 {
     if (a->type != b->type)
