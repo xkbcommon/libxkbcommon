@@ -30,7 +30,7 @@ test_message_get(void)
     assert(entry != NULL);
     entry = xkb_message_get(XKB_WARNING_CANNOT_INFER_KEY_TYPE);
     assert(entry != NULL);
-    entry = xkb_message_get(XKB_ERROR_INVALID_SYNTAX);
+    entry = xkb_message_get(XKB_ERROR_INVALID_XKB_SYNTAX);
     assert(entry != NULL);
     entry = xkb_message_get(XKB_WARNING_CONFLICTING_KEY_FIELDS);
     assert(entry != NULL);

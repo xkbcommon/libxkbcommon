@@ -16,6 +16,7 @@
 
 #include <errno.h>
 
+#include "messages-codes.h"
 #include "utils.h"
 #include "table.h"
 #include "scanner-utils.h"
@@ -106,12 +107,12 @@ skip_more_whitespace_and_comments:
         while (scanner_peek(s) != '>' && !scanner_eol(s) && !scanner_eof(s))
             scanner_buf_append(s, scanner_next(s));
         if (!scanner_chr(s, '>')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "unterminated keysym literal");
             return TOK_ERROR;
         }
         if (!scanner_buf_append(s, '\0')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "keysym literal is too long");
             return TOK_ERROR;
         }
@@ -173,17 +174,17 @@ skip_more_whitespace_and_comments:
             }
         }
         if (!scanner_chr(s, '\"')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "unterminated string literal");
             return TOK_ERROR;
         }
         if (!scanner_buf_append(s, '\0')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "string literal is too long");
             return TOK_ERROR;
         }
         if (!is_valid_utf8(s->buf, s->buf_pos - 1)) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_FILE_ENCODING,
                         "string literal is not a valid UTF-8 string");
             return TOK_ERROR;
         }
@@ -198,7 +199,7 @@ skip_more_whitespace_and_comments:
         while (is_alnum(scanner_peek(s)) || scanner_peek(s) == '_')
             scanner_buf_append(s, scanner_next(s));
         if (!scanner_buf_append(s, '\0')) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "identifier is too long");
             return TOK_ERROR;
         }
@@ -211,7 +212,7 @@ skip_more_whitespace_and_comments:
         return TOK_IDENT;
     }
 
-    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+    scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                 "unrecognized token");
     /* Discard rest of line. */
     scanner_skip_to_eol(s);
@@ -230,7 +231,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
     s->buf_pos = 0;
 
     if (!scanner_chr(s, '\"')) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                     "include statement must be followed by a path");
         return TOK_ERROR;
     }
@@ -278,7 +279,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
                 }
             }
             else {
-                scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                             "unknown %% format (%c) in include statement", scanner_peek(s));
                 return TOK_ERROR;
             }
@@ -287,7 +288,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
         }
     }
     if (!scanner_chr(s, '\"')) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                     "unterminated include statement");
         return TOK_ERROR;
     }
@@ -537,7 +538,7 @@ parse(struct xkb_compose_table *table, struct scanner *s,
        The first character relevant to the grammar must be ASCII:
        whitespace, include, modifier list, keysym, comment */
     if (!scanner_check_supported_char_encoding(s)) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_FILE_ENCODING,
                     "This could be a file encoding issue. "
                     "Supported file encodings are ASCII and UTF-8.");
         goto fail;
@@ -625,7 +626,7 @@ lhs_keysym_tok:
         check_deprecated_keysyms(scanner_warn, s, s->ctx,
                                  keysym, val.string.str, val.string.str, "%s", "");
         if (production.len + 1 > MAX_LHS_LEN) {
-            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_warn(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                          "too many keysyms (%d) on left-hand side; skipping line",
                          MAX_LHS_LEN + 1);
             goto skip;
@@ -657,7 +658,7 @@ lhs_mod_list_tok: {
 
         mod = resolve_modifier(val.string.str);
         if (mod == XKB_MOD_INVALID) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                         "unrecognized modifier \"%s\"",
                         val.string.str);
             goto error;
@@ -709,7 +710,7 @@ rhs:
         check_deprecated_keysyms(scanner_warn, s, s->ctx,
                                  keysym, val.string.str, val.string.str, "%s", "");
         if (production.has_keysym) {
-            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_warn(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                          "right-hand side can have at most one keysym; "
                          "skipping line");
             goto skip;
@@ -719,7 +720,7 @@ rhs:
         /* fallthrough */
     case TOK_END_OF_LINE:
         if (!production.has_string && !production.has_keysym) {
-            scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_warn(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                          "right-hand side must have at least one of string "
                          "or keysym; skipping line");
             goto skip;
@@ -732,7 +733,7 @@ rhs:
 
 unexpected:
     if (tok != TOK_ERROR)
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                     "unexpected token");
 error:
     num_errors++;

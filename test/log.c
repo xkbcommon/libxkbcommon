@@ -231,8 +231,8 @@ test_compose(void)
         {
             .input = "\xff\n",
             .log =
-                "error: (input string):1:1: unexpected non-ASCII character.\n"
-                "error: (input string):1:1: This could be a file encoding issue. Supported file encodings are ASCII and UTF-8.\n"
+                "error: [XKB-542] (input string):1:1: unexpected non-ASCII character.\n"
+                "error: [XKB-542] (input string):1:1: This could be a file encoding issue. Supported file encodings are ASCII and UTF-8.\n"
                 "error: (input string):1:1: failed to parse file\n",
             .error = true
         },
@@ -256,11 +256,11 @@ test_compose(void)
             .log =
                 "warning: [XKB-645] (input string):3:7: unknown escape sequence (\\j) in string literal\n"
                 "warning: [XKB-193] (input string):3:7: illegal hexadecimal escape sequence (\\x) in string literal\n"
-                "error: (input string):3:7: unterminated string literal\n"
+                "error: [XKB-685] (input string):3:7: unterminated string literal\n"
                 "warning: [XKB-193] (input string):4:10: illegal octal escape sequence (\\400) in string literal\n"
                 "error: (input string):4:17: unrecognized keysym \"invalidKeysym\" on right-hand side\n"
                 "warning: [XKB-301] (input string):5:41: deprecated keysym \"leftshoe\".\n"
-                "warning: (input string):5:41: too many keysyms (11) on left-hand side; skipping line\n",
+                "warning: [XKB-685] (input string):5:41: too many keysyms (11) on left-hand side; skipping line\n",
             .error = false
         },
         {
@@ -272,9 +272,9 @@ test_compose(void)
                 "<d> : a b\n",
             .log =
                 "warning: (input string):1:1: expected at least one keysym on left-hand side; skipping line\n"
-                "warning: (input string):2:5: right-hand side must have at least one of string or keysym; skipping line\n"
+                "warning: [XKB-685] (input string):2:5: right-hand side must have at least one of string or keysym; skipping line\n"
                 "warning: (input string):4:11: right-hand side can have at most one string; skipping line\n"
-                "error: (input string):5:9: unrecognized modifier \"b\"\n",
+                "error: [XKB-685] (input string):5:9: unrecognized modifier \"b\"\n",
             .error = false
         },
         {

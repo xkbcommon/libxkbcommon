@@ -307,6 +307,11 @@
   added: ALWAYS
   type: warning
   description: "Conflicting definitions of a key name or alias"
+- id: "invalid-file-encoding"
+  code: 542
+  added: 1.7.0
+  type: error
+  description: "Invalid file encoding"
 - id: "allocation-error"
   code: 550
   added: ALWAYS
@@ -351,6 +356,11 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "invalid-compose-syntax"
+  code: 685
+  added: ALWAYS
+  type: error
+  description: "The Compose file syntax is invalid and the entry cannot be parsed"
 - id: "incompatible-actions-and-keysyms-count"
   code: 693
   added: 1.8.0
@@ -368,11 +378,13 @@
   added: ALWAYS
   type: warning
   description: "A legacy X11 symbol field is not supported"
-- id: "invalid-syntax"
+- id: "invalid-xkb-syntax"
   code: 769
   added: ALWAYS
   type: error
-  description: "The syntax is invalid and the file cannot be parsed"
+  description: "The XKB syntax is invalid and the file cannot be parsed"
+  details: |
+    See @ref keymap-text-format-v1 "" for further details.
 - id: "undefined-keycode"
   code: 770
   added: ALWAYS
@@ -440,6 +452,13 @@
   added: ALWAYS
   type: warning
   description: "Warn if using a symbol not defined in the keymap"
+- id: "invalid-rules-syntax"
+  code: 967
+  added: ALWAYS
+  type: error
+  description: "The rules syntax is invalid and the file cannot be parsed"
+  details: |
+    See @ref rule-file-format "" for further information.
 - id: "undeclared-modifiers-in-key-type"
   code: 971
   added: ALWAYS
