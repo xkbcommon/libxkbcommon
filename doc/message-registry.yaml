@@ -45,6 +45,20 @@
   added: ALWAYS
   type: error
   description: "Expected an array entry, but the index is missing"
+- id: "invalid-numeric-keysym"
+  code: 82
+  added: ALWAYS
+  type: error
+  description: "Invalid numeric keysym"
+  details: |
+    Keysyms are 32-bit integers with the 3 most significant bits always set to
+    zero. Thus valid keysyms are in the range `0 .. 0x1fffffff` = @ref XKB_KEYSYM_MAX.
+
+    See: Appendix A [“KEYSYM Encoding”][encoding] of the X Window System Protocol.
+
+    [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
+
+    @see keysyms
 - id: "illegal-keycode-alias"
   code: 101
   added: ALWAYS

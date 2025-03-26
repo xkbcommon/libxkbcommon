@@ -51,6 +51,8 @@ enum xkb_message_code {
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
     /** Expected an array entry, but the index is missing */
     XKB_ERROR_EXPECTED_ARRAY_ENTRY = 77,
+    /** Invalid numeric keysym */
+    XKB_ERROR_INVALID_NUMERIC_KEYSYM = 82,
     /** Illegal keycode alias with the name of a real key */
     XKB_WARNING_ILLEGAL_KEYCODE_ALIAS = 101,
     /** Warn on unrecognized keysyms */
