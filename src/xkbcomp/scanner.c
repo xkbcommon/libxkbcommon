@@ -196,10 +196,10 @@ XkbParseString(struct xkb_context *ctx, const char *string, size_t len,
        The first character relevant to the grammar must be ASCII:
        whitespace, section, comment */
     if (!scanner_check_supported_char_encoding(&scanner)) {
-        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(&scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "This could be a file encoding issue. "
                     "Supported encodings must be backward compatible with ASCII.");
-        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(&scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "E.g. ISO/CEI 8859 and UTF-8 are supported "
                     "but UTF-16, UTF-32 and CP1026 are not.");
         return NULL;

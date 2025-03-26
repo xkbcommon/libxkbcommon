@@ -68,7 +68,7 @@ skip_more_whitespace_and_comments:
         /* Optional \r. */
         scanner_chr(s, '\r');
         if (!scanner_eol(s)) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "illegal new line escape; must appear at end of line");
             return TOK_ERROR;
         }
@@ -96,7 +96,7 @@ skip_more_whitespace_and_comments:
             val->string.len++;
         }
         if (val->string.len == 0) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "unexpected character after \'$\'; expected name");
             return TOK_ERROR;
         }
@@ -118,7 +118,7 @@ skip_more_whitespace_and_comments:
         return TOK_IDENTIFIER;
     }
 
-    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+    scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                 "unrecognized token");
     return TOK_ERROR;
 }
@@ -574,8 +574,8 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
 
     /* Not found. */
     if (mlvo >= _MLVO_NUM_ENTRIES) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                    "invalid mapping: %.*s is not a valid value here; "
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                    "invalid mapping: \"%.*s\" is not a valid value here; "
                     "ignoring rule set",
                     ident.len, ident.start);
         m->mapping.active = false;
@@ -583,8 +583,8 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
     }
 
     if (is_mlvo_mask_defined(m, mlvo)) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                    "invalid mapping: %.*s appears twice on the same line; "
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                    "invalid mapping: \"%.*s\" appears twice on the same line; "
                     "ignoring rule set",
                     mlvo_sval.len, mlvo_sval.start);
         m->mapping.active = false;
@@ -598,7 +598,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
                                                     ident.len - mlvo_sval.len,
                                                     &idx);
         if ((int) (ident.len - mlvo_sval.len) != consumed) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "invalid mapping: \"%.*s\" may only be followed by a "
                         "valid group index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
@@ -613,7 +613,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
             m->mapping.variant_idx = idx;
         }
         else {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "invalid mapping: \"%.*s\" cannot be followed by a group "
                         "index; ignoring rule set",
                         mlvo_sval.len, mlvo_sval.start);
@@ -627,7 +627,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
     if (((mlvo == MLVO_LAYOUT && is_mlvo_mask_defined(m, MLVO_VARIANT)) ||
          (mlvo == MLVO_VARIANT && is_mlvo_mask_defined(m, MLVO_LAYOUT))) &&
         m->mapping.layout_idx != m->mapping.variant_idx) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: \"layout\" index must be the same as the "
                     "\"variant\" index");
         m->mapping.active = false;
@@ -693,8 +693,8 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
 
     /* Not found. */
     if (kccgst >= _KCCGST_NUM_ENTRIES) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                    "invalid mapping: %.*s is not a valid value here; "
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                    "invalid mapping: \"%.*s\" is not a valid value here; "
                     "ignoring rule set",
                     ident.len, ident.start);
         m->mapping.active = false;
@@ -702,8 +702,8 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
     }
 
     if (m->mapping.defined_kccgst_mask & (1u << kccgst)) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                    "invalid mapping: %.*s appears twice on the same line; "
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                    "invalid mapping: \"%.*s\" appears twice on the same line; "
                     "ignoring rule set",
                     kccgst_sval.len, kccgst_sval.start);
         m->mapping.active = false;
@@ -719,14 +719,14 @@ static bool
 matcher_mapping_verify(struct matcher *m, struct scanner *s)
 {
     if (m->mapping.num_mlvo == 0) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: must have at least one value on the left "
                     "hand side; ignoring rule set");
         goto skip;
     }
 
     if (m->mapping.num_kccgst == 0) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: must have at least one value on the right "
                     "hand side; ignoring rule set");
         goto skip;
@@ -801,7 +801,7 @@ matcher_rule_set_mlvo_common(struct matcher *m, struct scanner *s,
                              enum mlvo_match_type match_type)
 {
     if (m->rule.num_mlvo_values + 1 > m->mapping.num_mlvo) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid rule: has more values than the mapping line; "
                     "ignoring rule");
         m->rule.skip = true;
@@ -838,7 +838,7 @@ matcher_rule_set_kccgst(struct matcher *m, struct scanner *s,
                         struct sval ident)
 {
     if (m->rule.num_kccgst_values + 1 > m->mapping.num_kccgst) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid rule: has more values than the mapping line; "
                     "ignoring rule");
         m->rule.skip = true;
@@ -958,7 +958,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
     bool expanded_index = false;
     if (*i < value.len && str[*i] == '[') {
         if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
-            scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "invalid index in %%-expansion; "
                         "may only index layout or variant");
             goto error;
@@ -1028,7 +1028,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
     return true;
 
 error:
-    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+    scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                 "invalid %%-expansion in value; not used");
     return false;
 }
@@ -1162,7 +1162,7 @@ matcher_rule_verify(struct matcher *m, struct scanner *s)
 {
     if (m->rule.num_mlvo_values != m->mapping.num_mlvo ||
         m->rule.num_kccgst_values != m->mapping.num_kccgst) {
-        scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid rule: must have same number of values "
                     "as mapping line; ignoring rule");
         m->rule.skip = true;
@@ -1446,7 +1446,7 @@ finish:
     return true;
 
 state_error:
-    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+    scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                 "unexpected token");
 error:
     return false;
@@ -1477,12 +1477,12 @@ read_rules_file(struct xkb_context *ctx,
        The first character relevant to the grammar must be ASCII:
        whitespace, !, / (for comment) */
     if (!scanner_check_supported_char_encoding(&scanner)) {
-        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
-            "This could be a file encoding issue. "
-            "Supported encodings must be backward compatible with ASCII.");
-        scanner_err(&scanner, XKB_LOG_MESSAGE_NO_ID,
-            "E.g. ISO/CEI 8859 and UTF-8 are supported "
-            "but UTF-16, UTF-32 and CP1026 are not.");
+        scanner_err(&scanner, XKB_ERROR_INVALID_FILE_ENCODING,
+                    "This could be a file encoding issue. "
+                    "Supported encodings must be backward compatible with ASCII.");
+        scanner_err(&scanner, XKB_ERROR_INVALID_FILE_ENCODING,
+                    "E.g. ISO/CEI 8859 and UTF-8 are supported "
+                    "but UTF-16, UTF-32 and CP1026 are not.");
         unmap_file(string, size);
         return false;
     }

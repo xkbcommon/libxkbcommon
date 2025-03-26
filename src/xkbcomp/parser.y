@@ -41,7 +41,7 @@ struct parser_param {
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)
 {
-    parser_err(param, XKB_ERROR_INVALID_SYNTAX, "%s", msg);
+    parser_err(param, XKB_ERROR_INVALID_XKB_SYNTAX, "%s", msg);
 }
 
 static bool

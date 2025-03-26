@@ -227,7 +227,7 @@ scanner_check_supported_char_encoding(struct scanner *scanner)
 
     /* Early detection of wrong file encoding, e.g. UTF-16 or UTF-32 */
     if (scanner->s[0] == '\0' || scanner->s[1] == '\0') {
-        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "unexpected NULL character.");
         return false;
     }
@@ -235,7 +235,7 @@ scanner_check_supported_char_encoding(struct scanner *scanner)
        See the note before the use of this function, that explains the relevant
        parts of the grammars of rules, keymap components and Compose. */
     if (!is_ascii(scanner->s[0])) {
-        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "unexpected non-ASCII character.");
         return false;
     }

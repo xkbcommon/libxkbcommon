@@ -117,6 +117,8 @@ enum xkb_message_code {
     XKB_WARNING_EXTRA_SYMBOLS_IGNORED = 516,
     /** Conflicting definitions of a key name or alias */
     XKB_WARNING_CONFLICTING_KEY_NAME = 523,
+    /** Invalid file encoding */
+    XKB_ERROR_INVALID_FILE_ENCODING = 542,
     /** Cannot allocate memory */
     XKB_ERROR_ALLOCATION_ERROR = 550,
     /** Warn when a field has not the expected type */
@@ -129,14 +131,16 @@ enum xkb_message_code {
     XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE = 645,
     /** The target file of an include statement could not be processed */
     XKB_ERROR_INVALID_INCLUDED_FILE = 661,
+    /** The Compose file syntax is invalid and the entry cannot be parsed */
+    XKB_ERROR_INVALID_COMPOSE_SYNTAX = 685,
     /** A level has a different number of keysyms and actions */
     XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT = 693,
     /** Warn if a key defines multiple groups at once */
     XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE = 700,
     /** A legacy X11 symbol field is not supported */
     XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD = 711,
-    /** The syntax is invalid and the file cannot be parsed */
-    XKB_ERROR_INVALID_SYNTAX = 769,
+    /** The XKB syntax is invalid and the file cannot be parsed */
+    XKB_ERROR_INVALID_XKB_SYNTAX = 769,
     /** Reference to an undefined keycode */
     XKB_WARNING_UNDEFINED_KEYCODE = 770,
     /** An expression has not the expected type */
@@ -163,6 +167,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_IDENTIFIER = 949,
     /** Warn if using a symbol not defined in the keymap */
     XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL = 965,
+    /** The rules syntax is invalid and the file cannot be parsed */
+    XKB_ERROR_INVALID_RULES_SYNTAX = 967,
     /** Some modifiers used in a key type “map” or “preserve” entry are not declared */
     XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE = 971,
     _XKB_LOG_MESSAGE_MAX_CODE = 971

@@ -57,16 +57,18 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_NUMERIC_KEYSYM, "Numeric keysym"},
     {XKB_WARNING_EXTRA_SYMBOLS_IGNORED, "Extra symbols ignored"},
     {XKB_WARNING_CONFLICTING_KEY_NAME, "Conflicting key name"},
+    {XKB_ERROR_INVALID_FILE_ENCODING, "Invalid file encoding"},
     {XKB_ERROR_ALLOCATION_ERROR, "Allocation error"},
     {XKB_ERROR_WRONG_FIELD_TYPE, "Wrong field type"},
     {XKB_ERROR_CANNOT_RESOLVE_RMLVO, "Cannot resolve rmlvo"},
     {XKB_ERROR_INVALID_REAL_MODIFIER, "Invalid real modifier"},
     {XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE, "Unknown char escape sequence"},
     {XKB_ERROR_INVALID_INCLUDED_FILE, "Invalid included file"},
+    {XKB_ERROR_INVALID_COMPOSE_SYNTAX, "Invalid compose syntax"},
     {XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT, "Incompatible actions and keysyms count"},
     {XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE, "Multiple groups at once"},
     {XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD, "Unsupported symbols field"},
-    {XKB_ERROR_INVALID_SYNTAX, "Invalid syntax"},
+    {XKB_ERROR_INVALID_XKB_SYNTAX, "Invalid xkb syntax"},
     {XKB_WARNING_UNDEFINED_KEYCODE, "Undefined keycode"},
     {XKB_ERROR_INVALID_EXPRESSION_TYPE, "Invalid expression type"},
     {XKB_ERROR_INVALID_VALUE, "Invalid value"},
@@ -80,6 +82,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_CONFLICTING_KEY_FIELDS, "Conflicting key fields"},
     {XKB_ERROR_INVALID_IDENTIFIER, "Invalid identifier"},
     {XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL, "Unresolved keymap symbol"},
+    {XKB_ERROR_INVALID_RULES_SYNTAX, "Invalid rules syntax"},
     {XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE, "Undeclared modifiers in key type"}
 };
 

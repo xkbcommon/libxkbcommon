@@ -43,8 +43,8 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
         break;
     }
     log_wsgo(ctx,
-        XKB_ERROR_INVALID_SYNTAX,
-        "Unexpected operator %d in ResolveLhs\n", expr->common.type);
+             XKB_ERROR_INVALID_XKB_SYNTAX,
+             "Unexpected operator %d in ResolveLhs\n", expr->common.type);
     return false;
 }
 
@@ -398,7 +398,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_ACTION_DECL:
     case STMT_EXPR_ACTION_LIST:
     case STMT_EXPR_KEYSYM_LIST:
-        log_err(ctx, XKB_ERROR_INVALID_SYNTAX,
+        log_err(ctx, XKB_ERROR_INVALID_XKB_SYNTAX,
                 "%s of strings not permitted\n",
                 stmt_type_to_string(expr->common.type));
         return false;
