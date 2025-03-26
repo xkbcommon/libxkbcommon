@@ -55,7 +55,18 @@ On the other hand, some features and extensions were added.
 - multiple keysyms per level
   + such levels are ignored by x11/xkbcomp.
 - key names (e.g. `<AE11>`) can be longer than 4 characters.
-- `! include` statement for rules files.
+
+## Rules support {#rules-support}
+
+### Additions
+
+- `! include` statement.
+- Additional wild cards:
+  - `<none>` matches *empty* value;
+  - `<some>` matches *non-empty* value in *every* context.
+  - `<any>` matches *optionally empty* value in *every* context, contrary to the
+    legacy `*` wild card which does not match empty values for layout and
+    variant;
 
 ## Compose support {#compose-support}
 

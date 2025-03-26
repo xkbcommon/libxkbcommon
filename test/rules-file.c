@@ -374,6 +374,45 @@ main(int argc, char *argv[])
         assert(test_rules(ctx, &special_indexes_first_data[k]));
     }
 
+    /* Test extended wild cards: <none>, <some> and <any> */
+#define ENTRY(_rules, _layout, _variant, _symbols, _layouts, _fail)   \
+    { .rules = (_rules), .model = NULL,                               \
+      .layout = (_layout), .variant = (_variant), .options = NULL,    \
+      .keycodes = "evdev", .types = "complete", .compat = "complete", \
+      .symbols = (_symbols) , .explicit_layouts = (_layouts),         \
+      .should_fail = (_fail) }
+
+    struct test_data extended_wild_cards_data[] = {
+        ENTRY("extended-wild-cards", "l1", NULL, "pc+l10:1", 1, false),
+        ENTRY("extended-wild-cards", "l1", "v1", "pc+l20:1", 1, false),
+        ENTRY("extended-wild-cards", "l1", "v2", "pc+l30(v2):1", 1, false),
+        /* legacy wild card * does not catch empty variant */
+        ENTRY("extended-wild-cards", "l2", NULL, "pc+l2:1", 1, false),
+        ENTRY("extended-wild-cards", "l2", "v1", "pc+l40(v1):1", 1, false),
+        ENTRY("extended-wild-cards", "l2", "v2", "pc+l40(v2):1", 1, false),
+        ENTRY("extended-wild-cards", "l3", NULL, "pc+l50:1", 1, false),
+        ENTRY("extended-wild-cards", "l3", "v1", "pc+l50(v1):1", 1, false),
+        ENTRY("extended-wild-cards", "l3", "v2", "pc+l50(v2):1", 1, false),
+        /* ? wild card does catch empty variant */
+        ENTRY("extended-wild-cards", "l4", NULL, "pc+l4:1", 1, false),
+        ENTRY("extended-wild-cards", "l4", "v1", "pc+l4(v1):1", 1, false),
+        ENTRY("extended-wild-cards", "l4", "v2", "pc+l4(v20):1", 1, false),
+        ENTRY("extended-wild-cards", "l1,l1,l1,l2", ",v1,v2,",
+              "pc+l10:1+l20:2+l30(v2):3+l2:4", 4, false),
+        ENTRY("extended-wild-cards", "l2,l2,l3,l3", "v1,v2,,v1",
+              "pc+l40(v1):1+l40(v2):2+l50:3+l50(v1):4", 4, false),
+        /* NOTE: `l4(v2)` (4th LV index) is matched *before* the other LV indexes,
+         *       because with the extended indexes we follow the order of the rules in the
+         *       file, not the RMLVO order. This is similar to options handling. */
+        ENTRY("extended-wild-cards", "l3,l4,l4,l4", "v2,,v1,v2",
+              "pc+l50(v2):1+l4(v20):4+l4:2+l4(v1):3", 4, false),
+    };
+
+    for (size_t k = 0; k < ARRAY_SIZE(extended_wild_cards_data); k++) {
+        assert(test_rules(ctx, &extended_wild_cards_data[k]));
+    }
+#undef ENTRY
+
     /* Test :all qualifier without special indexes, with option */
     struct test_data all_qualified_alone1 = {
         .rules = "all_qualifier",
