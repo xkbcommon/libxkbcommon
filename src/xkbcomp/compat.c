@@ -118,10 +118,10 @@ InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
     info->ctx = ctx;
     info->include_depth = include_depth;
     info->actions = actions;
-    info->mods = *mods;
-    info->default_interp.merge = MERGE_OVERRIDE;
+    InitVMods(&info->mods, mods, include_depth > 0);
+    info->default_interp.merge = MERGE_DEFAULT; /* Unused */
     info->default_interp.interp.virtual_mod = XKB_MOD_INVALID;
-    info->default_led.merge = MERGE_OVERRIDE;
+    info->default_led.merge = MERGE_DEFAULT; /* Unused */
 }
 
 static void
@@ -357,7 +357,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -370,7 +370,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
     else {
         SymInterpInfo *si;
         darray_foreach(si, from->interps) {
-            si->merge = (merge == MERGE_DEFAULT ? si->merge : merge);
+            si->merge = merge;
             if (!AddInterp(into, si, false))
                 into->errorCount++;
         }
@@ -384,7 +384,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
     else {
         for (xkb_led_index_t i = 0; i < from->num_leds; i++) {
             LedInfo *ledi = &from->leds[i];
-            ledi->merge = (merge == MERGE_DEFAULT ? ledi->merge : merge);
+            ledi->merge = merge;
             if (!AddLedMap(into, ledi, false))
                 into->errorCount++;
         }
@@ -392,7 +392,7 @@ MergeIncludedCompatMaps(CompatInfo *into, CompatInfo *from,
 }
 
 static void
-HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge);
+HandleCompatMapFile(CompatInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
@@ -404,7 +404,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitCompatInfo(&included, info->ctx, 0 /* unused */,
+    InitCompatInfo(&included, info->ctx, info->include_depth + 1,
                    info->actions, &info->mods);
     included.name = steal(&include->stmt);
 
@@ -422,11 +422,9 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         InitCompatInfo(&next_incl, info->ctx, info->include_depth + 1,
                        info->actions, &included.mods);
         next_incl.default_interp = info->default_interp;
-        next_incl.default_interp.merge = stmt->merge;
         next_incl.default_led = info->default_led;
-        next_incl.default_led.merge = stmt->merge;
 
-        HandleCompatMapFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleCompatMapFile(&next_incl, file);
 
         MergeIncludedCompatMaps(&included, &next_incl, stmt->merge);
 
@@ -652,7 +650,7 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
 }
 
 static bool
-HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
+HandleInterpDef(CompatInfo *info, InterpDef *def)
 {
     enum xkb_match_operation pred;
     xkb_mod_mask_t mods;
@@ -666,7 +664,7 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
     }
 
     si = info->default_interp;
-    si.merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
+    si.merge = def->merge;
     si.interp.sym = def->sym;
     si.interp.match = pred;
     si.interp.mods = mods;
@@ -685,14 +683,14 @@ HandleInterpDef(CompatInfo *info, InterpDef *def, enum merge_mode merge)
 }
 
 static bool
-HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
+HandleLedMapDef(CompatInfo *info, LedMapDef *def)
 {
     LedInfo ledi;
     VarDef *var;
     bool ok;
 
     ledi = info->default_led;
-    ledi.merge = (def->merge == MERGE_DEFAULT ? merge : def->merge);
+    ledi.merge = def->merge;
     ledi.led.name = def->name;
 
     ok = true;
@@ -722,11 +720,9 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def, enum merge_mode merge)
 }
 
 static void
-HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
+HandleCompatMapFile(CompatInfo *info, XkbFile *file)
 {
     bool ok;
-
-    merge = (merge == MERGE_DEFAULT ? MERGE_AUGMENT : merge);
 
     free(info->name);
     info->name = strdup_safe(file->name);
@@ -737,7 +733,7 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleIncludeCompatMap(info, (IncludeStmt *) stmt);
             break;
         case STMT_INTERP:
-            ok = HandleInterpDef(info, (InterpDef *) stmt, merge);
+            ok = HandleInterpDef(info, (InterpDef *) stmt);
             break;
         case STMT_GROUP_COMPAT:
             log_dbg(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -746,13 +742,13 @@ HandleCompatMapFile(CompatInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_LED_MAP:
-            ok = HandleLedMapDef(info, (LedMapDef *) stmt, merge);
+            ok = HandleLedMapDef(info, (LedMapDef *) stmt);
             break;
         case STMT_VAR:
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         default:
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -875,8 +871,7 @@ CopyCompatToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
 }
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
-                 enum merge_mode merge)
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap)
 {
     CompatInfo info;
     ActionsInfo *actions;
@@ -886,10 +881,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
         return false;
 
     InitCompatInfo(&info, keymap->ctx, 0, actions, &keymap->mods);
-    info.default_interp.merge = merge;
-    info.default_led.merge = merge;
 
-    HandleCompatMapFile(&info, file, merge);
+    HandleCompatMapFile(&info, file);
     if (info.errorCount != 0)
         goto err_info;
 
