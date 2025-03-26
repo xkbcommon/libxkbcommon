@@ -140,8 +140,9 @@ typedef uint32_t xkb_keycode_t;
  * Keysym names are case-sensitive.
  *
  * @note **Encoding:** Keysyms are 32-bit integers with the 3 most significant
- * bits always set to zero.  See: Appendix A [“KEYSYM Encoding”][encoding] of
- * the X Window System Protocol.
+ * bits always set to zero.  Thus valid keysyms are in the range
+ * `0 .. 0x1fffffff` = @ref XKB_KEYSYM_MAX.
+ * See: Appendix A [“KEYSYM Encoding”][encoding] of the X Window System Protocol.
  *
  * [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
  *

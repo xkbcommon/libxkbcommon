@@ -178,7 +178,7 @@ test_keymaps(void)
                 "warning: [XKB-193] (input string):9:13: invalid octal escape sequence (\\400) in string literal\n"
                 "warning: [XKB-645] (input string):9:13: unknown escape sequence (\\j) in string literal\n"
                 "warning: [XKB-107] (input string):11:15: unrecognized keysym \"invalidKeysym\"\n"
-                "warning: [XKB-489] (input string):14:26: numeric keysym \"0x30\" (48)\n"
+                "warning: [XKB-489] (input string):14:26: numeric keysym \"0x0030\" (48)\n"
                 "warning: [XKB-301] (input string):14:32: deprecated keysym \"leftshoe\".\n"
                 "warning: [XKB-433] No map in include statement, but \"(input string)\" contains several; Using first defined map, \"(unnamed)\"\n"
                 "warning: [XKB-523] Alias of <1> for <> declared more than once; First definition ignored\n"

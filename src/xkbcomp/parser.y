@@ -20,6 +20,8 @@
 %{
 #include "config.h"
 
+#include <assert.h>
+
 #include "keysym.h"
 #include "xkbcomp/xkbcomp-priv.h"
 #include "xkbcomp/parser-priv.h"
@@ -785,35 +787,42 @@ KeySym          :       IDENT
                 |       Integer
                         {
                             if ($1 < XKB_KEYSYM_MIN) {
+                                /* Negative value */
+                                static_assert(XKB_KEYSYM_MIN == 0);
                                 parser_warn(
                                     param,
-                                    XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                                    "unrecognized keysym \"%"PRId64"\"",
-                                    $1
+                                    XKB_ERROR_INVALID_NUMERIC_KEYSYM,
+                                    "unrecognized keysym \"-%#06"PRIx64"\""
+                                    " (%"PRId64")",
+                                    -$1, $1
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
-                            /* Special case for digits 0..9 */
                             else if ($1 < 10) {     /* XKB_KEY_0 .. XKB_KEY_9 */
+                                /* Special case for digits 0..9 */
                                 $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
+                                /* Any other numeric value */
                                 if ($1 <= XKB_KEYSYM_MAX) {
+                                    /* Valid keysym */
                                     $$ = (xkb_keysym_t) $1;
                                     check_deprecated_keysyms(
                                         parser_warn, param, param->ctx,
-                                        $$, NULL, $$, "0x%"PRIx32, "");
+                                        $$, NULL, $$, "%#06"PRIx32, "");
                                 } else {
+                                    /* Invalid keysym */
                                     parser_warn(
-                                        param, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                                        "unrecognized keysym \"0x%"PRIx64"\" "
+                                        param, XKB_ERROR_INVALID_NUMERIC_KEYSYM,
+                                        "unrecognized keysym \"%#06"PRIx64"\" "
                                         "(%"PRId64")", $1, $1
                                     );
                                     $$ = XKB_KEY_NoSymbol;
                                 }
+                                /* Any other numeric value */
                                 parser_warn(
                                     param, XKB_WARNING_NUMERIC_KEYSYM,
-                                    "numeric keysym \"0x%"PRIx64"\" (%"PRId64")",
+                                    "numeric keysym \"%#06"PRIx64"\" (%"PRId64")",
                                     $1, $1
                                 );
                             }
