@@ -54,7 +54,3 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
                 uint32_t *mask_rtrn, const LookupEntry *values);
-
-bool
-ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
-                  xkb_keysym_t *sym_rtrn);

@@ -203,8 +203,9 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
-%type <expr>    KeySymList Action Coord CoordList
-%type <exprList> OptExprList ExprList ActionList MultiActionList MultiKeySymList
+%type <expr>    KeySymList Action Coord CoordList KeyOrKeysym
+%type <exprList> OptExprList ExprList KeyOrKeysymList
+%type <exprList> ActionList MultiActionList MultiKeySymList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody OptSymbolsBody
 %type <vmod>    VModDef
@@ -488,8 +489,20 @@ GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
                         { $$ = GroupCompatCreate($2, $4); }
                 ;
 
-ModMapDecl      :       MODIFIER_MAP Ident OBRACE ExprList CBRACE SEMI
+ModMapDecl      :       MODIFIER_MAP Ident OBRACE KeyOrKeysymList CBRACE SEMI
                         { $$ = ModMapCreate($2, $4.head); }
+                ;
+
+KeyOrKeysymList :       KeyOrKeysymList COMMA KeyOrKeysym
+                        { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
+                |       KeyOrKeysym
+                        { $$.head = $$.last = $1; }
+                ;
+
+KeyOrKeysym     :       KEYNAME
+                        { $$ = ExprCreateKeyName($1); }
+                |       KeySym
+                        { $$ = ExprCreateKeySym($1); }
                 ;
 
 LedMapDecl:             INDICATOR String OBRACE VarDeclList CBRACE SEMI

@@ -685,6 +685,111 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
 }
 
 static void
+test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
+{
+    /* Only accept key and keysyms in the modifier_map list */
+    struct keymap_test_data keymaps[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <CAPS> = 66;\n"
+                "    alias <LOCK> = <CAPS>;\n"
+                "    <0> = 0;"
+                "    <1> = 1;"
+                "    <2> = 2;"
+                "    <3> = 3;"
+                "    <any>  = 10;"
+                "    <none> = 11;"
+                "    <a> = 61;"
+                "    <100> = 100;"
+                "  };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols {\n"
+                "    key <CAPS> { [Caps_Lock] };\n"
+                "    key <any>  { [any, A] };\n"
+                "    key <none> { [none, N] };\n"
+                "    key <0>    { [0] };\n"
+                "    key <1>    { [1] };\n"
+                "    key <2>    { [2] };\n"
+                "    key <a>    { [a] };\n"
+                "    key <3>    { [NotAKeysym, 3] };\n"
+                "    key <100>  { [C] };\n"
+                "    modifier_map Lock {\n"
+                "      <100>, <LOCK>, any, none,\n"
+                "      0, 1, 0x2, a, NotAKeysym\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "symbols-modifier_map.xkb"
+        },
+        /* Invalid: string (length = 0) */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { modifier_map Lock { \"\" }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid: string (length = 1) */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { modifier_map Lock { \"a\" }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid: string (length > 1) */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { modifier_map Lock { \"ab\" }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid type: list */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { modifier_map Lock { [a] }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid type: list */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { modifier_map Lock { {a, b} }; };\n"
+                "};",
+            .expected = NULL
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -756,6 +861,7 @@ main(int argc, char *argv[])
     test_masks(ctx, update_output_files);
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
+    test_modifier_maps(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 

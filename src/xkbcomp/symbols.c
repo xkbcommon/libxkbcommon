@@ -14,6 +14,7 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -22,6 +23,7 @@
 #include "include.h"
 #include "keysym.h"
 #include "util-mem.h"
+#include "xkbcomp/ast.h"
 
 
 enum key_repeat {
@@ -1365,15 +1367,18 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     tmp.merge = def->merge;
 
     for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
-        xkb_keysym_t sym = XKB_KEY_NoSymbol;
-
         if (key->common.type == STMT_EXPR_KEYNAME_LITERAL) {
             tmp.haveSymbol = false;
             tmp.u.keyName = key->key_name.key_name;
         }
-        else if (ExprResolveKeySym(ctx, key, &sym)) {
-            tmp.haveSymbol = true;
-            tmp.u.keySym = sym;
+        else if (key->common.type == STMT_EXPR_KEYSYM_LITERAL) {
+            if (key->keysym.keysym == XKB_KEY_NoSymbol) {
+                /* Invalid keysym: ignore. Error message already printed */
+                continue;
+            } else {
+                tmp.haveSymbol = true;
+                tmp.u.keySym = key->keysym.keysym;
+            }
         }
         else {
             log_err(info->ctx, XKB_ERROR_INVALID_MODMAP_ENTRY,
