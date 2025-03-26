@@ -46,6 +46,7 @@ enum stmt_type {
     STMT_EXPR_FLOAT_LITERAL,
     STMT_EXPR_BOOLEAN_LITERAL,
     STMT_EXPR_KEYNAME_LITERAL,
+    STMT_EXPR_KEYSYM_LITERAL,
     STMT_EXPR_IDENT,
     STMT_EXPR_ACTION_DECL,
     STMT_EXPR_FIELD_REF,
@@ -142,6 +143,11 @@ typedef struct {
 
 typedef struct {
     ParseCommon common;
+    xkb_keysym_t keysym;
+} ExprKeySym;
+
+typedef struct {
+    ParseCommon common;
     ExprDef *left;
     ExprDef *right;
 } ExprBinary;
@@ -189,6 +195,7 @@ union ExprDef {
     ExprBoolean boolean;
     ExprInteger integer;
     ExprKeyName key_name;
+    ExprKeySym keysym;
     ExprBinary binary;
     ExprUnary unary;
     ExprFieldRef field_ref;

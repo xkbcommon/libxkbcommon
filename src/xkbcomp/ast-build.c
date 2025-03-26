@@ -17,6 +17,7 @@
 #include "xkbcomp-priv.h"
 #include "ast-build.h"
 #include "include.h"
+#include "xkbcomp/ast.h"
 
 static ExprDef *
 ExprCreate(enum stmt_type op)
@@ -77,6 +78,16 @@ ExprCreateKeyName(xkb_atom_t key_name)
     if (!expr)
         return NULL;
     expr->key_name.key_name = key_name;
+    return expr;
+}
+
+ExprDef *
+ExprCreateKeySym(xkb_keysym_t keysym)
+{
+    ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LITERAL);
+    if (!expr)
+        return NULL;
+    expr->keysym.keysym = keysym;
     return expr;
 }
 
@@ -684,6 +695,7 @@ static const char *stmt_type_strings[_STMT_NUM_VALUES] = {
     [STMT_EXPR_FLOAT_LITERAL] = "float literal expression",
     [STMT_EXPR_BOOLEAN_LITERAL] = "boolean literal expression",
     [STMT_EXPR_KEYNAME_LITERAL] = "key name expression",
+    [STMT_EXPR_KEYSYM_LITERAL] = "keysym expression",
     [STMT_EXPR_IDENT] = "identifier expression",
     [STMT_EXPR_ACTION_DECL] = "action declaration expression",
     [STMT_EXPR_FIELD_REF] = "field reference expression",

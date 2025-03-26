@@ -22,6 +22,9 @@ ExprDef *
 ExprCreateKeyName(xkb_atom_t key_name);
 
 ExprDef *
+ExprCreateKeySym(xkb_keysym_t keysym);
+
+ExprDef *
 ExprCreateIdent(xkb_atom_t ident);
 
 ExprDef *

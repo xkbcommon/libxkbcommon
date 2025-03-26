@@ -10,6 +10,7 @@
 #include "text.h"
 #include "expr.h"
 #include "keysym.h"
+#include "xkbcomp/ast.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, uint32_t *val_rtrn);
@@ -117,6 +118,7 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_INTEGER_LITERAL:
     case STMT_EXPR_FLOAT_LITERAL:
     case STMT_EXPR_KEYNAME_LITERAL:
+    case STMT_EXPR_KEYSYM_LITERAL:
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Found %s where boolean was expected\n",
                 stmt_type_to_string(expr->common.type));
@@ -200,6 +202,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_FLOAT_LITERAL:
     case STMT_EXPR_BOOLEAN_LITERAL:
     case STMT_EXPR_KEYNAME_LITERAL:
+    case STMT_EXPR_KEYSYM_LITERAL:
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Found %s where an int was expected\n",
                 stmt_type_to_string(expr->common.type));
@@ -367,6 +370,7 @@ ExprResolveString(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_FLOAT_LITERAL:
     case STMT_EXPR_BOOLEAN_LITERAL:
     case STMT_EXPR_KEYNAME_LITERAL:
+    case STMT_EXPR_KEYSYM_LITERAL:
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Found %s, expected a string\n",
                 stmt_type_to_string(expr->common.type));
@@ -466,6 +470,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_FLOAT_LITERAL:
     case STMT_EXPR_BOOLEAN_LITERAL:
     case STMT_EXPR_KEYNAME_LITERAL:
+    case STMT_EXPR_KEYSYM_LITERAL:
         log_err(ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Found %s where a mask was expected\n",
                 stmt_type_to_string(expr->common.type));
@@ -579,53 +584,6 @@ ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
 {
     LookupModMaskPriv priv = { .mods = mods, .mod_type = mod_type };
     return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, &priv);
-}
-
-bool
-ExprResolveKeySym(struct xkb_context *ctx, const ExprDef *expr,
-                  xkb_keysym_t *sym_rtrn)
-{
-    int64_t val = 0;
-
-    if (expr->common.type == STMT_EXPR_IDENT) {
-        const char *str = xkb_atom_text(ctx, expr->ident.ident);
-        *sym_rtrn = xkb_keysym_from_name(str, 0);
-        if (*sym_rtrn != XKB_KEY_NoSymbol) {
-            check_deprecated_keysyms(log_warn, ctx, ctx,
-                                     *sym_rtrn, str, str, "%s", "\n");
-            return true;
-        }
-    }
-
-    if (!ExprResolveInteger(ctx, expr, &val))
-        return false;
-
-    if (val < XKB_KEYSYM_MIN) {
-        log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-                 "unrecognized keysym \"-0x%"PRIx64"\" (%"PRId64")\n",
-                 (uint64_t) -val, val);
-        return false;
-    }
-
-    /* Special case for digits 0..9 */
-    if (val < 10) {
-        *sym_rtrn = XKB_KEY_0 + (xkb_keysym_t) val;
-        return true;
-    }
-
-    if (val <= XKB_KEYSYM_MAX) {
-        check_deprecated_keysyms(log_warn, ctx, ctx, val, NULL, val, "0x%"PRIx64, "\n");
-        log_warn(ctx, XKB_WARNING_NUMERIC_KEYSYM,
-                 "numeric keysym \"0x%"PRIx64"\" (%"PRId64")",
-                 (uint64_t) val, val);
-        *sym_rtrn = (xkb_keysym_t) val;
-        return true;
-    }
-
-    log_warn(ctx, XKB_WARNING_UNRECOGNIZED_KEYSYM,
-             "unrecognized keysym \"0x%"PRIx64"\" (%"PRId64")\n",
-             (uint64_t) val, val);
-    return false;
 }
 
 bool
