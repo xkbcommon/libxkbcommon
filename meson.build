@@ -47,6 +47,7 @@ cflags = [
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
     '-Wno-pedantic',
+    '/utf-8',
     '/wd4100', # Disable MSVC C4100: unreferenced formal parameter
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
