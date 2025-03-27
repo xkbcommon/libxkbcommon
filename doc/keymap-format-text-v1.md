@@ -1538,6 +1538,7 @@ located in an XKB include path.
 One can use a **merge mode** *prefix* to specify the merge mode of the file:
 - ‘+’ selects the **override** merge mode.
 - ‘|’ selects the **augment** merge mode.
+- ‘^’ selects the **replace** merge mode.
 
 @todo dedicated section for merge mode
 

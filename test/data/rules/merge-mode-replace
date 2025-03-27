@@ -1,0 +1,24 @@
+! model         = keycodes
+  *             = evdev
+
+
+! model         = types
+  *             = complete
+
+! model         = compat
+  *             = complete
+
+! layout        = symbols
+  *             = pc+%l
+
+! layout[1]     = symbols
+  *             = pc+%l[1]
+
+! layout[2]     = symbols
+  *             = +%l[2]:2
+
+! option        = symbols
+replace:single  = ^level3(ralt_alt)
+replace:first   = ^level3(ralt_alt)|empty
+replace:later   = +level3(ralt_switch)^level3(ralt_alt)|empty
+grp:menu_toggle	= +group(menu_toggle)
