@@ -5,11 +5,11 @@
 
 #include "config.h"
 
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
 #include "messages-codes.h"
 #include "messages.h"
 
@@ -46,6 +46,9 @@ usage(char **argv)
 #define UNSUPPORTED_MESSAGE (1 << 3)
 
 int main(int argc, char **argv) {
+
+    setlocale(LC_ALL, "");
+
     if (argc <= 1) {
         usage(argv);
         return EXIT_INVALID_USAGE;

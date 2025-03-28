@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -404,6 +405,8 @@ main(int argc, char **argv)
     struct xkb_rule_names names = { 0 };
     bool use_env_names = false;
     int rc = 1;
+
+    setlocale(LC_ALL, "");
 
     if (argc < 1) {
         usage(stderr, argv[0]);

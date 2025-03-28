@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <getopt.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -79,6 +80,8 @@ main(int argc, char **argv)
         OPT_VERSION,
     };
     int option_index = 0;
+
+    setlocale(LC_ALL, "");
 
     while (1) {
         int c;

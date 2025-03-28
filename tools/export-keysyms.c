@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <locale.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -44,6 +45,9 @@ main(int argc, char **argv)
     if (char_names)
         fprintf(stderr, "ERROR: names argument requires ICU.\n");
 #endif
+
+    setlocale(LC_ALL, "");
+
     struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(explicit);
     while (xkb_keysym_iterator_next(iter)) {
         xkb_keysym_t ks = xkb_keysym_iterator_get_keysym(iter);
