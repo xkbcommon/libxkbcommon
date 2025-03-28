@@ -5,8 +5,12 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
+
+const char DECIMAL_SEPARATOR = '.';
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -21,7 +25,7 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     }
     else {
         while (is_digit(scanner_peek(s))) scanner_next(s);
-        is_float = scanner_chr(s, '.');
+        is_float = scanner_chr(s, DECIMAL_SEPARATOR);
         while (is_digit(scanner_peek(s))) scanner_next(s);
     }
     if (s->s + s->pos == start)
@@ -33,16 +37,18 @@ number(struct scanner *s, int64_t *out, int *out_tok)
     if (is_hex)
         x = strtoll(start, &end, 16);
     else if (is_float) {
-        /* The parser currently just ignores floats, so the cast is
-         * fine - the value doesn't matter. */
-        #ifdef __GNUC__
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wbad-function-cast"
-        #endif
-        x = (long long int) strtold(start, &end);
-        #ifdef __GNUC__
-        #pragma GCC diagnostic pop
-        #endif
+        /* NOTE: strtold does not work reliably, because it depends on the
+         * locale for e.g. the decimal separator (e.g. a period or a comma).
+         * Since the parser does not use floats, we do not care of the actual
+         * value: we just need to ensure that the syntax is correct. So just
+         * truncate it. */
+        x = strtoll(start, &end, 10);
+        assert(*end == DECIMAL_SEPARATOR);
+        /* Drop the optional decimal part */
+        if (end + 1 < s->s + s->pos)
+            strtoll(end + 1, &end, 10);
+        else
+            end++;
     }
     else
         x = strtoll(start, &end, 10);

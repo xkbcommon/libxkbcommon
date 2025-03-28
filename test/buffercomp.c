@@ -64,6 +64,90 @@ test_encodings(struct xkb_context *ctx)
     assert(!keymap);
 }
 
+struct keymap_simple_test_data {
+    const char * const keymap;
+    bool valid;
+};
+
+static void
+test_floats(struct xkb_context *ctx)
+{
+    const struct keymap_simple_test_data tests[] = {
+        /* Valid floats */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { };\n"
+                "  xkb_geometry {\n"
+                "    width=123.456;\n"
+                "    width=123.0;\n"
+                "    width=123.;\n"
+                "    width=01.234;\n"
+                "    width=01.0;\n"
+                "    width=01.;\n"
+                "    width=001.234;\n"
+                "    width=001.0;\n"
+                "    width=001.;\n"
+                "  };"
+                "};",
+            .valid = true
+        },
+        /* Invalid: missing integer part */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { };\n"
+                "  xkb_geometry {\n"
+                "    width=.123;"
+                "  };"
+                "};",
+            .valid = false
+        },
+        /* Invalid: comma decimal separator */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { };\n"
+                "  xkb_geometry {\n"
+                "    width=1,23;"
+                "  };"
+                "};",
+            .valid = false
+        },
+        /* Invalid: exponent */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { };\n"
+                "  xkb_types { };\n"
+                "  xkb_compat { };\n"
+                "  xkb_symbols { };\n"
+                "  xkb_geometry {\n"
+                "    width=1.23e2;"
+                "  };"
+                "};",
+            .valid = false
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        struct xkb_keymap *keymap =
+            test_compile_buffer(ctx, tests[k].keymap, strlen(tests[k].keymap));
+        assert(tests[k].valid ^ !keymap);
+        xkb_keymap_unref(keymap);
+    }
+}
+
 static void
 test_component_syntax_error(struct xkb_context *ctx)
 {
@@ -853,6 +937,7 @@ main(int argc, char *argv[])
     assert(!keymap);
 
     test_encodings(ctx);
+    test_floats(ctx);
     test_component_syntax_error(ctx);
     test_recursive(ctx);
     test_alloc_limits(ctx);

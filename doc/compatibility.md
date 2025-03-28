@@ -41,6 +41,9 @@ unused in the standard dataset.
 - indicator behaviours such as LED-controls-key
   + the only supported LED behaviour is key-controls-LED; again this
     was never really used in current keymaps
+- xkbcommon has stronger type checks, so floating-point numbers cannot
+  be used where an integer is expected.
+- exponent syntax for floating-point numbers is not supported.
 
 On the other hand, some features and extensions were added.
 

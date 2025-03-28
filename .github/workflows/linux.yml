@@ -33,9 +33,12 @@ jobs:
           python -m pip install --upgrade meson PyYAML ruff
           sudo apt update
           sudo apt install -y \
+            locales tzdata \
             doxygen libxcb-xkb-dev valgrind ninja-build \
             libwayland-dev wayland-protocols bison graphviz libicu-dev \
             ${{ matrix.sanitizers == 'sanitizers' && 'libasan8 libubsan1' || '' }}
+          # Generate locale for tests
+          sudo locale-gen fr_FR.UTF-8
       - name: Install xkeyboard-config
         run: |
           # Install master version of xkeyboard-config, in order to ensure
@@ -65,12 +68,15 @@ jobs:
         run: |
           meson compile -C build
       - name: Test
+        # Use a specific non-US locale
         run:
-          meson test -C build --print-errorlogs
+          LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs
       - name: Test with valgrind
         if: matrix.sanitizers != 'sanitizers'
-        run:
-          meson test -C build --print-errorlogs --setup=valgrind --no-suite python-tests
+        # Use a specific non-US locale
+        run: |
+          LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs --setup=valgrind \
+                                                 --no-suite python-tests
       - name: Upload test logs
         uses: actions/upload-artifact@v4
         if: failure()
