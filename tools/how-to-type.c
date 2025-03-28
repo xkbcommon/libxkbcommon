@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <getopt.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -152,6 +153,8 @@ main(int argc, char *argv[])
         {"options",              required_argument,      0, OPT_OPTIONS},
         {0, 0, 0, 0},
     };
+
+    setlocale(LC_ALL, "");
 
     while (1) {
         int opt;

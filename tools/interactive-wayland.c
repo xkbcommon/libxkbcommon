@@ -771,6 +771,8 @@ main(int argc, char *argv[])
         {0, 0, 0, 0},
     };
 
+    setlocale(LC_ALL, "");
+
     while (1) {
         int opt;
         int option_index = 0;
@@ -797,8 +799,6 @@ main(int argc, char *argv[])
             return EXIT_INVALID_USAGE;
         }
     }
-
-    setlocale(LC_ALL, "");
 
     memset(&inter, 0, sizeof(inter));
     wl_list_init(&inter.seats);

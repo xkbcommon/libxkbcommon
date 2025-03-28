@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <locale.h>
 #include <stdio.h>
 #include <getopt.h>
 
@@ -49,6 +50,8 @@ main(int argc, char **argv)
         {"ruleset",             required_argument,  0, 'r'},
         {0, 0, 0, 0},
     };
+
+    setlocale(LC_ALL, "");
 
     while (1) {
         int c;
