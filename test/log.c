@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <locale.h>
+
 #include "test.h"
 #include "context.h"
 #include "messages-codes.h"
@@ -315,6 +317,10 @@ int
 main(void)
 {
     test_init();
+
+    /* We really need to be locale-independent here */
+    setlocale(LC_ALL, "C");
+
     test_basic();
     test_keymaps();
     test_compose();
