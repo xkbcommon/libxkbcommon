@@ -70,6 +70,14 @@ skip_more_whitespace_and_comments:
     /* Skip spaces. */
     while (is_space(scanner_peek(s))) scanner_next(s);
 
+    /*
+     * Skip U+200E LEFT-TO-RIGHT MARK and U+200F RIGHT-TO-LEFT MARK, assuming
+     * UTF-8 encoding. These Unicode code points are useful for forcing the text
+     * directionality when displaying/editing an XKB file.
+     */
+    if (scanner_lit(s, u8"\u200E") || scanner_lit(s, u8"\u200F"))
+        goto skip_more_whitespace_and_comments;
+
     /* Skip comments. */
     if (scanner_lit(s, "//") || scanner_chr(s, '#')) {
         scanner_skip_to_eol(s);
