@@ -47,6 +47,7 @@ cflags = [
     '-Wwrite-strings',
     '-Wno-documentation-deprecated-sync',
     '-Wno-pedantic',
+    '/utf-8',
     '/wd4100', # Disable MSVC C4100: unreferenced formal parameter
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
@@ -253,6 +254,8 @@ libxkbcommon_sources = [
     'src/text.h',
     'src/utf8.c',
     'src/utf8.h',
+    'src/utf8-decoding.c',
+    'src/utf8-decoding.h',
     'src/utils.c',
     'src/utils.h',
     'src/util-mem.h',

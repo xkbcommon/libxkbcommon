@@ -49,9 +49,11 @@ On the other hand, some features and extensions were added.
 - 32-bit keycodes
 - extended number of modifiers (planned)
 - extended number of groups (planned)
-- multiple keysyms per level
+- multiple keysyms and actions per level
   + such levels are ignored by x11/xkbcomp.
 - key names (e.g. `<AE11>`) can be longer than 4 characters.
+- keysyms can be written as their corresponding string, e.g. `udiaeresis`
+  can be written `"ü"`.
 - `! include` statement for rules files.
 
 ## Compose support {#compose-support}

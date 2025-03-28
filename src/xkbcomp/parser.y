@@ -201,7 +201,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <mapFlags> Flag Flags OptFlags
 %type <str>     MapName OptMapName
 %type <atom>    FieldSpec Ident Element String
-%type <keysym>  KeySym
+%type <keysym>  KeySym KeySymLit
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
@@ -711,8 +711,8 @@ MultiActionList :       MultiActionList COMMA Action
 
 ActionList      :       ActionList COMMA Action
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       Action COMMA Action
-                        { $$.head = $1; $$.head->common.next = &$3->common; $$.last = $3; }
+                |       Action
+                        { $$.head = $$.last = $1; }
                 ;
 
 Actions         :       OBRACE ActionList CBRACE
@@ -743,7 +743,7 @@ Terminal        :       String
                         { $$ = ExprCreateKeyName($1); }
                 ;
 
-MultiKeySymList :       MultiKeySymList COMMA KeySym
+MultiKeySymList :       MultiKeySymList COMMA KeySymLit
                         {
                             ExprDef *expr = ExprCreateKeysymList($3);
                             $$ = $1;
@@ -751,26 +751,65 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
                         }
                 |       MultiKeySymList COMMA KeySyms
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       KeySym
+                |       KeySymLit
                         { $$.head = $$.last = ExprCreateKeysymList($1); }
                 |       KeySyms
                         { $$.head = $$.last = $1; }
                 ;
 
-KeySymList      :       KeySymList COMMA KeySym
+KeySymList      :       KeySymList COMMA KeySymLit
                         { $$ = ExprAppendKeysymList($1, $3); }
-                |       KeySym COMMA KeySym
+                |       KeySymList COMMA STRING
+                        {
+                            $$ = ExprKeysymListAppendString(param->scanner, $1, $3);
+                            free($3);
+                            if (!$$)
+                                YYERROR;
+                        }
+                |       KeySymLit
                         {
                             $$ = ExprCreateKeysymList($1);
-                            $$ = ExprAppendKeysymList($$, $3);
+                            if (!$$)
+                                YYERROR;
+                        }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            if (!$$)
+                                YYERROR;
+                            $$ = ExprKeysymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
                         }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
                         { $$ = $2; }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            if (!$$)
+                                YYERROR;
+                            $$ = ExprKeysymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
+                        }
                 ;
 
-KeySym          :       IDENT
+KeySym          :       KeySymLit
+                        { $$ = $1; }
+                |       STRING
+                        {
+                            $$ = KeysymParseString(param->scanner, $1);
+                            free($1);
+                            if ($$ == XKB_KEY_NoSymbol)
+                                YYERROR;
+                        }
+                ;
+
+KeySymLit       :       IDENT
                         {
                             if (!resolve_keysym(param, $1, &$$)) {
                                 parser_warn(

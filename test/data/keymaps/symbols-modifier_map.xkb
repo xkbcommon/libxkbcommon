@@ -9,6 +9,8 @@ xkb_keycodes "(unnamed)" {
 	<any>                = 10;
 	<none>               = 11;
 	<a>                  = 61;
+	<b>                  = 62;
+	<c>                  = 63;
 	<CAPS>               = 66;
 	<100>                = 100;
 	alias <LOCK>         = <CAPS>;
@@ -51,9 +53,11 @@ xkb_symbols "(unnamed)" {
 	key <any>                {	[        NoSymbol,               A ] };
 	key <none>               {	[      VoidSymbol,               N ] };
 	key <a>                  {	[               a ] };
+	key <b>                  {	[               b ] };
+	key <c>                  {	[       U0001F3BA ] };
 	key <CAPS>               {	[       Caps_Lock ] };
 	key <100>                {	[               C ] };
-	modifier_map Lock { <0>, <1>, <2>, <none>, <a>, <CAPS>, <100> };
+	modifier_map Lock { <0>, <1>, <2>, <none>, <a>, <b>, <c>, <CAPS>, <100> };
 };
 
 };
