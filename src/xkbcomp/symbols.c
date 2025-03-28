@@ -1320,22 +1320,15 @@ HandleSymbolsDef(SymbolsInfo *info, SymbolsDef *stmt)
     keyi.merge = stmt->merge;
     keyi.name = stmt->keyName;
 
-    if (!HandleSymbolsBody(info, stmt->symbols, &keyi)) {
-        info->errorCount++;
-        return false;
+    if (HandleSymbolsBody(info, stmt->symbols, &keyi) &&
+        SetExplicitGroup(info, &keyi) &&
+        AddKeySymbols(info, &keyi, true)) {
+        return true;
     }
 
-    if (!SetExplicitGroup(info, &keyi)) {
-        info->errorCount++;
-        return false;
-    }
-
-    if (!AddKeySymbols(info, &keyi, true)) {
-        info->errorCount++;
-        return false;
-    }
-
-    return true;
+    ClearKeyInfo(&keyi);
+    info->errorCount++;
+    return false;
 }
 
 static bool
