@@ -13,6 +13,7 @@
 #include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
+#include "xkbcommon/xkbcommon.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -218,6 +219,38 @@ test_optional_components(struct xkb_context *ctx, bool update_output_files)
                 "};",
             .expected = NULL
         },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
+test_bidi_chars(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct keymap_test_data keymaps[] = {
+        /* Invalid: first char must be ASCII */
+        {
+            .keymap = u8"\u200Exkb_keymap {};",
+            .expected = NULL
+        },
+        {
+            .keymap = u8"\u200Fxkb_keymap {};",
+            .expected = NULL
+        },
+        /* Valid */
+        {
+            .keymap =
+                u8" \u200Fxkb_keymap\u200E\u200F\n\u200E{ "
+                u8"\u200Exkb_keycodes \u200F{ "
+                u8"<>\u200E= \u200F1\u200E;\u200F"
+                u8"}\u200E ;"
+                u8"};\u200E",
+            .expected = GOLDEN_TESTS_OUTPUTS "bidi.xkb"
+        }
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
@@ -1224,6 +1257,7 @@ main(int argc, char *argv[])
     test_floats(ctx);
     test_component_syntax_error(ctx);
     test_optional_components(ctx, update_output_files);
+    test_bidi_chars(ctx, update_output_files);
     test_recursive(ctx);
     test_alloc_limits(ctx);
     test_integers(ctx, update_output_files);
