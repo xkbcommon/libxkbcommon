@@ -533,20 +533,23 @@ Comments are introduced following either `//` or `#` until the end of the line.
   A string is surrounded by double quotes: “<code>&quot;</code>”.
   The following _escape sequences_ are supported:
 
-  | Escape sequence    | Meaning                                                 |
-  | ------------------ | ------------------------------------------------------- |
-  | `\\`               | Backslash “`\`”                                         |
-  | `\b`               | Backspace                                               |
-  | `\e`               | Escape                                                  |
-  | `\f`               | Form feed                                               |
-  | `\n`               | Line feed (newline)                                     |
-  | `\r`               | Carriage return                                         |
-  | `\t`               | Horizontal tabulation                                   |
-  | `\v`               | Vertical tabulation                                     |
-  | `\` + octal number | Corresponding ASCII character: `\0` → NULL, `\42` → `"` |
+  | Escape sequence    | Meaning                                                  |
+  | ------------------ | -------------------------------------------------------- |
+  | `\\`               | Backslash “`\`”                                          |
+  | `\b`               | Backspace                                                |
+  | `\e`               | Escape                                                   |
+  | `\f`               | Form feed                                                |
+  | `\n`               | Line feed (newline)                                      |
+  | `\r`               | Carriage return                                          |
+  | `\t`               | Horizontal tabulation                                    |
+  | `\v`               | Vertical tabulation                                      |
+  | `\` + octal number | Corresponding ASCII character: `\1` → `SOH`, `\42` → `"`. Up to **4** octal digits `0‥7` are parsed. The result must fit into a byte. |
 
   @note The string _encoding_ is unspecified and not validated, but for best
   results, stick to ASCII.
+
+  @since \<1.9.0: Octal escape sequences accept up to **3** digits.
+  @since 1.9.0: Octal escape sequences accept up to **4** digits.
 
   <!-- TODO: check UTF-8 encoding result -->
 
