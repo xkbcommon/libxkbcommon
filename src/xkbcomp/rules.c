@@ -10,6 +10,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <limits.h>
 
 #include "xkbcomp-priv.h"
@@ -34,7 +35,10 @@ enum rules_token {
     TOK_GROUP_NAME,
     TOK_BANG,
     TOK_EQUALS,
-    TOK_STAR,
+    TOK_WILD_CARD_STAR,
+    TOK_WILD_CARD_NONE,
+    TOK_WILD_CARD_SOME,
+    TOK_WILD_CARD_ANY,
     TOK_INCLUDE,
     TOK_ERROR
 };
@@ -85,7 +89,12 @@ skip_more_whitespace_and_comments:
     /* Operators and punctuation. */
     if (scanner_chr(s, '!')) return TOK_BANG;
     if (scanner_chr(s, '=')) return TOK_EQUALS;
-    if (scanner_chr(s, '*')) return TOK_STAR;
+
+    /* Wild cards */
+    if (scanner_chr(s, '*')) return TOK_WILD_CARD_STAR;
+    if (scanner_lit(s, "<none>")) return TOK_WILD_CARD_NONE;
+    if (scanner_lit(s, "<some>")) return TOK_WILD_CARD_SOME;
+    if (scanner_lit(s, "<any>")) return TOK_WILD_CARD_ANY;
 
     /* Group name. */
     if (scanner_chr(s, '$')) {
@@ -208,15 +217,24 @@ struct mapping {
 };
 
 enum mlvo_match_type {
+    /** Match the given plain value */
     MLVO_MATCH_NORMAL = 0,
-    MLVO_MATCH_WILDCARD,
+    /** Match depending on the value of `wildcard_match_type` */
+    MLVO_MATCH_WILDCARD_LEGACY,
+    /** Match empty value */
+    MLVO_MATCH_WILDCARD_NONE,
+    /** Match non-empty value */
+    MLVO_MATCH_WILDCARD_SOME,
+    /** Match any value, optionally empty */
+    MLVO_MATCH_WILDCARD_ANY,
+    /** Match any entry in a group */
     MLVO_MATCH_GROUP,
 };
 
 enum wildcard_match_type {
-    /* Match only non-empty strings */
+    /** ‘*’ matches only non-empty strings */
     WILDCARD_MATCH_NONEMPTY = 0,
-    /* Match all strings */
+    /** ‘*’ matches all strings */
     WILDCARD_MATCH_ALL,
 };
 
@@ -813,10 +831,11 @@ matcher_rule_set_mlvo_common(struct matcher *m, struct scanner *s,
 }
 
 static void
-matcher_rule_set_mlvo_wildcard(struct matcher *m, struct scanner *s)
+matcher_rule_set_mlvo_wildcard(struct matcher *m, struct scanner *s,
+                               enum mlvo_match_type match_type)
 {
     struct sval dummy = { NULL, 0 };
-    matcher_rule_set_mlvo_common(m, s, dummy, MLVO_MATCH_WILDCARD);
+    matcher_rule_set_mlvo_common(m, s, dummy, match_type);
 }
 
 static void
@@ -883,12 +902,23 @@ match_value(struct matcher *m, struct sval val, struct sval to,
             enum mlvo_match_type match_type,
             enum wildcard_match_type wildcard_type)
 {
-    if (match_type == MLVO_MATCH_WILDCARD)
-        /* Wild card match empty values only if explicitly required */
-        return wildcard_type == WILDCARD_MATCH_ALL || !!to.len;
-    if (match_type == MLVO_MATCH_GROUP)
-        return match_group(m, val, to);
-    return svaleq(val, to);
+    switch (match_type) {
+        case MLVO_MATCH_WILDCARD_LEGACY:
+            /* Match empty values only if explicitly required */
+            return wildcard_type == WILDCARD_MATCH_ALL || !!to.len;
+        case MLVO_MATCH_WILDCARD_NONE:
+            return !to.len;
+        case MLVO_MATCH_WILDCARD_SOME:
+            return !!to.len;
+        case MLVO_MATCH_WILDCARD_ANY:
+            /* Contrary to the legacy ‘*’, this wild card *always* matches */
+            return true;
+        case MLVO_MATCH_GROUP:
+            return match_group(m, val, to);
+        default:
+            assert(match_type == MLVO_MATCH_NORMAL);
+            return svaleq(val, to);
+    }
 }
 
 static bool
@@ -1183,7 +1213,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         struct matched_sval *to;
         bool matched = false;
 
-        /* NOTE: Wild card matches empty values only for model and options, as
+        /* NOTE: Wild card * matches empty values only for model and options, as
          * implemented in libxkbfile and xserver. The reason for such different
          * treatment is not documented. */
         if (mlvo == MLVO_MODEL) {
@@ -1218,7 +1248,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                 (to) = &darray_item((m)->rmlvo._component,                   \
                                   (m)->mapping.layout_idx_min);              \
                 (matched) = match_value_and_mark(m, value, to, match_type,   \
-                                               WILDCARD_MATCH_NONEMPTY);     \
+                                                 WILDCARD_MATCH_NONEMPTY);   \
             }
         else if (mlvo == MLVO_LAYOUT) {
             process_component(layouts, m, value, idx, candidate_layouts, to,
@@ -1401,12 +1431,28 @@ rule_mlvo:
 rule_mlvo_no_tok:
     switch (tok) {
     case TOK_IDENTIFIER:
-        if (!m->rule.skip)
-            matcher_rule_set_mlvo(m, s, m->val.string);
+        if (!m->rule.skip) {
+            if (m->val.string.len == 1 && m->val.string.start[0] == '+')
+                matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_SOME);
+            else
+                matcher_rule_set_mlvo(m, s, m->val.string);
+        }
         goto rule_mlvo;
-    case TOK_STAR:
+    case TOK_WILD_CARD_STAR:
         if (!m->rule.skip)
-            matcher_rule_set_mlvo_wildcard(m, s);
+            matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_LEGACY);
+        goto rule_mlvo;
+    case TOK_WILD_CARD_NONE:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_NONE);
+        goto rule_mlvo;
+    case TOK_WILD_CARD_SOME:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_SOME);
+        goto rule_mlvo;
+    case TOK_WILD_CARD_ANY:
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_ANY);
         goto rule_mlvo;
     case TOK_GROUP_NAME:
         if (!m->rule.skip)

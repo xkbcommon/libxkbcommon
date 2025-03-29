@@ -53,10 +53,11 @@ of the following fields (called [RMLVO] for short):
 [option]: @ref config-options-def
 [options]: @ref config-options-def
 
-Format of the file
-------------------
+# Format of the file
+
+## Rules and rule sets {#rule-def}
+
 @anchor rule-set-def
-@anchor rule-def
 The file consists of **rule sets**, each consisting of **rules** (one
 per line), which match the [MLVO] values on the left hand side, and,
 if the values match to the values the user passed in, results in the
@@ -85,7 +86,8 @@ resulting [KcCGST]. See @ref rmlvo-resolution for further details.
   fr        caps:digits_row = +capslock(digits_row)
 ```
 
-@anchor rules-group-def
+## Groups {#rules-group-def}
+
 Since some values are related and repeated often, it is possible
 to *group* them together and refer to them by a **group name** in the
 rules.
@@ -105,13 +107,51 @@ rules.
  $azerty    caps:digits_row = +capslock(digits_row)
 ```
 
-@anchor rules-wildcard-def
+## Wild cards {#rules-wildcard-def}
+
 Along with matching values by simple string equality and for
 membership in a [group] defined previously, rules may also contain
-**wildcard** values “\*” with the following behavior:
+**wild card** values with the following behavior:
+
+<dl>
+<dt>* @anchor rules-wildcard-legacy-def</dt>
+<dd>
+
+Legacy wild card:
 - For `model` and `options`: *always* match.
 - For `layout` and `variant`: match any *non-empty* value.
-These usually appear near the end of a rule set to set *default* values.
+
+This wild card usually appears near the end of a rule set to set *default* values.
+
+@note Prefer using the wild cards @ref rules-wildcard-some-def "\<some\>" or
+@ref rules-wildcard-any-def "\<any\>" for their simpler semantics, as it does not
+depend on the context.
+</dd>
+<dt>\<none\> @anchor rules-wildcard-none-def</dt>
+<dd>
+
+Match *empty* values
+
+@since 1.9.0
+</dd>
+<dt>\<some\> @anchor rules-wildcard-some-def</dt>
+<dd>
+
+Match *non-empty* value
+
+@since 1.9.0
+</dd>
+<dt>\<any\> @anchor rules-wildcard-any-def</dt>
+<dd>
+
+Match *any* (optionally empty) value. Its behavior does not depend on the
+context, contrary to the legacy wild card @ref rules-wildcard-legacy-def "*".
+
+This wild card usually appears near the end of a rule set to set *default* values.
+
+@since 1.9.0
+</dd>
+</dl>
 
 ```c
 ! layout = keycodes
@@ -123,8 +163,8 @@ These usually appear near the end of a rule set to set *default* values.
   *      = +aliases(qwerty)
 ```
 
-Grammar
--------
+# Grammar
+
 It is advised to look at a file like `rules/evdev` along with
 this grammar.
 
@@ -149,7 +189,7 @@ SpecialIndex ::= "single" | "first" | "later" | "any"
 Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 
 Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
-MlvoValue    ::= "*" | GroupName | <ident>
+MlvoValue    ::= "*" | "<none>" | "<some>" | "<any>" | GroupName | <ident>
 KccgstValue  ::= <ident> [ { Qualifier } ]
 Qualifier    ::= ":" ({ NumericIndex } | "all")
 ```
@@ -327,8 +367,9 @@ or %%H seems to do the job though.
     </tr>
   </table>
 
-RMLVO resolution process {#rmlvo-resolution}
-------------------------
+# RMLVO resolution process {#rmlvo-resolution}
+
+## Process
 
 First of all, the rules *file* is extracted from the provided
 [<em>R</em>MLVO][RMLVO] configuration (usually `evdev`). Then its path
@@ -375,6 +416,8 @@ inside lists.
 
 [value update]: @ref rules-kccgst-value-update
 [merge mode]: @ref merge-mode-def
+
+## Examples
 
 ### Example: key codes
 

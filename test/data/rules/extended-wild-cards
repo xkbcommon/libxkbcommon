@@ -1,0 +1,23 @@
+! model = keycodes
+  *     = evdev
+
+! model = compat
+  *     = complete
+
+! model = types
+  *     = complete
+
+! model = symbols
+  *     = pc
+
+! layout[any] variant[any] = symbols
+  l1          <none>       = +l10:%i             // compatibity mapping: l1, no variant
+  l1          v1           = +l20:%i             // compatibity mapping: l1, specific variant
+  l1          <some>       = +l30%(v[%i]):%i     // compatibity mapping: l1, some variant
+  l2          *            = +l40%(v[%i]):%i     // compatibity mapping: l2, some variant (legacy)
+  l3          <any>        = +l50%(v[%i]):%i     // compatibity mapping: l3, any variant (catch-all)
+  *           v2           = +%l[%i](v20):%i     // compatibity mapping: specific variant
+  *           <any>        = +%l[%i]%(v[%i]):%i  // catch-all
+
+! option = symbols
+  opt1   = +opt1
