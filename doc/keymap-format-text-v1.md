@@ -535,7 +535,9 @@ Comments are introduced following either `//` or `#` until the end of the line.
 
   | Escape sequence    | Meaning                                                  |
   | ------------------ | -------------------------------------------------------- |
+  | `\&`               | Produce no character (`"\&"` denotes an empty string) but enable to stop a *previous* escape sequence, e.g. `\61\&2` produces “12” whereas `\622` is invalid. |
   | `\\`               | Backslash “`\`”                                          |
+  | `\"`               | Double quote “`"`”                                       |
   | `\b`               | Backspace                                                |
   | `\e`               | Escape                                                   |
   | `\f`               | Form feed                                                |
@@ -549,7 +551,9 @@ Comments are introduced following either `//` or `#` until the end of the line.
   results, stick to ASCII.
 
   @since \<1.9.0: Octal escape sequences accept up to **3** digits.
+
   @since 1.9.0: Octal escape sequences accept up to **4** digits.
+  Added `\&` and <code>\\&quot;</code> escape sequences.
 
   <!-- TODO: check UTF-8 encoding result -->
 
