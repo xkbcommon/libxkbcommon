@@ -891,7 +891,8 @@ KeySym          :       IDENT
                         {
                             if ($1 < XKB_KEYSYM_MIN) {
                                 /* Negative value */
-                                static_assert(XKB_KEYSYM_MIN == 0);
+                                static_assert(XKB_KEYSYM_MIN == 0,
+                                              "Keysyms are positive");
                                 parser_warn(
                                     param,
                                     XKB_ERROR_INVALID_NUMERIC_KEYSYM,
