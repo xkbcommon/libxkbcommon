@@ -98,7 +98,27 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
                 else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
                 else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\x1b');
-                else if (scanner_oct(s, &o) && is_valid_char((char) o))
+                else if (scanner_chr(s, 'u')) {
+                    /* Unicode escape sequence */
+                    uint32_t cp = 0;
+                    if (scanner_chr(s, '{') &&
+                        scanner_unicode_code_point(s, &cp) &&
+                        /* NOTE: the order of the check is important! */
+                        scanner_chr(s, '}') && is_valid_char(cp)) {
+                        /* Encode code point using UTF-8 */
+                        scanner_buf_appends_code_point(s, cp);
+                    } else {
+                        scanner_warn(
+                            s, XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE,
+                            "invalid Unicode escape sequence (%.*s) "
+                            "in string literal",
+                            (int) (s->pos - start_pos + 1),
+                            &s->s[start_pos - 1]
+                        );
+                        /* Ignore. */
+                    }
+                }
+                else if (scanner_oct(s, &o) && is_valid_char((uint32_t) o))
                     scanner_buf_append(s, (char) o);
                 else if (s->pos > start_pos) {
                     scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,

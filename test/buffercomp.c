@@ -921,7 +921,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
 static void
 test_empty_compound_statements(struct xkb_context *ctx, bool update_output_files)
 {
-
     struct keymap_test_data keymaps[] = {
         {
             .keymap =
@@ -1023,39 +1022,46 @@ test_empty_compound_statements(struct xkb_context *ctx, bool update_output_files
 static void
 test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
 {
+    /* Similarly to `test_integers`, test that escape sequences at the end of
+     * a buffer raise a syntax error but no memory violation */
+    const char bad_octal[] = { '"', '\\', '1' };
+    assert(!test_compile_buffer(ctx, bad_octal, sizeof(bad_octal)));
+    const char bad_unicode[] = { '"', '\\', 'u', '{', '1' };
+    assert(!test_compile_buffer(ctx, bad_unicode, sizeof(bad_unicode)));
+
     const char keymap[] =
         "default xkb_keymap \"\" {\n"
         "  xkb_keycodes "
-        "\"\\0La paix est la seule\\tbataille "
-        "qui vaille la peine d\\342\\200\\231\\303\\252tre men\\303\\251e.\\n\" {\n"
+        "\"\\u{0}La paix est la seule\\tbataille "
+        "qui vaille la peine d\\u{02019}\\u{Ea}tre men\\303\\251e.\\n\" {\n"
         "    <> = 1;\n"
-        "    indicator 1 = \"\\0\\n\\342\\214\\250\\357\\270\\217\";\n"
+        "    indicator 1 = \"\\0\\n\\u{2328}\\u{fe0f}\";\n"
         "  };\n"
-        "  xkb_types \"\\0\\61\\\\\\00427\\r\\n\" {\n"
-        "    type \"\\0\\45\\61\\360\\237\\216\\272\\342\\234\\250\\360\\237\\225\\212\\357\\270\\217\\f\" {\n"
+        "  xkb_types \"\\00001\\\\\\00427\\u{22}\\r\\n\" {\n"
+        "    type \"\\0\\00451\\u{1F3BA}\\u{2728}\\u{01F54a}\\u{0fE0f}\\f\" {\n"
         "      modifiers = Shift;\n"
         "      map[Shift] = 2;\n"
         "      level_name[1] = "
-        "\"O\\303\\271 ils ont fait un d\\303\\251sert, \\e"
-        "ils disent qu\\342\\200\\231ils \\12ont fait la \\42paix\\042.\\b\\n\";\n"
+        "\"O\\u{f9} ils ont fait un \\u{22}d\\303\\251sert\\u{22}, \\e"
+        "ils disent qu\\u{002019}ils \\12ont fait la \\42paix\\042.\\b\\n\";\n"
         "      level_name[2] = "
-        "\"\\0Science \\163\\141ns conscience "
-        "n\\342\\200\\231est que rui\\\\ne\\12 de l\\342\\200\\231\\303\\242me.\\r\";\n"
+        "\"\\u{0000}Science \\u{73}\\141ns conscience "
+        "n\\u{2019}est que rui\\\\ne\\u{A} de l\\u{02019}\\u{E2}me.\\r\";\n"
         "    };\n"
         "  };\n"
         "  xkb_compat "
-        "\"Le c\\305\\223ur a \\v ses raisons "
-        "que la raison ne con\\134na\\303\\251t point\" {\n"
-        "    indicator \"\\n\\342\\214\\250\\0\\357\\270\\217\" { modifiers = Shift; };\n"
+        "\"Le c\\u{153}ur a \\v ses raisons "
+        "que la raison ne con\\u{5C}na\\u{EE}t point\" {\n"
+        "    indicator \"\\n\\u{2328}\\0\\u{fe0f}\" { modifiers = Shift; };\n"
         "  };\n"
         "  xkb_symbols "
-        "\"La libert\\303\\251 commence "
-        "o\\303\\271 l\\342\\200\\231ignorance finit.\" {\n"
+        "\"La libert\\u{00e9} commence "
+        "o\\u{0000f9} l\\342\\200\\231ignorance finit.\" {\n"
         "    name[1] = \"\\n\\0377\\3760\";\n"
         "    name[2] = \"\\00427\";\n"
         "    key <> {\n"
         "      symbols[1]=[a, A],\n"
-        "      type[1]=\"%1\\360\\237\\216\\272\\342\\234\\250\\360\\237\\225\\212\\357\\270\\217\\14\",\n"
+        "      type[1]=\"%1\\u{1F3BA}\\u{2728}\\u{00001F54a}\\u{0fE0f}\\u{0C}\",\n"
         "      actions[2]=[Private(type=123, data=\"\0abcdefg\")]"
         "    };\n"
         "  };\n"
