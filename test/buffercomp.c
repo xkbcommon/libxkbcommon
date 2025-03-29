@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "utils.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -1020,6 +1021,52 @@ test_empty_compound_statements(struct xkb_context *ctx, bool update_output_files
 }
 
 static void
+test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
+{
+    const char keymap[] =
+        "default xkb_keymap \"\" {\n"
+        "  xkb_keycodes "
+        "\"\\0La paix est la seule\\tbataille "
+        "qui vaille la peine d\\342\\200\\231\\303\\252tre men\\303\\251e.\\n\" {\n"
+        "    <> = 1;\n"
+        "    indicator 1 = \"\\0\\n\\342\\214\\250\\357\\270\\217\";\n"
+        "  };\n"
+        "  xkb_types \"\\0\\61\\\\\\0427\\r\\n\" {\n"
+        "    type \"\\0\\45\\61\\360\\237\\216\\272\\342\\234\\250\\360\\237\\225\\212\\357\\270\\217\\f\" {\n"
+        "      modifiers = Shift;\n"
+        "      map[Shift] = 2;\n"
+        "      level_name[1] = "
+        "\"O\\303\\271 ils ont fait un d\\303\\251sert, \\e"
+        "ils disent qu\\342\\200\\231ils \\12ont fait la \\42paix\\42.\\b\\n\";\n"
+        "      level_name[2] = "
+        "\"\\0Science \\163\\141ns conscience "
+        "n\\342\\200\\231est que rui\\\\ne\\12 de l\\342\\200\\231\\303\\242me.\\r\";\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_compat "
+        "\"Le c\\305\\223ur a \\v ses raisons "
+        "que la raison ne con\\134na\\303\\251t point\" {\n"
+        "    indicator \"\\n\\342\\214\\250\\0\\357\\270\\217\" { modifiers = Shift; };\n"
+        "  };\n"
+        "  xkb_symbols "
+        "\"La libert\\303\\251 commence "
+        "o\\303\\271 l\\342\\200\\231ignorance finit.\" {\n"
+        "    name[1] = \"\\n\";\n"
+        "    name[2] = \"\\0427\";\n"
+        "    key <> {\n"
+        "      symbols[1]=[a, A],\n"
+        "      type[1]=\"%1\\360\\237\\216\\272\\342\\234\\250\\360\\237\\225\\212\\357\\270\\217\\14\",\n"
+        "      actions[2]=[Private(type=123, data=\"\0abcdefg\")]"
+        "    };\n"
+        "  };\n"
+        "};";
+    const char expected[] = GOLDEN_TESTS_OUTPUTS "escape-sequences.xkb";
+    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                               keymap, ARRAY_SIZE(keymap),
+                               expected, update_output_files));
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -1095,6 +1142,7 @@ main(int argc, char *argv[])
     test_invalid_symbols_fields(ctx);
     test_modifier_maps(ctx, update_output_files);
     test_empty_compound_statements(ctx, update_output_files);
+    test_escape_sequences(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 

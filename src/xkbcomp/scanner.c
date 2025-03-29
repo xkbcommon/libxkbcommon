@@ -96,7 +96,7 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'b'))  scanner_buf_append(s, '\b');
                 else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
                 else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
-                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
+                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\x1b');
                 else if (scanner_oct(s, &o) && is_valid_char((char) o))
                     scanner_buf_append(s, (char) o);
                 else if (s->pos > start_pos)
