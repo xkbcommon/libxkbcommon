@@ -545,7 +545,11 @@ Comments are introduced following either `//` or `#` until the end of the line.
   | `\r`               | Carriage return                                          |
   | `\t`               | Horizontal tabulation                                    |
   | `\v`               | Vertical tabulation                                      |
-  | `\` + octal number | Corresponding ASCII character: `\0` → NULL, `\42` → `"`. Up to **4** octal digits `0 .. 7` are parsed. The result must fit into a byte. |
+  | `\` + octal number | Corresponding ASCII character: `\0` → NULL, `\42` → `"`. Up to **4** octal digits `0‥7` are parsed. The result must fit into a byte. |
+  | `\u` + hexadecimal number | `\uNNNN` produce the corresponding [Unicode code point] `U+NNNN`, encoded in [UTF-8]. Supported code points are in the range `U+0001‥U+10FFFF`. |
+
+  [Unicode code point]: https://en.wikipedia.org/wiki/Unicode#Codespace_and_code_points
+  [UTF-8]: https://en.wikipedia.org/wiki/UTF-8
 
   @note The string _encoding_ is unspecified and not validated, but for best
   results, stick to ASCII.
@@ -553,7 +557,7 @@ Comments are introduced following either `//` or `#` until the end of the line.
   @since \<1.9.0: Octal escape sequences accept up to **3** digits.
 
   @since 1.9.0: Octal escape sequences accept up to **4** digits.
-  Added `\&` and <code>\\&quot;</code> escape sequences.
+  Added `\&`, <code>\\&quot;</code> and `\uNNNN` escape sequences.
 
   <!-- TODO: check UTF-8 encoding result -->
 

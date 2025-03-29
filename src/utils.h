@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <uchar.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #else
@@ -52,7 +53,7 @@ typedef SSIZE_T ssize_t;
 
 /* Check if a character is valid in a string literal */
 static inline bool
-is_valid_char(char c)
+is_valid_char(char32_t c)
 {
     /* Currently we only check for NULL character, but this could be extended
      * in the future to further ASCII control characters. */

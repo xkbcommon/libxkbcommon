@@ -8,12 +8,15 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
+#include <uchar.h>
 
 #include "context.h"
 #include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
+#include "utf8.h"
 
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
@@ -185,6 +188,22 @@ scanner_buf_appends(struct scanner *s, const char *str)
 }
 
 static inline bool
+scanner_buf_appends_code_point(struct scanner *s, char32_t c)
+{
+    /* Up to 4 bytes + NULL */
+    if (s->buf_pos + 5 <= sizeof(s->buf)) {
+        const int count = utf32_to_utf8((uint32_t) c, s->buf + s->buf_pos);
+        if (count == 0)
+            return false;
+        /* `count` counts the NULL byte */
+        s->buf_pos += count - 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static inline bool
 scanner_oct(struct scanner *s, uint8_t *out)
 {
     uint8_t i = 0;
@@ -207,7 +226,7 @@ scanner_oct(struct scanner *s, uint8_t *out)
 static inline bool
 scanner_hex(struct scanner *s, uint8_t *out)
 {
-    int i;
+    uint8_t i;
     for (i = 0, *out = 0; is_xdigit(scanner_peek(s)) && i < 2; i++) {
         const char c = scanner_next(s);
         const char offset = (char) (c >= '0' && c <= '9' ? '0' :
@@ -216,6 +235,23 @@ scanner_hex(struct scanner *s, uint8_t *out)
         *out = *out * 16 + c - offset;
     }
     return i > 0;
+}
+
+/* For \uNNNN escape sequences */
+static inline bool
+scanner_unicode(struct scanner *s, char32_t *out)
+{
+    uint8_t i;
+    char32_t u = 0;
+    for (i = 0; is_xdigit(scanner_peek(s)) && i < 9; i++) {
+        const char c = scanner_next(s);
+        const char offset = (char) (c >= '0' && c <= '9' ? '0' :
+                                    c >= 'a' && c <= 'f' ? 'a' - 10
+                                                         : 'A' - 10);
+        u = u * 16 + c - offset;
+    }
+    *out = u;
+    return i > 0 && u <= 0x10ffff;
 }
 
 /* Basic detection of wrong character encoding based on the first bytes */
