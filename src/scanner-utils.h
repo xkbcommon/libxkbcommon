@@ -189,16 +189,20 @@ scanner_buf_appends(struct scanner *s, const char *str)
 static inline bool
 scanner_oct(struct scanner *s, uint8_t *out)
 {
-    int i;
-    for (i = 0, *out = 0; scanner_peek(s) >= '0' && scanner_peek(s) <= '7' && i < 3; i++)
+    uint8_t i = 0;
+    uint8_t c = 0;
+    for (; scanner_peek(s) >= '0' && scanner_peek(s) <= '7' && i < 4; i++) {
         /* Test overflow */
-        if (*out < 040) {
-            *out = *out * 8 + scanner_next(s) - '0';
+        if (c < 040) {
+            c = c * 8 + scanner_next(s) - '0';
         } else {
             /* Consume valid digit, but mark result as invalid */
             scanner_next(s);
+            *out = c;
             return false;
         }
+    }
+    *out = c;
     return i > 0;
 }
 

@@ -354,17 +354,17 @@
   details: |
     xkbcommon support the following escape sequences in string literals:
 
-    | Escape sequence | Corresponding character             |
-    | --------------- | ----------------------------------- |
-    | `\b`            | `U+0008` Backspace                  |
-    | `\t`            | `U+0009` Character tabulation       |
-    | `\n`            | `U+000A` Line feed                  |
-    | `\v`            | `U+000B` Vertical tabulation        |
-    | `\f`            | `U+000C` Form feed                  |
-    | `\r`            | `U+000D` Carriage return            |
-    | `\e`            | `U+001B` Escape                     |
-    | `\\`            | `U+005C` Backslash                  |
-    | `\NNN`          | _Octal_ escape, from `\0` to `\777` |
+    | Escape sequence | Corresponding character                   |
+    | --------------- | ----------------------------------------- |
+    | `\b`            | `U+0008` Backspace                        |
+    | `\t`            | `U+0009` Character tabulation             |
+    | `\n`            | `U+000A` Line feed                        |
+    | `\v`            | `U+000B` Vertical tabulation              |
+    | `\f`            | `U+000C` Form feed                        |
+    | `\r`            | `U+000D` Carriage return                  |
+    | `\e`            | `U+001B` Escape                           |
+    | `\\`            | `U+005C` Backslash                        |
+    | `\NNNN`         | _Octal_ escape, `NNNN` in range `1‥0o377` |
 - id: "invalid-included-file"
   code: 661
   added: ALWAYS

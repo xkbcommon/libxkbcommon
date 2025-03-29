@@ -10,7 +10,7 @@ xkb_types "1__7__" {
 	type "%1🎺✨🕊️" {
 		modifiers= Shift;
 		map[Shift]= 2;
-		level_name[1]= "Où ils ont fait un désert, ils disent qu’ils \nont fait la \042paix\042.\n";
+		level_name[1]= "Où ils ont fait un désert, ils disent qu’ils \nont fait la \0042paix\0042.\n";
 		level_name[2]= "Science sans conscience n’est que rui\\ne\n de l’âme.\r";
 	};
 };
@@ -24,8 +24,8 @@ xkb_compatibility "Le_c�_ur_a___ses_raisons_que_la_raison_ne_con_na�_t_point" {
 };
 
 xkb_symbols "La_libert�__commence_o�__l�__ignorance_finit_" {
-	name[Group1]="\n";
-	name[Group2]="\0427";
+	name[Group1]="\n�";
+	name[Group2]="\00427";
 
 	key <>                   {
 		type= "%1🎺✨🕊️",
