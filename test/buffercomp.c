@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "utils.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -790,6 +791,51 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
+test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
+{
+    const char keymap[] =
+        "default xkb_keymap \"\\&\" {\n"
+        "  xkb_keycodes "
+        "\"\\u0La paix est la seule\\tbataille "
+        "qui vaille la peine d\\u02019\\uEatre men\\303\\251e.\\n\" {\n"
+        "    <> = 1;\n"
+        "    indicator 1 = \"\\0\\n\\u2328\\ufe0f\";\n"
+        "  };\n"
+        "  xkb_types \"\\0\\&1\\\\\\00427\\u22\\r\\n\" {\n"
+        "    type \"\\0\\45\\&1\\u1F3BA\\u2728\\u001F54a\\&\\u0fE0f\\f\" {\n"
+        "      modifiers = Shift;\n"
+        "      map[Shift] = 2;\n"
+        "      level_name[1] = "
+        "\"O\\uf9 ils ont fait un \\u22\\&d\\303\\251sert\\u22, \\e"
+        "ils disent qu\\u00002019ils \\12ont fait la \\42paix\\042.\\b\\n\";\n"
+        "      level_name[2] = "
+        "\"\\u0000Science \\u73\\141ns conscience "
+        "n\\u2019\\&est que rui\\\\ne\\uA de l\\u02019\\uE2me.\\r\";\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_compat "
+        "\"Le c\\u153ur a \\v ses rai\\&sons "
+        "que la raison ne con\\u5Cna\\&\\uEEt point\" {\n"
+        "    indicator \"\\n\\u2328\\0\\ufe0f\" { modifiers = Shift; };\n"
+        "  };\n"
+        "  xkb_symbols "
+        "\"La libert\\u00e9 commence "
+        "o\\u000000f9 l\\342\\200\\231ignorance finit.\" {\n"
+        "    name[1] = \"\\n\\0377\\3760\";\n"
+        "    name[2] = \"\\00427\";\n"
+        "    key <> {\n"
+        "      [a, A],\n"
+        "      type=\"%1\\u1F3BA\\u2728\\u001F54a\\&\\u0fE0f\\u0C\"\n"
+        "    };\n"
+        "  };\n"
+        "};";
+    const char expected[] = GOLDEN_TESTS_OUTPUTS "escape-sequences.xkb";
+    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                               keymap, ARRAY_SIZE(keymap),
+                               expected, update_output_files));
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -862,6 +908,7 @@ main(int argc, char *argv[])
     test_multi_keysyms_actions(ctx);
     test_invalid_symbols_fields(ctx);
     test_modifier_maps(ctx, update_output_files);
+    test_escape_sequences(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 

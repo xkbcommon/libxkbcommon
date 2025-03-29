@@ -127,6 +127,8 @@ enum xkb_message_code {
     XKB_ERROR_WRONG_FIELD_TYPE = 578,
     /** Cannot resolve a given (Rules, Model, Layout, Variant, Options) configuration */
     XKB_ERROR_CANNOT_RESOLVE_RMLVO = 595,
+    /** Invalid Unicode escape sequence */
+    XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE = 607,
     /** Invalid _real_ modifier */
     XKB_ERROR_INVALID_REAL_MODIFIER = 623,
     /** Warn on unknown escape sequence in string literal */

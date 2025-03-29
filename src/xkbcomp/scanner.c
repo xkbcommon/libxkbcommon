@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <uchar.h>
+
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 
@@ -79,24 +81,49 @@ skip_more_whitespace_and_comments:
         while (!scanner_eof(s) && !scanner_eol(s) && scanner_peek(s) != '\"') {
             if (scanner_chr(s, '\\')) {
                 uint8_t o;
-                size_t start_pos = s->pos;
+                const size_t start_pos = s->pos;
                 if      (scanner_chr(s, '\\')) scanner_buf_append(s, '\\');
+                else if (scanner_chr(s, '"'))  scanner_buf_append(s, '"');
                 else if (scanner_chr(s, 'n'))  scanner_buf_append(s, '\n');
                 else if (scanner_chr(s, 't'))  scanner_buf_append(s, '\t');
                 else if (scanner_chr(s, 'r'))  scanner_buf_append(s, '\r');
                 else if (scanner_chr(s, 'b'))  scanner_buf_append(s, '\b');
                 else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
                 else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
-                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\033');
-                else if (scanner_oct(s, &o) && is_valid_char((char) o))
+                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\x1b');
+                else if (scanner_chr(s, '&')) {
+                    /*
+                     * Consume, but append nothing: useful to break previous
+                     * escape sequence, such as: "\45\&1" / "\u25\&1" → "%1".
+                     */
+                }
+                else if (scanner_chr(s, 'u')) {
+                    /* Unicode escape sequence */
+                    char32_t u = 0;
+                    if (scanner_unicode(s, &u) && is_valid_char(u)) {
+                        /* Encode code point using UTF-8 */
+                        scanner_buf_appends_code_point(s, u);
+                    } else {
+                        scanner_warn(
+                            s, XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE,
+                            "invalid Unicode escape sequence (%.*s) "
+                            "in string literal",
+                            (int) (s->pos - start_pos + 1),
+                            &s->s[start_pos - 1]
+                        );
+                        /* Ignore. */
+                    }
+                }
+                else if (scanner_oct(s, &o) && is_valid_char((char32_t) o))
                     scanner_buf_append(s, (char) o);
-                else if (s->pos > start_pos)
+                else if (s->pos > start_pos) {
                     scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
                                  "invalid octal escape sequence (%.*s) "
                                  "in string literal",
                                  (int) (s->pos - start_pos + 1),
                                  &s->s[start_pos - 1]);
                     /* Ignore. */
+                }
                 else {
                     scanner_warn(s, XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
                                  "unknown escape sequence (\\%c) in string literal",

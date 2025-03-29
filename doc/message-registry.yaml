@@ -341,6 +341,14 @@
   added: ALWAYS
   type: error
   description: "Cannot resolve a given (Rules, Model, Layout, Variant, Options) configuration"
+- id: "invalid-unicode-escape-sequence"
+  code: 607
+  added: 1.9.0
+  type: warning
+  description: "Invalid Unicode escape sequence"
+  details: |
+    xkbcommon support the Unicode sequence `\uNNNN`, where `NNNN` denotes a
+    Unicode code point in hexadecimal format in the range `1 .. 0x10ffff`.
 - id: "invalid-real-modifier"
   code: 623
   added: ALWAYS
