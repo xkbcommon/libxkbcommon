@@ -88,8 +88,9 @@ skip_more_whitespace_and_comments:
         while (!scanner_eof(s) && !scanner_eol(s) && scanner_peek(s) != '\"') {
             if (scanner_chr(s, '\\')) {
                 uint8_t o;
-                size_t start_pos = s->pos;
+                const size_t start_pos = s->pos;
                 if      (scanner_chr(s, '\\')) scanner_buf_append(s, '\\');
+                else if (scanner_chr(s, '"'))  scanner_buf_append(s, '"');
                 else if (scanner_chr(s, 'n'))  scanner_buf_append(s, '\n');
                 else if (scanner_chr(s, 't'))  scanner_buf_append(s, '\t');
                 else if (scanner_chr(s, 'r'))  scanner_buf_append(s, '\r');
@@ -99,13 +100,14 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\x1b');
                 else if (scanner_oct(s, &o) && is_valid_char((char) o))
                     scanner_buf_append(s, (char) o);
-                else if (s->pos > start_pos)
+                else if (s->pos > start_pos) {
                     scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
                                  "invalid octal escape sequence (%.*s) "
                                  "in string literal",
                                  (int) (s->pos - start_pos + 1),
                                  &s->s[start_pos - 1]);
                     /* Ignore. */
+                }
                 else {
                     scanner_warn(s, XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
                                  "unknown escape sequence (\\%c) in string literal",

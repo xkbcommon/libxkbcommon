@@ -536,6 +536,7 @@ Comments are introduced following either `//` or `#` until the end of the line.
   | Escape sequence    | Meaning                                                  |
   | ------------------ | -------------------------------------------------------- |
   | `\\`               | Backslash “`\`”                                          |
+  | `\"`               | Double quote “`"`”                                       |
   | `\b`               | Backspace                                                |
   | `\e`               | Escape                                                   |
   | `\f`               | Form feed                                                |
@@ -549,7 +550,9 @@ Comments are introduced following either `//` or `#` until the end of the line.
   results, stick to ASCII.
 
   @since \<1.9.0: Octal escape sequences accept up to **3** digits.
+
   @since 1.9.0: Octal escape sequences accept up to **4** digits.
+  Added <code>\\&quot;</code> escape sequence.
 
   <!-- TODO: check UTF-8 encoding result -->
 

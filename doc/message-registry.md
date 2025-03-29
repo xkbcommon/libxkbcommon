@@ -606,17 +606,18 @@ key <AE01> { [ U1ED0 ] };
 
 xkbcommon support the following escape sequences in string literals:
 
-| Escape sequence | Corresponding character                   |
-| --------------- | ----------------------------------------- |
-| `\b`            | `U+0008` Backspace                        |
-| `\t`            | `U+0009` Character tabulation             |
-| `\n`            | `U+000A` Line feed                        |
-| `\v`            | `U+000B` Vertical tabulation              |
-| `\f`            | `U+000C` Form feed                        |
-| `\r`            | `U+000D` Carriage return                  |
-| `\e`            | `U+001B` Escape                           |
-| `\\`            | `U+005C` Backslash                        |
-| `\NNNN`         | _Octal_ escape, `NNNN` in range `1‥0o377` |
+| Escape sequence | Corresponding character                     |
+| --------------- | ------------------------------------------- |
+| `\b`            | `U+0008` Backspace                          |
+| `\t`            | `U+0009` Character tabulation               |
+| `\n`            | `U+000A` Line feed                          |
+| `\v`            | `U+000B` Vertical tabulation                |
+| `\f`            | `U+000C` Form feed                          |
+| `\r`            | `U+000D` Carriage return                    |
+| `\e`            | `U+001B` Escape                             |
+| `\\`            | `U+005C` Backslash                          |
+| `\"`            | `U+0022` Double quote                       |
+| `\NNNN`         | _Octal_ escape, `NNNN` in range `1‥0o377`   |
 
 
 ### XKB-661 – Invalid included file {#XKB-661}

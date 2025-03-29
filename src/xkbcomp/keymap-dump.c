@@ -145,7 +145,8 @@ check_write_string_literal(struct buf *buf, const char* string)
         case '"':
             /* `"` would break strings
              *
-             * NOTE: We must use the octal escape sequence in xkbcomp style:
+             * NOTE: xkbcomp does not parse the escape sequence \", so we must
+             * use the octal escape sequence in xkbcomp style `\0nnn`:
              * 1. To be compatible with Xorg xkbcomp.
              * 2. To avoid issues with the next char: e.g. "\00427" should not
              *    be emitted as "\427" nor "\0427".
