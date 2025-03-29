@@ -104,10 +104,10 @@ check_write_string(struct buf *buf, const char* string)
              *
              * NOTE: We must use the octal escape sequence in xkbcomp style:
              * 1. To be compatible with Xorg xkbcomp.
-             * 2. To avoid issues with the next char: e.g. "\0427" should not
-             *    be emitted as "\427".
+             * 2. To avoid issues with the next char: e.g. "\00427" should not
+             *    be emitted as "\427" nor "\0427".
              */
-            escape = "\\042";
+            escape = "\\0042";
             break;
         case '\\':
             /* `\` would create escape sequences */
