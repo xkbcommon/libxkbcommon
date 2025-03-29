@@ -1196,7 +1196,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     xmlCtxtSetOptions(xmlCtxt, _XML_OPTIONS | XML_PARSE_DTDLOAD);
 
     xmlParserInputPtr pinput =
-        xmlNewInputFromMemory(NULL, dtdstr, sizeof(dtdstr),
+        xmlNewInputFromMemory(NULL, dtdstr, ARRAY_SIZE(dtdstr) - 1,
                               XML_INPUT_BUF_STATIC);
     if (!pinput)
         goto dtd_error;
@@ -1206,7 +1206,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     /* Note: do not use xmlParserInputBufferCreateStatic, it generates random
      * DTD validity errors for unknown reasons */
     xmlParserInputBufferPtr buf =
-        xmlParserInputBufferCreateMem(dtdstr, sizeof(dtdstr),
+        xmlParserInputBufferCreateMem(dtdstr, ARRAY_SIZE(dtdstr) - 1,
                                       XML_CHAR_ENCODING_NONE);
     if (!buf)
         goto dtd_error;
