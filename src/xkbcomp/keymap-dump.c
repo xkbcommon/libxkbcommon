@@ -29,13 +29,11 @@ struct buf {
 static bool
 do_realloc(struct buf *buf, size_t at_least)
 {
-    char *new;
-
     buf->alloc += BUF_CHUNK_SIZE;
     if (at_least >= BUF_CHUNK_SIZE)
         buf->alloc += at_least;
 
-    new = realloc(buf->buf, buf->alloc);
+    char *const new = realloc(buf->buf, buf->alloc);
     if (!new)
         return false;
 
@@ -94,6 +92,96 @@ err:
 } while (0)
 
 static bool
+check_copy_to_buf(struct buf *buf, const char* source, size_t len)
+{
+    if (len == 0)
+        return true;
+
+    const size_t available = buf->alloc - buf->size;
+    if (len >= available) {
+        /* len + 1 (terminating NULL) */
+        if (!do_realloc(buf, len + 1)) {
+            free(buf->buf);
+            buf->buf = NULL;
+            return false;
+        }
+    }
+
+    memcpy(buf->buf + buf->size, source, len);
+    buf->size += len;
+    /* Append NULL byte */
+    buf->buf[buf->size] = '\0';
+    return true;
+}
+
+#define copy_to_buf_len(buf, source, len) do { \
+    if (!check_copy_to_buf(buf, source, len)) \
+        return false; \
+} while (0)
+
+#define copy_to_buf(buf, source) \
+    copy_to_buf_len(buf, source, sizeof(source) - 1)
+
+static bool
+check_write_string_literal(struct buf *buf, const char* string)
+{
+    copy_to_buf(buf, "\"");
+
+    /* Write chunks, separated by characters requiring escape sequence */
+    size_t pending_start = 0;
+    size_t current = 0;
+    for (; string[current] != '\0'; current++) {
+        const char *escape;
+        uint8_t escape_len = 2;
+        switch (string[current]) {
+        case '\n':
+            /* `\n` would break strings */
+            escape = "\\n";
+            break;
+        case '\r':
+            /* `\r` is legal but looks odd in resulting serialization */
+            escape = "\\r";
+            break;
+        case '"':
+            /* `"` would break strings
+             *
+             * NOTE: We must use the octal escape sequence in xkbcomp style:
+             * 1. To be compatible with Xorg xkbcomp.
+             * 2. To avoid issues with the next char: e.g. "\0427" should not
+             *    be emitted as "\427".
+             */
+            escape = "\\042";
+            escape_len = 4;
+            break;
+        case '\\':
+            /* `\` would create escape sequences */
+            escape = "\\\\";
+            break;
+        default:
+            /* Expand the chunk */
+            continue;
+        }
+        /* Write pending chunk */
+        assert(current >= pending_start);
+        copy_to_buf_len(buf, string + pending_start, current - pending_start);
+        /* Write escape sequence */
+        copy_to_buf_len(buf, escape, escape_len);
+        pending_start = current + 1;
+    }
+    /* Write remaining chunk */
+    assert(current >= pending_start);
+    copy_to_buf_len(buf, string + pending_start, current - pending_start);
+
+    copy_to_buf(buf, "\"");
+    return true;
+}
+
+#define write_buf_string_literal(buf, string) do { \
+    if (!check_write_string_literal(buf, string)) \
+        return false; \
+} while (0)
+
+static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_mod *mod;
@@ -105,10 +193,10 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             continue;
 
         if (!has_some) {
-            write_buf(buf, "\tvirtual_modifiers ");
+            copy_to_buf(buf, "\tvirtual_modifiers ");
             has_some = true;
         } else {
-            write_buf(buf, ",");
+            copy_to_buf(buf, ",");
         }
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
         if (keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) {
@@ -120,7 +208,7 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     if (has_some)
-        write_buf(buf, ";\n\n");
+        copy_to_buf(buf, ";\n\n");
 
     return true;
 }
@@ -136,7 +224,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "xkb_keycodes \"%s\" {\n",
                   keymap->keycodes_section_name);
     else
-        write_buf(buf, "xkb_keycodes {\n");
+        copy_to_buf(buf, "xkb_keycodes {\n");
 
     /* xkbcomp and X11 really want to see keymaps with a minimum of 8, and
      * a maximum of at least 255, else XWayland really starts hating life.
@@ -154,9 +242,11 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     xkb_leds_enumerate(idx, led, keymap)
-        if (led->name != XKB_ATOM_NONE)
-            write_buf(buf, "\tindicator %u = \"%s\";\n",
-                      idx + 1, xkb_atom_text(keymap->ctx, led->name));
+        if (led->name != XKB_ATOM_NONE) {
+            write_buf(buf, "\tindicator %u = ", idx + 1);
+            write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, led->name));
+            copy_to_buf(buf, ";\n");
+        }
 
 
     for (unsigned i = 0; i < keymap->num_key_aliases; i++)
@@ -164,7 +254,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
                   KeyNameText(keymap->ctx, keymap->key_aliases[i].alias),
                   KeyNameText(keymap->ctx, keymap->key_aliases[i].real));
 
-    write_buf(buf, "};\n\n");
+    copy_to_buf(buf, "};\n\n");
     return true;
 }
 
@@ -175,15 +265,16 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "xkb_types \"%s\" {\n",
                   keymap->types_section_name);
     else
-        write_buf(buf, "xkb_types {\n");
+        copy_to_buf(buf, "xkb_types {\n");
 
     write_vmods(keymap, buf);
 
     for (unsigned i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type *type = &keymap->types[i];
 
-        write_buf(buf, "\ttype \"%s\" {\n",
-                  xkb_atom_text(keymap->ctx, type->name));
+        copy_to_buf(buf, "\ttype ");
+        write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, type->name));
+        copy_to_buf(buf, " {\n");
 
         write_buf(buf, "\t\tmodifiers= %s;\n",
                   ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
@@ -212,14 +303,18 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         }
 
         for (xkb_level_index_t n = 0; n < type->num_level_names; n++)
-            if (type->level_names[n])
-                write_buf(buf, "\t\tlevel_name[%u]= \"%s\";\n", n + 1,
-                          xkb_atom_text(keymap->ctx, type->level_names[n]));
+            if (type->level_names[n]) {
+                write_buf(buf, "\t\tlevel_name[%u]= ", n + 1);
+                write_buf_string_literal(
+                    buf, xkb_atom_text(keymap->ctx, type->level_names[n]));
+                copy_to_buf(buf, ";\n");
+            }
 
-        write_buf(buf, "\t};\n");
+
+        copy_to_buf(buf, "\t};\n");
     }
 
-    write_buf(buf, "};\n\n");
+    copy_to_buf(buf, "};\n\n");
     return true;
 }
 
@@ -227,8 +322,9 @@ static bool
 write_led_map(struct xkb_keymap *keymap, struct buf *buf,
               const struct xkb_led *led)
 {
-    write_buf(buf, "\tindicator \"%s\" {\n",
-              xkb_atom_text(keymap->ctx, led->name));
+    copy_to_buf(buf, "\tindicator ");
+    write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, led->name));
+    copy_to_buf(buf, " {\n");
 
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
@@ -256,7 +352,7 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
                   ControlMaskText(keymap->ctx, led->ctrls));
     }
 
-    write_buf(buf, "\t};\n");
+    copy_to_buf(buf, "\t};\n");
     return true;
 }
 
@@ -344,7 +440,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         if (action->btn.button > 0 && action->btn.button <= 5)
             write_buf(buf, "%d", action->btn.button);
         else
-            write_buf(buf, "default");
+            copy_to_buf(buf, "default");
         if (action->btn.count)
             write_buf(buf, ",count=%d", action->btn.count);
         if (args)
@@ -406,7 +502,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         unsigned int count;
 
         if (level != 0)
-            write_buf(buf, ", ");
+            copy_to_buf(buf, ", ");
 
         count = xkb_keymap_key_get_actions_by_level(keymap, key->keycode,
                                                     group, level, &actions);
@@ -422,10 +518,10 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
         else {
-            write_buf(buf2, "{ ");
+            copy_to_buf(buf2, "{ ");
             for (unsigned int k = 0; k < count; k++) {
                 if (k != 0)
-                    write_buf(buf2, ", ");
+                    copy_to_buf(buf2, ", ");
                 size_t old_size = buf2->size;
                 if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
                     return false;
@@ -439,7 +535,7 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
                     return false;
             }
-            write_buf(buf2, " }");
+            copy_to_buf(buf2, " }");
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
     }
@@ -456,12 +552,12 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "xkb_compatibility \"%s\" {\n",
                   keymap->compat_section_name);
     else
-        write_buf(buf, "xkb_compatibility {\n");
+        copy_to_buf(buf, "xkb_compatibility {\n");
 
     write_vmods(keymap, buf);
 
-    write_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
-    write_buf(buf, "\tinterpret.repeat= False;\n");
+    copy_to_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
+    copy_to_buf(buf, "\tinterpret.repeat= False;\n");
 
     for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
@@ -477,13 +573,13 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                                    si->virtual_mod));
 
         if (si->level_one_only)
-            write_buf(buf, "\t\tuseModMapMods=level1;\n");
+            copy_to_buf(buf, "\t\tuseModMapMods=level1;\n");
 
         if (si->repeat)
-            write_buf(buf, "\t\trepeat= True;\n");
+            copy_to_buf(buf, "\t\trepeat= True;\n");
 
         write_action(keymap, buf, &si->action, "\t\taction= ", ";\n");
-        write_buf(buf, "\t};\n");
+        copy_to_buf(buf, "\t};\n");
     }
 
     xkb_leds_foreach(led, keymap)
@@ -491,7 +587,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
             led->mods.mods || led->ctrls)
             write_led_map(keymap, buf, led);
 
-    write_buf(buf, "};\n\n");
+    copy_to_buf(buf, "};\n\n");
 
     return true;
 }
@@ -508,7 +604,7 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         int num_syms;
 
         if (level != 0)
-            write_buf(buf, ", ");
+            copy_to_buf(buf, ", ");
 
         num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
                                                     group, level, &syms);
@@ -520,14 +616,14 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         }
         else {
             buf2->size = 0;
-            write_buf(buf2, "{ ");
+            copy_to_buf(buf2, "{ ");
             for (int s = 0; s < num_syms; s++) {
                 if (s != 0)
-                    write_buf(buf2, ", ");
+                    copy_to_buf(buf2, ", ");
                 write_buf(buf2, "%*s", (show_actions ? padding : 0),
                           KeysymText(keymap->ctx, syms[s]));
             }
-            write_buf(buf2, " }");
+            copy_to_buf(buf2, " }");
             write_buf(buf, "%*s", padding, buf2->buf);
         }
     }
@@ -561,15 +657,19 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                     continue;
 
                 const struct xkb_key_type * const type = key->groups[group].type;
-                write_buf(buf, "\n\t\ttype[Group%u]= \"%s\",",
-                          group + 1,
-                          xkb_atom_text(keymap->ctx, type->name));
+                /* TODO: This will require using integer indexes when > 4 */
+                write_buf(buf, "\n\t\ttype[Group%u]= ", group + 1);
+                write_buf_string_literal(
+                  buf, xkb_atom_text(keymap->ctx, type->name));
+                copy_to_buf(buf, ",");
             }
         }
         else {
             const struct xkb_key_type * const type = key->groups[0].type;
-            write_buf(buf, "\n\t\ttype= \"%s\",",
-                      xkb_atom_text(keymap->ctx, type->name));
+            write_buf(buf, "\n\t\ttype= ");
+            write_buf_string_literal(
+                buf, xkb_atom_text(keymap->ctx, type->name));
+            copy_to_buf(buf, ",");
         }
     }
 
@@ -588,9 +688,9 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
      * field, so make it explicit. */
     if ((key->explicit & EXPLICIT_REPEAT) || show_actions) {
         if (key->repeats)
-            write_buf(buf, "\n\t\trepeat= Yes,");
+            copy_to_buf(buf, "\n\t\trepeat= Yes,");
         else
-            write_buf(buf, "\n\t\trepeat= No,");
+            copy_to_buf(buf, "\n\t\trepeat= No,");
     }
 
     /* If we show actions, interprets are not going to be used to set this
@@ -602,7 +702,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
     switch (key->out_of_range_group_action) {
     case RANGE_SATURATE:
-        write_buf(buf, "\n\t\tgroupsClamp,");
+        copy_to_buf(buf, "\n\t\tgroupsClamp,");
         break;
 
     case RANGE_REDIRECT:
@@ -625,11 +725,11 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 buf->size--;
         } else {
 	        if (!only_symbols)
-	            write_buf(buf, "\n\t");
-            write_buf(buf, "\t[ ");
+	            copy_to_buf(buf, "\n\t");
+            copy_to_buf(buf, "\t[ ");
             if (!write_keysyms(keymap, buf, buf2, key, 0, false))
                 return false;
-            write_buf(buf, " ]");
+            copy_to_buf(buf, " ]");
         }
         write_buf(buf, "%s", (only_symbols ? " };\n" : "\n\t};\n"));
     }
@@ -637,19 +737,19 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         assert(key->num_groups > 0);
         for (group = 0; group < key->num_groups; group++) {
             if (group != 0)
-                write_buf(buf, ",");
+                copy_to_buf(buf, ",");
             write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
             if (!write_keysyms(keymap, buf, buf2, key, group, show_actions))
                 return false;
-            write_buf(buf, " ]");
+            copy_to_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
                 if (!write_actions(keymap, buf, buf2, key, group))
                     return false;
-                write_buf(buf, " ]");
+                copy_to_buf(buf, " ]");
             }
         }
-        write_buf(buf, "\n\t};\n");
+        copy_to_buf(buf, "\n\t};\n");
     }
 
     return true;
@@ -667,15 +767,17 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "xkb_symbols \"%s\" {\n",
                   keymap->symbols_section_name);
     else
-        write_buf(buf, "xkb_symbols {\n");
+        copy_to_buf(buf, "xkb_symbols {\n");
 
     for (group = 0; group < keymap->num_group_names; group++)
-        if (keymap->group_names[group])
-            write_buf(buf,
-                      "\tname[Group%u]=\"%s\";\n", group + 1,
-                      xkb_atom_text(keymap->ctx, keymap->group_names[group]));
+        if (keymap->group_names[group]) {
+            write_buf(buf, "\tname[Group%u]=", group + 1);
+            write_buf_string_literal(
+                buf, xkb_atom_text(keymap->ctx, keymap->group_names[group]));
+            copy_to_buf(buf, ";\n");
+        }
     if (group > 0)
-        write_buf(buf, "\n");
+        copy_to_buf(buf, "\n");
 
     struct buf buf2 = { NULL, 0, 0 };
     xkb_keys_foreach(key, keymap) {
@@ -703,10 +805,10 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
             }
         }
         if (had_any)
-            write_buf(buf, " };\n");
+            copy_to_buf(buf, " };\n");
     }
 
-    write_buf(buf, "};\n\n");
+    copy_to_buf(buf, "};\n\n");
     return true;
 }
 
