@@ -7,8 +7,8 @@
 #include "config.h"
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "context.h"
@@ -16,6 +16,7 @@
 #include "messages-codes.h"
 #include "utils.h"
 #include "utils-numbers.h"
+#include "utf8.h"
 
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
@@ -187,6 +188,22 @@ scanner_buf_appends(struct scanner *s, const char *str)
 }
 
 static inline bool
+scanner_buf_appends_code_point(struct scanner *s, uint32_t c)
+{
+    /* Up to 4 bytes + NULL */
+    if (s->buf_pos + 5 <= sizeof(s->buf)) {
+        const int count = utf32_to_utf8(c, s->buf + s->buf_pos);
+        if (count == 0)
+            return false;
+        /* `count` counts the NULL byte */
+        s->buf_pos += count - 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static inline bool
 scanner_oct(struct scanner *s, uint8_t *out)
 {
     uint8_t i = 0;
@@ -209,7 +226,7 @@ scanner_oct(struct scanner *s, uint8_t *out)
 static inline bool
 scanner_hex(struct scanner *s, uint8_t *out)
 {
-    int i;
+    uint8_t i;
     for (i = 0, *out = 0; is_xdigit(scanner_peek(s)) && i < 2; i++) {
         const char c = scanner_next(s);
         const char offset = (char) (c >= '0' && c <= '9' ? '0' :
@@ -258,6 +275,21 @@ scanner_hex_int64(struct scanner *s, int64_t *out)
         *out = (int64_t) val;
     }
     return count;
+}
+
+/** Parser for the hexadecimal number NNNN of \u{NNNN} escape sequences */
+static inline bool
+scanner_unicode_code_point(struct scanner *s, uint32_t *out)
+{
+    uint32_t cp = 0;
+    const int count =
+        parse_hex_to_uint32_t(s->s + s->pos, s->len - s->pos, &cp);
+    if (count > 0 && cp <= 0x10ffff) {
+        *out = cp;
+        s->pos += count;
+        return true;
+    }
+    return false;
 }
 
 /* Basic detection of wrong character encoding based on the first bytes */

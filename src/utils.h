@@ -52,7 +52,7 @@ typedef SSIZE_T ssize_t;
 
 /* Check if a character is valid in a string literal */
 static inline bool
-is_valid_char(char c)
+is_valid_char(uint32_t c)
 {
     /* Currently we only check for NULL character, but this could be extended
      * in the future to further ASCII control characters. */
