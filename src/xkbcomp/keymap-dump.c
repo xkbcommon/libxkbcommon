@@ -91,6 +91,51 @@ err:
 } while (0)
 
 static bool
+check_write_string(struct buf *buf, const char* string)
+{
+    const size_t len = strlen(string);
+    /* Write chunks, separated by characters requiring escape sequence */
+    size_t last = 0;
+    for (size_t current = last; current < len; current++) {
+        const char *escape;
+        switch (string[current]) {
+        case '"':
+            /* `"` would break strings
+             *
+             * NOTE: We must use the octal escape sequence in xkbcomp style:
+             * 1. To be compatible with Xorg xkbcomp.
+             * 2. To avoid issues with the next char: e.g. "\0427" should not
+             *    be emitted as "\427".
+             */
+            escape = "\\042";
+            break;
+        case '\\':
+            /* `\` would create escape sequences */
+            escape = "\\\\";
+            break;
+        case '\n':
+            /* `\n` would break strings */
+            escape = "\\n";
+            break;
+        default:
+            continue;
+        }
+        if (current > last)
+            write_buf(buf, "%.*s", (int) (current - last), &string[last]);
+        last = current + 1;
+        write_buf(buf, "%s", escape);
+    }
+    if (last < len)
+        write_buf(buf, "%.*s", (int) (len - last), &string[last]);
+    return true;
+}
+
+#define write_buf_string(buf, string) do { \
+    if (!check_write_string(buf, string)) \
+        return false; \
+} while (0)
+
+static bool
 write_vmods(struct xkb_keymap *keymap, struct buf *buf)
 {
     const struct xkb_mod *mod;
@@ -151,9 +196,11 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
     }
 
     xkb_leds_enumerate(idx, led, keymap)
-        if (led->name != XKB_ATOM_NONE)
-            write_buf(buf, "\tindicator %u = \"%s\";\n",
-                      idx + 1, xkb_atom_text(keymap->ctx, led->name));
+        if (led->name != XKB_ATOM_NONE) {
+            write_buf(buf, "\tindicator %u = \"", idx + 1);
+            write_buf_string(buf, xkb_atom_text(keymap->ctx, led->name));
+            write_buf(buf, "\";\n");
+        }
 
 
     for (unsigned i = 0; i < keymap->num_key_aliases; i++)
@@ -179,8 +226,9 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
     for (unsigned i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type *type = &keymap->types[i];
 
-        write_buf(buf, "\ttype \"%s\" {\n",
-                  xkb_atom_text(keymap->ctx, type->name));
+        write_buf(buf, "\ttype \"");
+        write_buf_string(buf, xkb_atom_text(keymap->ctx, type->name));
+        write_buf(buf, "\" {\n");
 
         write_buf(buf, "\t\tmodifiers= %s;\n",
                   ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
@@ -209,9 +257,13 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
         }
 
         for (xkb_level_index_t n = 0; n < type->num_level_names; n++)
-            if (type->level_names[n])
-                write_buf(buf, "\t\tlevel_name[%u]= \"%s\";\n", n + 1,
-                          xkb_atom_text(keymap->ctx, type->level_names[n]));
+            if (type->level_names[n]) {
+                write_buf(buf, "\t\tlevel_name[%u]= \"", n + 1);
+                write_buf_string(
+                    buf, xkb_atom_text(keymap->ctx, type->level_names[n]));
+                write_buf(buf, "\";\n");
+            }
+
 
         write_buf(buf, "\t};\n");
     }
@@ -224,8 +276,9 @@ static bool
 write_led_map(struct xkb_keymap *keymap, struct buf *buf,
               const struct xkb_led *led)
 {
-    write_buf(buf, "\tindicator \"%s\" {\n",
-              xkb_atom_text(keymap->ctx, led->name));
+    write_buf(buf, "\tindicator \"");
+    write_buf_string(buf, xkb_atom_text(keymap->ctx, led->name));
+    write_buf(buf, "\" {\n");
 
     if (led->which_groups) {
         if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE) {
@@ -562,15 +615,17 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                     continue;
 
                 type = key->groups[group].type;
-                write_buf(buf, "\n\t\ttype[Group%u]= \"%s\",",
-                            group + 1,
-                            xkb_atom_text(keymap->ctx, type->name));
+                /* TODO: This will require using integer indexes when > 4 */
+                write_buf(buf, "\n\t\ttype[Group%u]= \"", group + 1);
+                write_buf_string(buf, xkb_atom_text(keymap->ctx, type->name));
+                write_buf(buf, "\",");
             }
         }
         else {
             type = key->groups[0].type;
-            write_buf(buf, "\n\t\ttype= \"%s\",",
-                        xkb_atom_text(keymap->ctx, type->name));
+            write_buf(buf, "\n\t\ttype= \"");
+            write_buf_string(buf, xkb_atom_text(keymap->ctx, type->name));
+            write_buf(buf, "\",");
         }
     }
 
@@ -661,10 +716,12 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
         write_buf(buf, "xkb_symbols {\n");
 
     for (group = 0; group < keymap->num_group_names; group++)
-        if (keymap->group_names[group])
-            write_buf(buf,
-                      "\tname[Group%u]=\"%s\";\n", group + 1,
-                      xkb_atom_text(keymap->ctx, keymap->group_names[group]));
+        if (keymap->group_names[group]) {
+            write_buf(buf, "\tname[Group%u]=\"", group + 1);
+            write_buf_string(
+                buf, xkb_atom_text(keymap->ctx, keymap->group_names[group]));
+            write_buf(buf, "\";\n");
+        }
     if (group > 0)
         write_buf(buf, "\n");
 
