@@ -737,7 +737,9 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
 
     InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
 
-    HandleKeyTypesFile(&info, file, merge);
+    if (file != NULL)
+        HandleKeyTypesFile(&info, file, merge);
+
     if (info.errorCount != 0)
         goto err_info;
 

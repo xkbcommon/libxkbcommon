@@ -1787,7 +1787,8 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
     InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
     info.default_key.merge = merge;
 
-    HandleSymbolsFile(&info, file, merge);
+    if (file !=NULL)
+        HandleSymbolsFile(&info, file, merge);
 
     if (info.errorCount != 0)
         goto err_info;

@@ -710,7 +710,9 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
 
     InitKeyNamesInfo(&info, keymap->ctx, 0);
 
-    HandleKeycodesFile(&info, file, merge);
+    if (file != NULL)
+        HandleKeycodesFile(&info, file, merge);
+
     if (info.errorCount != 0)
         goto err_info;
 

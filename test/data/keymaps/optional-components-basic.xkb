@@ -1,0 +1,26 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<>                   = 1;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+};
+
+xkb_symbols {
+	key <>                   {
+		type= "default",
+		symbols[Group1]= [               a ]
+	};
+};
+
+};

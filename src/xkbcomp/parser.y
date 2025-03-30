@@ -272,10 +272,22 @@ XkbCompositeType:       XKB_KEYMAP      { $$ = FILE_TYPE_KEYMAP; }
                 |       XKB_LAYOUT      { $$ = FILE_TYPE_KEYMAP; }
                 ;
 
+/*
+ * NOTE: Any component is optional
+ */
 XkbMapConfigList :      XkbMapConfigList XkbMapConfig
-                        { $$.head = $1.head; $$.last->common.next = &$2->common; $$.last = $2; }
-                |       XkbMapConfig
-                        { $$.head = $$.last = $1; }
+                        {
+                            if ($2) {
+                                if ($1.head) {
+                                    $$.head = $1.head;
+                                    $$.last->common.next = &$2->common;
+                                    $$.last = $2;
+                                } else {
+                                    $$.head = $$.last = $2;
+                                }
+                            }
+                        }
+                |       { $$.head = $$.last = NULL; }
                 ;
 
 XkbMapConfig    :       OptFlags FileType OptMapName OBRACE
