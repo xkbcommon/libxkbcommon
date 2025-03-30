@@ -1,5 +1,5 @@
 xkb_keymap {
-xkb_keycodes "(unnamed)" {
+xkb_keycodes {
 	minimum = 0;
 	maximum = 255;
 	<0>                  = 0;
@@ -14,7 +14,7 @@ xkb_keycodes "(unnamed)" {
 	alias <LOCK>         = <CAPS>;
 };
 
-xkb_types "(unnamed)" {
+xkb_types "basic" {
 	virtual_modifiers NumLock;
 
 	type "ONE_LEVEL" {
@@ -36,14 +36,14 @@ xkb_types "(unnamed)" {
 	};
 };
 
-xkb_compatibility "(unnamed)" {
+xkb_compatibility {
 	virtual_modifiers NumLock;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
 };
 
-xkb_symbols "(unnamed)" {
+xkb_symbols {
 	key <0>                  {	[               0 ] };
 	key <1>                  {	[               1 ] };
 	key <2>                  {	[               2 ] };
