@@ -1,10 +1,10 @@
 xkb_keymap {
-xkb_keycodes "(unnamed)" {
+xkb_keycodes {
 	minimum = 8;
 	maximum = 255;
 };
 
-xkb_types "(unnamed)" {
+xkb_types {
 	virtual_modifiers Test01,Test02=0xffffffff,Test11=all,Test12=Mod2+Mod3+Mod4+Mod5,Test13=0xfffffff0,Test14=0xffffffff,Test15=0xffffff00,Test16,Test17=Mod1+Mod2;
 
 	type "XXX" {
@@ -13,14 +13,14 @@ xkb_types "(unnamed)" {
 	};
 };
 
-xkb_compatibility "(unnamed)" {
+xkb_compatibility {
 	virtual_modifiers Test01,Test02=0xffffffff,Test11=all,Test12=Mod2+Mod3+Mod4+Mod5,Test13=0xfffffff0,Test14=0xffffffff,Test15=0xffffff00,Test16,Test17=Mod1+Mod2;
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
 };
 
-xkb_symbols "(unnamed)" {
+xkb_symbols {
 };
 
 };

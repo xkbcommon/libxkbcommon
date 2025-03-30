@@ -1,5 +1,5 @@
 xkb_keymap {
-xkb_keycodes "(unnamed)" {
+xkb_keycodes {
 	minimum = 8;
 	maximum = 255;
 	indicator 1 = "A";
@@ -8,13 +8,13 @@ xkb_keycodes "(unnamed)" {
 	indicator 4 = "D";
 };
 
-xkb_types "(unnamed)" {
+xkb_types {
 	type "default" {
 		modifiers= none;
 	};
 };
 
-xkb_compatibility "(unnamed)" {
+xkb_compatibility {
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
 	interpret A+AnyOfOrNone(all) {
@@ -49,7 +49,7 @@ xkb_compatibility "(unnamed)" {
 	};
 };
 
-xkb_symbols "(unnamed)" {
+xkb_symbols {
 };
 
 };

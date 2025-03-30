@@ -78,7 +78,7 @@ enum update_files {
 /* Helper to create a keymap string to initialize output files */
 #define make_ref_keymap(file, map, suffix)           \
     keymap_common                                    \
-    "  xkb_symbols {\n"                              \
+    "  xkb_symbols \"\" {\n"                         \
     "    include \"" file "(" map suffix ")\"\n"     \
     "  };\n"                                         \
     "};"
@@ -86,7 +86,7 @@ enum update_files {
 /* Helper to create a keymap string to test (global) */
 #define make_test_keymap_global(file, map, merge_mode)                        \
     keymap_common                                                             \
-    "  xkb_symbols {\n"                                                       \
+    "  xkb_symbols \"\" {\n"                                                  \
     /*                                                                        \
      * NOTE: Separate statements so that *all* the merge modes *really* work. \
      *       Using + and | separators downgrades `replace key` to `override/  \
@@ -100,7 +100,7 @@ enum update_files {
 /* Helper to create a keymap string to test (local) */
 #define make_test_keymap_local(file, map, merge_mode)                         \
     keymap_common                                                             \
-    "  xkb_symbols {\n"                                                       \
+    "  xkb_symbols \"\" {\n"                                                  \
     /*                                                                        \
      * NOTE: Separate statements so that *all* the merge modes *really* work. \
      *       Using + and | separators downgrades `replace key` to `override/  \

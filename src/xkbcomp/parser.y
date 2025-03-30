@@ -928,7 +928,8 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
                 XKB_WARNING_MISSING_DEFAULT_SECTION,
                 "No map in include statement, but \"%s\" contains several; "
                 "Using first defined map, \"%s\"\n",
-                scanner->file_name, first->name);
+                scanner->file_name,
+                (first->name) ? first->name : default_component_name);
 
     return first;
 }

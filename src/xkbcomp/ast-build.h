@@ -99,3 +99,5 @@ XkbFileCreate(enum xkb_file_type type, char *name, ParseCommon *defs,
 
 void
 FreeStmt(ParseCommon *stmt);
+
+static const char default_component_name[] = "(unnamed map)";
