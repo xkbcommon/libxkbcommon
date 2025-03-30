@@ -13,6 +13,22 @@
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
+struct keymap_test_data {
+    /** Keymap string to compile */
+    const char * const keymap;
+    /** Resulting file *path* to reference serialization,
+     *  or NULL if the keymap string should not compile. */
+    const char * const expected;
+};
+
+/* Our keymap compiler is the xkbcommon buffer compiler */
+static struct xkb_keymap *
+compile_buffer(struct xkb_context *context, const char *buf, size_t len,
+                     void *private)
+{
+    return test_compile_buffer(context, buf, len);
+}
+
 static void
 test_encodings(struct xkb_context *ctx)
 {
@@ -188,6 +204,80 @@ test_component_syntax_error(struct xkb_context *ctx)
     }
 }
 
+/** Test that any component is optional and can be empty */
+static void
+test_optional_components(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct keymap_test_data keymaps[] = {
+        /*
+         * Optional or empty
+         */
+        {
+            .keymap = "xkb_keymap {};",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        {
+            .keymap = "xkb_keymap { xkb_keycodes {}; };",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        {
+            .keymap = "xkb_keymap { xkb_types {}; };",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        {
+            .keymap = "xkb_keymap { xkb_compat {}; };",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        {
+            .keymap = "xkb_keymap { xkb_symbols {}; };",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        /*
+         * Some content, to check we handle missing data correctly
+         */
+        {
+            /* Indicator not defined in keycodes */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { indicator \"XXX\" { modifiers=Lock; }; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-no-real-led.xkb"
+        },
+        {
+            /* Key not defined */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_symbols { key <> { [a] }; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"
+        },
+        {
+            /* Key type not defined */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };"
+                "  xkb_symbols { key <> { [a], type=\"XXX\" }; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "optional-components-basic.xkb"
+        },
+        {
+            /* Virtual modifier not defined */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };"
+                "  xkb_symbols { key <> { vmods=XXX, [a] }; };\n"
+                "};",
+            .expected = NULL
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
 static void
 test_recursive(struct xkb_context *ctx)
 {
@@ -302,19 +392,6 @@ test_alloc_limits(struct xkb_context *ctx)
             test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
-}
-
-struct keymap_test_data {
-    const char * const keymap;
-    const char * const expected;
-};
-
-/* Our keymap compiler is the xkbcommon buffer compiler */
-static struct xkb_keymap *
-compile_buffer(struct xkb_context *context, const char *buf, size_t len,
-                     void *private)
-{
-    return test_compile_buffer(context, buf, len);
 }
 
 static void
@@ -939,6 +1016,7 @@ main(int argc, char *argv[])
     test_encodings(ctx);
     test_floats(ctx);
     test_component_syntax_error(ctx);
+    test_optional_components(ctx, update_output_files);
     test_recursive(ctx);
     test_alloc_limits(ctx);
     test_integers(ctx, update_output_files);

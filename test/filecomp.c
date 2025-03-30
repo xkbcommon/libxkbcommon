@@ -35,7 +35,6 @@ main(void)
     assert(test_file(ctx, "keymaps/invalid-escape-sequence.xkb"));
 
     assert(!test_file(ctx, "keymaps/divide-by-zero.xkb"));
-    assert(!test_file(ctx, "keymaps/bad.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error.xkb"));
     assert(!test_file(ctx, "keymaps/syntax-error2.xkb"));
     assert(!test_file(ctx, "keymaps/empty-symbol-decl.xkb"));

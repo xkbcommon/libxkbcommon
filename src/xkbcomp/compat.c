@@ -889,7 +889,9 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
     info.default_interp.merge = merge;
     info.default_led.merge = merge;
 
-    HandleCompatMapFile(&info, file, merge);
+    if (file != NULL)
+        HandleCompatMapFile(&info, file, merge);
+
     if (info.errorCount != 0)
         goto err_info;
 

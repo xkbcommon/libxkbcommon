@@ -341,7 +341,6 @@ static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
 {
-    bool ok;
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
     enum xkb_file_type type;
     struct xkb_context *ctx = keymap->ctx;
@@ -375,32 +374,25 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
     }
 
     /*
-     * Check that all required section were provided.
-     * Report everything before failing.
+     * Compile sections
+     *
+     * NOTE: Any component is optional.
      */
-    ok = true;
     for (type = FIRST_KEYMAP_FILE_TYPE;
          type <= LAST_KEYMAP_FILE_TYPE;
          type++) {
         if (files[type] == NULL) {
-            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Required section %s missing from keymap\n",
+            log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Component %s not provided in keymap\n",
                     xkb_file_type_to_string(type));
-            ok = false;
+        } else {
+            log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Compiling %s \"%s\"\n",
+                    xkb_file_type_to_string(type), files[type]->name);
         }
-    }
-    if (!ok)
-        return false;
 
-    /* Compile sections. */
-    for (type = FIRST_KEYMAP_FILE_TYPE;
-         type <= LAST_KEYMAP_FILE_TYPE;
-         type++) {
-        log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Compiling %s \"%s\"\n",
-                xkb_file_type_to_string(type), files[type]->name);
-
-        ok = compile_file_fns[type](files[type], keymap, merge);
+        /* Missing components are initialized with defaults */
+        const bool ok = compile_file_fns[type](files[type], keymap, merge);
         if (!ok) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Failed to compile %s\n",
