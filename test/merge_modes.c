@@ -26,8 +26,6 @@ test_compat(struct xkb_context *ctx, enum update_files update_output_files)
     // Github Issue #566
     const char keymap_str[] =
         "xkb_keymap {\n"
-        "  xkb_keycodes { };\n"
-        "  xkb_types { };\n"
         "  xkb_compat {\n"
         "    interpret A { repeat = true; };\n"
         "    interpret A { repeat = true; };\n"
@@ -55,7 +53,6 @@ test_compat(struct xkb_context *ctx, enum update_files update_output_files)
 	    "    indicator \"D\" { modifiers=Lock; };\n"
 	    "    replace indicator \"D\" { groups=Group1; };\n"
         "  };\n"
-        "  xkb_symbols { };\n"
         "};\n";
 
     assert(test_compile_output(ctx, compile_buffer, NULL,

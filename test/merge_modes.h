@@ -63,8 +63,7 @@ enum update_files {
 	"        level_name[Level3] = \"Alt Base\";\n"                            \
 	"        level_name[Level4] = \"Shift Alt\";\n"                           \
     "    };\n"                                                                \
-    "  };\n"                                                                  \
-    "  xkb_compat { };\n"
+    "  };\n"
 
 /* Macro sorcery: see "src/messages-codes.h" */
 #define MATCHdefault             unused,default

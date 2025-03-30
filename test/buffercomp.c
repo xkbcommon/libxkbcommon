@@ -35,47 +35,24 @@ test_encodings(struct xkb_context *ctx)
     struct xkb_keymap *keymap;
 
     /* Accept UTF-8 encoded BOM (U+FEFF) */
-    const char utf8_with_bom[] =
-        "\xef\xbb\xbfxkb_keymap {"
-        "  xkb_keycodes { };"
-        "  xkb_types { };"
-        "  xkb_compat { };"
-        "  xkb_symbols { };"
-        "};";
+    const char utf8_with_bom[] = "\xef\xbb\xbfxkb_keymap {};";
     keymap = test_compile_buffer(ctx, utf8_with_bom, sizeof(utf8_with_bom));
     assert(keymap);
     xkb_keymap_unref(keymap);
 
     /* Reject UTF-16LE encoded string */
-    const char utf16_le[] =
-        "x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
-        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
-        "}\0;\0";
+    const char utf16_le[] = "x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;\0";
     keymap = test_compile_buffer(ctx, utf16_le, sizeof(utf16_le));
     assert(!keymap);
 
     /* Reject UTF-16LE with BOM encoded string */
     const char utf16_le_with_bom[] =
-        "\xff\xfex\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
-        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
-        "}\0;\0";
+        "\xff\xfex\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;\0";
     keymap = test_compile_buffer(ctx, utf16_le_with_bom, sizeof(utf16_le_with_bom));
     assert(!keymap);
 
     /* Reject UTF-16BE encoded string */
-    const char utf16_be[] =
-        "\0x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0\n\0"
-        " \0 \0x\0k\0b\0_\0k\0e\0y\0c\0o\0d\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0e\0v\0d\0e\0v\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0t\0y\0p\0e\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0c\0o\0m\0p\0a\0t\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0c\0o\0m\0p\0l\0e\0t\0e\0\"\0 \0}\0;\0\n\0"
-        " \0 \0x\0k\0b\0_\0s\0y\0m\0b\0o\0l\0s\0 \0{\0 \0i\0n\0c\0l\0u\0d\0e\0 \0\"\0p\0c\0\"\0 \0}\0;\0\n\0"
-        "}\0;";
+    const char utf16_be[] = "\0x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;";
     keymap = test_compile_buffer(ctx, utf16_be, sizeof(utf16_be));
     assert(!keymap);
 }
@@ -93,10 +70,6 @@ test_floats(struct xkb_context *ctx)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
-                "  xkb_symbols { };\n"
                 "  xkb_geometry {\n"
                 "    width=123.456;\n"
                 "    width=123.0;\n"
@@ -113,44 +86,17 @@ test_floats(struct xkb_context *ctx)
         },
         /* Invalid: missing integer part */
         {
-            .keymap =
-                "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
-                "  xkb_symbols { };\n"
-                "  xkb_geometry {\n"
-                "    width=.123;"
-                "  };"
-                "};",
+            .keymap = "xkb_keymap { xkb_geometry { width=.123; }; };",
             .valid = false
         },
         /* Invalid: comma decimal separator */
         {
-            .keymap =
-                "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
-                "  xkb_symbols { };\n"
-                "  xkb_geometry {\n"
-                "    width=1,23;"
-                "  };"
-                "};",
+            .keymap = "xkb_keymap { xkb_geometry { width=1,23; }; };",
             .valid = false
         },
         /* Invalid: exponent */
         {
-            .keymap =
-                "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
-                "  xkb_symbols { };\n"
-                "  xkb_geometry {\n"
-                "    width=1.23e2;"
-                "  };"
-                "};",
+            .keymap = "xkb_keymap { xkb_geometry { width=1.23e2; }; };",
             .valid = false
         },
     };
@@ -170,29 +116,29 @@ test_component_syntax_error(struct xkb_context *ctx)
     /* The following used to trigger memory leak */
     const char* const keymaps[] = {
         "xkb_keymap {"
-        "  xkb_keycodes { };"
+        "  xkb_keycodes {};"
         "};"
         "};", /* Syntax error, keymap “complete” */
         "xkb_keymap {"
-        "  xkb_keycodes { };"
-        "  xkb_types { };"
-        "  xkb_compat { };"
-        "  xkb_symbols { };"
+        "  xkb_keycodes {};"
+        "  xkb_types {};"
+        "  xkb_compat {};"
+        "  xkb_symbols {};"
         "};"
         "};"/* Syntax error, keymap complete */,
         "xkb_keymap {"
-        "  xkb_keycodes { };"
+        "  xkb_keycodes {};"
         "}" /* Syntax error, incomplete map */
-        "  xkb_types { };"
-        "  xkb_compat { };"
-        "  xkb_symbols { };"
+        "  xkb_types {};"
+        "  xkb_compat {};"
+        "  xkb_symbols {};"
         "};",
         "xkb_keymap {"
-        "  xkb_keycodes { };"
+        "  xkb_keycodes {};"
         ";" /* Syntax error, incomplete map */
-        "  xkb_types { };"
-        "  xkb_compat { };"
-        "  xkb_symbols { };"
+        "  xkb_types {};"
+        "  xkb_compat {};"
+        "  xkb_symbols {};"
         "};",
     };
 
@@ -364,26 +310,18 @@ test_alloc_limits(struct xkb_context *ctx)
         /* Valid keycode value, but we should not handle it
          * with our *continuous* array! */
         "  xkb_keycodes { <> = 0xfffffffe; };\n"
-        "  xkb_types { };\n"
-        "  xkb_compat { };\n"
         "  xkb_symbols { key <> {[a]}; };\n"
         "};",
         /* Key types */
         "xkb_keymap {\n"
-        "  xkb_keycodes { };\n"
         "  xkb_types {\n"
         "    type \"X\" { map[none] = 0xfffffffe; };\n" /* Invalid level index */
         "  };\n"
-        "  xkb_compat { };\n"
-        "  xkb_symbols { };\n"
         "};",
         "xkb_keymap {\n"
-        "  xkb_keycodes { };\n"
         "  xkb_types {\n"
         "    type \"X\" {levelname[0xfffffffe]=\"x\";};\n" /* Invalid level index */
         "  };\n"
-        "  xkb_compat { };\n"
-        "  xkb_symbols { };\n"
         "};"
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
@@ -404,9 +342,6 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                     /* Out of range (expect 32 bits, got > 64 bits) */
                     "    <> = 0x10000000000000000;\n"
                     "  };\n"
-                    "  xkb_types { };\n"
-                    "  xkb_compat { };\n"
-                    "  xkb_symbols { };\n"
                     "};",
                 .expected = NULL
         },
@@ -414,7 +349,6 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 .keymap =
                     "xkb_keymap {\n"
                     "  xkb_keycodes { <> = 1; };\n"
-                    "  xkb_types { };\n"
                     "  xkb_compat {\n"
                     "  };\n"
                     "  xkb_symbols {\n"
@@ -434,7 +368,6 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    <> = 1;\n"
                 "    indicator 32 = \"xxx\";\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    group 0xffffffff = Mod5;\n"
                 "  };\n"
@@ -477,11 +410,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    augment  <A> = 300;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
         },
@@ -493,11 +424,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    augment  <A> = 0;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
@@ -511,11 +440,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 301;\n"
                 "    override <A> = 300;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-2.xkb"
         },
@@ -530,11 +457,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    augment  <B> = 301;\n"
                 "    override <A> = 1;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
@@ -548,11 +473,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    augment  <B> = 300;\n"
                 "    override <A> = 1;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
@@ -568,11 +491,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <B> = 300;\n"
                 "    augment  <A> = 0;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
         },
@@ -585,11 +506,9 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    augment  <B> = 302;\n"
                 "  };\n"
-                "  xkb_types { };\n"
                 "  xkb_compat {\n"
                 "    interpret.repeat= False;\n"
                 "  };\n"
-                "  xkb_symbols { };\n"
                 "};",
             /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
@@ -610,59 +529,46 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
         {
                 .keymap =
                     "xkb_keymap {\n"
-                    "  xkb_keycodes { };\n"
-                    "  xkb_types { };\n"
                     "  xkb_compat {\n"
                     /* Cannot be negative */
                     "    virtual_modifiers Test1 = -1;\n"
                     "  };\n"
-                    "  xkb_symbols { };\n"
                     "};",
                 .expected = NULL
         },
         {
                 .keymap =
                     "xkb_keymap {\n"
-                    "  xkb_keycodes { };\n"
-                    "  xkb_types { };\n"
                     "  xkb_compat {\n"
                     /* Out of range (expect 32bits) */
                     "    virtual_modifiers Test1 = 0x100000000;\n"
                     "  };\n"
-                    "  xkb_symbols { };\n"
                     "};",
                 .expected = NULL
         },
         {
                 .keymap =
                     "xkb_keymap {\n"
-                    "  xkb_keycodes { };\n"
-                    "  xkb_types { };\n"
                     "  xkb_compat {\n"
                     /* Out of range (expect 32bits) */
                     "    virtual_modifiers Test1 = ~0x100000000;\n"
                     "  };\n"
-                    "  xkb_symbols { };\n"
                     "};",
                 .expected = NULL
         },
         {
                 .keymap =
                     "xkb_keymap {\n"
-                    "  xkb_keycodes { };\n"
-                    "  xkb_types { };\n"
                     "  xkb_compat {\n"
                     /* Unsupported operator */
                     "    virtual_modifiers Test1 = !Mod1;\n"
                     "  };\n"
-                    "  xkb_symbols { };\n"
                     "};",
                 .expected = NULL
         },
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
                 "  xkb_types {\n"
                 /* Try range */
                 "    virtual_modifiers Test01 = 0;\n"
@@ -682,8 +588,6 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
                 "      map[Test12 - Mod5] = 2;\n"
                 "    };\n"
                 "  };\n"
-                "  xkb_compat { };\n"
-                "  xkb_symbols { };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "masks.xkb"
         }
@@ -794,46 +698,32 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
     const char * const keymaps[] = {
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { vmods = [] }; };\n"
         "};",
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { repeat = [] }; };\n"
         "};",
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { type = [] }; };\n"
         "};",
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { groupswrap = [] }; };\n"
         "};",
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { groupsredirect = [] }; };\n"
         "};",
         /* Used to parse without error because the “repeats” key field is valid,
          * but we should fail in the following 2 keymaps */
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { vmods=[], repeats=false }; };\n"
         "};",
         "xkb_keymap {\n"
         "    xkb_keycodes { <> = 9; };\n"
-        "    xkb_types { };\n"
-        "    xkb_compat { };\n"
         "    xkb_symbols { key <> { repeats=false, vmods=[] }; };\n"
         "};"
     };
@@ -866,7 +756,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
                 "    <100> = 100;"
                 "  };\n"
                 "  xkb_types { include \"basic\" };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols {\n"
                 "    key <CAPS> { [Caps_Lock] };\n"
                 "    key <any>  { [any, A] };\n"
@@ -889,9 +778,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols { modifier_map Lock { \"\" }; };\n"
                 "};",
             .expected = NULL
@@ -900,9 +786,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols { modifier_map Lock { \"a\" }; };\n"
                 "};",
             .expected = NULL
@@ -911,9 +794,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols { modifier_map Lock { \"ab\" }; };\n"
                 "};",
             .expected = NULL
@@ -922,9 +802,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols { modifier_map Lock { [a] }; };\n"
                 "};",
             .expected = NULL
@@ -933,9 +810,6 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { };\n"
-                "  xkb_types { };\n"
-                "  xkb_compat { };\n"
                 "  xkb_symbols { modifier_map Lock { {a, b} }; };\n"
                 "};",
             .expected = NULL
