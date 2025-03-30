@@ -12,6 +12,8 @@ unused in the standard dataset.
 
 ### Notable removals
 
+- Keymap components are no longer mandatory, e.g. a keymap without a
+  `xkb_types` section is legal.
 - geometry support @anchor geometry
   @anchor geometry-support
   + there were very few geometry definitions available, and while
