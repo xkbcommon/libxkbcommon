@@ -575,7 +575,7 @@ _case-sensitive_.
 | `alphanumeric_keys`     | <span class="todo">TODO</span> |
 | `alternate_group`       | <span class="todo">TODO</span> |
 | `alternate`             | <span class="todo">TODO</span> |
-| `augment`               | Mode qualifier for [include] statements |
+| `augment`               | Merge mode qualifier for [include] statements |
 | `default`               | <span class="todo">TODO</span> |
 | `function_keys`         | <span class="todo">TODO</span> |
 | `group`                 | <span class="todo">TODO</span> |
@@ -593,9 +593,9 @@ _case-sensitive_.
 | `modifier_map`          | <span class="todo">TODO</span> |
 | `outline`               | <span class="todo">TODO</span> |
 | `overlay`               | <span class="todo">TODO</span> |
-| `override`              | Mode qualifier for [include] statements |
+| `override`              | Merge mode qualifier for [include] statements |
 | `partial`               | <span class="todo">TODO</span> |
-| `replace`               | Mode qualifier for [include] statements |
+| `replace`               | Merge mode qualifier for [include] statements |
 | `row`                   | <span class="todo">TODO</span> |
 | `section`               | <span class="todo">TODO</span> |
 | `shape`                 | <span class="todo">TODO</span> |
@@ -632,9 +632,298 @@ sections.
 These settings are _case-insensitive_, e.g. the following strings denote
 the same key word: `SETMODS`, `SetMods`, `setMods` and `setmods`.
 
+### Merge modes {#merge-mode-def}
+
+Each statement has a **merge mode** property that defines how to handle
+*conflicts* with previous statements. This property can be set explicitly by
+prefixing the statement with one of the merge modes presented hereinafter.
+
+<dl>
+<dt>@anchor merge-mode-augment augment</dt>
+<dd>
+
+If two declarations conflict, update the properties which are *explicitly*
+defined in the *new* declaration, *only* if they were *implicit* in the *old*
+declaration.
+
+```c
+key <A>         { [a          , NoSymbol   , ae          ] };
+augment key <A> { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
+// Result
+key <A>         { [a          , Greek_ALPHA, ae      , AE] };
+```
+</dt>
+<dt>@anchor merge-mode-override override</dt>
+<dd>
+
+If two declarations conflict, update only the properties which are
+*explicitly* defined in the *new* declaration.
+
+@note @anchor merge-mode-default Override is the *default* merge mode.
+
+```c
+key <A>          { [a          , NoSymbol   , ae          ] };
+// Explicit merge mode
+override key <A> { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
+// Result
+key <A>          { [Greek_alpha, Greek_ALPHA, ae      , AE] };
+```
+
+```c
+key <A>          { [a          , NoSymbol   , ae          ] };
+// Implicit merge mode is override
+key <A>          { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
+// Result
+key <A>          { [Greek_alpha, Greek_ALPHA, ae      , AE] };
+```
+</dt>
+<dt>@anchor merge-mode-replace replace</dt>
+<dd>
+
+If two declarations conflict, ignore the old declaration and use the new one.
+
+```c
+key <A>         { [a          , NoSymbol   , ae          ] };
+replace key <A> { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
+// Result
+key <A>         { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
+```
+</dt>
+</dl>
+
+[default merge mode]: @ref merge-mode-default
+
 ### The include mechanism {#xkb-include}
 
-@todo the import mechanism, its qualifiers
+#### Syntax
+
+Statements of the form:
+
+```c
+// Implicit section name
+include "<PATH>"
+// Explicit section name
+include "<PATH>(<SECTION_NAME>)"
+```
+
+will include data from another [section] of the *same type*, possibly located in
+another file. Note that the statement does not have a trailing semicolon.
+
+The path may be absolute or relative to its corresponding directory in a XKB
+configuration: e.g. given the configuration directory `<XKB>`, files of
+section type `xkb_symbols` are looked up in `<XKB>/symbols`.
+
+The `include` keyword uses the *default* [merge mode]. The following keywords
+can be used instead to use the corresponding *explicit* [merge modes][]:
+- [`augment`][augment]
+- [`override`][override]
+- [`replace`][replace]
+
+[merge mode]: @ref merge-mode-def
+[merge modes]: @ref merge-mode-def
+[augment]: @ref merge-mode-augment
+[override]: @ref merge-mode-override
+[replace]: @ref merge-mode-replace
+
+*Multiple files* can be included using the same statement. They are separated using one
+of the following [merge mode] prefixes:
+- ‘|’ selects the <strong>[augment]</strong> merge mode.
+- ‘+’ selects the <strong>[override]</strong> merge mode (default).
+- ‘^’ selects the <strong>[replace]</strong> merge mode.
+
+The following example illustrates the complete syntax:
+
+```c
+// Default merge mode, 1 file with an implicit section name
+include "<PATH>"
+// Augment merge mode, 1 file with an implicit section name
+augment "<PATH>(<SECTION_NAME>)"
+// Override merge mode, 2 files: a first file with an implicit section name merged
+// using the augment mode with a second file with an explicit section name
+override "<PATH_1>|<PATH_2>(<SECTION_NAME>)
+```
+
+#### Processing
+
+The statement is processed as follow:
+1. Set PARENT as the current [section] containing the include statement.
+2. Set INCLUDED_MERGE_MODE to the merge mode corresponding to the keyword.
+3. Initialize an empty [section] as INCLUDED.
+4. Select the first file as the current file to process.
+5. Set CURRENT_MERGE_MODE to the merge mode corresponding to the current file
+   merge mode *prefix*.
+6. The current file path is searched sequentially in the
+   [XKB configuration path list] and the *first match* is selected, or it raises
+   an error if there is no match.
+7. The current file is processed and results in the CURRENT [section].
+8. The INCLUDED [section] is merged with the CURRENT [section] using the merge mode
+   CURRENT_MERGE_MODE.
+9. If they are more files, select the next file as the current file and go to
+   step 5). Else go to step 10).
+10. Once all files have been processed, merge PARENT with INCLUDED using the
+   merge mode INCLUDED_MERGE_MODE.
+
+[XKB configuration path list]: @ref xkb_context::xkb_context_include_path_append()
+
+#### Example: include path list
+
+Let’s illustrate using the following [XKB configuration path list][]:
+1. `/home/<USER>/.config/xkb`: user configuration directory
+   (see @ref user-configuration "").
+2. `/usr/share/X11/xkb`: system directory.
+
+The relevant directory structure is:
+- `/home/<USER>/.config/xkb`
+  - `symbols`
+    - `es`
+    - `my_own_file`
+- `/usr/share/X11/xkb`
+  - `symbols`
+    - `es`
+    - `it`
+
+Then the following file:
+
+```c
+xkb_symbols {
+    include "it"          // Exists only in system directory
+    include "my_own_file" // Exists only in user directory
+    include "es"          // Exists in both user and system directory
+};
+```
+
+is equivalent to:
+
+```c
+xkb_symbols {
+    include "/usr/share/X11/xkb/symbols/it"
+    include "/home/<USER>/.config/xkb/symbols/my_own_file"
+    include "/home/<USER>/.config/xkb/symbols/es"
+};
+```
+
+#### Example: simple include
+
+Given the following files:
+
+- `symbols/A`
+
+  ```c
+  xkb_symbols {
+      key <A> { [a, A, ae, AE] };
+      include "B(S2)"
+  };
+  ```
+- `symbols/B`
+
+  ```c
+  // This section is not used (does not match)
+  xkb_symbols "S1" {
+      key <B> { [b, B] };
+  };
+  // This section will be included (match the included section name)
+  xkb_symbols "S2" {
+      key <A> { [Greek_alpha, Greek_ALPHA] };
+      key <B> { [Greek_beta , Greek_BETA ] };
+  };
+  ```
+
+the resulting section in `A` will be:
+
+```c
+xkb_symbols {
+    // Key overridden: mix of old + new
+    key <A> { [Greek_alpha, Greek_ALPHA, ae, AE] };
+    // New key
+    key <B> { [Greek_beta , Greek_BETA         ] };
+};
+```
+
+#### Example: merge modes
+
+Given the same file `symbols/B` of the previous example, the following section:
+
+<table>
+<thead>
+<tr>
+  <th>Input</th>
+  <th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>
+
+  ```c
+  xkb_symbols {
+      key <A> { [a, A, ae, AE] };
+      augment "B(S2)"
+  };
+  ```
+  </td>
+  <td>
+
+  ```c
+  xkb_symbols {
+      // Key unchanged
+      key <A> { [a, A, ae, AE] };
+      // New key
+      key <B> { [Greek_beta , Greek_BETA] };
+  };
+  ```
+  </td>
+</tr>
+<tr>
+  <td>
+
+  ```c
+  xkb_symbols {
+      key <A> { [a, A, ae, AE] };
+      replace "B(S2)"
+  };
+  ```
+  </td>
+  <td>
+
+  ```c
+  xkb_symbols {
+      // Key replaced
+      key <A> { Greek_alpha, Greek_ALPHA] };
+      // New key
+      key <B> { [Greek_beta , Greek_BETA ] };
+  };
+  ```
+  </td>
+</tr>
+<tr>
+  <td>
+
+  ```c
+  xkb_symbols {
+      key <A> { [a, A, ae, AE] };
+      // Two files merged together with the merge mode
+      // augment, then the result is merged this the
+      // statement above using the override merge mode
+      include "B(S1)|B(S2)"
+  };
+  ```
+  </td>
+  <td>
+
+  ```c
+  xkb_symbols {
+      // Key overridden: mix of old + new
+      key <A> { [Greek_alpha, Greek_ALPHA, ae, AE] };
+      // New key; "B(2)" had no effect with the
+      // merge mode augment "|"
+      key <B> { [b, B] };
+  };
+  ```
+  </td>
+</tr>
+</tbody>
+</table>
+
 
 ## The “xkb_keymap” block {#the-xkb_keymap-block}
 
@@ -748,7 +1037,7 @@ using keycodes beyond `255` should expect warnings.
 
 If there’s a conflict, like the same name given to different keycodes,
 or same keycode given different names, it is resolved according to the
-merge mode which applies to the definitions.
+[merge mode] which applies to the definitions.
 
 ### Alias statements
 
@@ -1522,25 +1811,6 @@ A group must be named.
 
 `group` and `groupName` mean the same thing, and the `Group` in `Group1` is
 optional.
-
-### Include statements
-
-Statements of the form:
-
-    include "nokia_vndr/rx-51(nordic_base)"
-
-Will include data from another `xkb_symbols` section, possibly located in
-another file. Here it would include the `xkb_symbols` section called
-`nordic_base`, from the file `rx-51` located in the `nokia_vndr` folder, itself
-located in an XKB include path.
-
-@anchor merge-mode-def
-One can use a **merge mode** *prefix* to specify the merge mode of the file:
-- ‘+’ selects the **override** merge mode.
-- ‘|’ selects the **augment** merge mode.
-- ‘^’ selects the **replace** merge mode.
-
-@todo dedicated section for merge mode
 
 ### Key statement {#key-statement}
 
