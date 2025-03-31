@@ -1,0 +1,179 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<10>                 = 10;
+	<11>                 = 11;
+	<12>                 = 12;
+	<20>                 = 20;
+	<21>                 = 21;
+	<22>                 = 22;
+	<23>                 = 23;
+	<24>                 = 24;
+	<25>                 = 25;
+	<30>                 = 30;
+	<31>                 = 31;
+	<32>                 = 32;
+	<33>                 = 33;
+	<34>                 = 34;
+	<35>                 = 35;
+	<40>                 = 40;
+	<41>                 = 41;
+	<42>                 = 42;
+	<50>                 = 50;
+	<51>                 = 51;
+	<52>                 = 52;
+	<60>                 = 60;
+	<61>                 = 61;
+	<62>                 = 62;
+	<63>                 = 63;
+	<64>                 = 64;
+	<65>                 = 65;
+	<66>                 = 66;
+	<67>                 = 67;
+	<68>                 = 68;
+	<69>                 = 69;
+	<70>                 = 70;
+	<71>                 = 71;
+	<72>                 = 72;
+	<73>                 = 73;
+	<74>                 = 74;
+	<AD08>               = 80;
+	<AC05>               = 81;
+	<AB05>               = 82;
+	<AD01>               = 83;
+};
+
+xkb_types "basic" {
+	virtual_modifiers NumLock;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers NumLock;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret adiaeresis+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U2728+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U1F3BA+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U1F54A+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret 0x01000001+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret Linefeed+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret 0x0100001f+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret space+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret asciitilde+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret Delete+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret 0x01000080+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret 0x0100009f+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret nobreakspace+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret ydiaeresis+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret UFDD0+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret UFDEF+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret UFFFE+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret UFFFF+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U10000+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U1FFFF+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+	interpret U10FFFF+AnyOfOrNone(all) {
+		action= SetMods(modifiers=none);
+	};
+};
+
+xkb_symbols {
+	key <10>                 {	[        NoSymbol,        { b, c } ] };
+	key <11>                 {	[               a,               b ] };
+	key <20>                 {	[               a,        { b, c } ] };
+	key <23>                 {	[           U2728,          U1F3BA ] };
+	key <24>                 {	[    { u, U0308 } ] };
+	key <25>                 {	[ { U2200, partialderivative, elementof, U211D, logicaland, union, identical, infinity, space, uparrow, U2197, U21A8, U21BB, U21E3, space, uprightcorner, crossinglines, U2554, U2558, U2591, U25BA, U263A, femalesymbol, space, UFB01, UFFFD, U2440, twosubscript, U1F20, Babovedot, U04E5, Wdiaeresis, U0250, U02D0, U234E, hebrew_aleph, Armenian_AYB, Georgian_an } ] };
+	key <30>                 {	[               a,        { b, c } ] };
+	key <31>                 {	[               a,        { b, c } ] };
+	key <32>                 {	[               a,        { b, c } ] };
+	key <33>                 {	[          U1F54A, { U1F3F3, UFE0F } ] };
+	key <34>                 {	[    { u, U0308 } ] };
+	key <35>                 {	[ { U2200, partialderivative, elementof, U211D, logicaland, union, identical, infinity, space, uparrow, U2197, U21A8, U21BB, U21E3, space, uprightcorner, crossinglines, U2554, U2558, U2591, U25BA, U263A, femalesymbol, space, UFB01, UFFFD, U2440, twosubscript, U1F20, Babovedot, U04E5, Wdiaeresis, U0250, U02D0, U234E, hebrew_aleph, Armenian_AYB, Georgian_an } ] };
+	key <40>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <41>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <42>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <50>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <51>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <52>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <60>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <61>                 {	[        { a, b },  { c, d, e, f } ] };
+	key <63>                 {	[  { a, b, c, d },  { e, f, g, h } ] };
+	key <64>                 {	[  { a, b, c, d },  { e, f, g, h } ] };
+	key <65>                 {	[        NoSymbol,         U10FFFF ] };
+	key <66>                 {	[      0x01000001,        Linefeed ] };
+	key <67>                 {	[      0x0100001f,           space ] };
+	key <68>                 {	[      asciitilde,          Delete ] };
+	key <69>                 {	[      0x01000080,      0x0100009f ] };
+	key <70>                 {	[    nobreakspace,      ydiaeresis ] };
+	key <71>                 {	[           UFFFD,           UFFFD ] };
+	key <72>                 {	[           UFDD0,           UFDEF ] };
+	key <73>                 {	[           UFFFE,           UFFFF ] };
+	key <74>                 {	[          U10000,          U1FFFF ] };
+	key <AD08>               {	[        { i, j },           U0132 ] };
+	key <AC05>               {	[ { g, combining_tilde }, { G, combining_tilde } ] };
+	key <AB05>               {	[ { Arabic_lam, Arabic_alef }, { Arabic_lam, Arabic_maddaonalef } ] };
+	key <AD01>               {	[ { c, rightsinglequotemark, h }, { C, rightsinglequotemark, h } ] };
+	modifier_map Mod1 { <23>, <33> };
+};
+
+};

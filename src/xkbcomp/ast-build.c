@@ -14,10 +14,16 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "messages-codes.h"
 #include "xkbcomp-priv.h"
+#include "ast.h"
 #include "ast-build.h"
 #include "include.h"
-#include "xkbcomp/ast.h"
+#include "keysym.h"
+#include "utf8-decoding.h"
 
 static ExprDef *
 ExprCreate(enum stmt_type op)
@@ -198,6 +204,78 @@ ExprAppendKeySymList(ExprDef *expr, xkb_keysym_t sym)
         darray_append(expr->keysym_list.syms, sym);
     }
     return expr;
+}
+
+ExprDef *
+ExprKeySymListAppendString(struct scanner *scanner,
+                           ExprDef *expr, const char *string)
+{
+    /* TODO: use strnlen with max len = 4 * MAX_KEYSYMS_LIST_LENGTH */
+    const size_t len = strlen(string);
+    size_t idx = 0;
+    size_t idx_cp = 1;
+    while (idx < len) {
+        size_t count = 0;
+        uint32_t cp = utf8_next_code_point(string + idx, len - idx, &count);
+        if (cp == INVALID_UTF8_CODE_POINT) {
+            scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
+                        "Cannot convert string to keysyms: "
+                        "Invalid UTF-8 encoding starting at byte position %zu "
+                        "(code point position: %zu).",
+                        idx + 1, idx_cp);
+            goto error;
+        }
+        const xkb_keysym_t sym = xkb_utf32_to_keysym(cp);
+        if (sym == XKB_KEY_NoSymbol) {
+            scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                        "Cannot convert string to keysyms: Unicode code point "
+                        "U+04%"PRIX32" has no keysym equivalent"
+                        "(byte position: %zu, code point position: %zu).",
+                        cp, idx + 1, idx_cp);
+            goto error;
+        }
+        darray_append(expr->keysym_list.syms, sym);
+        idx += count;
+        idx_cp++;
+    }
+    assert(string[idx] == '\0');
+    return expr;
+error:
+    FreeStmt((ParseCommon*) expr);
+    return NULL;
+}
+
+xkb_keysym_t
+KeysymParseString(struct scanner *scanner, const char *string)
+{
+    const size_t len = strlen(string);
+    if (len == 0) {
+        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot convert string to single keysym: empty string.");
+        return XKB_KEY_NoSymbol;
+    }
+    size_t count = 0;
+    const uint32_t cp = utf8_next_code_point(string, len, &count);
+    if (cp == INVALID_UTF8_CODE_POINT) {
+        scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
+                    "Cannot convert string to single keysym: "
+                    "Invalid UTF-8 encoding.");
+        return XKB_KEY_NoSymbol;
+    } else if (count != len) {
+        scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
+                    "Cannot convert string to single keysym: "
+                    "Expected a single Unicode code point, got: \"%s\".",
+                    string);
+        return XKB_KEY_NoSymbol;
+    }
+    const xkb_keysym_t sym = xkb_utf32_to_keysym(cp);
+    if (sym == XKB_KEY_NoSymbol) {
+        scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot convert string to single keysym: Unicode "
+                    "code point U+%04"PRIX32" has no keysym equivalent.",
+                    cp);
+    }
+    return sym;
 }
 
 KeycodeDef *

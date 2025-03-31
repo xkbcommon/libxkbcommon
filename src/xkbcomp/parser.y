@@ -202,7 +202,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <mapFlags> Flag Flags OptFlags
 %type <str>     MapName OptMapName
 %type <atom>    FieldSpec Ident Element String
-%type <keysym>  KeySym
+%type <keysym>  KeySym KeySymLit
 %type <noSymbolOrActionList> NoSymbolOrActionList
 %type <any>     Decl
 %type <anyList> DeclList
@@ -845,7 +845,7 @@ Terminal        :       String
                         { $$ = ExprCreateKeyName($1); }
                 ;
 
-MultiKeySymList :       MultiKeySymList COMMA KeySym
+MultiKeySymList :       MultiKeySymList COMMA KeySymLit
                         {
                             ExprDef *expr = ExprCreateKeySymList($3);
                             $$ = $1;
@@ -853,20 +853,51 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
                         }
                 |       MultiKeySymList COMMA KeySyms
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       KeySym
+                |       KeySymLit
                         { $$.head = $$.last = ExprCreateKeySymList($1); }
                 |       NonEmptyKeySyms
                         { $$.head = $$.last = $1; }
                 ;
 
-KeySymList      :       KeySymList COMMA KeySym
+KeySymList      :       KeySymList COMMA KeySymLit
                         { $$ = ExprAppendKeySymList($1, $3); }
-                |       KeySym
-                        { $$ = ExprCreateKeySymList($1); }
+                |       KeySymList COMMA STRING
+                        {
+                            $$ = ExprKeySymListAppendString(param->scanner, $1, $3);
+                            free($3);
+                            if (!$$)
+                                YYERROR;
+                        }
+                |       KeySymLit
+                        {
+                            $$ = ExprCreateKeySymList($1);
+                            if (!$$)
+                                YYERROR;
+                        }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeySymList(XKB_KEY_NoSymbol);
+                            if (!$$)
+                                YYERROR;
+                            $$ = ExprKeySymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
+                        }
                 ;
 
 NonEmptyKeySyms :       OBRACE KeySymList CBRACE
                         { $$ = $2; }
+                |       STRING
+                        {
+                            $$ = ExprCreateKeySymList(XKB_KEY_NoSymbol);
+                            if (!$$)
+                                YYERROR;
+                            $$ = ExprKeySymListAppendString(param->scanner, $$, $1);
+                            free($1);
+                            if (!$$)
+                                YYERROR;
+                        }
                 ;
 
 KeySyms         :       NonEmptyKeySyms
@@ -875,7 +906,18 @@ KeySyms         :       NonEmptyKeySyms
                         { $$ = ExprCreateKeySymList(XKB_KEY_NoSymbol); }
                 ;
 
-KeySym          :       IDENT
+KeySym          :       KeySymLit
+                        { $$ = $1; }
+                |       STRING
+                        {
+                            $$ = KeysymParseString(param->scanner, $1);
+                            free($1);
+                            if ($$ == XKB_KEY_NoSymbol)
+                                YYERROR;
+                        }
+                ;
+
+KeySymLit       :       IDENT
                         {
                             if (!resolve_keysym(param, $1, &$$)) {
                                 parser_warn(

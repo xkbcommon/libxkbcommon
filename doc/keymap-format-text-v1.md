@@ -104,7 +104,8 @@ Some additional resources are:
 
   The complete list of keysyms is defined in `xkbcommon/xkbcommon-keysyms.h`.
 
-  See [xkb_symbols] for further details on binding keysyms to keycodes.
+  @sa [xkb_symbols] for further details on binding keysyms to keycodes.
+  @sa [Keysym syntax][@ref keysym-syntax]
   </dd>
   <dt><a name="modifier-def">Modifier</a></dt>
   <dd>
@@ -569,6 +570,104 @@ Comments are introduced following either `//` or `#` until the end of the line.
   - _decimal floating-point number:_ `1.23`, etc.
   - _hexadecimal integer:_ prefixed with `0x`: `0x123`, `0xff`, `0xAB`, etc.
   </dd>
+</dl>
+
+### Keysyms {#keysym-syntax}
+
+[Keysyms][keysym] may be written in multiple ways:
+
+<dl>
+<dt>Name</dt>
+<dd>
+
+Keysym names are defined in `xkbcommon/xkbcommon-keysyms.h`; remove the
+`XKB_KEY_` prefix to get the name.
+
+Example: the keysym `0xffbe = XKB_KEY_F1` has the name `F1`.
+</dd>
+<dt>Unicode</dt>
+<dd>
+
+The *Unicode* syntax `Unnnn` denotes a keysym whose corresponding character is
+the Unicode code point `U+nnnn`, where `nnnn` is an hexadecimal number in the
+range `0x100 .. 0x10ffff`. The resulting keysym value is `0x01000000 + nnnn`.
+
+Example: `U1F3BA` has value `0x0101F3BA` and corresponds to the code point
+`U+1F3BA`: ‘🎺’ (TRUMPET).
+</dd>
+<dt>String literal</dt>
+<dd>
+
+A keysym or list of keysyms can be written as a *string literal*, with the
+following semantics:
+
+1. The string must be encoded in UTF-8.
+2. If the encoding is invalid, it raises a syntax error.
+3. If the string expands to 0 Unicode code point, the resulting keysym is
+   `NoSymbol`.
+4. If the string expands to 1 Unicode code point, the resulting keysym is the
+   output of `xkb_utf32_to_keysym`.
+5. Otherwise the string expands to a list `{ ... }` with each Unicode code point
+   converted via `xkb_utf32_to_keysym`.
+
+   @note This is only possible where multiple keysyms is valid, e.g. in the
+   @ref key-multiple-symbols-per-level "key symbols".
+
+
+Examples:
+
+<table>
+  <thead>
+    <tr>
+      <th>Keysym string</th>
+      <th>Keysym name</th>
+      <th>Keysym value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`""`</td>
+      <td>`NoSymbol`</td>
+      <td>`0x0000`</td>
+    </tr>
+    <tr>
+      <td>`"a"`</td>
+      <td>`a`</td>
+      <td>`0x0061`</td>
+    </tr>
+    <tr>
+      <td>`"ü"`</td>
+      <td>`udiaeresis`</td>
+      <td>`0x00dc`</td>
+    </tr>
+    <tr>
+      <td>`"🎺"`</td>
+      <td>`U1F3BA`</td>
+      <td>`0x0101F3BA`</td>
+    </tr>
+    <tr>
+      <td>`"g̃"`</td>
+      <td>`{g, combining_tilde}`</td>
+      <td>`{0x0101F3BA, 0x01000303}`</td>
+    </tr>
+  </tbody>
+</table>
+
+@sa @ref keysyms-string "Keysym strings"
+
+@since 1.9.0
+</dd>
+<dt>Numeric value</dt>
+<dd>
+
+A keysym can be written directly with its *numeric* value: e.g. `0x61` is `a`.
+
+@note Digits `0 .. 9` have a special treatment because they are interpreted as
+names, not values. E.g. `1` is the keysym with name `1` and value `0x31`.
+
+@warning This syntax should be avoided for its poor readability, except if it
+is not possible to write the keysym with the previous syntaxes.
+</dd>
 </dl>
 
 ### Keywords
@@ -1890,7 +1989,8 @@ key <AD01> { [ q, Q ] }; // Level 1 → `q`, Level 2 → `Q`
 ```
 
 Symbols are named using the symbolic names from the
-`xkbcommon/xkbcommon-keysyms.h` file. A group of symbols is enclosed in brackets
+`xkbcommon/xkbcommon-keysyms.h` file. See the @ref keysym-syntax "keysym syntax"
+for further information. A group of symbols is enclosed in brackets
 and separated by commas. Each element of the symbol arrays corresponds to a
 different [shift level]. In this example, the symbol (keysym) `XKB_KEY_q` for
 level 1 and `XKB_KEY_Q` for level 2. These levels are configured by the
@@ -1905,10 +2005,30 @@ keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 libxkbcommon supports multiple key symbols and actions per level (the latter
 since version 1.8.0):
 
-    key <AD01> { [ {a, b}, Q ] };
+```c
+key <AD08> { [ {i, j}        , U0132         ] }; // IJ Dutch digraph
+key <AC05> { [ {g, U0303}    , {G, U0303}    ] }; // G̃ Guarani letter
+key <AB05> { [ {U0644, U0627}, {U0644, U0622}] }; // ⁧لا⁩ ⁧لآ⁩ Arabic Lam-Alef ligatures decomposed
+key <AD01> { [ {c, U2019, h} , {C, U2019, h} ] }; // C’H Breton trigraph
+```
 
-In this example, the keycode `<AD01>` produces two symbols on level 1
-(`XKB_KEY_a` and `XKB_KEY_b`) and one symbol (`XKB_KEY_Q`) on level 2.
+In this example, the keycode `<AD08>` produces two symbols on level 1
+(`XKB_KEY_i` and `XKB_KEY_j`) and one symbol (Unicode keysym `U0132` for “Ĳ”)
+on level 2. `<AD08>` and `<AD01>` produce letters that have no *precomposed*
+code point in Unicode. Key `<AB05>` avoids the need of using Compose.
+
+@anchor keysyms-string Since 1.9.0, UTF-8-encoded *strings* may be used to
+denote a list of keysyms corresponding to the encoded Unicode code points.
+E.g. the previous example can be also written more intuitively as:
+
+```c
+key <AD08> { [ "ij" , "Ĳ"   ] }; // IJ Dutch digraph
+key <AC05> { [ "g̃"  , "G̃"   ] }; // G̃ Guarani letter
+// NOTE: We use U+200E LEFT-TO-RIGHT MARK in order to display the strings in
+//       in the proper order.
+key <AB05> { [ "لا"‎  , "لآ"‎   ] }; // ⁧لا⁩ ⁧لآ⁩ Arabic Lam-Alef ligatures decomposed
+key <AD01> { [ "c’h", "C’h" ] }; // C’H Breton trigraph
+```
 
 When no actions are explicitly given, they are automatically filled
 thanks to [interpretations] from the [compat section][xkb_compat].

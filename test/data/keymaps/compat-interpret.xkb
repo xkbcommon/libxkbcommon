@@ -1,0 +1,28 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret 1+AnyOfOrNone(all) {};
+	interpret 0x0000000b+AnyOfOrNone(all) {};
+	interpret Shift_L+AnyOfOrNone(all) {};
+	interpret a+AnyOfOrNone(all) {};
+	interpret adiaeresis+AnyOfOrNone(all) {};
+	interpret U2728+AnyOfOrNone(all) {};
+	interpret U1F3BA+AnyOfOrNone(all) {};
+};
+
+xkb_symbols {
+};
+
+};
