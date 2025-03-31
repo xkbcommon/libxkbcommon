@@ -1,0 +1,217 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<01>                 = 1;
+	<02>                 = 2;
+	<03>                 = 3;
+	<04>                 = 4;
+	<05>                 = 5;
+	<06>                 = 6;
+	<07>                 = 7;
+	<08>                 = 8;
+	<09>                 = 9;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Shift Lock";
+};
+
+xkb_types "basic_extra" {
+	virtual_modifiers NumLock,Alt,LevelThree,AltGr;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+	type "FOUR_LEVEL" {
+		modifiers= Shift+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_ALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 4;
+		map[Shift+Lock+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_MIXED_KEYPAD" {
+		modifiers= Shift+NumLock+LevelThree;
+		map[NumLock]= 2;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[NumLock+LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Shift+NumLock+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_X" {
+		modifiers= Shift+Control+Alt+LevelThree;
+		map[LevelThree]= 2;
+		map[Shift+LevelThree]= 3;
+		map[Control+Alt]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Alt Base";
+		level_name[3]= "Shift Alt";
+		level_name[4]= "Ctrl+Alt";
+	};
+	type "SEPARATE_CAPS_AND_SHIFT_ALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 4;
+		preserve[Lock]= Lock;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "AltGr Base";
+		level_name[4]= "Shift AltGr";
+	};
+	type "FOUR_LEVEL_PLUS_LOCK" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock]= 5;
+		map[Shift+Lock]= 2;
+		map[Lock+LevelThree]= 3;
+		map[Shift+Lock+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "Lock";
+	};
+};
+
+xkb_compatibility "basic" {
+	virtual_modifiers NumLock,Alt,LevelThree,AltGr;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret Shift_Lock+AnyOf(Shift+Lock) {
+		action= LockMods(modifiers=Shift);
+	};
+	interpret Num_Lock+AnyOf(all) {
+		virtualModifier= NumLock;
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret Mode_switch+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		action= SetGroup(group=+1);
+	};
+	interpret Any+Exactly(Lock) {
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Num Lock" {
+		whichModState= locked;
+		modifiers= NumLock;
+	};
+	indicator "Shift Lock" {
+		whichModState= locked;
+		modifiers= Shift;
+	};
+};
+
+xkb_symbols {
+	key <01>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [     SetMods(modifiers=Control) ]
+	};
+	key <02>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [     SetMods(modifiers=Control),             SetGroup(group=+1) ]
+	};
+	key <03>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) } ]
+	};
+	key <04>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1), Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+	};
+	key <05>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [     SetMods(modifiers=Control), {             SetGroup(group=+1), Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+	};
+	key <06>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) ]
+	};
+	key <07>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x0f,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+	};
+	key <08>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), { Private(type=0x0f,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00),     SetMods(modifiers=Control) },                     NoAction() ]
+	};
+	key <09>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x0f,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x0f,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) },     SetMods(modifiers=Control),                     NoAction() ]
+	};
+};
+
+};

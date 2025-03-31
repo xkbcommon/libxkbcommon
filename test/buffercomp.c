@@ -602,92 +602,92 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
 
 /* Test various multi-{keysym,action} syntaxes */
 static void
-test_multi_keysyms_actions(struct xkb_context *ctx)
+test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
 {
-    struct xkb_keymap *keymap;
-
-    /* Macros to define the tests */
-#define make_keymap(keysyms, actions)               \
-        "xkb_keymap {\n"                            \
-        "  xkb_keycodes {\n"                        \
-        "    minimum= 8;\n"                         \
-        "    maximum= 10;\n"                        \
-        "    <AE01> = 10;\n"                        \
-        "  };\n"                                    \
-        "  xkb_types { include \"basic\" };\n"      \
-        "  xkb_compat { include \"basic\" };\n"     \
-        "  xkb_symbols {\n"                         \
-        "    key <AE01> { " keysyms actions " };\n" \
-        "  };\n"                                    \
+    /* Macro to create keymap for failing tests */
+#define make_keymap(xs)                         \
+        "xkb_keymap {\n"                        \
+        "  xkb_keycodes {\n"                    \
+        "    <AE01> = 10;\n"                    \
+        "  };\n"                                \
+        "  xkb_types { include \"basic\" };\n"  \
+        "  xkb_compat { include \"basic\" };\n" \
+        "  xkb_symbols {\n"                     \
+        "    key <AE01> { [" xs "] };\n"        \
+        "  };\n"                                \
         "};"
-#define make_keymap_with_keysyms(keysyms) \
-        make_keymap("[" keysyms "]", "")
-#define make_keymap_with_actions(actions) \
-        make_keymap("", "actions[1] = [" actions "]")
-#define test_keymaps                                    \
-        make_keymaps_with(make_keymap_with_keysyms,     \
-                          "a", "b", "c", "d"),          \
-        make_keymaps_with(make_keymap_with_actions,     \
-                          "SetMods(modifiers=Control)", \
-                          "SetGroup(group=+1)",         \
-                          "Private(data=\"foo\")",      \
+
+#define make_keymaps_with(func, name, a, b, c, d)                           \
+    /* Test: valid keymaps */                                               \
+    {                                                                       \
+        .keymap =                                                           \
+            "xkb_keymap {\n"                                                \
+            "  xkb_keycodes {\n"                                            \
+            "    <01> = 1;\n"                                               \
+            "    <02> = 2;\n"                                               \
+            "    <03> = 3;\n"                                               \
+            "    <04> = 4;\n"                                               \
+            "    <05> = 5;\n"                                               \
+            "    <06> = 6;\n"                                               \
+            "    <07> = 7;\n"                                               \
+            "    <08> = 8;\n"                                               \
+            "    <09> = 9;\n"                                               \
+            "  };\n"                                                        \
+            "  xkb_types { include \"basic+extra\" };\n"                    \
+            "  xkb_compat { include \"basic\" };\n"                         \
+            "  xkb_symbols {\n"                                             \
+            "    key <01> { [ "a "] };\n"                                   \
+            "    key <02> { [ "a", "b" ] };\n"                              \
+            "    key <03> { [ { "a", "b" } ] };\n"                          \
+            "    key <04> { [ { "a", "b", "c" } ] };\n"                     \
+            "    key <05> { [ "a", { "b", "c" } ] };\n"                     \
+            "    key <06> { [ { "a", "b" }, "c" ] };\n"                     \
+            "    key <07> { [ { "a", "b" }, { "c", "d" } ] };\n"            \
+            "    key <08> { [ { "a", "b" }, "c", { "d", "a" } ] };\n"       \
+            "    key <09> { [ { "a", "b" }, { "c", "d" }, "a" ] };\n"       \
+            "  };\n"                                                        \
+            "};",                                                           \
+        .expected = GOLDEN_TESTS_OUTPUTS "symbols-multi-" name ".xkb"       \
+    },                                                                      \
+    /* Test: invalid keymaps */                                             \
+    { .keymap = func("{}")                            , .expected = NULL }, \
+    { .keymap = func("{ {} }")                        , .expected = NULL }, \
+    { .keymap = func("{ "a" }")                       , .expected = NULL }, \
+    { .keymap = func("{ "a", {} }")                   , .expected = NULL }, \
+    { .keymap = func("{ {}, "b" }")                   , .expected = NULL }, \
+    { .keymap = func("{ {}, {} }")                    , .expected = NULL }, \
+    { .keymap = func("{ "a" }, { "b" }")              , .expected = NULL }, \
+    { .keymap = func("{ "a", { "b" } }")              , .expected = NULL }, \
+    { .keymap = func("{ { "a" }, "b" }")              , .expected = NULL }, \
+    { .keymap = func("{ { "a", "b" }, "c" }")         , .expected = NULL }, \
+    { .keymap = func("{ "a", { "b", "c" } }")         , .expected = NULL }, \
+    { .keymap = func("{ "a", {}, "c" }")              , .expected = NULL }, \
+    { .keymap = func("{ "a", "b", {} }")              , .expected = NULL }, \
+    { .keymap = func("{ {}, "b", "c" }")              , .expected = NULL }, \
+    { .keymap = func("{ { "a", "b" }, "c", "d" }")    , .expected = NULL }, \
+    { .keymap = func("{ "a", { "b", "c" }, "d" }")    , .expected = NULL }, \
+    { .keymap = func("{ "a", "b", { "c", "d" } }")    , .expected = NULL }, \
+    { .keymap = func("{ { "a", "b" }, { "c", "d" } }"), .expected = NULL }
+
+    const struct keymap_test_data keymaps[] = {
+        make_keymaps_with(make_keymap, "keysyms",
+                          "a", "b", "c", "d"),
+        make_keymaps_with(make_keymap, "actions",
+                          "SetMods(modifiers=Control)",
+                          "SetGroup(group=+1)",
+                          "Private(data=\"foo\")",
                           "Private(data=\"bar\")")
-#define run_test(kind, condition, msg, ...) do {                      \
-    const char* const keymaps[] = { test_keymaps };                   \
-    for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {                \
-        fprintf(stderr,                                               \
-                "------\n"                                            \
-                "*** %s: " kind "#%zu ***\n",                         \
-                __func__, k + 1);                                     \
-        keymap = test_compile_buffer(ctx, keymaps[k],                 \
-                                     strlen(keymaps[k]));             \
-        assert_printf(condition,                                      \
-                      "The following symbols " msg " parse:\n%s\n",   \
-                      keymaps[k]);                                    \
-        __VA_ARGS__;                                                  \
-    }                                                                 \
-} while (0)
-
-    /* Test: valid keymaps */
-#define make_keymaps_with(func, a, b, c, d)      \
-        func(a),                                 \
-        func(a", "b),                            \
-        func("{ "a", "b" }"),                    \
-        func("{ "a", "b", "c" }"),               \
-        func(a", { "b", "c" }"),                 \
-        func("{ "a", "b" }, "c),                 \
-        func("{ "a", "b" }, { "c", "d" }"),      \
-        func("{ "a", "b" }, "c", { "d", "a" }"), \
-        func("{ "a", "b" }, { "c", "d" }, "a)
-    run_test("valid", keymap != NULL, "does *not*", xkb_keymap_unref(keymap));
+    };
+    for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap,
+                                   strlen(keymaps[k].keymap),
+                                   keymaps[k].expected,
+                                   update_output_files));
+    }
 #undef make_keymaps_with
-
-    /* Test: invalid keymaps */
-#define make_keymaps_with(func, a, b, c, d)    \
-        func("{}"),                            \
-        func("{ {} }"),                        \
-        func("{ "a" }"),                       \
-        func("{ "a", {} }"),                   \
-        func("{ {}, "b" }"),                   \
-        func("{ {}, {} }"),                    \
-        func("{ "a", { "b" } }"),              \
-        func("{ { "a" }, "b" }"),              \
-        func("{ { "a", "b" }, "c" }"),         \
-        func("{ "a", { "b", "c" } }"),         \
-        func("{ "a", {}, "c" }"),              \
-        func("{ "a", "b", {} }"),              \
-        func("{ {}, "b", "c" }"),              \
-        func("{ { "a", "b" }, "c", "d" }"),    \
-        func("{ "a", { "b", "c" }, "d" }"),    \
-        func("{ "a", "b", { "c", "d" } }"),    \
-        func("{ { "a", "b" }, { "c", "d" } }")
-    run_test("invalid", keymap == NULL, "*does*");
 #undef make_keymap
-#undef make_keymap_with_actions
-#undef make_keymap_with_keysyms
-#undef make_keymaps_with
-#undef test_keymaps
-#undef run_test
 }
 
 static void
@@ -896,7 +896,7 @@ main(int argc, char *argv[])
     test_integers(ctx, update_output_files);
     test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);
-    test_multi_keysyms_actions(ctx);
+    test_multi_keysyms_actions(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);
     test_modifier_maps(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
