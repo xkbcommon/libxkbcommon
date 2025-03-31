@@ -733,6 +733,8 @@ MergeMode       :       INCLUDE         { $$ = MERGE_DEFAULT; }
                      * This used to be MERGE_ALT_FORM. This functionality was
                      * unused and has been removed.
                      */
+                    parser_warn(param, XKB_LOG_MESSAGE_NO_ID,
+                                "ignored unsupported legacy merge mode \"alternate\"");
                     $$ = MERGE_DEFAULT;
                 }
                 ;

@@ -46,6 +46,7 @@ unused in the standard dataset.
 - xkbcommon has stronger type checks, so floating-point numbers cannot
   be used where an integer is expected.
 - exponent syntax for floating-point numbers is not supported.
+- legacy merge mode `alternate` is not supported and is ignored.
 - support the merge mode *replace* in include statements via the
   prefix `^`, in addition to the standard *merge* `|` and *override*
   `+` modes.
