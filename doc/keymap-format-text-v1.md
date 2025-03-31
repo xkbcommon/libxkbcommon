@@ -574,7 +574,7 @@ _case-sensitive_.
 | `alias`                 | <span class="todo">TODO</span> |
 | `alphanumeric_keys`     | <span class="todo">TODO</span> |
 | `alternate_group`       | <span class="todo">TODO</span> |
-| `alternate`             | <span class="todo">TODO</span> |
+| `alternate`             | Merge mode qualifier for [include] statements |
 | `augment`               | Merge mode qualifier for [include] statements |
 | `default`               | <span class="todo">TODO</span> |
 | `function_keys`         | <span class="todo">TODO</span> |
@@ -689,6 +689,17 @@ replace key <A> { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
 key <A>         { [Greek_alpha, Greek_ALPHA, NoSymbol, AE] };
 ```
 </dt>
+<dt>@anchor merge-mode-alternate alternate</dt>
+<dd>
+
+Legacy merge mode for keycodes. Its purpose is to allow to assign the same key
+name to multiple key codes, which is not allowed otherwise. This is unfortunately
+poorly documented and not used in xkeyboard-config. The xkblib specification
+implies that this was part of the overlay functionality, which is currently not
+supported by libxkbcommon.
+
+@warning This merge mode is not supported by libxkbcommon and is ignored.
+</dd>
 </dl>
 
 [default merge mode]: @ref merge-mode-default
