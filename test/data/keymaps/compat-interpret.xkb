@@ -1,0 +1,42 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret 1+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret 0x0000000b+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret Shift_L+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret a+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret adiaeresis+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret U2728+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret U0001F3BA+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+};
+
+xkb_symbols {
+};
+
+};
