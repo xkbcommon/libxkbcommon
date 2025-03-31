@@ -253,6 +253,8 @@ libxkbcommon_sources = [
     'src/text.h',
     'src/utf8.c',
     'src/utf8.h',
+    'src/utf8-decoding.c',
+    'src/utf8-decoding.h',
     'src/utils.c',
     'src/utils.h',
     'src/util-mem.h',

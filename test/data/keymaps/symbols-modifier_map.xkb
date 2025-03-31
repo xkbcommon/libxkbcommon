@@ -6,9 +6,15 @@ xkb_keycodes {
 	<1>                  = 1;
 	<2>                  = 2;
 	<3>                  = 3;
+	<4>                  = 4;
+	<5>                  = 5;
+	<6>                  = 6;
+	<7>                  = 7;
 	<any>                = 10;
 	<none>               = 11;
 	<a>                  = 61;
+	<b>                  = 62;
+	<c>                  = 63;
 	<CAPS>               = 66;
 	<100>                = 100;
 	alias <LOCK>         = <CAPS>;
@@ -48,12 +54,18 @@ xkb_symbols {
 	key <1>                  {	[               1 ] };
 	key <2>                  {	[               2 ] };
 	key <3>                  {	[        NoSymbol,               3 ] };
+	key <4>                  {	[          U1F54A ] };
+	key <5>                  {	[           UFFFD,           UFFFD ] };
+	key <6>                  {	[           UFDD0,           UFDEF ] };
+	key <7>                  {	[           UFFFE,           UFFFF ] };
 	key <any>                {	[        NoSymbol,               A ] };
 	key <none>               {	[      VoidSymbol,               N ] };
 	key <a>                  {	[               a ] };
+	key <b>                  {	[               b ] };
+	key <c>                  {	[          U1F3BA ] };
 	key <CAPS>               {	[       Caps_Lock ] };
 	key <100>                {	[               C ] };
-	modifier_map Lock { <0>, <1>, <2>, <none>, <a>, <CAPS>, <100> };
+	modifier_map Lock { <0>, <1>, <2>, <4>, <5>, <6>, <7>, <none>, <a>, <b>, <c>, <CAPS>, <100> };
 };
 
 };

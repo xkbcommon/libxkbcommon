@@ -661,6 +661,68 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
     }
 }
 
+static void
+test_interpret(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct keymap_test_data keymaps[] = {
+        /* Invalid: empty string */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret \"\" { repeat = false; } };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid UTF-8 encoding */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret \"\xff\" { repeat = false; }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid single Unicode code point */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret \"\\u{0}\" { repeat = false; }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid multiple Unicode code points */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret \"ab\" { repeat = false; }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Valid */
+        {
+            .keymap =
+                u8"xkb_keymap {\n"
+                u8"  xkb_compat {\n"
+                u8"   interpret 0x1     { repeat = false; };\n"
+                u8"   interpret 0xB     { repeat = false; };\n"
+                u8"   interpret Shift_L { repeat = false; };\n"
+                u8"   interpret a       { repeat = false; };\n"
+                u8"   interpret \"ä\"   { repeat = false; };\n"
+                u8"   interpret \"✨\"  { repeat = false; };\n"
+                u8"   interpret \"🎺\"  { repeat = false; };\n"
+                u8"  };\n"
+                u8"};",
+            .expected = GOLDEN_TESTS_OUTPUTS "compat-interpret.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
 /* Test various multi-{keysym,action} syntaxes */
 static void
 test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
@@ -825,6 +887,159 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
 #undef make_keymap
 }
 
+/* Test keysyms as strings */
+static void
+test_key_keysyms_as_strings(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct keymap_test_data keymaps[] = {
+        /* Invalid UTF-8 encoding */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 10; };\n"
+                "  xkb_symbols {\n"
+                /* Invalid byte at string index 2 */
+                "    key <> { [\"\xC3\xBC\xff\"] };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Valid */
+        {
+            .keymap =
+                u8"xkb_keymap {\n"
+                u8"  xkb_keycodes {\n"
+                u8"    <10> = 10;\n"
+                u8"    <11> = 11;\n"
+                u8"    <12> = 12;\n"
+                u8"    <20> = 20;\n"
+                u8"    <21> = 21;\n"
+                u8"    <22> = 22;\n"
+                u8"    <23> = 23;\n"
+                u8"    <24> = 24;\n"
+                u8"    <25> = 25;\n"
+                u8"    <30> = 30;\n"
+                u8"    <31> = 31;\n"
+                u8"    <32> = 32;\n"
+                u8"    <33> = 33;\n"
+                u8"    <34> = 34;\n"
+                u8"    <35> = 35;\n"
+                u8"    <40> = 40;\n"
+                u8"    <41> = 41;\n"
+                u8"    <42> = 42;\n"
+                u8"    <50> = 50;\n"
+                u8"    <51> = 51;\n"
+                u8"    <52> = 52;\n"
+                u8"    <60> = 60;\n"
+                u8"    <61> = 61;\n"
+                u8"    <62> = 62;\n"
+                u8"    <63> = 63;\n"
+                u8"    <64> = 64;\n"
+                u8"    <65> = 65;\n"
+                u8"    <66> = 66;\n"
+                u8"    <67> = 67;\n"
+                u8"    <68> = 68;\n"
+                u8"    <69> = 69;\n"
+                u8"    <70> = 70;\n"
+                u8"    <71> = 71;\n"
+                u8"    <72> = 72;\n"
+                u8"    <73> = 73;\n"
+                u8"    <74> = 74;\n"
+                u8"    <AD08> = 80;\n"
+                u8"    <AC05> = 81;\n"
+                u8"    <AB05> = 82;\n"
+                u8"    <AD01> = 83;\n"
+                u8"  };\n"
+                u8"  xkb_types { include \"basic\" };\n"
+                u8"  xkb_compat {\n"
+                u8"   interpret.action = SetMods();\n"
+                u8"   interpret \"ä\"           {};\n"
+                u8"   interpret \"✨\"          {};\n"
+                u8"   interpret \"🎺\"          {};\n"
+                u8"   interpret \"\\u{1F54A}\"  {};\n"
+                u8"   interpret \"\\u{1}\"      {};\n"
+                u8"   interpret \"\\u{a}\"      {};\n"
+                u8"   interpret \"\\u{1f}\"     {};\n"
+                u8"   interpret \"\\u{20}\"     {};\n"
+                u8"   interpret \"\\u{7e}\"     {};\n"
+                u8"   interpret \"\\u{7f}\"     {};\n"
+                u8"   interpret \"\\u{80}\"     {};\n"
+                u8"   interpret \"\\u{9f}\"     {};\n"
+                u8"   interpret \"\\u{a0}\"     {};\n"
+                u8"   interpret \"\\u{ff}\"     {};\n"
+                // u8"   interpret \"\\u{d800}\"   {};\n"
+                // u8"   interpret \"\\u{dfff}\"   {};\n"
+                u8"   interpret \"\\u{fdd0}\"   {};\n"
+                u8"   interpret \"\\u{fdef}\"   {};\n"
+                u8"   interpret \"\\u{fffe}\"   {};\n"
+                u8"   interpret \"\\u{ffff}\"   {};\n"
+                u8"   interpret \"\\u{10000}\"  {};\n"
+                u8"   interpret \"\\u{1ffff}\"  {};\n"
+                u8"   interpret \"\\u{10ffff}\" {};\n"
+                u8"  };\n"
+                u8"  xkb_symbols {\n"
+                /* Empty string */
+                u8"    key <10> { [\"\", {b, \"\", c}] };\n"
+                u8"    key <11> { [{a, \"\"}, {b, \"\"}] };\n"
+                u8"    key <12> { [{\"\"}, {\"\", \"\"}] };\n"
+                /* Single string: Plain */
+                u8"    key <20> { [\"a\", \"bc\"] };\n"
+                u8"    key <23> { [\"✨\", \"🎺\"] };\n" // U+2728 ✨, U+1F3BA 🎺
+                u8"    key <24> { [\"u\u0308\"] };\n" // u + U+0308 ◌̈ COMBINING DIAERESIS
+                u8"    key <25> { [\"∀∂∈ℝ∧∪≡∞ ↑↗↨↻⇣ ┐┼╔╘░►☺♀ ﬁ�⑀₂ἠḂӥẄɐː⍎אԱა\"] };\n"
+                /* Single string: Nested */
+                u8"    key <30> { [{\"a\"      }, {\"bc\"      }] };\n"
+                u8"    key <31> { [{\"a\", \"\"}, {\"bc\", \"\"}] };\n"
+                u8"    key <32> { [{\"\", \"a\"}, {\"\", \"bc\"}] };\n"
+                u8"    key <33> { [{\"\\u{1F54A}\"}, {\"\\u{1f3f3}\\u{fe0f}\"}] };\n" // U+1F54A 🕊️, 🏳️
+                u8"    key <34> { [{\"u\\u{0308}\"}] };\n" // u + U+0308 ◌̈ COMBINING DIAERESIS
+                u8"    key <35> { [{\"∀\\u{0}∂∈ℝ∧∪≡∞ ↑↗↨↻⇣ ┐┼╔╘░►☺♀ ﬁ�⑀₂ἠḂӥẄɐː⍎אԱა\"}] };\n"
+                /* Multi: string, literal */
+                u8"    key <40> { [{\"a\",       b}, {\"cde\",       f}] };\n"
+                u8"    key <41> { [{\"a\", \"\", b}, {\"cde\", \"\", f}] };\n"
+                u8"    key <42> { [{\"a\", b, \"\"}, {\"cde\", f, \"\"}] };\n"
+                /* Multi: literal, string */
+                u8"    key <50> { [{a,       \"b\"}, {c,       \"def\"}] };\n"
+                u8"    key <51> { [{a, \"\", \"b\"}, {c, \"\", \"def\"}] };\n"
+                u8"    key <52> { [{a, \"b\", \"\"}, {c, \"def\", \"\"}] };\n"
+                /* Multi: string, string */
+                u8"    key <60> { [{\"a\",       \"b\"}, {\"cd\",       \"ef\"}] };\n"
+                u8"    key <61> { [{\"a\", \"\", \"b\"}, {\"cd\", \"\", \"ef\"}] };\n"
+                u8"    key <63> { [{\"a\",       \"bcd\"}, {\"efg\",       \"h\"}] };\n"
+                u8"    key <64> { [{\"a\", \"\", \"bcd\"}, {\"efg\", \"\", \"h\"}] };\n"
+                /* Some special Unicode code points */
+                u8"    key <65> { [\"\\u{0}\", \"\\u{10ffff}\"] };\n"
+                u8"    key <66> { [\"\\u{1}\", \"\\u{a}\"] };\n"
+                u8"    key <67> { [\"\\u{1f}\", \"\\u{20}\"] };\n"
+                u8"    key <68> { [\"\\u{7e}\", \"\\u{7f}\"] };\n"
+                u8"    key <69> { [\"\\u{80}\", \"\\u{9f}\"] };\n"
+                u8"    key <70> { [\"\\u{a0}\", \"\\u{ff}\"] };\n"
+                u8"    key <71> { [\"\\u{d800}\", \"\\u{dfff}\"] };\n"
+                u8"    key <72> { [\"\\u{fdd0}\", \"\\u{fdef}\"] };\n"
+                u8"    key <73> { [\"\\u{fffe}\", \"\\u{ffff}\"] };\n"
+                u8"    key <74> { [\"\\u{10000}\", \"\\u{1ffff}\"] };\n"
+                /* Example from the doc */
+                u8"    key <AD08> { [ \"ij\" , \"Ĳ\"   ] }; // IJ Dutch digraph\n"
+                u8"    key <AC05> { [ \"g̃\"  , \"G̃\"   ] }; // G̃ Guarani letter\n"
+                /* NOTE: We use U+200E LEFT-TO-RIGHT MARK in order to display the strings in
+                 *       in the proper order. */
+                u8"    key <AB05> { [ \"لا\"‎  , \"لآ\"‎   ] }; // ⁧لا⁩ ⁧لآ⁩ Arabic Lam-Alef ligatures decomposed\n"
+                u8"    key <AD01> { [ \"c’h\", \"C’h\" ] }; // C’H Breton trigraph\n"
+                u8"    modifier_map Mod1 { \"✨\", \"\\u{1F54A}\" };\n"
+                u8"  };\n"
+                u8"};",
+            .expected = GOLDEN_TESTS_OUTPUTS "string-as-keysyms.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
 static void
 test_invalid_symbols_fields(struct xkb_context *ctx)
 {
@@ -877,39 +1092,55 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
     struct keymap_test_data keymaps[] = {
         {
             .keymap =
-                "xkb_keymap {\n"
-                "  xkb_keycodes {\n"
-                "    <CAPS> = 66;\n"
-                "    alias <LOCK> = <CAPS>;\n"
-                "    <0> = 0;"
-                "    <1> = 1;"
-                "    <2> = 2;"
-                "    <3> = 3;"
-                "    <any>  = 10;"
-                "    <none> = 11;"
-                "    <a> = 61;"
-                "    <100> = 100;"
-                "  };\n"
-                "  xkb_types { include \"basic\" };\n"
-                "  xkb_symbols {\n"
-                "    key <CAPS> { [Caps_Lock] };\n"
-                "    key <any>  { [any, A] };\n"
-                "    key <none> { [none, N] };\n"
-                "    key <0>    { [0] };\n"
-                "    key <1>    { [1] };\n"
-                "    key <2>    { [2] };\n"
-                "    key <a>    { [a] };\n"
-                "    key <3>    { [NotAKeysym, 3] };\n"
-                "    key <100>  { [C] };\n"
-                "    modifier_map Lock {\n"
-                "      <100>, <LOCK>, any, none,\n"
-                "      0, 1, 0x2, a, NotAKeysym\n"
-                "    };\n"
-                "  };\n"
-                "};",
+                u8"xkb_keymap {\n"
+                u8"  xkb_keycodes {\n"
+                u8"    <CAPS> = 66;\n"
+                u8"    alias <LOCK> = <CAPS>;\n"
+                u8"    <0> = 0;"
+                u8"    <1> = 1;"
+                u8"    <2> = 2;"
+                u8"    <3> = 3;"
+                u8"    <4> = 4;"
+                u8"    <5> = 5;"
+                u8"    <6> = 6;"
+                u8"    <7> = 7;"
+                u8"    <any>  = 10;"
+                u8"    <none> = 11;"
+                u8"    <a> = 61;"
+                u8"    <b> = 62;"
+                u8"    <c> = 63;"
+                u8"    <100> = 100;"
+                u8"  };\n"
+                u8"  xkb_types { include \"basic\" };\n"
+                u8"  xkb_symbols {\n"
+                u8"    key <CAPS> { [Caps_Lock] };\n"
+                u8"    key <any>  { [any, A] };\n"
+                u8"    key <none> { [none, N] };\n"
+                u8"    key <0>    { [0] };\n"
+                u8"    key <1>    { [1] };\n"
+                u8"    key <2>    { [2] };\n"
+                u8"    key <a>    { [a] };\n"
+                u8"    key <b>    { [b] };\n"
+                u8"    key <c>    { [\"🎺\"] };\n"
+                u8"    key <3>    { [NotAKeysym, 3] };\n"
+                u8"    key <4>    { [\"\\u{0000001F54A}\"]};\n"
+                u8"    key <5>    { [\"\\u{d800}\", \"\\u{dfff}\"]};\n"
+                u8"    key <6>    { [\"\\u{fdd0}\", \"\\u{fdef}\"]};\n"
+                u8"    key <7>    { [\"\\u{fffe}\", \"\\u{ffff}\"]};\n"
+                u8"    key <100>  { [C] };\n"
+                u8"    modifier_map Lock {\n"
+                u8"      <100>, <LOCK>, any, none,\n"
+                u8"      0, 1, 0x2, a, \"b\", \"🎺\", \"\\u{1F54A}\",\n"
+                u8"      \"\\u{d800}\", \"\\u{dfff}\",\n"
+                u8"      \"\\u{fdd0}\", \"\\u{fdef}\",\n"
+                u8"      \"\\u{fffe}\", \"\\u{ffff}\",\n"
+                u8"      NotAKeysym\n"
+                u8"    };\n"
+                u8"  };\n"
+                u8"};",
             .expected = GOLDEN_TESTS_OUTPUTS "symbols-modifier_map.xkb"
         },
-        /* Invalid: string (length = 0) */
+        /* Invalid: empty string */
         {
             .keymap =
                 "xkb_keymap {\n"
@@ -917,15 +1148,23 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
                 "};",
             .expected = NULL
         },
-        /* Invalid: string (length = 1) */
+        /* Invalid Unicode encoding */
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_symbols { modifier_map Lock { \"a\" }; };\n"
+                "  xkb_symbols { modifier_map Lock { \"\xff\" }; };\n"
                 "};",
             .expected = NULL
         },
-        /* Invalid: string (length > 1) */
+        /* Invalid single Unicode code point */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_symbols { modifier_map Lock { \"\\u{0}\" }; };\n"
+                "};",
+            .expected = NULL
+        },
+        /* Invalid multiple Unicode code points */
         {
             .keymap =
                 "xkb_keymap {\n"
@@ -1263,7 +1502,9 @@ main(int argc, char *argv[])
     test_integers(ctx, update_output_files);
     test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);
+    test_interpret(ctx, update_output_files);
     test_multi_keysyms_actions(ctx, update_output_files);
+    test_key_keysyms_as_strings(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);
     test_modifier_maps(ctx, update_output_files);
     test_empty_compound_statements(ctx, update_output_files);

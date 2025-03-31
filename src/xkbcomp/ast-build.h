@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ast.h"
+#include "scanner-utils.h"
 
 ExprDef *
 ExprCreateString(xkb_atom_t str);
@@ -53,6 +54,13 @@ ExprCreateKeySymList(xkb_keysym_t sym);
 
 ExprDef *
 ExprAppendKeySymList(ExprDef *list, xkb_keysym_t sym);
+
+ExprDef *
+ExprKeySymListAppendString(struct scanner *param,
+                           ExprDef *expr, const char *string);
+
+xkb_keysym_t
+KeysymParseString(struct scanner *scanner, const char *string);
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);

@@ -151,11 +151,22 @@ test_keymaps(void)
         {
             .input =
                 "xkb_keymap \"\\j\"\n"
-                " { symbols = { };\n"
+                " { xkb_symbols = {};\n"
                 "};",
             .log =
                 "warning: [XKB-645] (input string):1:12: unknown escape sequence \"\\j\" in string literal\n"
-                "error: [XKB-769] (input string):2:4: syntax error\n"
+                "error: [XKB-769] (input string):2:16: syntax error\n"
+                "error: [XKB-822] Failed to parse input xkb string\n",
+            .error = true
+        },
+        {
+            .input =
+                "xkb_keymap {\n"
+                " xkb_keycodes { <> = 1; };\n"
+                " xkb_symbols { key <> { [\"\xC3\xBC\xff\"] }; };\n"
+                "};",
+            .log =
+                "error: [XKB-542] (input string):3:26: Cannot convert string to keysyms: Invalid UTF-8 encoding starting at byte position 3 (code point position: 2).\n"
                 "error: [XKB-822] Failed to parse input xkb string\n",
             .error = true
         },
