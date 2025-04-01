@@ -68,20 +68,9 @@ typedef struct {
 } KeyInfo;
 
 static void
-ClearLevelInfo(struct xkb_level *leveli)
-{
-    if (leveli->num_syms > 1) {
-        free(leveli->s.syms);
-    }
-    if (leveli->num_actions > 1) {
-        free(leveli->a.actions);
-    }
-}
-
-static void
 StealLevelInfo(struct xkb_level *into, struct xkb_level *from)
 {
-    ClearLevelInfo(into);
+    clear_level(into);
     if (from->num_syms > 1) {
         /* Steal */
         into->s.syms = steal(&from->s.syms);
@@ -111,7 +100,7 @@ ClearGroupInfo(GroupInfo *groupi)
 {
     struct xkb_level *leveli;
     darray_foreach(leveli, groupi->levels)
-        ClearLevelInfo(leveli);
+        clear_level(leveli);
     darray_free(groupi->levels);
 }
 
@@ -1662,7 +1651,7 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     darray_size(groupi->levels));
 
             darray_foreach_from(leveli, groupi->levels, type->num_levels)
-                ClearLevelInfo(leveli);
+                clear_level(leveli);
         }
         darray_resize0(groupi->levels, type->num_levels);
 

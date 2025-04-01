@@ -27,6 +27,15 @@ xkb_keymap_ref(struct xkb_keymap *keymap)
 }
 
 void
+clear_level(struct xkb_level *leveli)
+{
+    if (leveli->num_syms > 1)
+        free(leveli->s.syms);
+    if (leveli->num_actions > 1)
+        free(leveli->a.actions);
+}
+
+void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
     if (!keymap || --keymap->refcnt > 0)
@@ -38,12 +47,10 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
             if (key->groups) {
                 for (unsigned i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
-                        for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
-                            if (key->groups[i].levels[j].num_syms > 1)
-                                free(key->groups[i].levels[j].s.syms);
-                            if (key->groups[i].levels[j].num_actions > 1)
-                                free(key->groups[i].levels[j].a.actions);
-                        }
+                        for (xkb_level_index_t j = 0;
+                             j < XkbKeyNumLevels(key, i);
+                             j++)
+                            clear_level(&key->groups[i].levels[j]);
                         free(key->groups[i].levels);
                     }
                 }
