@@ -19,14 +19,14 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
 {
     /* Predefined (AKA real, core, X11) modifiers. The order is important! */
     static const char *const builtin_mods[] = {
-        [0] = XKB_MOD_NAME_SHIFT,
-        [1] = XKB_MOD_NAME_CAPS,
-        [2] = XKB_MOD_NAME_CTRL,
-        [3] = XKB_MOD_NAME_MOD1,
-        [4] = XKB_MOD_NAME_MOD2,
-        [5] = XKB_MOD_NAME_MOD3,
-        [6] = XKB_MOD_NAME_MOD4,
-        [7] = XKB_MOD_NAME_MOD5
+        [XKB_MOD_INDEX_SHIFT] = XKB_MOD_NAME_SHIFT,
+        [XKB_MOD_INDEX_CAPS]  = XKB_MOD_NAME_CAPS,
+        [XKB_MOD_INDEX_CTRL]  = XKB_MOD_NAME_CTRL,
+        [XKB_MOD_INDEX_MOD1]  = XKB_MOD_NAME_MOD1,
+        [XKB_MOD_INDEX_MOD2]  = XKB_MOD_NAME_MOD2,
+        [XKB_MOD_INDEX_MOD3]  = XKB_MOD_NAME_MOD3,
+        [XKB_MOD_INDEX_MOD4]  = XKB_MOD_NAME_MOD4,
+        [XKB_MOD_INDEX_MOD5]  = XKB_MOD_NAME_MOD5
     };
 
     for (unsigned i = 0; i < ARRAY_SIZE(builtin_mods); i++) {

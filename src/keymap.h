@@ -56,6 +56,18 @@ enum mod_type {
 };
 #define MOD_REAL_MASK_ALL ((xkb_mod_mask_t) 0x000000ff)
 
+/** Predefined (AKA real, core, X11) modifiers. The order is important! */
+enum real_mod_index {
+    XKB_MOD_INDEX_SHIFT = 0,
+    XKB_MOD_INDEX_CAPS,
+    XKB_MOD_INDEX_CTRL,
+    XKB_MOD_INDEX_MOD1,
+    XKB_MOD_INDEX_MOD2,
+    XKB_MOD_INDEX_MOD3,
+    XKB_MOD_INDEX_MOD4,
+    XKB_MOD_INDEX_MOD5
+};
+
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
     ACTION_TYPE_MOD_SET,
