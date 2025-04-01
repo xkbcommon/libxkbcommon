@@ -427,6 +427,9 @@ struct xkb_keymap {
          (idx) < (keymap)->num_leds; \
          (idx)++, (iter)++)
 
+void
+clear_level(struct xkb_level *leveli);
+
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
