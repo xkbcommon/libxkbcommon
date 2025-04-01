@@ -1603,6 +1603,8 @@ level 1 and `XKB_KEY_Q` for level 2. These levels are configured by the
 @remark Remember that @ref keysym-transformations may affect the resulting
 keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 
+@remark Trailing `NoSymbol` are dropped.
+
 As an extension to the XKB legacy format, libxkbcommon supports multiple key
 symbols and actions per level (the latter since version 1.8.0):
 
@@ -1765,6 +1767,8 @@ key <LALT> {
 @endfigure
 
 For further details see [key actions][actions].
+
+@remark Trailing `NoAction()` are dropped.
 
 #### Multiple groups {#key-groups}
 

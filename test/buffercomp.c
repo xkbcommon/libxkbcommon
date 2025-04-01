@@ -676,7 +676,66 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
                           "SetMods(modifiers=Control)",
                           "SetGroup(group=+1)",
                           "Private(data=\"foo\")",
-                          "Private(data=\"bar\")")
+                          "Private(data=\"bar\")"),
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <10> = 10;\n"
+                "    <11> = 11;\n"
+                "    <12> = 12;\n"
+                "    <13> = 13;\n"
+                "    <14> = 14;\n"
+                "    <15> = 15;\n"
+                "    <16> = 16;\n"
+                "    <17> = 17;\n"
+                "    <18> = 18;\n"
+                "    <19> = 19;\n"
+                "    <20> = 20;\n"
+                "    <21> = 21;\n"
+                "    <22> = 22;\n"
+                "    <23> = 23;\n"
+                "    <30> = 30;\n"
+                "    <31> = 31;\n"
+                "    <32> = 32;\n"
+                "    <33> = 33;\n"
+                "    <34> = 34;\n"
+                "    <35> = 35;\n"
+                "    <36> = 36;\n"
+                "    <37> = 37;\n"
+                "    <38> = 38;\n"
+                "    <39> = 39;\n"
+                "  };\n"
+                "  xkb_types { include \"basic+extra\" };\n"
+                "  xkb_symbols {\n"
+                /* Empty keysyms */
+                "    key <10> { [any, any ] };\n"
+             // "    key <11> { [{} , {}  ] };\n"
+                "    key <12> { [any, any ], [SetMods(modifiers=Shift)] };\n"
+             // "    key <13> { [{} , {}  ], [SetMods(modifiers=Shift)] };\n"
+                "    key <14> { [any, any ], type = \"TWO_LEVEL\" };\n"
+             // "    key <15> { [{} , {}  ], type = \"TWO_LEVEL\" };\n"
+                "    key <16> { [a, A, any] };\n"
+             // "    key <17> { [a, A, {} ] };\n"
+                "    key <18> { [a, A, any], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+             // "    key <19> { [a, A, {} ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+                "    key <20> { [a, A, ae, any] };\n"
+             // "    key <21> { [a, A, ae, {} ] };\n"
+                "    key <22> { [a, A, ae, AE, any] };\n"
+             // "    key <23> { [a, A, ae, AE, {} ] };\n"
+                /* Empty actions */
+                "    key <30> { [NoAction(), NoAction() ] };\n"
+             // "    key <31> { actions=[{}, {}         ] };\n"
+                "    key <32> { [NoAction(), NoAction() ], [a] };\n"
+             // "    key <33> { actions=[{}, {}         ], [a] };\n"
+                "    key <34> { [NoAction(), NoAction() ], type = \"TWO_LEVEL\" };\n"
+             // "    key <35> { actions=[{}, {}         ], type = \"TWO_LEVEL\" };\n"
+                "    key <38> { [NoAction(), NoAction() ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+             // "    key <39> { actions=[{}, {}         ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "symbols-multi-keysyms-empty.xkb"
+        }
     };
     for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);

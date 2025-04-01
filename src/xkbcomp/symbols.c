@@ -14,7 +14,10 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
+
+#include "darray.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -800,8 +803,19 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
 
     xkb_level_index_t nLevels = 0;
-    for (ParseCommon *p = &value->common; p; p = p->next)
+    xkb_level_index_t nonEmptyLevels = 0;
+    /* Contrary to actions, keysyms are already parsed at this point so we drop
+     * trailing symbols by not adding them in the first place. */
+    for (ExprKeysymList *keysymList = (ExprKeysymList *) value;
+         keysymList;
+         keysymList = (ExprKeysymList *) keysymList->common.next) {
         nLevels++;
+        /* Drop trailing NoSymbol */
+        if (darray_size(keysymList->syms) > 0)
+            nonEmptyLevels = nLevels;
+    }
+    if (nonEmptyLevels < nLevels)
+        nLevels = nonEmptyLevels;
     if (darray_size(groupi->levels) < nLevels)
         darray_resize0(groupi->levels, nLevels);
 
@@ -809,7 +823,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     xkb_level_index_t level = 0;
     for (ExprKeysymList *keysymList = (ExprKeysymList *) value;
-         keysymList;
+         keysymList && level < nLevels;
          keysymList = (ExprKeysymList *) keysymList->common.next, level++) {
         struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_syms == 0);
@@ -878,6 +892,9 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     }
 
     xkb_level_index_t nLevels = 0;
+    /* Contrary to keysyms with trailing `NoSymbol`, we cannot detect trailing
+     * `NoAction()` now, because we need to parse the actions first. Jusr count
+     * explicit actions for now. */
     for (ParseCommon *p = &value->common; p; p = p->next)
         nLevels++;
     if (darray_size(groupi->levels) < nLevels)
@@ -886,6 +903,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     groupi->defined |= GROUP_FIELD_ACTS;
 
     xkb_level_index_t level = 0;
+    xkb_level_index_t nonEmptyLevels = 0;
     for (ExprActionList *actionList = (ExprActionList *) value;
          actionList;
          actionList = (ExprActionList *) actionList->common.next, level++) {
@@ -937,7 +955,22 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             darray_free(actions);
         }
 next_level:
-        ;
+        /*
+         * Check trailing `NoAction()`, but count as empty level only if there
+         * is no corresponding keysym.
+         */
+        if (leveli->num_actions > 0 || leveli->num_syms > 0)
+            nonEmptyLevels = level + 1;
+    }
+
+    if (nonEmptyLevels < nLevels) {
+        /* Drop trailing `NoAction()`.
+         * No need to clear dropped levels: there are no keysyms nor actions */
+        darray_size(groupi->levels) = nonEmptyLevels;
+        if (nonEmptyLevels > 0)
+            darray_shrink(groupi->levels);
+        else
+            darray_free(groupi->levels);
     }
 
     return true;
