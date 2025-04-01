@@ -16,6 +16,7 @@
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcomp-priv.h"
+#include "darray.h"
 #include "text.h"
 #include "expr.h"
 #include "action.h"
@@ -1661,6 +1662,41 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     /* Copy levels. */
     darray_enumerate(i, groupi, keyi->groups) {
+        /*
+         * Compute the capitalization transformation of the keysyms.
+         * This is necessary because `xkb_state_key_get_syms()` returns an
+         * immutable array and does not use a buffer, so we must store them.
+         * We apply only simple capitalization rules, so the keysyms count is
+         * unchanged.
+         */
+        struct xkb_level *leveli;
+        darray_foreach(leveli, groupi->levels) {
+            switch (leveli->num_syms) {
+            case 0:
+                leveli->s.upper = XKB_KEY_NoSymbol;
+                break;
+            case 1:
+                leveli->s.upper = xkb_keysym_to_upper(leveli->s.sym);
+                break;
+            default:
+                /*
+                 * Multiple keysyms
+                 * Store the transformation result in the same array,
+                 * right after the original keysyms.
+                 */
+                leveli->s.syms = realloc(leveli->s.syms,
+                                         (size_t) 2 * leveli->num_syms *
+                                         sizeof(*leveli->s.syms));
+                if (!leveli->s.syms)
+                    return false; /* FIXME: better handling */
+                for (unsigned int k = 0; k < leveli->num_syms; k++) {
+                    leveli->s.syms[leveli->num_syms + k] =
+                        xkb_keysym_to_upper(leveli->s.syms[k]);
+                }
+            }
+        }
+
+        /* Copy the level */
         darray_steal(groupi->levels, &key->groups[i].levels, NULL);
         if (groupi->defined & GROUP_FIELD_ACTS) {
             key->groups[i].explicit_actions = true;

@@ -1551,14 +1551,13 @@ xkb_state_update_mask(struct xkb_state *state,
  * If you do not want to handle this case, you can use
  * xkb_state_key_get_one_sym() for a simpler interface.
  *
- * This function does not perform any @ref keysym-transformations.
- * (This might change).
- *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given keyboard state, returns 0 and sets
  * syms_out to NULL.
  *
  * @memberof xkb_state
+ *
+ * @since 1.9.0 This function now performs @ref keysym-transformations.
  */
 XKB_EXPORT int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
