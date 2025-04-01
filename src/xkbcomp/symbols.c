@@ -14,11 +14,11 @@
 
 #include "config.h"
 
-#include "keymap.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 
 #include "darray.h"
+#include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -912,13 +912,15 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         assert(leveli->num_actions == 0);
 
         unsigned int num_actions = 0;
-        for (ParseCommon *p = &actionList->actions->common; p; p = p->next)
+        for (ExprDef *act = actionList->actions;
+             act; act = (ExprDef *) act->common.next)
             num_actions++;
 
         /* Parse actions and add only defined actions */
         darray(union xkb_action) actions = darray_new();
         unsigned int act_index = 0;
-        for (ExprDef *act = actionList->actions; act; act = (ExprDef *) act->common.next, act_index++) {
+        for (ExprDef *act = actionList->actions;
+             act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
             if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,

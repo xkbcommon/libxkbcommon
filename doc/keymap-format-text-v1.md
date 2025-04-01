@@ -1656,14 +1656,38 @@ There are some *limitations* with this extension:
   - `SetMods` + `LockMods`: *error*
   - `SetMods` + `LockGroup`: ok
 - Multiple actions are only supported from version 1.8.0.
-- Since 1.8.0, `NoSymbol` and `NoAction` are dropped in order to normalize levels:
 
-  ```c
-  // Before normalization
-  key <> { [{NoSymbol}, {a, NoSymbol}, {NoSymbol,b}, {a, NoSymbol, b}] };
-  // After normalization
-  key <> { [NoSymbol, a, b, {a, b}] };
-  ```
+<div>
+
+@since 1.8.0: When using multiple keysyms or actions per level, `NoSymbol` and
+`NoAction()` are dropped in order to normalize the levels:
+```c
+// Before normalization
+key <> { [{NoSymbol}, {a, NoSymbol}, {NoSymbol,b}, {a, NoSymbol, b}] };
+// After normalization
+key <> { [NoSymbol, a, b, {a, b}] };
+```
+
+</div>
+<div>
+
+@since 1.9.0: Trailing `NoSymbol` and `NoAction()` are dropped in groups:
+```c
+// Before normalization
+key <> { [a, NoSymbol] };
+// After normalization
+key <> { [a] };
+```
+This affects the automatic key type detection.
+
+</div>
+<div>
+
+@since 1.9.0: Added support for keysyms and actions lists of length 0 and 1,
+respectively `{}` and `{a}`. `{}` is equivalent to the corresponding `NoSymbol`
+or `NoAction()`.
+
+</div>
 
 @warning Keymaps containing multiple key symbols per level are not supported
 by the various X11-related tools (`setxkbmap`, `xkbcomp`, etc.).

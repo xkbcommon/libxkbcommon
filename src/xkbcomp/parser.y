@@ -171,6 +171,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         xkb_keysym_t    keysym;
         ParseCommon     *any;
         struct { ParseCommon *head; ParseCommon *last; } anyList;
+        uint32_t        noSymbolOrActionList;
         ExprDef         *expr;
         struct { ExprDef *head; ExprDef *last; } exprList;
         VarDef          *var;
@@ -202,6 +203,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <str>     MapName OptMapName
 %type <atom>    FieldSpec Ident Element String
 %type <keysym>  KeySym
+%type <noSymbolOrActionList> NoSymbolOrActionList
 %type <any>     Decl
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
@@ -500,12 +502,72 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
                 |       ArrayInit               { $$ = VarCreate(NULL, $1); }
                 ;
 
+/*
+ * A list of keysym/action lists
+ *
+ * There is some ambiguity because we use `{}` to denote both an empty list of
+ * keysyms and an empty list of actions. But as soon as we get a keysym or an
+ * action, we know whether it is a `MultiKeySymList` or a `MultiActionList`.
+ * So we just count the `{}` at the *beginning* using `NoSymbolOrActionList`,
+ * then replace it by the relevant count of `NoSymbol` or `NoAction()` once the
+ * ambiguity is solved. If not, this is a list of empties of *some* type: we
+ * drop those empties and delegate the type resolution using `ExprEmptyList()`.
+ */
 ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
                         { $$ = $2.head; }
+                |       OBRACKET NoSymbolOrActionList COMMA MultiKeySymList CBRACKET
+                        {
+                            /* Prepend n times NoSymbol */
+                            struct {ExprDef *head; ExprDef *last;} list = {
+                                .head = $4.head, .last = $4.last
+                            };
+                            for (uint32_t k = 0; k < $2; k++) {
+                                ExprDef* const syms =
+                                    ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                                if (!syms) {
+                                    /* TODO: Use Bison’s more appropriate YYNOMEM */
+                                    YYABORT;
+                                }
+                                syms->common.next = &list.head->common;
+                                list.head = syms;
+                            }
+                            $$ = list.head;
+                        }
                 |       OBRACKET MultiActionList CBRACKET
                         { $$ = $2.head; }
-                |       OBRACKET CBRACKET
+                |       OBRACKET NoSymbolOrActionList COMMA MultiActionList CBRACKET
+                        {
+                            /* Prepend n times NoAction() */
+                            struct {ExprDef *head; ExprDef *last;} list = {
+                                .head = $4.head, .last = $4.last
+                            };
+                            for (uint32_t k = 0; k < $2; k++) {
+                                ExprDef* const acts = ExprCreateActionList(NULL);
+                                if (!acts) {
+                                    /* TODO: Use Bison’s more appropriate YYNOMEM */
+                                    YYABORT;
+                                }
+                                acts->common.next = &list.head->common;
+                                list.head = acts;
+                            }
+                            $$ = list.head;
+                        }
+                        /*
+                         * A list of *empty* keysym/action lists `{}`.
+                         * There is not enough context here to decide if it is
+                         * a `MultiKeySymList` or a `MultiActionList`.
+                         */
+                |       OBRACKET NoSymbolOrActionList CBRACKET
                         { $$ = ExprEmptyList(); }
+                ;
+
+/* A list of `{}`, which remains ambiguous until reaching a keysym or action list */
+NoSymbolOrActionList
+                :       NoSymbolOrActionList COMMA OBRACE CBRACE
+                        { $$ = $1 + 1; }
+                |       OBRACE CBRACE
+                        { $$ = 1; }
+                |       { $$ = 0; }
                 ;
 
 GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
@@ -731,6 +793,13 @@ MultiActionList :       MultiActionList COMMA Action
                         }
                 |       MultiActionList COMMA Actions
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
+                |       MultiActionList COMMA OBRACE CBRACE
+                        {
+                            ExprDef* const acts = ExprCreateActionList(NULL);
+                            $$ = $1;
+                            $$.last->common.next = &acts->common;
+                            $$.last = acts;
+                        }
                 |       Action
                         { $$.head = $$.last = ExprCreateActionList($1); }
                 |       Actions
@@ -739,8 +808,8 @@ MultiActionList :       MultiActionList COMMA Action
 
 ActionList      :       ActionList COMMA Action
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       Action COMMA Action
-                        { $$.head = $1; $$.head->common.next = &$3->common; $$.last = $3; }
+                |       Action
+                        { $$.head = $$.last = $1; }
                 ;
 
 Actions         :       OBRACE ActionList CBRACE
@@ -779,6 +848,12 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
                         }
                 |       MultiKeySymList COMMA KeySyms
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
+                |       MultiKeySymList COMMA OBRACE CBRACE
+                        {
+                            ExprDef *expr = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            $$ = $1;
+                            $$.last->common.next = &expr->common; $$.last = expr;
+                        }
                 |       KeySym
                         { $$.head = $$.last = ExprCreateKeysymList($1); }
                 |       KeySyms
@@ -787,11 +862,8 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
 
 KeySymList      :       KeySymList COMMA KeySym
                         { $$ = ExprAppendKeysymList($1, $3); }
-                |       KeySym COMMA KeySym
-                        {
-                            $$ = ExprCreateKeysymList($1);
-                            $$ = ExprAppendKeysymList($$, $3);
-                        }
+                |       KeySym
+                        { $$ = ExprCreateKeysymList($1); }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE
