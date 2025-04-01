@@ -154,18 +154,39 @@ xkb_symbols {
 		symbols[Group1]= [                       NoSymbol ],
 		actions[Group1]= [       SetMods(modifiers=Shift) ]
 	};
+	key <13>                 {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [       SetMods(modifiers=Shift) ]
+	};
 	key <14>                 {
 		type= "TWO_LEVEL",
 		symbols[Group1]= [        NoSymbol,        NoSymbol ]
 	};
+	key <15>                 {
+		type= "TWO_LEVEL",
+		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+	};
 	key <16>                 {	[               a,               A ] };
+	key <17>                 {	[               a,               A ] };
 	key <18>                 {
 		type= "FOUR_LEVEL_SEMIALPHABETIC",
 		symbols[Group1]= [               a,               A,        NoSymbol,        NoSymbol ]
 	};
+	key <19>                 {
+		type= "FOUR_LEVEL_SEMIALPHABETIC",
+		symbols[Group1]= [               a,               A,        NoSymbol,        NoSymbol ]
+	};
 	key <20>                 {	[               a,               A,              ae,        NoSymbol ] };
+	key <21>                 {	[               a,               A,              ae,        NoSymbol ] };
 	key <22>                 {	[               a,               A,              ae,              AE ] };
+	key <23>                 {	[               a,               A,              ae,              AE ] };
 	key <32>                 {
+		repeat= No,
+		symbols[Group1]= [                              a ],
+		actions[Group1]= [                     NoAction() ]
+	};
+	key <33>                 {
 		repeat= No,
 		symbols[Group1]= [                              a ],
 		actions[Group1]= [                     NoAction() ]
@@ -176,7 +197,19 @@ xkb_symbols {
 		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
 		actions[Group1]= [                     NoAction(),                     NoAction() ]
 	};
+	key <35>                 {
+		type= "TWO_LEVEL",
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(),                     NoAction() ]
+	};
 	key <38>                 {
+		type= "FOUR_LEVEL_SEMIALPHABETIC",
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[Group1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <39>                 {
 		type= "FOUR_LEVEL_SEMIALPHABETIC",
 		repeat= No,
 		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],

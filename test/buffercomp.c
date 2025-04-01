@@ -632,31 +632,40 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
             "    <07> = 7;\n"                                               \
             "    <08> = 8;\n"                                               \
             "    <09> = 9;\n"                                               \
+            "    <10> = 10;\n"                                              \
+            "    <11> = 11;\n"                                              \
+            "    <12> = 12;\n"                                              \
+            "    <13> = 13;\n"                                              \
+            "    <14> = 14;\n"                                              \
+            "    <15> = 15;\n"                                              \
             "  };\n"                                                        \
             "  xkb_types { include \"basic+extra\" };\n"                    \
             "  xkb_compat { include \"basic\" };\n"                         \
             "  xkb_symbols {\n"                                             \
             "    key <01> { [ "a "] };\n"                                   \
             "    key <02> { [ "a", "b" ] };\n"                              \
-            "    key <03> { [ { "a", "b" } ] };\n"                          \
-            "    key <04> { [ { "a", "b", "c" } ] };\n"                     \
-            "    key <05> { [ "a", { "b", "c" } ] };\n"                     \
-            "    key <06> { [ { "a", "b" }, "c" ] };\n"                     \
-            "    key <07> { [ { "a", "b" }, { "c", "d" } ] };\n"            \
-            "    key <08> { [ { "a", "b" }, "c", { "d", "a" } ] };\n"       \
-            "    key <09> { [ { "a", "b" }, { "c", "d" }, "a" ] };\n"       \
+            "    key <03> { [ {} ] };\n"                                    \
+            "    key <04> { [ {}, "b" ] };\n"                               \
+            "    key <05> { [ "a", {} ] };\n"                               \
+            "    key <06> { [ {}, {} ] };\n"                                \
+            "    key <07> { [ { "a" } ] };\n"                               \
+            "    key <08> { [ { "a" }, { "b" } ] };\n"                      \
+            "    key <09> { [ { "a", "b" } ] };\n"                          \
+            "    key <10> { [ { "a", "b", "c" } ] };\n"                     \
+            "    key <11> { [ "a", { "b", "c" } ] };\n"                     \
+            "    key <12> { [ { "a", "b" }, "c" ] };\n"                     \
+            "    key <13> { [ { "a", "b" }, { "c", "d" } ] };\n"            \
+            "    key <14> { [ { "a", "b" }, "c", { "d", "a" } ] };\n"       \
+            "    key <15> { [ { "a", "b" }, { "c", "d" }, "a" ] };\n"       \
             "  };\n"                                                        \
             "};",                                                           \
         .expected = GOLDEN_TESTS_OUTPUTS "symbols-multi-" name ".xkb"       \
     },                                                                      \
     /* Test: invalid keymaps */                                             \
-    { .keymap = func("{}")                            , .expected = NULL }, \
     { .keymap = func("{ {} }")                        , .expected = NULL }, \
-    { .keymap = func("{ "a" }")                       , .expected = NULL }, \
     { .keymap = func("{ "a", {} }")                   , .expected = NULL }, \
     { .keymap = func("{ {}, "b" }")                   , .expected = NULL }, \
     { .keymap = func("{ {}, {} }")                    , .expected = NULL }, \
-    { .keymap = func("{ "a" }, { "b" }")              , .expected = NULL }, \
     { .keymap = func("{ "a", { "b" } }")              , .expected = NULL }, \
     { .keymap = func("{ { "a" }, "b" }")              , .expected = NULL }, \
     { .keymap = func("{ { "a", "b" }, "c" }")         , .expected = NULL }, \
@@ -710,28 +719,28 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
                 "  xkb_symbols {\n"
                 /* Empty keysyms */
                 "    key <10> { [any, any ] };\n"
-             // "    key <11> { [{} , {}  ] };\n"
+                "    key <11> { [{} , {}  ] };\n"
                 "    key <12> { [any, any ], [SetMods(modifiers=Shift)] };\n"
-             // "    key <13> { [{} , {}  ], [SetMods(modifiers=Shift)] };\n"
+                "    key <13> { [{} , {}  ], [SetMods(modifiers=Shift)] };\n"
                 "    key <14> { [any, any ], type = \"TWO_LEVEL\" };\n"
-             // "    key <15> { [{} , {}  ], type = \"TWO_LEVEL\" };\n"
+                "    key <15> { [{} , {}  ], type = \"TWO_LEVEL\" };\n"
                 "    key <16> { [a, A, any] };\n"
-             // "    key <17> { [a, A, {} ] };\n"
+                "    key <17> { [a, A, {} ] };\n"
                 "    key <18> { [a, A, any], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
-             // "    key <19> { [a, A, {} ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+                "    key <19> { [a, A, {} ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
                 "    key <20> { [a, A, ae, any] };\n"
-             // "    key <21> { [a, A, ae, {} ] };\n"
+                "    key <21> { [a, A, ae, {} ] };\n"
                 "    key <22> { [a, A, ae, AE, any] };\n"
-             // "    key <23> { [a, A, ae, AE, {} ] };\n"
+                "    key <23> { [a, A, ae, AE, {} ] };\n"
                 /* Empty actions */
                 "    key <30> { [NoAction(), NoAction() ] };\n"
-             // "    key <31> { actions=[{}, {}         ] };\n"
+                "    key <31> { actions=[{}, {}         ] };\n"
                 "    key <32> { [NoAction(), NoAction() ], [a] };\n"
-             // "    key <33> { actions=[{}, {}         ], [a] };\n"
+                "    key <33> { actions=[{}, {}         ], [a] };\n"
                 "    key <34> { [NoAction(), NoAction() ], type = \"TWO_LEVEL\" };\n"
-             // "    key <35> { actions=[{}, {}         ], type = \"TWO_LEVEL\" };\n"
+                "    key <35> { actions=[{}, {}         ], type = \"TWO_LEVEL\" };\n"
                 "    key <38> { [NoAction(), NoAction() ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
-             // "    key <39> { actions=[{}, {}         ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
+                "    key <39> { actions=[{}, {}         ], type = \"FOUR_LEVEL_SEMIALPHABETIC\" };\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "symbols-multi-keysyms-empty.xkb"

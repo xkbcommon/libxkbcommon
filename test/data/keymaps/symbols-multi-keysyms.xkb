@@ -11,6 +11,12 @@ xkb_keycodes {
 	<07>                 = 7;
 	<08>                 = 8;
 	<09>                 = 9;
+	<10>                 = 10;
+	<11>                 = 11;
+	<12>                 = 12;
+	<13>                 = 13;
+	<14>                 = 14;
+	<15>                 = 15;
 	indicator 1 = "Caps Lock";
 	indicator 2 = "Num Lock";
 	indicator 3 = "Shift Lock";
@@ -169,13 +175,17 @@ xkb_compatibility "basic" {
 xkb_symbols {
 	key <01>                 {	[               a ] };
 	key <02>                 {	[               a,               b ] };
-	key <03>                 {	[        { a, b } ] };
-	key <04>                 {	[     { a, b, c } ] };
-	key <05>                 {	[               a,        { b, c } ] };
-	key <06>                 {	[        { a, b },               c ] };
-	key <07>                 {	[        { a, b },        { c, d } ] };
-	key <08>                 {	[        { a, b },               c,        { d, a },        NoSymbol ] };
-	key <09>                 {	[        { a, b },        { c, d },               a,        NoSymbol ] };
+	key <04>                 {	[        NoSymbol,               b ] };
+	key <05>                 {	[               a ] };
+	key <07>                 {	[               a ] };
+	key <08>                 {	[               a,               b ] };
+	key <09>                 {	[        { a, b } ] };
+	key <10>                 {	[     { a, b, c } ] };
+	key <11>                 {	[               a,        { b, c } ] };
+	key <12>                 {	[        { a, b },               c ] };
+	key <13>                 {	[        { a, b },        { c, d } ] };
+	key <14>                 {	[        { a, b },               c,        { d, a },        NoSymbol ] };
+	key <15>                 {	[        { a, b },        { c, d },               a,        NoSymbol ] };
 };
 
 };
