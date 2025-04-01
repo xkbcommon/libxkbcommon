@@ -922,7 +922,7 @@ xkb_state_update_mask(struct xkb_state *state,
      *
      * It might seem more reasonable to do this only for components.mods
      * in xkb_state_update_derived(), rather than for each component
-     * seperately.  That would allow to distinguish between "really"
+     * separately.  That would allow to distinguish between "really"
      * depressed mods (would be in MODS_DEPRESSED) and indirectly
      * depressed to to a mapping (would only be in MODS_EFFECTIVE).
      * However, the traditional behavior of xkb_state_update_key() is that
@@ -981,12 +981,10 @@ err:
 static bool
 should_do_caps_transformation(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_mod_index_t caps =
-        xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CAPS);
-
     return
-        xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0 &&
-        xkb_state_mod_index_is_consumed(state, kc, caps) == 0;
+        xkb_state_mod_index_is_active(state, XKB_MOD_INDEX_CAPS,
+                                      XKB_STATE_MODS_EFFECTIVE) > 0 &&
+        xkb_state_mod_index_is_consumed(state, kc, XKB_MOD_INDEX_CAPS) == 0;
 }
 
 /*
@@ -995,12 +993,10 @@ should_do_caps_transformation(struct xkb_state *state, xkb_keycode_t kc)
 static bool
 should_do_ctrl_transformation(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_mod_index_t ctrl =
-        xkb_keymap_mod_get_index(state->keymap, XKB_MOD_NAME_CTRL);
-
     return
-        xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_EFFECTIVE) > 0 &&
-        xkb_state_mod_index_is_consumed(state, kc, ctrl) == 0;
+        xkb_state_mod_index_is_active(state, XKB_MOD_INDEX_CTRL,
+                                      XKB_STATE_MODS_EFFECTIVE) > 0 &&
+        xkb_state_mod_index_is_consumed(state, kc, XKB_MOD_INDEX_CTRL) == 0;
 }
 
 /*
