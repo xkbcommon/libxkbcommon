@@ -206,7 +206,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <anyList> DeclList
 %type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
 %type <expr>    KeySymList Action Coord CoordList KeyOrKeysym
-%type <exprList> OptExprList ExprList KeyOrKeysymList
+%type <exprList> ExprList KeyOrKeysymList
 %type <exprList> ActionList MultiActionList MultiKeySymList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody OptSymbolsBody
@@ -457,9 +457,18 @@ InterpretMatch  :       KeySym PLUS Expr
                 ;
 
 VarDeclList     :       VarDeclList VarDecl
-                        { $$.head = $1.head; $$.last->common.next = &$2->common; $$.last = $2; }
-                |       VarDecl
-                        { $$.head = $$.last = $1; }
+                        {
+                            if ($2) {
+                                if ($1.head) {
+                                    $$.head = $1.head;
+                                    $$.last->common.next = &$2->common;
+                                    $$.last = $2;
+                                } else {
+                                    $$.head = $$.last = $2;
+                                }
+                            }
+                        }
+                |       { $$.head = $$.last = NULL; }
                 ;
 
 KeyTypeDecl     :       TYPE String OBRACE
@@ -665,14 +674,21 @@ MergeMode       :       INCLUDE         { $$ = MERGE_DEFAULT; }
                 }
                 ;
 
-OptExprList     :       ExprList        { $$ = $1; }
-                |                       { $$.head = $$.last = NULL; }
-                ;
-
 ExprList        :       ExprList COMMA Expr
-                        { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
+                        {
+                            if ($3) {
+                                if ($1.head) {
+                                    $$.head = $1.head;
+                                    $$.last->common.next = &$3->common;
+                                    $$.last = $3;
+                                } else {
+                                    $$.head = $$.last = $3;
+                                }
+                            }
+                        }
                 |       Expr
                         { $$.head = $$.last = $1; }
+                |       { $$.head = $$.last = NULL; }
                 ;
 
 Expr            :       Expr DIVIDE Expr
@@ -699,7 +715,7 @@ Term            :       MINUS Term
                         { $$ = ExprCreateUnary(STMT_EXPR_INVERT, $2); }
                 |       Lhs
                         { $$ = $1;  }
-                |       FieldSpec OPAREN OptExprList CPAREN %prec OPAREN
+                |       FieldSpec OPAREN ExprList CPAREN %prec OPAREN
                         { $$ = ExprCreateAction($1, $3.head); }
                 |       Terminal
                         { $$ = $1;  }
@@ -731,7 +747,7 @@ Actions         :       OBRACE ActionList CBRACE
                         { $$ = ExprCreateActionList($2.head); }
                 ;
 
-Action          :       FieldSpec OPAREN OptExprList CPAREN
+Action          :       FieldSpec OPAREN ExprList CPAREN
                         { $$ = ExprCreateAction($1, $3.head); }
                 ;
 
