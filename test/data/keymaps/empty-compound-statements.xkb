@@ -1,0 +1,54 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<Q>                  = 24;
+	<W>                  = 25;
+	<E>                  = 26;
+	<R>                  = 27;
+	<T>                  = 28;
+	<Y>                  = 29;
+	<U>                  = 30;
+	<I>                  = 31;
+	<A>                  = 38;
+	<S>                  = 39;
+	<D>                  = 40;
+	indicator 1 = "xxx";
+	indicator 2 = "yyy";
+};
+
+xkb_types {
+	virtual_modifiers M1,M2;
+
+	type "ttt" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers M1,M2;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret q+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret w+AnyOfOrNone(all) {
+		repeat= True;
+		action= NoAction();
+	};
+	indicator "yyy" {
+		modifiers= Shift;
+	};
+};
+
+xkb_symbols {
+	key <Q>                  {	[               q ] };
+	key <W>                  {	[               w ] };
+	key <E>                  {
+		type= "ttt",
+		symbols[Group1]= [               e ]
+	};
+};
+
+};

@@ -884,6 +884,58 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
+test_empty_compound_statements(struct xkb_context *ctx, bool update_output_files)
+{
+
+    struct keymap_test_data keymaps[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <Q> = 24;\n"
+                "    <W> = 25;\n"
+                "    <E> = 26;\n"
+                "    <R> = 27;\n"
+                "    <T> = 28;\n"
+                "    <Y> = 29;\n"
+                "    <U> = 30;\n"
+                "    <I> = 31;\n"
+                "    <A> = 38;\n"
+                "    <S> = 39;\n"
+                "    <D> = 40;\n"
+                "  };\n"
+                "  xkb_types {\n"
+                "    type \"ttt\" {};\n"
+                "  };\n"
+                "  xkb_compat {\n"
+                "    virtual_modifiers M1, M2;\n"
+                "    indicator \"xxx\" {};\n"
+                "    indicator.modifiers = Shift;"
+                "    indicator \"yyy\" {};\n"
+                "\n"
+                "    interpret q {};\n"
+                "    interpret.repeat = true;\n"
+                "    interpret w {};\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <Q> { [q] };\n"
+                "    key <W> { [w] };\n"
+                "    key <E> { [e], type = \"ttt\" };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "empty-compound-statements.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -958,6 +1010,7 @@ main(int argc, char *argv[])
     test_multi_keysyms_actions(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);
     test_modifier_maps(ctx, update_output_files);
+    test_empty_compound_statements(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 
