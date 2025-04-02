@@ -175,7 +175,7 @@ ExprCreateActionList(ExprDef *actions)
 }
 
 ExprDef *
-ExprCreateKeysymList(xkb_keysym_t sym)
+ExprCreateKeySymList(xkb_keysym_t sym)
 {
     ExprDef *expr = ExprCreate(STMT_EXPR_KEYSYM_LIST);
     if (!expr)
@@ -190,7 +190,7 @@ ExprCreateKeysymList(xkb_keysym_t sym)
 }
 
 ExprDef *
-ExprAppendKeysymList(ExprDef *expr, xkb_keysym_t sym)
+ExprAppendKeySymList(ExprDef *expr, xkb_keysym_t sym)
 {
     if (sym == XKB_KEY_NoSymbol) {
         /* Discard NoSymbol */
