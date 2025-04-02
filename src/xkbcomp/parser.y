@@ -206,9 +206,9 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <noSymbolOrActionList> NoSymbolOrActionList
 %type <any>     Decl
 %type <anyList> DeclList
-%type <expr>    Expr Term Lhs Terminal ArrayInit Actions KeySyms
-%type <expr>    KeySymList Action Coord CoordList KeyOrKeysym
-%type <exprList> ExprList KeyOrKeysymList
+%type <expr>    Expr Term Lhs Terminal MultiKeySymOrActionList Actions KeySyms
+%type <expr>    KeySymList Action Coord CoordList KeyOrKeySym
+%type <exprList> ExprList KeyOrKeySymList
 %type <exprList> ActionList MultiActionList MultiKeySymList
 %type <var>     VarDecl SymbolsVarDecl
 %type <varList> VarDeclList SymbolsBody OptSymbolsBody
@@ -496,10 +496,10 @@ SymbolsBody     :       SymbolsBody COMMA SymbolsVarDecl
                 ;
 
 SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
-                |       Lhs EQUALS ArrayInit    { $$ = VarCreate($1, $3); }
+                |       Lhs EQUALS MultiKeySymOrActionList { $$ = VarCreate($1, $3); }
                 |       Ident                   { $$ = BoolVarCreate($1, true); }
                 |       EXCLAM Ident            { $$ = BoolVarCreate($2, false); }
-                |       ArrayInit               { $$ = VarCreate(NULL, $1); }
+                |       MultiKeySymOrActionList { $$ = VarCreate(NULL, $1); }
                 ;
 
 /*
@@ -513,7 +513,8 @@ SymbolsVarDecl  :       Lhs EQUALS Expr         { $$ = VarCreate($1, $3); }
  * ambiguity is solved. If not, this is a list of empties of *some* type: we
  * drop those empties and delegate the type resolution using `ExprEmptyList()`.
  */
-ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
+MultiKeySymOrActionList
+                :       OBRACKET MultiKeySymList CBRACKET
                         { $$ = $2.head; }
                 |       OBRACKET NoSymbolOrActionList COMMA MultiKeySymList CBRACKET
                         {
@@ -523,7 +524,7 @@ ArrayInit       :       OBRACKET MultiKeySymList CBRACKET
                             };
                             for (uint32_t k = 0; k < $2; k++) {
                                 ExprDef* const syms =
-                                    ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                                    ExprCreateKeySymList(XKB_KEY_NoSymbol);
                                 if (!syms) {
                                     /* TODO: Use Bison’s more appropriate YYNOMEM */
                                     YYABORT;
@@ -574,17 +575,17 @@ GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
                         { $$ = GroupCompatCreate($2, $4); }
                 ;
 
-ModMapDecl      :       MODIFIER_MAP Ident OBRACE KeyOrKeysymList CBRACE SEMI
+ModMapDecl      :       MODIFIER_MAP Ident OBRACE KeyOrKeySymList CBRACE SEMI
                         { $$ = ModMapCreate($2, $4.head); }
                 ;
 
-KeyOrKeysymList :       KeyOrKeysymList COMMA KeyOrKeysym
+KeyOrKeySymList :       KeyOrKeySymList COMMA KeyOrKeySym
                         { $$.head = $1.head; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       KeyOrKeysym
+                |       KeyOrKeySym
                         { $$.head = $$.last = $1; }
                 ;
 
-KeyOrKeysym     :       KEYNAME
+KeyOrKeySym     :       KEYNAME
                         { $$ = ExprCreateKeyName($1); }
                 |       KeySym
                         { $$ = ExprCreateKeySym($1); }
@@ -842,7 +843,7 @@ Terminal        :       String
 
 MultiKeySymList :       MultiKeySymList COMMA KeySym
                         {
-                            ExprDef *expr = ExprCreateKeysymList($3);
+                            ExprDef *expr = ExprCreateKeySymList($3);
                             $$ = $1;
                             $$.last->common.next = &expr->common; $$.last = expr;
                         }
@@ -850,20 +851,20 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
                 |       MultiKeySymList COMMA OBRACE CBRACE
                         {
-                            ExprDef *expr = ExprCreateKeysymList(XKB_KEY_NoSymbol);
+                            ExprDef *expr = ExprCreateKeySymList(XKB_KEY_NoSymbol);
                             $$ = $1;
                             $$.last->common.next = &expr->common; $$.last = expr;
                         }
                 |       KeySym
-                        { $$.head = $$.last = ExprCreateKeysymList($1); }
+                        { $$.head = $$.last = ExprCreateKeySymList($1); }
                 |       KeySyms
                         { $$.head = $$.last = $1; }
                 ;
 
 KeySymList      :       KeySymList COMMA KeySym
-                        { $$ = ExprAppendKeysymList($1, $3); }
+                        { $$ = ExprAppendKeySymList($1, $3); }
                 |       KeySym
-                        { $$ = ExprCreateKeysymList($1); }
+                        { $$ = ExprCreateKeySymList($1); }
                 ;
 
 KeySyms         :       OBRACE KeySymList CBRACE

@@ -49,10 +49,10 @@ ExprDef *
 ExprCreateActionList(ExprDef *actions);
 
 ExprDef *
-ExprCreateKeysymList(xkb_keysym_t sym);
+ExprCreateKeySymList(xkb_keysym_t sym);
 
 ExprDef *
-ExprAppendKeysymList(ExprDef *list, xkb_keysym_t sym);
+ExprAppendKeySymList(ExprDef *list, xkb_keysym_t sym);
 
 KeycodeDef *
 KeycodeCreate(xkb_atom_t name, int64_t value);
