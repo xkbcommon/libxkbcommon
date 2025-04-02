@@ -149,7 +149,6 @@ xkb_compatibility {
 };
 
 xkb_symbols {
-	key <10>                 {	[        NoSymbol ] };
 	key <12>                 {
 		repeat= No,
 		symbols[Group1]= [                       NoSymbol ],
@@ -166,11 +165,6 @@ xkb_symbols {
 	};
 	key <20>                 {	[               a,               A,              ae,        NoSymbol ] };
 	key <22>                 {	[               a,               A,              ae,              AE ] };
-	key <30>                 {
-		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [                     NoAction() ]
-	};
 	key <32>                 {
 		repeat= No,
 		symbols[Group1]= [                              a ],

@@ -258,9 +258,11 @@ enum xkb_range_exceed_type {
 };
 
 enum xkb_explicit_components {
-    EXPLICIT_INTERP = (1 << 0),
-    EXPLICIT_VMODMAP = (1 << 1),
-    EXPLICIT_REPEAT = (1 << 2),
+    EXPLICIT_SYMBOLS = (1 << 0),
+    EXPLICIT_INTERP = (1 << 1),
+    EXPLICIT_TYPES = (1 << 2),
+    EXPLICIT_VMODMAP = (1 << 3),
+    EXPLICIT_REPEAT = (1 << 4),
 };
 
 struct xkb_level {
