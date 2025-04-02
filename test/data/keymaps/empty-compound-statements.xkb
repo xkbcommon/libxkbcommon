@@ -10,9 +10,21 @@ xkb_keycodes {
 	<Y>                  = 29;
 	<U>                  = 30;
 	<I>                  = 31;
+	<O>                  = 32;
+	<P>                  = 33;
 	<A>                  = 38;
 	<S>                  = 39;
 	<D>                  = 40;
+	<F>                  = 41;
+	<G>                  = 42;
+	<H>                  = 43;
+	<Z>                  = 52;
+	<X>                  = 53;
+	<C>                  = 54;
+	<V>                  = 55;
+	<B>                  = 56;
+	<N>                  = 57;
+	<M>                  = 58;
 	indicator 1 = "xxx";
 	indicator 2 = "yyy";
 };
@@ -20,8 +32,12 @@ xkb_keycodes {
 xkb_types {
 	virtual_modifiers M1,M2;
 
-	type "ttt" {
+	type "t1" {
 		modifiers= none;
+	};
+	type "t2" {
+		modifiers= Shift;
+		map[Shift]= 2;
 	};
 };
 
@@ -44,11 +60,69 @@ xkb_compatibility {
 
 xkb_symbols {
 	key <Q>                  {	[               q ] };
-	key <W>                  {	[               w ] };
+	key <W>                  {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [        SetMods(modifiers=none) ]
+	};
 	key <E>                  {
-		type= "ttt",
+		type= "t1",
 		symbols[Group1]= [               e ]
 	};
+	key <U>                  {
+		symbols[Group1]= [        NoSymbol ],
+		symbols[Group2]= [               u ]
+	};
+	key <I>                  {	[               i ] };
+	key <A>                  {
+		virtualMods= M1
+	};
+	key <S>                  {
+		repeat= No
+	};
+	key <F>                  {
+		type= "t2",
+		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+	};
+	key <G>                  {
+		type= "t2",
+		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+	};
+	key <H>                  {
+		type[Group1]= "t1",
+		type[Group2]= "t2",
+		symbols[Group1]= [        NoSymbol ],
+		symbols[Group2]= [        NoSymbol,        NoSymbol ]
+	};
+	key <X>                  {
+		virtualMods= M1
+	};
+	key <C>                  {
+		virtualMods= M2
+	};
+	key <V>                  {
+		virtualMods= none
+	};
+	key <B>                  {
+		type= "t2",
+		virtualMods= none,
+		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+	};
+	key <N>                  {
+		type= "t1",
+		virtualMods= none,
+		symbols[Group1]= [        NoSymbol ]
+	};
+	key <M>                  {
+		type[Group1]= "t1",
+		type[Group2]= "t2",
+		virtualMods= none,
+		symbols[Group1]= [        NoSymbol ],
+		symbols[Group2]= [        NoSymbol,        NoSymbol ]
+	};
+	modifier_map Shift { <Z> };
+	modifier_map Lock { <X> };
+	modifier_map Control { <C> };
 };
 
 };

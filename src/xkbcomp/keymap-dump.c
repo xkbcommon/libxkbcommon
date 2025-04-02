@@ -12,6 +12,9 @@
 
 #include "config.h"
 
+#include <assert.h>
+
+#include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 
@@ -538,39 +541,35 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 {
     xkb_layout_index_t group;
     bool simple = true;
-    bool explicit_types = false;
-    bool multi_type = false;
-    bool show_actions;
 
     write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
 
-    for (group = 0; group < key->num_groups; group++) {
-        if (key->groups[group].explicit_type)
-            explicit_types = true;
-
-        if (group != 0 && key->groups[group].type != key->groups[0].type)
-            multi_type = true;
-    }
-
-    if (explicit_types) {
-        const struct xkb_key_type *type;
+    if (key->explicit & EXPLICIT_TYPES) {
         simple = false;
+
+        bool multi_type = false;
+        for (group = 1; group < key->num_groups; group++) {
+            if (key->groups[group].type != key->groups[0].type) {
+                multi_type = true;
+                break;
+            }
+        }
 
         if (multi_type) {
             for (group = 0; group < key->num_groups; group++) {
                 if (!key->groups[group].explicit_type)
                     continue;
 
-                type = key->groups[group].type;
+                const struct xkb_key_type * const type = key->groups[group].type;
                 write_buf(buf, "\n\t\ttype[Group%u]= \"%s\",",
-                            group + 1,
-                            xkb_atom_text(keymap->ctx, type->name));
+                          group + 1,
+                          xkb_atom_text(keymap->ctx, type->name));
             }
         }
         else {
-            type = key->groups[0].type;
+            const struct xkb_key_type * const type = key->groups[0].type;
             write_buf(buf, "\n\t\ttype= \"%s\",",
-                        xkb_atom_text(keymap->ctx, type->name));
+                      xkb_atom_text(keymap->ctx, type->name));
         }
     }
 
@@ -583,7 +582,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
      * One side effect is that no interpretation will be run on this key anymore,
      * so we may have to set some extra fields explicitly: repeat, virtualMods.
      */
-    show_actions = (key->explicit & EXPLICIT_INTERP);
+    const bool show_actions = (key->explicit & EXPLICIT_INTERP);
 
     /* If we show actions, interprets are not going to be used to set this
      * field, so make it explicit. */
@@ -592,12 +591,11 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
             write_buf(buf, "\n\t\trepeat= Yes,");
         else
             write_buf(buf, "\n\t\trepeat= No,");
-        simple = false;
     }
 
     /* If we show actions, interprets are not going to be used to set this
      * field, so make it explicit. */
-    if (key->vmodmap && ((key->explicit & EXPLICIT_VMODMAP) || show_actions))
+    if ((key->explicit & EXPLICIT_VMODMAP) || (show_actions && key->vmodmap))
         write_buf(buf, "\n\t\tvirtualMods= %s,",
                   ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                               key->vmodmap));
@@ -620,12 +618,23 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         simple = false;
 
     if (simple) {
-        write_buf(buf, "\t[ ");
-        if (!write_keysyms(keymap, buf, buf2, key, 0, false))
-            return false;
-        write_buf(buf, " ] };\n");
+        const bool only_symbols = key->explicit == EXPLICIT_SYMBOLS;
+        if (key->num_groups == 0) {
+            /* Remove trailing comma */
+            if (buf->buf[buf->size - 1] == ',')
+                buf->size--;
+        } else {
+	        if (!only_symbols)
+	            write_buf(buf, "\n\t");
+            write_buf(buf, "\t[ ");
+            if (!write_keysyms(keymap, buf, buf2, key, 0, false))
+                return false;
+            write_buf(buf, " ]");
+        }
+        write_buf(buf, "%s", (only_symbols ? " };\n" : "\n\t};\n"));
     }
     else {
+        assert(key->num_groups > 0);
         for (group = 0; group < key->num_groups; group++) {
             if (group != 0)
                 write_buf(buf, ",");
@@ -670,7 +679,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
     struct buf buf2 = { NULL, 0, 0 };
     xkb_keys_foreach(key, keymap) {
-        if (key->num_groups > 0) {
+        /* Skip keys with no explicit values */
+        if (key->explicit) {
             if (!write_key(keymap, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;

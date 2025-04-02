@@ -459,6 +459,9 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
             FAIL_UNLESS((unsigned) syms_length == wire_sym_map->width * key->num_groups);
 
+            if (syms_length > 0)
+                key->explicit |= EXPLICIT_SYMBOLS;
+
             for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
                 for (xkb_level_index_t level = 0; level < wire_sym_map->width; level++) {
                     xcb_keysym_t wire_keysym = *syms_iter;
@@ -586,17 +589,25 @@ get_explicits(struct xkb_keymap *keymap, xcb_connection_t *conn,
         key = &keymap->keys[wire->keycode];
 
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_1) &&
-            key->num_groups > 0)
+            key->num_groups > 0) {
             key->groups[0].explicit_type = true;
+            key->explicit |= EXPLICIT_TYPES;
+        }
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_2) &&
-            key->num_groups > 1)
+            key->num_groups > 1) {
             key->groups[1].explicit_type = true;
+            key->explicit |= EXPLICIT_TYPES;
+        }
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_3) &&
-            key->num_groups > 2)
+            key->num_groups > 2) {
             key->groups[2].explicit_type = true;
+            key->explicit |= EXPLICIT_TYPES;
+        }
         if ((wire->explicit & XCB_XKB_EXPLICIT_KEY_TYPE_4) &&
-            key->num_groups > 3)
+            key->num_groups > 3) {
             key->groups[3].explicit_type = true;
+            key->explicit |= EXPLICIT_TYPES;
+        }
         if (wire->explicit & XCB_XKB_EXPLICIT_INTERPRET) {
             key->explicit |= EXPLICIT_INTERP;
             /* Make all key groups have explicit actions too */

@@ -14,6 +14,7 @@
 
 #include "config.h"
 
+#include "keymap.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 
@@ -153,8 +154,8 @@ ClearKeyInfo(KeyInfo *keyi)
 typedef struct {
     enum merge_mode merge;
     bool haveSymbol;
-    // NOTE: Can also be XKB_MOD_NONE, meaning
-    //       “don’t add a modifier to the modmap”.
+    /* NOTE: Can also be XKB_MOD_NONE, meaning
+     *       “don’t add a modifier to the modmap”. */
     xkb_mod_index_t modifier;
     union {
         xkb_atom_t keyName;
@@ -1363,10 +1364,10 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
     const char *modifier_name = xkb_atom_text(ctx, def->modifier);
 
     if (istreq(modifier_name, "none")) {
-        // Handle special "None" entry
+        /* Handle special "None" entry */
         ndx = XKB_MOD_NONE;
     } else {
-        // Handle normal entry
+        /* Handle normal entry */
         ndx = XkbModNameToIndex(&info->mods, def->modifier, MOD_REAL);
         if (ndx == XKB_MOD_INVALID) {
             log_err(info->ctx, XKB_ERROR_INVALID_REAL_MODIFIER,
@@ -1577,7 +1578,7 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
 
     if (type_name == XKB_ATOM_NONE) {
         if (keyi->default_type != XKB_ATOM_NONE) {
-            type_name  = keyi->default_type;
+            type_name = keyi->default_type;
         }
         else {
             type_name = FindAutomaticType(keymap->ctx, groupi);
@@ -1588,8 +1589,8 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
 
     if (type_name == XKB_ATOM_NONE) {
         log_warn(keymap->ctx, XKB_WARNING_CANNOT_INFER_KEY_TYPE,
-                 "Couldn't find an automatic type for key '%s' group %d with %lu levels; "
-                 "Using the default type\n",
+                 "Couldn't find an automatic type for key '%s' "
+                 "group %d with %lu levels; Using the default type\n",
                  KeyNameText(keymap->ctx, keyi->name), group + 1,
                  (unsigned long) darray_size(groupi->levels));
         goto use_default;
@@ -1601,8 +1602,8 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
 
     if (i >= keymap->num_types) {
         log_warn(keymap->ctx, XKB_WARNING_UNDEFINED_KEY_TYPE,
-                 "The type \"%s\" for key '%s' group %d was not previously defined; "
-                 "Using the default type\n",
+                 "The type \"%s\" for key '%s' group %d "
+                 "was not previously defined; Using the default type\n",
                  xkb_atom_text(keymap->ctx, type_name),
                  KeyNameText(keymap->ctx, keyi->name), group + 1);
         goto use_default;
@@ -1641,12 +1642,24 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     /* Find the range of groups we need. */
     key->num_groups = 0;
-    darray_enumerate(i, groupi, keyi->groups)
-        if (groupi->defined)
+    darray_enumerate(i, groupi, keyi->groups) {
+        /* Skip groups that have no levels and no explicit type.
+         * Such group would be filled with `NoSymbol` anyway. */
+        const bool has_explicit_type = (keyi->defined & KEY_FIELD_DEFAULT_TYPE)
+                                    || (groupi->defined & GROUP_FIELD_TYPE);
+        if (darray_size(groupi->levels) > 0 || has_explicit_type)
             key->num_groups = i + 1;
+        if (has_explicit_type)
+            key->explicit |= EXPLICIT_TYPES;
+    }
 
-    if (key->num_groups <= 0)
-        return false; /* WSGO */
+    if (key->num_groups <= 0) {
+        /* A key with no group may still have other fields defined */
+        if (keyi->defined)
+            goto key_fields;
+        else
+            return false;
+    }
 
     darray_resize(keyi->groups, key->num_groups);
 
@@ -1695,15 +1708,21 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     /* Copy levels. */
     darray_enumerate(i, groupi, keyi->groups) {
         darray_steal(groupi->levels, &key->groups[i].levels, NULL);
+        if (key->groups[i].type->num_levels > 1 ||
+            key->groups[i].levels[0].num_syms > 0)
+            key->explicit |= EXPLICIT_SYMBOLS;
         if (groupi->defined & GROUP_FIELD_ACTS) {
             key->groups[i].explicit_actions = true;
             key->explicit |= EXPLICIT_INTERP;
         }
+        if (key->groups[i].explicit_type)
+            key->explicit |= EXPLICIT_TYPES;
     }
 
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
 
+key_fields:
     if (keyi->defined & KEY_FIELD_VMODMAP) {
         key->vmodmap = keyi->vmodmap;
         key->explicit |= EXPLICIT_VMODMAP;
@@ -1746,9 +1765,9 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
         }
     }
 
-    // Handle modMap None
+    /* Skip modMap None */
     if (entry->modifier != XKB_MOD_NONE) {
-        // Convert modifier index to modifier mask
+        /* Convert modifier index to modifier mask */
         key->modmap |= (UINT32_C(1) << entry->modifier);
     }
 
