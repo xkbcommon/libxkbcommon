@@ -1580,7 +1580,7 @@ The <code>[xkb_symbols]</code> section (see below)
 allows the keymap author to perform, among other things, the following
 things for each key:
 
-- Bind an [action], like `SetMods` or `LockGroup`, to the key.
+- Bind a sequence of [actions], like `SetMods` or `LockGroup`, to the key.
   Actions, like symbols, are specified for each level of each group
   in the key separately.
 
@@ -1674,6 +1674,11 @@ Note: the other possible value is `any` and is the default value.
 
 Bind this action to the matching levels. See [key actions][actions]
 for the list of available key actions.
+
+Since 1.9.0, it is also possible to assign a sequence of actions, mirroring
+the feature used in the [key statement](@ref key-multiple-symbols-per-level).
+
+    action = {SetMods(modifiers=NumLock),SetGroup(group=2)};
 
 #### “virtualModifier” statement {#interpret-virtualModifier}
 
@@ -1896,8 +1901,9 @@ keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 
 @remark Trailing `NoSymbol` are dropped.
 
-As an extension to the XKB legacy format, libxkbcommon supports multiple key
-symbols and actions per level (the latter since version 1.8.0):
+@anchor key-multiple-symbols-per-level As an extension to the XKB legacy format,
+libxkbcommon supports multiple key symbols and actions per level (the latter
+since version 1.8.0):
 
     key <AD01> { [ {a, b}, Q ] };
 

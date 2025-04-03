@@ -780,13 +780,15 @@ Term            :       MINUS Term
                 |       INVERT Term
                         { $$ = ExprCreateUnary(STMT_EXPR_INVERT, $2); }
                 |       Lhs
-                        { $$ = $1;  }
+                        { $$ = $1; }
                 |       FieldSpec OPAREN ExprList CPAREN %prec OPAREN
                         { $$ = ExprCreateAction($1, $3.head); }
+                |       Actions
+                        { $$ = $1; }
                 |       Terminal
-                        { $$ = $1;  }
+                        { $$ = $1; }
                 |       OPAREN Expr CPAREN
-                        { $$ = $2;  }
+                        { $$ = $2; }
                 ;
 
 MultiActionList :       MultiActionList COMMA Action

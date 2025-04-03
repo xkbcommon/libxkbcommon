@@ -10,6 +10,8 @@
 
 #include "config.h"
 
+#include "darray.h"
+#include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -189,7 +191,18 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
         }
         if (UseNewInterpField(SI_FIELD_ACTION, old->defined, new->defined,
                               clobber, report, &collide)) {
-            old->interp.action = new->interp.action;
+            if (old->interp.num_actions > 1) {
+                free(old->interp.a.actions);
+            }
+            old->interp.num_actions = new->interp.num_actions;
+            if (new->interp.num_actions > 1) {
+                old->interp.a.actions = new->interp.a.actions;
+                new->interp.a.action =
+                    (union xkb_action) { .type = ACTION_TYPE_NONE };
+                new->interp.num_actions = 0;
+            } else {
+                old->interp.a.action = new->interp.a.action;
+            }
             old->defined |= SI_FIELD_ACTION;
         }
         if (UseNewInterpField(SI_FIELD_AUTO_REPEAT, old->defined, new->defined,
@@ -448,8 +461,59 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         if (arrayNdx)
             return ReportSINotArray(info, si, field);
 
-        if (!HandleActionDef(info->ctx, info->actions, &info->mods,
-                             value, &si->interp.action))
+        if (value->common.type == STMT_EXPR_ACTION_LIST) {
+            unsigned int num_actions = 0;
+            for (ExprDef *act = value->actions.actions;
+                 act; act = (ExprDef *) act->common.next)
+                 num_actions++;
+
+            si->interp.num_actions = 0;
+            si->interp.a.action.type = ACTION_TYPE_NONE;
+
+            /* Parse actions and add only defined actions */
+            darray(union xkb_action) actions = darray_new();
+            unsigned int act_index = 0;
+            for (ExprDef *act = value->actions.actions;
+                 act; act = (ExprDef *) act->common.next, act_index++) {
+                union xkb_action toAct = { 0 };
+                if (!HandleActionDef(info->ctx, info->actions,
+                                     &info->mods, act, &toAct)) {
+                    darray_free(actions);
+                    return false;
+                }
+                if (toAct.type == ACTION_TYPE_NONE) {
+                    /* Drop action */
+                } else if (likely(num_actions == 1)) {
+                    /* Only one action: do not allocate */
+                    si->interp.num_actions = 1;
+                    si->interp.a.action = toAct;
+                } else {
+                    darray_append(actions, toAct);
+                }
+            }
+            switch (darray_size(actions)) {
+            case 0:
+                /* No action or exactly one action: already processed */
+                assert(si->interp.num_actions <= 1);
+                break;
+            case 1:
+                /* One action: some actions were dropped */
+                si->interp.num_actions = 1;
+                si->interp.a.action = darray_item(actions, 1);
+                darray_free(actions);
+                break;
+            default:
+                /* Multiple actions; no NoAction() left */
+                darray_shrink(actions);
+                darray_steal(actions, &si->interp.a.actions,
+                             &si->interp.num_actions);
+            }
+        }
+        else if (HandleActionDef(info->ctx, info->actions, &info->mods,
+                                 value, &si->interp.a.action))
+            si->interp.num_actions =
+                (si->interp.a.action.type != ACTION_TYPE_NONE);
+        else
             return false;
 
         si->defined |= SI_FIELD_ACTION;

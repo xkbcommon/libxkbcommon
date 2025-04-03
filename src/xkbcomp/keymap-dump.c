@@ -575,25 +575,47 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
 
-        write_buf(buf, "\tinterpret %s+%s(%s) {\n",
+        write_buf(buf, "\tinterpret %s+%s(%s) {",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
                   SIMatchText(si->match),
                   ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, si->mods));
 
-        if (si->virtual_mod != XKB_MOD_INVALID)
-            write_buf(buf, "\t\tvirtualModifier= %s;\n",
+        bool has_explicit_properties = false;
+
+        if (si->virtual_mod != XKB_MOD_INVALID) {
+            write_buf(buf, "\n\t\tvirtualModifier= %s;",
                       ModIndexText(keymap->ctx, &keymap->mods,
                                    si->virtual_mod));
+            has_explicit_properties = true;
+        }
 
-        if (si->level_one_only)
-            copy_to_buf(buf, "\t\tuseModMapMods=level1;\n");
+        if (si->level_one_only) {
+            copy_to_buf(buf, "\n\t\tuseModMapMods=level1;");
+            has_explicit_properties = true;
+        }
 
-        if (si->repeat)
-            copy_to_buf(buf, "\t\trepeat= True;\n");
+        if (si->repeat) {
+            copy_to_buf(buf, "\n\t\trepeat= True;");
+            has_explicit_properties = true;
+        }
 
-        if (!write_action(keymap, buf, &si->action, "\t\taction= ", ";\n"))
-            return false;
-        copy_to_buf(buf, "\t};\n");
+        if (si->num_actions > 1) {
+            copy_to_buf(buf, "\n\t\taction= {");
+            const char suffix[] = ", ";
+            for (unsigned int k = 0; k < si->num_actions; k++) {
+                if (!write_action(keymap, buf, &si->a.actions[k], "", suffix))
+                    return false;
+            }
+            buf->size -= sizeof(suffix) - 1; /* trailing comma */
+            copy_to_buf(buf, "};");
+            has_explicit_properties = true;
+        } else if (si->num_actions == 1) {
+            if (!write_action(keymap, buf, &si->a.action,
+                              "\n\t\taction= ", ";"))
+                return false;
+            has_explicit_properties = true;
+        }
+        write_buf(buf, (has_explicit_properties ? "\n\t};\n" : "};\n"));
     }
 
     xkb_leds_foreach(led, keymap)

@@ -11,6 +11,8 @@
 
 #include "config.h"
 
+#include <string.h>
+
 #include "darray.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
@@ -44,7 +46,8 @@ static const struct xkb_sym_interpret default_interpret = {
     .match = MATCH_ANY_OR_NONE,
     .mods = 0,
     .virtual_mod = XKB_MOD_INVALID,
-    .action = { .type = ACTION_TYPE_NONE },
+    .num_actions = 0,
+    .a = { .action = { .type = ACTION_TYPE_NONE } },
 };
 
 typedef darray(const struct xkb_sym_interpret*) xkb_sym_interprets;
@@ -151,6 +154,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
     xkb_level_index_t level;
     // FIXME: do not use darray, add actions directly in FindInterpForKey
     xkb_sym_interprets interprets = darray_new();
+    darray(union xkb_action) actions = darray_new();
 
     for (group = 0; group < key->num_groups; group++) {
         /* Skip any interpretation for this group if it has explicit actions */
@@ -169,16 +173,6 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             if (!found)
                 continue;
 
-            key->groups[group].levels[level].num_actions =
-                key->groups[group].levels[level].num_syms;
-
-            /* Allocate actions */
-            if (key->groups[group].levels[level].num_actions > 1) {
-                key->groups[group].levels[level].a.actions =
-                    calloc(key->groups[group].levels[level].num_actions,
-                           sizeof(*key->groups[group].levels[level].a.actions));
-            }
-
             darray_enumerate(k, interp_iter, interprets) {
                 interp = *interp_iter;
                 /* Infer default key behaviours from the base level. */
@@ -190,17 +184,48 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     if (interp->virtual_mod != XKB_MOD_INVALID)
                         vmodmap |= (UINT32_C(1) << interp->virtual_mod);
 
-                if (interp->action.type != ACTION_TYPE_NONE) {
-                    if (key->groups[group].levels[level].num_actions == 1) {
-                        key->groups[group].levels[level].a.action = interp->action;
-                    } else {
-                        key->groups[group].levels[level].a.actions[k] = interp->action;
-                    }
+                switch (interp->num_actions) {
+                case 0:
+                    break;
+                case 1:
+                    darray_append(actions, interp->a.action);
+                    break;
+                default:
+                    darray_append_items(actions, interp->a.actions,
+                                        interp->num_actions);
                 }
             }
+
+            /* Copy the actions */
+            key->groups[group].levels[level].num_actions = darray_size(actions);
+            switch (darray_size(actions)) {
+                case 0:
+                    key->groups[group].levels[level].a.action =
+                        (union xkb_action) { .type = ACTION_TYPE_NONE };
+                    break;
+                case 1:
+                    key->groups[group].levels[level].a.action =
+                        darray_item(actions, 0);
+                    break;
+                default:
+                    key->groups[group].levels[level].a.actions =
+                        memdup(darray_items(actions),
+                               darray_size(actions),
+                               sizeof(*darray_items(actions)));
+                    if (!key->groups[group].levels[level].a.actions) {
+                        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+                                "Could not allocate interpret actions\n");
+                        darray_free(actions);
+                        darray_free(interprets);
+                        return false;
+                    }
+            }
+
+            /* Do not free here */
+            darray_resize(actions, 0);
         }
     }
-
+    darray_free(actions);
     darray_free(interprets);
 
     if (!(key->explicit & EXPLICIT_VMODMAP))

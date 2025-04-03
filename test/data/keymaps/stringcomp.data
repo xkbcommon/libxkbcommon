@@ -605,9 +605,7 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 		virtualModifier= NumLock;
 		action= LockMods(modifiers=NumLock);
 	};
-	interpret ISO_Lock+AnyOf(all) {
-		action= NoAction();
-	};
+	interpret ISO_Lock+AnyOf(all) {};
 	interpret ISO_Level3_Shift+AnyOf(all) {
 		virtualModifier= LevelThree;
 		useModMapMods=level1;
