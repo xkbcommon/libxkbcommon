@@ -35,6 +35,13 @@ clear_level(struct xkb_level *leveli)
         free(leveli->a.actions);
 }
 
+static void
+clear_interpret(struct xkb_sym_interpret *interp)
+{
+    if (interp->num_actions > 1)
+        free(interp->a.actions);
+}
+
 void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
@@ -65,6 +72,9 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
             free(keymap->types[i].level_names);
         }
         free(keymap->types);
+    }
+    for (unsigned int k = 0; k < keymap->num_sym_interprets; k++) {
+        clear_interpret(&keymap->sym_interprets[k]);
     }
     free(keymap->sym_interprets);
     free(keymap->key_aliases);

@@ -215,9 +215,15 @@ struct xkb_sym_interpret {
     enum xkb_match_operation match;
     xkb_mod_mask_t mods;
     xkb_mod_index_t virtual_mod;
-    union xkb_action action;
     bool level_one_only;
     bool repeat;
+    unsigned int num_actions;
+    union {
+        /* num_actions <= 1 */
+        union xkb_action action;
+        /* num_actions >  1 */
+        union xkb_action *actions;
+    } a;
 };
 
 struct xkb_led {

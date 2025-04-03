@@ -848,8 +848,10 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
             sym_interpret->virtual_mod = NUM_REAL_MODS + wire->virtualMod;
 
         sym_interpret->repeat = (wire->flags & 0x01);
-        translate_action(&sym_interpret->action,
+        translate_action(&sym_interpret->a.action,
                          (xcb_xkb_action_t *) &wire->action);
+        sym_interpret->num_actions =
+            (sym_interpret->a.action.type != ACTION_TYPE_NONE);
 
         xcb_xkb_sym_interpret_next(&iter);
     }

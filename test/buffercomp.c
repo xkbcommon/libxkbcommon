@@ -742,6 +742,12 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
                 "    <39> = 39;\n"
                 "  };\n"
                 "  xkb_types { include \"basic+extra\" };\n"
+                "  xkb_compat {\n"
+                "    interpret 1 { action = {}; };\n"
+                "    interpret 2 { action = {NoAction()}; };\n"
+                "    interpret 3 { action = {SetMods()}; };\n"
+                "    interpret 4 { action = {SetMods(), SetGroup(group=1)}; };\n"
+                "  };\n"
                 "  xkb_symbols {\n"
                 /* Empty keysyms */
                 "    key <10> { [any, any ] };\n"

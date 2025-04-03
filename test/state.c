@@ -1574,6 +1574,96 @@ test_leds(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_multiple_actions(struct xkb_context *ctx)
+{
+    /* Check that we can trigger 2 actions on the same levels, with both
+     * explicit (defined via the key statement) and explicit (defined via
+     * interpret). The actions set the Control modifier and may change the
+     * group. The idea is to enable keyboard shortcuts to always target the
+     * same layout. Because SetGroup() does not work well with absolute values,
+     * we define the modifiers on each 2 groups. */
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <AD01> = 24;\n"
+	    "    <LCTL> = 37;\n"
+	    "    <RCTL> = 105;\n"
+        "  };\n"
+        "  xkb_compat {\n"
+        /* Right Control has its actions set implicitly via interpret */
+        "    interpret 1 {\n"
+        "      action = {SetMods(modifiers=Control)};\n"
+        "    };\n"
+        "    interpret 2 {\n"
+        "      action = {SetMods(modifiers=Control), SetGroup(group=-1)};\n"
+        "    };\n"
+        "    interpret 3 {\n"
+        "      action = {SetMods(modifiers=Control), SetGroup(group=-2)};\n"
+        "    };\n"
+        "    interpret 4 {\n"
+        "      action = {SetMods(modifiers=Control), SetGroup(group=-3)};\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    key <AD01> { [q], [Arabic_dad], [c_h], [Thai_maiyamok] };\n"
+        /* Left Control has its actions set explicitly */
+        "    key <LCTL> {\n"
+        "      symbols[1] = [Control_L],\n"
+        "      actions[1] = [{SetMods(modifiers=Control)}],\n"
+        "      actions[2] = [{SetMods(modifiers=Control), SetGroup(group=-1)}],\n"
+        "      actions[3] = [{SetMods(modifiers=Control), SetGroup(group=-2)}],\n"
+        "      actions[4] = [{SetMods(modifiers=Control), SetGroup(group=-3)}]\n"
+        "    };\n"
+        "    key <RCTL> { [1], [2], [3], [4] };\n"
+        "  };\n"
+        "};";
+    struct xkb_keymap *keymap = test_compile_buffer(ctx, keymap_str,
+                                                    sizeof(keymap_str));
+    assert(keymap);
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+    const xkb_mod_index_t ctrl_idx =
+        _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    const xkb_mod_mask_t ctrl = UINT32_C(1) << ctrl_idx;
+    const xkb_keycode_t lcontrol = KEY_LEFTCTRL + EVDEV_OFFSET;
+    const xkb_keycode_t rcontrol = KEY_RIGHTCTRL + EVDEV_OFFSET;
+    const xkb_keycode_t q = KEY_Q + EVDEV_OFFSET;
+    xkb_mod_mask_t mods;
+
+    const xkb_keycode_t mod_keys[] = {lcontrol, rcontrol};
+    const xkb_keysym_t ad01[] = {
+        XKB_KEY_q,
+        XKB_KEY_Arabic_dad,
+        XKB_KEY_c_h,
+        XKB_KEY_Thai_maiyamok
+    };
+
+    for (xkb_layout_index_t layout = 0; layout < ARRAY_SIZE(ad01); layout++) {
+        /* Lock layout */
+        xkb_state_update_mask(state, 0, 0, 0, 0, 0, layout);
+        assert(xkb_state_key_get_layout(state, q) == layout);
+        assert(xkb_state_key_get_one_sym(state, q) == ad01[layout]);
+        for (unsigned k = 0; k < ARRAY_SIZE(mod_keys); k++) {
+            /* Temporarily switch to first layout + set Control modifier */
+            xkb_state_update_key(state, mod_keys[k], XKB_KEY_DOWN);
+            assert(xkb_state_key_get_layout(state, q) == 0);
+            mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
+            assert(mods == ctrl);
+            assert(xkb_state_key_get_one_sym(state, q) == XKB_KEY_q);
+            /* Restore layout, unset Control */
+            xkb_state_update_key(state, mod_keys[k], XKB_KEY_UP);
+            assert(xkb_state_key_get_layout(state, q) == layout);
+            mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
+            assert(mods == 0);
+            assert(xkb_state_key_get_one_sym(state, q) == ad01[layout]);
+        }
+    }
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -1613,6 +1703,7 @@ main(void)
 
     xkb_keymap_unref(keymap);
     test_leds(context);
+    test_multiple_actions(context);
 
     xkb_context_unref(context);
 }

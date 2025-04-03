@@ -46,12 +46,9 @@ xkb_compatibility {
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
-	interpret q+AnyOfOrNone(all) {
-		action= NoAction();
-	};
+	interpret q+AnyOfOrNone(all) {};
 	interpret w+AnyOfOrNone(all) {
 		repeat= True;
-		action= NoAction();
 	};
 	indicator "yyy" {
 		modifiers= Shift;
