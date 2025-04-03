@@ -72,6 +72,10 @@ ___xkbcli_subcommand()
                     _filedir
                     return;;
             esac
+            if [[ ${COMP_WORDS[COMP_CWORD]} != -* ]]; then
+                _filedir
+                return
+            fi
             ;;
         compile-compose)
             case ${COMP_WORDS[COMP_CWORD-1]} in
@@ -79,6 +83,10 @@ ___xkbcli_subcommand()
                     _filedir
                     return;;
             esac
+            if [[ ${COMP_WORDS[COMP_CWORD]} != -* ]]; then
+                _filedir
+                return
+            fi
             ;;
         list)
             if [[ ${COMP_WORDS[COMP_CWORD]} != -* ]]; then
