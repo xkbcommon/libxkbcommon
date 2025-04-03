@@ -206,8 +206,9 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <noSymbolOrActionList> NoSymbolOrActionList
 %type <any>     Decl
 %type <anyList> DeclList
-%type <expr>    Expr Term Lhs Terminal MultiKeySymOrActionList Actions KeySyms
-%type <expr>    KeySymList Action Coord CoordList KeyOrKeySym
+%type <expr>    Expr Term Lhs Terminal Coord CoordList
+%type <expr>    MultiKeySymOrActionList NonEmptyActions Actions Action
+%type <expr>    KeySyms NonEmptyKeySyms KeySymList KeyOrKeySym
 %type <exprList> ExprList KeyOrKeySymList
 %type <exprList> ActionList MultiActionList MultiKeySymList
 %type <var>     VarDecl SymbolsVarDecl
@@ -796,16 +797,9 @@ MultiActionList :       MultiActionList COMMA Action
                         }
                 |       MultiActionList COMMA Actions
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       MultiActionList COMMA OBRACE CBRACE
-                        {
-                            ExprDef* const acts = ExprCreateActionList(NULL);
-                            $$ = $1;
-                            $$.last->common.next = &acts->common;
-                            $$.last = acts;
-                        }
                 |       Action
                         { $$.head = $$.last = ExprCreateActionList($1); }
-                |       Actions
+                |       NonEmptyActions
                         { $$.head = $$.last = $1; }
                 ;
 
@@ -815,8 +809,14 @@ ActionList      :       ActionList COMMA Action
                         { $$.head = $$.last = $1; }
                 ;
 
-Actions         :       OBRACE ActionList CBRACE
+NonEmptyActions :       OBRACE ActionList CBRACE
                         { $$ = ExprCreateActionList($2.head); }
+                ;
+
+Actions         :       NonEmptyActions
+                        { $$ = $1; }
+                |       OBRACE CBRACE
+                        { $$ = ExprCreateActionList(NULL); }
                 ;
 
 Action          :       FieldSpec OPAREN ExprList CPAREN
@@ -851,15 +851,9 @@ MultiKeySymList :       MultiKeySymList COMMA KeySym
                         }
                 |       MultiKeySymList COMMA KeySyms
                         { $$ = $1; $$.last->common.next = &$3->common; $$.last = $3; }
-                |       MultiKeySymList COMMA OBRACE CBRACE
-                        {
-                            ExprDef *expr = ExprCreateKeySymList(XKB_KEY_NoSymbol);
-                            $$ = $1;
-                            $$.last->common.next = &expr->common; $$.last = expr;
-                        }
                 |       KeySym
                         { $$.head = $$.last = ExprCreateKeySymList($1); }
-                |       KeySyms
+                |       NonEmptyKeySyms
                         { $$.head = $$.last = $1; }
                 ;
 
@@ -869,8 +863,14 @@ KeySymList      :       KeySymList COMMA KeySym
                         { $$ = ExprCreateKeySymList($1); }
                 ;
 
-KeySyms         :       OBRACE KeySymList CBRACE
+NonEmptyKeySyms :       OBRACE KeySymList CBRACE
                         { $$ = $2; }
+                ;
+
+KeySyms         :       NonEmptyKeySyms
+                        { $$ = $1; }
+                |       OBRACE CBRACE
+                        { $$ = ExprCreateKeySymList(XKB_KEY_NoSymbol); }
                 ;
 
 KeySym          :       IDENT
