@@ -21,7 +21,7 @@ xkb_symbols {
 	key <>                   {
 		repeat= No,
 		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [                     NoAction() ],
+		actions[Group1]= [              MovePtr(x=0,y=+0) ],
 		symbols[Group2]= [                       NoSymbol ],
 		actions[Group2]= [           MovePtr(x=2,y=32766) ]
 	};

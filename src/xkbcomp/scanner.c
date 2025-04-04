@@ -6,7 +6,9 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdint.h>
 
+#include "scanner-utils.h"
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 
@@ -15,49 +17,50 @@ const char DECIMAL_SEPARATOR = '.';
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
 {
-    bool is_float = false, is_hex = false;
-    const char *start = s->s + s->pos;
-    char *end;
-
     if (scanner_lit(s, "0x")) {
-        while (is_xdigit(scanner_peek(s))) scanner_next(s);
-        is_hex = true;
+        switch (scanner_hex_int64(s, out)) {
+        case -1:
+            *out_tok = ERROR_TOK;
+            return true;
+        case 0:
+            return false;
+        default:
+            *out_tok = INTEGER;
+            return true;
+        }
     }
     else {
-        while (is_digit(scanner_peek(s))) scanner_next(s);
-        is_float = scanner_chr(s, DECIMAL_SEPARATOR);
-        while (is_digit(scanner_peek(s))) scanner_next(s);
+        switch (scanner_dec_int64(s, out)) {
+        case -1:
+            *out_tok = ERROR_TOK;
+            return true;
+        case 0:
+            return false;
+        default:
+            ;
+        }
+        if (scanner_chr(s, DECIMAL_SEPARATOR)) {
+            /*
+             * Since the parser does not use floats, we do not care of the
+             * actual floating-point number value: we just need to ensure that
+             * the syntax is correct. So just truncate it!
+             *
+             * Note that `strtold` would not work reliably in our context,
+             * because it depends on the locale for e.g. the decimal separator
+             * (e.g. a period or a comma) and requires a null-terminated string,
+             * which we cannot guarantee.
+             */
+            int64_t dec;
+            if (scanner_dec_int64(s, &dec) < 0) {
+                *out_tok = ERROR_TOK;
+                return true;
+            }
+            *out_tok = FLOAT;
+        } else {
+            *out_tok = INTEGER;
+        }
+        return true;
     }
-    if (s->s + s->pos == start)
-        return false;
-
-    errno = 0;
-    /* We use an intermediate variable, as we may have LLONG_MAX > INT64_MAX */
-    long long int x;
-    if (is_hex)
-        x = strtoll(start, &end, 16);
-    else if (is_float) {
-        /* NOTE: strtold does not work reliably, because it depends on the
-         * locale for e.g. the decimal separator (e.g. a period or a comma).
-         * Since the parser does not use floats, we do not care of the actual
-         * value: we just need to ensure that the syntax is correct. So just
-         * truncate it. */
-        x = strtoll(start, &end, 10);
-        assert(*end == DECIMAL_SEPARATOR);
-        /* Drop the optional decimal part */
-        if (end + 1 < s->s + s->pos)
-            strtoll(end + 1, &end, 10);
-        else
-            end++;
-    }
-    else
-        x = strtoll(start, &end, 10);
-    if (errno != 0 || s->s + s->pos != end || x > INT64_MAX)
-        *out_tok = ERROR_TOK;
-    else
-        *out_tok = (is_float ? FLOAT : INTEGER);
-    *out = (int64_t) x;
-    return true;
 }
 
 int

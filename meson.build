@@ -256,6 +256,7 @@ libxkbcommon_sources = [
     'src/utils.c',
     'src/utils.h',
     'src/util-mem.h',
+    'src/utils-numbers.h',
     'src/utils-paths.c',
     'src/utils-paths.h',
 ]
@@ -856,6 +857,9 @@ test(
     'utils',
     executable(
         'test-utils',
+        'src/utils.h',
+        'src/utils-numbers.h',
+        'src/utils-paths.h',
         'test/utils.c',
         'test/utils-text.c',
         'test/utils-text.h',
@@ -1000,6 +1004,18 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
             'bench/compile-keymap.c',
             dependencies: test_dep,
             c_args: ['-DKEYMAP_DUMP'],
+        ),
+        env: bench_env,
+    )
+    benchmark(
+        'custom-parsers',
+        executable(
+            'bench-custom-parsers',
+            'bench/custom-parsers.c',
+            'src/utils.c',
+            'src/utils.h',
+            'src/utils-numbers.h',
+            dependencies: test_dep,
         ),
         env: bench_env,
     )

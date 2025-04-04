@@ -334,32 +334,39 @@ test_alloc_limits(struct xkb_context *ctx)
 
 static void
 test_integers(struct xkb_context *ctx, bool update_output_files) {
+    /* Using a buffer without a terminating NULL. The following is a obvious
+     * syntax error, but it should still exit *cleanly*, not as previously where
+     * the use of strtoll would trigger a memory violation. */
+    const char not_null_terminated[] = { '1' };
+    assert(!test_compile_buffer(ctx, not_null_terminated,
+                                sizeof(not_null_terminated)));
+
     const struct keymap_test_data keymaps[] = {
         {
-                .keymap =
-                    "xkb_keymap {\n"
-                    "  xkb_keycodes {\n"
-                    /* Out of range (expect 32 bits, got > 64 bits) */
-                    "    <> = 0x10000000000000000;\n"
-                    "  };\n"
-                    "};",
-                .expected = NULL
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                /* Out of range (expect 32 bits, got > 64 bits) */
+                "    <> = 0x10000000000000000;\n"
+                "  };\n"
+                "};",
+            .expected = NULL
         },
         {
-                .keymap =
-                    "xkb_keymap {\n"
-                    "  xkb_keycodes { <> = 1; };\n"
-                    "  xkb_compat {\n"
-                    "  };\n"
-                    "  xkb_symbols {\n"
-                    "    key <> {\n"
-                    /* FIXME: Unchecked overflow */
-                    "      [MovePointer(x=0xffffffff + 1,\n"
-                    "                   y=0x80000000 * 2)]\n"
-                    "    };\n"
-                    "  };\n"
-                    "};",
-                .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <> {\n"
+                /* FIXME: Unchecked overflow */
+                "      [MovePointer(x=0xffffffff + 1,\n"
+                "                   y=0x80000000 * 2)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
         },
         {
             .keymap =
@@ -376,11 +383,29 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    key <> {\n"
                 "      actions[1 + -~0x100000001 / 0x100000000]=\n"
                 "      [MovePointer(x=0x100000000 - 0xfffffffe,\n"
-                "                   y=~-0x7fff * 0x30000 / 0x2ffff)]\n"
+                "                   y=~-0x7fff * 0x30000 / 0x2ffff)],\n"
+                /* Test (INT64_MIN + 1) and INT64_MAX */
+                "      [MovePointer(x=-9223372036854775807\n"
+                "                     +9223372036854775807)]\n"
                 "    };\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "integers.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols {\n"
+                /* We cannot parse INT64_MIN literal.
+                 * If we could, the following should fit into 16 bits. */
+                "    key <> {\n"
+                "      [MovePointer(x=-9223372036854775808\n"
+                "                     +9223372036854775807)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
         }
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {

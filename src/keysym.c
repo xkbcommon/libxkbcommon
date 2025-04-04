@@ -10,9 +10,11 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
+#include "utils-numbers.h"
 #include "keysym.h"
 #include "ks_tables.h"
 
@@ -181,29 +183,14 @@ xkb_keysym_iterator_next(struct xkb_keysym_iterator *iter)
     return true;
 }
 
-/*
- * Parse the numeric part of a 0xXXXX and UXXXX keysym.
- * Not using strtoul -- it's slower and accepts a bunch of stuff
- * we don't want to allow, like signs, spaces, even locale stuff.
- */
+/* Parse the numeric part of a 0xXXXX and UXXXX keysym. */
 static bool
 parse_keysym_hex(const char *s, uint32_t *out)
 {
-    uint32_t result = 0;
-    unsigned int i;
-    for (i = 0; i < 8 && s[i] != '\0'; i++) {
-        result <<= 4;
-        if ('0' <= s[i] && s[i] <= '9')
-            result += s[i] - '0';
-        else if ('a' <= s[i] && s[i] <= 'f')
-            result += 10 + s[i] - 'a';
-        else if ('A' <= s[i] && s[i] <= 'F')
-            result += 10 + s[i] - 'A';
-        else
-            return false;
-    }
-    *out = result;
-    return s[i] == '\0' && i > 0;
+    /* We expect a NULL-terminated string of length up to 8 */
+    const int count = parse_hex_to_uint32_t(s, 8, out);
+    /* Check that some value was parsed and we reached the end of the string */
+    return (count > 0 && s[count] == '\0');
 }
 
 xkb_keysym_t
@@ -279,12 +266,18 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
         if (!parse_keysym_hex(&name[1], &val))
             return XKB_KEY_NoSymbol;
 
-        if (val < 0x20 || (val > 0x7e && val < 0xa0))
+        if (val < 0x20 || (val > 0x7e && val < 0xa0)) {
+            /* Exclude control characters */
             return XKB_KEY_NoSymbol;
-        if (val < 0x100)
+        }
+        if (val < 0x100) {
+            /* ASCII code points have a direct mapping */
             return (xkb_keysym_t) val;
-        if (val > 0x10ffff)
+        }
+        if (val > 0x10ffff) {
+            /* Invalid Unicode code point */
             return XKB_KEY_NoSymbol;
+        }
         return (xkb_keysym_t) val | XKB_KEYSYM_UNICODE_OFFSET;
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
