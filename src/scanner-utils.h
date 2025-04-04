@@ -7,6 +7,7 @@
 #include "config.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -14,6 +15,7 @@
 #include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
+#include "utils-numbers.h"
 
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
@@ -212,6 +214,46 @@ scanner_hex(struct scanner *s, uint8_t *out)
         *out = *out * 16 + c - offset;
     }
     return i > 0;
+}
+
+static inline int
+scanner_dec_int64(struct scanner *s, int64_t *out)
+{
+    uint64_t val = 0;
+    const int count =
+        parse_dec_to_uint64_t(s->s + s->pos, s->len - s->pos, &val);
+    if (count > 0) {
+        /*
+         * NOTE: Since the sign is handled as a token, we parse only *positive*
+         *       values here. So that means that *we cannot parse INT64_MIN*,
+         *       because abs(INT64_MIN) > INT64_MAX. But we use 64-bit integers
+         *       only to avoid under/overflow in expressions: we do not use
+         *       64-bit integers in the keymap, only up to 32 bits. So we expect
+         *       to parse only 32 bits integers in realistic keymap files and
+         *       the limitation should not be an issue.
+         */
+        if (val > INT64_MAX)
+            return -1;
+        s->pos += count;
+        *out = (int64_t) val;
+    }
+    return count;
+}
+
+static inline int
+scanner_hex_int64(struct scanner *s, int64_t *out)
+{
+    uint64_t val = 0;
+    const int count =
+        parse_hex_to_uint64_t(s->s + s->pos, s->len - s->pos, &val);
+    if (count > 0) {
+        /* See comment in `scanner_dec_int64()` above */
+        if (val > INT64_MAX)
+            return -1;
+        s->pos += count;
+        *out = (int64_t) val;
+    }
+    return count;
 }
 
 /* Basic detection of wrong character encoding based on the first bytes */
