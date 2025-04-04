@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "test.h"
 #include "xkbcomp/rules.h"
+#include <stdlib.h>
 
 struct test_data {
     /* Rules file */
@@ -95,7 +96,7 @@ main(int argc, char *argv[])
 
     test_init();
 
-    ctx = test_get_context(0);
+    ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
     struct test_data test_utf_8_with_bom = {
@@ -149,6 +150,34 @@ main(int argc, char *argv[])
         .explicit_layouts = 1,
     };
     assert(!test_rules(ctx, &test_utf_32be));
+
+    /* Only parse strict decimal groups */
+    struct test_data test_invalid_group_index = {
+        .rules = "invalid-group-index",
+
+        .model = "my_model", .layout = "1,2", .variant = NULL,
+        .options = NULL,
+
+        .keycodes = "default_keycodes", .types = "default_types",
+        .compat = "default_compat",
+        .symbols = "default_symbols+default_symbols:2",
+        .explicit_layouts = 2,
+    };
+    assert(!test_rules(ctx, &test_invalid_group_index));
+
+    /* Only parse strict decimal groups */
+    struct test_data test_invalid_group_qualifier = {
+        .rules = "invalid-group-qualifier",
+
+        .model = "my_model", .layout = "1,2", .variant = NULL,
+        .options = NULL,
+
+        .keycodes = "default_keycodes", .types = "default_types",
+        .compat = "default_compat",
+        .symbols = "default_symbols+default_symbols:+2",
+        .explicit_layouts = 1,
+    };
+    assert(test_rules(ctx, &test_invalid_group_qualifier));
 
     struct test_data test1 = {
         .rules = "simple",
@@ -526,5 +555,5 @@ main(int argc, char *argv[])
     assert(test_rules(ctx, &all_qualified_with_special_indexes2));
 
     xkb_context_unref(ctx);
-    return 0;
+    return EXIT_SUCCESS;
 }

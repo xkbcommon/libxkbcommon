@@ -17,6 +17,7 @@
 #include "rules.h"
 #include "include.h"
 #include "scanner-utils.h"
+#include "utils-numbers.h"
 #include "utils-paths.h"
 
 #define MAX_INCLUDE_DEPTH 5
@@ -518,16 +519,19 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     }
     /* Numeric index */
 
-#define parse_layout_int_index(s, endptr, index, out)                  \
-    char *(endptr);                                                    \
-    long (index) = strtol(&(s)[1], &(endptr), 10);                     \
-    if ((index) < 0 || (endptr)[0] != ']' || (index) > XKB_MAX_GROUPS) \
-        return -1;                                                     \
-    /* To zero-based index. */                                         \
-    *(out) = (xkb_layout_index_t)(index) - 1;                          \
-    return (int)((endptr) - (s) + 1) /* == length "[index]" */
+#define parse_layout_int_index(s, len, out) do {                                \
+    /* We expect a NULL-terminated string of at least length 3 */               \
+    assert((len) >= 3);                                                         \
+    uint32_t val = 0;                                                           \
+    const int count = parse_hex_to_uint32_t(&(s)[1], (len) - 2, &val);          \
+    if (count <= 0 || (s)[1 + count] != ']' || val == 0 || val > XKB_MAX_GROUPS)\
+        return -1;                                                              \
+    /* To zero-based index. */                                                  \
+    *(out) = val - 1;                                                           \
+    return count + 2; /* == length "[index]" */                                 \
+} while (0)
 
-    parse_layout_int_index(s, endptr, index, out);
+    parse_layout_int_index(s, max_len, out);
 }
 
 /* Special layout indexes */
@@ -571,7 +575,7 @@ extract_mapping_layout_index(const char *s, size_t max_len,
     else if_index(&s[1], LAYOUT_INDEX_ANY, out)
     else {
         /* Numeric index */
-        parse_layout_int_index(s, endptr, index, out);
+        parse_layout_int_index(s, max_len, out);
     }
 #undef if_index
 #undef LAYOUT_INDEX_SINGLE
@@ -1611,14 +1615,16 @@ xkb_components_from_rules(struct xkb_context *ctx,
         const char *symbols = out->symbols;
         /* Take the highest modifier */
         while ((symbols = strchr(symbols, ':')) != NULL && symbols[1] != '\0') {
-            char *endptr;
-            unsigned long group = strtoul(++symbols, &endptr, 10);
+            xkb_layout_index_t group = 0;
+            const int count = parse_dec_to_uint32_t(++symbols, SIZE_MAX, &group);
             /* Update only when valid group index, but continue parsing
              * even on invalid ones, as we do not handle them here. */
-            if (group > 0 && group <= XKB_MAX_GROUPS)
-                *explicit_layouts = MAX(*explicit_layouts,
-                                        (xkb_layout_index_t)group);
-            symbols = endptr;
+            if (count > 0 && (symbols[count] == '\0' ||
+                is_merge_mode_prefix(symbols[count])) &&
+                group > 0 && group <= XKB_MAX_GROUPS) {
+                *explicit_layouts = MAX(*explicit_layouts, group);
+                symbols += count;
+            }
         }
     }
 
