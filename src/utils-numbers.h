@@ -43,6 +43,13 @@ parse_dec_to_##type(const char *s, size_t len, type (*out))  \
 }
 
 /**
+ * Parse a `uint32_t` in decimal format.
+ *
+ * @returns -1 on error (overflow) or the count of characters parsed.
+ */
+MAKE_PARSE_DEC_TO(uint32_t, UINT32_MAX)
+
+/**
  * Parse a `uint64_t` in decimal format.
  *
  * @returns -1 on error (overflow) or the count of characters parsed.

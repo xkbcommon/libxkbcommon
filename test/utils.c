@@ -326,6 +326,9 @@ test_number_parsers(void)
     };
     for (size_t k = 0; k < ARRAY_SIZE(values); k++) {
         /* Basic: decimal */
+        count = snprintf(buffer, sizeof(buffer), "%"PRIu32, (uint32_t) values[k]);
+        assert(count > 0);
+        test_parse_to(uint32_t, dec, buffer, count, (uint32_t) values[k]);
         count = snprintf(buffer, sizeof(buffer), "%"PRIu64, values[k]);
         assert(count > 0);
         test_parse_to(uint64_t, dec, buffer, count, values[k]);
@@ -346,6 +349,10 @@ test_number_parsers(void)
         /* Prefix with some zeroes */
         for (int z = 0; z < 10 ; z++) {
             /* Decimal */
+            count = snprintf(buffer, sizeof(buffer), "%0*"PRIu32,
+                             z, (uint32_t) values[k]);
+            assert(count > 0);
+            test_parse_to(uint32_t, dec, buffer, count, (uint32_t) values[k]);
             count = snprintf(buffer, sizeof(buffer), "%0*"PRIu64,
                              z, values[k]);
             assert(count > 0);
@@ -363,6 +370,10 @@ test_number_parsers(void)
             for (int c = 0; c < 0x100 ; c++) {
                 if (c < '0' || c > '9') {
                     /* Decimal */
+                    count = snprintf(buffer, sizeof(buffer), "%0*u%"PRIu32"%c",
+                                     z, 0, (uint32_t) values[k], (char) c);
+                    assert(count > 0);
+                    test_parse_to(uint32_t, dec, buffer, count - 1, (uint32_t) values[k]);
                     count = snprintf(buffer, sizeof(buffer), "%0*u%"PRIu64"%c",
                                      z, 0, values[k], (char) c);
                     assert(count > 0);
@@ -409,11 +420,17 @@ test_number_parsers(void)
         /* Hex: some garbage after */
         buffer[count] = (char) (((unsigned) rand()) % '0');
         test_parse_to(uint64_t, hex, buffer, count, x64);
-        /* Decimal */
+        /* Decimal (32 bits) */
+        count = snprintf(buffer, sizeof(buffer), "%"PRIu32, x32);
+        assert(count > 0);
+        test_parse_to(uint32_t, dec, buffer, count, x32);
+        /* Decimal: some garbage after */
+        buffer[count] = (char) (((unsigned) rand()) % '0');
+        test_parse_to(uint32_t, dec, buffer, count, x32);
+        /* Decimal (64 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu64, x64);
         assert(count > 0);
         test_parse_to(uint64_t, dec, buffer, count, x64);
-        /* Decimal: some garbage after */
         buffer[count] = (char) (((unsigned) rand()) % '0');
         test_parse_to(uint64_t, dec, buffer, count, x64);
     }

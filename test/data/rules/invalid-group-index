@@ -1,0 +1,19 @@
+! model         = keycodes
+  *             = default_keycodes
+
+! layout        = symbols
+  *             = default_symbols
+
+// Invalid group index
+! layout[+1]    = symbols
+  *             = default_symbols
+
+// Invalid group index
+! layout[+2]    = symbols
+  *             = +default_symbols:2
+
+! model         = types
+  *             = default_types
+
+! model         = compat
+  *             = default_compat
