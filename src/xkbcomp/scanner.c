@@ -110,7 +110,7 @@ skip_more_whitespace_and_comments:
                     } else {
                         scanner_warn(
                             s, XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE,
-                            "invalid Unicode escape sequence (%.*s) "
+                            "invalid Unicode escape sequence \"%.*s\" "
                             "in string literal",
                             (int) (s->pos - start_pos + 1),
                             &s->s[start_pos - 1]
@@ -122,7 +122,7 @@ skip_more_whitespace_and_comments:
                     scanner_buf_append(s, (char) o);
                 else if (s->pos > start_pos) {
                     scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
-                                 "invalid octal escape sequence (%.*s) "
+                                 "invalid octal escape sequence \"%.*s\" "
                                  "in string literal",
                                  (int) (s->pos - start_pos + 1),
                                  &s->s[start_pos - 1]);
@@ -130,7 +130,7 @@ skip_more_whitespace_and_comments:
                 }
                 else {
                     scanner_warn(s, XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE,
-                                 "unknown escape sequence (\\%c) in string literal",
+                                 "unknown escape sequence \"\\%c\" in string literal",
                                  scanner_peek(s));
                     /* Ignore. */
                 }
