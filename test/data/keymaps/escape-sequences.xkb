@@ -7,11 +7,11 @@ xkb_keycodes "La_paix_est_la_seule_bataille_qui_vaille_la_peine_d�__�_tre_men�_e
 };
 
 xkb_types "1__7___" {
-	type "%1🎺✨🕊️" {
+	type "%1🎺✨🕊️\0014" {
 		modifiers= Shift;
 		map[Shift]= 2;
-		level_name[1]= "Où ils ont fait un \0042désert\0042, ils disent qu’ils \nont fait la \0042paix\0042.\n";
-		level_name[2]= "Science sans conscience n’est que rui\\ne\n de l’âme.\r";
+		level_name[1]= "Où ils ont fait un \0042désert\0042, \0033ils disent qu’ils \nont fait la \0042paix\0042.\0010\n";
+		level_name[2]= "Science sans conscience n’est que rui\\ne\n de l’âme.\0015";
 	};
 };
 
@@ -28,7 +28,7 @@ xkb_symbols "La_libert�__commence_o�__l�__ignorance_finit_" {
 	name[Group2]="\00427";
 
 	key <>                   {
-		type= "%1🎺✨🕊️",
+		type= "%1🎺✨🕊️\0014",
 		repeat= Yes,
 		symbols[Group1]= [                              a,                              A ],
 		actions[Group1]= [                     NoAction(),                     NoAction() ],
