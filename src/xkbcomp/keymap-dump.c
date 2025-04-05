@@ -210,8 +210,12 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
             copy_to_buf(buf, ",");
         }
         write_buf(buf, "%s", xkb_atom_text(keymap->ctx, mod->name));
-        if (keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) {
-            /* Can only pretty-print real modifiers in this context */
+        if ((keymap->mods.explicit_vmods & (UINT32_C(1) << vmod)) &&
+            mod->mapping != 0) {
+            /*
+             * Explicit non-default mapping
+             * NOTE: we can only pretty-print *real* modifiers in this context.
+             */
             write_buf(buf, "=%s",
                       ModMaskText(keymap->ctx, MOD_REAL, &keymap->mods,
                                   mod->mapping));

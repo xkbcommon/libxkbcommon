@@ -1,0 +1,76 @@
+xkb_compat {
+    virtual_modifiers M1=0x1000, M2=0x2000, M3=0x4000, M4=0x8000;
+
+    interpret.repeat= False;
+    // Effective: override
+    interpret.repeat= True;
+
+    interpret.virtualmod = M1;
+    // Effective: override
+    interpret.virtualmod = M2;
+    // Ineffective: cannot augment previous value
+    augment interpret.virtualmod = M3;
+
+    SetGroup.group = 1;
+    // Effective: override
+    SetGroup.group = 2;
+    // Ineffective: cannot augment previous value
+    augment SetGroup.group = 3;
+
+
+    // Effective: *override* every explicit field
+    interpret a {
+        virtualmod = M4;
+        action=SetGroup(group=1);
+    };
+    interpret A {
+        repeat = False;
+        virtualmod = M1;
+        action=SetMods(mods=M1);
+    };
+
+
+    // Effective: no previous interpret entry,
+    // so *override* every explicit field
+    augment interpret s {
+        repeat = False;
+        action=SetGroup();
+    };
+    // Only augment fields not set previously (explicit or implicit)
+    augment interpret s {
+        // Ineffective: cannot augment previous implicit value
+        virtualmod = M4;
+        // Ineffective: cannot augment previous explicit value
+        action=SetGroup(group=4);
+        // Effective: no previous value
+        useModMapMods=level1;
+    };
+    augment interpret S {
+        action=SetGroup(group=4);
+    };
+
+    indicator.modifiers = M1;
+    indicator.modifiers = M2;
+    augment indicator.modifiers = M3;
+    indicator.groups = All - 1;
+    indicator.controls = AudibleBell;
+
+    indicator "A" {
+      modifiers = M4;
+      whichmodstate = base;
+    };
+    indicator "A" {
+      whichmodstate = locked;
+      whichgroupstate = locked;
+      controls = SlowKeys;
+    };
+    augment indicator "B" {
+      modifiers = M4;
+      whichmodstate = base;
+    };
+    augment indicator "B" {
+      groups = 4;
+      whichmodstate   = locked;
+      whichgroupstate = locked;
+    };
+};

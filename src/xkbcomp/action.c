@@ -14,9 +14,11 @@
 
 #include "config.h"
 
+#include "context.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
+#include "xkbcomp/ast.h"
 #include "action.h"
 
 static const ExprBoolean constTrue = {
@@ -55,17 +57,10 @@ enum action_field {
     ACTION_FIELD_MODS_TO_CLEAR,
 };
 
-ActionsInfo *
-NewActionsInfo(void)
+void
+InitActionsInfo(ActionsInfo *info)
 {
-    enum xkb_action_type type;
-    ActionsInfo *info;
-
-    info = calloc(1, sizeof(*info));
-    if (!info)
-        return NULL;
-
-    for (type = 0; type < _ACTION_TYPE_NUM_ENTRIES; type++)
+    for (enum xkb_action_type type = 0; type < _ACTION_TYPE_NUM_ENTRIES; type++)
         info->actions[type].type = type;
 
     /* Apply some "factory defaults". */
@@ -75,14 +70,6 @@ NewActionsInfo(void)
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
     info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
-
-    return info;
-}
-
-void
-FreeActionsInfo(ActionsInfo *info)
-{
-    free(info);
 }
 
 static const LookupEntry fieldStrings[] = {
@@ -818,9 +805,10 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
 }
 
 bool
-SetActionField(struct xkb_context *ctx, ActionsInfo *info,
-               struct xkb_mod_set *mods, const char *elem,
-               const char *field, ExprDef *array_ndx, ExprDef *value)
+SetDefaultActionField(struct xkb_context *ctx, ActionsInfo *info,
+                      struct xkb_mod_set *mods, const char *elem,
+                      const char *field, ExprDef *array_ndx,
+                      ExprDef *value, enum merge_mode merge)
 {
     enum xkb_action_type action;
     if (!stringToActionType(elem, &action))
@@ -833,6 +821,33 @@ SetActionField(struct xkb_context *ctx, ActionsInfo *info,
         return false;
     }
 
-    return handleAction[action](ctx, mods, &info->actions[action],
-                                action_field, array_ndx, value);
+    union xkb_action* const into = &info->actions[action];
+    /* Initialize with current defaults to enable comparison, see aftwerwards */
+    union xkb_action from = *into;
+
+    /* Parse action */
+    if (!handleAction[action](ctx, mods, &from, action_field, array_ndx, value))
+        return false;
+
+    /*
+     * Merge action with its corresponding default
+     *
+     * NOTE: Contrary to other items, actions do not have a “defined” field, so
+     * we fallback to compare all the actions fields. The drawback is that it
+     * overmatches, as even setting an *explicit* default value for the first
+     * time (and different from the “factory” default) would *always* display a
+     * warning. So we guard the logging with a high verbosity, as best effort
+     * mitigation.
+     */
+    if (!action_equal(into, &from)) {
+        const bool replace = (merge != MERGE_AUGMENT);
+        log_vrb(ctx, 9, XKB_LOG_MESSAGE_NO_ID,
+                "Conflicting field \"%s\" for default action \"%s\"; "
+                "Using %s, ignore %s\n",
+                fieldText(action_field), ActionTypeText(action),
+                (replace ? "from" : "into"), (replace ? "into" : "from"));
+        if (replace)
+            *into = from;
+    }
+    return true;
 }

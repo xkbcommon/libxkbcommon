@@ -87,7 +87,7 @@ InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
     info->include_depth = include_depth;
-    info->mods = *mods;
+    InitVMods(&info->mods, mods, include_depth > 0);
 }
 
 static void
@@ -127,7 +127,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new, bool same_file)
 
     old = FindMatchingKeyType(info, new->name);
     if (old) {
-        if (new->merge == MERGE_REPLACE || new->merge == MERGE_OVERRIDE) {
+        if (new->merge != MERGE_AUGMENT) {
             if ((same_file && verbosity > 0) || verbosity > 9) {
                 log_warn(info->ctx,
                          XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS,
@@ -169,7 +169,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -183,7 +183,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
     else {
         KeyTypeInfo *type;
         darray_foreach(type, from->types) {
-            type->merge = (merge == MERGE_DEFAULT ? type->merge : merge);
+            type->merge = merge;
             if (!AddKeyType(into, type, false))
                 into->errorCount++;
         }
@@ -194,7 +194,7 @@ MergeIncludedKeyTypes(KeyTypesInfo *into, KeyTypesInfo *from,
 }
 
 static void
-HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge);
+HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
@@ -206,7 +206,8 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitKeyTypesInfo(&included, info->ctx, 0 /* unused */, &info->mods);
+    InitKeyTypesInfo(&included, info->ctx, info->include_depth + 1,
+                     &info->mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -223,7 +224,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         InitKeyTypesInfo(&next_incl, info->ctx, info->include_depth + 1,
                          &included.mods);
 
-        HandleKeyTypesFile(&next_incl, file, stmt->merge);
+        HandleKeyTypesFile(&next_incl, file);
 
         MergeIncludedKeyTypes(&included, &next_incl, stmt->merge);
 
@@ -564,7 +565,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
         ok = SetLevelName(info, type, arrayNdx, value);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
-                "Unknown field %s in key type %s; Definition ignored\n",
+                "Unknown field \"%s\" in key type \"%s\"; Definition ignored\n",
                 field, TypeTxt(info, type));
     }
 
@@ -609,11 +610,11 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
 }
 
 static bool
-HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
+HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def)
 {
     KeyTypeInfo type = {
         .defined = 0,
-        .merge = (def->merge == MERGE_DEFAULT ? merge : def->merge),
+        .merge = def->merge,
         .name = def->name,
         .mods = 0,
         .num_levels = 1,
@@ -635,7 +636,7 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def, enum merge_mode merge)
 }
 
 static void
-HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
+HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -648,7 +649,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleIncludeKeyTypes(info, (IncludeStmt *) stmt);
             break;
         case STMT_TYPE:
-            ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt, merge);
+            ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt);
             break;
         case STMT_VAR:
             log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
@@ -657,7 +658,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file, enum merge_mode merge)
             ok = true;
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         default:
             log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
@@ -730,15 +731,14 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 /***====================================================================***/
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap)
 {
     KeyTypesInfo info;
 
     InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
 
     if (file != NULL)
-        HandleKeyTypesFile(&info, file, merge);
+        HandleKeyTypesFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;

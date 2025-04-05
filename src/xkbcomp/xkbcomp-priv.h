@@ -27,24 +27,19 @@ XkbFileFromComponents(struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs);
 
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge);
+CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap);
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap,
-                enum merge_mode merge);
+CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap);
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap,
-                 enum merge_mode merge);
+CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap);
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
-               enum merge_mode merge);
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap);
 
 bool
-CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
-              enum merge_mode merge);
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap);
 
 /***====================================================================***/
 
@@ -86,7 +81,7 @@ ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
                const char *name)
 {
     log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-            "Unknown %s field %s in %s; "
+            "Unknown %s field \"%s\" in %s; "
             "Ignoring assignment to unknown field in %s\n",
             type, field, name, name);
     return false;

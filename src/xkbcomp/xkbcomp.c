@@ -51,7 +51,7 @@ compile_keymap_file(struct xkb_keymap *keymap, XkbFile *file)
         return false;
     }
 
-    if (!CompileKeymap(file, keymap, MERGE_OVERRIDE)) {
+    if (!CompileKeymap(file, keymap)) {
         log_err(keymap->ctx, XKB_ERROR_KEYMAP_COMPILATION_FAILED,
                 "Failed to compile keymap\n");
         return false;

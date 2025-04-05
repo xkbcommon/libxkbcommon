@@ -2,6 +2,7 @@ xkb_keymap {
 xkb_keycodes {
 	minimum = 8;
 	maximum = 255;
+	<>                   = 8;
 	indicator 1 = "A";
 	indicator 2 = "B";
 	indicator 3 = "C";

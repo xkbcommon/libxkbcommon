@@ -135,7 +135,6 @@ static void
 InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
 {
     memset(keyi, 0, sizeof(*keyi));
-    keyi->merge = MERGE_OVERRIDE;
     keyi->name = xkb_atom_intern_literal(ctx, "*");
     keyi->out_of_range_group_action = RANGE_WRAP;
 }
@@ -167,11 +166,10 @@ typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned int include_depth;
-    enum merge_mode merge;
     xkb_layout_index_t explicit_group;
     darray(KeyInfo) keys;
     KeyInfo default_key;
-    ActionsInfo *actions;
+    ActionsInfo default_actions;
     darray(xkb_atom_t) group_names;
     darray(ModMapEntry) modmaps;
     struct xkb_mod_set mods;
@@ -183,17 +181,15 @@ typedef struct {
 
 static void
 InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
-                unsigned int include_depth,
-                ActionsInfo *actions, const struct xkb_mod_set *mods)
+                unsigned int include_depth, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = keymap->ctx;
     info->include_depth = include_depth;
     info->keymap = keymap;
-    info->merge = MERGE_OVERRIDE;
     InitKeyInfo(keymap->ctx, &info->default_key);
-    info->actions = actions;
-    info->mods = *mods;
+    InitActionsInfo(&info->default_actions);
+    InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
 }
 
@@ -454,8 +450,7 @@ UseNewKeyField(enum key_field field, enum key_field old, enum key_field new,
         if (report)
             *collide |= field;
 
-        if (clobber)
-            return true;
+        return clobber;
     }
 
     return false;
@@ -608,7 +603,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
         return;
     }
 
-    into->mods = from->mods;
+    MergeModSets(into->ctx, &into->mods, &from->mods, merge);
 
     if (into->name == NULL) {
         into->name = steal(&from->name);
@@ -636,7 +631,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     else {
         KeyInfo *keyi;
         darray_foreach(keyi, from->keys) {
-            keyi->merge = (merge == MERGE_DEFAULT ? keyi->merge : merge);
+            keyi->merge = merge;
             if (!AddKeySymbols(into, keyi, false))
                 into->errorCount++;
         }
@@ -649,7 +644,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
     else {
         ModMapEntry *mm;
         darray_foreach(mm, from->modmaps) {
-            mm->merge = (merge == MERGE_DEFAULT ? mm->merge : merge);
+            mm->merge = merge;
             if (!AddModMapEntry(into, mm))
                 into->errorCount++;
         }
@@ -657,7 +652,7 @@ MergeIncludedSymbols(SymbolsInfo *into, SymbolsInfo *from,
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge);
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file);
 
 static bool
 HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
@@ -669,8 +664,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitSymbolsInfo(&included, info->keymap, 0 /* unused */,
-                    info->actions, &info->mods);
+    InitSymbolsInfo(&included, info->keymap, info->include_depth + 1,
+                    &info->mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -685,7 +680,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         }
 
         InitSymbolsInfo(&next_incl, info->keymap, info->include_depth + 1,
-                        info->actions, &included.mods);
+                        &included.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
@@ -710,7 +705,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = info->explicit_group;
         }
 
-        HandleSymbolsFile(&next_incl, file, MERGE_OVERRIDE);
+        HandleSymbolsFile(&next_incl, file);
 
         MergeIncludedSymbols(&included, &next_incl, stmt->merge);
 
@@ -922,7 +917,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->actions, &info->mods, act, &toAct))
+            if (!HandleActionDef(info->ctx, &info->default_actions, &info->mods,
+                                 act, &toAct))
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
@@ -1135,7 +1131,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
-                "Unknown field %s in a symbol interpretation; "
+                "Unknown field \"%s\" in a symbol interpretation; "
                 "Definition ignored\n",
                 field);
         return false;
@@ -1145,7 +1141,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 }
 
 static bool
-SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
+SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
+             enum merge_mode merge)
 {
     if (!arrayNdx) {
         log_vrb(info->ctx, 1, XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX,
@@ -1191,6 +1188,20 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value)
         /* Avoid clang-tidy false positive */
         assert(darray_size(info->group_names) < group_to_use + 1);
         darray_resize0(info->group_names, group_to_use + 1);
+    } else {
+        const xkb_atom_t old_name = darray_item(info->group_names, group_to_use);
+        if (old_name != XKB_ATOM_NONE && old_name != name) {
+            const bool replace = (merge != MERGE_AUGMENT);
+            const xkb_atom_t use    = (replace ? name : old_name);
+            const xkb_atom_t ignore = (replace ? old_name : name);
+            log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Multiple definitions of group %"PRIu32" name "
+                     "in map '%s'; Using '%s', ignoring '%s'\n",
+                     group_to_use, info->name,
+                     xkb_atom_text(info->ctx, use),
+                     xkb_atom_text(info->ctx, ignore));
+            name = use;
+        }
     }
     darray_item(info->group_names, group_to_use) = name;
 
@@ -1208,12 +1219,18 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         return false;
 
     if (elem && istreq(elem, "key")) {
-        ret = SetSymbolsField(info, &info->default_key, field, arrayNdx,
-                              stmt->value);
+        KeyInfo temp = {0};
+        InitKeyInfo(info->ctx, &temp);
+        /* Do not replace the whole key, only the current field */
+        temp.merge = (temp.merge == MERGE_REPLACE)
+            ? MERGE_OVERRIDE
+            : stmt->merge;
+        ret = SetSymbolsField(info, &temp, field, arrayNdx, stmt->value);
+        MergeKeys(info, &info->default_key, &temp, true);
     }
     else if (!elem && (istreq(field, "name") ||
                        istreq(field, "groupname"))) {
-        ret = SetGroupName(info, arrayNdx, stmt->value);
+        ret = SetGroupName(info, arrayNdx, stmt->value, stmt->merge);
     }
     else if (!elem && (istreq(field, "groupswrap") ||
                        istreq(field, "wrapgroups"))) {
@@ -1240,8 +1257,9 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else {
-        ret = SetActionField(info->ctx, info->actions, &info->mods,
-                             elem, field, arrayNdx, stmt->value);
+        ret = SetDefaultActionField(info->ctx, &info->default_actions,
+                                    &info->mods, elem, field, arrayNdx,
+                                    stmt->value, stmt->merge);
     }
 
     return ret;
@@ -1412,7 +1430,7 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 }
 
 static void
-HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
+HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
 {
     bool ok;
 
@@ -1431,7 +1449,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file, enum merge_mode merge)
             ok = HandleGlobalVar(info, (VarDef *) stmt);
             break;
         case STMT_VMOD:
-            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt, merge);
+            ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
@@ -1817,21 +1835,14 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 }
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
-               enum merge_mode merge)
+CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
 {
     SymbolsInfo info;
-    ActionsInfo *actions;
 
-    actions = NewActionsInfo();
-    if (!actions)
-        return false;
-
-    InitSymbolsInfo(&info, keymap, 0, actions, &keymap->mods);
-    info.default_key.merge = merge;
+    InitSymbolsInfo(&info, keymap, 0, &keymap->mods);
 
     if (file !=NULL)
-        HandleSymbolsFile(&info, file, merge);
+        HandleSymbolsFile(&info, file);
 
     if (info.errorCount != 0)
         goto err_info;
@@ -1840,11 +1851,9 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap,
         goto err_info;
 
     ClearSymbolsInfo(&info);
-    FreeActionsInfo(actions);
     return true;
 
 err_info:
-    FreeActionsInfo(actions);
     ClearSymbolsInfo(&info);
     return false;
 }
