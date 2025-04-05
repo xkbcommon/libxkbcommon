@@ -267,7 +267,8 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
     else
         copy_to_buf(buf, "xkb_types {\n");
 
-    write_vmods(keymap, buf);
+    if (!write_vmods(keymap, buf))
+        return false;
 
     for (unsigned i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type *type = &keymap->types[i];
@@ -554,7 +555,8 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     else
         copy_to_buf(buf, "xkb_compatibility {\n");
 
-    write_vmods(keymap, buf);
+    if (!write_vmods(keymap, buf))
+        return false;
 
     copy_to_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     copy_to_buf(buf, "\tinterpret.repeat= False;\n");
@@ -578,14 +580,16 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (si->repeat)
             copy_to_buf(buf, "\t\trepeat= True;\n");
 
-        write_action(keymap, buf, &si->action, "\t\taction= ", ";\n");
+        if (!write_action(keymap, buf, &si->action, "\t\taction= ", ";\n"))
+            return false;
         copy_to_buf(buf, "\t};\n");
     }
 
     xkb_leds_foreach(led, keymap)
         if (led->which_groups || led->groups || led->which_mods ||
             led->mods.mods || led->ctrls)
-            write_led_map(keymap, buf, led);
+            if (!write_led_map(keymap, buf, led))
+                return false;
 
     copy_to_buf(buf, "};\n\n");
 
