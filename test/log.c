@@ -154,7 +154,7 @@ test_keymaps(void)
                 " { symbols = { };\n"
                 "};",
             .log =
-                "warning: [XKB-645] (input string):1:12: unknown escape sequence (\\j) in string literal\n"
+                "warning: [XKB-645] (input string):1:12: unknown escape sequence \"\\j\" in string literal\n"
                 "error: [XKB-769] (input string):2:4: syntax error\n"
                 "error: [XKB-822] Failed to parse input xkb string\n",
             .error = true
@@ -177,8 +177,8 @@ test_keymaps(void)
                 "  xkb_symbols { key <> {[0x30, leftshoe]}; };\n"
                 "};",
             .log =
-                "warning: [XKB-193] (input string):9:13: invalid octal escape sequence (\\400) in string literal\n"
-                "warning: [XKB-645] (input string):9:13: unknown escape sequence (\\j) in string literal\n"
+                "warning: [XKB-193] (input string):9:13: invalid octal escape sequence \"\\400\" in string literal\n"
+                "warning: [XKB-645] (input string):9:13: unknown escape sequence \"\\j\" in string literal\n"
                 "warning: [XKB-107] (input string):11:15: unrecognized keysym \"invalidKeysym\"\n"
                 "warning: [XKB-489] (input string):14:26: numeric keysym \"0x0030\" (48)\n"
                 "warning: [XKB-301] (input string):14:32: deprecated keysym \"leftshoe\".\n"
@@ -256,10 +256,10 @@ test_compose(void)
                 "<0x30> : \"\\400\" invalidKeysym\n"
                 "<0> <1> <2> <3> <4> <5> <6> <7> <8> <9> <leftshoe> : \"\"\n",
             .log =
-                "warning: [XKB-645] (input string):3:7: unknown escape sequence (\\j) in string literal\n"
-                "warning: [XKB-193] (input string):3:7: illegal hexadecimal escape sequence (\\x) in string literal\n"
+                "warning: [XKB-645] (input string):3:7: unknown escape sequence \"\\j\" in string literal\n"
+                "warning: [XKB-193] (input string):3:7: illegal hexadecimal escape sequence \"\\x\" in string literal\n"
                 "error: [XKB-685] (input string):3:7: unterminated string literal\n"
-                "warning: [XKB-193] (input string):4:10: illegal octal escape sequence (\\400) in string literal\n"
+                "warning: [XKB-193] (input string):4:10: illegal octal escape sequence \"\\400\" in string literal\n"
                 "error: (input string):4:17: unrecognized keysym \"invalidKeysym\" on right-hand side\n"
                 "warning: [XKB-301] (input string):5:41: deprecated keysym \"leftshoe\".\n"
                 "warning: [XKB-685] (input string):5:41: too many keysyms (11) on left-hand side; skipping line\n",
