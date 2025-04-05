@@ -130,43 +130,53 @@ check_write_string_literal(struct buf *buf, const char* string)
     /* Write chunks, separated by characters requiring escape sequence */
     size_t pending_start = 0;
     size_t current = 0;
+    char escape_buffer[5] = "\\0000";
     for (; string[current] != '\0'; current++) {
-        const char *escape;
-        uint8_t escape_len = 2;
+        uint8_t escape_len;
         switch (string[current]) {
         case '\n':
             /* `\n` would break strings */
-            escape = "\\n";
-            break;
-        case '\r':
-            /* `\r` is legal but looks odd in resulting serialization */
-            escape = "\\r";
-            break;
-        case '"':
-            /* `"` would break strings
-             *
-             * NOTE: xkbcomp does not parse the escape sequence \", so we must
-             * use the octal escape sequence in xkbcomp style `\0nnn`:
-             * 1. To be compatible with Xorg xkbcomp.
-             * 2. To avoid issues with the next char: e.g. "\00427" should not
-             *    be emitted as "\427" nor "\0427".
-             */
-            escape = "\\0042";
-            escape_len = 5;
+            escape_buffer[1] = 'n';
+            escape_len = 2;
             break;
         case '\\':
             /* `\` would create escape sequences */
-            escape = "\\\\";
+            escape_buffer[1] = '\\';
+            escape_len = 2;
             break;
         default:
-            /* Expand the chunk */
-            continue;
+            /*
+             * Handle `"` (would break strings) and ASCII control characters
+             * with an octal escape sequence. Xorg xkbcomp does not parse the
+             * escape sequence `\"` nor xkbcommon < 1.9.0, so in order to be
+             * backward compatible we must use the octal escape sequence in
+             * xkbcomp style `\0nnn` with *4* digits:
+             *
+             * 1. To be compatible with Xorg xkbcomp.
+             * 2. To avoid issues with the next char: e.g. "\00427" should not
+             *    be emitted as "\427" nor "\0427".
+             *
+             * Note that xkbcommon < 1.9.0 will still not parse this correctly,
+             * although it will not raise an error: e.g. the escape for `"`,
+             * `\0042`, would be parsed as `\004` + `2`.
+             */
+            if (unlikely((unsigned char)string[current] < 0x20U ||
+                         string[current] == '"')) {
+                escape_buffer[1] = '0';
+                escape_buffer[2] = '0';
+                escape_buffer[3] = (char)('0' + (string[current] >> 3));
+                escape_buffer[4] = (char)('0' + (string[current] & 0x7));
+                escape_len = 5;
+            } else {
+                /* Expand the chunk */
+                continue;
+            }
         }
         /* Write pending chunk */
         assert(current >= pending_start);
         copy_to_buf_len(buf, string + pending_start, current - pending_start);
         /* Write escape sequence */
-        copy_to_buf_len(buf, escape, escape_len);
+        copy_to_buf_len(buf, escape_buffer, escape_len);
         pending_start = current + 1;
     }
     /* Write remaining chunk */
