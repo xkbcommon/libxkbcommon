@@ -8,12 +8,24 @@
 #ifndef _XKBCOMMON_NAMES_H
 #define _XKBCOMMON_NAMES_H
 
+#define XKB_INTERNAL_STRINGIFY(x) #x
+#if defined(__GNUC__) || defined(__clang__)
+    #define XKB_INTERNAL_PRAGMA(x) _Pragma(#x)
+    #define XKB_INTERNAL_DEPRECATION_WARNING(x) \
+        XKB_INTERNAL_PRAGMA(GCC warning #x)
+    #define XKB_INTERNAL_DEPRECATED_MOD_NAME(msg, str) \
+        (XKB_INTERNAL_DEPRECATION_WARNING(msg) str)
+#else
+    #define XKB_INTERNAL_DEPRECATED_MOD_NAME(msg, str) str
+#endif
+
 /**
  * @file
  * @brief Predefined names for common modifiers and LEDs.
  */
 
 /* *Real* modifiers names are hardcoded in libxkbcommon */
+
 #define XKB_MOD_NAME_SHIFT      "Shift"
 #define XKB_MOD_NAME_CAPS       "Lock"
 #define XKB_MOD_NAME_CTRL       "Control"
@@ -24,9 +36,43 @@
 #define XKB_MOD_NAME_MOD5       "Mod5"
 
 /* Usual virtual modifiers mappings to real modifiers */
-#define XKB_MOD_NAME_ALT        "Mod1" /* Alt */
-#define XKB_MOD_NAME_LOGO       "Mod4" /* Super */
-#define XKB_MOD_NAME_NUM        "Mod2" /* NumLock */
+
+/**
+ * Usual *real* modifier for the *virtual* modifier `Alt`.
+ *
+ * @deprecated
+ * Use `XKB_VMOD_NAME_ALT` instead.
+ */
+#define XKB_MOD_NAME_ALT                                        \
+    XKB_INTERNAL_DEPRECATED_MOD_NAME(                           \
+        XKB_INTERNAL_STRINGIFY(XKB_MOD_NAME_ALT) is deprecated: \
+        use XKB_INTERNAL_STRINGIFY(XKB_VMOD_NAME_ALT) instead,  \
+        "Mod1"                                                  \
+    )
+/**
+ * Usual *real* modifier for the *virtual* modifier `Super`.
+ *
+ * @deprecated
+ * Use `XKB_VMOD_NAME_SUPER` instead.
+ */
+#define XKB_MOD_NAME_LOGO                                       \
+    XKB_INTERNAL_DEPRECATED_MOD_NAME(                           \
+        XKB_INTERNAL_STRINGIFY(XKB_MOD_NAME_LOGO) is deprecated:\
+        use XKB_INTERNAL_STRINGIFY(XKB_VMOD_NAME_SUPER) instead,\
+        "Mod4"                                                  \
+    )
+/**
+ * Usual *real* modifier for the *virtual* modifier `NumLock`.
+ *
+ * @deprecated
+ * Use `XKB_VMOD_NAME_NUM` instead.
+ */
+#define XKB_MOD_NAME_NUM                                        \
+    XKB_INTERNAL_DEPRECATED_MOD_NAME(                           \
+        XKB_INTERNAL_STRINGIFY(XKB_MOD_NAME_NUM) is deprecated: \
+        use XKB_INTERNAL_STRINGIFY(XKB_VMOD_NAME_NUM) instead,  \
+        "Mod2"                                                  \
+    )
 
 /* Common *virtual* modifiers, encoded in xkeyboard-config in the compat and
  * symbols files. They have been stable since the beginning of the project and

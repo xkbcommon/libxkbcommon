@@ -74,3 +74,5 @@ ALIASES                += figure="@htmlonly[block]<figure>@endhtmlonly"
 ALIASES                += endfigure="@htmlonly[block]</figure>@endhtmlonly"
 ALIASES                += figcaption="@htmlonly[block]<figcaption>@endhtmlonly"
 ALIASES                += endfigcaption="@htmlonly[block]</figcaption>@endhtmlonly"
+
+EXCLUDE_SYMBOLS        = XKB_INTERNAL_*
