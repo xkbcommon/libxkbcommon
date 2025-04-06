@@ -130,7 +130,7 @@ check_write_string_literal(struct buf *buf, const char* string)
     /* Write chunks, separated by characters requiring escape sequence */
     size_t pending_start = 0;
     size_t current = 0;
-    char escape_buffer[5] = "\\0000";
+    char escape_buffer[] = {'\\', '0', '0', '0', '0'};
     for (; string[current] != '\0'; current++) {
         uint8_t escape_len;
         switch (string[current]) {

@@ -191,7 +191,7 @@ skip_more_whitespace_and_comments:
             scanner_next(s);
 
         const char *start = s->s + s->token_pos;
-        const size_t len = s->pos - s->token_pos;
+        const unsigned int len = s->pos - s->token_pos;
 
         /* Keyword. */
         tok = keyword_to_token(start, len);
