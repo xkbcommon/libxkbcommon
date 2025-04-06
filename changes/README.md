@@ -12,9 +12,10 @@ There are 3 sections types:
 - Tools: `changes/tools`
 - Build System: `changes/build`
 
-There are 3 news fragments types:
+There are 4 news fragments types:
 
 - Breaking changes: `.breaking`
+- Deprecations: `.deprecation`
 - New: `.feature`
 - Fixes: `.bugfix`
 

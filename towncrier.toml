@@ -36,6 +36,11 @@ name = "Breaking changes"
 showcontent = true
 
 [[tool.towncrier.type]]
+directory = "deprecation"
+name = "Deprecations"
+showcontent = true
+
+[[tool.towncrier.type]]
 directory = "feature"
 name = "New"
 showcontent = true
