@@ -24,7 +24,7 @@ for_each_helper(struct xkb_compose_table *table,
                 void *data,
                 xkb_keysym_t *syms,
                 size_t nsyms,
-                uint16_t p)
+                uint32_t p)
 {
     if (!p) {
         return;
