@@ -5,13 +5,14 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <spawn.h>
-#include <unistd.h>
 #include <assert.h>
 #include <signal.h>
+#include <spawn.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "test.h"
 #include "xvfb-wrapper.h"
@@ -54,6 +55,15 @@ X11_TEST(test_basic)
     ret = posix_spawnp(&xkbcomp_pid, "xkbcomp", NULL, NULL, xkbcomp_argv, envp);
     free(xkb_path);
     if (ret != 0) {
+        fprintf(stderr,
+                "[ERROR] Cannot run xkbcomp. posix_spawnp error %d: %s\n",
+                ret, strerror(ret));
+        if (ret == ENOENT) {
+            fprintf(stderr,
+                    "[ERROR] xkbcomp may be missing. "
+                    "Please install the corresponding package, "
+                    "e.g. \"xkbcomp\" or \"x11-xkb-utils\".\n");
+        }
         ret = TEST_SETUP_FAILURE;
         goto err_xcb;
     }
@@ -86,7 +96,7 @@ X11_TEST(test_basic)
         goto err_dump;
     }
 
-    ret = 0;
+    ret = EXIT_SUCCESS;
 err_dump:
     free(original);
     free(dump);

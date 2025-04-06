@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <stdlib.h>
+
 #include "test.h"
 #include "xvfb-wrapper.h"
 #include "xkbcommon/xkbcommon-x11.h"
@@ -18,7 +20,7 @@ X11_TEST(test_basic)
     struct xkb_keymap *keymap;
     struct xkb_state *state;
     char *dump;
-    int exit_code = 0;
+    int exit_code = EXIT_SUCCESS;
 
     /*
     * The next two steps depend on a running X server with XKB support.
