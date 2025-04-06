@@ -91,3 +91,9 @@ ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
             type, field, name, name);
     return false;
 }
+
+static inline const char*
+safe_map_name(XkbFile *file)
+{
+    return file->name ? file->name : "(unnamed map)";
+}
