@@ -891,8 +891,14 @@ test(
 )
 if get_option('enable-x11')
     has_xvfb = find_program('Xvfb', required: false)
+    has_xkbcomp = find_program('xkbcomp', required: false)
+    # We only warn because the build machine may not be the same
+    # as the host/test machine.
     if not has_xvfb.found()
         warning('Xvfb program not found, but is required to run X11 tests.')
+    endif
+    if not has_xkbcomp.found()
+        warning('xkbcomp program not found, but is required to run X11 tests.')
     endif
     test(
         'x11',

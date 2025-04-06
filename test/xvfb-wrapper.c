@@ -6,10 +6,11 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <spawn.h>
 #include <assert.h>
 #include <signal.h>
+#include <spawn.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -27,7 +28,7 @@ sigusr1_handler(int signal)
 int
 xvfb_wrapper(int (*test_func)(char* display))
 {
-    int ret = 0;
+    int ret = EXIT_SUCCESS;
     FILE * display_fd;
     char display_fd_string[32];
     sigset_t mask;
@@ -71,11 +72,14 @@ xvfb_wrapper(int (*test_func)(char* display))
      */
     ret = posix_spawnp(&xvfb_pid, "Xvfb", NULL, NULL, xvfb_argv, envp);
     if (ret != 0) {
-        fprintf(stderr, "posix_spawnp error %d: %s\n", ret, strerror(ret));
+        fprintf(stderr,
+                "[ERROR] Cannot run Xvfb. posix_spawnp error %d: %s\n",
+                ret, strerror(ret));
         if (ret == ENOENT) {
             fprintf(stderr,
-                    "Xvfb may be missing. Please install the corresponding "
-                    "package, e.g. \"xvfb\" or \"xorg-x11-server-Xvfb\".\n");
+                    "[ERROR] Xvfb may be missing. "
+                    "Please install the corresponding package, "
+                    "e.g. \"xvfb\" or \"xorg-x11-server-Xvfb\".\n");
         }
         ret = TEST_SETUP_FAILURE;
         goto err_xvfd;
@@ -136,7 +140,7 @@ x11_tests_run(void)
          t++) {
         fprintf(stderr, "Running test: %s from %s\n", t->name, t->file);
         rc = xvfb_wrapper(t->func);
-        if (rc != 0) {
+        if (rc != EXIT_SUCCESS) {
             break;
         }
     }
