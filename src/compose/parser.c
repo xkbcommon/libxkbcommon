@@ -464,7 +464,7 @@ parse_string_literal(struct xkb_context *ctx, const char *string)
 {
     struct scanner s;
     union lvalue val;
-    scanner_init(&s, ctx, string, strlen(string), "(unamed)", NULL);
+    scanner_init(&s, ctx, string, strlen(string), "(unnamed)", NULL);
     switch (lex(&s, &val)) {
         case TOK_STRING:
             return strdup(val.string.str);

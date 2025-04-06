@@ -413,7 +413,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap, enum merge_mode merge)
         } else {
             log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Compiling %s \"%s\"\n",
-                    xkb_file_type_to_string(type), files[type]->name);
+                    xkb_file_type_to_string(type), safe_map_name(files[type]));
         }
 
         /* Missing components are initialized with defaults */
