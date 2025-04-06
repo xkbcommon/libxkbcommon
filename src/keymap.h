@@ -271,20 +271,28 @@ enum xkb_explicit_components {
     EXPLICIT_REPEAT = (1 << 4),
 };
 
+/** A key level */
 struct xkb_level {
-    /* Count of keysyms */
+    /** Count of keysyms */
     unsigned int num_syms;
-    /* Count of actions */
+    /** Count of actions */
     unsigned int num_actions;
-    /* Keysyms */
+    /** Keysyms */
     union {
-        xkb_keysym_t sym;          /* num_syms == 1 */
-        xkb_keysym_t *syms;        /* num_syms > 1  */
+        /* num_syms == 1 */
+        struct {
+            xkb_keysym_t sym;
+            xkb_keysym_t upper;
+        };
+        /* num_syms > 1 */
+        xkb_keysym_t *syms;
     } s;
-    /* Actions */
+    /** Actions */
     union {
-        union xkb_action action;   /* num_actions == 1 */
-        union xkb_action *actions; /* num_actions >  1 */
+        /* num_actions == 1 */
+        union xkb_action action;
+        /* num_actions >  1 */
+        union xkb_action *actions;
     } a;
 };
 
@@ -507,6 +515,10 @@ XkbWrapGroupIntoRange(int32_t group,
 
 xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
+
+struct xkb_level *
+xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
+                         xkb_layout_index_t layout, xkb_level_index_t level);
 
 unsigned int
 xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
