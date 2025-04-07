@@ -912,6 +912,21 @@ if get_option('enable-x11')
         env: test_env,
         is_parallel : false,
     )
+    x11_dep = dependency('x11', required: false)
+    if (x11_dep.found())
+        test(
+            'x11-keysyms',
+            executable(
+                'test-x11-keysyms',
+                'test/x11-keysyms.c',
+                'src/utf8.c',
+                'src/utf8.h',
+                dependencies: [x11_xvfb_test_dep, x11_dep]
+            ),
+            env: test_env,
+            is_parallel : false,
+        )
+    endif
 endif
 if get_option('enable-xkbregistry')
     test(
