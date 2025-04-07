@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: MIT
  */
 #include "config.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 
 #include <locale.h>
 #include <stdbool.h>
+#include <stdio.h>
 #if HAVE_ICU
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -16,6 +18,7 @@
 #include "test.h"
 #include "src/keysym.h" /* For unexported is_lower/upper/keypad() */
 #include "test/keysym.h"
+#include "src/utf8.h"
 
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {
@@ -104,7 +107,7 @@ test_string(const char *string, xkb_keysym_t expected)
 {
     xkb_keysym_t keysym;
 
-    keysym = xkb_keysym_from_name(string, 0);
+    keysym = xkb_keysym_from_name(string, XKB_KEYSYM_NO_FLAGS);
 
     fprintf(stderr, "Expected string %s -> %x\n", string, expected);
     fprintf(stderr, "Received string %s -> %x\n\n", string, keysym);
@@ -132,7 +135,8 @@ test_ambiguous_icase_names(const struct ambiguous_icase_ks_names_entry *entry)
         /* Check expected result */
         assert(test_casestring(entry->names[k], entry->keysym));
         /* If the keysym is cased, then check the resulting keysym is lower-cased */
-        xkb_keysym_t keysym = xkb_keysym_from_name(entry->names[k], 0);
+        xkb_keysym_t keysym = xkb_keysym_from_name(entry->names[k],
+                                                   XKB_KEYSYM_NO_FLAGS);
         if (xkb_keysym_is_lower(keysym) || xkb_keysym_is_upper_or_title(keysym)) {
             assert(xkb_keysym_is_lower(entry->keysym));
         }
@@ -402,6 +406,135 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
     return expected == actual;
 }
 
+static inline bool
+is_surrogate(uint32_t cp)
+{
+    return (cp >= 0xd800 && cp <= 0xdfff);
+}
+
+/*
+ * Unicode handling consistency
+ * We should be able to roundtrip with the Unicode keysyms most of the time.
+ * Keysyms that are illegal with one function should be illegal in all functions,
+ * unless we *explictly* tolerate it.
+ */
+static void
+test_unicode_consistency(void)
+{
+    /* Latin-1 code points should not be converted to
+     * cp + XKB_KEYSYM_UNICODE_OFFSET, as per specification in the keysym
+     * header. */
+    xkb_keysym_t ks;
+    static_assert(XKB_KEYSYM_UTF8_MAX_SIZE <= XKB_KEYSYM_NAME_MAX_SIZE);
+    char buffer[XKB_KEYSYM_NAME_MAX_SIZE] = {0};
+    for (uint32_t cp = 0; cp < 0x10ffff; cp++) {
+        char utf8[5] = {0};
+        utf32_to_utf8(cp, utf8);
+
+        ks = xkb_utf32_to_keysym(cp);
+        if (ks == 0) {
+            /* NULL or surrogates */
+            /* Or non-character!? */
+            assert_printf(cp == 0 || is_surrogate(cp) ||
+                          /* FIXME */
+                          (cp >= 0xfdd0 && cp <= 0xfdef) ||
+                          cp > 0x10ffff || (cp & 0xfffe) == 0xfffe,
+                          "Unexpected NoSymbol for code point U+%#"PRIX32"\n",
+                          cp);
+        } else if (ks < 0x100) {
+            /* 1:1 mapping */
+            assert_printf(ks == cp && xkb_keysym_to_utf32(ks) == cp,
+                          "Expected keysym %#"PRIx32" for "
+                          "Unicode code point U+%04"PRIX32", "
+                          "but got: %#"PRIx32"\n",
+                          cp, cp, ks);
+        } else if (cp < 0x100 && ks <= 0xffff) {
+            /* Special keysyms */
+            xkb_keysym_t expected = (cp == 0x7f) ? XKB_KEY_Delete : (cp | 0xff00);
+            assert_printf(ks == expected && xkb_keysym_to_utf32(ks) == cp,
+                          "Expected keysym %#"PRIx32" for "
+                          "Unicode code point U+%04"PRIX32", "
+                          "but got: %#"PRIx32"\n",
+                          expected, cp, ks);
+        } else {
+            /* Named keysym or Unicode keysym */
+            xkb_keysym_t expected = cp + XKB_KEYSYM_UNICODE_OFFSET;
+            assert_printf((ks < 0xffff || ks == expected) &&
+                          xkb_keysym_to_utf32(ks) == cp,
+                          "Expected keysym %#"PRIx32" for "
+                          "Unicode code point U+%04"PRIX32", "
+                          "but got: %#"PRIx32"\n",
+                          expected, cp, ks);
+        }
+
+        ks = XKB_KEYSYM_UNICODE_OFFSET + cp;
+
+        /* Convert all Unicode keysyms to their code point, except for surrogates */
+        const uint32_t cp2 = xkb_keysym_to_utf32(ks);
+        assert_printf((cp2 == cp) ^ (cp2 == 0 && is_surrogate(cp)),
+                      "Expected keysym %#"PRIx32" to convert to code point "
+                      "U+%04"PRIX32", but got: U+%04"PRIX32"\n",
+                      ks, cp, cp2);
+
+        /* Convert all Unicode keysyms to the UTF-8 encoding of their code point,
+         * except for U0000 and surrogates */
+        int count = xkb_keysym_to_utf8(ks, buffer, sizeof(buffer));
+        assert_printf((count == 0 && (cp == 0 || is_surrogate(cp))) ^
+                      (count > 0 && strcmp(buffer, utf8) == 0),
+                      "Unexpected failure of UTF-8 encoding for keysym "
+                      "%#"PRIx32"\n",
+                      ks);
+
+        /* Unicode keysyms always have a name */
+        count = xkb_keysym_get_name(ks, buffer, sizeof(buffer));
+        if (cp < 0x100) {
+            /* 0xNNNN notation */
+            assert_printf(count > 2 && buffer[0] == '0' && buffer[1] == 'x' &&
+                          strtoll(buffer, NULL, 16) == ks,
+                          "Unexpected name for Unicode keysym %#"PRIx32": %s\n",
+                          ks, buffer);
+        } else {
+            /* Predefined name or Unnnn notation */
+            char *end = NULL;
+            assert_printf(count > 1 && (buffer[0] != 'U' ||
+                          (strtoll(buffer + 1, &end, 16) == cp) || *end != '\0'),
+                          "Unexpected name for Unicode keysym %#"PRIx32": %s\n",
+                          ks, buffer);
+        }
+
+        /* Numeric hexadecimal format always work */
+        snprintf(buffer, sizeof(buffer), "%#"PRIx32, ks);
+        ks = xkb_keysym_from_name(buffer, 0);
+        xkb_keysym_t expected = cp + XKB_KEYSYM_UNICODE_OFFSET;
+        assert_printf((cp == 0 && ks == XKB_KEY_NoSymbol) ^ (ks == expected),
+                      "Unexpected failure of numeric notation %s; "
+                      "got keysym: %#"PRIx32"\n",
+                      buffer, ks);
+
+        /* Unicode notation does not work for control code points */
+        snprintf(buffer, sizeof(buffer), "U%04"PRIX32, cp);
+        ks = xkb_keysym_from_name(buffer, 0);
+        if (cp < 0x20 || (cp > 0x7e && cp < 0xa0)) {
+            /* Control code points */
+            assert_printf(ks == XKB_KEY_NoSymbol,
+                          "Unexpected success of Unicode notation %s; "
+                          "got keysym: %#"PRIx32"\n",
+                          buffer, ks);
+        } else if (cp < 0x100) {
+            /* Direct mapping */
+            assert_printf(ks == cp,
+                          "Expected 1:1 mapping for Unicode notation %s, "
+                          "but got keysym: %#"PRIx32"\n",
+                          buffer, ks);
+        } else {
+            assert_printf(ks == cp + XKB_KEYSYM_UNICODE_OFFSET,
+                          "Unexpected keysym from Unicode notation %s: "
+                          "%#"PRIx32"\n",
+                          buffer, ks);
+        }
+    }
+}
+
 int
 main(void)
 {
@@ -446,6 +579,7 @@ main(void)
     assert(!xkb_keysym_is_assigned(XKB_KEYSYM_MAX));
 
     test_modifiers_table();
+    test_unicode_consistency();
 
     struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(false);
     xkb_keysym_t ks_prev = XKB_KEYSYM_MIN;
@@ -729,6 +863,8 @@ main(void)
     assert(test_utf32_to_keysym(0x634, XKB_KEY_Arabic_sheen));
     assert(test_utf32_to_keysym(0x1F609, 0x0101F609)); // ;) emoji
 
+    // FIXME assert(test_utf32_to_keysym('\0', XKB_KEY_NoSymbol));
+    // FIXME assert(test_utf32_to_keysym('\1', XKB_KEY_NoSymbol));
     assert(test_utf32_to_keysym('\b', XKB_KEY_BackSpace));
     assert(test_utf32_to_keysym('\t', XKB_KEY_Tab));
     assert(test_utf32_to_keysym('\n', XKB_KEY_Linefeed));

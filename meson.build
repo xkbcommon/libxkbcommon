@@ -739,9 +739,15 @@ if icu_dep.found()
 endif
 test(
     'keysym',
-    executable('test-keysym', 'test/keysym.c', 'test/keysym.h',
-               dependencies: keysyms_test_dep,
-               c_args: keysyms_test_c_args),
+    executable(
+        'test-keysym',
+        'test/keysym.c',
+        'test/keysym.h',
+        'src/utf8.c',
+        'src/utf8.h',
+        dependencies: keysyms_test_dep,
+        c_args: keysyms_test_c_args
+    ),
     env: test_env,
 )
 test(
