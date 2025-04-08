@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include "utils.h"
 #include "utf8-decoding.h"
 
 /* Array mapping the leading byte to the length of a UTF-8 sequence.
@@ -73,7 +74,7 @@ utf8_next_code_point(const char *s, size_t max_size, size_t *size_out)
     }
 
     /* Check surrogates */
-    if (cp >= 0xd800 && cp <= 0xdfff)
+    if (is_surrogate(cp))
         return INVALID_UTF8_CODE_POINT;
 
     *size_out = len;

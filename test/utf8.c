@@ -170,7 +170,7 @@ test_utf8_to_utf32(void)
     for (uint32_t cp = 0; cp < 0x10ffff; cp++) {
         int length = utf32_to_utf8(cp, buffer) - 1;
         /* Check surrogates */
-        if (cp >= 0xd800 && cp <= 0xdfff) {
+        if (is_surrogate(cp)) {
             assert(length == -1);
         } else {
             assert(length > 0);

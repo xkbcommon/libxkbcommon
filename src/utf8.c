@@ -33,7 +33,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         head = 0xc0;
     }
     /* Handle surrogates */
-    else if (0xd800 <= unichar && unichar <= 0xdfff) {
+    else if (is_surrogate(unichar)) {
         goto ill_formed_code_unit_subsequence;
     }
     else if (unichar <= 0xffff) {

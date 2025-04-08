@@ -50,13 +50,21 @@ typedef SSIZE_T ssize_t;
 #define CONCAT(x,y) x ## y
 #define CONCAT2(x,y) CONCAT(x,y)
 
-/* Check if a character is valid in a string literal */
+/* Check if a Unicode code point is valid in a string literal */
 static inline bool
-is_valid_char(uint32_t c)
+is_valid_char(uint32_t cp)
 {
     /* Currently we only check for NULL character, but this could be extended
      * in the future to further ASCII control characters. */
-    return c != 0;
+    return cp != 0;
+}
+
+/* Check if a Unicode code point is a surrogate.
+ * Those code points are used only in UTF-16 encodings. */
+static inline bool
+is_surrogate(uint32_t cp)
+{
+    return (cp >= 0xd800 && cp <= 0xdfff);
 }
 
 char

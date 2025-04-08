@@ -105,7 +105,8 @@ def generate(
 
 
 # Root of the project
-ROOT = Path(__file__).parent.parent
+SCRIPT = Path(__file__)
+ROOT = SCRIPT.parent.parent
 
 # Parse commands
 parser = argparse.ArgumentParser(
@@ -139,7 +140,10 @@ keysyms_bounds, keysyms_ambiguous_case_insensitive_names = load_keysyms(
 # Generate the files
 generate(
     jinja_env,
-    keysyms_bounds,
+    dict(
+        keysyms_bounds,
+        script=SCRIPT.relative_to(ROOT),
+    ),
     args.root,
     Path("src/keysym.h"),
 )
@@ -150,6 +154,7 @@ generate(
         keysyms_bounds,
         ambiguous_case_insensitive_names=keysyms_ambiguous_case_insensitive_names,
         MAX_AMBIGUOUS_NAMES=MAX_AMBIGUOUS_NAMES,
+        script=SCRIPT.relative_to(ROOT),
     ),
     args.root,
     Path("test/keysym.h"),
