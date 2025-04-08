@@ -91,6 +91,30 @@ xkb_keysym_is_assigned(xkb_keysym_t ks)
            find_keysym_index(ks) != -1;
 }
 
+int
+xkb_keysym_get_explicit_names(xkb_keysym_t ks, const char **buffer, size_t size)
+{
+    if (ks > XKB_KEYSYM_MAX)
+        return -1;
+    const ssize_t index = find_keysym_index(ks);
+    if (index < 0)
+        return 0;
+    const uint16_t canonical = keysym_to_name[index].offset;
+    if (size > 0)
+        buffer[0] = get_name(&keysym_to_name[index]);
+    int count = 1;
+    for (size_t pos = 0; pos < ARRAY_SIZE(name_to_keysym); pos++) {
+        if (name_to_keysym[pos].keysym == ks &&
+            name_to_keysym[pos].offset != canonical) {
+            if ((size_t) count < size) {
+                buffer[count] = get_name(&name_to_keysym[pos]);
+            }
+            count++;
+        }
+    }
+    return count;
+}
+
 struct xkb_keysym_iterator {
     bool explicit;       /* If true, traverse only explicitly named keysyms */
     int32_t index;       /* Current index in `keysym_to_name` */

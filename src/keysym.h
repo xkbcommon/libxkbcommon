@@ -46,12 +46,17 @@
 #define XKB_KEYSYM_LONGEST_CANONICAL_NAME ISO_Discontinuous_Underline
 /** Longest keysym name */
 #define XKB_KEYSYM_LONGEST_NAME ISO_Discontinuous_Underline
+/** Maximum of distinct explicit names for a keysym */
+#define XKB_KEYSYM_EXPLICIT_ALIASES_MAX 9
 /** Maximum bytes to encode the Unicode representation of a keysym in UTF-8:
  * 4 bytes + NULL-terminating byte */
 #define XKB_KEYSYM_UTF8_MAX_SIZE  5
 
 XKB_EXPORT_PRIVATE bool
 xkb_keysym_is_assigned(xkb_keysym_t ks);
+
+XKB_EXPORT_PRIVATE int
+xkb_keysym_get_explicit_names(xkb_keysym_t ks, const char **buffer, size_t size);
 
 struct xkb_keysym_iterator;
 

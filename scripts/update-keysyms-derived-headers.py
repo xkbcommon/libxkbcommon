@@ -29,6 +29,7 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
     keysym_max = 0
     min_unicode_keysym = 0x01000100
     max_unicode_keysym = 0x0110FFFF
+    names: dict[int, set[str]] = defaultdict(set)
     canonical_names: dict[int, str] = {}
     casefolded_names: dict[str, list[str]] = defaultdict(list)
     max_unicode_name = "U10FFFF"
@@ -41,6 +42,7 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
                 keysym_min = min(keysym_min, value)
                 keysym_max = max(keysym_max, value)
                 name = m.group("name")
+                names[value].add(name)
                 casefolded_names[name.casefold()].append(name)
                 if value not in canonical_names:
                     canonical_names[value] = name
@@ -57,6 +59,7 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
         max_keysym_name,
         key=len,
     )
+    XKB_KEYSYM_EXPLICIT_ALIASES_MAX = max(map(len, names.values()))
 
     # Keep only ambiguous case-insensitive names and sort them
     for name in tuple(casefolded_names.keys()):
@@ -81,6 +84,7 @@ def load_keysyms(path: Path) -> tuple[KeysymsBounds, KeysymsCaseFoldedNames]:
             "XKB_KEYSYM_NAME_MAX_SIZE": len(XKB_KEYSYM_LONGEST_CANONICAL_NAME) + 1,
             "XKB_KEYSYM_LONGEST_CANONICAL_NAME": XKB_KEYSYM_LONGEST_CANONICAL_NAME,
             "XKB_KEYSYM_LONGEST_NAME": XKB_KEYSYM_LONGEST_NAME,
+            "XKB_KEYSYM_EXPLICIT_ALIASES_MAX": XKB_KEYSYM_EXPLICIT_ALIASES_MAX,
         },
         casefolded_names,
     )
