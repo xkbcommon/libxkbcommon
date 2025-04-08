@@ -60,8 +60,7 @@ get_name(const struct name_keysym *entry)
 static inline int
 get_unicode_name(xkb_keysym_t ks, char *buffer, size_t size)
 {
-    const int width = (ks & 0xff0000UL) ? 8 : 4;
-    return snprintf(buffer, size, "U%0*lX", width, ks & 0xffffffUL);
+    return snprintf(buffer, size, "U%04"PRIX32, ks & UINT32_C(0xffffff));
 }
 
 int

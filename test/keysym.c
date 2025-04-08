@@ -6,6 +6,7 @@
 
 #include <locale.h>
 #include <stdbool.h>
+#include <stdint.h>
 #if HAVE_ICU
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -14,6 +15,8 @@
 #endif
 
 #include "test.h"
+#include "utils.h"
+#include "utils-numbers.h"
 #include "src/keysym.h" /* For unexported is_lower/upper/keypad() */
 #include "test/keysym.h"
 
@@ -504,6 +507,22 @@ main(void)
                       "xkb_keysym_is_keypad(0x%04"PRIx32") \"%s\": "
                       "expected %d, got: %d\n",
                       ks, name, expected, got);
+        /* Ensure no explicit name would clash with the Unicode notation */
+        if (xkb_keysym_iterator_is_explicitly_named(iter)) {
+            const int n = xkb_keysym_get_explicit_names(ks, aliases,
+                                                        ARRAY_SIZE(aliases));
+            assert(n > 0);
+            for (int k = 0; k < n; k++) {
+                const char* const alias = aliases[k];
+                if (alias[0] != 'U')
+                    continue;
+                uint32_t cp = 0;
+                const int r = parse_hex_to_uint32_t(name + 1, SIZE_MAX, &cp);
+                /* Either none or incomplete parsing */
+                assert((r == 0) ^ (r > 0 && name[r + 1] != '\0'));
+            }
+        }
+
 #if HAVE_ICU
         /* Check case mappings */
         test_icu_case_mappings(ks);
@@ -621,9 +640,9 @@ main(void)
     /* 16-bit unicode padded to width 4. */
     assert(test_keysym(0x010002DE, "U02DE"));
     /* 32-bit unicode padded to width 8. */
-    assert(test_keysym(0x0101F4A9, "U0001F4A9"));
+    assert(test_keysym(0x0101F4A9, "U1F4A9"));
     /* Max Unicode */
-    assert(test_keysym(XKB_KEYSYM_UNICODE_MAX, "U0010FFFF"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_MAX, "U10FFFF"));
     /* Max Unicode + 1 */
     assert(test_keysym(0x01110000, "0x01110000"));
     /* Min keysym. */
