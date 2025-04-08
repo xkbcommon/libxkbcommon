@@ -447,6 +447,28 @@ main(void)
 
     test_modifiers_table();
 
+    /* Check xkb_keysym_get_explicit_names works */
+    const char* aliases[XKB_KEYSYM_EXPLICIT_ALIASES_MAX] = {0};
+    int aliases_count =
+        xkb_keysym_get_explicit_names(XKB_KEY_a,
+                                      aliases, ARRAY_SIZE(aliases));
+    assert(aliases_count == 1);
+    assert_streq_not_null("", "a", aliases[0]);
+
+    aliases_count =
+        xkb_keysym_get_explicit_names(XKB_KEY_ISO_Group_Shift,
+                                      aliases, ARRAY_SIZE(aliases));
+    assert(aliases_count == XKB_KEYSYM_EXPLICIT_ALIASES_MAX);
+    assert_streq_not_null("", "Mode_switch", aliases[0]);
+    assert_streq_not_null("", "Arabic_switch", aliases[1]);
+    assert_streq_not_null("", "Greek_switch", aliases[2]);
+    assert_streq_not_null("", "Hangul_switch", aliases[3]);
+    assert_streq_not_null("", "Hebrew_switch", aliases[4]);
+    assert_streq_not_null("", "ISO_Group_Shift", aliases[5]);
+    assert_streq_not_null("", "kana_switch", aliases[6]);
+    assert_streq_not_null("", "script_switch", aliases[7]);
+    assert_streq_not_null("", "SunAltGraph", aliases[8]);
+
     struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(false);
     xkb_keysym_t ks_prev = XKB_KEYSYM_MIN;
     uint32_t count = 0;
