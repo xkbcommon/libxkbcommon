@@ -1,4 +1,9 @@
 /*
+ * NOTE: This file has been generated automatically by “scripts/update-keysyms-derived-headers.py”.
+ *       Do not edit manually!
+ */
+
+/*
  * Copyright © 2024 Pierre Le Marre <dev@wismill.eu>
  * SPDX-License-Identifier: MIT
  */

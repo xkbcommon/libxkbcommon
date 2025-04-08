@@ -1,4 +1,9 @@
 /*
+ * NOTE: This file has been generated automatically by “scripts/update-keysyms-derived-headers.py”.
+ *       Do not edit manually!
+ */
+
+/*
  * For MIT-open-group:
  * Copyright 1985, 1987, 1990, 1998  The Open Group
  *
@@ -36,6 +41,10 @@
 #define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
 /** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */
 #define XKB_KEYSYM_UNICODE_MIN    0x01000100
+/** Minimum Unicode surrogate keysym */
+#define XKB_KEYSYM_UNICODE_SURROGATE_MIN 0x0100d800
+/** Maximum Unicode surrogate keysym */
+#define XKB_KEYSYM_UNICODE_SURROGATE_MAX 0x0100dfff
 /** Maximum Unicode keysym, corresponding to the maximum Unicode code point */
 #define XKB_KEYSYM_UNICODE_MAX    0x0110ffff
 /** Unicode version used for case mappings */

@@ -755,9 +755,9 @@ main(void)
     assert(test_utf8(XKB_KEYSYM_UNICODE_MIN, "Ā")); /* Min Unicode keysym */
     assert(test_utf8(0x10005d0, "א"));
     assert(test_utf8(XKB_KEYSYM_UNICODE_MAX, "\xf4\x8f\xbf\xbf")); /* Max Unicode */
-    assert(test_utf8(0x0100d800, NULL) == 0); // Unicode surrogates
-    assert(test_utf8(0x0100dfff, NULL) == 0); // Unicode surrogates
-    assert(test_utf8(0x1110000, NULL) == 0);
+    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MIN, NULL) == 0);
+    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MAX, NULL) == 0);
+    assert(test_utf8(XKB_KEYSYM_UNICODE_MAX + 1, NULL) == 0);
 
     assert(test_utf32_to_keysym('y', XKB_KEY_y));
     assert(test_utf32_to_keysym('u', XKB_KEY_u));

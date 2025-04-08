@@ -878,8 +878,9 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     /* Exclude surrogates: they are invalid in UTF-32.
      * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
      * for further details.
-    */
-    if (0x0100d800 <= keysym && keysym <= 0x0100dfff)
+     */
+    if (keysym >= XKB_KEYSYM_UNICODE_SURROGATE_MIN &&
+        keysym <= XKB_KEYSYM_UNICODE_SURROGATE_MAX)
         return NO_KEYSYM_UNICODE_CONVERSION;
     /*
      * In theory, this is supposed to start from 0x100100, such that the ASCII
@@ -910,7 +911,7 @@ xkb_utf32_to_keysym(uint32_t ucs)
         return XKB_KEY_Delete;
 
     /* Unicode non-symbols and code points outside Unicode planes */
-    if ((ucs >= 0xd800 && ucs <= 0xdfff) ||
+    if (is_surrogate(ucs) ||
         (ucs >= 0xfdd0 && ucs <= 0xfdef) ||
         ucs > 0x10ffff || (ucs & 0xfffe) == 0xfffe)
         return XKB_KEY_NoSymbol;
