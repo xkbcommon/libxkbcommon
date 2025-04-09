@@ -101,10 +101,8 @@ skip_more_whitespace_and_comments:
                 else if (scanner_chr(s, 'u')) {
                     /* Unicode escape sequence */
                     uint32_t cp = 0;
-                    if (scanner_chr(s, '{') &&
-                        scanner_unicode_code_point(s, &cp) &&
-                        /* NOTE: the order of the check is important! */
-                        scanner_chr(s, '}') && is_valid_char(cp)) {
+                    if (scanner_unicode_code_point(s, &cp) &&
+                        is_valid_char(cp)) {
                         /* Encode code point using UTF-8 */
                         scanner_buf_appends_code_point(s, cp);
                     } else {
