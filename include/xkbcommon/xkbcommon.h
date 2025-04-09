@@ -508,6 +508,8 @@ enum xkb_keysym_flags {
  * @returns The keysym. If the name is invalid, returns XKB_KEY_NoSymbol.
  *
  * @sa xkb_keysym_t
+ * @since 1.9.0: Enable support for C0 and C1 control characters in the Unicode
+   notation.
  */
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
@@ -560,11 +562,9 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * encoding use a direct encoding scheme. These keysyms don't usually
  * have an associated keysym constant (XKB_KEY_*).
  *
- * For noncharacter Unicode codepoints and codepoints outside of the
- * defined Unicode planes this function returns XKB_KEY_NoSymbol.
- *
  * @sa xkb_keysym_to_utf32()
  * @since 1.0.0
+ * @since 1.9.0: Enable support for all noncharacters.
  */
 XKB_EXPORT xkb_keysym_t
 xkb_utf32_to_keysym(uint32_t ucs);

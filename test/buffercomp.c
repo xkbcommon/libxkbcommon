@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "src/keysym.h"
+#include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
 
@@ -1087,6 +1089,75 @@ test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
+test_unicode_keysyms(struct xkb_context *ctx, bool update_output_files)
+{
+    struct keymap_test_data keymaps[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols {\n"
+                /* C0 Control characters */
+                "    key <AE01> { [U0000, 0x01000000 ] };\n"
+                "    key <AE02> { [U0001, 0x01000001 ] };\n"
+                "    key <AE03> { [U000A, 0x0100000a ] };\n"
+                "    key <AE04> { [U001F, 0x0100001f ] };\n"
+                /* Printable ASCII characters */
+                "    key <AE05> { [U0020, 0x01000020 ] };\n"
+                "    key <AE06> { [U007E, 0x0100007e ] };\n"
+                /* C0/C1 control characters */
+                "    key <AE07> { [U007F, 0x0100007f ] };\n"
+                "    key <AE08> { [U0080, 0x01000080 ] };\n"
+                "    key <AE09> { [U009F, 0x0100009f ] };\n"
+                /* Latin-1 printable characters */
+                "    key <AE10> { [U00A0, 0x010000a0 ] };\n"
+                "    key <AE11> { [U00FF, 0x010000ff ] };\n"
+                /* Misc: bounds */
+                "    key <AD01> { [U0100, 0x01000100 ] };\n"
+                "    key <AD02> { [UD7FF, 0x0100d7ff ] };\n"
+                /* Surrogates */
+                "    key <AD03> { [UD800, 0x0100d800 ] };\n"
+                "    key <AD04> { [UDFFF, 0x0100dfff ] };\n"
+                /* Misc: bounds */
+                "    key <AD05> { [UE000, 0x0100e000 ] };\n"
+                "    key <AD06> { [UFDCF, 0x0100fdcf ] };\n"
+                /* Noncharacters */
+                "    key <AD07> { [UFDD0, 0x0100fdd0 ] };\n"
+                "    key <AD08> { [UFDEF, 0x0100fdef ] };\n"
+                /* Misc: bounds */
+                "    key <AD09> { [UFDF0, 0x0100fdf0 ] };\n"
+                "    key <AD10> { [UFFFD, 0x0100fffd ] };\n"
+                /* Noncharacters */
+                "    key <AD11> { [UFFFE, 0x0100fffe ] };\n"
+                "    key <AD12> { [UFFFF, 0x0100ffff ] };\n"
+                /* Misc: bounds */
+                "    key <AC01> { [U10000, 0x01010000 ] };\n"
+                /* Noncharacters */
+                "    key <AC08> { [U1FFFE , 0x0101fffe ] };\n"
+                "    key <AC09> { [U1FFFF , 0x0101ffff ] };\n"
+                "    key <AC10> { [U10FFFE, 0x0110fffe ] };\n"
+                /* Max Unicode */
+                "    key <AC11> { [U10FFFF, 0x0110ffff ] };\n"
+                /* Max Unicode + 1 */
+                "    key <AC12> { [U110000, 0x01110000 ] };\n"
+                /* Misc */
+                "    key <AB01> { [U0174, 0x01000174 ] };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "unicode-keysyms.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -1163,6 +1234,7 @@ main(int argc, char *argv[])
     test_modifier_maps(ctx, update_output_files);
     test_empty_compound_statements(ctx, update_output_files);
     test_escape_sequences(ctx, update_output_files);
+    test_unicode_keysyms(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 

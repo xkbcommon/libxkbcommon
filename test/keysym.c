@@ -3,10 +3,16 @@
  * SPDX-License-Identifier: MIT
  */
 #include "config.h"
+#include "utils.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon.h"
 
+#include <assert.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #if HAVE_ICU
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -107,7 +113,7 @@ test_string(const char *string, xkb_keysym_t expected)
 {
     xkb_keysym_t keysym;
 
-    keysym = xkb_keysym_from_name(string, 0);
+    keysym = xkb_keysym_from_name(string, XKB_KEYSYM_NO_FLAGS);
 
     fprintf(stderr, "Expected string %s -> %x\n", string, expected);
     fprintf(stderr, "Received string %s -> %x\n\n", string, keysym);
@@ -565,21 +571,36 @@ main(void)
     assert(test_string("4567", XKB_KEY_NoSymbol));
 
     /* Unicode: test various ranges */
-    assert(test_string("U0000", XKB_KEY_NoSymbol)); /* Min Unicode */
-    assert(test_string("U001f", XKB_KEY_NoSymbol));
-    assert(test_string("U0020", 0x0000020));
-    assert(test_string("U007E", 0x000007e));
-    assert(test_string("U007f", XKB_KEY_NoSymbol));
-    assert(test_string("U009f", XKB_KEY_NoSymbol));
-    assert(test_string("U00a0", 0x00000a0));
-    assert(test_string("U00ff", 0x00000ff));
-    assert(test_string("U0100", XKB_KEYSYM_UNICODE_MIN));
-    assert(test_string("U4567", 0x1004567));
+    assert(test_string("U0000", XKB_KEY_NoSymbol)); /* Min Unicode, first ASCII ctrl */
+    assert(test_string("U0001", 0x01000001)); /* ASCII ctrl without named keysym */
+    assert(test_string("U000A", 0x0000ff0a)); /* ASCII ctrl mapping to function keysym */
+    assert(test_string("U001F", 0x0100001f)); /* Last ASCII ctrl before first printable */
+    assert(test_string("U0020", 0x00000020)); /* First ASCII printable */
+    assert(test_string("U007E", 0x0000007e));
+    assert(test_string("U007F", 0x0000ffff)); /* Last ASCII code point */
+    assert(test_string("U0080", 0x01000080)); /* First non-ASCII code point */
+    assert(test_string("U009F", 0x0100009f));
+    assert(test_string("U00A0", 0x000000a0));
+    assert(test_string("U00FF", 0x000000ff)); /* Last Latin-1 code point */
+    assert(test_string("U0100", 0x01000100));
+    assert(test_string("U4567", 0x01004567));
+    assert(test_string("UD7FF", 0x0100d7ff));
+    assert(test_string("UD800", 0x0100d800)); /* Surrogates */
+    assert(test_string("UDFFF", 0x0100dfff)); /* Surrogates */
+    assert(test_string("UE000", 0x0100e000));
+    assert(test_string("UFDCF", 0x0100fdcf));
+    assert(test_string("UFDD0", 0x0100fdd0)); /* Noncharacter */
+    assert(test_string("UFDEF", 0x0100fdef)); /* Noncharacter */
+    assert(test_string("UFDF0", 0x0100fdf0));
+    assert(test_string("UFFFD", 0x0100fffd));
+    assert(test_string("UFFFE", 0x0100fffe)); /* Noncharacter */
+    assert(test_string("UFFFF", 0x0100ffff)); /* Noncharacter */
+    assert(test_string("U10000", 0x01010000));
     assert(test_string("U1F4A9", 0x0101F4A9));
     assert(test_string("U10FFFF", XKB_KEYSYM_UNICODE_MAX)); /* Max Unicode */
     assert(test_string("U110000", XKB_KEY_NoSymbol));
     /* Unicode: test syntax */
-    assert(test_string("U00004567", 0x1004567));         /* OK:  8 digits */
+    assert(test_string("U00004567", 0x01004567));        /* OK:  8 digits */
     assert(test_string("U000004567", XKB_KEY_NoSymbol)); /* ERR: 9 digits */
     assert(test_string("U+4567", XKB_KEY_NoSymbol));     /* ERR: Standard Unicode notation */
     assert(test_string("U+4567ffff", XKB_KEY_NoSymbol));
@@ -593,13 +614,44 @@ main(void)
     assert(test_string("u4567", XKB_KEY_NoSymbol)); /* Require XKB_KEYSYM_CASE_INSENSITIVE */
 
     /* Hexadecimal: test ranges */
-    assert(test_string(STRINGIFY2(XKB_KEYSYM_MIN), XKB_KEY_NoSymbol)); /* Min keysym. */
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_MIN), XKB_KEY_NoSymbol)); /* Min keysym */
     assert(test_string("0x1", 0x00000001));
     assert(test_string("0x01234567", 0x01234567));
     assert(test_string("0x09abcdef", 0x09abcdef));
-    assert(test_string("0x01000100", XKB_KEYSYM_UNICODE_MIN)); /* Min Unicode. */
-    assert(test_string("0x0110ffff", XKB_KEYSYM_UNICODE_MAX)); /* Max Unicode. */
-    assert(test_string(STRINGIFY2(XKB_KEYSYM_MAX), XKB_KEYSYM_MAX)); /* Max keysym. */
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_UNICODE_OFFSET),
+                       XKB_KEYSYM_UNICODE_OFFSET));
+    assert(test_string("0x01000001", 0x01000001));
+    assert(test_string("0x0100000a", 0x0100000a));
+    assert(test_string("0x0100001f", 0x0100001f));
+    assert(test_string("0x01000020", 0x01000020));
+    assert(test_string("0x0100007e", 0x0100007e));
+    assert(test_string("0x0100007f", 0x0100007f));
+    assert(test_string("0x01000080", 0x01000080));
+    assert(test_string("0x0100009f", 0x0100009f));
+    assert(test_string("0x010000a0", 0x010000a0));
+    assert(test_string("0x010000ff", 0x010000ff));
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_UNICODE_MIN),
+                       XKB_KEYSYM_UNICODE_MIN));
+    assert(test_string("0x0100d7ff", 0x0100d7ff));
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_UNICODE_SURROGATE_MIN),
+                       XKB_KEYSYM_UNICODE_SURROGATE_MIN));
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_UNICODE_SURROGATE_MAX),
+                       XKB_KEYSYM_UNICODE_SURROGATE_MAX));
+    assert(test_string("0x0100e000", 0x0100e000));
+    assert(test_string("0x0100fdcf", 0x0100fdcf));
+    assert(test_string("0x0100fdd0", 0x0100fdd0)); /* Noncharacter */
+    assert(test_string("0x0100fdef", 0x0100fdef)); /* Noncharacter */
+    assert(test_string("0x0100fdf0", 0x0100fdf0));
+    assert(test_string("0x0100fffd", 0x0100fffd));
+    assert(test_string("0x0100fffe", 0x0100fffe)); /* Noncharacter */
+    assert(test_string("0x0100ffff", 0x0100ffff)); /* Noncharacter */
+    assert(test_string("0x01010000", 0x01010000));
+    assert(test_string("0x0101fffe", 0x0101fffe)); /* Noncharacter */
+    assert(test_string("0x0101ffff", 0x0101ffff)); /* Noncharacter */
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_UNICODE_MAX),
+                       XKB_KEYSYM_UNICODE_MAX));
+    assert(test_string("0x01110000", 0x1110000)); /* XKB_KEYSYM_UNICODE_MAX + 1 */
+    assert(test_string(STRINGIFY2(XKB_KEYSYM_MAX), XKB_KEYSYM_MAX)); /* Max keysym */
     assert(test_string("0x20000000", XKB_KEY_NoSymbol));
     assert(test_string("0xffffffff", XKB_KEY_NoSymbol));
     assert(test_string("0x100000000", XKB_KEY_NoSymbol));
@@ -634,6 +686,18 @@ main(void)
     assert(test_keysym(XKB_KEY_guillemetleft, "guillemotleft"));
     assert(test_keysym(XKB_KEY_ordmasculine, "masculine"));
     assert(test_keysym(XKB_KEY_Greek_lambda, "Greek_lamda"));
+    /* Unicode: ISO-8859-1 (Latin-1 + C0 and C1 control code) */
+    assert(test_keysym(XKB_KEYSYM_UNICODE_OFFSET, STRINGIFY2(XKB_KEYSYM_UNICODE_OFFSET)));
+    assert(test_keysym(0x01000001, "0x01000001"));
+    assert(test_keysym(0x0100000a, "0x0100000a"));
+    assert(test_keysym(0x0100001f, "0x0100001f"));
+    assert(test_keysym(0x01000020, "0x01000020"));
+    assert(test_keysym(0x0100007e, "0x0100007e"));
+    assert(test_keysym(0x0100007f, "0x0100007f"));
+    assert(test_keysym(0x01000080, "0x01000080"));
+    assert(test_keysym(0x0100009f, "0x0100009f"));
+    assert(test_keysym(0x010000a0, "0x010000a0"));
+    assert(test_keysym(0x010000ff, "0x010000ff"));
     /* Min Unicode */
     assert(test_keysym(XKB_KEYSYM_UNICODE_MIN, "U0100"));
     assert(test_keysym(0x01001234, "U1234"));
@@ -641,6 +705,24 @@ main(void)
     assert(test_keysym(0x010002DE, "U02DE"));
     /* 32-bit unicode padded to width 8. */
     assert(test_keysym(0x0101F4A9, "U1F4A9"));
+    /* Surrogates */
+    assert(test_keysym(0x0100d7ff, "UD7FF"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_SURROGATE_MIN, "UD800"));
+    assert(test_keysym(XKB_KEYSYM_UNICODE_SURROGATE_MAX, "UDFFF"));
+    assert(test_keysym(0x0100e000, "UE000"));
+    /* Misc. */
+    assert(test_keysym(0x0100fdcf, "UFDCF"));
+    /* Noncharacters */
+    assert(test_keysym(0x0100fdd0, "UFDD0"));
+    assert(test_keysym(0x0100fdef, "UFDEF"));
+    /* Misc */
+    assert(test_keysym(0x0100fdf0, "UFDF0"));
+    assert(test_keysym(0x0100fffd, "UFFFD"));
+    /* Noncharacters */
+    assert(test_keysym(0x0100fffe, "UFFFE"));
+    assert(test_keysym(0x0100ffff, "UFFFF"));
+    /* Misc */
+    assert(test_keysym(0x01010000, "U10000"));
     /* Max Unicode */
     assert(test_keysym(XKB_KEYSYM_UNICODE_MAX, "U10FFFF"));
     /* Max Unicode + 1 */
@@ -789,17 +871,17 @@ main(void)
     assert(test_utf32_to_keysym(0x10fffd, 0x110fffd));
     assert(test_utf32_to_keysym(0x20ac, XKB_KEY_EuroSign));
 
-    // Unicode non-characters
-    assert(test_utf32_to_keysym(0xd800, XKB_KEY_NoSymbol)); // Unicode surrogates
-    assert(test_utf32_to_keysym(0xdfff, XKB_KEY_NoSymbol)); // Unicode surrogates
-    assert(test_utf32_to_keysym(0xfdd0, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0xfdef, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0xfffe, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0xffff, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0x7fffe, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0x7ffff, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0xafffe, XKB_KEY_NoSymbol));
-    assert(test_utf32_to_keysym(0xaffff, XKB_KEY_NoSymbol));
+    // Unicode noncharacters
+    assert(test_utf32_to_keysym(0xd800, XKB_KEY_NoSymbol)); // Unicode first surrogate
+    assert(test_utf32_to_keysym(0xdfff, XKB_KEY_NoSymbol)); // Unicode last surrogate
+    assert(test_utf32_to_keysym(0xfdd0, 0x100fdd0));
+    assert(test_utf32_to_keysym(0xfdef, 0x100fdef));
+    assert(test_utf32_to_keysym(0xfffe, 0x100fffe));
+    assert(test_utf32_to_keysym(0xffff, 0x100ffff));
+    assert(test_utf32_to_keysym(0x7fffe, 0x107fffe));
+    assert(test_utf32_to_keysym(0x7ffff, 0x107ffff));
+    assert(test_utf32_to_keysym(0xafffe, 0x10afffe));
+    assert(test_utf32_to_keysym(0xaffff, 0x10affff));
 
     // Codepoints outside the Unicode planes
     assert(test_utf32_to_keysym(0x110000, XKB_KEY_NoSymbol));
