@@ -192,7 +192,11 @@ scanner_buf_appends_code_point(struct scanner *s, uint32_t c)
 {
     /* Up to 4 bytes + NULL */
     if (s->buf_pos + 5 <= sizeof(s->buf)) {
-        const int count = utf32_to_utf8(c, s->buf + s->buf_pos);
+        int count = utf32_to_utf8(c, s->buf + s->buf_pos);
+        if (count == 0) {
+            /* Handle encoding failure with U+FFFD REPLACEMENT CHARACTER */
+            count = utf32_to_utf8(0xfffd, s->buf + s->buf_pos);
+        }
         if (count == 0)
             return false;
         /* `count` counts the NULL byte */
@@ -277,18 +281,34 @@ scanner_hex_int64(struct scanner *s, int64_t *out)
     return count;
 }
 
-/** Parser for the hexadecimal number NNNN of \u{NNNN} escape sequences */
+/** Parser for the {NNNN} part of a Unicode escape sequences */
 static inline bool
 scanner_unicode_code_point(struct scanner *s, uint32_t *out)
 {
+    if (!scanner_chr(s, '{'))
+        return false;
+
     uint32_t cp = 0;
     const int count =
         parse_hex_to_uint32_t(s->s + s->pos, s->len - s->pos, &cp);
-    if (count > 0 && cp <= 0x10ffff) {
-        *out = cp;
+    if (count > 0)
         s->pos += count;
-        return true;
+
+    /* Try to consume everything within the string until the next `}` */
+    const size_t last_valid = s->pos;
+    while (!scanner_eof(s) && !scanner_eol(s) && scanner_peek(s) != '"' &&
+           scanner_peek(s) != '}') {
+        scanner_next(s);
     }
+
+    if (scanner_chr(s, '}')) {
+        /* End of the escape sequence; code point may be invalid */
+        *out = cp;
+        return (count > 0 && s->pos == last_valid + 1 && cp <= 0x10ffff);
+    }
+
+    /* No closing `}` within the string: rollback to last valid position */
+    s->pos = last_valid;
     return false;
 }
 

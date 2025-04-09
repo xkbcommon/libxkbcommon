@@ -4,6 +4,14 @@ xkb_keycodes "La_paix_est_la_seule_bataille_qui_vaille_la_peine_d�__�_tre_men�_e
 	maximum = 255;
 	<>                   = 1;
 	indicator 1 = "\n⌨️";
+	indicator 2 = "surrogates: � �";
+	indicator 3 = "noncharacters: ﷐ ﷯ ￾ ￿";
+	indicator 4 = "noncharacters: 🿾 🿿 􏿾 􏿿";
+	indicator 5 = "out of range:  a  ";
+	indicator 6 = "invalid:  a A b  c  e ";
+	indicator 7 = "invalid: x\0042 y ";
+	indicator 8 = "invalid:  x  y";
+	indicator 9 = "     ";
 };
 
 xkb_types "1__7___" {
