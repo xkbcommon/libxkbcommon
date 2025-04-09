@@ -745,6 +745,13 @@ test(
     env: test_env,
 )
 test(
+    'keysym-unicode',
+    executable('test-keysym-unicode', 'test/keysym-unicode.c',
+               dependencies: keysyms_test_dep,
+               c_args: keysyms_test_c_args),
+    env: test_env,
+)
+test(
     'keymap',
     executable(
         'test-keymap',

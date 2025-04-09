@@ -904,14 +904,19 @@ KeySym          :       IDENT
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
-                            else if ($1 < 10) {     /* XKB_KEY_0 .. XKB_KEY_9 */
-                                /* Special case for digits 0..9 */
+                            else if ($1 < 10) {
+                                /* Special case for digits 0..9:
+                                 * map to XKB_KEY_0 .. XKB_KEY_9 */
                                 $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
                             }
                             else {
                                 /* Any other numeric value */
                                 if ($1 <= XKB_KEYSYM_MAX) {
-                                    /* Valid keysym */
+                                    /*
+                                     * Valid keysym
+                                     * No normalization is performed and value
+                                     * is used as is.
+                                     */
                                     $$ = (xkb_keysym_t) $1;
                                     check_deprecated_keysyms(
                                         parser_warn, param, param->ctx,
@@ -925,7 +930,6 @@ KeySym          :       IDENT
                                     );
                                     $$ = XKB_KEY_NoSymbol;
                                 }
-                                /* Any other numeric value */
                                 parser_warn(
                                     param, XKB_WARNING_NUMERIC_KEYSYM,
                                     "numeric keysym \"%#06"PRIx64"\" (%"PRId64")",

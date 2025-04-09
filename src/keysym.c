@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "utils-numbers.h"
@@ -75,7 +76,14 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
     if (index != -1)
         return snprintf(buffer, size, "%s", get_name(&keysym_to_name[index]));
 
-    /* Unnamed Unicode codepoint. */
+    /*
+     * Unnamed Unicode codepoint.
+     * • Keysyms in the range [XKB_KEYSYM_UNICODE_OFFSET, XKB_KEYSYM_UNICODE_MIN [
+     *   do not use the Unicode notation for backward compatibility.
+     * • Keysyms are not normalized: e.g. given a Unicode keysym, calling
+     *   `xkb_utf32_to_keysym` with the corresponding code point may return a
+     *   different keysym or fail (e.g. surrogates are invalid in UTF-32).
+     */
     if (ks >= XKB_KEYSYM_UNICODE_MIN && ks <= XKB_KEYSYM_UNICODE_MAX)
         return get_unicode_name(ks, buffer, size);
 
@@ -286,24 +294,30 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     }
 
     if (*name == 'U' || (icase && *name == 'u')) {
+        /* Parse Unicode notation */
         if (!parse_keysym_hex(&name[1], &val))
             return XKB_KEY_NoSymbol;
-
-        if (val < 0x20 || (val > 0x7e && val < 0xa0)) {
-            /* Exclude control characters */
-            return XKB_KEY_NoSymbol;
-        }
-        if (val < 0x100) {
-            /* ASCII code points have a direct mapping */
-            return (xkb_keysym_t) val;
-        }
-        if (val > 0x10ffff) {
-            /* Invalid Unicode code point */
-            return XKB_KEY_NoSymbol;
-        }
-        return (xkb_keysym_t) val | XKB_KEYSYM_UNICODE_OFFSET;
+        return (val > 0xff && val <= 0x10ffff)
+            /*
+             * No normalization.
+             *
+             * NOTE: It allows surrogates, as we are dealing with Unicode
+             * *code points* here, not Unicode *scalars*.
+             */
+            ? XKB_KEYSYM_UNICODE_OFFSET + val
+            /*
+             * Normalize ISO-8859-1 (Latin-1 + C0 and C1 control code)
+             *
+             * These code points require special processing to ensure
+             * backward compatibility with legacy keysyms.
+             */
+            : xkb_utf32_to_keysym(val);
     }
     else if (name[0] == '0' && (name[1] == 'x' || (icase && name[1] == 'X'))) {
+        /*
+         * Parse numeric hexadecimal notation without any normalization, in
+         * in order to be consistent with the keymap files parsing.
+         */
         if (!parse_keysym_hex(&name[2], &val) || val > XKB_KEYSYM_MAX)
             return XKB_KEY_NoSymbol;
         return (xkb_keysym_t) val;

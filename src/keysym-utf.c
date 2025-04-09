@@ -910,10 +910,12 @@ xkb_utf32_to_keysym(uint32_t ucs)
     if (ucs == (XKB_KEY_Delete & 0x7f))
         return XKB_KEY_Delete;
 
-    /* Unicode non-symbols and code points outside Unicode planes */
-    if (is_surrogate(ucs) ||
-        (ucs >= 0xfdd0 && ucs <= 0xfdef) ||
-        ucs > 0x10ffff || (ucs & 0xfffe) == 0xfffe)
+    /* U+0000 NULL and invalid Unicode code points.
+     * Surrogates are invalid in UTF-32.
+     * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
+     * for further details.
+     */
+    if (unlikely(ucs == 0 || is_surrogate(ucs) || ucs > 0x10ffff))
         return XKB_KEY_NoSymbol;
 
     /* search main table */
@@ -921,7 +923,7 @@ xkb_utf32_to_keysym(uint32_t ucs)
         if (keysymtab[i].ucs == ucs)
             return keysymtab[i].keysym;
 
-    /* Use direct encoding if everything else fails */
+    /* Use direct encoding if everything else failed */
     return ucs | XKB_KEYSYM_UNICODE_OFFSET;
 }
 
