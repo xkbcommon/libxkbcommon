@@ -336,28 +336,32 @@ main(int argc, char *argv[])
                count, should_fail)
     struct test_data special_indexes_first_data[] = {
         /* Test index ranges: layout vs layout[first] */
-        ENTRY("layout_a", NULL, NULL, "symbols_A", 1, false),
-        ENTRY("layout_e", NULL, NULL, "symbols_E+layout_e", 1, false),
+        ENTRY("layout_a", NULL, NULL, "A", 1, false),
+        ENTRY("layout_e", NULL, NULL, "E+layout_e", 1, false),
         ENTRY("a", NULL, NULL, "a", 1, false),
         ENTRY("a", "1", NULL, "a(1)", 1, false),
         /* Test index ranges: invalid layout qualifier */
-        ENTRY("layout_c", NULL, NULL, "symbols_C:1+symbols_z:1", 1, false),
+        ENTRY("layout_c", NULL, NULL, "C:1+z:1", 1, false),
         /* Test index ranges: invalid layout[first] qualifier */
-        ENTRY("layout_d", NULL, NULL, "symbols_D", 1, false),
+        ENTRY("layout_d", NULL, NULL, "D", 1, false),
         /* Test index ranges: multiple layouts */
         ENTRY("a,b", NULL, NULL, "a+b:2", 2, false),
         ENTRY("a,b", ",c", NULL, "a+b(c):2", 2, false),
-        ENTRY("layout_e,layout_a", NULL, NULL, "symbols_e:1+symbols_x:2", 2, false),
+        ENTRY("layout_e,layout_a", NULL, NULL, "e:1+x:2", 2, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d", NULL, NULL,
-              "symbols_a:1+symbols_y:2+layout_c:3+layout_d:4+symbols_z:3", 4, false),
+              "a:1+y:2+layout_c:3+layout_d:4+z:3", 4, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d",
               "extra,,,extra", NULL,
-              "symbols_a:1+symbols_y:2+layout_c:3+layout_d(extra):4+symbols_z:3"
+              "a:1+y:2+layout_c:3+layout_d(extra):4+z:3"
               "+foo:1|bar:1+foo:4|bar:4", 4, false),
         /* NOTE: 5 layouts is intentional;
          * will require update when raising XKB_MAX_LAYOUTS */
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
-              "symbols_a:1+symbols_y:2+layout_c:3+layout_d:4+symbols_z:3", 4, false),
+              "a:1+y:2+layout_c:3+layout_d:4+z:3", 4, false),
+        /* Check that special indexes merge the KcCGST values in the expected order */
+        ENTRY("layout_a,layout_b,layout_c", NULL, "option_3,option_2,option_1",
+              "a:1+y:2+layout_c:3+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
+              3, false),
 #undef ENTRY
         /* Test index ranges: too much layouts */
         ENTRY2("special_indexes-limit", NULL, too_much_layouts, NULL, NULL,
@@ -443,11 +447,8 @@ main(int argc, char *argv[])
               "pc+l10:1+l20:2+l30(v2):3+l2:4", 4, false),
         ENTRY("extended-wild-cards", "l2,l2,l3,l3", "v1,v2,,v1",
               "pc+l40(v1):1+l40(v2):2+l50:3+l50(v1):4", 4, false),
-        /* NOTE: `l4(v2)` (4th LV index) is matched *before* the other LV indexes,
-         *       because with the extended indexes we follow the order of the rules in the
-         *       file, not the RMLVO order. This is similar to options handling. */
         ENTRY("extended-wild-cards", "l3,l4,l4,l4", "v2,,v1,v2",
-              "pc+l50(v2):1+l4(v20):4+l4:2+l4(v1):3", 4, false),
+              "pc+l50(v2):1+l4:2+l4(v1):3+l4(v20):4", 4, false),
     };
 
     for (size_t k = 0; k < ARRAY_SIZE(extended_wild_cards_data); k++) {
