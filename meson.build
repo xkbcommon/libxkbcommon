@@ -994,16 +994,16 @@ benchmark(
     ),
 )
 benchmark(
-    'rules',
-    executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
     'rulescomp',
     executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
     env: bench_env,
 )
 if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
+    benchmark(
+        'rules',
+        executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
+        env: bench_env,
+    )
     benchmark(
         'compile-keymap',
         executable(
