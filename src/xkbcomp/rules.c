@@ -13,6 +13,8 @@
 #include <assert.h>
 #include <limits.h>
 
+#include "darray.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "rules.h"
 #include "include.h"
@@ -252,6 +254,23 @@ struct rule {
     bool skip;
 };
 
+#define SLICE_KCCGST_BIT_FIELD_SIZE 4
+static_assert(!((1u << (SLICE_KCCGST_BIT_FIELD_SIZE - 1)) &
+                (_KCCGST_NUM_ENTRIES - 1)),
+              "Cannot encode KcCGST enum safely (need space for the sign)");
+struct kccgst_buffer_slice {
+    uint32_t length:(32 - SLICE_KCCGST_BIT_FIELD_SIZE);
+    enum rules_kccgst kccgst:SLICE_KCCGST_BIT_FIELD_SIZE;
+    xkb_layout_index_t layout;
+};
+
+/* Buffer for pending KcCGST values */
+struct kccgst_buffer {
+    darray_char buffer;
+    /* Slice corresponding to each value in the buffer */
+    darray(struct kccgst_buffer_slice) slices;
+};
+
 /*
  * This is the main object used to match a given RMLVO against a rules
  * file and aggregate the results in a KcCGST. It goes through a simple
@@ -268,6 +287,12 @@ struct matcher {
     struct mapping mapping;
     /* Current rule. */
     struct rule rule;
+    /*
+     * Buffers for pending KcCGST values. Required in case of using layout
+     * index ranges, to ensure that the values are merged in the expected order.
+     * See the note: “Layout index ranges and merging KcCGST values”.
+     */
+    struct kccgst_buffer pending_kccgst;
     /* Output. */
     darray_char kccgst[_KCCGST_NUM_ENTRIES];
 };
@@ -346,14 +371,16 @@ matcher_new(struct xkb_context *ctx,
 static void
 matcher_free(struct matcher *m)
 {
-    struct group *group;
     if (!m)
         return;
     darray_free(m->rmlvo.layouts);
     darray_free(m->rmlvo.variants);
     darray_free(m->rmlvo.options);
+    struct group *group;
     darray_foreach(group, m->groups)
         darray_free(group->elements);
+    darray_free(m->pending_kccgst.buffer);
+    darray_free(m->pending_kccgst.slices);
     for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
         darray_free(m->kccgst[i]);
     darray_free(m->groups);
@@ -1118,19 +1145,42 @@ expand_qualifier_in_kccgst_value(
     }
 }
 
+static inline void
+#ifdef _MSC_VER
+concat_kccgst(darray_char *into, size_t size, _In_reads_(size) const char* from)
+#else
+concat_kccgst(darray_char *into, size_t size, const char from[static size])
+#endif
+{
+    /*
+     * Appending  bar to  foo ->  foo (not an error if this happens)
+     * Appending +bar to  foo ->  foo+bar
+     * Appending  bar to +foo ->  bar+foo
+     * Appending +bar to +foo -> +foo+bar
+     */
+    const bool from_plus = is_merge_mode_prefix(from[0]);
+    if (from_plus || darray_empty(*into)) {
+        darray_appends_nullterminate(*into, from, size);
+    } else {
+        const char ch =
+            (char) (darray_empty(*into) ? '\0' : darray_item(*into, 0));
+        const bool into_plus = is_merge_mode_prefix(ch);
+        if (into_plus)
+            darray_prepends_nullterminate(*into, from, size);
+    }
+}
+
 /*
  * This function performs %-expansion and :all-expansion on @value
  * (see overview above), and appends the result to @to.
  */
 static bool
 append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
-                             darray_char *to, struct sval value,
+                             bool merge, darray_char *to, struct sval value,
                              xkb_layout_index_t layout_idx)
 {
     const char *str = value.start;
     darray_char expanded = darray_new();
-    char ch;
-    bool expanded_plus, to_plus;
     unsigned int last_item_idx = 0;
     bool has_separator = false;
 
@@ -1167,33 +1217,55 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
         }
     }
 
-    /*
-     * Appending  bar to  foo ->  foo (not an error if this happens)
-     * Appending +bar to  foo ->  foo+bar
-     * Appending  bar to +foo ->  bar+foo
-     * Appending +bar to +foo -> +foo+bar
-     */
-
-    ch = (char) (darray_empty(expanded) ? '\0' : darray_item(expanded, 0));
-    expanded_plus = is_merge_mode_prefix(ch);
-    ch = (char) (darray_empty(*to) ? '\0' : darray_item(*to, 0));
-    to_plus = is_merge_mode_prefix(ch);
-
-    if (expanded_plus || darray_empty(*to))
-        darray_appends_nullterminate(*to,
-                                     darray_items(expanded),
-                                     darray_size(expanded));
-    else if (to_plus)
-        darray_prepends_nullterminate(*to,
-                                      darray_items(expanded),
-                                      darray_size(expanded));
-
+    /* See note: “Layout index ranges and merging KcCGST values” */
+    if (merge) {
+        if (!darray_empty(expanded))
+            concat_kccgst(to, darray_size(expanded), darray_items(expanded));
+    } else {
+        darray_concat(*to, expanded);
+    }
     darray_free(expanded);
     return true;
 
 error:
     darray_free(expanded);
     return false;
+}
+
+static bool
+matcher_append_pending_kccgst(struct matcher *m)
+{
+    if (!m->mapping.has_layout_idx_range)
+        return true;
+    /*
+     * Handle pending KcCGST values
+     * See note: “Layout index ranges and merging KcCGST values”
+     */
+    for (unsigned int i = 0; i < m->mapping.num_kccgst; i++) {
+        const enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+        /* For each relevant layout, append the relevant KcCGST values to
+         * the output. */
+        for (xkb_layout_index_t layout = m->mapping.layout_idx_min;
+             layout < m->mapping.layout_idx_max;
+             layout++) {
+            /* There may be multiple values to add if the rule set involved
+             * options. Process them sequentially. */
+            register const struct kccgst_buffer* const buf = &m->pending_kccgst;
+            size_t offset = 0;
+            for (unsigned k = 0; k < darray_size(buf->slices); k++) {
+                register const struct kccgst_buffer_slice * const slice =
+                    &darray_item(buf->slices, k);
+                if (slice->kccgst == kccgst && slice->layout == layout &&
+                    slice->length)
+                    concat_kccgst(&m->kccgst[kccgst], slice->length,
+                                  darray_items(buf->buffer) + offset);
+                offset += slice->length;
+            }
+        }
+    }
+    /* Ensure we won’t come here before the next relevant rule set */
+    m->mapping.has_layout_idx_range = false;
+    return true;
 }
 
 static void
@@ -1289,10 +1361,58 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         {
             if (candidate_layouts & (UINT32_C(1) << idx)) {
                 for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
-                    enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
-                    struct sval value = m->rule.kccgst_value_at_pos[i];
-                    append_expanded_kccgst_value(m, s, &m->kccgst[kccgst],
+                    const enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
+                    const struct sval value = m->rule.kccgst_value_at_pos[i];
+                    /*
+                     * [NOTE] Layout index ranges and merging KcCGST values
+                     *
+                     * Layout indexes match following first the order of the
+                     * rules in the file, then their natural order. So do not
+                     * merge with the output for now but buffer the resulting
+                     * KcCGST value and wait reaching the end of the rule set.
+                     *
+                     * Because the rule set may also involve options, it may
+                     * match multiple times for the *same* layout index. So
+                     * buffer the result of *each* match.
+                     *
+                     * When the end of the rule set is reached, merge buffered
+                     * KcCGST sequentially, following first the layouts order,
+                     * then the order of the rules in the file.
+                     *
+                     * Example:
+                     *
+                     * ! model = symbols
+                     *   *     = pc
+                     * ! layout[any] option = symbols
+                     *   C           1      = +c1:%i
+                     *   C           2      = +c2:%i
+                     *   B           3      = skip
+                     *   B           4      = +b:%i
+                     *
+                     * The result of {layout: "A,B,C", options: "4,3,2,1"} is:
+                     * symbols = pc+b:2+c1:3+c2:3.
+                     *
+                     * - `skip` was dropped because it has no explicit merge
+                     *   mode;
+                     * - although every rule was matched in order, the resulting
+                     *   order of the symbols follows the order of the layouts,
+                     *   so `+b` appears before `+c1` and `+c2`.
+                     * - the relative order of the options for layout C follows
+                     *   the order within the rule set, not the order of RMLVO.
+                     */
+                    register struct kccgst_buffer * const buf =
+                        &m->pending_kccgst;
+                    const size_t prev_buffer_length = darray_size(buf->buffer);
+                    append_expanded_kccgst_value(m, s, false, &buf->buffer,
                                                  value, idx);
+                    const uint32_t length = (uint32_t) (darray_size(buf->buffer)
+                                          - prev_buffer_length);
+                    const struct kccgst_buffer_slice slice = {
+                        .length = length,
+                        .kccgst = kccgst,
+                        .layout = idx
+                    };
+                    darray_append(buf->slices, slice);
                 }
             }
         }
@@ -1301,7 +1421,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
             enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
             struct sval value = m->rule.kccgst_value_at_pos[i];
-            append_expanded_kccgst_value(m, s, &m->kccgst[kccgst], value,
+            append_expanded_kccgst_value(m, s, true, &m->kccgst[kccgst], value,
                                          m->mapping.layout_idx_min);
         }
     }
@@ -1415,8 +1535,15 @@ mapping_kccgst:
             matcher_mapping_set_kccgst(m, s, m->val.string);
         goto mapping_kccgst;
     case TOK_END_OF_LINE:
-        if (m->mapping.active && matcher_mapping_verify(m, s))
+        if (m->mapping.active && matcher_mapping_verify(m, s)) {
             matcher_mapping_set_layout_bounds(m);
+            if (m->mapping.has_layout_idx_range) {
+                /* Lazily reset buffers for layout index ranges.
+                 * We’ll reuse the allocations. */
+                darray_size(m->pending_kccgst.buffer) = 0;
+                darray_size(m->pending_kccgst.slices) = 0;
+            }
+        }
         goto rule_mlvo_first;
     default:
         goto unexpected;
@@ -1425,10 +1552,12 @@ mapping_kccgst:
 rule_mlvo_first:
     switch (tok = gettok(m, s)) {
     case TOK_BANG:
+        matcher_append_pending_kccgst(m);
         goto bang;
     case TOK_END_OF_LINE:
         goto rule_mlvo_first;
     case TOK_END_OF_FILE:
+        matcher_append_pending_kccgst(m);
         goto finish;
     default:
         matcher_rule_start_new(m);
