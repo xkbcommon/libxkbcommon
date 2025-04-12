@@ -829,7 +829,7 @@ include "<PATH>"
 include "<PATH>(<SECTION_NAME>)"
 ```
 
-will include data from another [section] of the *same type*, possibly located in
+will merge data from another [section] of the *same type*, possibly located in
 another file. Note that the statement does not have a trailing semicolon.
 
 If no section name is provided, the [default map] is looked up.
@@ -871,6 +871,14 @@ override "<PATH_1>|<PATH_2>(<SECTION_NAME>)
 ```
 
 #### Processing
+
+@important Since xkbcommon 1.9.0 the included files are processed in *isolation*
+and are not affected by the parent file (e.g. defaults), except for the virtual
+modifiers indexes.
+
+@important Since xkbcommon 1.9.0 local merge modes are *not* propagated outside
+the section scope, i.e. an included file does not leaks its local merge modes to
+its parent.
 
 The statement is processed as follow:
 1. Set PARENT as the current [section] containing the include statement.
