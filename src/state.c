@@ -948,33 +948,6 @@ xkb_state_update_mask(struct xkb_state *state,
     return get_state_component_changes(&prev_components, &state->components);
 }
 
-/**
- * Provides the symbols to use for the given key and state.  Returns the
- * number of symbols pointed to in syms_out.
- */
-int
-xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
-                       const xkb_keysym_t **syms_out)
-{
-    xkb_layout_index_t layout;
-    xkb_level_index_t level;
-
-    layout = xkb_state_key_get_layout(state, kc);
-    if (layout == XKB_LAYOUT_INVALID)
-        goto err;
-
-    level = xkb_state_key_get_level(state, kc, layout);
-    if (level == XKB_LEVEL_INVALID)
-        goto err;
-
-    return xkb_keymap_key_get_syms_by_level(state->keymap, kc, layout, level,
-                                            syms_out);
-
-err:
-    *syms_out = NULL;
-    return 0;
-}
-
 /*
  * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Lock_Modifier
  */
@@ -997,6 +970,61 @@ should_do_ctrl_transformation(struct xkb_state *state, xkb_keycode_t kc)
         xkb_state_mod_index_is_active(state, XKB_MOD_INDEX_CTRL,
                                       XKB_STATE_MODS_EFFECTIVE) > 0 &&
         xkb_state_mod_index_is_consumed(state, kc, XKB_MOD_INDEX_CTRL) == 0;
+}
+
+/**
+ * Provides the symbols to use for the given key and state.  Returns the
+ * number of symbols pointed to in syms_out.
+ */
+int
+xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
+                       const xkb_keysym_t **syms_out)
+{
+    xkb_layout_index_t layout;
+    xkb_level_index_t level;
+
+    layout = xkb_state_key_get_layout(state, kc);
+    if (layout == XKB_LAYOUT_INVALID)
+        goto err;
+
+    level = xkb_state_key_get_level(state, kc, layout);
+    if (level == XKB_LEVEL_INVALID)
+        goto err;
+
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
+
+    if (!key)
+        goto err;
+
+    const struct xkb_level* const leveli =
+        xkb_keymap_key_get_level(state->keymap, key, layout, level);
+
+    if (!leveli)
+        goto err;
+
+    const xkb_keysym_count_t num_syms = leveli->num_syms;
+    if (num_syms == 0)
+        goto err;
+
+    if (should_do_caps_transformation(state, kc)) {
+        /* Only simple capitalization rules: keysyms count is unchanged. */
+        if (num_syms > 1) {
+            *syms_out = (leveli->has_upper)
+                      ? leveli->s.syms + num_syms
+                      : leveli->s.syms;
+        } else {
+            *syms_out = &leveli->upper;
+        }
+    } else {
+        *syms_out = (num_syms > 1)
+                  ? leveli->s.syms
+                  : &leveli->s.sym;
+    }
+    return (int) num_syms;
+
+err:
+    *syms_out = NULL;
+    return 0;
 }
 
 /*
@@ -1051,19 +1079,12 @@ xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
     const xkb_keysym_t *syms;
-    xkb_keysym_t sym;
-    int num_syms;
+    const int num_syms = xkb_state_key_get_syms(state, kc, &syms);
 
-    num_syms = xkb_state_key_get_syms(state, kc, &syms);
     if (num_syms != 1)
         return XKB_KEY_NoSymbol;
-
-    sym = syms[0];
-
-    if (should_do_caps_transformation(state, kc))
-        sym = xkb_keysym_to_upper(sym);
-
-    return sym;
+    else
+        return syms[0];
 }
 
 /*

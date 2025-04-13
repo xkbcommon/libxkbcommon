@@ -468,6 +468,23 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
     return count;
 }
 
+struct xkb_level *
+xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
+                         xkb_layout_index_t layout, xkb_level_index_t level)
+{
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
+                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_number);
+    if (layout == XKB_LAYOUT_INVALID)
+        return NULL;
+
+    if (level >= XkbKeyNumLevels(key, layout))
+        return NULL;
+
+    return &key->groups[layout].levels[level];
+}
+
 /**
  * As below, but takes an explicit layout/level rather than state.
  */
@@ -483,25 +500,20 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     if (!key)
         goto err;
 
-    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
-    layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
-                                   key->out_of_range_group_action,
-                                   key->out_of_range_group_number);
-    if (layout == XKB_LAYOUT_INVALID)
+    const struct xkb_level* const leveli =
+        xkb_keymap_key_get_level(keymap, key, layout, level);
+
+    if (!leveli)
         goto err;
 
-    if (level >= XkbKeyNumLevels(key, layout))
-        goto err;
-
-    const xkb_keysym_count_t num_syms =
-        key->groups[layout].levels[level].num_syms;
+    const xkb_keysym_count_t num_syms = leveli->num_syms;
     if (num_syms == 0)
         goto err;
 
     if (num_syms == 1)
-        *syms_out = &key->groups[layout].levels[level].s.sym;
+        *syms_out = &leveli->s.sym;
     else
-        *syms_out = key->groups[layout].levels[level].s.syms;
+        *syms_out = leveli->s.syms;
 
     return (int) num_syms;
 

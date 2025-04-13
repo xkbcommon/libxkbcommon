@@ -286,6 +286,14 @@ struct xkb_level {
     xkb_keysym_count_t num_syms;
     /** Count of actions */
     xkb_action_count_t num_actions;
+    /** Upper keysym */
+    union {
+        /** num_syms == 1: Upper keysym */
+        xkb_keysym_t upper;
+        /** num_syms >  1: Indicate if `syms` contains the upper case keysyms
+         *                 after the lower ones. */
+        bool has_upper;
+    };
     /** Keysyms */
     union {
         xkb_keysym_t sym;          /* num_syms == 1 */
@@ -520,6 +528,10 @@ XkbWrapGroupIntoRange(int32_t group,
 
 xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
+
+struct xkb_level *
+xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
+                         xkb_layout_index_t layout, xkb_level_index_t level);
 
 unsigned int
 xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
