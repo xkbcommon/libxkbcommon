@@ -493,7 +493,8 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
     if (level >= XkbKeyNumLevels(key, layout))
         goto err;
 
-    const unsigned int num_syms = key->groups[layout].levels[level].num_syms;
+    const xkb_keysym_count_t num_syms =
+        key->groups[layout].levels[level].num_syms;
     if (num_syms == 0)
         goto err;
 

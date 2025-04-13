@@ -19,6 +19,9 @@
 
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
+
+#include <stdint.h>
+
 #include "xkbcommon/xkbcommon.h"
 
 #include "utils.h"
@@ -210,6 +213,9 @@ struct xkb_key_type {
     struct xkb_key_type_entry *entries;
 };
 
+typedef uint16_t xkb_action_count_t;
+#define MAX_ACTIONS_PER_LEVEL UINT16_MAX
+
 struct xkb_sym_interpret {
     xkb_keysym_t sym;
     enum xkb_match_operation match;
@@ -217,7 +223,7 @@ struct xkb_sym_interpret {
     xkb_mod_index_t virtual_mod;
     bool level_one_only;
     bool repeat;
-    unsigned int num_actions;
+    xkb_action_count_t num_actions;
     union {
         /* num_actions <= 1 */
         union xkb_action action;
@@ -271,17 +277,21 @@ enum xkb_explicit_components {
     EXPLICIT_REPEAT = (1 << 4),
 };
 
+typedef uint16_t xkb_keysym_count_t;
+#define MAX_KEYSYMS_PER_LEVEL UINT16_MAX
+
+/** A key level */
 struct xkb_level {
-    /* Count of keysyms */
-    unsigned int num_syms;
-    /* Count of actions */
-    unsigned int num_actions;
-    /* Keysyms */
+    /** Count of keysyms */
+    xkb_keysym_count_t num_syms;
+    /** Count of actions */
+    xkb_action_count_t num_actions;
+    /** Keysyms */
     union {
         xkb_keysym_t sym;          /* num_syms == 1 */
         xkb_keysym_t *syms;        /* num_syms > 1  */
     } s;
-    /* Actions */
+    /** Actions */
     union {
         union xkb_action action;   /* num_actions == 1 */
         union xkb_action *actions; /* num_actions >  1 */

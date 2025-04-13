@@ -824,7 +824,16 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         struct xkb_level *leveli = &darray_item(groupi->levels, level);
         assert(leveli->num_syms == 0);
 
-        leveli->num_syms = darray_size(keysymList->syms);
+        if (unlikely(darray_size(keysymList->syms) > MAX_KEYSYMS_PER_LEVEL)) {
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Key %s has too many keysyms for group %u, level %u; "
+                    "expected max %u, got: %u\n",
+                    KeyInfoText(info, keyi), ndx + 1, level + 1,
+                    MAX_KEYSYMS_PER_LEVEL, darray_size(keysymList->syms));
+            return false;
+        }
+
+        leveli->num_syms = (xkb_keysym_count_t) darray_size(keysymList->syms);
         switch (leveli->num_syms) {
         case 0:
             leveli->s.sym = XKB_KEY_NoSymbol;
@@ -838,7 +847,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             darray_steal(keysymList->syms, &leveli->s.syms, NULL);
 #ifndef NDEBUG
             /* Canonical list: all NoSymbol were dropped */
-            for (unsigned int k = 0; k < leveli->num_syms; k++)
+            for (xkb_keysym_count_t k = 0; k < leveli->num_syms; k++)
                 assert(leveli->s.syms[k] != XKB_KEY_NoSymbol);
 #endif
         }
@@ -902,6 +911,15 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
              act; act = (ExprDef *) act->common.next)
             num_actions++;
 
+        if (unlikely(num_actions > MAX_ACTIONS_PER_LEVEL)) {
+            log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Key %s has too many actions for group %u, level %u; "
+                    "expected max %u, got: %u\n",
+                    KeyInfoText(info, keyi), ndx + 1, level + 1,
+                    MAX_ACTIONS_PER_LEVEL, num_actions);
+            return false;
+        }
+
         /* Parse actions and add only defined actions */
         darray(union xkb_action) actions = darray_new();
         unsigned int act_index = 0;
@@ -928,12 +946,12 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         if (darray_empty(actions)) {
             leveli->num_actions = 0;
         } else if (likely(darray_size(actions) > 1)) {
-            leveli->num_actions = darray_size(actions);
+            leveli->num_actions = (xkb_action_count_t) darray_size(actions);
             darray_shrink(actions);
             darray_steal(actions, &leveli->a.actions, NULL);
 #ifndef NDEBUG
             /* Canonical list: all NoAction() were dropped */
-            for (unsigned int k = 0; k < leveli->num_actions; k++)
+            for (xkb_action_count_t k = 0; k < leveli->num_actions; k++)
                 assert(leveli->a.actions[k].type != ACTION_TYPE_NONE);
 #endif
         } else {

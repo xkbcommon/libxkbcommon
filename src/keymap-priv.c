@@ -198,7 +198,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
         return false;
     if (a->num_actions <= 1)
         return action_equal(&a->a.action, &b->a.action);
-    for (unsigned int k = 0; k < a->num_actions; k++) {
+    for (xkb_action_count_t k = 0; k < a->num_actions; k++) {
         if (!action_equal(&a->a.actions[k], &b->a.actions[k]))
             return false;
     }
@@ -274,7 +274,8 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
     if (level >= XkbKeyNumLevels(key, layout))
         goto err;
 
-    const unsigned int count = key->groups[layout].levels[level].num_actions;
+    const xkb_action_count_t count =
+        key->groups[layout].levels[level].num_actions;
     switch (count) {
         case 0:
             goto err;
@@ -284,7 +285,7 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
         default:
             *actions = key->groups[layout].levels[level].a.actions;
     }
-    return count;
+    return (int) count;
 
 err:
     *actions = NULL;

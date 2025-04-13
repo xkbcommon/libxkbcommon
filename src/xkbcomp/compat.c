@@ -500,6 +500,14 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                  act; act = (ExprDef *) act->common.next)
                  num_actions++;
 
+            if (num_actions > MAX_ACTIONS_PER_LEVEL) {
+                log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "Interpret %s has too many actions; "
+                        "expected max %u, got: %u\n",
+                        siText(si, info), MAX_ACTIONS_PER_LEVEL, num_actions);
+                return false;
+            }
+
             si->interp.num_actions = 0;
             si->interp.a.action.type = ACTION_TYPE_NONE;
 
@@ -538,8 +546,9 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             default:
                 /* Multiple actions; no NoAction() left */
                 darray_shrink(actions);
-                darray_steal(actions, &si->interp.a.actions,
-                             &si->interp.num_actions);
+                si->interp.num_actions =
+                    (xkb_action_count_t) darray_size(actions);
+                darray_steal(actions, &si->interp.a.actions, NULL);
             }
         }
         else if (HandleActionDef(info->ctx, &info->default_actions, &info->mods,

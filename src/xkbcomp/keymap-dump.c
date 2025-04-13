@@ -606,7 +606,7 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
         if (si->num_actions > 1) {
             copy_to_buf(buf, "\n\t\taction= {");
             const char suffix[] = ", ";
-            for (unsigned int k = 0; k < si->num_actions; k++) {
+            for (xkb_action_count_t k = 0; k < si->num_actions; k++) {
                 if (!write_action(keymap, buf, &si->a.actions[k], "", suffix))
                     return false;
             }
