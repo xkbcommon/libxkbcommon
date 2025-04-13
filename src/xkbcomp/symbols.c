@@ -834,17 +834,8 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
             assert(leveli->s.sym != XKB_KEY_NoSymbol);
             break;
         default:
-            leveli->s.syms =
-                calloc(leveli->num_syms, sizeof(*leveli->s.syms));
-            if (!leveli->s.syms) {
-                leveli->num_syms = 0;
-                log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
-                        "Could not allocate keysyms\n");
-                return false;
-            }
-            memcpy(leveli->s.syms,
-                   &darray_item(keysymList->syms, 0),
-                   leveli->num_syms * sizeof(*leveli->s.syms));
+            darray_shrink(keysymList->syms);
+            darray_steal(keysymList->syms, &leveli->s.syms, NULL);
 #ifndef NDEBUG
             /* Canonical list: all NoSymbol were dropped */
             for (unsigned int k = 0; k < leveli->num_syms; k++)
