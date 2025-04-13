@@ -13,6 +13,7 @@
 
 #include <string.h>
 
+#include "keymap.h"
 #include "darray.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
@@ -197,7 +198,18 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             }
 
             /* Copy the actions */
-            key->groups[group].levels[level].num_actions = darray_size(actions);
+            if (unlikely(darray_size(actions)) > MAX_ACTIONS_PER_LEVEL) {
+                log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                         "Could not append interpret actions to key %s: "
+                         "maximum is %u, got: %u. Dropping excessive actions\n",
+                         KeyNameText(keymap->ctx, key->name),
+                         MAX_ACTIONS_PER_LEVEL, darray_size(actions));
+                key->groups[group].levels[level].num_actions =
+                    MAX_ACTIONS_PER_LEVEL;
+            } else {
+                key->groups[group].levels[level].num_actions =
+                    (xkb_action_count_t) darray_size(actions);
+            }
             switch (darray_size(actions)) {
                 case 0:
                     key->groups[group].levels[level].a.action =
@@ -210,7 +222,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                 default:
                     key->groups[group].levels[level].a.actions =
                         memdup(darray_items(actions),
-                               darray_size(actions),
+                               key->groups[group].levels[level].num_actions,
                                sizeof(*darray_items(actions)));
                     if (!key->groups[group].levels[level].a.actions) {
                         log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
@@ -261,13 +273,13 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
             struct xkb_level *level = &key->groups[g].levels[l];
             if (level->num_actions <= 1)
                 continue;
-            for (unsigned i = 0; i < level->num_actions; i++) {
+            for (xkb_action_count_t i = 0; i < level->num_actions; i++) {
                 union xkb_action *action1 = &level->a.actions[i];
                 bool mod_action = is_mod_action(action1);
                 bool group_action = is_group_action(action1);
                 if (!(mod_action || group_action))
                     continue;
-                for (unsigned j = i + 1; j < level->num_actions; j++) {
+                for (xkb_action_count_t j = i + 1; j < level->num_actions; j++) {
                     union xkb_action *action2 = &level->a.actions[j];
                     if ((mod_action && is_mod_action(action2)) ||
                         (group_action && is_group_action(action2)))
