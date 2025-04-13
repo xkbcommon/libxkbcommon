@@ -17,10 +17,20 @@
 #include "utils.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
+#include "src/keysym.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
  * keycode set (where ESC is 9). */
 #define EVDEV_OFFSET 8
+
+/* S sharp
+ * • U+00DF ß: lower case
+ * •       SS: upper case (special mapping, not handled by us)
+ * • U+1E9E ẞ: upper case, only for capitals
+ */
+#ifndef XKB_KEY_Ssharp
+#define XKB_KEY_Ssharp (XKB_KEYSYM_UNICODE_OFFSET + 0x1E9E)
+#endif
 
 /* Reference implementation from XkbAdjustGroup in Xorg xserver */
 static int32_t
@@ -1275,11 +1285,29 @@ test_range(struct xkb_keymap *keymap)
 }
 
 static void
-test_caps_keysym_transformation(struct xkb_keymap *keymap)
+test_caps_keysym_transformation(struct xkb_context *context)
 {
     int nsyms;
     xkb_keysym_t sym;
     const xkb_keysym_t *syms;
+
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        " xkb_keycodes { include \"evdev\" };\n"
+        " xkb_compat { include \"basic\" };\n"
+        " xkb_types { include \"complete\" };\n"
+        " xkb_symbols {\n"
+        "  include \"pc+ch(fr)\"\n"
+        "  key <AE13> { [{oe, ssharp}, {ae, s, s}] };"
+        "  key <AB11> { [{3, ntilde}] };"
+        "  replace key <RCTL> { [{Control_R, ISO_Next_Group}] };"
+        " };"
+        "};";
+
+    struct xkb_keymap* const keymap =
+        test_compile_buffer(context, keymap_str, sizeof(keymap_str));
+    assert(keymap);
+
     xkb_mod_index_t shift = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
     xkb_mod_index_t caps = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
     struct xkb_state *state = xkb_state_new(keymap);
@@ -1301,6 +1329,21 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     assert(sym == XKB_KEY_eacute);
     nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
     assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
+    assert(xkb_state_key_get_level(state, KEY_YEN + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_YEN + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_YEN + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_oe && syms[1] == XKB_KEY_ssharp);
+    assert(xkb_state_key_get_level(state, KEY_RO + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RO + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RO + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_3 && syms[1] == XKB_KEY_ntilde);
+    assert(xkb_state_key_get_level(state, KEY_RIGHTCTRL + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RIGHTCTRL + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RIGHTCTRL + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_Control_R && syms[1] == XKB_KEY_ISO_Next_Group);
 
     /* With shift, no transformation (only different level). */
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -1313,10 +1356,25 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     assert(sym == XKB_KEY_odiaeresis);
     nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
     assert(nsyms == 1 && syms[0] == XKB_KEY_odiaeresis);
+    assert(xkb_state_key_get_level(state, KEY_YEN + EVDEV_OFFSET, 0) == 1);
+    sym = xkb_state_key_get_one_sym(state, KEY_YEN + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_YEN + EVDEV_OFFSET, &syms);
+    assert(nsyms == 3 && syms[0] == XKB_KEY_ae && syms[1] == XKB_KEY_s && syms[2] == XKB_KEY_s);
+    assert(xkb_state_key_get_level(state, KEY_RO + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RO + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RO + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_3 && syms[1] == XKB_KEY_ntilde);
+    assert(xkb_state_key_get_level(state, KEY_RIGHTCTRL + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RIGHTCTRL + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RIGHTCTRL + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_Control_R && syms[1] == XKB_KEY_ISO_Next_Group);
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
 
-    /* With caps, transform in same level, only with _get_one_sym(). */
+    /* With caps, transform in same level. */
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, caps, XKB_STATE_MODS_EFFECTIVE) > 0);
@@ -1328,13 +1386,29 @@ test_caps_keysym_transformation(struct xkb_keymap *keymap)
     sym = xkb_state_key_get_one_sym(state, KEY_SEMICOLON + EVDEV_OFFSET);
     assert(sym == XKB_KEY_Eacute);
     nsyms = xkb_state_key_get_syms(state, KEY_SEMICOLON + EVDEV_OFFSET, &syms);
-    assert(nsyms == 1 && syms[0] == XKB_KEY_eacute);
+    assert(nsyms == 1 && syms[0] == XKB_KEY_Eacute);
+    assert(xkb_state_key_get_level(state, KEY_YEN + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_YEN + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_YEN + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_OE && syms[1] == XKB_KEY_Ssharp);
+    assert(xkb_state_key_get_level(state, KEY_RO + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RO + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RO + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_3 && syms[1] == XKB_KEY_Ntilde);
+    assert(xkb_state_key_get_level(state, KEY_RIGHTCTRL + EVDEV_OFFSET, 0) == 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_RIGHTCTRL + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_NoSymbol);
+    nsyms = xkb_state_key_get_syms(state, KEY_RIGHTCTRL + EVDEV_OFFSET, &syms);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_Control_R && syms[1] == XKB_KEY_ISO_Next_Group);
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_index_is_active(state, shift, XKB_STATE_MODS_EFFECTIVE) == 0);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
 
     xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
 }
 
 static void
@@ -1696,12 +1770,9 @@ main(void)
     test_overlapping_mods(context);
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(context, "evdev", NULL, "ch", "fr", NULL);
-    assert(keymap);
 
-    test_caps_keysym_transformation(keymap);
+    test_caps_keysym_transformation(context);
 
-    xkb_keymap_unref(keymap);
     test_leds(context);
     test_multiple_actions(context);
 

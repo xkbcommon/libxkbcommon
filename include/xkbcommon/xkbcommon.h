@@ -433,8 +433,8 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * as described in the XKB specification.  These are:
  *
  * - Capitalization transformation.  If the Caps Lock modifier is
- *   active and was not consumed by the translation process, a single
- *   keysym is transformed to its upper-case form (if applicable).
+ *   active and was not consumed by the translation process, keysyms
+ *   are transformed to their upper-case form (if applicable).
  *   Similarly, the UTF-8/UTF-32 string produced is capitalized.
  *
  *   This is described in:
@@ -1551,14 +1551,15 @@ xkb_state_update_mask(struct xkb_state *state,
  * If you do not want to handle this case, you can use
  * xkb_state_key_get_one_sym() for a simpler interface.
  *
- * This function does not perform any @ref keysym-transformations.
- * (This might change).
- *
  * @returns The number of keysyms in the syms_out array.  If no keysyms
  * are produced by the key in the given keyboard state, returns 0 and sets
  * syms_out to NULL.
  *
+ * This function performs Capitalization @ref keysym-transformations.
+ *
  * @memberof xkb_state
+ *
+ * @since 1.9.0 This function now performs @ref keysym-transformations.
  */
 XKB_EXPORT int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,

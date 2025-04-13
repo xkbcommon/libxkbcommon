@@ -20,6 +20,7 @@
 #include "darray.h"
 #include "keymap.h"
 #include "xkbcomp-priv.h"
+#include "darray.h"
 #include "text.h"
 #include "expr.h"
 #include "action.h"
@@ -1736,11 +1737,57 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     /* Copy levels. */
     darray_enumerate(i, groupi, keyi->groups) {
+        /*
+         * Compute the capitalization transformation of the keysyms.
+         * This is necessary because `xkb_state_key_get_syms()` returns an
+         * immutable array and does not use a buffer, so we must store them.
+         * We apply only simple capitalization rules, so the keysyms count is
+         * unchanged.
+         */
+        struct xkb_level *leveli;
+        darray_foreach(leveli, groupi->levels) {
+            switch (leveli->num_syms) {
+            case 0:
+                leveli->upper = XKB_KEY_NoSymbol;
+                break;
+            case 1:
+                leveli->upper = xkb_keysym_to_upper(leveli->s.sym);
+                break;
+            default:
+                /* Multiple keysyms: check if there is any cased keysym */
+                leveli->has_upper = false;
+                for (xkb_keysym_count_t k = 0; k < leveli->num_syms; k++) {
+                    const xkb_keysym_t upper =
+                        xkb_keysym_to_upper(leveli->s.syms[k]);
+                    if (upper != leveli->s.syms[k]) {
+                        leveli->has_upper = true;
+                        break;
+                    }
+                }
+                if (leveli->has_upper) {
+                    /*
+                     * Some cased keysyms: store the transformation result in
+                     * the same array, right after the original keysyms.
+                     */
+                    leveli->s.syms = realloc(leveli->s.syms,
+                                             (size_t) 2 * leveli->num_syms *
+                                             sizeof(*leveli->s.syms));
+                    if (!leveli->s.syms)
+                        return false; /* FIXME: better handling? */
+                    for (xkb_keysym_count_t k = 0; k < leveli->num_syms; k++) {
+                        leveli->s.syms[leveli->num_syms + k] =
+                            xkb_keysym_to_upper(leveli->s.syms[k]);
+                    }
+                }
+            }
+        }
+
+        /* Copy the level */
         darray_steal(groupi->levels, &key->groups[i].levels, NULL);
         if (key->groups[i].type->num_levels > 1 ||
             key->groups[i].levels[0].num_syms > 0)
             key->explicit |= EXPLICIT_SYMBOLS;
-        if (groupi->defined & GROUP_FIELD_ACTS) {
+        if (groupi->defined & GROUP_FIELD_ACTS) { // FIXME
             key->groups[i].explicit_actions = true;
             key->explicit |= EXPLICIT_INTERP;
         }
