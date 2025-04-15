@@ -1,0 +1,47 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<LVL3>               = 92;
+	<RALT>               = 108;
+};
+
+xkb_types "basic" {
+	virtual_modifiers NumLock;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers NumLock;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+};
+
+xkb_symbols "level3" {
+	key <LVL3>               {
+		type= "ONE_LEVEL",
+		symbols[Group1]= [ ISO_Level3_Shift ]
+	};
+	key <RALT>               {	[ ISO_Level3_Shift, ISO_Level3_Lock ] };
+	modifier_map Mod5 { <LVL3> };
+};
+
+};

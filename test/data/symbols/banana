@@ -1,0 +1,7 @@
+xkb_symbols "1" {
+	key <> { ["🍌"] };
+};
+
+xkb_symbols "2" {
+	key <> { ["🍊"] };
+};

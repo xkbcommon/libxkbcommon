@@ -259,11 +259,18 @@ XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                    enum xkb_file_type file_type)
 {
-    FILE *file;
-    XkbFile *xkb_file = NULL;
+    /*
+     * Resolve include statement:
+     * - Explicit map name: look for an *exact match* only.
+     * - Default map: look for an *explicit default* map (i.e. tagged with
+     *   `default`: exact match), else fallback to the first *implicit* default
+     *   map (weak match).
+     */
+    XkbFile *xkb_file = NULL;  /* Exact match */
+    XkbFile *candidate = NULL; /* Weak match */
     unsigned int offset = 0;
 
-    file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
+    FILE* file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
     if (!file)
         return NULL;
 
@@ -280,13 +287,40 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
                         xkb_file_type_to_string(xkb_file->file_type), stmt->file);
                 FreeXkbFile(xkb_file);
                 xkb_file = NULL;
-            } else {
+            } else if (stmt->map || (xkb_file->flags && MAP_IS_DEFAULT)) {
+                /*
+                 * Exact match: explicit map name or explicit default map.
+                 * Lookup stops here.
+                 */
                 break;
+            } else if (!candidate) {
+                /*
+                 * Weak match: looking for an explicit default map, but found
+                 * only the first *implicit* default map (e.g. first map of the
+                 * file). Use as fallback, but keep looking for an exact match.
+                 */
+                candidate = xkb_file;
+                xkb_file = NULL;
+            } else {
+                /*
+                 * Weak match, but we already have a previous candidate.
+                 * Keep looking for an exact match.
+                 */
+                FreeXkbFile(xkb_file);
+                xkb_file = NULL;
             }
         }
 
         offset++;
         file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
+    }
+
+    if (!xkb_file) {
+        /* No exact match: use weak match, if any */
+        xkb_file = candidate;
+    } else {
+        /* Found exact match: discard weak match, if any */
+        FreeXkbFile(candidate);
     }
 
     if (!xkb_file) {
