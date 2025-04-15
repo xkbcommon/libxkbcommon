@@ -1,3 +1,172 @@
+libxkbcommon [1.9.0] - 2025-04-26
+=================================
+
+[1.9.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.0
+
+## API
+
+### Breaking changes
+
+- *Merge modes* and *include mechanism* were completely refactored to fix inconsistencies.
+  Included files are now always processed in isolation and do not propagate the local
+  merge modes. This makes the reasoning about included files much easier and consistent.
+- Trailing `NoSymbol` and `NoAction()` are now dropped. This may affect keys that
+  rely on an *implicit* key type.
+
+  Example:
+  - Input:
+    ```c
+    key <> { [a, A, NoSymbol] };
+    ```
+  - Compilation with xkbcommon \< 1.9.0:
+    ```c
+    key <> {
+      type= "FOUR_LEVEL_SEMIALPHABETIC",
+      [a, A, NoSymbol, NoSymbol]
+    };
+    ```
+
+  - Compilation with xkbcommon ≥ 1.9.0:
+    ```c
+    key <> {
+      type= "ALPHABETIC",
+      [a, A]
+    };
+    ```
+
+### New
+
+- Added function `xkb_components_names_from_rules()` to compute
+  <abbr title="Keycodes, Compatibility, Geometry, Symbols, Types">KcCGST</abbr>
+  keymap components from
+  <abbr title="Rules, Model, Layout, Variant, Options">RMLVO</abbr> names resolution.
+  This mainly for *debugging* purposes and to enable the `--kccgst` option in the tools.
+  ([#669](https://github.com/xkbcommon/libxkbcommon/issues/669))
+- Added the following *wild cards* to the **rules** file syntax, in addition to
+  the current `*` legacy wild card:
+  - `<none>`: Match *empty* value.
+  - `<some>`: Match *non-empty* value.
+  - `<any>`: Match *any* (optionally empty) value. Its behavior does not depend on
+    the context, contrary to the legacy wild card `*`.
+- All keymap components are now optional, e.g. a keymap without a `xkb_types`
+  section is now legal. The missing components will still be serialized explicitly
+  in order to maintain backward compatibility.
+- Added support for further empty compound statements:
+  - `xkb_types`: `type \"xxx\" {};`
+  - `xkb_compat`: `interpret x {};` and `indicator \"xxx\" {};`.
+
+  Such statements are initialized using the current defaults, i.e. the
+  factory implicit defaults or some explicit custom defaults (e.g.
+  `indicator.modifiers = Shift`).
+- Added support for actions and keysyms level list of length 0 and 1: respectively
+  `{}` and `{a}`. Example: `key <A> { [{}, {a}, {a, A}] };`.
+- Enable using the merge mode *replace* in include statements using the prefix `^`,
+  such as: `include "a^b"`. The main motivation is to enable this new syntax in
+  *rules*, which previously could not handle this merge mode.
+- Added support for sequences of actions in `interpret` statements of the
+  `xkb_compat` component, mirroring the syntax used in `xkb_symbols`.
+  ([#695](https://github.com/xkbcommon/libxkbcommon/issues/695))
+- Added support for keysym Capitalization transformation to `xkb_state_key_get_syms()`.
+  ([#552](https://github.com/xkbcommon/libxkbcommon/issues/552))
+- `xkb_utf32_to_keysym`: Allow [Unicode noncharacters].
+  ([#715](https://github.com/xkbcommon/libxkbcommon/issues/715))
+- `xkb_keysym_from_name`:
+  - Unicode format `UNNNN`: allow control characters C0 and C1 and use
+    `xkb_utf32_to_keysym` for the conversion when `NNNN < 0x100`, for
+    backward compatibility.
+  - Numeric hexadecimal format `0xNNNN`: *unchanged*. Contrary to the Unicode
+    format, it does not normalize any keysym values in order to enable roundtrip
+    with `xkb_keysym_get_name`.
+
+  [Unicode noncharacters]: https://en.wikipedia.org/wiki/Universal_Character_Set_characters#Noncharacters
+
+  ([#715](https://github.com/xkbcommon/libxkbcommon/issues/715))
+- Added [Unicode code point] escape sequences `\u{NNNN}`. They are replaced with
+  the [UTF-8] encoding of their corresponding code point `U+NNNN`, if legal.
+  Supported Unicode code points are in the range `1‥0x10ffff`. This is intended
+  mainly for writing keysyms as [UTF-8] encoded strings.
+
+  [Unicode code point]: https://en.wikipedia.org/wiki/Unicode#Codespace_and_code_points
+  [UTF-8]: https://en.wikipedia.org/wiki/UTF-8
+- Enable to write keysyms as UTF-8-encoded strings:
+  - *Single* Unicode code point `U+1F3BA` (TRUMPET) `"🎺"` is converted into a
+    single keysym: `U1F3BA`.
+  - *Multiple* Unicode code points are converted to a keysym *list* where it is
+    allowed (i.e. in key symbols). E.g. `"J́"` is converted to U+004A LATIN CAPITAL
+    LETTER J plus U+0301 COMBINING ACUTE ACCENT: `{J, U0301}`.
+  - An empty string `""` denotes the keysym `NoSymbol`.
+- Enable displaying bidirectional text in XKB files using the following Unicode
+  code points, wherever a white space can be used:
+  - U+200E LEFT-TO-RIGHT MARK
+  - U+200F RIGHT-TO-LEFT MARK
+
+### Fixes
+
+- Added support for `libxml2-2.14+`, which now disallows parsing trailing `NULL` bytes.
+  ([#692](https://github.com/xkbcommon/libxkbcommon/issues/692))
+- Fixed included *default* section not resolving to an *exact* match in some
+  cases. It may occur if one creates a file name in a *user* XKB directory that
+  also exists in the XKB *system* directory.
+
+  Example: if one creates a custom variant `my_variant` in the file
+  `$XDG_CONFIG_HOME/xkb/symbols/us`, then *before* libxkbcommon 1.9.0 every
+  statement loading the *default* map of the `us` file, `include "us"`, would
+  wrongly resolve including `us(my_variant)` from the *user* configuration
+  directory instead of `us(basic)` from the XKB *system* directory. Starting
+  from libxkbcommon 1.9.0, `include "us"` would correctly resolve to the system
+  file, unless `$XDG_CONFIG_HOME/xkb/symbols/us` contains an *explicit default*
+  section. ([#726](https://github.com/xkbcommon/libxkbcommon/issues/726))
+- Fixed floating-point number parsing failling on locales that use a decimal
+  separator different than the period `.`.
+
+  Note that the issue is unlikely to happen even with such locales, unless
+  *parsing* a keymap with a *geometry* component which contains floating-point
+  numbers.
+
+  Affected API:
+  - `xkb_keymap_new_from_file()`,
+  - `xkb_keymap_new_from_buffer()`,
+  - `xkb_keymap_new_from_string()`.
+
+  Unaffected API:
+  - `xkb_keymap_new_from_names()`: none of the components loaded use
+    floating-point number. libxkbcommon does not load *geometry* files.
+  - `libxkbcommon-x11`: no such parsing is involved.
+- Fixed the handling of empty keys. Previously keys with no symbols nor actions
+  would simply be skipped entirely. E.g. in the following:
+
+  ```c
+  key <A> { vmods = M };
+  modifier_map Shift { <A> };
+  ```
+
+  the key `<A>` would be skipped and the virtual modifier `M` would not be
+  mapped to `Shift`. This is now handled properly.
+- Fixed characters not escaped properly in the keymap serialization, resulting in
+  a keymap string with erroneous string literals and possible syntax errors.
+- Fixed octal escape sequences valid in Xorg’s xkbcomp but not in xkbcommon. Now up
+  to *4* digits are parsed, compared to *3* previously.
+- Fixed the serialization of the `whichGroupState` indicator field.
+
+
+## Tools
+
+### New
+
+- `xkbcli compile-keymap`: Added `--kccgst` option to display the result of
+  <abbr title="Rules, Model, Layout, Variant, Options">RMLVO</abbr> names resolution to
+  <abbr title="Keycodes, Compatibility, Geometry, Symbols, Types">KcCGST</abbr> components.
+
+  This option has the same function than `setxkbmap -print`. This is particularly
+  useful for debugging issues with the rules. ([#669](https://github.com/xkbcommon/libxkbcommon/issues/669))
+- Honor user locale in all tools.
+
+
+## Build system
+
+No significant changes.
+
+
 libxkbcommon [1.8.1] - 2025-03-12
 =================================
 
