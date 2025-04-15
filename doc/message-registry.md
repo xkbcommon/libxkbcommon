@@ -10,7 +10,7 @@ There are currently 66 entries.
 
 @todo The documentation of the log messages is a work in progress.
 
-## Index
+## Index {#error-code-list}
 
 | Code      | Identifier                   | Description | Type |
 | --------- | ---------------------------- | ----------- | ---- |

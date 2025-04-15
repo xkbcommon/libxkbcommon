@@ -679,8 +679,8 @@ _case-sensitive_.
 
 | Keyword                 | Use                            |
 | ----------------------- | ------------------------------ |
-| `action`                | <span class="todo">TODO</span> |
-| `alias`                 | <span class="todo">TODO</span> |
+| `action`                | Action of an [interpret statement](@ref interpret-action) |
+| `alias`                 | [Keycode alias](@ref keycode-alias) |
 | `alphanumeric_keys`     | <span class="todo">TODO</span> |
 | `alternate_group`       | <span class="todo">TODO</span> |
 | `alternate`             | Merge mode qualifier for [include] statements |
@@ -689,45 +689,47 @@ _case-sensitive_.
 | `function_keys`         | <span class="todo">TODO</span> |
 | `group`                 | <span class="todo">TODO</span> |
 | `hidden`                | <span class="todo">TODO</span> |
-| `include`               | [Include statement][include]              |
-| `indicator`             | <span class="todo">TODO</span> |
+| `include`               | [Include statement][include]   |
+| `indicator`             | Indicator statement in either the [keycode section](@ref indicator-name) or the [compatibility section](@ref indicator-effect) |
 | `interpret`             | [Interpret statement][interpret] |
 | `key`                   | <span class="todo">TODO</span> |
 | `keypad_keys`           | <span class="todo">TODO</span> |
-| `keys`                  | <span class="todo">TODO</span> |
-| `logo`                  | <span class="todo">TODO</span> |
-| `mod_map`               | Alias of `modifier_map`                   |
+| `keys`                  | Legacy [geometry element][xkb_geometry] |
+| `logo`                  | Legacy [geometry element][xkb_geometry] |
+| `mod_map`               | Alias of `modifier_map`        |
 | `modifier_keys`         | <span class="todo">TODO</span> |
-| `modmap`                | Alias of `modifier_map` |
-| `modifier_map`          | <span class="todo">TODO</span> |
-| `outline`               | <span class="todo">TODO</span> |
-| `overlay`               | <span class="todo">TODO</span> |
+| `modmap`                | Alias of `modifier_map`        |
+| `modifier_map`          | [Real modifier bindings](@ref modmap-statement) |
+| `outline`               | Legacy [geometry element][xkb_geometry] |
+| `overlay`               | Legacy [geometry element][xkb_geometry] |
 | `override`              | Merge mode qualifier for [include] statements |
 | `partial`               | <span class="todo">TODO</span> |
 | `replace`               | Merge mode qualifier for [include] statements |
-| `row`                   | <span class="todo">TODO</span> |
-| `section`               | <span class="todo">TODO</span> |
-| `shape`                 | <span class="todo">TODO</span> |
-| `solid`                 | <span class="todo">TODO</span> |
-| `text`                  | <span class="todo">TODO</span> |
-| `type`                  | <span class="todo">TODO</span> |
-| `virtual_modifiers`     | <span class="todo">TODO</span> |
-| `virtual`               | <span class="todo">TODO</span> |
+| `row`                   | Legacy [geometry element][xkb_geometry] |
+| `section`               | Legacy [geometry element][xkb_geometry] |
+| `shape`                 | Legacy [geometry element][xkb_geometry] |
+| `solid`                 | Legacy [geometry element][xkb_geometry] |
+| `text`                  | Legacy [geometry element][xkb_geometry] |
+| `type`                  | [Key type statement](@ref key-type-statement) |
+| `virtual_modifiers`     | [Virtual modifiers mappings](@ref virtual-modifier-statements) |
+| `virtual`               | Tag for the [indicator statement](@ref indicator-name) |
 | `xkb_compat_map`        | Alias of `xkb_compatibility_map` |
 | `xkb_compat`            | Alias of `xkb_compatibility_map` |
 | `xkb_compatibility_map` | Declare a [compatibility section][xkb_compat] |
 | `xkb_compatibility`     | Alias of `xkb_compatibility_map` |
-| `xkb_geometry`          | Declare a geometry section (<span class="todo">TODO: legacy</span>) |
+| `xkb_geometry`          | Declare a [geometry section][xkb_geometry] |
 | `xkb_keycodes`          | Declare a [keycodes section][xkb_keycodes] |
 | `xkb_keymap`            | Declare a [keymap block][xkb_keymap] |
-| `xkb_layout`            | <span class="todo">TODO</span> |
-| `xkb_semantics`         | <span class="todo">TODO</span> |
+| `xkb_layout`            | Declare a legacy [layout compound section][xkb_layout] |
+| `xkb_semantics`         | Declare a legacy [semantics compound section][xkb_semantics] |
 | `xkb_symbols`           | Declare a [symbols section][xkb_symbols]   |
 | `xkb_types`             | Declare a [key types section ][xkb_types]  |
 
 [include]: @ref xkb-include
 [interpret]: @ref interpret-statements
 [interpretations]: @ref interpret-statements
+[xkb_layout]: @ref legacy-layout-section
+[xkb_semantics]: @ref legacy-semantics-section
 
 ### Built-in settings
 
@@ -1090,12 +1092,28 @@ xkb_keymap {
 };
 ```
 
+@since 1.9.0 All the component are optional.
+
+<!-- NOTE: do not use blank lines here! -->
+@remark The XKB file format historically supported the following compound
+section types:
+<div>
+- `xkb_semantics`: @anchor legacy-semantics-section *must* contain a [xkb_compat] section
+   and *can* contain a [xkb_types] section.
+- `xkb_layout`: @anchor legacy-layout-section *must* contain [xkb_keycodes], [xkb_types]
+  and [xkb_symbols] sections and *can* contain [xkb_geometry] section.
+- `xkb_keymap`: *must* contain [xkb_keycodes], [xkb_compat], [xkb_types] and
+  [xkb_symbols] sections and *can* contain [xkb_geometry] section.
+</div>
+Since such distinction is purely semantic and would have niche use cases lost to
+history, these compound sections are treated equally as `xkb_keymap` in
+libxkbcommon.
+
+[xkb_geometry]: @ref the-xkb_geometry-section
+
 <!-- TODO: there might be several sections of the same type: explain syntax and how they are selected -->
 <!-- TODO: sections may be named -->
 <!-- TODO: introduce tags → only “default” MAP_IS_DEFAULT seems to be used; other are just documentation -->
-<!-- TODO: `xkb_semantics`, `xkb_layout`: they seem to be aliases of `xkb_keymap`
-           in xkbcommon, but they have subtle differences in original `xkbcomp`. -->
-<!-- TODO: See: [xkbcomp] xkbcomp/keymap.c CompileKeymap (XkmSemanticsFile, XkmLayoutFile) -->
 
 ## The “xkb_keycodes” section {#the-xkb_keycodes-section}
 
@@ -1159,7 +1177,7 @@ If there’s a conflict, like the same name given to different keycodes,
 or same keycode given different names, it is resolved according to the
 [merge mode] which applies to the definitions.
 
-### Alias statements
+### Alias statements {#keycode-alias}
 
 Statements of the form:
 
@@ -1183,6 +1201,7 @@ Assigns a name to the keyboard LED (AKA [indicator]) with the given
 index. The LED may be referred by this name later in the compat
 section and by the user.
 
+@todo `virtual` tag
 
 ## The “xkb_types” section {#the-xkb_types-section}
 
@@ -1242,7 +1261,7 @@ The following diagram presents an overview of theses computations:
 @anchor xkb-types-explanation-diagram
 @dotfile xkb-types-explanation "Use of key types to compute shift level and consumed modifiers"
 
-### Type definitions
+### Type definitions {#key-type-statement}
 
 Statements of the form:
 
@@ -2284,6 +2303,10 @@ key  <LALT> {
 ```
 @endfigure
 
+### Real Modifier map {#modmap-statement}
+
+@todo Document `modifier_map`
+
 ## Virtual modifier statements {#virtual-modifier-statements}
 
 <!-- TODO: rework this section -->
@@ -2702,3 +2725,14 @@ and validated but have no effect. This allows to use keymaps defined in
 #### Private action
 
 @todo `Private`
+
+## The “xkb_geometry” section {#the-xkb_geometry-section}
+
+This section aims to describe the *physical* layout of a keyboard and its main
+use case is to produce a picture of the keyboard via e.g. the `xkbprint` program.
+
+@warning libxkbcommon does not support this section: while it can parse the
+syntax, it does not interpret it; the section is simply dropped so there is no
+API to query it and the keymap serialization does not contain it.
+
+@sa @ref geometry-support "Compatibility with X11".

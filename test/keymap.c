@@ -538,5 +538,5 @@ main(void)
     test_multiple_keysyms_per_level();
     test_multiple_actions_per_level();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
