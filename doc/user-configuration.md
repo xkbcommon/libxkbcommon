@@ -75,7 +75,7 @@ For example, a common [RMLVO] configuration is layout "us", variant "dvorak" and
 option "terminate:ctrl_alt_bksp". Using the default rules file and model
 this maps into the following [KcCGST] components:
 
-```
+```c
 xkb_keymap {
 	xkb_keycodes  { include "evdev+aliases(qwerty)"	};
 	xkb_types     { include "complete"	};
@@ -90,7 +90,7 @@ scope for this document. See [the rules file](md_doc_rules-format.html) page
 instead.
 
 
-## Adding a layout
+## Adding a layout {#user-config-layout}
 
 Adding a layout requires that the user adds **symbols** in the correct location.
 
@@ -139,9 +139,15 @@ swap the numbers and symbols in the top-most row (compared to the US layout) but
 otherwise use the US layout.
 
 The "orange" variant uses the "banana" symbols and includes a different section
-to define the eurosign. It does not specificially override any symbols.
+to define the `eurosign`. It does not specifically override any symbols.
 
-The exact details of how `xkb_symbols` work is out of scope for this document.
+The exact details of how `xkb_symbols` section works is out of scope for this
+document; see: @ref keymap-text-format-v1 "".
+
+@remark This example uses a file name "banana" that should not clash with the
+system files in `<datadir>/X11/xkb/symbols`. Using the same file name than
+the system files is possible but may require special handling,
+see: @ref user-config-system-file-names "".
 
 ## Adding an option
 
@@ -196,6 +202,41 @@ xkb_symbols "baz" {
 
 With these in place, a user may select any layout/variant together with
 the "custom:foo" and/or "custom:baz" options.
+
+@remark This example uses file names "custom" and "other" that should not clash
+with the system files in `<datadir>/X11/xkb/symbols`. Using the same file
+name than the system files is possible but may require special handling,
+see: @ref user-config-system-file-names "".
+
+## Using system file names {#user-config-system-file-names}
+
+The previous examples use custom keymap files with file name that do not clash
+with the files in the *system* directory, `<datadir>/X11/xkb/`. It is possible
+to add a custom variant using the *same* file name than the system file, e.g.
+`$XDG_CONFIG_HOME/xkb/symbols/us` instead of `$XDG_CONFIG_HOME/xkb/symbols/banana`
+for the example in @ref user-config-layout "".
+
+However, it must then contains an *explicit default* section if the system file
+has one, else it may break the keyboard setup by including a section of the
+custom file instead of the system one. The default section should enforce that
+the system default section is included. If one wanted to define only the "orange"
+layout variant above, then the file would have been:
+
+```
+$ cat $XDG_CONFIG_HOME/xkb/symbols/us
+default partial alphanumeric_keys xkb_symbols { include "us(basic)" };
+
+partial alphanumeric_keys
+xkb_symbols "orange" {
+    include "us(basic)"
+    name[Group1] = "Banana (Eurosign on 5)";
+    include "eurosign(5)"
+};
+```
+
+@since 1.9.0 The requirement for an explicit default section is not necessary
+anymore: libxkbcommon will look up for the proper default section in the XKB
+paths.
 
 ## Discoverable layouts
 

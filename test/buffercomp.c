@@ -261,7 +261,7 @@ test_bidi_chars(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
-test_recursive(struct xkb_context *ctx)
+test_recursive_includes(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
 
@@ -334,6 +334,72 @@ test_recursive(struct xkb_context *ctx)
         keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
+}
+
+static void
+test_include_default_maps(bool update_output_files)
+{
+    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    assert(ctx);
+    /* “User” config */
+    char *include_path = test_get_path("extra");
+    assert(include_path);
+    assert(xkb_context_include_path_append(ctx, include_path));
+    free(include_path);
+    /* “System” config */
+    include_path = test_get_path("");
+    assert(include_path);
+    assert(xkb_context_include_path_append(ctx, include_path));
+    free(include_path);
+
+    const struct keymap_test_data keymaps[] = {
+        {
+            /* Use system explicit default map */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <CAPS> = 66; };\n"
+                "  xkb_symbols { include \"capslock\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-capslock-system.xkb"
+        },
+        {
+            /* Use custom named map */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <CAPS> = 66; };\n"
+                "  xkb_symbols { include \"capslock(custom)\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-capslock-custom.xkb"
+        },
+        {
+            /* Use custom *explicit* default map */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <RALT> = 108; <LVL3> = 92; };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols { include \"level3\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-level3-explicit-default.xkb"
+        },
+        {
+            /* Use custom *implicit* default map */
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols { include \"banana\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-banana-implicit-default.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+
+    xkb_context_unref(ctx);
 }
 
 /* Test some limits related to allocations */
@@ -1497,7 +1563,8 @@ main(int argc, char *argv[])
     test_component_syntax_error(ctx);
     test_optional_components(ctx, update_output_files);
     test_bidi_chars(ctx, update_output_files);
-    test_recursive(ctx);
+    test_recursive_includes(ctx);
+    test_include_default_maps(update_output_files);
     test_alloc_limits(ctx);
     test_integers(ctx, update_output_files);
     test_keycodes(ctx, update_output_files);

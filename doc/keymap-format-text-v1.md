@@ -681,29 +681,29 @@ _case-sensitive_.
 | ----------------------- | ------------------------------ |
 | `action`                | Action of an [interpret statement](@ref interpret-action) |
 | `alias`                 | [Keycode alias](@ref keycode-alias) |
-| `alphanumeric_keys`     | <span class="todo">TODO</span> |
-| `alternate_group`       | <span class="todo">TODO</span> |
+| `alphanumeric_keys`     | [Section flag](@ref section-flag-alphanum) |
+| `alternate_group`       | [Section flag](@ref section-flag-alt-group) |
 | `alternate`             | Merge mode qualifier for [include] statements |
 | `augment`               | Merge mode qualifier for [include] statements |
-| `default`               | <span class="todo">TODO</span> |
-| `function_keys`         | <span class="todo">TODO</span> |
+| `default`               | [Section flag](@ref section-flag-default) |
+| `function_keys`         | [Section flag](@ref section-flag-function) |
 | `group`                 | <span class="todo">TODO</span> |
-| `hidden`                | <span class="todo">TODO</span> |
+| `hidden`                | [Section flag](@ref section-flag-hidden) |
 | `include`               | [Include statement][include]   |
 | `indicator`             | Indicator statement in either the [keycode section](@ref indicator-name) or the [compatibility section](@ref indicator-effect) |
 | `interpret`             | [Interpret statement][interpret] |
-| `key`                   | <span class="todo">TODO</span> |
-| `keypad_keys`           | <span class="todo">TODO</span> |
+| `key`                   | [Key statement](@ref key-statement) |
+| `keypad_keys`           | [Section flag](@ref section-flag-keypad) |
 | `keys`                  | Legacy [geometry element][xkb_geometry] |
 | `logo`                  | Legacy [geometry element][xkb_geometry] |
 | `mod_map`               | Alias of `modifier_map`        |
-| `modifier_keys`         | <span class="todo">TODO</span> |
+| `modifier_keys`         | [Section flag](@ref section-flag-modifier) |
 | `modmap`                | Alias of `modifier_map`        |
 | `modifier_map`          | [Real modifier bindings](@ref modmap-statement) |
 | `outline`               | Legacy [geometry element][xkb_geometry] |
 | `overlay`               | Legacy [geometry element][xkb_geometry] |
 | `override`              | Merge mode qualifier for [include] statements |
-| `partial`               | <span class="todo">TODO</span> |
+| `partial`               | [Section flag](@ref section-flag-partial) |
 | `replace`               | Merge mode qualifier for [include] statements |
 | `row`                   | Legacy [geometry element][xkb_geometry] |
 | `section`               | Legacy [geometry element][xkb_geometry] |
@@ -712,7 +712,7 @@ _case-sensitive_.
 | `text`                  | Legacy [geometry element][xkb_geometry] |
 | `type`                  | [Key type statement](@ref key-type-statement) |
 | `virtual_modifiers`     | [Virtual modifiers mappings](@ref virtual-modifier-statements) |
-| `virtual`               | Tag for the [indicator statement](@ref indicator-name) |
+| `virtual`               | Flag for the [indicator statement](@ref indicator-name) |
 | `xkb_compat_map`        | Alias of `xkb_compatibility_map` |
 | `xkb_compat`            | Alias of `xkb_compatibility_map` |
 | `xkb_compatibility_map` | Declare a [compatibility section][xkb_compat] |
@@ -728,6 +728,7 @@ _case-sensitive_.
 [include]: @ref xkb-include
 [interpret]: @ref interpret-statements
 [interpretations]: @ref interpret-statements
+[xkb_geometry]: @ref the-xkb_geometry-section
 [xkb_layout]: @ref legacy-layout-section
 [xkb_semantics]: @ref legacy-semantics-section
 
@@ -822,7 +823,7 @@ supported by libxkbcommon.
 Statements of the form:
 
 ```c
-// Implicit section name
+// Implicit section name: use the default map
 include "<PATH>"
 // Explicit section name
 include "<PATH>(<SECTION_NAME>)"
@@ -830,6 +831,10 @@ include "<PATH>(<SECTION_NAME>)"
 
 will include data from another [section] of the *same type*, possibly located in
 another file. Note that the statement does not have a trailing semicolon.
+
+If no section name is provided, the [default map] is looked up.
+
+[default map]: @ref default-map-def
 
 The path may be absolute or relative to its corresponding directory in a XKB
 configuration: e.g. given the configuration directory `<XKB>`, files of
@@ -875,8 +880,15 @@ The statement is processed as follow:
 5. Set CURRENT_MERGE_MODE to the merge mode corresponding to the current file
    merge mode *prefix*.
 6. The current file path is searched sequentially in the
-   [XKB configuration path list] and the *first match* is selected, or it raises
-   an error if there is no match.
+   [XKB configuration path list]:
+
+   - If a section name is provided, select the first *exact match* of file +
+     section.
+   - If no section name is provided, select the first *explicit* [default map]
+     in matched files, else if no exact match was found in the path list, then
+     fallback to the first *implicit* [default map] as a weak match.
+
+   Then if no match is found, raise an error; else go to the next step.
 7. The current file is processed and results in the CURRENT [section].
 8. The INCLUDED [section] is merged with the CURRENT [section] using the merge mode
    CURRENT_MERGE_MODE.
@@ -1109,11 +1121,59 @@ Since such distinction is purely semantic and would have niche use cases lost to
 history, these compound sections are treated equally as `xkb_keymap` in
 libxkbcommon.
 
-[xkb_geometry]: @ref the-xkb_geometry-section
-
 <!-- TODO: there might be several sections of the same type: explain syntax and how they are selected -->
 <!-- TODO: sections may be named -->
-<!-- TODO: introduce tags → only “default” MAP_IS_DEFAULT seems to be used; other are just documentation -->
+
+## Section flags {#section-flags-def}
+
+A section can have various **flags** applied to it, separated by whitespaces:
+
+    partial alphanumeric_keys
+    xkb_symbols "basic" {
+        ...
+    }
+
+### Generic flags
+
+The possible flags are:
+
+<dl>
+<dt><code>partial</code>@anchor section-flag-partial</dt>
+<dd>Indicates that the map doesn’t cover a complete keyboard.</dd>
+<dt><code>default</code>@anchor section-flag-default</dt>
+<dd>
+
+@anchor default-map-def
+Marks the symbol map as the *explicit* **default map** in the file. If no map is
+marked as a default, the first map in the file is the *implicit* default. Only
+**one** section can be marked as the default in each file.
+</dd>
+<dt><code>hidden</code>@anchor section-flag-hidden</dt>
+<dd>Variant that can only be used internally.</dd>
+</dl>
+
+### Symbols flags
+
+Additionally, `xkb_symbols` may also have the following flags:
+
+<dl>
+<dt><code>alphanumeric_keys</code>@anchor section-flag-alphanum</dt>
+<dd>Indicates that the map contains alphanumeric keys.</dd>
+<dt><code>modifier_keys</code>@anchor section-flag-modifier</dt>
+<dd>Indicates that the map contains modifier keys: Control, Shift, Alt, Meta, etc.</dd>
+<dt><code>keypad_keys</code>@anchor section-flag-keypad</dt>
+<dd>Indicates that the map contains keypad keys.</dd>
+<dt><code>function_keys</code>@anchor section-flag-function</dt>
+<dd>Indicates that the map contains function keys: F1, F2, etc.</dd>
+<dt><code>alternate_group</code>@anchor section-flag-alt-group</dt>
+<dd>Indicates that the map contains keys for an alternate group.</dd>
+</dl>
+
+If no `*_keys` flags are supplied, then the symbols section is assumed to cover
+a complete keyboard.
+
+At present, except for `default` (see: [default map]), none of the flags affect
+key processing in libxkbcommon, and only serve as *metadata*.
 
 ## The “xkb_keycodes” section {#the-xkb_keycodes-section}
 
@@ -1201,7 +1261,7 @@ Assigns a name to the keyboard LED (AKA [indicator]) with the given
 index. The LED may be referred by this name later in the compat
 section and by the user.
 
-@todo `virtual` tag
+@todo `virtual` flag
 
 ## The “xkb_types” section {#the-xkb_types-section}
 
@@ -1913,34 +1973,6 @@ Statements of the form:
 
 Declare a symbols map named `basic`. Statements inside the curly braces only
 affect the symbols map.
-
-A map can have various flags applied to it above the statement, separated by
-whitespace:
-
-    partial alphanumeric_keys
-    xkb_symbols "basic" {
-        ...
-    }
-
-The possible flags are:
-
-  * `partial` - Indicates that the map doesn’t cover a complete keyboard.
-  * `default` - Marks the symbol map as the default map in the file when no
-    explicit map is specified. If no map is marked as a default, the first map
-    in the file is the default.
-  * `hidden` - Variant that can only be used internally
-  * `alphanumeric_keys` - Indicates that the map contains alphanumeric keys
-  * `modifier_keys` - Indicates that the map contains modifier keys
-  * `keypad_keys` - Indicates that the map contains keypad keys
-  * `function_keys` - Indicates that the map contains function keys
-  * `alternate_group` - Indicates that the map contains keys for an alternate
-    group
-
-If no `*_keys` flags are supplied, then the map is assumed to cover a complete
-keyboard.
-
-At present, except for `default`, none of the flags affect key processing in
-libxkbcommon, and only serve as metadata.
 
 ### Name statements
 

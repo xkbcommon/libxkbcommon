@@ -1,0 +1,5 @@
+default partial modifier_keys
+xkb_symbols "ralt_switch" {
+  key <RALT> { [ ISO_Level3_Shift, ISO_Level3_Lock ] };
+  include "level3(modifier_mapping)"
+};
