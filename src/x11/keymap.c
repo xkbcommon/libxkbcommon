@@ -1160,7 +1160,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
                                enum xkb_keymap_compile_flags flags)
 {
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_COMPILATION_FLAG,
                      "unrecognized flags: %#x\n", flags);
         return NULL;
     }
