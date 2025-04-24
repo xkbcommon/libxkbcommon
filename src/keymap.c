@@ -127,7 +127,7 @@ check_keymap_flags(struct xkb_context *ctx,
                    enum xkb_keymap_compile_flags flags)
 {
     if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_COMPILATION_FLAG,
                      "unrecognized flags: %#x\n", flags);
         return false;
     }
@@ -142,7 +142,7 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
     const struct xkb_keymap_format_ops* const ops =
         get_keymap_format_ops(options->format);
     if (!ops || !ops->keymap_new_from_names) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_TEXT_FORMAT,
                      "unsupported keymap format: %d\n", options->format);
         return NULL;
     }
@@ -200,7 +200,7 @@ xkb_keymap_new_from_buffer2(struct xkb_context *ctx,
     const struct xkb_keymap_format_ops* const ops =
         get_keymap_format_ops(options->format);
     if (!ops || !ops->keymap_new_from_string) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_TEXT_FORMAT,
                      "unsupported keymap format: %d\n", options->format);
         return NULL;
     }
@@ -248,7 +248,7 @@ xkb_keymap_new_from_file2(struct xkb_context *ctx, FILE *file,
     const struct xkb_keymap_format_ops* const ops =
         get_keymap_format_ops(options->format);
     if (!ops || !ops->keymap_new_from_file) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_TEXT_FORMAT,
                      "unsupported keymap format: %d\n", options->format);
         return NULL;
     }
@@ -295,7 +295,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
     const struct xkb_keymap_format_ops* const ops =
         get_keymap_format_ops(format);
     if (!ops || !ops->keymap_get_as_string) {
-        log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_TEXT_FORMAT,
                      "unsupported keymap format: %d\n", format);
         return NULL;
     }
