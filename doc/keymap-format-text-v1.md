@@ -86,7 +86,10 @@ Some additional resources are:
   A _keysym_ (short for “key symbol”) is a numeric encoding of a
   symbol on the cap of a key.
 
-  They have a canonical name for convenience. It can be:
+  Some keysyms have a canonical name for convenience. The complete list of
+  canonical names is defined in `xkbcommon/xkbcommon-keysyms.h`.
+
+  Common types of keysyms are:
 
   - A _character:_ e.g. `a` and `A` for Latin scripts,
     `alpha` “α” and `ALPHA` “Α” for Greek, etc.
@@ -101,8 +104,6 @@ Some additional resources are:
   - A <em>[modifier]⁠:</em> e.g. `Shift_L`, `Control_R`, `Caps_Lock`.
     See hereinafter.
   - A _system action:_ e.g. the arrow `Left`, `Pause`, `Escape`, `F1`.
-
-  The complete list of keysyms is defined in `xkbcommon/xkbcommon-keysyms.h`.
 
   @sa [xkb_symbols] for further details on binding keysyms to keycodes.
   @sa [Keysym syntax][@ref keysym-syntax]
