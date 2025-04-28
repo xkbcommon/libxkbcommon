@@ -8,7 +8,8 @@
 
 #ifdef _WIN32
 
-main()
+int
+main(void)
 {
     test_init();
     return SKIP_TEST;
