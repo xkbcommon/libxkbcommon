@@ -143,6 +143,8 @@ typedef struct {
 
 typedef struct {
     ParseCommon common;
+    /* Keysyms are resolved early, so this might contain `NoSymbol` in case of
+     * failure, to enable error recovery. */
     xkb_keysym_t keysym;
 } ExprKeySym;
 
