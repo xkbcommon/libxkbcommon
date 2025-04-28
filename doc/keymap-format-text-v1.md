@@ -162,8 +162,8 @@ Some additional resources are:
   | `Meta`       | Virtual | `Mod1` or `Mod4` | The legacy [Meta] key    |
   | `NumLock`    | Virtual | `Mod2`        | The usual [NumLock]         |
   | `Super`      | Virtual | `Mod4`        | The usual [Super]/GUI       |
-  | `LevelThree` | Virtual | `Mod3`        | [ISO][ISO9995] level 3, aka [AltGr] |
-  | `LevelFive`  | Virtual | `Mod5`        | [ISO][ISO9995] level 5      |
+  | `LevelThree` | Virtual | `Mod5`        | [ISO][ISO9995] level 3, aka [AltGr] |
+  | `LevelFive`  | Virtual | `Mod3`        | [ISO][ISO9995] level 5      |
 
   [usual modifiers]: @ref usual-modifiers
   [Shift]: https://en.wikipedia.org/wiki/Control_key
