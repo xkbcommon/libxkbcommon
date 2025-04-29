@@ -1024,8 +1024,11 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
         else {
             ndx--;
-            if (ndx >= darray_size(keyi->groups))
+            if (ndx >= darray_size(keyi->groups)) {
+                /* Avoid clang-tidy false positive */
+                assert(darray_size(keyi->groups) < ndx + 1);
                 darray_resize0(keyi->groups, ndx + 1);
+            }
             darray_item(keyi->groups, ndx).type = val;
             darray_item(keyi->groups, ndx).defined |= GROUP_FIELD_TYPE;
         }
