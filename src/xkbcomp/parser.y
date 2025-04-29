@@ -4,9 +4,10 @@
  */
 
 /*
- * The parser should work with reasonably recent versions of either
- * bison or byacc.  So if you make changes, try to make sure it works
- * in both!
+ * The parser should work with reasonably recent versions of bison.
+ *
+ * byacc support was dropped, because it does not support the following features:
+ * - `%define parse.error detailed`
  */
 
 /* The following goes in the header */

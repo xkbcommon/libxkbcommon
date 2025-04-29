@@ -176,29 +176,13 @@ have_version_script = cc.links(
 map_to_def = find_program('scripts/map-to-def')
 
 # libxkbcommon.
-# Note: we use some yacc extensions, which work with either GNU bison
-# (preferred) or byacc (with backtracking enabled).
-bison = find_program('bison', 'win_bison', required: false, version: '>= 2.3a')
-if bison.found()
-    yacc = bison
-    yacc_gen = generator(
-        bison,
-        output: ['@BASENAME@.c', '@BASENAME@.h'],
-        arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
-    )
-else
-    byacc = find_program('byacc', required: false)
-    if byacc.found()
-        yacc = byacc
-        yacc_gen = generator(
-            byacc,
-            output: ['@BASENAME@.c', '@BASENAME@.h'],
-            arguments: ['-H', '@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
-        )
-    else
-        error('Could not find a compatible YACC program (bison or byacc)')
-    endif
-endif
+bison = find_program('bison', 'win_bison', required: true, version: '>= 2.3a')
+yacc = bison
+yacc_gen = generator(
+    bison,
+    output: ['@BASENAME@.c', '@BASENAME@.h'],
+    arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
+)
 libxkbcommon_sources = [
     'src/compose/parser.c',
     'src/compose/parser.h',
