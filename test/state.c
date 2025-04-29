@@ -1412,6 +1412,128 @@ test_caps_keysym_transformation(struct xkb_context *context)
 }
 
 static void
+test_shortcuts_tweak(struct xkb_context *context)
+{
+    struct xkb_keymap_compile_options *options =
+        xkb_keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1,
+                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+    assert(options);
+    assert(xkb_keymap_compile_options_set_modifier_mask(
+        options, UINT32_C(1) << XKB_MOD_INDEX_CTRL
+    ));
+    assert(xkb_keymap_compile_options_set_shortcuts_reference_layout(
+        options, 1, 2
+    ));
+    assert(xkb_keymap_compile_options_set_shortcuts_reference_layout(
+        options, 3, 0
+    ));
+    struct xkb_keymap *keymap =
+        test_compile_rules2(context, "evdev", "pc104", "us,il,de,ru", NULL,
+                            "grp:menu_toggle,grp:win_switch", options);
+    xkb_keymap_compile_options_free(options);
+    assert(keymap);
+    assert(test_key_seq(
+        keymap,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+
+        /* Layout 2: temporary switch */
+
+        KEY_LEFTMETA, DOWN, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* Layout 2 */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTMETA, UP  , XKB_KEY_ISO_Group_Shift, NEXT,
+
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT, /* Layout 1 (unchanged) */
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTMETA, DOWN, XKB_KEY_ISO_Group_Shift, NEXT, /* Layout 2 */
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT, /* Redirect to layout 3 */
+        KEY_Z       , BOTH, XKB_KEY_y              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* Layout 2 */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L          , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* No redirection with Alt */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L          , NEXT,
+        KEY_LEFTMETA, UP  , XKB_KEY_ISO_Group_Shift, NEXT, /* Layout 1 */
+
+        /* Layout 2: lock */
+
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* Match mask: redirect to layout 1 */
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* No match: no redirect */
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* Match mask: redirect to layout 1 */
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        /* Layout 3 */
+
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        /* Layout 4 */
+
+        KEY_Q       , BOTH, XKB_KEY_Cyrillic_shorti, NEXT,
+        KEY_Z       , BOTH, XKB_KEY_Cyrillic_ya    , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L          , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_Cyrillic_shorti, NEXT,
+        KEY_Z       , BOTH, XKB_KEY_Cyrillic_ya    , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L          , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group , FINISH
+    ));
+    xkb_keymap_unref(keymap);
+}
+
+static void
 test_get_utf8_utf32(struct xkb_keymap *keymap)
 {
     char buf[256];
@@ -1772,6 +1894,7 @@ main(void)
     xkb_keymap_unref(keymap);
 
     test_caps_keysym_transformation(context);
+    test_shortcuts_tweak(context);
 
     test_leds(context);
     test_multiple_actions(context);

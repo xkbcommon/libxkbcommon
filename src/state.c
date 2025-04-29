@@ -807,8 +807,19 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.locked_group,
                                     state->keymap->num_groups,
                                     RANGE_WRAP, 0);
-    state->components.group =
-        (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
+
+    state->components.group = (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
+
+    /*
+     * Shortcuts tweak: if the effective mod mask matches the shortcuts mask,
+     * then redirect the effective group to its corresponding target.
+     */
+    if (state->components.mods & state->keymap->shortcuts_mod_mask) {
+        wrapped =
+            state->keymap->shortcuts_target_layouts[state->components.group];
+        if (wrapped != XKB_LAYOUT_INVALID)
+            state->components.group = wrapped;
+    }
 
     xkb_state_led_update_all(state);
 }

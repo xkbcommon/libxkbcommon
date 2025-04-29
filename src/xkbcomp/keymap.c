@@ -13,6 +13,10 @@
 
 #include <string.h>
 
+#include "xkbcommon/xkbcommon.h"
+#include "context.h"
+#include "messages-codes.h"
+#include "utils.h"
 #include "keymap.h"
 #include "darray.h"
 #include "xkbcomp-priv.h"
@@ -306,7 +310,8 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
  * other than Shift actually do something ...
  */
 static bool
-UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
+UpdateDerivedKeymapFields(struct xkb_keymap *keymap,
+                          const struct xkb_keymap_compile_options *options)
 {
     struct xkb_key *key;
     struct xkb_mod *mod;
@@ -361,6 +366,27 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     xkb_keys_foreach(key, keymap)
         keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
 
+    /* Set shortcut tweak config only if relevant */
+    if (options->shortcuts_config.mask &&
+        !darray_empty(options->shortcuts_config.targets)) {
+        keymap->shortcuts_mod_mask = options->shortcuts_config.mask;
+        keymap->shortcuts_target_layouts = calloc(
+            keymap->num_groups, sizeof(*keymap->shortcuts_target_layouts)
+        );
+        if (!keymap->shortcuts_target_layouts)
+            return false;
+        const unsigned int count = MIN(
+            keymap->num_groups, darray_size(options->shortcuts_config.targets)
+        );
+        for (i = 0; i < count; i++) {
+            keymap->shortcuts_target_layouts[i]
+                = (darray_item(options->shortcuts_config.targets, i) >= count)
+                ? XKB_LAYOUT_INVALID
+                : darray_item(options->shortcuts_config.targets, i);
+        }
+        for (i = count; i < keymap->num_groups; i++)
+            keymap->shortcuts_target_layouts[i] = XKB_LAYOUT_INVALID;
+    }
     return true;
 }
 
@@ -374,7 +400,8 @@ static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
 };
 
 bool
-CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
+              const struct xkb_keymap_compile_options *options)
 {
     XkbFile *files[LAST_KEYMAP_FILE_TYPE + 1] = { NULL };
     enum xkb_file_type type;
@@ -436,5 +463,5 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
         }
     }
 
-    return UpdateDerivedKeymapFields(keymap);
+    return UpdateDerivedKeymapFields(keymap, options);
 }

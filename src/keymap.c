@@ -16,8 +16,8 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "darray.h"
 #include "keymap.h"
-#include "text.h"
 
 struct xkb_keymap_compile_options*
 xkb_keymap_compile_options_new(enum xkb_keymap_format format,
@@ -37,8 +37,40 @@ xkb_keymap_compile_options_new(enum xkb_keymap_format format,
 void
 xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options)
 {
-    if (options)
-        free(options);
+    if (!options)
+        return;
+    darray_free(options->shortcuts_config.targets);
+    free(options);
+}
+
+bool
+xkb_keymap_compile_options_set_modifier_mask(
+    struct xkb_keymap_compile_options* restrict options, xkb_mod_mask_t mask
+)
+{
+    options->shortcuts_config.mask = mask;
+    return true;
+}
+
+bool
+xkb_keymap_compile_options_set_shortcuts_reference_layout(
+    struct xkb_keymap_compile_options* restrict options,
+    xkb_layout_index_t source, xkb_layout_index_t target)
+{
+    if (source >= XKB_MAX_GROUPS || target >= XKB_MAX_GROUPS)
+        return false;
+
+    /* Resize array & initialize new entries, if relevant */
+    if (source >= darray_size(options->shortcuts_config.targets)) {
+        xkb_layout_index_t new = darray_size(options->shortcuts_config.targets);
+        darray_resize(options->shortcuts_config.targets, source + 1);
+        for (; new < source; new++)
+            darray_item(options->shortcuts_config.targets, new) =
+                XKB_LAYOUT_INVALID;
+    }
+
+    darray_item(options->shortcuts_config.targets, source) = target;
+    return true;
 }
 
 struct xkb_keymap *
@@ -88,6 +120,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         }
         free(keymap->keys);
     }
+    free(keymap->shortcuts_target_layouts);
     if (keymap->types) {
         for (unsigned i = 0; i < keymap->num_types; i++) {
             free(keymap->types[i].entries);
@@ -159,7 +192,7 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
         rmlvo = *rmlvo_in;
     xkb_context_sanitize_rule_names(ctx, &rmlvo);
 
-    if (!ops->keymap_new_from_names(keymap, &rmlvo)) {
+    if (!ops->keymap_new_from_names(keymap, options, &rmlvo)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
@@ -222,7 +255,7 @@ xkb_keymap_new_from_buffer2(struct xkb_context *ctx,
     if (length > 0 && buffer[length - 1] == '\0')
         length--;
 
-    if (!ops->keymap_new_from_string(keymap, buffer, length)) {
+    if (!ops->keymap_new_from_string(keymap, options, buffer, length)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }
@@ -266,7 +299,7 @@ xkb_keymap_new_from_file2(struct xkb_context *ctx, FILE *file,
     if (!keymap)
         return NULL;
 
-    if (!ops->keymap_new_from_file(keymap, file)) {
+    if (!ops->keymap_new_from_file(keymap, options, file)) {
         xkb_keymap_unref(keymap);
         return NULL;
     }

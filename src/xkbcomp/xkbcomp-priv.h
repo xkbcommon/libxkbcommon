@@ -39,7 +39,8 @@ bool
 CompileSymbols(XkbFile *file, struct xkb_keymap *keymap);
 
 bool
-CompileKeymap(XkbFile *file, struct xkb_keymap *keymap);
+CompileKeymap(XkbFile *file, struct xkb_keymap *keymap,
+              const struct xkb_keymap_compile_options *options);
 
 /***====================================================================***/
 

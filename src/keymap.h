@@ -361,14 +361,24 @@ struct xkb_mod_set {
     xkb_mod_mask_t explicit_vmods;
 };
 
+struct xkb_shortcuts_config {
+    xkb_mod_mask_t mask;
+    darray(xkb_layout_index_t) targets;
+};
+
 struct xkb_keymap_compile_options {
     enum xkb_keymap_format format;
     enum xkb_keymap_compile_flags flags;
+    struct xkb_shortcuts_config shortcuts_config;
 };
 
 #define keymap_compile_options_new(_format, _flags) { \
         .flags = (_flags),                            \
-        .format = (_format)                           \
+        .format = (_format),                          \
+        .shortcuts_config = {                         \
+            .mask = 0,                                \
+            .targets = darray_new()                   \
+        }                                             \
     }
 
 /*
@@ -434,6 +444,10 @@ struct xkb_keymap {
     /* Not all groups must have names. */
     xkb_layout_index_t num_group_names;
     xkb_atom_t *group_names;
+    /* Target layouts for shortcuts tweak */
+    xkb_layout_index_t *shortcuts_target_layouts;
+    /* Modifier mask for shortcuts tweak */
+    xkb_mod_mask_t shortcuts_mod_mask;
 
     struct xkb_led leds[XKB_MAX_LEDS];
     unsigned int num_leds;
@@ -551,10 +565,14 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
 
 struct xkb_keymap_format_ops {
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
+                                  const struct xkb_keymap_compile_options *opt,
                                   const struct xkb_rule_names *names);
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
+                                   const struct xkb_keymap_compile_options *opt,
                                    const char *string, size_t length);
-    bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
+    bool (*keymap_new_from_file)(struct xkb_keymap *keymap,
+                                 const struct xkb_keymap_compile_options *opt,
+                                 FILE *file);
     char *(*keymap_get_as_string)(struct xkb_keymap *keymap);
 };
 

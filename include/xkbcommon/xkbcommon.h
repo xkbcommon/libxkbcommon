@@ -950,6 +950,32 @@ XKB_EXPORT void
 xkb_keymap_compile_options_free(struct xkb_keymap_compile_options *options);
 
 /**
+ * Set the modifiers that trigger keyboard shortcuts tweak.
+ *
+ * @sa xkb_keymap_compile_options_set_shortcuts_reference_layout()
+ * @since 1.10
+ */
+XKB_EXPORT bool
+xkb_keymap_compile_options_set_modifier_mask(
+    struct xkb_keymap_compile_options* restrict options, xkb_mod_mask_t mask
+);
+
+/**
+ * Set layout mapping for keyboard shortcuts tweak.
+ *
+ * Enable tweaking keyboard shortcuts by switching the effective layout when
+ * any modifier set by xkb_keymap_compile_options_set_modifier_mask() is active.
+ *
+ * @sa xkb_keymap_compile_options_set_modifier_mask()
+ * @since 1.10
+ */
+XKB_EXPORT bool
+xkb_keymap_compile_options_set_shortcuts_reference_layout(
+    struct xkb_keymap_compile_options* restrict options,
+    xkb_layout_index_t source, xkb_layout_index_t target
+);
+
+/**
  * Create a keymap from [RMLVO] names.
  *
  * The primary keymap entry point: creates a new XKB keymap from a set of
