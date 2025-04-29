@@ -102,12 +102,6 @@ test_path_functions(void)
 static uint32_t
 rand_uint32(void)
 {
-    static int initialized = 0;
-    if (!initialized) {
-        srand((unsigned int)time(NULL));
-        initialized = 1;
-    }
-
     /* First decide how many bits we’ll actually use (1-32) */
     int bits = 1 + (rand() % 32);
 
@@ -126,12 +120,6 @@ rand_uint32(void)
 static uint64_t
 rand_uint64(void)
 {
-    static int initialized = 0;
-    if (!initialized) {
-        srand((unsigned int)time(NULL));
-        initialized = 1;
-    }
-
     /* First decide how many bits we’ll actually use (1-64) */
     int bits = 1 + (rand() % 64);
 
@@ -428,7 +416,6 @@ test_number_parsers(void)
     }
 
     /* Random */
-    srand(time(NULL));
     for (unsigned k = 0; k < 10000; k++) {
         const uint32_t x32 = rand_uint32();
         const uint64_t x64 = rand_uint64();
@@ -471,10 +458,26 @@ test_number_parsers(void)
 }
 /* NOLINTEND(google-readability-function-size) */
 
+/* CLI positional arguments:
+ * 1. Seed for the pseudo-random generator:
+ *    - Leave it unset or set it to “-” to use current time.
+ *    - Use an integer to set it explicitly.
+ */
 int
-main(void)
+main(int argc, char *argv[])
 {
     test_init();
+
+    /* Initialize pseudo-random generator with program arg or current time */
+    unsigned int seed;
+    if (argc >= 2 && !streq(argv[1], "-")) {
+        seed = (unsigned int) atoi(argv[1]);
+    } else {
+        seed = (unsigned int) time(NULL);
+    }
+    fprintf(stderr, "Seed for the pseudo-random generator: %u\n", seed);
+    srand(seed);
+
     test_string_functions();
     test_path_functions();
     test_number_parsers();
