@@ -59,9 +59,6 @@ test_random_strings(void)
     table = atom_table_new();
     assert(table);
 
-    unsigned seed = (unsigned) clock();
-    srand(seed);
-
     N = 1 + rand() % 100000;
     arr = calloc(N, sizeof(*arr));
     assert(arr);
@@ -81,7 +78,6 @@ test_random_strings(void)
                         strlen(string), string);
                 fprintf(stderr, "new length %zu, string %.*s\n",
                         arr[i].len, (int) arr[i].len, arr[i].string);
-                fprintf(stderr, "seed: %u\n", seed);
                 assert(false);
             }
 
@@ -95,7 +91,6 @@ test_random_strings(void)
         if (arr[i].atom == XKB_ATOM_NONE) {
             fprintf(stderr, "failed to intern! len: %zu, string: %.*s\n",
                     arr[i].len, (int) arr[i].len, arr[i].string);
-            fprintf(stderr, "seed: %u\n", seed);
             assert(false);
         }
     }
@@ -121,7 +116,6 @@ test_random_strings(void)
             }
             fprintf(stderr, "END\n");
 
-            fprintf(stderr, "seed: %u\n", seed);
             assert(false);
         }
     }
@@ -132,13 +126,28 @@ test_random_strings(void)
     atom_table_free(table);
 }
 
+/* CLI positional arguments:
+ * 1. Seed for the pseudo-random generator:
+ *    - Leave it unset or set it to “-” to use current time.
+ *    - Use an integer to set it explicitly.
+ */
 int
-main(void)
+main(int argc, char *argv[])
 {
     struct atom_table *table;
     xkb_atom_t atom1, atom2, atom3;
 
     test_init();
+
+    /* Initialize pseudo-random generator with program arg or current time */
+    unsigned int seed;
+    if (argc >= 2 && !streq(argv[1], "-")) {
+        seed = (unsigned int) atoi(argv[1]);
+    } else {
+        seed = (unsigned int) time(NULL);
+    }
+    fprintf(stderr, "Seed for the pseudo-random generator: %u\n", seed);
+    srand(seed);
 
     table = atom_table_new();
     assert(table);

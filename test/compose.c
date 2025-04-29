@@ -4,6 +4,7 @@
  */
 
 #include "config.h"
+#include <stdlib.h>
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
@@ -1066,13 +1067,13 @@ main(int argc, char *argv[])
     assert(ctx);
 
     /* Initialize pseudo-random generator with program arg or current time */
-    int seed;
+    unsigned int seed;
     if (argc >= 2 && !streq(argv[1], "-")) {
-        seed = atoi(argv[1]);
+        seed = (unsigned int) atoi(argv[1]);
     } else {
-        seed = (int)time(NULL);
+        seed = (unsigned int) time(NULL);
     }
-    fprintf(stderr, "Seed for the pseudo-random generator: %d\n", seed);
+    fprintf(stderr, "Seed for the pseudo-random generator: %u\n", seed);
     srand(seed);
 
     /* Determine number of loops for quickchecks */
@@ -1119,5 +1120,5 @@ main(int argc, char *argv[])
     test_roundtrip(ctx);
 
     xkb_context_unref(ctx);
-    return 0;
+    return EXIT_SUCCESS;
 }
