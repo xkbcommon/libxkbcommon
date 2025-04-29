@@ -154,7 +154,7 @@ test_number_parsers(void)
     /* Check the claim that it always works on normal strings using SIZE_MAX and
      * that it always stops on the first NULL byte */
     {
-        const struct {
+        static const struct {
             const char* input;
             struct { int count; uint64_t val; } dec;
             struct { int count; uint64_t val; } hex;
@@ -170,9 +170,39 @@ test_number_parsers(void)
                 .hex = { 0, UINT64_C(0) }
             },
             {
+                .input = "/",
+                .dec = { 0, UINT64_C(0) },
+                .hex = { 0, UINT64_C(0) }
+            },
+            {
+                .input = ";",
+                .dec = { 0, UINT64_C(0) },
+                .hex = { 0, UINT64_C(0) }
+            },
+            {
                 .input = "x",
                 .dec = { 0, UINT64_C(0) },
                 .hex = { 0, UINT64_C(0) }
+            },
+            {
+                .input = "/1",
+                .dec = { 0, UINT64_C(0) },
+                .hex = { 0, UINT64_C(0) }
+            },
+            {
+                .input = ";1",
+                .dec = { 0, UINT64_C(0) },
+                .hex = { 0, UINT64_C(0) }
+            },
+            {
+                .input = "x1",
+                .dec = { 0, UINT64_C(0) },
+                .hex = { 0, UINT64_C(0) }
+            },
+            {
+                .input = "0",
+                .dec = { 1, UINT64_C(0) },
+                .hex = { 1, UINT64_C(0) }
             },
             {
                 .input = "1",
@@ -200,14 +230,44 @@ test_number_parsers(void)
                 .hex = { -1, UINT64_C(0x1844674407370955)}
             },
             {
+                .input = "18446744073709551616",
+                .dec = { -1, UINT64_C(1844674407370955161)},
+                .hex = { -1, UINT64_C(0x1844674407370955) }
+            },
+            {
+                .input = "99999999999999999999",
+                .dec = { -1, UINT64_C(9999999999999999999)},
+                .hex = { -1, UINT64_C(0x9999999999999999) }
+            },
+            {
                 .input = "184467440737095516150",
                 .dec = { -1, UINT64_MAX                  },
                 .hex = { -1, UINT64_C(0x1844674407370955)}
             },
             {
+                .input = "00000000000000000",
+                .dec = { 17, UINT64_C(0) },
+                .hex = { 17, UINT64_C(0) }
+            },
+            {
+                .input = "00000000000000001",
+                .dec = { 17, UINT64_C(1) },
+                .hex = { 17, UINT64_C(1) }
+            },
+            {
                 .input = "ffffffffffffffff",
                 .dec = { 0 , 0         },
                 .hex = { 16, UINT64_MAX}
+            },
+            {
+                .input = "ffffffffffffffff0",
+                .dec = { 0 , 0         },
+                .hex = { -1, UINT64_MAX}
+            },
+            {
+                .input = "10000000000000000",
+                .dec = { 17, UINT64_C(10000000000000000) },
+                .hex = { -1, UINT64_C(0x1000000000000000)}
             },
             {
                 .input = "fffffffffffffffff",
@@ -217,91 +277,62 @@ test_number_parsers(void)
 
         };
         for (size_t k = 0; k < ARRAY_SIZE(tests); k++) {
-            uint64_t dec = 0;
-            int count;
-            count = parse_dec_to_uint64_t(tests[k].input, SIZE_MAX, &dec);
-            assert_printf(count == tests[k].dec.count,
-                          "SIZE_MAX #%zu, expected: %d, got: %d\n",
-                          k, tests[k].dec.count, count);
-            assert_printf(dec == tests[k].dec.val,
-                          "SIZE_MAX #%zu, expected: %"PRIu64", got: %"PRIu64"\n",
-                          k, tests[k].dec.val, dec);
-            uint64_t hex = 0;
-            count = parse_hex_to_uint64_t(tests[k].input, SIZE_MAX, &hex);
-            assert_printf(count == tests[k].hex.count,
-                          "SIZE_MAX #%zu, expected: %d, got: %d\n",
-                          k, tests[k].hex.count, count);
-            assert_printf(hex == tests[k].hex.val,
-                          "SIZE_MAX #%zu, expected: %#"PRIx64", got: %#"PRIx64"\n",
-                          k, tests[k].hex.val, hex);
+            const size_t len = strlen(tests[k].input);
+            /* Try different lengths */
+            const struct {const char* label; size_t len;} sizes[] = {
+                { .label = "buffer"  , .len = len     },
+                { .label = "string"  , .len = len + 1 },
+                { .label = "SIZE_MAX", .len = SIZE_MAX}
+            };
+            for (unsigned int s = 0; s < ARRAY_SIZE(sizes); s++) {
+                int count;
+                /* Decimal */
+                uint64_t dec = 0;
+                count =
+                    parse_dec_to_uint64_t(tests[k].input, sizes[s].len, &dec);
+                assert_printf(count == tests[k].dec.count,
+                              "Dec %s #%zu \"%s\" (%zu), "
+                              "expected: %d, got: %d\n",
+                              sizes[s].label, k, tests[k].input, sizes[s].len,
+                              tests[k].dec.count, count);
+                assert_printf(dec == tests[k].dec.val,
+                              "Dec %s #%zu \"%s\", "
+                              "expected: %"PRIu64", got: %"PRIu64"\n",
+                              sizes[s].label, k, tests[k].input,
+                              tests[k].dec.val, dec);
+                /* Hexadecimal */
+                uint64_t hex = 0;
+                count =
+                    parse_hex_to_uint64_t(tests[k].input, sizes[s].len, &hex);
+                assert_printf(count == tests[k].hex.count,
+                              "Hex %s #%zu \"%s\" (%zu), "
+                              "expected: %d, got: %d\n",
+                              sizes[s].label, k, tests[k].input, sizes[s].len,
+                              tests[k].hex.count, count);
+                assert_printf(hex == tests[k].hex.val,
+                              "Hex %s #%zu \"%s\", "
+                              "expected: %#"PRIx64", got: %#"PRIx64"\n",
+                              sizes[s].label, k, tests[k].input,
+                              tests[k].hex.val, hex);
+            }
         }
     }
 
-#define str_safe_len(input) \
-    (sizeof(input) == 0 ?   \
-        0                   \
-        : sizeof(input) - ((input)[sizeof(input) - 1] == '\0' ? -1 : 0))
 #define PRIuint64_t PRIx64
 #define PRIuint32_t PRIx32
-#define test_parse_to(type, format, input, count, expected) do {             \
-    type n = 0;                                                              \
-    int r = parse_##format##_to_##type(input, str_safe_len(input), &n);      \
-    assert_printf(r == (count),                                              \
-                  "expected count: %d, got: %d (value: %#"PRI##type", string: %s)\n", \
-                  count, r, n, input);                                       \
-    assert_printf(n == (expected),                                           \
-                  "expected value: %#"PRI##type", got: %#"PRI##type"\n", expected, n);         \
+#define test_parse_to(type, format, input, count, expected) do {     \
+    type n = 0;                                                      \
+    int r = parse_##format##_to_##type(input, ARRAY_SIZE(input), &n);\
+    assert_printf(r == (count),                                      \
+                  "Buffer: expected count: %d, "                     \
+                  "got: %d (value: %#"PRI##type", string: %.*s)\n",  \
+                  count, r, n, (int) ARRAY_SIZE(input), (input));    \
+    assert_printf(n == (expected),                                   \
+                  "Buffer: expected value: %#"PRI##type", got: "     \
+                  "%#"PRI##type"\n", expected, n);                   \
 } while (0)
 
-    char empty[] = {};
-    char not_null_terminated_0[] = { '0' };
-    char not_null_terminated_1[] = { '1' };
-    char not_null_terminated_dec_max[] = {
-        '1', '8', '4', '4', '6', '7', '4', '4', '0', '7', '3', '7', '0', '9',
-        '5', '5', '1', '6', '1', '5'
-    };
-    char buffer[30] = {0};
-    int count;
-
-    test_parse_to(uint64_t, dec, empty, 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, not_null_terminated_0, 1, UINT64_C(0));
-    test_parse_to(uint64_t, dec, not_null_terminated_1, 1, UINT64_C(1));
-    test_parse_to(uint64_t, dec, not_null_terminated_dec_max,
-                  (int) sizeof(not_null_terminated_dec_max), UINT64_MAX);
-    test_parse_to(uint64_t, dec, empty, 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "/", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, ";", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "x", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "/0", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, ";0", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "x0", 0, UINT64_C(0));
-    test_parse_to(uint64_t, dec, "18446744073709551616", -1, UINT64_MAX / 10);
-    test_parse_to(uint64_t, dec, "184467440737095516150", -1, UINT64_MAX);
-    test_parse_to(uint64_t, dec, "99999999999999999999", -1,
-                  UINT64_C(9999999999999999999));
-
-    char not_null_terminated_hex_max[] = {
-        'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f',
-        'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f',
-    };
-
-    test_parse_to(uint64_t, hex, empty, 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, not_null_terminated_0, 1, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, not_null_terminated_1, 1, UINT64_C(0x1));
-    test_parse_to(uint64_t, hex, not_null_terminated_hex_max,
-                  (int) sizeof(not_null_terminated_hex_max), UINT64_MAX);
-    test_parse_to(uint64_t, hex, "", 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, "/", 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, ";", 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, "x", 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, "xf", 0, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, "00000000000000000", 17, UINT64_C(0x0));
-    test_parse_to(uint64_t, hex, "00000000000000001", 17, UINT64_C(0x1));
-    test_parse_to(uint64_t, hex, "ffffffffffffffff0", -1, UINT64_MAX);
-    test_parse_to(uint64_t, hex, "10000000000000000", -1,
-                  UINT64_C(0x1000000000000000));
-
+    /* Test syntax variants */
     const uint64_t values[] = {
         UINT64_C(0),
         UINT64_C(1),
@@ -324,7 +355,9 @@ test_number_parsers(void)
         UINT64_MAX - 1,
         UINT64_MAX,
     };
+    char buffer[30] = {0};
     for (size_t k = 0; k < ARRAY_SIZE(values); k++) {
+        int count;
         /* Basic: decimal */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu32, (uint32_t) values[k]);
         assert(count > 0);
@@ -399,6 +432,7 @@ test_number_parsers(void)
     for (unsigned k = 0; k < 10000; k++) {
         const uint32_t x32 = rand_uint32();
         const uint64_t x64 = rand_uint64();
+        int count;
         /* Hex: Lower case */
         count = snprintf(buffer, sizeof(buffer), "%"PRIx32, x32);
         assert(count > 0);
