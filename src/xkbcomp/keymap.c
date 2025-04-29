@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-names.h"
 #include "context.h"
 #include "messages-codes.h"
 #include "utils.h"
@@ -303,6 +304,97 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
     }
 }
 
+static bool
+set_shortcut_tweak_config(struct xkb_keymap *keymap,
+                          const struct xkb_keymap_compile_options *options)
+{
+    keymap->shortcuts_mod_mask = options->shortcuts_config.mask;
+    keymap->shortcuts_target_layouts = calloc(
+        keymap->num_groups, sizeof(*keymap->shortcuts_target_layouts)
+    );
+    if (!keymap->shortcuts_target_layouts)
+        return false;
+    const unsigned int count = MIN(
+        keymap->num_groups, darray_size(options->shortcuts_config.targets)
+    );
+    for (unsigned int i = 0; i < count; i++)
+        keymap->shortcuts_target_layouts[i]
+            = (darray_item(options->shortcuts_config.targets, i) >= count)
+            ? XKB_LAYOUT_INVALID
+            : darray_item(options->shortcuts_config.targets, i);
+    for (unsigned int i = count; i < keymap->num_groups; i++)
+        keymap->shortcuts_target_layouts[i] = XKB_LAYOUT_INVALID;
+    return true;
+}
+
+static bool
+set_shortcut_tweak_config_from_env(struct xkb_keymap *keymap)
+{
+    const char *config_str = xkb_context_getenv(
+        keymap->ctx, "XKB_UNSTABLE_EXPERIMENTAL_SHORTCUT_MASK"
+    );
+    xkb_mod_mask_t mask = 0;
+    if (isempty(config_str)) {
+        /* Use default mask */
+        xkb_mod_index_t mod;
+        mod = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+        mod = xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+        mod = xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_SUPER);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+    } else {
+        char *endptr = NULL;
+        const unsigned long raw_mask = strtoul(config_str, &endptr, 16);
+        if (endptr[0] != '\0' || raw_mask > UINT32_MAX) {
+            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot parse shortcut tweak mod mask\n");
+            return true;
+        }
+        mask = (xkb_mod_mask_t) raw_mask;
+    }
+
+    mask = mod_mask_get_effective(keymap, mask);
+
+    if (!mask)
+        return true;
+
+    config_str = xkb_context_getenv(
+        keymap->ctx, "XKB_UNSTABLE_EXPERIMENTAL_SHORTCUT_TARGET_LAYOUTS"
+    );
+    if (isempty(config_str))
+        return true;
+    struct xkb_keymap_compile_options options = keymap_compile_options_new(0, 0);
+    xkb_keymap_compile_options_set_modifier_mask(&options, mask);
+    const char *start = config_str;
+    xkb_layout_index_t layout = 0;
+    /* Parse comma-separated list of layout indexes */
+    while (start[0] != '\0') {
+        char *endptr = NULL;
+        const unsigned long raw_layout = strtoul(start, &endptr, 10);
+        if ((endptr[0] != '\0' && endptr[0] != ',') ||
+            raw_layout < 1 || raw_layout > XKB_MAX_GROUPS ||
+            !xkb_keymap_compile_options_set_shortcuts_reference_layout(
+                &options, layout, (xkb_layout_index_t) raw_layout - 1)) {
+            darray_free(options.shortcuts_config.targets);
+            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot parse shortcut tweak layout index #%"PRIu32"\n",
+                    layout);
+            return false;
+        }
+        fprintf(stderr, "~~~ %u -> %lu - %s\n", layout, raw_layout, endptr);
+        layout++;
+        if (endptr[0] == '\0')
+            break;
+        start = endptr + 1;
+    }
+
+    return set_shortcut_tweak_config(keymap, &options);
+}
+
 /**
  * This collects a bunch of disparate functions which was done in the server
  * at various points that really should've been done within xkbcomp.  Turns out
@@ -369,25 +461,11 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap,
     /* Set shortcut tweak config only if relevant */
     if (options->shortcuts_config.mask &&
         !darray_empty(options->shortcuts_config.targets)) {
-        keymap->shortcuts_mod_mask = options->shortcuts_config.mask;
-        keymap->shortcuts_target_layouts = calloc(
-            keymap->num_groups, sizeof(*keymap->shortcuts_target_layouts)
-        );
-        if (!keymap->shortcuts_target_layouts)
-            return false;
-        const unsigned int count = MIN(
-            keymap->num_groups, darray_size(options->shortcuts_config.targets)
-        );
-        for (i = 0; i < count; i++) {
-            keymap->shortcuts_target_layouts[i]
-                = (darray_item(options->shortcuts_config.targets, i) >= count)
-                ? XKB_LAYOUT_INVALID
-                : darray_item(options->shortcuts_config.targets, i);
-        }
-        for (i = count; i < keymap->num_groups; i++)
-            keymap->shortcuts_target_layouts[i] = XKB_LAYOUT_INVALID;
+        return set_shortcut_tweak_config(keymap, options);
+    } else {
+        // FIXME: remove when we are done with the experimentation
+        return set_shortcut_tweak_config_from_env(keymap);
     }
-    return true;
 }
 
 typedef bool (*compile_file_fn)(XkbFile *file, struct xkb_keymap *keymap);
