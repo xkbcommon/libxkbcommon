@@ -1513,8 +1513,8 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * All parameters must always be passed, or the resulting state may be
  * incoherent.
  *
- * The serialization is lossy and will not survive round trips; it must only
- * be used to feed client state objects, and must not be used to update the
+ * @warning The serialization is lossy and will not survive round trips; it must
+ * only be used to feed client state objects, and must not be used to update the
  * server state.
  *
  * @returns A mask of state components that have changed as a result of
