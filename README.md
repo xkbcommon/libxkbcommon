@@ -14,6 +14,7 @@ layouts.
 - [User-configuration](doc/user-configuration.md): instructions to add
   a *custom layout* or option.
 - [Quick Guide](doc/quick-guide.md): introduction on how to use this library.
+- [Frequently Asked Question (FAQ)](doc/faq.md).
 
 ## Building
 
