@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <spawn.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -15,12 +16,21 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "xvfb-wrapper.h"
+#include "evdev-scancodes.h"
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon-names.h"
 #include "xkbcommon/xkbcommon-x11.h"
+#include "xvfb-wrapper.h"
+
+/* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
+ * keycode set (where ESC is 9). */
+#define EVDEV_OFFSET 8
 
 X11_TEST(test_basic)
 {
-    struct xkb_keymap *keymap;
+    struct xkb_keymap *keymap = NULL;
+    struct xkb_state *state = NULL;
     xcb_connection_t *conn;
     int32_t device_id;
     int ret, status;
@@ -96,10 +106,30 @@ X11_TEST(test_basic)
         goto err_dump;
     }
 
+    state = xkb_x11_state_new_from_device(keymap, conn, device_id);
+    assert(state);
+
+    /* Check capitalization transformation */
+    xkb_keysym_t sym;
+    sym = xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_a);
+    sym = xkb_state_key_get_one_sym(state, KEY_LEFT + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_Left);
+    const xkb_mod_index_t caps_idx =
+        xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    assert(caps_idx != XKB_MOD_INVALID);
+    const xkb_mod_mask_t caps = UINT32_C(1) << caps_idx;
+    xkb_state_update_mask(state, 0, 0, caps, 0, 0, 0);
+    sym = xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_A);
+    sym = xkb_state_key_get_one_sym(state, KEY_LEFT + EVDEV_OFFSET);
+    assert(sym == XKB_KEY_Left);
+
     ret = EXIT_SUCCESS;
 err_dump:
     free(original);
     free(dump);
+    xkb_state_unref(state);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
 err_xcb:

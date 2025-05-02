@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "x11-priv.h"
+#include "xkbcommon/xkbcommon.h"
 
 /*
  * References for the lonesome traveler:
@@ -472,6 +473,9 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                          * there may be an action set */
                         key->groups[group].levels[level].num_syms = 1;
                         key->groups[group].levels[level].s.sym = wire_keysym;
+                        /* Set capitalization transformation */
+                        key->groups[group].levels[level].upper =
+                            xkb_keysym_to_upper(wire_keysym);
                     }
 
                     syms_iter++;
