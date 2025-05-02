@@ -1,3 +1,18 @@
+libxkbcommon [1.9.1] - 2025-05-02
+=================================
+
+[1.9.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.1
+
+## API
+
+### Fixes
+
+- X11: Fixed capitalization transformation not set properly, resulting in
+  some keys (e.g. arrows, Home, etc.) not working when Caps Lock is on.
+
+  ([#740](https://github.com/xkbcommon/libxkbcommon/issues/740))
+
+
 libxkbcommon [1.9.0] - 2025-04-26
 =================================
 
@@ -160,11 +175,6 @@ libxkbcommon [1.9.0] - 2025-04-26
   This option has the same function than `setxkbmap -print`. This is particularly
   useful for debugging issues with the rules. ([#669](https://github.com/xkbcommon/libxkbcommon/issues/669))
 - Honor user locale in all tools.
-
-
-## Build system
-
-No significant changes.
 
 
 libxkbcommon [1.8.1] - 2025-03-12
