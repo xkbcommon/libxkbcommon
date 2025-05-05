@@ -885,6 +885,27 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
 }
 
 /**
+ * Compute the resolved effective mask of an arbitrary input.
+ *
+ * Contrary to `mod_mask_get_effective`, it resolves only modifiers not present
+ * in the canonical mask, so that it enables `xkb_state_serialize_mods` to
+ * round trip via `xkb_state_update_mask`.
+ */
+static inline xkb_mod_mask_t
+resolve_to_canonical_mods(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
+{
+    return
+        /*
+         * Keep canonical modifier mask.
+         * It contains either real modifiers or canonical virtual modifiers.
+         */
+        (mods & keymap->canonical_state_mask) |
+        /* Resolve other modifiers */
+        mod_mask_get_effective(keymap,
+                               mods & ~keymap->canonical_state_mask);
+}
+
+/**
  * Updates the state from a set of explicit masks as gained from
  * xkb_state_serialize_mods and xkb_state_serialize_groups.  As noted in the
  * documentation for these functions in xkbcommon.h, this round-trip is
@@ -900,20 +921,10 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_layout_index_t latched_group,
                       xkb_layout_index_t locked_group)
 {
-    struct state_components prev_components;
-    xkb_mod_mask_t mask;
+    const struct state_components prev_components = state->components;
 
-    prev_components = state->components;
-
-    /* Only include modifiers which exist in the keymap. */
-    mask = (xkb_mod_mask_t) ((UINT64_C(1) << xkb_keymap_num_mods(state->keymap))
-         - UINT64_C(1));
-
-    state->components.base_mods = base_mods & mask;
-    state->components.latched_mods = latched_mods & mask;
-    state->components.locked_mods = locked_mods & mask;
-
-    /* Make sure the mods are fully resolved - since we get arbitrary
+    /*
+     * Make sure the mods are fully resolved - since we get arbitrary
      * input, they might not be.
      *
      * It might seem more reasonable to do this only for components.mods
@@ -925,14 +936,13 @@ xkb_state_update_mask(struct xkb_state *state,
      * if a vmod is depressed, its mappings are depressed with it; so we're
      * expected to do the same here.  Also, LEDs (usually) look if a real
      * mod is locked, not just effective; otherwise it won't be lit.
-     *
-     * We OR here because mod_mask_get_effective() drops vmods. */
-    state->components.base_mods |=
-        mod_mask_get_effective(state->keymap, state->components.base_mods);
-    state->components.latched_mods |=
-        mod_mask_get_effective(state->keymap, state->components.latched_mods);
-    state->components.locked_mods |=
-        mod_mask_get_effective(state->keymap, state->components.locked_mods);
+     */
+    state->components.base_mods =
+        resolve_to_canonical_mods(state->keymap, base_mods);
+    state->components.latched_mods =
+        resolve_to_canonical_mods(state->keymap, latched_mods);
+    state->components.locked_mods =
+        resolve_to_canonical_mods(state->keymap, locked_mods);
 
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.base_group = (int32_t) base_group;
@@ -1247,13 +1257,12 @@ xkb_state_serialize_layout(struct xkb_state *state,
 xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
 {
+    /* Initialize the effective mask with its corresponding real mods. */
+    xkb_mod_mask_t mask = mods & MOD_REAL_MASK_ALL;
+
+    /* Resolve the virtual modifiers */
     const struct xkb_mod *mod;
     xkb_mod_index_t i;
-    xkb_mod_mask_t mask;
-
-    /* The effective mask is only real mods for now. */
-    mask = mods & MOD_REAL_MASK_ALL;
-
     xkb_vmods_enumerate(i, mod, &keymap->mods)
         if (mods & (UINT32_C(1) << i))
             mask |= mod->mapping;
@@ -1571,7 +1580,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
     if (!key)
         return 0;
 
-    return mod_mask_get_effective(state->keymap, mask) &
+    return resolve_to_canonical_mods(state->keymap, mask) &
            ~key_get_consumed(state, key, XKB_CONSUMED_MODE_XKB);
 }
 

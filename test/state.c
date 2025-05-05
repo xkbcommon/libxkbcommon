@@ -798,31 +798,25 @@ test_update_mask_mods(struct xkb_keymap *keymap)
 
     changed = xkb_state_update_mask(state, alt, 0, 0, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
-           (alt | mod1));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod1);
 
     changed = xkb_state_update_mask(state, meta, 0, 0, 0, 0, 0);
-    assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
-           (meta | mod1));
+    assert(changed == 0); /* Same canonical modifier state */
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod1);
 
     changed = xkb_state_update_mask(state, 0, 0, num, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
                        XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
-           (num | mod2));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod2);
 
     xkb_state_update_mask(state, 0, 0, 0, 0, 0, 0);
 
     changed = xkb_state_update_mask(state, mod2, 0, num, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
                        XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
-           (mod2 | num));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) ==
-           mod2);
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) ==
-           (num | mod2));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod2);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == mod2);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == mod2);
 
     xkb_state_unref(state);
 }

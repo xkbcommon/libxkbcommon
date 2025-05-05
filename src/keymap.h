@@ -419,7 +419,37 @@ struct xkb_keymap {
     unsigned int num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
 
+    /**
+     * Modifiers configuration.
+     * This is *internal* to the keymap; other implementations may use different
+     * virtual modifiers indexes. Ours depends on:
+     *   1. the order of the parsing of the keymap components;
+     *   2. the order of the virtual modifiers declarations;
+     */
     struct xkb_mod_set mods;
+    /**
+     * Modifier mask of the *canonical* state, i.e. the mask with the *smallest*
+     * population count that denotes all bits used to encode the modifiers in
+     * the keyboard state. It is equal to the bitwise OR of *real* modifiers and
+     * all *virtual* modifiers mappings.
+     *
+     * [WARNING] The bits that do not correspond to *real* modifiers should
+     * *not* be interpreted as corresponding to indexes of virtual modifiers of
+     * the keymap. Indeed, one may use explicit vmod mapping with an arbitrary
+     * value.
+     *
+     * E.g. if M1 is the only vmod and it is defined by:
+     *
+     *     virtual_modifiers M1=0x80000000; // 1 << (32 - 1)
+     *
+     * then the 32th bit of a modifier mask input does *not* denote the 32th
+     * virtual modifier of the keymap, but merely the encoding of the mapping of
+     * M1.
+     *
+     * In the API, any input mask should be preprocessed to resolve the bits
+     * that do not match the canonical mask.
+     */
+    xkb_mod_mask_t canonical_state_mask;
 
     /* This field has 2 uses:
      * • During parsing: Expected layouts count after RMLVO resolution, if any;
@@ -544,7 +574,7 @@ XkbWrapGroupIntoRange(int32_t group,
                       enum xkb_range_exceed_type out_of_range_group_action,
                       xkb_layout_index_t out_of_range_group_number);
 
-xkb_mod_mask_t
+XKB_EXPORT_PRIVATE xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
 struct xkb_level *

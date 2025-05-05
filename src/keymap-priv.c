@@ -36,6 +36,7 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
         keymap->mods.mods[i].type = MOD_REAL;
     }
     keymap->mods.num_mods = ARRAY_SIZE(builtin_mods);
+    keymap->canonical_state_mask = MOD_REAL_MASK_ALL;
 }
 
 struct xkb_keymap *

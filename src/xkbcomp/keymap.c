@@ -327,6 +327,13 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
             if (key->vmodmap & (UINT32_C(1) << i))
                 mod->mapping |= key->modmap;
 
+    /* Update the canonical modifiers state mask */
+    assert(keymap->canonical_state_mask == MOD_REAL_MASK_ALL);
+    xkb_mod_mask_t extra_canonical_mods = 0;
+    xkb_vmods_enumerate(i, mod, &keymap->mods)
+        extra_canonical_mods |= mod->mapping;
+    keymap->canonical_state_mask |= extra_canonical_mods;
+
     /* Now update the level masks for all the types to reflect the vmods. */
     for (i = 0; i < keymap->num_types; i++) {
         ComputeEffectiveMask(keymap, &keymap->types[i].mods);
