@@ -96,7 +96,7 @@ static const struct xkb_key_type_entry *
 get_entry_for_key_state(struct xkb_state *state, const struct xkb_key *key,
                         xkb_layout_index_t group)
 {
-    const struct xkb_key_type *type = key->groups[group].type;
+    const struct xkb_key_type* const type = key->groups[group].type;
     xkb_mod_mask_t active_mods = state->components.mods & type->mods.mask;
     return get_entry_for_mods(type, active_mods);
 }
@@ -109,14 +109,14 @@ xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
                         xkb_layout_index_t layout)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
-    const struct xkb_key_type_entry *entry;
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
 
     if (!key || layout >= key->num_groups)
         return XKB_LEVEL_INVALID;
 
     /* If we don't find an explicit match the default is 0. */
-    entry = get_entry_for_key_state(state, key, layout);
+    const struct xkb_key_type_entry* const entry =
+        get_entry_for_key_state(state, key, layout);
     if (!entry)
         return 0;
 
@@ -130,7 +130,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
 
     if (!key)
         return XKB_LAYOUT_INVALID;
@@ -669,16 +669,14 @@ xkb_filter_apply_all(struct xkb_state *state,
 struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap)
 {
-    struct xkb_state *ret;
-
-    ret = calloc(1, sizeof(*ret));
-    if (!ret)
+    struct xkb_state* restrict const state = calloc(1, sizeof(*state));
+    if (!state)
         return NULL;
 
-    ret->refcnt = 1;
-    ret->keymap = xkb_keymap_ref(keymap);
+    state->refcnt = 1;
+    state->keymap = xkb_keymap_ref(keymap);
 
-    return ret;
+    return state;
 }
 
 struct xkb_state *
@@ -849,21 +847,19 @@ enum xkb_state_component
 xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
-    xkb_mod_index_t i;
-    xkb_mod_mask_t bit;
-    struct state_components prev_components;
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
-
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
     if (!key)
         return 0;
 
-    prev_components = state->components;
+    const struct state_components prev_components = state->components;
 
     state->set_mods = 0;
     state->clear_mods = 0;
 
     xkb_filter_apply_all(state, key, direction);
 
+    xkb_mod_index_t i;
+    xkb_mod_mask_t bit;
     for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
         if (state->set_mods & bit) {
             state->mod_key_count[i]++;
@@ -980,14 +976,11 @@ int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t kc,
                        const xkb_keysym_t **syms_out)
 {
-    xkb_layout_index_t layout;
-    xkb_level_index_t level;
-
-    layout = xkb_state_key_get_layout(state, kc);
+    const xkb_layout_index_t layout = xkb_state_key_get_layout(state, kc);
     if (layout == XKB_LAYOUT_INVALID)
         goto err;
 
-    level = xkb_state_key_get_level(state, kc, layout);
+    const xkb_level_index_t level = xkb_state_key_get_level(state, kc, layout);
     if (level == XKB_LEVEL_INVALID)
         goto err;
 
@@ -1078,7 +1071,7 @@ XkbToControl(char ch)
 xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 {
-    const xkb_keysym_t *syms;
+    const xkb_keysym_t *syms = NULL;
     const int num_syms = xkb_state_key_get_syms(state, kc, &syms);
 
     if (num_syms != 1)
@@ -1099,24 +1092,20 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t kc)
 static xkb_keysym_t
 get_one_sym_for_string(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_level_index_t level;
-    xkb_layout_index_t layout, num_layouts;
-    const xkb_keysym_t *syms;
-    int nsyms;
-    xkb_keysym_t sym;
-
-    layout = xkb_state_key_get_layout(state, kc);
-    num_layouts = xkb_keymap_num_layouts_for_key(state->keymap, kc);
-    level = xkb_state_key_get_level(state, kc, layout);
+    const xkb_layout_index_t layout = xkb_state_key_get_layout(state, kc);
+    const xkb_layout_index_t num_layouts =
+        xkb_keymap_num_layouts_for_key(state->keymap, kc);
+    xkb_level_index_t level = xkb_state_key_get_level(state, kc, layout);
     if (layout == XKB_LAYOUT_INVALID || num_layouts == 0 ||
         level == XKB_LEVEL_INVALID)
         return XKB_KEY_NoSymbol;
 
-    nsyms = xkb_keymap_key_get_syms_by_level(state->keymap, kc,
-                                             layout, level, &syms);
+    const xkb_keysym_t *syms = NULL;
+    int nsyms = xkb_keymap_key_get_syms_by_level(state->keymap, kc,
+                                                 layout, level, &syms);
     if (nsyms != 1)
         return XKB_KEY_NoSymbol;
-    sym = syms[0];
+    xkb_keysym_t sym = syms[0];
 
     if (should_do_ctrl_transformation(state, kc) && sym > 127u) {
         for (xkb_layout_index_t i = 0; i < num_layouts; i++) {
@@ -1144,13 +1133,9 @@ int
 xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
                        char *buffer, size_t size)
 {
-    xkb_keysym_t sym;
-    const xkb_keysym_t *syms;
     int nsyms;
-    int offset;
-    char tmp[XKB_KEYSYM_UTF8_MAX_SIZE];
-
-    sym = get_one_sym_for_string(state, kc);
+    const xkb_keysym_t *syms = NULL;
+    const xkb_keysym_t sym = get_one_sym_for_string(state, kc);
     if (sym != XKB_KEY_NoSymbol) {
         nsyms = 1; syms = &sym;
     }
@@ -1159,7 +1144,8 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
     }
 
     /* Make sure not to truncate in the middle of a UTF-8 sequence. */
-    offset = 0;
+    int offset = 0;
+    char tmp[XKB_KEYSYM_UTF8_MAX_SIZE];
     for (int i = 0; i < nsyms; i++) {
         int ret = xkb_keysym_to_utf8(syms[i], tmp, sizeof(tmp));
         if (ret <= 0)
@@ -1198,11 +1184,8 @@ err_bad:
 uint32_t
 xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t kc)
 {
-    xkb_keysym_t sym;
-    uint32_t cp;
-
-    sym = get_one_sym_for_string(state, kc);
-    cp = xkb_keysym_to_utf32(sym);
+    const xkb_keysym_t sym = get_one_sym_for_string(state, kc);
+    uint32_t cp = xkb_keysym_to_utf32(sym);
 
     if (cp <= 127u && should_do_ctrl_transformation(state, kc))
         cp = (uint32_t) XkbToControl((char) cp);
@@ -1301,7 +1284,8 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     if (unlikely(idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    xkb_mod_mask_t mapping = mod_mapping(&state->keymap->mods.mods[idx], idx);
+    const xkb_mod_mask_t mapping =
+        mod_mapping(&state->keymap->mods.mods[idx], idx);
     if (!mapping) {
         /* Modifier not mapped */
         return 0;
@@ -1320,7 +1304,7 @@ match_mod_masks(struct xkb_state *state,
                 enum xkb_state_match match,
                 xkb_mod_mask_t wanted)
 {
-    xkb_mod_mask_t active = xkb_state_serialize_mods(state, type);
+    const xkb_mod_mask_t active = xkb_state_serialize_mods(state, type);
 
     if (!(match & XKB_STATE_MATCH_NON_EXCLUSIVE) && (active & ~wanted))
         return false;
@@ -1344,7 +1328,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
     va_list ap;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
-    xkb_mod_index_t num_mods = xkb_keymap_num_mods(state->keymap);
+    const xkb_mod_index_t num_mods = xkb_keymap_num_mods(state->keymap);
 
     va_start(ap, match);
     while (1) {
@@ -1378,7 +1362,7 @@ int
 xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
                              enum xkb_state_component type)
 {
-    xkb_mod_index_t idx = xkb_keymap_mod_get_index(state->keymap, name);
+    const xkb_mod_index_t idx = xkb_keymap_mod_get_index(state->keymap, name);
 
     if (idx == XKB_MOD_INVALID)
         return -1;
@@ -1402,11 +1386,10 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
 
     va_start(ap, match);
     while (1) {
-        xkb_mod_index_t idx;
         const char *str = va_arg(ap, const char *);
         if (str == NULL)
             break;
-        idx = xkb_keymap_mod_get_index(state->keymap, str);
+        const xkb_mod_index_t idx = xkb_keymap_mod_get_index(state->keymap, str);
         if (idx == XKB_MOD_INVALID) {
             ret = -1;
             break;
@@ -1435,11 +1418,10 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
                                  xkb_layout_index_t idx,
                                  enum xkb_state_component type)
 {
-    int ret = 0;
-
     if (idx >= state->keymap->num_groups)
         return -1;
 
+    int ret = 0;
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
         ret |= (state->components.group == idx);
     if (type & XKB_STATE_LAYOUT_DEPRESSED)
@@ -1460,7 +1442,8 @@ int
 xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
                                 enum xkb_state_component type)
 {
-    xkb_layout_index_t idx = xkb_keymap_layout_get_index(state->keymap, name);
+    const xkb_layout_index_t idx =
+        xkb_keymap_layout_get_index(state->keymap, name);
 
     if (idx == XKB_LAYOUT_INVALID)
         return -1;
@@ -1487,7 +1470,7 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx)
 int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name)
 {
-    xkb_led_index_t idx = xkb_keymap_led_get_index(state->keymap, name);
+    const xkb_led_index_t idx = xkb_keymap_led_get_index(state->keymap, name);
 
     if (idx == XKB_LED_INVALID)
         return -1;
@@ -1504,42 +1487,41 @@ static xkb_mod_mask_t
 key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
                  enum xkb_consumed_mode mode)
 {
-    const struct xkb_key_type *type;
-    const struct xkb_key_type_entry *matching_entry;
-    xkb_mod_mask_t preserve = 0;
-    xkb_layout_index_t group;
-    xkb_mod_mask_t consumed = 0;
-
-    group = xkb_state_key_get_layout(state, key->keycode);
+    const xkb_layout_index_t group =
+        xkb_state_key_get_layout(state, key->keycode);
     if (group == XKB_LAYOUT_INVALID)
         return 0;
 
-    type = key->groups[group].type;
+    xkb_mod_mask_t preserve = 0;
+    xkb_mod_mask_t consumed = 0;
 
-    matching_entry = get_entry_for_key_state(state, key, group);
+    const struct xkb_key_type_entry* const matching_entry =
+        get_entry_for_key_state(state, key, group);
     if (matching_entry)
         preserve = matching_entry->preserve.mask;
 
+    const struct xkb_key_type* const type = key->groups[group].type;
     switch (mode) {
     case XKB_CONSUMED_MODE_XKB:
         consumed = type->mods.mask;
         break;
 
     case XKB_CONSUMED_MODE_GTK: {
-        const struct xkb_key_type_entry *no_mods_entry;
-        xkb_level_index_t no_mods_leveli;
-        const struct xkb_level *no_mods_level, *level;
-
-        no_mods_entry = get_entry_for_mods(type, 0);
-        no_mods_leveli = no_mods_entry ? no_mods_entry->level : 0;
-        no_mods_level = &key->groups[group].levels[no_mods_leveli];
+        const struct xkb_key_type_entry* const no_mods_entry =
+            get_entry_for_mods(type, 0);
+        const xkb_level_index_t no_mods_leveli = no_mods_entry
+                                               ? no_mods_entry->level
+                                               : 0;
+        const struct xkb_level* const no_mods_level =
+            &key->groups[group].levels[no_mods_leveli];
 
         for (unsigned i = 0; i < type->num_entries; i++) {
-            const struct xkb_key_type_entry *entry = &type->entries[i];
+            const struct xkb_key_type_entry* const entry = &type->entries[i];
             if (!entry_is_active(entry))
                 continue;
 
-            level = &key->groups[group].levels[entry->level];
+            const struct xkb_level* const level =
+                &key->groups[group].levels[entry->level];
             if (XkbLevelsSameSyms(level, no_mods_level))
                 continue;
 
@@ -1558,12 +1540,13 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
                                  xkb_mod_index_t idx,
                                  enum xkb_consumed_mode mode)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
 
     if (unlikely(!key || idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    xkb_mod_mask_t mapping = mod_mapping(&state->keymap->mods.mods[idx], idx);
+    const xkb_mod_mask_t mapping =
+        mod_mapping(&state->keymap->mods.mods[idx], idx);
     if (!mapping) {
         /* Modifier not mapped */
         return 0;
@@ -1583,7 +1566,7 @@ xkb_mod_mask_t
 xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t kc,
                                    xkb_mod_mask_t mask)
 {
-    const struct xkb_key *key = XkbKey(state->keymap, kc);
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
 
     if (!key)
         return 0;
@@ -1596,8 +1579,6 @@ xkb_mod_mask_t
 xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
                                  enum xkb_consumed_mode mode)
 {
-    const struct xkb_key *key;
-
     switch (mode) {
     case XKB_CONSUMED_MODE_XKB:
     case XKB_CONSUMED_MODE_GTK:
@@ -1608,7 +1589,7 @@ xkb_state_key_get_consumed_mods2(struct xkb_state *state, xkb_keycode_t kc,
         return 0;
     }
 
-    key = XkbKey(state->keymap, kc);
+    const struct xkb_key* const key = XkbKey(state->keymap, kc);
     if (!key)
         return 0;
 
