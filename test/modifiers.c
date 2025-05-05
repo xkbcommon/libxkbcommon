@@ -10,27 +10,21 @@
 
 #include "test.h"
 #include "keymap.h"
-
-/* Standard real modifiers indexes */
-#define ShiftIndex   0
-#define LockIndex    1
-#define ControlIndex 2
-#define Mod1Index    3
-#define Mod2Index    4
-#define Mod3Index    5
-#define Mod4Index    6
-#define Mod5Index    7
+#include "utils.h"
+#include "xkbcommon/xkbcommon.h"
 
 /* Standard real modifier masks */
-#define ShiftMask   (UINT32_C(1) << ShiftIndex)
-#define LockMask    (UINT32_C(1) << LockIndex)
-#define ControlMask (UINT32_C(1) << ControlIndex)
-#define Mod1Mask    (UINT32_C(1) << Mod1Index)
-#define Mod2Mask    (UINT32_C(1) << Mod2Index)
-#define Mod3Mask    (UINT32_C(1) << Mod3Index)
-#define Mod4Mask    (UINT32_C(1) << Mod4Index)
-#define Mod5Mask    (UINT32_C(1) << Mod5Index)
-#define NoModifier  0
+enum real_mod_mask {
+    ShiftMask   = (UINT32_C(1) << XKB_MOD_INDEX_SHIFT),
+    LockMask    = (UINT32_C(1) << XKB_MOD_INDEX_CAPS),
+    ControlMask = (UINT32_C(1) << XKB_MOD_INDEX_CTRL),
+    Mod1Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD1),
+    Mod2Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD2),
+    Mod3Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD3),
+    Mod4Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD4),
+    Mod5Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD5),
+    NoModifier  = 0
+};
 
 static bool
 test_real_mod(struct xkb_keymap *keymap, const char* name,
@@ -57,43 +51,43 @@ test_modifiers_names(struct xkb_context *context)
 {
     struct xkb_keymap *keymap;
 
-    keymap = test_compile_rules(context, "evdev", NULL, NULL, NULL, NULL);
+    keymap = test_compile_rules(context, "evdev", "pc104", "us", NULL, NULL);
     assert(keymap);
 
     /* Real modifiers
      * The indexes and masks are fixed and always valid */
-    assert(test_real_mod(keymap, XKB_MOD_NAME_SHIFT, ShiftIndex, ShiftMask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_CAPS, LockIndex, LockMask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_CTRL, ControlIndex, ControlMask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD1, Mod1Index, Mod1Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD2, Mod2Index, Mod2Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD3, Mod3Index, Mod3Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD4, Mod4Index, Mod4Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD5, Mod5Index, Mod5Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_SHIFT, XKB_MOD_INDEX_SHIFT, ShiftMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_CAPS, XKB_MOD_INDEX_CAPS, LockMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_CTRL, XKB_MOD_INDEX_CTRL, ControlMask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD1, XKB_MOD_INDEX_MOD1, Mod1Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD2, XKB_MOD_INDEX_MOD2, Mod2Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD3, XKB_MOD_INDEX_MOD3, Mod3Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD4, XKB_MOD_INDEX_MOD4, Mod4Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_MOD5, XKB_MOD_INDEX_MOD5, Mod5Mask));
 
     /* Usual virtual mods mappings */
-    assert(test_real_mod(keymap, XKB_MOD_NAME_ALT,  Mod1Index, Mod1Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_NUM,  Mod2Index, Mod2Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_LOGO, Mod4Index, Mod4Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_ALT,  XKB_MOD_INDEX_MOD1, Mod1Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_NUM,  XKB_MOD_INDEX_MOD2, Mod2Mask));
+    assert(test_real_mod(keymap, XKB_MOD_NAME_LOGO, XKB_MOD_INDEX_MOD4, Mod4Mask));
 
     /* Virtual modifiers
      * The indexes depends on the keymap files */
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_ALT,    Mod5Index + 2,  Mod1Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_META,   Mod5Index + 11, Mod1Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_NUM,    Mod5Index + 1,  Mod2Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SUPER,  Mod5Index + 12, Mod4Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_HYPER,  Mod5Index + 13, Mod4Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL3, Mod5Index + 3,  Mod5Mask));
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SCROLL, Mod5Index + 8,  0));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_ALT,    XKB_MOD_INDEX_MOD5 + 2,  Mod1Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_META,   XKB_MOD_INDEX_MOD5 + 11, Mod1Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_NUM,    XKB_MOD_INDEX_MOD5 + 1,  Mod2Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SUPER,  XKB_MOD_INDEX_MOD5 + 12, Mod4Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_HYPER,  XKB_MOD_INDEX_MOD5 + 13, Mod4Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL3, XKB_MOD_INDEX_MOD5 + 3,  Mod5Mask));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_SCROLL, XKB_MOD_INDEX_MOD5 + 8,  0       ));
     /* TODO: current xkeyboard-config maps LevelFive to Nod3 by default */
-    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL5, Mod5Index + 9,  0));
+    assert(test_virtual_mod(keymap, XKB_VMOD_NAME_LEVEL5, XKB_MOD_INDEX_MOD5 + 9,  0));
     /* Legacy stuff, removed from xkeyboard-config */
     assert(keymap->mods.num_mods == 21);
-    assert(test_virtual_mod(keymap, "LAlt",     Mod5Index + 4,  0));
-    assert(test_virtual_mod(keymap, "RAlt",     Mod5Index + 5,  0));
-    assert(test_virtual_mod(keymap, "LControl", Mod5Index + 7,  0));
-    assert(test_virtual_mod(keymap, "RControl", Mod5Index + 6,  0));
-    assert(test_virtual_mod(keymap, "AltGr",    Mod5Index + 10, Mod5Mask));
+    assert(test_virtual_mod(keymap, "LAlt",     XKB_MOD_INDEX_MOD5 + 4,  0       ));
+    assert(test_virtual_mod(keymap, "RAlt",     XKB_MOD_INDEX_MOD5 + 5,  0       ));
+    assert(test_virtual_mod(keymap, "LControl", XKB_MOD_INDEX_MOD5 + 7,  0       ));
+    assert(test_virtual_mod(keymap, "RControl", XKB_MOD_INDEX_MOD5 + 6,  0       ));
+    assert(test_virtual_mod(keymap, "AltGr",    XKB_MOD_INDEX_MOD5 + 10, Mod5Mask));
 
     xkb_keymap_unref(keymap);
 }
@@ -206,6 +200,332 @@ test_modmap_none(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_explicit_virtual_modifiers(struct xkb_context *context)
+{
+    const struct {
+        const char* keymap;
+        struct mod_props {
+            enum mod_type type;
+            xkb_mod_mask_t mapping;
+            xkb_mod_mask_t mapping_effective;
+        } m1;
+        struct mod_props m2;
+    } tests[] = {
+        /* Test virtual modifiers with canonical mappings */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                /* Vmods map to themselves */
+                "    virtual_modifiers M1 = 0x100, M2 = 0x200;\n"
+                "  };\n"
+                "};",
+            .m1 = {
+                .type = MOD_VIRT,
+                .mapping = 0x100,
+                .mapping_effective = 0x100
+            },
+            .m2 = {
+                .type = MOD_VIRT,
+                .mapping = 0x200,
+                .mapping_effective = 0x200
+            }
+        },
+        /* Test virtual modifiers overlapping: identical */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    virtual_modifiers M1 = 0x100, M2 = 0x100;\n"
+                "  };\n"
+                "};",
+            .m1 = {
+                .type = MOD_VIRT,
+                .mapping = 0x100,
+                .mapping_effective = 0x100
+            },
+            .m2 = {
+                .type = MOD_VIRT,
+                .mapping = 0x100,
+                .mapping_effective = 0x100
+            }
+        },
+        /* Test virtual modifiers overlapping: non identical */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    virtual_modifiers M1 = 0x100, M2 = 0x300;\n"
+                "  };\n"
+                "};",
+            .m1 = {
+                .type = MOD_VIRT,
+                .mapping = 0x100,
+                .mapping_effective = 0x100
+            },
+            .m2 = {
+                .type = MOD_VIRT,
+                .mapping = 0x300,
+                .mapping_effective = 0x300
+            }
+        },
+        /* Test virtual modifiers with swapped mappings */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                /* The mapping of each modifier is the mask of the other */
+                "    virtual_modifiers M1 = 0x200, M2 = 0x100;\n"
+                "  };\n"
+                "};",
+            .m1 = {
+                .type = MOD_VIRT,
+                .mapping = 0x200,
+                .mapping_effective = 0x100 /* different from mapping! */
+            },
+            .m2 = {
+                .type = MOD_VIRT,
+                .mapping = 0x100,
+                .mapping_effective = 0x200 /* different from mapping! */
+            }
+        },
+        /* Test virtual modifiers mapping to undefined modifiers */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    virtual_modifiers M1 = 0x400, M2 = 0x800;\n"
+                "  };\n"
+                "};",
+            .m1 = {
+                .type = MOD_VIRT,
+                .mapping = 0x400,
+                .mapping_effective = 0 /* no mod entry */
+            },
+            .m2 = {
+                .type = MOD_VIRT,
+                .mapping = 0x800,
+                .mapping_effective = 0 /* no mod entry */
+            }
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        struct xkb_keymap *keymap = test_compile_buffer(
+            context, tests[k].keymap, strlen(tests[k].keymap)
+        );
+        assert(keymap);
+
+        const xkb_mod_index_t m1_idx = xkb_keymap_mod_get_index(keymap, "M1");
+        const xkb_mod_index_t m2_idx = xkb_keymap_mod_get_index(keymap, "M2");
+        assert(m1_idx == 8);
+        assert(m2_idx == 9);
+        assert(keymap->mods.mods[m1_idx].type == tests[k].m1.type);
+        assert(keymap->mods.mods[m2_idx].type == tests[k].m2.type);
+
+        const xkb_mod_mask_t m1 = UINT32_C(1) << m1_idx;
+        const xkb_mod_mask_t m2 = UINT32_C(1) << m2_idx;
+        const xkb_mod_mask_t m1_mapping = mod_mask_get_effective(keymap, m1);
+        const xkb_mod_mask_t m2_mapping = mod_mask_get_effective(keymap, m2);
+        assert(m1_mapping == tests[k].m1.mapping);
+        assert(m2_mapping == tests[k].m2.mapping);
+        /* mod_mask_get_effective is not idempotent */
+        assert(mod_mask_get_effective(keymap, m1_mapping) ==
+               tests[k].m1.mapping_effective);
+        assert(mod_mask_get_effective(keymap, m2_mapping) ==
+               tests[k].m2.mapping_effective);
+
+        struct xkb_state *state = xkb_state_new(keymap);
+        assert(state);
+
+        /* Not in the canonical modifier mask nor denotes a *known* virtual
+         * modifiers, so it will be discarded. */
+        const xkb_mod_mask_t noise = UINT32_C(0x8000);
+        assert((keymap->canonical_state_mask & noise) == 0);
+
+        /* Update the state, then check round-trip and mods state */
+        const xkb_mod_mask_t set_masks[] = {m1_mapping, m2_mapping};
+        for (unsigned int m = 0; m < ARRAY_SIZE(set_masks); m++) {
+            const xkb_mod_mask_t expected = set_masks[m];
+            xkb_state_update_mask(state, expected | noise, 0, noise, 0, 0, 0);
+            const xkb_mod_mask_t got =
+                xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
+            assert_printf(got == expected, /* round-trip */
+                          "expected %#"PRIx32", got %#"PRIx32"\n",
+                          expected, got);
+            assert(
+                xkb_state_mod_index_is_active(state, m1_idx,
+                                              XKB_STATE_MODS_EFFECTIVE) ==
+                ((expected & m1_mapping) == m1_mapping)
+            );
+            assert(
+                xkb_state_mod_index_is_active(state, m2_idx,
+                                              XKB_STATE_MODS_EFFECTIVE) ==
+                ((expected & m2_mapping) == m2_mapping)
+            );
+        }
+
+        xkb_state_unref(state);
+        xkb_keymap_unref(keymap);
+    }
+}
+
+/*
+ * Test the hack documented in the FAQ to get virtual modifiers mapping using
+ * `xkb_state_update_mask`/`xkb_state_serialize_mods`.
+ *
+ * This should work without problem for keymap using only real mods to map
+ * virtual modifiers.
+ *
+ * [NOTE] If the test requires an update, do not forget to update the FAQ as well!
+ */
+static void
+test_virtual_modifiers_mapping_hack(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap = test_compile_rules(context, "evdev",
+                                                   "pc104", "us", NULL, NULL);
+    assert(keymap);
+
+    struct xkb_state* state = xkb_state_new(keymap);
+    assert(state);
+
+    static const struct {
+        const char* name;
+        xkb_mod_index_t index;
+        xkb_mod_mask_t mapping;
+    } mods[] = {
+        /* Real modifiers */
+        {
+            .name = XKB_MOD_NAME_SHIFT,
+            .index = XKB_MOD_INDEX_SHIFT,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_SHIFT
+        },
+        {
+            .name = XKB_MOD_NAME_CAPS,
+            .index = XKB_MOD_INDEX_CAPS,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_CAPS
+        },
+        {
+            .name = XKB_MOD_NAME_CTRL,
+            .index = XKB_MOD_INDEX_CTRL,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_CTRL
+        },
+        {
+            .name = XKB_MOD_NAME_MOD1,
+            .index = XKB_MOD_INDEX_MOD1,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD1
+        },
+        {
+            .name = XKB_MOD_NAME_MOD2,
+            .index = XKB_MOD_INDEX_MOD2,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD2
+        },
+        {
+            .name = XKB_MOD_NAME_MOD3,
+            .index = XKB_MOD_INDEX_MOD3,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD3
+        },
+        {
+            .name = XKB_MOD_NAME_MOD4,
+            .index = XKB_MOD_INDEX_MOD4,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD4
+        },
+        {
+            .name = XKB_MOD_NAME_MOD5,
+            .index = XKB_MOD_INDEX_MOD5,
+            .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD5
+        },
+        /* Virtual modifiers
+         * The indexes depends on the keymap files */
+        {
+            .name = XKB_VMOD_NAME_ALT,
+            .index = XKB_MOD_INDEX_MOD5 + 2,
+            .mapping = Mod1Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_META,
+            .index = XKB_MOD_INDEX_MOD5 + 11,
+            .mapping = Mod1Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_NUM,
+            .index = XKB_MOD_INDEX_MOD5 + 1,
+            .mapping = Mod2Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_SUPER,
+            .index = XKB_MOD_INDEX_MOD5 + 12,
+            .mapping = Mod4Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_HYPER,
+            .index = XKB_MOD_INDEX_MOD5 + 13,
+            .mapping = Mod4Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_LEVEL3,
+            .index = XKB_MOD_INDEX_MOD5 + 3,
+            .mapping = Mod5Mask
+        },
+        {
+            .name = XKB_VMOD_NAME_SCROLL,
+            .index = XKB_MOD_INDEX_MOD5 + 8,
+            .mapping = 0
+        },
+        {
+            .name = XKB_VMOD_NAME_LEVEL5,
+            .index = XKB_MOD_INDEX_MOD5 + 9,
+            .mapping = 0
+        },
+        /* Legacy stuff, removed from xkeyboard-config */
+        {
+            .name = "LAlt",
+            .index = XKB_MOD_INDEX_MOD5 + 4,
+            .mapping = 0
+        },
+        {
+            .name = "RAlt",
+            .index = XKB_MOD_INDEX_MOD5 + 5,
+            .mapping = 0
+        },
+        {
+            .name = "LControl",
+            .index = XKB_MOD_INDEX_MOD5 + 7,
+            .mapping = 0
+        },
+        {
+            .name = "RControl",
+            .index = XKB_MOD_INDEX_MOD5 + 6,
+            .mapping = 0
+        },
+        {
+            .name = "AltGr",
+            .index = XKB_MOD_INDEX_MOD5 + 10,
+            .mapping = Mod5Mask
+        },
+    };
+
+    for (unsigned k = 0; k < ARRAY_SIZE(mods); k++) {
+        const xkb_mod_mask_t index =
+            xkb_keymap_mod_get_index(keymap, mods[k].name);
+        assert_printf(index == mods[k].index,
+                      "%s: expected %"PRIu32", got: %"PRIu32"\n",
+                      mods[k].name, mods[k].index, index);
+        const xkb_mod_mask_t mask = UINT32_C(1) << index;
+        xkb_state_update_mask(state, mask, 0, 0, 0, 0, 0);
+        const xkb_mod_mask_t mapping =
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
+        assert_printf(mapping == mods[k].mapping,
+                      "%s: expected %#"PRIx32", got: %#"PRIx32"\n",
+                      mods[k].name, mods[k].mapping, mapping);
+    }
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -216,6 +536,8 @@ main(void)
 
     test_modmap_none(context);
     test_modifiers_names(context);
+    test_explicit_virtual_modifiers(context);
+    test_virtual_modifiers_mapping_hack(context);
 
     xkb_context_unref(context);
 
