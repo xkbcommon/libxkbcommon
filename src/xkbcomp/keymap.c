@@ -323,7 +323,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
     xkb_keys_foreach(key, keymap)
-        xkb_mods_enumerate(i, mod, &keymap->mods)
+        xkb_vmods_enumerate(i, mod, &keymap->mods)
             if (key->vmodmap & (UINT32_C(1) << i))
                 mod->mapping |= key->modmap;
 

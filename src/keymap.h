@@ -51,11 +51,13 @@
 /* Special value to handle modMap None {…} */
 #define XKB_MOD_NONE 0xffffffffU
 
-/* These should all go away. */
 enum mod_type {
+    /** X11 core modifier */
     MOD_REAL = (1 << 0),
+    /** A non-X11 core modifier */
     MOD_VIRT = (1 << 1),
-    MOD_BOTH = (MOD_REAL | MOD_VIRT),
+    /** Any modifier */
+    MOD_BOTH = (MOD_REAL | MOD_VIRT)
 };
 #define MOD_REAL_MASK_ALL ((xkb_mod_mask_t) 0x000000ff)
 
@@ -68,8 +70,10 @@ enum real_mod_index {
     XKB_MOD_INDEX_MOD2,
     XKB_MOD_INDEX_MOD3,
     XKB_MOD_INDEX_MOD4,
-    XKB_MOD_INDEX_MOD5
+    XKB_MOD_INDEX_MOD5,
+    _XKB_MOD_INDEX_NUM_ENTRIES
 };
+static_assert(_XKB_MOD_INDEX_NUM_ENTRIES == 8, "Invalid X11 core modifiers");
 
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
@@ -450,8 +454,22 @@ struct xkb_keymap {
          (iter)++, (mask) >>= 1) \
         if ((mask) & 0x1)
 
+/** Enumerate all modifiers */
 #define xkb_mods_enumerate(idx, iter, mods_) \
     for ((idx) = 0, (iter) = (mods_)->mods; \
+         (idx) < (mods_)->num_mods; \
+         (idx)++, (iter)++)
+
+/** Enumerate only real modifiers */
+#define xkb_rmods_enumerate(idx, iter, mods_) \
+    for ((idx) = 0, (iter) = (mods_)->mods; \
+         (idx) < _XKB_MOD_INDEX_NUM_ENTRIES; \
+         (idx)++, (iter)++)
+
+/** Enumerate only virtual modifiers */
+#define xkb_vmods_enumerate(idx, iter, mods_) \
+    for ((idx) = _XKB_MOD_INDEX_NUM_ENTRIES, \
+         (iter) = &(mods_)->mods[_XKB_MOD_INDEX_NUM_ENTRIES]; \
          (idx) < (mods_)->num_mods; \
          (idx)++, (iter)++)
 

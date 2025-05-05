@@ -1271,7 +1271,7 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     /* The effective mask is only real mods for now. */
     mask = mods & MOD_REAL_MASK_ALL;
 
-    xkb_mods_enumerate(i, mod, &keymap->mods)
+    xkb_vmods_enumerate(i, mod, &keymap->mods)
         if (mods & (UINT32_C(1) << i))
             mask |= mod->mapping;
 

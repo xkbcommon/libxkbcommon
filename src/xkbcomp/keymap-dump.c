@@ -199,10 +199,7 @@ write_vmods(struct xkb_keymap *keymap, struct buf *buf)
     xkb_mod_index_t vmod = 0;
     bool has_some = false;
 
-    xkb_mods_enumerate(vmod, mod, &keymap->mods) {
-        if (mod->type != MOD_VIRT)
-            continue;
-
+    xkb_vmods_enumerate(vmod, mod, &keymap->mods) {
         if (!has_some) {
             copy_to_buf(buf, "\tvirtual_modifiers ");
             has_some = true;
@@ -832,7 +829,7 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     }
     free(buf2.buf);
 
-    xkb_mods_enumerate(i, mod, &keymap->mods) {
+    xkb_rmods_enumerate(i, mod, &keymap->mods) {
         bool had_any = false;
         xkb_keys_foreach(key, keymap) {
             if (key->modmap & (UINT32_C(1) << i)) {
