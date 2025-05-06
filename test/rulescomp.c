@@ -195,8 +195,10 @@ main(int argc, char *argv[])
     /* Test response to invalid flags. */
     {
         struct xkb_rule_names rmlvo = { NULL };
-        assert(!xkb_keymap_new_from_names(ctx, &rmlvo, -1));
-        assert(!xkb_keymap_new_from_names(ctx, &rmlvo, 5453));
+        assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
+                                           XKB_KEYMAP_FORMAT_TEXT_V1, -1));
+        assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
+                                           XKB_KEYMAP_FORMAT_TEXT_V1, 5453));
     }
 
     xkb_context_unref(ctx);
