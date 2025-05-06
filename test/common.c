@@ -435,9 +435,11 @@ test_compile_rules(struct xkb_context *context, const char *rules,
     };
 
     if (!rules && !model && !layout && !variant && !options)
-        keymap = xkb_keymap_new_from_names(context, NULL, 0);
+        keymap = xkb_keymap_new_from_names2(context, NULL,
+                                            XKB_KEYMAP_FORMAT_TEXT_V1, 0);
     else
-        keymap = xkb_keymap_new_from_names(context, &rmlvo, 0);
+        keymap = xkb_keymap_new_from_names2(context, &rmlvo,
+                                            XKB_KEYMAP_FORMAT_TEXT_V1, 0);
 
     if (!keymap) {
         fprintf(stderr,
