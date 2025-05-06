@@ -382,7 +382,7 @@ struct xkb_component_names {
  * Resolve [RMLVO] names to [KcCGST] components.
  *
  * This function is used primarily for *debugging*. See
- * xkb_keymap::xkb_keymap_new_from_names() for creating keymaps from
+ * xkb_keymap::xkb_keymap_new_from_names2() for creating keymaps from
  * [RMLVO] names.
  *
  * @param[in]  context    The context in which to resolve the names.
@@ -403,7 +403,7 @@ struct xkb_component_names {
  * @see [Introduction to KcCGST][KcCGST]
  * @see xkb_rule_names
  * @see xkb_component_names
- * @see xkb_keymap::xkb_keymap_new_from_names()
+ * @see xkb_keymap::xkb_keymap_new_from_names2()
  *
  * @since 1.9.0
  * @memberof xkb_component_names
@@ -922,6 +922,8 @@ enum xkb_keymap_format {
  * Same as `xkb_keymap_new_from_names2()`, but with the keymap format fixed to:
  * `::XKB_KEYMAP_FORMAT_TEXT_V1`.
  *
+ * @deprecated Use `xkb_keymap_new_from_names2()` instead.
+ * @since 1.11.0: Deprecated
  * @sa xkb_keymap_new_from_names2(), xkb_rule_names
  * @memberof xkb_keymap
  */
