@@ -38,6 +38,7 @@ test_real_mod(struct xkb_keymap *keymap, const char* name,
 {
     return xkb_keymap_mod_get_index(keymap, name) == idx &&
            (keymap->mods.mods[idx].type == MOD_REAL) &&
+           mapping == keymap->mods.mods[idx].mapping &&
            mapping == (UINT32_C(1) << idx);
 }
 

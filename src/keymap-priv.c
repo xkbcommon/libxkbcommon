@@ -29,11 +29,13 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
         [XKB_MOD_INDEX_MOD5]  = XKB_MOD_NAME_MOD5
     };
 
-    for (unsigned i = 0; i < ARRAY_SIZE(builtin_mods); i++) {
+    for (xkb_mod_index_t i = 0; i < ARRAY_SIZE(builtin_mods); i++) {
         keymap->mods.mods[i].name = xkb_atom_intern(keymap->ctx,
                                                     builtin_mods[i],
                                                     strlen(builtin_mods[i]));
         keymap->mods.mods[i].type = MOD_REAL;
+        /* Real modifiers have a canonical mapping */
+        keymap->mods.mods[i].mapping = UINT32_C(1) << i;
     }
     keymap->mods.num_mods = ARRAY_SIZE(builtin_mods);
 }
