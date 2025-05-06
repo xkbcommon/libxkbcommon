@@ -30,7 +30,7 @@ from typing import (
     cast,
 )
 
-# TODO: import unconditionnaly Self from typing once we raise Python requirement to 3.11+
+# TODO: import unconditionally Self from typing once we raise Python requirement to 3.11+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -274,7 +274,7 @@ class XkbCompInvocation(Invocation):
 
 
 @dataclass
-class XkbCompReformatInvocation(XkbCompInvocation):
+class XkbCompToXkbcommonInvocation(XkbCompInvocation):
     """
     Use setxkbcomp & xkbcomp, then pipe the result to xkbcli in order to enable
     comparison with direct xkbcli compilation with the same format.
@@ -343,10 +343,12 @@ class XkbcommonInvocation(Invocation):
         *args,
         **kwargs,
     ) -> Self:
-        i._run(xkb_root, output_dir, compress)
+        i._run(xkb_root, output_dir, not output_dir, compress)
         return i
 
-    def _run(self, xkb_root: Path, output_dir: Path | None, compress: int) -> None:
+    def _run(
+        self, xkb_root: Path, output_dir: Path | None, test: bool, compress: int
+    ) -> None:
         args = (
             "xkbcli-compile-keymap",  # this is run in the builddir
             "--include",
@@ -355,7 +357,7 @@ class XkbcommonInvocation(Invocation):
             # "--verbose",
             *itertools.chain.from_iterable((f"--{k}", v) for k, v in self.rmlvo),
         )
-        if not output_dir:
+        if test:
             args += ("--test",)
         self.command = shlex.join(args)
         try:
@@ -370,6 +372,44 @@ class XkbcommonInvocation(Invocation):
         else:
             if self._check_stderr(completed.stderr):
                 self.keymap = completed.stdout.encode("utf-8")
+        if output_dir:
+            self._write_keymap(output_dir, compress)
+
+
+@dataclass
+class XkbcommonToXkbcompInvocation(XkbcommonInvocation):
+    """
+    Use xkbcli, then pipe the result to xkbcomp in order to check
+    that xkbcomp can parse xkbcommon output.
+    """
+
+    def _run(
+        self, xkb_root: Path, output_dir: Path | None, test: bool, compress: int
+    ) -> None:
+        super()._run(xkb_root, output_dir, False, compress)
+
+        if self.exitstatus:
+            return
+
+        args = ("xkbcomp", "-xkb", "-opt", "g", "-", "-")
+
+        try:
+            completed = subprocess.run(
+                args,
+                check=True,
+                capture_output=True,
+                input=self.keymap,
+            )
+        except subprocess.CalledProcessError as err:
+            self.error = (
+                "failed to compile keymap:\n"
+                f"------\nstderr:\n{err.stderr}\n"
+                f"------\nstdout:\n{err.stdout}\n"
+                f"------\nstdin:\n{self.keymap.decode('utf-8')}\n"
+            )
+            self.exitstatus = err.returncode
+        else:
+            self.keymap = completed.stdout
         if output_dir:
             self._write_keymap(output_dir, compress)
 
@@ -555,11 +595,12 @@ def main() -> NoReturn:
         type=Path,
         help="XKB root directory",
     )
-    DEFAULT_TOOL = "libxkbcommon"
+    DEFAULT_TOOL = "xkbcommon"
     tools: dict[str, type[Invocation]] = {
         DEFAULT_TOOL: XkbcommonInvocation,
+        "xkbcommon-xkbcomp": XkbcommonToXkbcompInvocation,
         "xkbcomp": XkbCompInvocation,
-        "xkbcomp-reformat": XkbCompReformatInvocation,
+        "xkbcomp-xkbcommon": XkbCompToXkbcommonInvocation,
     }
     parser.add_argument(
         "--tool",
