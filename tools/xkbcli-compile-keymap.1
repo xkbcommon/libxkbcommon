@@ -52,6 +52,21 @@ to add the default include paths.
 Add the default set of include directories.
 This option is order-dependent, include paths given first are searched first.
 .
+.It Fl \-input\-format Ar keymap_format
+The keymap format (numeric or label, e.g.\&
+.Dq v1 )
+for parsing
+.
+.It Fl \-output\-format Ar keymap_format
+The keymap format (numeric or label, e.g.\&
+.Dq v1 )
+for serializing
+.
+.It Fl \-format Ar keymap_format
+The keymap format (numeric or label, e.g.\&
+.Dq v1 )
+for both parsing and serializing
+.
 .It Fl \-keymap Oo Ar PATH Oc , Fl \-from\-xkb Oo Ar PATH Oc
 Load the XKB file from a file, ignore RMLVO options. If
 .Ar PATH

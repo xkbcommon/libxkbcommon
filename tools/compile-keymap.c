@@ -17,6 +17,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "tools-common.h"
 #include "src/utils.h"
+#include "src/keymap-formats.h"
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 
@@ -63,6 +64,12 @@ usage(FILE *file, const char *progname)
            "    Add the default set of include directories.\n"
            "    This option is order-dependent, include paths given first\n"
            "    are searched first.\n"
+           " --input-format <format>\n"
+           "    The keymap format to use for parsing (default: '%d')\n"
+           " --output-format <format>\n"
+           "    The keymap format to use for serializing (default: '%d')\n"
+           " --format <format>\n"
+           "    The keymap format to use for both parsing and serializing\n"
            " --keymap <file>\n"
            " --from-xkb <file>\n"
            "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
@@ -96,8 +103,9 @@ usage(FILE *file, const char *progname)
            " --modmaps\n"
            "    Print real and virtual key modmaps and modifiers encodings in YAML format\n"
            "\n",
-           progname, DEFAULT_XKB_RULES,
-           DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
+           progname,
+           DEFAULT_INPUT_KEYMAP_FORMAT, DEFAULT_OUTPUT_KEYMAP_FORMAT,
+           DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
@@ -112,6 +120,8 @@ static bool
 parse_options(int argc, char **argv,
               enum input_format *input_format_out,
               enum output_format *output_format_out,
+              enum xkb_keymap_format *keymap_input_format,
+              enum xkb_keymap_format *keymap_output_format,
               bool *use_env_names,
               char **path, struct xkb_rule_names *names)
 {
@@ -126,6 +136,9 @@ parse_options(int argc, char **argv,
         OPT_INCLUDE_DEFAULTS,
         OPT_KEYMAP,
         OPT_ENABLE_ENV_NAMES,
+        OPT_KEYMAP_INPUT_FORMAT,
+        OPT_KEYMAP_OUTPUT_FORMAT,
+        OPT_KEYMAP_FORMAT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -152,6 +165,9 @@ parse_options(int argc, char **argv,
         /* Alias maintained for backward compatibility */
         {"from-xkb",         optional_argument,      0, OPT_KEYMAP},
         {"enable-environment-names", no_argument,    0, OPT_ENABLE_ENV_NAMES},
+        {"input-format",     required_argument,      0, OPT_KEYMAP_INPUT_FORMAT},
+        {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
+        {"format",           required_argument,      0, OPT_KEYMAP_FORMAT},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
         {"layout",           required_argument,      0, OPT_LAYOUT},
@@ -219,6 +235,31 @@ parse_options(int argc, char **argv,
                 goto keymap_env_error;
             *use_env_names = true;
             input_format = INPUT_FORMAT_RMLVO;
+            break;
+        case OPT_KEYMAP_INPUT_FORMAT:
+            *keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!(*keymap_input_format)) {
+                fprintf(stderr, "ERROR: invalid --input-format: \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
+        case OPT_KEYMAP_OUTPUT_FORMAT:
+            *keymap_output_format = xkb_keymap_parse_format(optarg);
+            if (!(*keymap_output_format)) {
+                fprintf(stderr, "ERROR: invalid --output-format: \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
+        case OPT_KEYMAP_FORMAT:
+            *keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!(*keymap_input_format)) {
+                fprintf(stderr, "ERROR: invalid --format: \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                exit(EXIT_INVALID_USAGE);
+            }
+            *keymap_output_format = *keymap_input_format;
             break;
         case OPT_RULES:
             if (input_format == INPUT_FORMAT_KEYMAP)
@@ -388,8 +429,8 @@ out:
 }
 
 static struct xkb_keymap*
-load_keymap(struct xkb_context *ctx, enum input_format format,
-            const struct xkb_rule_names *rmlvo,
+load_keymap(struct xkb_context *ctx, enum xkb_keymap_format keymap_input_format,
+            enum input_format format, const struct xkb_rule_names *rmlvo,
             const char *path)
 {
     if (format == INPUT_FORMAT_KEYMAP) {
@@ -407,27 +448,31 @@ load_keymap(struct xkb_context *ctx, enum input_format format,
             return NULL;
         }
         return xkb_keymap_new_from_file(ctx, file,
-                                        XKB_KEYMAP_FORMAT_TEXT_V1,
+                                        keymap_input_format,
                                         XKB_KEYMAP_COMPILE_NO_FLAGS);
     } else {
-        return xkb_keymap_new_from_names(ctx, rmlvo,
-                                         XKB_KEYMAP_COMPILE_NO_FLAGS);
+        return xkb_keymap_new_from_names2(ctx, rmlvo, keymap_input_format,
+                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
     }
 }
 
 static int
-print_keymap(struct xkb_context *ctx, enum input_format format,
-             const struct xkb_rule_names *rmlvo,
+print_keymap(struct xkb_context *ctx,
+             enum xkb_keymap_format keymap_input_format,
+             enum xkb_keymap_format keymap_output_format,
+             enum input_format format, const struct xkb_rule_names *rmlvo,
              const char *path)
 {
     int ret = EXIT_SUCCESS;
-    struct xkb_keymap *keymap = load_keymap(ctx, format, rmlvo, path);
+    struct xkb_keymap *keymap = load_keymap(ctx, keymap_input_format,
+                                            format, rmlvo, path);
+
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
     } else if (!test) {
         char* keymap_string =
-            xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+            xkb_keymap_get_as_string(keymap, keymap_output_format);
         if (!keymap_string) {
             fprintf(stderr, "ERROR: Couldn't get the keymap string\n");
         } else {
@@ -440,12 +485,14 @@ print_keymap(struct xkb_context *ctx, enum input_format format,
 }
 
 static int
-print_modmaps(struct xkb_context *ctx, enum input_format format,
-              const struct xkb_rule_names *rmlvo,
+print_modmaps(struct xkb_context *ctx,
+              enum xkb_keymap_format keymap_input_format,
+              enum input_format format, const struct xkb_rule_names *rmlvo,
               const char *path)
 {
     int ret = EXIT_SUCCESS;
-    struct xkb_keymap *keymap = load_keymap(ctx, format, rmlvo, path);
+    struct xkb_keymap *keymap = load_keymap(ctx, keymap_input_format,
+                                            format, rmlvo, path);
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
@@ -465,6 +512,8 @@ main(int argc, char **argv)
     char *keymap_path = NULL;
     struct xkb_rule_names names = { 0 };
     bool use_env_names = false;
+    enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+    enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
     int rc = 1;
 
     setlocale(LC_ALL, "");
@@ -477,6 +526,7 @@ main(int argc, char **argv)
     enum input_format input_format = INPUT_FORMAT_AUTO;
     enum output_format output_format = OUTPUT_FORMAT_KEYMAP;
     if (!parse_options(argc, argv, &input_format, &output_format,
+                       &keymap_input_format, &keymap_output_format,
                        &use_env_names, &keymap_path, &names))
         return EXIT_INVALID_USAGE;
 
@@ -513,10 +563,12 @@ main(int argc, char **argv)
         rc = print_kccgst(ctx, &names);
         break;
     case OUTPUT_FORMAT_MODMAPS:
-        rc = print_modmaps(ctx, input_format, &names, keymap_path);
+        rc = print_modmaps(ctx, keymap_input_format,
+                           input_format, &names, keymap_path);
         break;
     default:
-        rc = print_keymap(ctx, input_format, &names, keymap_path);
+        rc = print_keymap(ctx, keymap_input_format, keymap_output_format,
+                          input_format, &names, keymap_path);
     }
 
     xkb_context_unref(ctx);

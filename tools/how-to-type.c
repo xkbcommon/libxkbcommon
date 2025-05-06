@@ -16,6 +16,8 @@
 #include "src/utils.h"
 #include "src/keysym.h"
 #include "src/utf8-decoding.h"
+#include "src/keymap-formats.h"
+#include "tools-common.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
@@ -62,7 +64,7 @@ parse_char_or_codepoint(const char *raw) {
 }
 
 static void
-usage(const char *argv0, FILE *fp)
+usage(FILE *fp, const char *argv0)
 {
     fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] "
                 "[--model <model>] [--layout <layout>] [--variant <variant>] "
@@ -88,6 +90,8 @@ usage(const char *argv0, FILE *fp)
         "    Treat the argument as a keysym, not a Unicode code point\n"
         "\n"
         "XKB-specific options:\n"
+        " --format <format>\n"
+        "    The keymap format to use (default: %d)\n"
         " --rules <rules>\n"
         "    The XKB ruleset (default: '%s')\n"
         " --model <model>\n"
@@ -107,6 +111,7 @@ usage(const char *argv0, FILE *fp)
         "    - XKB_DEFAULT_OPTIONS\n"
         "    Note that this option may affect the default values of the previous options.\n"
         "\n",
+        DEFAULT_INPUT_KEYMAP_FORMAT,
         DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
         DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
         DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
@@ -121,6 +126,7 @@ main(int argc, char *argv[])
     const char *variant = NULL;
     const char *options = NULL;
     bool use_env_names = false;
+    enum xkb_keymap_format keymap_format = DEFAULT_INPUT_KEYMAP_FORMAT;
     bool keysym_mode = false;
     int err = EXIT_FAILURE;
     struct xkb_context *ctx = NULL;
@@ -130,6 +136,7 @@ main(int argc, char *argv[])
     enum options {
         OPT_KEYSYM,
         OPT_ENABLE_ENV_NAMES,
+        OPT_KEYMAP_FORMAT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -140,6 +147,7 @@ main(int argc, char *argv[])
         {"help",                 no_argument,            0, 'h'},
         {"keysym",               no_argument,            0, OPT_KEYSYM},
         {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
+        {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
         {"rules",                required_argument,      0, OPT_RULES},
         {"model",                required_argument,      0, OPT_MODEL},
         {"layout",               required_argument,      0, OPT_LAYOUT},
@@ -165,6 +173,14 @@ main(int argc, char *argv[])
         case OPT_ENABLE_ENV_NAMES:
             use_env_names = true;
             break;
+        case OPT_KEYMAP_FORMAT:
+            keymap_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_format) {
+                fprintf(stderr, "ERROR: invalid --format \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
+            break;
         case OPT_RULES:
             rules = optarg;
             break;
@@ -181,10 +197,10 @@ main(int argc, char *argv[])
             options = optarg;
             break;
         case 'h':
-            usage(argv[0], stdout);
+            usage(stdout, argv[0]);
             exit(EXIT_SUCCESS);
         default:
-            usage(argv[0], stderr);
+            usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
     }
@@ -243,8 +259,8 @@ main(int argc, char *argv[])
         .variant = variant,
         .options = options,
     };
-    keymap = xkb_keymap_new_from_names(ctx, &names,
-                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = xkb_keymap_new_from_names2(ctx, &names, keymap_format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "ERROR: Failed to create XKB keymap\n");
         goto err;
@@ -312,6 +328,6 @@ err:
     xkb_context_unref(ctx);
     return err;
 parse_error:
-    usage(argv[0], stderr);
+    usage(stderr, argv[0]);
     exit(EXIT_INVALID_USAGE);
 }
