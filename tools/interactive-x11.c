@@ -16,6 +16,9 @@
 #include "xkbcommon/xkbcommon-x11.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
+#ifdef KEYMAP_DUMP
+#include "src/keymap-formats.h"
+#endif
 
 /*
  * Note: This program only handles the core keyboard device for now.
@@ -47,6 +50,9 @@ struct keyboard {
 };
 
 static bool terminate;
+#ifdef KEYMAP_DUMP
+static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+#endif
 
 static int
 select_xkb_events_for_device(xcb_connection_t *conn, int32_t device_id)
@@ -157,8 +163,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 
 #ifdef KEYMAP_DUMP
     /* Dump the keymap */
-    char *dump = xkb_keymap_get_as_string(kbd->keymap,
-                                          XKB_KEYMAP_FORMAT_TEXT_V1);
+    char *dump = xkb_keymap_get_as_string(kbd->keymap, keymap_format);
     fprintf(stdout, "%s", dump);
     free(dump);
     terminate = true;
@@ -354,16 +359,20 @@ usage(FILE *fp, char *progname)
 {
         fprintf(fp,
                 "Usage: %s [--help]"
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+                " [--format=<format>]"
+#else
                 " [--enable-compose]"
 #endif
                 "\n",
                 progname);
         fprintf(fp,
-#ifndef KEYMAP_DUMP
-                "    --enable-compose               enable Compose\n"
+#ifdef KEYMAP_DUMP
+                "    --format <FORMAT>    use keymap format FORMAT\n"
+#else
+                "    --enable-compose     enable Compose\n"
 #endif
-                "    --help                         display this help and exit\n"
+                "    --help               display this help and exit\n"
         );
 }
 
@@ -382,10 +391,13 @@ main(int argc, char *argv[])
     bool with_compose = false;
     enum options {
         OPT_COMPOSE,
+        OPT_KEYMAP_FORMAT,
     };
     static struct option opts[] = {
         {"help",                       no_argument, 0, 'h'},
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+        {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
+#else
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
 #endif
         {0, 0, 0, 0},
@@ -402,7 +414,16 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+        case OPT_KEYMAP_FORMAT:
+            keymap_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_format) {
+                fprintf(stderr, "ERROR: invalid --format \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
+            break;
+#else
         case OPT_COMPOSE:
             with_compose = true;
             break;
