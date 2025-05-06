@@ -351,7 +351,7 @@ illustrated in the [diagram hereinafter](@ref xkb-keymap-components-diagram):
   an [RMLVO configuration][RMLVO] and its corresponding
   <strong>[KcCGST components][KcCGST]</strong> files.
 
-  @see xkb_keymap::xkb_keymap_new_from_names
+  @see xkb_keymap::xkb_keymap_new_from_names2
 
   @see [xkeyboard-config] for the implementation of the *standard* keymap
   configuration database.

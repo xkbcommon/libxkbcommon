@@ -65,8 +65,9 @@ passing `NULL` chooses the system's default.
         .options = "terminate:ctrl_alt_bksp"
     };
 
-    keymap = xkb_keymap_new_from_names(ctx, &names,
-                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = xkb_keymap_new_from_names2(ctx, &names,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) <error>
 ~~~
 
