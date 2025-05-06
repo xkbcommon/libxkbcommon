@@ -124,3 +124,8 @@ V_1.9.0 {
 global:
     xkb_components_names_from_rules;
 } V_1.6.0;
+
+V_1.10.0 {
+global:
+    xkb_keymap_mod_get_mask;
+} V_1.9.0;

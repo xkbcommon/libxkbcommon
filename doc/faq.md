@@ -93,10 +93,16 @@ See also the [keymap text format][text format] documentation for the syntax.
 
 #### How to get the virtual to real modifiers mappings?
 
-The [virtual modifiers] mappings to [real modifiers] is an implementation
-detail that is not exposed directly. However, some applications may require
-it in order to interface with legacy code. These may adapt the following
-snippet:
+The [virtual modifiers] mappings to [real modifiers] is an implementation detail.
+However, some applications may require it in order to interface with legacy code.
+
+##### libxkbcommon ≥ 1.10
+
+Use the dedicated function `xkb_keymap::xkb_keymap_mod_get_mask()`.
+
+##### libxkbcommon ≤ 1.9
+
+Use the following snippet:
 
 ```c
 // Find the real modifier mapping of the virtual modifier `LevelThree`

@@ -18,6 +18,7 @@
 
 #include "keymap.h"
 #include "text.h"
+#include "xkbcommon/xkbcommon.h"
 
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
@@ -281,13 +282,22 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx)
 xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name)
 {
-    xkb_atom_t atom;
+    const xkb_atom_t atom = xkb_atom_lookup(keymap->ctx, name);
+    return (atom == XKB_ATOM_NONE)
+        ? XKB_MOD_INVALID
+        : XkbModNameToIndex(&keymap->mods, atom, MOD_BOTH);
+}
 
-    atom = xkb_atom_lookup(keymap->ctx, name);
-    if (atom == XKB_ATOM_NONE)
-        return XKB_MOD_INVALID;
-
-    return XkbModNameToIndex(&keymap->mods, atom, MOD_BOTH);
+/**
+ * Return the canonical mapping of a named modifier.
+ */
+xkb_mod_mask_t
+xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char* name)
+{
+    const xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, name);
+    return (idx >= keymap->mods.num_mods)
+        ? 0
+        : keymap->mods.mods[idx].mapping;
 }
 
 /**
