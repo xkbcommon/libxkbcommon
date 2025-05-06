@@ -616,7 +616,11 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
                 return false;
             has_explicit_properties = true;
         }
-        write_buf(buf, (has_explicit_properties ? "\n\t};\n" : "};\n"));
+        write_buf(buf, (has_explicit_properties
+                        ? "\n\t};\n"
+                        /* Empty interpret is a syntax error in xkbcomp, so
+                         * use a dummy entry */
+                        : "\n\t\taction= NoAction();\n\t};\n"));
     }
 
     xkb_leds_foreach(led, keymap)
