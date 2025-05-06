@@ -1,3 +1,20 @@
+libxkbcommon [1.9.2] - 2025-05-07
+=================================
+
+[1.9.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.2
+
+## API
+
+### Fixes
+
+- Fixed empty compatibility interpretation statement not parsable by X11’s `xkbcomp`.
+  This particularly affects Japanese layout `jp` when used with Xwayland.
+  ([#750](https://github.com/xkbcommon/libxkbcommon/issues/750))
+- Fixed empty compatibility interpretations map not parsable by X11’s `xkbcomp`.
+- Fixed key type map entries with a mix of bound and unbound modifiers not being ignored.
+  ([#758](https://github.com/xkbcommon/libxkbcommon/issues/758))
+
+
 libxkbcommon [1.9.1] - 2025-05-02
 =================================
 
