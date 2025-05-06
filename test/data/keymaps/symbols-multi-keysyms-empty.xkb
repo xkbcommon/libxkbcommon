@@ -146,8 +146,12 @@ xkb_compatibility {
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
-	interpret 1+AnyOfOrNone(all) {};
-	interpret 2+AnyOfOrNone(all) {};
+	interpret 1+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret 2+AnyOfOrNone(all) {
+		action= NoAction();
+	};
 	interpret 3+AnyOfOrNone(all) {
 		action= SetMods(modifiers=none);
 	};
