@@ -30,10 +30,18 @@ has_unbound_vmods(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
     return false;
 }
 
-static void
+static inline void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
 {
-    mods->mask = mod_mask_get_effective(keymap, mods->mods);
+    /*
+     * Since we accept numeric values for the vmod mask in the keymap, we may
+     * have extra bits set that encode no real/virtual modifier. Keep them
+     * unchanged for consistency.
+     */
+    const xkb_mod_mask_t unknown_mods = ~(xkb_mod_mask_t)
+        ((UINT64_C(1) << keymap->mods.num_mods) - UINT64_C(1));
+    mods->mask = mod_mask_get_effective(keymap, mods->mods)
+               | (mods->mods & unknown_mods);
 }
 
 static void
