@@ -1261,17 +1261,6 @@ mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
     return mask;
 }
 
-/* Get the mapping of a modifier */
-static inline xkb_mod_mask_t
-mod_mapping(struct xkb_mod *mod, xkb_mod_index_t idx)
-{
-    /*
-     * We cannot use `mod->mapping` directly, because it is
-     * not set for real modifiers.
-     */
-    return (mod->type & MOD_REAL) ? (UINT32_C(1) << idx) : mod->mapping;
-}
-
 /**
  * Returns 1 if the given modifier is active with the specified type(s), 0 if
  * not, or -1 if the modifier is invalid.
@@ -1284,14 +1273,13 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     if (unlikely(idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    const xkb_mod_mask_t mapping =
-        mod_mapping(&state->keymap->mods.mods[idx], idx);
+    const xkb_mod_mask_t mapping = state->keymap->mods.mods[idx].mapping;
     if (!mapping) {
         /* Modifier not mapped */
         return 0;
     }
     /* WARNING: this may overmatch for virtual modifiers */
-    return !!((xkb_state_serialize_mods(state, type) & mapping) == mapping);
+    return (xkb_state_serialize_mods(state, type) & mapping) == mapping;
 }
 
 /**
@@ -1339,7 +1327,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
             ret = -1;
             break;
         }
-        wanted |= mod_mapping(&state->keymap->mods.mods[idx], idx);
+        wanted |= state->keymap->mods.mods[idx].mapping;
     }
     va_end(ap);
 
@@ -1394,7 +1382,7 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
             ret = -1;
             break;
         }
-        wanted |= mod_mapping(&state->keymap->mods.mods[idx], idx);
+        wanted |= state->keymap->mods.mods[idx].mapping;
     }
     va_end(ap);
 
@@ -1545,13 +1533,12 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state, xkb_keycode_t kc,
     if (unlikely(!key || idx >= xkb_keymap_num_mods(state->keymap)))
         return -1;
 
-    const xkb_mod_mask_t mapping =
-        mod_mapping(&state->keymap->mods.mods[idx], idx);
+    const xkb_mod_mask_t mapping = state->keymap->mods.mods[idx].mapping;
     if (!mapping) {
         /* Modifier not mapped */
         return 0;
     }
-    return !!((mapping & key_get_consumed(state, key, mode)) == mapping);
+    return (mapping & key_get_consumed(state, key, mode)) == mapping;
 }
 
 int
