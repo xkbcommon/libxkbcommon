@@ -130,3 +130,8 @@ global:
     xkb_keymap_mod_get_mask;
     xkb_state_update_latched_locked;
 } V_1.9.0;
+
+V_1.11.0 {
+global:
+    xkb_keymap_new_from_names2;
+} V_1.10.0;
