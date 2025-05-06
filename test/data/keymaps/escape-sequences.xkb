@@ -26,6 +26,9 @@ xkb_types "1__7___" {
 xkb_compatibility "Le_c≈_ur_a___ses_raisons_que_la_raison_ne_con_na√_t_point" {
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
 	indicator "\n‚å®Ô∏è" {
 		modifiers= Shift;
 	};

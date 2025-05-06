@@ -53,8 +53,10 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
     }
 }
 
-static const struct xkb_sym_interpret default_interpret = {
-    .sym = XKB_KEY_NoSymbol,
+const struct xkb_sym_interpret default_interpret = {
+    /* Keysym unused for when applying interpretation, but used as a default
+     * entry when dumping the keymap */
+    .sym = XKB_KEY_VoidSymbol,
     .repeat = true,
     .match = MATCH_ANY_OR_NONE,
     .mods = 0,

@@ -18,6 +18,9 @@ xkb_compatibility {
 
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
 };
 
 xkb_symbols {
