@@ -717,6 +717,17 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "masks.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "    xkb_keycodes { <a> = 38; };\n"
+                "    xkb_symbols {\n"
+                "        virtual_modifiers X = 0xf0000000;\n"
+                "        key <a> { [ SetMods(mods = 0x00001100) ] };\n"
+                "    };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "masks-extra-bits.xkb"
         }
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {

@@ -1,0 +1,34 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<a>                  = 38;
+};
+
+xkb_types {
+	virtual_modifiers X=0xf0000000;
+
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers X=0xf0000000;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <a>                  {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [      SetMods(modifiers=0x1100) ]
+	};
+};
+
+};
