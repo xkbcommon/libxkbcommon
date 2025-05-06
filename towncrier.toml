@@ -41,6 +41,11 @@ name = "New"
 showcontent = true
 
 [[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
 directory = "bugfix"
 name = "Fixes"
 showcontent = true

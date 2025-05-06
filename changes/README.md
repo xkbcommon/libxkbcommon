@@ -17,6 +17,7 @@ There are 3 news fragments types:
 - Breaking changes: `.breaking`
 - New: `.feature`
 - Fixes: `.bugfix`
+- Deprecated: `.deprecated`
 
 [towncrier]: https://pypi.org/project/towncrier/
 
