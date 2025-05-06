@@ -34,7 +34,8 @@ test_real_mod(struct xkb_keymap *keymap, const char* name,
     return xkb_keymap_mod_get_index(keymap, name) == idx &&
            (keymap->mods.mods[idx].type == MOD_REAL) &&
            mapping == keymap->mods.mods[idx].mapping &&
-           mapping == (UINT32_C(1) << idx);
+           mapping == (UINT32_C(1) << idx) &&
+           xkb_keymap_mod_get_mask(keymap, name) == mapping;
 }
 
 static bool
@@ -43,7 +44,8 @@ test_virtual_mod(struct xkb_keymap *keymap, const char* name,
 {
     return xkb_keymap_mod_get_index(keymap, name) == idx &&
            (keymap->mods.mods[idx].type == MOD_VIRT) &&
-           mapping == keymap->mods.mods[idx].mapping;
+           mapping == keymap->mods.mods[idx].mapping &&
+           xkb_keymap_mod_get_mask(keymap, name) == mapping;
 }
 
 /* Check that the provided modifier names work */
@@ -521,6 +523,7 @@ test_virtual_modifiers_mapping_hack(struct xkb_context *context)
         assert_printf(mapping == mods[k].mapping,
                       "%s: expected %#"PRIx32", got: %#"PRIx32"\n",
                       mods[k].name, mods[k].mapping, mapping);
+        assert(mapping == xkb_keymap_mod_get_mask(keymap, mods[k].name));
     }
 
     xkb_state_unref(state);

@@ -1154,6 +1154,23 @@ XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
+ * Get the mapping of a modifier by name.
+ *
+ * In X11 terminology it corresponds to the mapping to the *[real modifiers]*.
+ *
+ * @returns The mapping of a modifier.  Note that it may be 0 if the name does
+ * not exist or if the modifier is not mapped.
+ *
+ * @since 1.10.0
+ * @memberof xkb_keymap
+ *
+ * [real modifiers]: @ref real-modifier-def
+ */
+XKB_EXPORT xkb_mod_mask_t
+xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char *name);
+
+
+/**
  * Get the number of layouts in the keymap.
  *
  * @sa xkb_layout_index_t xkb_rule_names xkb_keymap_num_layouts_for_key()
