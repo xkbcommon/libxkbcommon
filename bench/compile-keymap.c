@@ -10,7 +10,9 @@
 #include <getopt.h>
 
 #include "xkbcommon/xkbcommon.h"
+
 #include "utils.h"
+#include "keymap-formats.h"
 
 #include "bench.h"
 
@@ -18,9 +20,9 @@
 #define DEFAULT_STDEV 0.05
 
 static void
-usage(char **argv)
+usage(FILE *fp, char **argv)
 {
-    printf("Usage: %s [OPTIONS]\n"
+    fprintf(fp, "Usage: %s [OPTIONS]\n"
            "\n"
            "Benchmark compilation of the given RMLVO\n"
            "\n"
@@ -35,6 +37,12 @@ usage(char **argv)
            "Note: --iter and --stdev are mutually exclusive.\n"
            "\n"
            "XKB-specific options:\n"
+           " --input-format <format>\n"
+           "    The keymap format to use for parsing (default: %d)\n"
+#ifdef KEYMAP_DUMP
+           " --output-format <format>\n"
+           "    The keymap format to use for serializing (default: %d)\n"
+#endif
            " --rules <rules>\n"
            "    The XKB ruleset (default: '%s')\n"
            " --model <model>\n"
@@ -46,8 +54,11 @@ usage(char **argv)
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
            "\n",
-           argv[0], DEFAULT_STDEV * 100, DEFAULT_XKB_RULES,
-           DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
+           argv[0], DEFAULT_STDEV * 100, DEFAULT_INPUT_KEYMAP_FORMAT,
+#ifdef KEYMAP_DUMP
+           DEFAULT_OUTPUT_KEYMAP_FORMAT,
+#endif
+           DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
@@ -59,6 +70,10 @@ main(int argc, char **argv)
     struct bench bench;
     struct bench_time elapsed;
     struct estimate est;
+    enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+#ifdef KEYMAP_DUMP
+    enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+#endif
     bool explicit_iterations = false;
     int ret = 0;
     struct xkb_rule_names rmlvo = {
@@ -74,6 +89,8 @@ main(int argc, char **argv)
     double stdev = DEFAULT_STDEV;
 
     enum options {
+        OPT_KEYMAP_INPUT_FORMAT,
+        OPT_KEYMAP_OUTPUT_FORMAT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -85,6 +102,10 @@ main(int argc, char **argv)
 
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
+        {"input-format",     required_argument,      0, OPT_KEYMAP_INPUT_FORMAT},
+#ifdef KEYMAP_DUMP
+        {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
+#endif
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
         {"layout",           required_argument,      0, OPT_LAYOUT},
@@ -104,8 +125,26 @@ main(int argc, char **argv)
 
         switch (c) {
         case 'h':
-            usage(argv);
+            usage(stdout, argv);
             exit(EXIT_SUCCESS);
+        case OPT_KEYMAP_INPUT_FORMAT:
+            keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_input_format) {
+                fprintf(stderr, "ERROR: invalid --input-format: \"%s\"\n", optarg);
+                usage(stderr, argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
+#ifdef KEYMAP_DUMP
+        case OPT_KEYMAP_OUTPUT_FORMAT:
+            keymap_output_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_output_format) {
+                fprintf(stderr, "ERROR: invalid --output-format: \"%s\"\n", optarg);
+                usage(stderr, argv);
+                exit(EXIT_INVALID_USAGE);
+            }
+            break;
+#endif
         case OPT_RULES:
             rmlvo.rules = optarg;
             break;
@@ -123,7 +162,7 @@ main(int argc, char **argv)
             break;
         case OPT_ITERATIONS:
             if (max_iterations == 0) {
-                usage(argv);
+                usage(stderr, argv);
                 exit(EXIT_INVALID_USAGE);
             }
             {
@@ -137,7 +176,7 @@ main(int argc, char **argv)
             break;
         case OPT_STDEV:
             if (explicit_iterations) {
-                usage(argv);
+                usage(stderr, argv);
                 exit(EXIT_INVALID_USAGE);
             }
             stdev = atof(optarg) / 100;
@@ -146,7 +185,7 @@ main(int argc, char **argv)
             max_iterations = 0;
             break;
         default:
-            usage(argv);
+            usage(stderr, argv);
             exit(EXIT_INVALID_USAGE);
         }
     }
@@ -167,14 +206,16 @@ main(int argc, char **argv)
 
     struct xkb_keymap *keymap;
 
-    keymap = xkb_keymap_new_from_names(context, &rmlvo, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = xkb_keymap_new_from_names2(context, &rmlvo, keymap_input_format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "ERROR: Cannot compile keymap.\n");
         goto keymap_error;
         exit(EXIT_FAILURE);
     }
 #ifndef KEYMAP_DUMP
-    char *keymap_str = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    char *keymap_str = xkb_keymap_get_as_string(keymap,
+                                                XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     xkb_keymap_unref(keymap);
 #endif
 
@@ -202,16 +243,16 @@ main(int argc, char **argv)
         stdev = 0;
         bench_start2(&bench);
         for (unsigned int i = 0; i < max_iterations; i++) {
-#ifndef KEYMAP_DUMP
-            keymap = xkb_keymap_new_from_string(
-                context, keymap_str,
-                XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
-            assert(keymap);
-            xkb_keymap_unref(keymap);
-#else
-            char *s = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+#ifdef KEYMAP_DUMP
+            char *s = xkb_keymap_get_as_string(keymap, keymap_output_format);
             assert(s);
             free(s);
+#else
+            keymap = xkb_keymap_new_from_string(
+                context, keymap_str,
+                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            assert(keymap);
+            xkb_keymap_unref(keymap);
 #endif
         }
         bench_stop2(&bench);
@@ -221,20 +262,19 @@ main(int argc, char **argv)
         est.stdev = 0;
     } else {
         bench_start2(&bench);
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
         BENCH(stdev, max_iterations, elapsed, est,
-            keymap = xkb_keymap_new_from_string(
-                context, keymap_str,
-                XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
-            assert(keymap);
-            xkb_keymap_unref(keymap);
+            char *s = xkb_keymap_get_as_string(keymap, keymap_output_format);
+            assert(s);
+            free(s);
         );
 #else
         BENCH(stdev, max_iterations, elapsed, est,
-            char *s = xkb_keymap_get_as_string(
-                        keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
-            assert(s);
-            free(s);
+            keymap = xkb_keymap_new_from_string(
+                context, keymap_str,
+                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            assert(keymap);
+            xkb_keymap_unref(keymap);
         );
 #endif
         bench_stop2(&bench);
@@ -248,10 +288,10 @@ main(int argc, char **argv)
     dup2(stderr_old, STDERR_FILENO);
     close(stderr_old);
 
-#ifndef KEYMAP_DUMP
-    free(keymap_str);
-#else
+#ifdef KEYMAP_DUMP
     xkb_keymap_unref(keymap);
+#else
+    free(keymap_str);
 #endif
 
     struct bench_time total_elapsed;
