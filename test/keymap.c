@@ -11,13 +11,79 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "evdev-scancodes.h"
 #include "test.h"
-#include "xkbcommon/xkbcommon-keysyms.h"
 #include "keymap.h"
+#include "keymap-formats.h"
+#include "utils.h"
 
 #define KEY_LVL3 84
 #define KEY_LVL5 195
+
+static void
+test_supported_formats(void)
+{
+    assert(xkb_keymap_parse_format(NULL) == 0);
+    assert(xkb_keymap_parse_format("") == 0);
+    assert(xkb_keymap_parse_format("x") == 0);
+    assert(xkb_keymap_parse_format("v") == 0);
+    assert(xkb_keymap_parse_format("vx") == 0);
+    assert(xkb_keymap_parse_format("0x1") == 0); /* only base 10 */
+    assert(xkb_keymap_parse_format("+1") == XKB_KEYMAP_FORMAT_TEXT_V1);
+    assert(xkb_keymap_parse_format(" 1") == XKB_KEYMAP_FORMAT_TEXT_V1);
+
+    const struct {
+        int value;
+        enum xkb_keymap_format expected;
+        const char* const* labels;
+    } entries[] = {
+        { .value = -1                            , .labels = NULL, .expected = 0 },
+        { .value = 0                             , .labels = NULL, .expected = 0 },
+        { .value = 100000000                     , .labels = NULL, .expected = 0 },
+        { .value = XKB_KEYMAP_USE_ORIGINAL_FORMAT, .labels = NULL, .expected = 0 },
+        {
+          .value = XKB_KEYMAP_FORMAT_TEXT_V1,
+          .labels = (const char* const[]) { "v1", NULL },
+          .expected = XKB_KEYMAP_FORMAT_TEXT_V1
+        },
+    };
+    char buf[15] = { 0 };
+    for (size_t k = 0; k < ARRAY_SIZE(entries); k++) {
+        assert(xkb_keymap_is_supported_format(entries[k].value) ==
+               !!entries[k].expected);
+        /* Parse labels */
+        for (size_t l = 0; entries[k].labels && entries[k].labels[l]; l++) {
+            assert_printf(xkb_keymap_parse_format(entries[k].labels[l]) ==
+                          entries[k].expected,
+                          "%s: expected %d, got: %d\n",
+                          entries[k].labels[l], entries[k].value,
+                          xkb_keymap_parse_format(entries[k].labels[l]));
+        }
+        /* Parse serialized numeric value */
+        const int ret = snprintf(buf, sizeof(buf), "%d", entries[k].value);
+        assert(ret > 0 && ret < (int) sizeof(buf));
+        assert(xkb_keymap_parse_format(buf) == entries[k].expected);
+    }
+
+    const enum xkb_keymap_format *formats;
+    const size_t count = xkb_keymap_supported_formats(&formats);
+    assert(count == 1);
+    enum xkb_keymap_format previous = 0; /* Lower bound */
+    for (size_t k = 0; k < count; k++) {
+        /* Ascending order */
+        assert(previous < formats[k]);
+        /* Valid numeric format */
+        assert(xkb_keymap_is_supported_format(formats[k]));
+        /* Valid label */
+        const int ret = snprintf(buf, sizeof(buf), "%d", formats[k]);
+        assert(ret > 0 && ret < (int) sizeof(buf));
+        assert(xkb_keymap_parse_format(buf) == formats[k]);
+
+        previous = formats[k];
+    }
+}
 
 static void
 test_garbage_key(void)
@@ -531,6 +597,7 @@ main(void)
 {
     test_init();
 
+    test_supported_formats();
     test_garbage_key();
     test_keymap();
     test_no_extra_groups();
