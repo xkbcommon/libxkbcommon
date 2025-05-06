@@ -739,6 +739,8 @@ test(
         'test/keymap.c',
         'test/keysym.h',
         'test/keysym-case-mapping.h',
+        'src/keymap-formats.c',
+        'src/keymap-formats.h',
         dependencies: test_dep),
     env: test_env,
 )
