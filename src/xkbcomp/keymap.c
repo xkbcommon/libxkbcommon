@@ -12,11 +12,23 @@
 #include "config.h"
 
 #include <string.h>
+#include <stdbool.h>
 
 #include "keymap.h"
 #include "darray.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
+
+static bool
+has_unbound_vmods(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
+{
+    xkb_mod_index_t k;
+    struct xkb_mod *mod;
+    xkb_vmods_enumerate(k, mod, &keymap->mods)
+        if ((mask & (UINT32_C(1) << k)) && mod->mapping == 0)
+            return true;
+    return false;
+}
 
 static void
 ComputeEffectiveMask(struct xkb_keymap *keymap, struct xkb_mods *mods)
@@ -332,6 +344,21 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         ComputeEffectiveMask(keymap, &keymap->types[i].mods);
 
         for (j = 0; j < keymap->types[i].num_entries; j++) {
+            if (has_unbound_vmods(keymap,
+                                  keymap->types[i].entries[j].mods.mods)) {
+                /*
+                 * Map entries which specify unbound virtual modifiers are not
+                 * considered (see the XKB protocol, section “Determining the
+                 * KeySym Associated with a Key Event”).
+                 *
+                 * Deactivate entry by zeroing its mod mask and skipping further
+                 * processing.
+                 *
+                 * See also: `entry_is_active`.
+                 */
+                keymap->types[i].entries[j].mods.mask = 0;
+                continue;
+            }
             ComputeEffectiveMask(keymap, &keymap->types[i].entries[j].mods);
             ComputeEffectiveMask(keymap, &keymap->types[i].entries[j].preserve);
         }
