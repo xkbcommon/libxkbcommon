@@ -573,8 +573,17 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     copy_to_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
     copy_to_buf(buf, "\tinterpret.repeat= False;\n");
 
-    for (unsigned i = 0; i < keymap->num_sym_interprets; i++) {
-        const struct xkb_sym_interpret *si = &keymap->sym_interprets[i];
+    /* xkbcomp requires at least one interpret entry. */
+    const unsigned int num_sym_interprets = keymap->num_sym_interprets
+                                          ? keymap->num_sym_interprets
+                                          : 1;
+    const struct xkb_sym_interpret* const sym_interprets
+        = keymap->num_sym_interprets
+        ? keymap->sym_interprets
+        : &default_interpret;
+
+    for (unsigned i = 0; i < num_sym_interprets; i++) {
+        const struct xkb_sym_interpret *si = &sym_interprets[i];
 
         write_buf(buf, "\tinterpret %s+%s(%s) {",
                   si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
