@@ -501,9 +501,11 @@ XkbKeyNumLevels(const struct xkb_key *key, xkb_layout_index_t layout)
 }
 
 /*
- * If the virtual modifiers are not bound to anything, the entry
- * is not active and should be skipped. xserver does this with
- * cached entry->active field.
+ * Map entries which specify unbound virtual modifiers are not considered.
+ * See: the XKB protocol, section “Determining the KeySym Associated with a Key
+ * Event”
+ *
+ * xserver does this with cached entry->active field.
  */
 static inline bool
 entry_is_active(const struct xkb_key_type_entry *entry)

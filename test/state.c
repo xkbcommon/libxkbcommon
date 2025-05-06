@@ -1263,6 +1263,43 @@ test_overlapping_mods(struct xkb_context *context)
 }
 
 static void
+test_inactive_key_type_entry(struct xkb_context *context)
+{
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "    xkb_keycodes {\n"
+        "        <a> = 38;\n"
+        "        <leftshift> = 50;\n"
+        "    };\n"
+        "    xkb_types {\n"
+        "        virtual_modifiers Bound = Shift, Unbound;\n"
+        "        type \"X\" {\n"
+        "            modifiers = Bound+Unbound;\n"
+        /* This entry should be ignored because it has an unbound modifier */
+        "            map[Bound+Unbound] = Level1;\n"
+        "            map[Bound] = Level2;\n"
+        "        };\n"
+        "    };\n"
+        "    xkb_symbols {\n"
+        "        key <a>         { [ a, A ], type = \"X\" };\n"
+        "        key <leftshift> { [ SetMods(mods = Shift) ] };\n"
+        "    };\n"
+        "};";
+    struct xkb_keymap *keymap =
+        test_compile_buffer(context, keymap_str, sizeof(keymap_str));
+    assert(keymap);
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+    const xkb_mod_mask_t shift = (UINT32_C(1) << XKB_MOD_INDEX_SHIFT);
+    assert(xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET) == XKB_KEY_a);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == shift);
+    assert(xkb_state_key_get_one_sym(state, KEY_A + EVDEV_OFFSET) == XKB_KEY_A);
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
+static void
 key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
     xkb_keycode_t *counter = data;
@@ -1771,10 +1808,12 @@ main(void)
 
     xkb_keymap_unref(keymap);
 
+    test_inactive_key_type_entry(context);
     test_caps_keysym_transformation(context);
 
     test_leds(context);
     test_multiple_actions(context);
 
     xkb_context_unref(context);
+    return EXIT_SUCCESS;
 }
