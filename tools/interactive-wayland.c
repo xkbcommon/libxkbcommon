@@ -22,6 +22,7 @@
 #include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
 #include "src/utils.h"
+#include "src/keymap-formats.h"
 
 #include <wayland-client.h>
 #include "xdg-shell-client-protocol.h"
@@ -68,7 +69,9 @@ struct interactive_seat {
 };
 
 static bool terminate;
+static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
 #ifdef KEYMAP_DUMP
+static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static bool dump_raw_keymap;
 #endif
 
@@ -385,7 +388,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
 #endif
 
     seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
-                                              XKB_KEYMAP_FORMAT_TEXT_V1,
+                                              keymap_input_format,
                                               XKB_KEYMAP_COMPILE_NO_FLAGS);
     munmap(buf, size);
     close(fd);
@@ -395,8 +398,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     }
 #ifdef KEYMAP_DUMP
     /* Dump the reformatted keymap */
-    char *dump = xkb_keymap_get_as_string(seat->keymap,
-                                            XKB_KEYMAP_FORMAT_TEXT_V1);
+    char *dump = xkb_keymap_get_as_string(seat->keymap, keymap_output_format);
     fprintf(stdout, "%s", dump);
     free(dump);
     return;
@@ -730,18 +732,22 @@ usage(FILE *fp, char *progname)
 {
         fprintf(fp,
                 "Usage: %s [--help]"
-#ifndef KEYMAP_DUMP
-                " [--enable-compose]"
+#ifdef KEYMAP_DUMP
+                " [--raw] [--input-format] [--output-format] [--format]"
 #else
-                " [--raw]"
+                " [--format] [--enable-compose]"
 #endif
                 "\n",
                 progname);
         fprintf(fp,
-#ifndef KEYMAP_DUMP
-                "    --enable-compose   enable Compose\n"
+#ifdef KEYMAP_DUMP
+                "    --input-format <FORMAT>     use input keymap format FORMAT\n"
+                "    --output-format <FORMAT>    use output keymap format FORMAT\n"
+                "    --format <FORMAT>           keymap format to use for both input and output\n"
+                "    --raw                       dump the raw keymap, without parsing it\n"
 #else
-                "    --raw              dump the raw keymap, without parsing it\n"
+                "    --format <FORMAT>  use keymap format FORMAT\n"
+                "    --enable-compose   enable Compose\n"
 #endif
                 "    --help             display this help and exit\n"
         );
@@ -759,14 +765,21 @@ main(int argc, char *argv[])
     bool with_compose = false;
     enum options {
         OPT_COMPOSE,
+        OPT_INPUT_KEYMAP_FORMAT,
+        OPT_OUTPUT_KEYMAP_FORMAT,
+        OPT_KEYMAP_FORMAT,
         OPT_RAW,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
-#ifndef KEYMAP_DUMP
-        {"enable-compose",       no_argument,            0, OPT_COMPOSE},
-#else
+#ifdef KEYMAP_DUMP
+        {"input-format",         required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
+        {"output-format",        required_argument,      0, OPT_OUTPUT_KEYMAP_FORMAT},
+        {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
         {"raw",                  no_argument,            0, OPT_RAW},
+#else
+        {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
+        {"enable-compose",       no_argument,            0, OPT_COMPOSE},
 #endif
         {0, 0, 0, 0},
     };
@@ -782,13 +795,44 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
-#ifndef KEYMAP_DUMP
-        case OPT_COMPOSE:
-            with_compose = true;
-            break;
+        case OPT_INPUT_KEYMAP_FORMAT:
+            keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_input_format) {
+                fprintf(stderr, "ERROR: invalid %s \"%s\"\n",
+#ifdef KEYMAP_DUMP
+                        "--input-format",
 #else
+                        "--format",
+#endif
+                        optarg);
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
+            break;
+#ifdef KEYMAP_DUMP
+        case OPT_OUTPUT_KEYMAP_FORMAT:
+            keymap_output_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_output_format) {
+                fprintf(stderr, "ERROR: invalid --output-format \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                return EXIT_INVALID_USAGE;
+            }
+            break;
+        case OPT_KEYMAP_FORMAT:
+            keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!keymap_input_format) {
+                fprintf(stderr, "ERROR: invalid --format: \"%s\"\n", optarg);
+                usage(stderr, argv[0]);
+                exit(EXIT_INVALID_USAGE);
+            }
+            keymap_output_format = keymap_input_format;
+            break;
         case OPT_RAW:
             dump_raw_keymap = true;
+            break;
+#else
+        case OPT_COMPOSE:
+            with_compose = true;
             break;
 #endif
         case 'h':

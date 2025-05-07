@@ -92,6 +92,7 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 {
     static const struct xkb_keymap_format_ops *keymap_format_ops[] = {
         [XKB_KEYMAP_FORMAT_TEXT_V1] = &text_v1_keymap_format_ops,
+        [XKB_KEYMAP_FORMAT_TEXT_V2] = &text_v1_keymap_format_ops,
     };
 
     if ((int) format < 0 || (int) format >= (int) ARRAY_SIZE(keymap_format_ops))
@@ -101,13 +102,13 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 }
 
 struct xkb_keymap *
-xkb_keymap_new_from_names(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo_in,
-                          enum xkb_keymap_compile_flags flags)
+xkb_keymap_new_from_names2(struct xkb_context *ctx,
+                           const struct xkb_rule_names *rmlvo_in,
+                           enum xkb_keymap_format format,
+                           enum xkb_keymap_compile_flags flags)
 {
     struct xkb_keymap *keymap;
     struct xkb_rule_names rmlvo;
-    const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const struct xkb_keymap_format_ops *ops;
 
     ops = get_keymap_format_ops(format);
@@ -139,6 +140,16 @@ xkb_keymap_new_from_names(struct xkb_context *ctx,
     }
 
     return keymap;
+}
+
+
+struct xkb_keymap *
+xkb_keymap_new_from_names(struct xkb_context *ctx,
+                          const struct xkb_rule_names *rmlvo_in,
+                          enum xkb_keymap_compile_flags flags)
+{
+    return xkb_keymap_new_from_names2(ctx, rmlvo_in,
+                                      XKB_KEYMAP_FORMAT_TEXT_V2, flags);
 }
 
 struct xkb_keymap *

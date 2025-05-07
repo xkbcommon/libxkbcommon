@@ -8,7 +8,7 @@ See: [Introduction to XKB](./introduction-to-xkb.md).
 
 ### What does … mean?
 
-See: [terminology](./keymap-format-text-v1.md#terminology).
+See: [terminology](./keymap-text-format-v1-2.md#terminology).
 
 ## Keyboard layout
 
@@ -81,7 +81,7 @@ This project does not provide any keyboard layout database:
 
 See also the [keymap text format][text format] documentation for the syntax.
 
-[text format]: ./keymap-format-text-v1.md
+[text format]: ./keymap-text-format-v1-2.md
 
 ### How do I swap some keys?
 
