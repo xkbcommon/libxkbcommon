@@ -2,7 +2,7 @@
 
 @tableofcontents{html:2}
 
-## XKB support {#xkb-v1-compatibility}
+## Keymap text format v1: XKB 1.0 support {#xkb-v1-compatibility}
 
 Relative to the XKB 1.0 specification implemented in current X servers,
 xkbcommon has removed support for some parts of the specification which
@@ -65,6 +65,10 @@ On the other hand, some features and extensions were added.
   can be written `"ü"`. A string with multiple Unicode code points denotes
   a list of the corresponding keysyms. An empty string denotes the keysym
   `NoSymbol`.
+
+## Keymap text format v2 {#xkb-v2-compatibility}
+
+@todo
 
 ## Rules support {#rules-support}
 
