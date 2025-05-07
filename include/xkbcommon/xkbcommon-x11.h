@@ -182,7 +182,7 @@ xkb_x11_get_core_keyboard_device_id(xcb_connection_t *connection);
  *     Passing values outside of this range is an error (the XKB protocol
  *     predates the XInput2 protocol, which first allowed IDs > 127).
  * @param flags
- *     Optional flags for the keymap, or 0.
+ *     Optional flags for the keymap, or ::XKB_KEYMAP_COMPILE_NO_FLAGS.
  *
  * @returns A keymap retrieved from the X server, or NULL on failure.
  *

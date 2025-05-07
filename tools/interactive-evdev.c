@@ -389,6 +389,7 @@ main(int argc, char *argv[])
     struct keyboard *kbds;
     struct xkb_context *ctx = NULL;
     struct xkb_keymap *keymap = NULL;
+    struct xkb_keymap_compile_options *keymap_options = NULL;
     struct xkb_compose_table *compose_table = NULL;
     const char *includes[64];
     size_t num_includes = 0;
@@ -581,6 +582,11 @@ too_much_arguments:
             xkb_context_include_path_append(ctx, include);
     }
 
+    keymap_options = xkb_keymap_compile_options_new(XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                    XKB_KEYMAP_COMPILE_NO_FLAGS);
+    if (!keymap_options)
+        goto out;
+
     if (keymap_path) {
         FILE *file = fopen(keymap_path, "rb");
         if (!file) {
@@ -588,9 +594,7 @@ too_much_arguments:
                     keymap_path, strerror(errno));
             goto out;
         }
-        keymap = xkb_keymap_new_from_file(ctx, file,
-                                          XKB_KEYMAP_FORMAT_TEXT_V1,
-                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
+        keymap = xkb_keymap_new_from_file2(ctx, file, keymap_options);
         fclose(file);
     }
     else {
@@ -603,9 +607,9 @@ too_much_arguments:
         };
 
         if (!rules && !model && !layout && !variant && !options)
-            keymap = xkb_keymap_new_from_names(ctx, NULL, 0);
+            keymap = xkb_keymap_new_from_names2(ctx, NULL, keymap_options);
         else
-            keymap = xkb_keymap_new_from_names(ctx, &rmlvo, 0);
+            keymap = xkb_keymap_new_from_names2(ctx, &rmlvo, keymap_options);
 
         if (!keymap) {
             fprintf(stderr,
@@ -659,6 +663,7 @@ too_much_arguments:
     free_keyboards(kbds);
 out:
     xkb_compose_table_unref(compose_table);
+    xkb_keymap_compile_options_free(keymap_options);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
 
