@@ -48,6 +48,11 @@ test_supported_formats(void)
           .labels = (const char* const[]) { "v1", NULL },
           .expected = XKB_KEYMAP_FORMAT_TEXT_V1
         },
+        {
+          .value = XKB_KEYMAP_FORMAT_TEXT_V2,
+          .labels = (const char* const[]) { "v2", NULL },
+          .expected = XKB_KEYMAP_FORMAT_TEXT_V2
+        },
     };
     char buf[15] = { 0 };
     for (size_t k = 0; k < ARRAY_SIZE(entries); k++) {
@@ -69,7 +74,7 @@ test_supported_formats(void)
 
     const enum xkb_keymap_format *formats;
     const size_t count = xkb_keymap_supported_formats(&formats);
-    assert(count == 1);
+    assert(count == 2);
     enum xkb_keymap_format previous = 0; /* Lower bound */
     for (size_t k = 0; k < count; k++) {
         /* Ascending order */
