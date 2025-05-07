@@ -8,10 +8,11 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon.h"
+#include "evdev-scancodes.h"
 #include "test.h"
 #include "keymap.h"
 #include "utils.h"
-#include "xkbcommon/xkbcommon.h"
 
 /* Standard real modifier masks */
 enum real_mod_mask {
@@ -526,6 +527,119 @@ test_virtual_modifiers_mapping_hack(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_pure_virtual_modifiers(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap;
+
+    /* Test definition of >20 pure virtual modifiers.
+     * We superate the X11 limit of 16 virtual modifiers. */
+    keymap = test_compile_file(context, "keymaps/pure-virtual-mods.xkb");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_W,          BOTH,  XKB_KEY_w,        NEXT,
+                        KEY_A,          DOWN,  XKB_KEY_a,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_a,        NEXT,
+                        KEY_A,          UP,    XKB_KEY_a,        NEXT,
+                        KEY_B,          DOWN,  XKB_KEY_b,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_b,        NEXT,
+                        KEY_B,          UP,    XKB_KEY_b,        NEXT,
+                        KEY_C,          DOWN,  XKB_KEY_c,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_c,        NEXT,
+                        KEY_C,          UP,    XKB_KEY_c,        NEXT,
+                        KEY_D,          DOWN,  XKB_KEY_d,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_d,        NEXT,
+                        KEY_D,          UP,    XKB_KEY_d,        NEXT,
+                        KEY_E,          DOWN,  XKB_KEY_e,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_e,        NEXT,
+                        KEY_E,          UP,    XKB_KEY_e,        NEXT,
+                        KEY_F,          DOWN,  XKB_KEY_f,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_f,        NEXT,
+                        KEY_F,          UP,    XKB_KEY_f,        NEXT,
+                        KEY_G,          DOWN,  XKB_KEY_g,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_g,        NEXT,
+                        KEY_G,          UP,    XKB_KEY_g,        NEXT,
+                        KEY_H,          DOWN,  XKB_KEY_h,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_h,        NEXT,
+                        KEY_H,          UP,    XKB_KEY_h,        NEXT,
+                        KEY_I,          DOWN,  XKB_KEY_i,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_i,        NEXT,
+                        KEY_I,          UP,    XKB_KEY_i,        NEXT,
+                        KEY_J,          DOWN,  XKB_KEY_j,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_j,        NEXT,
+                        KEY_J,          UP,    XKB_KEY_j,        NEXT,
+                        KEY_K,          DOWN,  XKB_KEY_k,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_k,        NEXT,
+                        KEY_K,          UP,    XKB_KEY_k,        NEXT,
+                        KEY_L,          DOWN,  XKB_KEY_l,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_l,        NEXT,
+                        KEY_L,          UP,    XKB_KEY_l,        NEXT,
+                        KEY_M,          DOWN,  XKB_KEY_m,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_m,        NEXT,
+                        KEY_M,          UP,    XKB_KEY_m,        NEXT,
+                        KEY_N,          DOWN,  XKB_KEY_n,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_n,        NEXT,
+                        KEY_N,          UP,    XKB_KEY_n,        NEXT,
+                        KEY_O,          DOWN,  XKB_KEY_o,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_o,        NEXT,
+                        KEY_O,          UP,    XKB_KEY_o,        NEXT,
+                        KEY_P,          DOWN,  XKB_KEY_p,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_p,        NEXT,
+                        KEY_P,          UP,    XKB_KEY_p,        NEXT,
+                        KEY_Q,          DOWN,  XKB_KEY_q,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_q,        NEXT,
+                        KEY_Q,          UP,    XKB_KEY_q,        NEXT,
+                        KEY_R,          DOWN,  XKB_KEY_r,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_r,        NEXT,
+                        KEY_R,          UP,    XKB_KEY_r,        NEXT,
+                        KEY_S,          DOWN,  XKB_KEY_s,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_s,        NEXT,
+                        KEY_S,          UP,    XKB_KEY_s,        NEXT,
+                        KEY_T,          DOWN,  XKB_KEY_t,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_t,        NEXT,
+                        KEY_T,          UP,    XKB_KEY_t,        NEXT,
+                        KEY_U,          DOWN,  XKB_KEY_u,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_u,        NEXT,
+                        KEY_U,          UP,    XKB_KEY_u,        NEXT,
+                        KEY_V,          DOWN,  XKB_KEY_v,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_v,        NEXT,
+                        KEY_LEFTSHIFT,  DOWN,  XKB_KEY_Shift_L,  NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_V,        NEXT,
+                        KEY_LEFTSHIFT,  UP,    XKB_KEY_Shift_L,  NEXT,
+                        KEY_V,          UP,    XKB_KEY_v,        NEXT,
+                        KEY_A,          DOWN,  XKB_KEY_a,        NEXT,
+                        KEY_S,          DOWN,  XKB_KEY_s,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_1,        NEXT,
+                        KEY_RIGHTALT,   DOWN,  XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_4,        NEXT,
+                        KEY_S,          UP,    XKB_KEY_s,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_3,        NEXT,
+                        KEY_RIGHTALT,   UP,    XKB_KEY_ISO_Level3_Shift, NEXT,
+                        KEY_Q,          DOWN,  XKB_KEY_q,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_2,        NEXT,
+                        KEY_Q,          UP,    XKB_KEY_q,        NEXT,
+                        KEY_B,          DOWN,  XKB_KEY_b,        NEXT,
+                        KEY_C,          DOWN,  XKB_KEY_c,        NEXT,
+                        KEY_W,          BOTH,  XKB_KEY_5,        NEXT,
+                        KEY_C,          UP,    XKB_KEY_c,        NEXT,
+                        KEY_B,          UP,    XKB_KEY_b,        NEXT,
+                        KEY_A,          UP,    XKB_KEY_a,        NEXT,
+                        KEY_Y,          BOTH,  XKB_KEY_y,        FINISH));
+    xkb_keymap_unref(keymap);
+
+    /* Test invalid interpret using a virtual modifier */
+    const char keymap_str[] =
+        "xkb_keymap {"
+        "  xkb_keycodes { include \"evdev\" };"
+        "  xkb_types { include \"complete\" };"
+        "  xkb_compat { include \"complete+basic(invalid-pure-virtual-modifiers)\" };"
+        "  xkb_symbols { include \"pc(pc105-pure-virtual-modifiers)\" };"
+        "};";
+    keymap = test_compile_string(context, keymap_str);
+    assert(!keymap);
+}
+
 int
 main(void)
 {
@@ -538,6 +652,7 @@ main(void)
     test_modifiers_names(context);
     test_explicit_virtual_modifiers(context);
     test_virtual_modifiers_mapping_hack(context);
+    test_pure_virtual_modifiers(context);
 
     xkb_context_unref(context);
 

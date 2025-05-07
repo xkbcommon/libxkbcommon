@@ -1,0 +1,11 @@
+default xkb_types "ordered_explicit_mapping" {
+	virtual_modifiers
+		Alt = 0x100,
+		Meta = 0x200,
+		Super = 0x400,
+		Hyper = 0x800,
+		NumLock = 0x1000,
+		LevelThree = 0x2000,
+		LevelFive = 0x4000,
+		ScrollLock = 0x8000;
+};

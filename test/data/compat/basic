@@ -47,3 +47,53 @@ default xkb_compatibility "basic" {
 	modifiers= Shift;
     };
 };
+
+xkb_compatibility "pure-virtual-modifiers" {
+
+    virtual_modifiers  NumLock,AltGr,Alt;
+
+    interpret.repeat= False;
+    setMods.clearLocks= True;
+    latchMods.clearLocks= True;
+    latchMods.latchToLock= True;
+
+    interpret Shift_Lock {
+	action= LockMods(modifiers=Shift);
+    };
+
+    interpret Num_Lock {
+	virtualModifier= NumLock;
+	action= LockMods(modifiers=NumLock);
+    };
+
+    interpret Shift_L {
+	action= SetMods(modifiers=Shift);
+    };
+
+    interpret Shift_R {
+	action= SetMods(modifiers=Shift);
+    };
+
+    interpret Control_L {
+	action= SetMods(modifiers=Control);
+    };
+
+    interpret Control_R {
+	action= SetMods(modifiers=Control);
+    };
+
+    interpret Alt_L {
+	action= SetMods(modifiers=Alt);
+    };
+
+    interpret Alt_R {
+	action= SetMods(modifiers=Alt);
+    };
+};
+
+xkb_compatibility "invalid-pure-virtual-modifiers" {
+    virtual_modifiers Alt;
+    interpret Alt_R + Alt {
+	action= SetMods(modifiers=Alt);
+    };
+};

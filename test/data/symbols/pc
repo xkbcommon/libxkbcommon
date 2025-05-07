@@ -1,5 +1,4 @@
-default partial alphanumeric_keys modifier_keys
-xkb_symbols "pc105" {
+xkb_symbols "pc105-pure-virtual-modifiers" {
 
     key <ESC>  {	[ Escape		]	};
 
@@ -31,35 +30,40 @@ xkb_symbols "pc105" {
     key <RWIN> {	[ Super_R		]	};
     key <MENU> {	[ Menu			]	};
 
-    // Beginning of modifier mappings.
-    modifier_map Shift  { Shift_L, Shift_R };
-    modifier_map Lock   { Caps_Lock };
-    modifier_map Control{ Control_L, Control_R };
-    modifier_map Mod2   { Num_Lock };
-    modifier_map Mod4   { Super_L, Super_R };
-
     // Fake keys for virtual<->real modifiers mapping:
     key <LVL3> {	[ ISO_Level3_Shift	]	};
     key <MDSW> {	[ Mode_switch 		]	};
-    modifier_map Mod5   { <LVL3>, <MDSW> };
 
     key <ALT>  {	[ NoSymbol, Alt_L	]	};
-    include "altwin(meta_alt)"
+    key <LALT> { [ Alt_L, Meta_L ] };
+    key <RALT> { type[Group1] = "TWO_LEVEL",
+                 symbols[Group1] = [ Alt_R, Meta_R ] };
 
     key <META> {	[ NoSymbol, Meta_L	]	};
-    modifier_map Mod1   { <META> };
 
     key <SUPR> {	[ NoSymbol, Super_L	]	};
-    modifier_map Mod4   { <SUPR> };
 
     key <HYPR> {	[ NoSymbol, Hyper_L	]	};
-    modifier_map Mod4   { <HYPR> };
     // End of modifier mappings.
 
     key <OUTP> { [ XF86Display ] };
     key <KITG> { [ XF86KbdLightOnOff ] };
     key <KIDN> { [ XF86KbdBrightnessDown ] };
     key <KIUP> { [ XF86KbdBrightnessUp ] };
+};
+
+default partial alphanumeric_keys modifier_keys
+xkb_symbols "pc105" {
+    include "pc(pc105-pure-virtual-modifiers)"
+
+    // Beginning of modifier mappings.
+    modifier_map Shift  { Shift_L, Shift_R };
+    modifier_map Lock   { Caps_Lock };
+    modifier_map Control{ Control_L, Control_R };
+    modifier_map Mod1   { <META>, Alt_L, Alt_R, Meta_L, Meta_R };
+    modifier_map Mod2   { Num_Lock };
+    modifier_map Mod4   { <SUPR>, <HYPR>, Super_L, Super_R };
+    modifier_map Mod5   { <LVL3>, <MDSW> };
 };
 
 hidden partial alphanumeric_keys
