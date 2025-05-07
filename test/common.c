@@ -445,6 +445,36 @@ test_compile_rules(struct xkb_context *context, const char *rules,
     return keymap;
 }
 
+struct xkb_keymap *
+test_compile_rules2(struct xkb_context *context, const char *rules,
+                    const char *model, const char *layout,
+                    const char *variant, const char *options,
+                    struct xkb_keymap_compile_options *compile_options)
+{
+    struct xkb_keymap *keymap;
+    struct xkb_rule_names rmlvo = {
+        .rules = isempty(rules) ? NULL : rules,
+        .model = isempty(model) ? NULL : model,
+        .layout = isempty(layout) ? NULL : layout,
+        .variant = isempty(variant) ? NULL : variant,
+        .options = isempty(options) ? NULL : options
+    };
+
+    if (!rules && !model && !layout && !variant && !options)
+        keymap = xkb_keymap_new_from_names2(context, NULL, compile_options);
+    else
+        keymap = xkb_keymap_new_from_names2(context, &rmlvo, compile_options);
+
+    if (!keymap) {
+        fprintf(stderr,
+                "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",
+                rules, model, layout, variant, options);
+        return NULL;
+    }
+
+    return keymap;
+}
+
 bool
 test_compile_output(struct xkb_context *ctx,
                     test_compile_buffer_t compile_buffer,

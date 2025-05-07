@@ -112,6 +112,11 @@ test_compile_rules(struct xkb_context *context, const char *rules,
                    const char *model, const char *layout, const char *variant,
                    const char *options);
 
+struct xkb_keymap *
+test_compile_rules2(struct xkb_context *context, const char *rules,
+                    const char *model, const char *layout,
+                    const char *variant, const char *options,
+                    struct xkb_keymap_compile_options *compile_options);
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))

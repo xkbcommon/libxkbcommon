@@ -143,6 +143,8 @@ enum xkb_message_code {
     XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE = 700,
     /** A legacy X11 symbol field is not supported */
     XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD = 711,
+    /** Unsupported keymap compilation flag */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_COMPILATION_FLAG = 746,
     /** The XKB syntax is invalid and the file cannot be parsed */
     XKB_ERROR_INVALID_XKB_SYNTAX = 769,
     /** Reference to an undefined keycode */
@@ -157,6 +159,8 @@ enum xkb_message_code {
     XKB_ERROR_UNKNOWN_FIELD = 812,
     /** Keymap compilation failed */
     XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
+    /** Keymap text format is not supported */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_TEXT_FORMAT = 825,
     /** Warn if there are conflicting actions while merging keys */
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */

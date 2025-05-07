@@ -402,6 +402,13 @@
   added: ALWAYS
   type: warning
   description: "A legacy X11 symbol field is not supported"
+- id: "unsupported-keymap-compilation-flag"
+  code: 746
+  added: ALWAYS
+  type: error
+  description: "Unsupported keymap compilation flag"
+  details: |
+    See `xkb_keymap_compile_flags` for the supported keymap compilation flags.
 - id: "invalid-xkb-syntax"
   code: 769
   added: ALWAYS
@@ -441,6 +448,13 @@
   added: ALWAYS
   type: error
   description: "Keymap compilation failed"
+- id: "unsupported-keymap-text-format"
+  code: 825
+  added: ALWAYS
+  type: error
+  description: "Keymap text format is not supported"
+  details: |
+    See `xkb_keymap_format` for the supported keymap text formats.
 - id: "conflicting-key-action"
   code: 883
   added: ALWAYS
