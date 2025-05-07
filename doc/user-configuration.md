@@ -142,7 +142,7 @@ The "orange" variant uses the "banana" symbols and includes a different section
 to define the `eurosign`. It does not specifically override any symbols.
 
 The exact details of how `xkb_symbols` section works is out of scope for this
-document; see: @ref keymap-text-format-v1 "".
+document; see: @ref keymap-text-format-v1-v2 "".
 
 @remark This example uses a file name "banana" that should not clash with the
 system files in `<datadir>/X11/xkb/symbols`. Using the same file name than

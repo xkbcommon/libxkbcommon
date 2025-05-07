@@ -36,7 +36,8 @@ group__registry.html: []
 group__state.html: []
 group__x11.html: []
 index.html: []
-keymap-text-format-v1.html:
+keymap-text-format-v1-v2.html:
+- keymap-text-format-v1.html
 - md_doc_keymap_format_text_v1.html
 md_doc_2quick-guide.html:
 - md_doc_quick_guide.html

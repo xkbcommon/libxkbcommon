@@ -1129,7 +1129,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/compatibility.md',
         'doc/user-configuration.md',
         'doc/rules-format.md',
-        'doc/keymap-format-text-v1.md',
+        'doc/keymap-text-format-v1-v2.md',
         'doc/message-registry.md',
         'doc/release-notes.md',
         'doc/license.md',
