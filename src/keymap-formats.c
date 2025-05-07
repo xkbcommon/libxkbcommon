@@ -13,7 +13,8 @@
 
 /* [WARNING] Must be in ascending order */
 static const enum xkb_keymap_format keymap_formats[] = {
-    XKB_KEYMAP_FORMAT_TEXT_V1
+    XKB_KEYMAP_FORMAT_TEXT_V1,
+    XKB_KEYMAP_FORMAT_TEXT_V2,
 };
 
 /*
@@ -30,6 +31,7 @@ struct format_label {
 };
 static const struct format_label keymap_formats_labels [] = {
     { "v1", XKB_KEYMAP_FORMAT_TEXT_V1 },
+    { "v2", XKB_KEYMAP_FORMAT_TEXT_V2 },
 };
 
 size_t
