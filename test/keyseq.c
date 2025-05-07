@@ -1084,20 +1084,13 @@ test_simultaneous_modifier_clear(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 }
 
-int
-main(void)
+static void
+test_keymaps(struct xkb_context *ctx, const char* rules)
 {
-    test_init();
-
-    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
 
     assert(ctx);
 
-    test_simultaneous_modifier_clear(ctx);
-    test_group_latch(ctx);
-    test_mod_latch(ctx);
-    test_explicit_actions(ctx);
 
     keymap = test_compile_rules(ctx, "evdev", "evdev",
                                 "us,il,ru,de", ",,phonetic,neo",
@@ -1376,7 +1369,7 @@ main(void)
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "de", "neo", "");
+    keymap = test_compile_rules(ctx, rules, "", "de", "neo", "");
     assert(keymap);
     assert(test_key_seq(keymap,
                         /* Level 5. */
@@ -1428,7 +1421,7 @@ main(void)
 
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
                                 "grp:alt_shift_toggle_bidir,grp:menu_toggle");
     assert(keymap);
 
@@ -1467,7 +1460,7 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
 
@@ -1510,7 +1503,7 @@ main(void)
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us", "euro", "");
+    keymap = test_compile_rules(ctx, rules, "", "us", "euro", "");
     assert(keymap);
 
     assert(test_key_seq(keymap,
@@ -1530,7 +1523,7 @@ main(void)
                         KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "applealu_ansi", "us", "",
+    keymap = test_compile_rules(ctx, rules, "applealu_ansi", "us", "",
                                 "terminate:ctrl_alt_bksp");
     assert(keymap);
 
@@ -1550,6 +1543,26 @@ main(void)
                         KEY_A,         BOTH, XKB_KEY_a,                 FINISH));
 
     xkb_keymap_unref(keymap);
+}
+
+int
+main(void)
+{
+    test_init();
+
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
+    assert(ctx);
+
+    /* Usual rules */
+    test_keymaps(ctx, "evdev");
+    /* Special rules to make no use of modmaps */
+    test_keymaps(ctx, "evdev-pure-virtual-mods");
+
+    test_simultaneous_modifier_clear(ctx);
+    test_group_latch(ctx);
+    test_mod_latch(ctx);
+    test_explicit_actions(ctx);
+
     xkb_context_unref(ctx);
     return EXIT_SUCCESS;
 }

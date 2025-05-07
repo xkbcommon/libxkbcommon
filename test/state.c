@@ -430,13 +430,29 @@ print_state(struct xkb_state *state)
     }
 }
 
+/* Utils for checking modifier state */
+typedef bool (* is_active_t)(int);
+
+static inline bool
+is_active(int x)
+{
+    return x > 0;
+}
+
+static inline bool
+is_not_active(int x)
+{
+    return x == 0;
+}
+
 static void
-test_update_key(struct xkb_keymap *keymap)
+test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
 {
     struct xkb_state *state = xkb_state_new(keymap);
     const xkb_keysym_t *syms;
     xkb_keysym_t one_sym;
     int num_syms;
+    is_active_t check_active = pure_vmods ? is_not_active : is_active;
 
     assert(state);
 
@@ -458,23 +474,43 @@ test_update_key(struct xkb_keymap *keymap)
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
-    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD1,
-                                        XKB_STATE_MODS_DEPRESSED) > 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_ALT,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
-    assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_META,
-                                        XKB_STATE_MODS_DEPRESSED) > 0);
-    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                          XKB_STATE_MATCH_ALL,
-                                          XKB_MOD_NAME_CTRL,
-                                          XKB_MOD_NAME_MOD1,
-                                          XKB_VMOD_NAME_ALT,
-                                          XKB_VMOD_NAME_META,
-                                          NULL) > 0);
-    assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                            XKB_STATE_MATCH_ALL,
-                                            ctrl, mod1, alt, meta,
-                                            XKB_MOD_INVALID) > 0);
+    assert(check_active(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD1,
+                                                     XKB_STATE_MODS_DEPRESSED)));
+    assert(check_active(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_META,
+                                                     XKB_STATE_MODS_DEPRESSED)));
+    if (pure_vmods) {
+        assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                              XKB_STATE_MATCH_ALL,
+                                              XKB_MOD_NAME_CTRL,
+                                              XKB_VMOD_NAME_ALT,
+                                              NULL) > 0);
+        assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                                XKB_STATE_MATCH_ALL, ctrl, alt,
+                                                XKB_MOD_INVALID) > 0);
+        assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                              XKB_STATE_MATCH_ALL,
+                                              XKB_MOD_NAME_MOD1,
+                                              XKB_VMOD_NAME_META,
+                                              NULL) == 0);
+        assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                                XKB_STATE_MATCH_ALL,
+                                                mod1, meta,
+                                                XKB_MOD_INVALID) == 0);
+    } else {
+        assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                              XKB_STATE_MATCH_ALL,
+                                              XKB_MOD_NAME_CTRL,
+                                              XKB_MOD_NAME_MOD1,
+                                              XKB_VMOD_NAME_ALT,
+                                              XKB_VMOD_NAME_META,
+                                              NULL) > 0);
+        assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_DEPRESSED,
+                                                XKB_STATE_MATCH_ALL,
+                                                ctrl, mod1, alt, meta,
+                                                XKB_MOD_INVALID) > 0);
+    }
     assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
                                           XKB_STATE_MATCH_ALL,
                                           XKB_MOD_NAME_MOD1,
@@ -490,33 +526,33 @@ test_update_key(struct xkb_keymap *keymap)
     assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
                                           XKB_STATE_MATCH_ALL |
                                           XKB_STATE_MATCH_NON_EXCLUSIVE,
-                                          XKB_MOD_NAME_MOD1,
-                                          NULL) > 0);
-    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                          XKB_STATE_MATCH_ALL |
-                                          XKB_STATE_MATCH_NON_EXCLUSIVE,
                                           XKB_VMOD_NAME_ALT,
-                                          NULL) > 0);
-    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                          XKB_STATE_MATCH_ALL |
-                                          XKB_STATE_MATCH_NON_EXCLUSIVE,
-                                          XKB_VMOD_NAME_META,
-                                          NULL) > 0);
-    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                          (XKB_STATE_MATCH_ANY |
-                                           XKB_STATE_MATCH_NON_EXCLUSIVE),
-                                          XKB_MOD_NAME_MOD1,
                                           NULL) > 0);
     assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
                                           (XKB_STATE_MATCH_ANY |
                                            XKB_STATE_MATCH_NON_EXCLUSIVE),
                                           XKB_VMOD_NAME_ALT,
                                           NULL) > 0);
-    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
-                                          (XKB_STATE_MATCH_ANY |
-                                           XKB_STATE_MATCH_NON_EXCLUSIVE),
-                                          XKB_VMOD_NAME_META,
-                                          NULL) > 0);
+    assert(check_active(xkb_state_mod_names_are_active(
+                            state, XKB_STATE_MODS_DEPRESSED,
+                            XKB_STATE_MATCH_ALL | XKB_STATE_MATCH_NON_EXCLUSIVE,
+                            XKB_MOD_NAME_MOD1,
+                            NULL)));
+    assert(check_active(xkb_state_mod_names_are_active(
+                            state, XKB_STATE_MODS_DEPRESSED,
+                            XKB_STATE_MATCH_ALL | XKB_STATE_MATCH_NON_EXCLUSIVE,
+                            XKB_VMOD_NAME_META,
+                            NULL)));
+    assert(check_active(xkb_state_mod_names_are_active(
+                            state, XKB_STATE_MODS_DEPRESSED,
+                            (XKB_STATE_MATCH_ANY | XKB_STATE_MATCH_NON_EXCLUSIVE),
+                            XKB_MOD_NAME_MOD1,
+                            NULL)));
+    assert(check_active(xkb_state_mod_names_are_active(
+                            state, XKB_STATE_MODS_DEPRESSED,
+                            (XKB_STATE_MATCH_ANY | XKB_STATE_MATCH_NON_EXCLUSIVE),
+                            XKB_VMOD_NAME_META,
+                            NULL)));
 
     /* RAlt down */
     xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
@@ -524,12 +560,12 @@ test_update_key(struct xkb_keymap *keymap)
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
-    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD1,
-                                        XKB_STATE_MODS_DEPRESSED) > 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_ALT,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
-    assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_META,
-                                        XKB_STATE_MODS_DEPRESSED) > 0);
+    assert(check_active(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD1,
+                                                     XKB_STATE_MODS_DEPRESSED)));
+    assert(check_active(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_META,
+                                                     XKB_STATE_MODS_DEPRESSED)));
     assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_DEPRESSED,
                                           XKB_STATE_MATCH_ANY,
                                           XKB_MOD_NAME_CTRL,
@@ -576,10 +612,10 @@ test_update_key(struct xkb_keymap *keymap)
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_MODS_LOCKED) > 0);
-    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD2,
-                                        XKB_STATE_MODS_LOCKED) > 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_NUM,
                                         XKB_STATE_MODS_LOCKED) > 0);
+    assert(check_active(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD2,
+                                                     XKB_STATE_MODS_LOCKED)));
     num_syms = xkb_state_key_get_syms(state, KEY_KP1 + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_KP_1);
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_NUM) > 0);
@@ -630,7 +666,7 @@ struct test_active_mods_entry {
 };
 
 static void
-test_serialisation(struct xkb_keymap *keymap)
+test_serialisation(struct xkb_keymap *keymap, bool pure_vmods)
 {
     struct xkb_state *state = xkb_state_new(keymap);
     xkb_mod_mask_t base_mods;
@@ -702,7 +738,7 @@ test_serialisation(struct xkb_keymap *keymap)
     assert(xkb_state_mod_index_is_active(state, ctrlIdx, XKB_STATE_MODS_DEPRESSED) > 0);
     assert(xkb_state_mod_index_is_active(state, ctrlIdx, XKB_STATE_MODS_EFFECTIVE) > 0);
 
-    const struct test_active_mods_entry test_data[] = {
+    const struct test_active_mods_entry test_data_real[] = {
         { .state = 0,            .active = 0                         },
         { .state = shift,        .active = shift                     },
         { .state = caps,         .active = caps                      },
@@ -715,17 +751,52 @@ test_serialisation(struct xkb_keymap *keymap)
         { .state = shift | mod1, .active = shift | mod1 | alt | meta },
         { .state = shift | mod2, .active = shift | mod2 | num        },
     };
+    const struct test_active_mods_entry test_data_virtual[] = {
+        { .state = 0,            .active = 0                         },
+        { .state = shift,        .active = shift                     },
+        { .state = caps,         .active = caps                      },
+        { .state = ctrl,         .active = ctrl                      },
+        { .state = mod1,         .active = mod1                      },
+        { .state = mod2,         .active = mod2                      },
+        { .state = mod3,         .active = mod3                      },
+        { .state = mod4,         .active = mod4                      },
+        { .state = mod5,         .active = mod5                      },
+        { .state = alt,          .active = alt                       },
+        { .state = meta,         .active = meta                      },
+        { .state = super,        .active = super                     },
+        { .state = hyper,        .active = hyper                     },
+        { .state = num,          .active = num                       },
+        { .state = level3,       .active = level3                    },
+        { .state = shift | mod1, .active = shift | mod1              },
+        { .state = mod1 | alt,   .active = mod1 | alt                },
+        { .state = alt | meta,   .active = alt | meta                },
+        { .state = alt | level3, .active = alt | level3              },
+    };
+    const struct test_active_mods_entry *test_data = pure_vmods
+                                                   ? test_data_virtual
+                                                   : test_data_real;
+    unsigned k_max = pure_vmods
+                   ? ARRAY_SIZE(test_data_virtual)
+                   : ARRAY_SIZE(test_data_real);
 
-    for (unsigned k = 0; k < ARRAY_SIZE(test_data); k++) {
+    for (unsigned k = 0; k < k_max; k++) {
         const struct test_active_mods_entry *entry = &test_data[k];
 #define check_mods(keymap, state_, entry, type)                                     \
         for (xkb_mod_index_t idx = 0; idx < xkb_keymap_num_mods(keymap); idx++) {   \
             xkb_mod_mask_t mask = UINT32_C(1) << idx;                               \
+            fprintf(stderr, "#%"PRIu32" State %#"PRIx32", mod: %s (%"PRIu32")\n",   \
+                    k, (entry)->state, xkb_keymap_mod_get_name(keymap, idx), idx);  \
+            {                                                                       \
+                xkb_mod_mask_t expected = mod_mask_get_effective(keymap,            \
+                                                                 (entry)->state);   \
+                xkb_mod_mask_t got = xkb_state_serialize_mods(state, type);         \
+                assert_printf(got == expected,                                      \
+                              "xkb_state_serialize_mods, " STRINGIFY2(type)         \
+                              ", expected %#"PRIx32", got %#"PRIx32"\n",            \
+                              expected, got);                                       \
+            }                                                                       \
             bool expected = !!(mask & (entry)->active);                             \
             bool got = !!xkb_state_mod_index_is_active(state_, idx, type);          \
-            fprintf(stderr, "#%u State 0x%x, mod: %s (%u): expected %u, got: %u\n", \
-                    k, (entry)->state, xkb_keymap_mod_get_name(keymap, idx), idx,   \
-                    expected, got);                                                 \
             assert_printf(got == expected,                                          \
                           "xkb_state_mod_index_is_active, " STRINGIFY2(type) "\n"); \
             got = !!xkb_state_mod_index_is_active(state_, idx,                      \
@@ -756,8 +827,14 @@ test_serialisation(struct xkb_keymap *keymap)
     xkb_state_unref(state);
 }
 
+static inline xkb_mod_mask_t
+canonical_mask(bool is_pure, xkb_mod_mask_t vmod, xkb_mod_mask_t real)
+{
+    return is_pure ? vmod : real;
+}
+
 static void
-test_update_mask_mods(struct xkb_keymap *keymap)
+test_update_mask_mods(struct xkb_keymap *keymap, bool pure_vmods)
 {
     enum xkb_state_component changed;
     struct xkb_state *state = xkb_state_new(keymap);
@@ -798,25 +875,32 @@ test_update_mask_mods(struct xkb_keymap *keymap)
 
     changed = xkb_state_update_mask(state, alt, 0, 0, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod1);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           canonical_mask(pure_vmods, alt, mod1));
 
     changed = xkb_state_update_mask(state, meta, 0, 0, 0, 0, 0);
-    assert(changed == 0); /* Same canonical modifier state */
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod1);
+    assert(changed == (pure_vmods
+                       ? (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE)
+                       : 0 /* Same canonical modifier state */));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           canonical_mask(pure_vmods, meta, mod1));
 
     changed = xkb_state_update_mask(state, 0, 0, num, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
                        XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod2);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           canonical_mask(pure_vmods, num, mod2));
 
     xkb_state_update_mask(state, 0, 0, 0, 0, 0, 0);
 
     changed = xkb_state_update_mask(state, mod2, 0, num, 0, 0, 0);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
                        XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == mod2);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+           canonical_mask(pure_vmods, mod2 | num, mod2));
     assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == mod2);
-    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == mod2);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) ==
+           canonical_mask(pure_vmods, num, mod2));
 
     xkb_state_unref(state);
 }
@@ -832,17 +916,29 @@ test_repeat(struct xkb_keymap *keymap)
 }
 
 static void
-test_consume(struct xkb_keymap *keymap)
+test_consume(struct xkb_keymap *keymap, bool pure_vmods)
 {
     xkb_mod_mask_t mask;
-    xkb_mod_index_t shift = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
-    xkb_mod_index_t caps  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
-    xkb_mod_index_t ctrl  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
-    xkb_mod_index_t mod1  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
-    xkb_mod_index_t mod2  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD2);
-    xkb_mod_index_t mod5  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD5);
-    xkb_mod_index_t alt   = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
-    xkb_mod_index_t meta  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
+    xkb_mod_index_t shiftIdx  = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+    xkb_mod_index_t capsIdx   = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+    xkb_mod_index_t ctrlIdx   = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+    xkb_mod_index_t mod1Idx   = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
+    xkb_mod_index_t mod2Idx   = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD2);
+    xkb_mod_index_t mod5Idx   = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD5);
+    xkb_mod_index_t altIdx    = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
+    xkb_mod_index_t metaIdx   = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
+    xkb_mod_index_t numIdx    = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_NUM);
+    xkb_mod_index_t level3Idx = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_LEVEL3);
+    xkb_mod_mask_t caps   = (UINT32_C(1) << capsIdx);
+    xkb_mod_mask_t shift  = (UINT32_C(1) << shiftIdx);
+    xkb_mod_mask_t ctrl   = (UINT32_C(1) << ctrlIdx);
+    xkb_mod_mask_t mod1   = (UINT32_C(1) << mod1Idx);
+    xkb_mod_mask_t mod2   = (UINT32_C(1) << mod2Idx);
+    xkb_mod_mask_t mod5   = (UINT32_C(1) << mod5Idx);
+    xkb_mod_mask_t alt    = (UINT32_C(1) << altIdx);
+    xkb_mod_mask_t meta   = (UINT32_C(1) << metaIdx);
+    xkb_mod_mask_t num    = (UINT32_C(1) << numIdx);
+    xkb_mod_mask_t level3 = (UINT32_C(1) << level3Idx);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
 
@@ -855,22 +951,22 @@ test_consume(struct xkb_keymap *keymap)
     print_state(state);
 
     mask = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << shift)));
+    assert(mask == (canonical_mask(pure_vmods, alt, mod1) | shift));
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
                                               mask);
-    assert(mask == (UINT32_C(1) << mod1));
+    assert(mask == canonical_mask(pure_vmods, alt, mod1));
 
     /* Test get_consumed_mods() */
     mask = xkb_state_key_get_consumed_mods(state, KEY_EQUAL + EVDEV_OFFSET);
-    assert(mask == (UINT32_C(1) << shift));
+    assert(mask == shift);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_ESC + EVDEV_OFFSET);
     assert(mask == 0);
 
-    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, shift) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, mod1) == 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, alt) == 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, meta) == 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, shiftIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, mod1Idx) == 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, altIdx) == 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_EQUAL + EVDEV_OFFSET, metaIdx) == 0);
 
     xkb_state_unref(state);
 
@@ -879,22 +975,22 @@ test_consume(struct xkb_keymap *keymap)
     assert(state);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_A + EVDEV_OFFSET);
-    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
+    assert(mask == (shift | caps));
 
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, capsIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shiftIdx) > 0);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, capsIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shiftIdx) > 0);
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, capsIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shiftIdx) > 0);
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, caps) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shift) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, capsIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_A + EVDEV_OFFSET, shiftIdx) > 0);
 
     xkb_state_unref(state);
 
@@ -903,19 +999,19 @@ test_consume(struct xkb_keymap *keymap)
     assert(state);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << mod1) |
-                    (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod5)));
+    assert(mask == (shift | canonical_mask(pure_vmods, alt, mod1) |
+                    ctrl | canonical_mask(pure_vmods, level3, mod5)));
 
     /* Shift is preserved. */
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << ctrl) |
-                    (UINT32_C(1) << mod5)));
+    assert(mask == (canonical_mask(pure_vmods, alt, mod1) | ctrl |
+                    canonical_mask(pure_vmods, level3, mod5)));
     xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
 
     mask = xkb_state_key_get_consumed_mods(state, KEY_F1 + EVDEV_OFFSET);
-    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << mod1) |
-                    (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod5)));
+    assert(mask == (shift | canonical_mask(pure_vmods, alt, mod1) |
+                    ctrl | canonical_mask(pure_vmods, level3, mod5)));
 
     xkb_state_unref(state);
 
@@ -935,19 +1031,25 @@ test_consume(struct xkb_keymap *keymap)
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods2(state, KEY_F1 + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((UINT32_C(1) << mod1) | (UINT32_C(1) << ctrl)));
-    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, shift) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, ctrl) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, mod1) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, alt) > 0);
-    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, meta) > 0);
-    mask = (UINT32_C(1) << ctrl) | (UINT32_C(1) << mod1) | (UINT32_C(1) << mod2);
+    assert(mask == (canonical_mask(pure_vmods, alt, mod1) | ctrl));
+    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, shiftIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, ctrlIdx) > 0);
+    assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, altIdx) > 0);
+    if (pure_vmods) {
+        assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, mod1Idx) == 0);
+        assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, metaIdx) == 0);
+    } else {
+        assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, mod1Idx) > 0);
+        assert(xkb_state_mod_index_is_consumed(state, KEY_F1 + EVDEV_OFFSET, metaIdx) > 0);
+    }
+    mask = ctrl | canonical_mask(pure_vmods, alt, mod1) |
+           canonical_mask(pure_vmods, num, mod2);
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
-    assert(mask == (UINT32_C(1) << mod2));
-    mask = (UINT32_C(1) << ctrl) | (UINT32_C(1) << alt) | (UINT32_C(1) << meta) |
-           (UINT32_C(1) << mod2);
+    assert(mask == canonical_mask(pure_vmods, num, mod2));
+    mask = ctrl | alt | canonical_mask(pure_vmods, alt, meta) |
+           canonical_mask(pure_vmods, num, mod2);
     mask = xkb_state_mod_mask_remove_consumed(state, KEY_F1 + EVDEV_OFFSET, mask);
-    assert(mask == (UINT32_C(1) << mod2));
+    assert(mask == canonical_mask(pure_vmods, num, mod2));
 
     xkb_state_unref(state);
 
@@ -957,12 +1059,12 @@ test_consume(struct xkb_keymap *keymap)
 
     mask = xkb_state_key_get_consumed_mods2(state, KEY_A + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
+    assert(mask == (shift | caps));
 
     xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     mask = xkb_state_key_get_consumed_mods2(state, KEY_A + EVDEV_OFFSET,
                                             XKB_CONSUMED_MODE_GTK);
-    assert(mask == ((UINT32_C(1) << shift) | (UINT32_C(1) << caps)));
+    assert(mask == (shift | caps));
 
     xkb_state_unref(state);
 }
@@ -1786,25 +1888,29 @@ main(void)
 
     test_group_wrap(context);
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "us,ru", NULL,
-                                "grp:menu_toggle");
-    assert(keymap);
+    const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};
+    for (size_t r = 0; r < ARRAY_SIZE(rules); r++) {
+        fprintf(stderr, "=== Rules set: %s ===\n", rules[r]);
+        keymap = test_compile_rules(context, rules[r], "pc104", "us,ru", NULL,
+                                    "grp:menu_toggle");
+        assert(keymap);
+        const bool pure_vmods = !!r;
 
-    test_update_key(keymap);
-    test_serialisation(keymap);
-    test_update_mask_mods(keymap);
-    test_repeat(keymap);
-    test_consume(keymap);
-    test_range(keymap);
-    test_get_utf8_utf32(keymap);
-    test_ctrl_string_transformation(keymap);
-    test_overlapping_mods(context);
+        test_update_key(keymap, pure_vmods);
+        test_serialisation(keymap, pure_vmods);
+        test_update_mask_mods(keymap, pure_vmods);
+        test_repeat(keymap);
+        test_consume(keymap, pure_vmods);
+        test_range(keymap);
+        test_get_utf8_utf32(keymap);
+        test_ctrl_string_transformation(keymap);
 
-    xkb_keymap_unref(keymap);
+        xkb_keymap_unref(keymap);
+    }
 
     test_inactive_key_type_entry(context);
+    test_overlapping_mods(context);
     test_caps_keysym_transformation(context);
-
     test_leds(context);
     test_multiple_actions(context);
 
