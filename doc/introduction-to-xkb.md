@@ -178,7 +178,7 @@ is very close to XKB 1.0, with some removals and additions. See the
 [compatibility] page for further details.
 
 The format supported by _xkbcommon_ is documented at the page
-“[The XKB keymap text format, V1][keymap-format-text-v1]”.
+“[The XKB keymap text format, V1][keymap-text-format-v1-v2]”.
 
 The documentation of the _original_ XKB 1.0 format is much more scarce than
 for the protocol. Some priceless resources are:
@@ -193,7 +193,7 @@ for the protocol. Some priceless resources are:
 [xkbcommon-x11]: @ref x11-overview
 [Wayland]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard
 [compatibility]: @ref xkb-v1-compatibility
-[keymap-format-text-v1]: doc/keymap-format-text-v1.md
+[keymap-text-format-v1-v2]: doc/keymap-text-format-v1-v2.md
 [ivan-pascal]: https://web.archive.org/web/20190724015820/http://pascal.tsu.ru/en/xkb/
 [unreliable-guide]: https://www.charvolant.org/doug/xkb/html/index.html
 [arch-wiki]: https://wiki.archlinux.org/index.php/X_keyboard_extension

@@ -730,7 +730,7 @@ A level must have exactly the same number of keysyms and actions.
   <dt>Summary</dt><dd>The XKB syntax is invalid and the file cannot be parsed</dd>
 </dl>
 
-See @ref keymap-text-format-v1 "" for further details.
+See @ref keymap-text-format-v1-v2 "" for further details.
 
 
 ### XKB-770 – Undefined keycode {#XKB-770}

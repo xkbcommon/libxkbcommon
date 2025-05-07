@@ -434,7 +434,7 @@
   type: error
   description: "The XKB syntax is invalid and the file cannot be parsed"
   details: |
-    See @ref keymap-text-format-v1 "" for further details.
+    See @ref keymap-text-format-v1-v2 "" for further details.
 - id: "undefined-keycode"
   code: 770
   added: ALWAYS
