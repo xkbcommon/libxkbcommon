@@ -76,6 +76,8 @@
  * Usual [*virtual* modifiers][virtual modifiers] mappings to
  * [*real* modifiers][real modifiers].
  *
+ * @deprecated Use @ref virtual-modifier-names instead
+ *
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
  *
@@ -85,6 +87,9 @@
  * Usual [*real* modifier][real modifier] for the
  * [*virtual* modifier][virtual modifier] `Alt`.
  *
+ * @deprecated Use `::XKB_VMOD_NAME_ALT` instead.
+ * @since 1.10: deprecated
+ *
  * [virtual modifier]: @ref virtual-modifier-def
  * [real modifier]: @ref real-modifier-def
  */
@@ -93,6 +98,9 @@
  * Usual [*real* modifier][real modifier] for the
  * [*virtual* modifier][virtual modifier] `Super`.
  *
+ * @deprecated Use `::XKB_VMOD_NAME_SUPER` instead.
+ * @since 1.10: deprecated
+ *
  * [virtual modifier]: @ref virtual-modifier-def
  * [real modifier]: @ref real-modifier-def
  */
@@ -100,6 +108,9 @@
 /**
  * Usual [*real* modifier][real modifier] for the
  * [*virtual* modifier][virtual modifier] `NumLock`.
+ *
+ * @deprecated Use `::XKB_VMOD_NAME_NUM` instead.
+ * @since 1.10: deprecated
  *
  * [virtual modifier]: @ref virtual-modifier-def
  * [real modifier]: @ref real-modifier-def
