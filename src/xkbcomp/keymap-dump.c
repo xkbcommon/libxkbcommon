@@ -489,6 +489,18 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         write_buf(buf, "%sNoAction()%s", prefix, suffix);
         break;
 
+    case ACTION_TYPE_VOID:
+        /*
+         * VoidAction() is a libxkbcommon extension.
+         * Use LockControls as a backward-compatible fallback.
+         * We cannot serialize it to `NoAction()`, as it would be dropped in
+         * e.g. the context of multiple actions.
+         * We better not use `Private` either, because it could still be
+         * interpreted by X11.
+         */
+        write_buf(buf, "%sLockControls(controls=none,affect=neither)%s", prefix, suffix);
+        break;
+
     default:
         write_buf(buf,
                   "%s%s(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",
