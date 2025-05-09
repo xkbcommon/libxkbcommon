@@ -147,12 +147,13 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
         return false;
 
     /* Ensure we support all action types */
-    static_assert(ACTION_TYPE_INTERNAL == 16 &&
+    static_assert(ACTION_TYPE_INTERNAL == 17 &&
                   ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                   "Missing action type");
 
     switch (a->type) {
     case ACTION_TYPE_NONE:
+    case ACTION_TYPE_VOID:
         return true;
     case ACTION_TYPE_MOD_SET:
     case ACTION_TYPE_MOD_LATCH:

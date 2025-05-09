@@ -1,0 +1,30 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<>                   = 1;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <>                   {
+		repeat= No,
+		symbols[Group1]= [                       NoSymbol ],
+		actions[Group1]= [ LockControls(controls=none,affect=neither) ]
+	};
+};
+
+};
