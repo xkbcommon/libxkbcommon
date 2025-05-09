@@ -1507,6 +1507,25 @@ test_unicode_keysyms(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
+test_void_action(struct xkb_context *ctx, bool update_output_files)
+{
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <> = 1; };\n"
+        "  xkb_symbols {\n"
+        /* Check that we can overwrite NoAction, but not the contrary */
+        "   key <> { [NoAction()] };\n"
+        "   key <> { [VoidAction()] };\n"
+        "   key <> { [NoAction()] };\n"
+        "  };\n"
+        "};";
+    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                               keymap_str, sizeof(keymap_str),
+                               GOLDEN_TESTS_OUTPUTS "voidaction",
+                               update_output_files));
+}
+
+static void
 test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files)
 {
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
@@ -1588,6 +1607,7 @@ main(int argc, char *argv[])
     test_empty_compound_statements(ctx, update_output_files);
     test_escape_sequences(ctx, update_output_files);
     test_unicode_keysyms(ctx, update_output_files);
+    test_void_action(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
 

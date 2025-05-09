@@ -2599,6 +2599,31 @@ test_multiple_actions(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_void_action(struct xkb_context *ctx)
+{
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <> = 1; };\n"
+        "  xkb_symbols  { key <> { [VoidAction()], [VoidAction()] }; };\n"
+        "};";
+    struct xkb_keymap *keymap = test_compile_buffer(ctx, keymap_str,
+                                                    sizeof(keymap_str));
+    assert(keymap);
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+
+    xkb_state_update_latched_locked(state, 0x1, 0x1, true, 1, 0, 0, false, 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 1);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == 0x1);
+    xkb_state_update_key(state, 1, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == 0);
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -2643,6 +2668,7 @@ main(void)
     test_caps_keysym_transformation(context);
     test_leds(context);
     test_multiple_actions(context);
+    test_void_action(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;

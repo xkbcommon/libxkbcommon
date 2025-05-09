@@ -2555,16 +2555,17 @@ In order to define and use a modifier, one must:
 
 The following table provide an overview of the available actions:
 
-| Category | Action              | Alias            | Description                        |
+| Category | Action name         | Alias            | Description                        |
 |----------|---------------------|------------------|------------------------------------|
-|          | `NoAction`          |                  | Do nothing.                        |
-| [Modifier action] | `SetMods`           |                  | Modifies the _depressed_ modifiers |
+| [Ineffectual action] | [`NoAction`][no-action]|   | **Default action**: *implicitly* do nothing. |
+| ^        | [`VoidAction`][void-action]|           | *Explicitly* do nothing.           |
+| [Modifier action] | `SetMods`  |                  | Modifies the _depressed_ modifiers |
 | ^        | `LatchMods`         |                  | Modifies the _latched_ modifiers   |
 | ^        | `LockMods`          |                  | Modifies the _locked_ modifiers    |
-| [Group action] | `SetGroup`          |                  | <span class="todo">TODO</span> |
+| [Group action] | `SetGroup`    |                  | <span class="todo">TODO</span> |
 | ^        | `LatchGroup`        |                  | <span class="todo">TODO</span> |
 | ^        | `LockGroup`         |                  | <span class="todo">TODO</span> |
-| [Legacy action] | `MovePointer`       | `MovePtr`        | <span class="todo">TODO</span> |
+| [Legacy action] | `MovePointer`| `MovePtr`        | <span class="todo">TODO</span> |
 | ^        | `PointerButton`     | `PtrBtn`         | <span class="todo">TODO</span> |
 | ^        | `LockPointerButton` | `LockPtrBtn`     | <span class="todo">TODO</span> |
 | ^        | `SetPointerDefault` | `SetPtrDflt`     | <span class="todo">TODO</span> |
@@ -2574,10 +2575,35 @@ The following table provide an overview of the available actions:
 | ^        | `SwitchScreen`      |                  | <span class="todo">TODO</span> |
 | ^        | `Private`           |                  | <span class="todo">TODO</span> |
 
+[no-action]: @ref no-action
+[void-action]: @ref void-action
+
 Common syntax:
 - Boolean values:
   - `true`, `yes`, `on`
   - `false`, `no`, `off`
+
+### Ineffectual actions {#ineffectual-actions}
+
+[ineffectual action]: @ref ineffectual-actions
+
+<dl>
+<dt>`NoAction` @anchor no-action</dt>
+<dd>
+**Default action**: *implicitly* do nothing.
+Does *not* override previous actions and is dropped.
+</dd>
+<dt>`VoidAction` @anchor void-action</dt>
+<dd>
+*Explicitly* do nothing.
+*Does* override previous actions and is not dropped.
+
+@note This is a libxkbcommon *extension*. In order to maintain backward-compatibility,
+it serializes to `LockControls(controls=none,affect=neither)`.
+
+@since 1.10.0
+</dd>
+</dl>
 
 ### Modifiers actions {#modifiers-actions}
 

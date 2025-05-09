@@ -77,6 +77,7 @@ static_assert(_XKB_MOD_INDEX_NUM_ENTRIES == 8, "Invalid X11 core modifiers");
 
 enum xkb_action_type {
     ACTION_TYPE_NONE = 0,
+    ACTION_TYPE_VOID, /* libxkbcommon extension */
     ACTION_TYPE_MOD_SET,
     ACTION_TYPE_MOD_LATCH,
     ACTION_TYPE_MOD_LOCK,
