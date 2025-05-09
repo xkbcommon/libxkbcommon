@@ -587,7 +587,8 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
         act->ctrls = (enum xkb_action_controls) mask;
         return true;
     }
-    else if (field == ACTION_FIELD_AFFECT) {
+    else if (field == ACTION_FIELD_AFFECT &&
+             action->type == ACTION_TYPE_CTRL_LOCK) {
         return CheckAffectField(ctx, action->type, array_ndx, value,
                                 &act->flags);
     }
