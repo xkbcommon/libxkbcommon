@@ -873,6 +873,36 @@ test_update_latched_locked(struct xkb_keymap *keymap)
             .changes=0
         },
         {
+            GROUP_LOCK_ENTRY(-2),
+            .locked_group=0, .group=0, /* Wrapped */
+            .leds=0,
+            .changes=0
+        },
+        {
+            GROUP_LOCK_ENTRY(-2),
+            .locked_group=0, .group=0, /* Wrapped */
+            .leds=0,
+            .changes=0
+        },
+        {
+            GROUP_LOCK_ENTRY(-1),
+            .locked_group=1, .group=1, /* Wrapped */
+            .leds=group2_led,
+            .changes=GROUP_LOCK_CHANGES
+        },
+        {
+            GROUP_LOCK_ENTRY(-1),
+            .locked_group=1, .group=1, /* Wrapped */
+            .leds=group2_led,
+            .changes=0
+        },
+        {
+            GROUP_LOCK_ENTRY(0),
+            .locked_group=0, .group=0,
+            .leds=0,
+            .changes=GROUP_LOCK_CHANGES
+        },
+        {
             GROUP_LOCK_ENTRY(1),
             .locked_group=1, .group=1,
             .leds=group2_led,
@@ -884,12 +914,24 @@ test_update_latched_locked(struct xkb_keymap *keymap)
             .leds=group2_led,
             .changes=0
         },
+        {
+            GROUP_LOCK_ENTRY(2),
+            .locked_group=0, .group=0, /* Wrapped */
+            .leds=0,
+            .changes=GROUP_LOCK_CHANGES
+        },
+        {
+            GROUP_LOCK_ENTRY(2),
+            .locked_group=0, .group=0, /* Wrapped */
+            .leds=0,
+            .changes=0
+        },
         /* Invalid group */
         {
             GROUP_LOCK_ENTRY(XKB_MAX_GROUPS),
             .locked_group=0, .group=0,
             .leds=0,
-            .changes=GROUP_LOCK_CHANGES
+            .changes=0
         },
         /* Previous lock */
         {
