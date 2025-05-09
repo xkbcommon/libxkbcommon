@@ -34,7 +34,7 @@ struct test_data {
 };
 
 static bool
-test_rules(struct xkb_context *ctx, struct test_data *data)
+test_rules(struct xkb_context *ctx, const struct test_data *data)
 {
     fprintf(stderr, "\n\nChecking : %s\t%s\t%s\t%s\t%s\n", data->rules,
             data->model, data->layout, data->variant, data->options);
@@ -99,7 +99,7 @@ main(int argc, char *argv[])
     ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
-    struct test_data test_utf_8_with_bom = {
+    const struct test_data test_utf_8_with_bom = {
         .rules = "utf-8_with_bom",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -112,7 +112,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test_utf_8_with_bom));
 
-    struct test_data test_utf_16le_with_bom = {
+    const struct test_data test_utf_16le_with_bom = {
         .rules = "utf-16le_with_bom",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
     };
     assert(!test_rules(ctx, &test_utf_16le_with_bom));
 
-    struct test_data test_utf_16be_with_bom = {
+    const struct test_data test_utf_16be_with_bom = {
         .rules = "utf-16be_with_bom",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
     };
     assert(!test_rules(ctx, &test_utf_16be_with_bom));
 
-    struct test_data test_utf_32be = {
+    const struct test_data test_utf_32be = {
         .rules = "utf-32be",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -152,7 +152,7 @@ main(int argc, char *argv[])
     assert(!test_rules(ctx, &test_utf_32be));
 
     /* Only parse strict decimal groups */
-    struct test_data test_invalid_group_index = {
+    const struct test_data test_invalid_group_index = {
         .rules = "invalid-group-index",
 
         .model = "my_model", .layout = "1,2", .variant = NULL,
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
     assert(!test_rules(ctx, &test_invalid_group_index));
 
     /* Only parse strict decimal groups */
-    struct test_data test_invalid_group_qualifier = {
+    const struct test_data test_invalid_group_qualifier = {
         .rules = "invalid-group-qualifier",
 
         .model = "my_model", .layout = "1,2", .variant = NULL,
@@ -179,7 +179,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test_invalid_group_qualifier));
 
-    struct test_data test1 = {
+    const struct test_data test1 = {
         .rules = "simple",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -192,7 +192,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test1));
 
-    struct test_data test2 = {
+    const struct test_data test2 = {
         .rules = "simple",
 
         .model = "", .layout = "foo", .variant = "", .options = "",
@@ -203,7 +203,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test2));
 
-    struct test_data test3 = {
+    const struct test_data test3 = {
         .rules = "groups",
 
         .model = "pc104", .layout = "foo", .variant = "", .options = "",
@@ -214,7 +214,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test3));
 
-    struct test_data test4 = {
+    const struct test_data test4 = {
         .rules = "groups",
 
         .model = "foo", .layout = "ar", .variant = "bar", .options = "",
@@ -225,7 +225,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test4));
 
-    struct test_data test5 = {
+    const struct test_data test5 = {
         .rules = "simple",
 
         .model = NULL, .layout = "my_layout,second_layout", .variant = "my_variant",
@@ -235,7 +235,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test5));
 
-    struct test_data test6 = {
+    const struct test_data test6 = {
         .rules = "index",
 
         .model = "", .layout = "br,al,cn,az", .variant = "",
@@ -248,7 +248,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test6));
 
-    struct test_data test7 = {
+    const struct test_data test7 = {
         .rules = "multiple-options",
 
         .model = "my_model", .layout = "my_layout", .variant = "my_variant",
@@ -261,7 +261,7 @@ main(int argc, char *argv[])
     };
     assert(test_rules(ctx, &test7));
 
-    struct test_data test_merge_mode_replace = {
+    const struct test_data test_merge_mode_replace = {
         .rules = "merge-mode-replace",
 
         .model = "my_model", .layout = "us,de", .variant = "",
@@ -281,7 +281,7 @@ main(int argc, char *argv[])
       .keycodes = "evdev", .types = "complete", .compat = "complete",         \
       .symbols = (_symbols) , .geometry = "pc(pc104)",                        \
       .explicit_layouts = (_layouts), .should_fail = (_fail) }
-    struct test_data wildcard_data[] = {
+    const struct test_data wildcard_data[] = {
         /* OK: empty model and options and at least one layout+variant combo */
         ENTRY(NULL, "a"  , "1"  , NULL, "pc+a(1)", 1, false),
         ENTRY(""  , "a"  , "1"  , ""  , "pc+a(1)", 1, false),
@@ -334,7 +334,7 @@ main(int argc, char *argv[])
         ENTRY2("special_indexes", NULL, layout, variant, options,              \
                "default_keycodes", "default_types", "default_compat", symbols, \
                count, should_fail)
-    struct test_data special_indexes_first_data[] = {
+    const struct test_data special_indexes_first_data[] = {
         /* Test index ranges: layout vs layout[first] */
         ENTRY("layout_a", NULL, NULL, "A", 1, false),
         ENTRY("layout_e", NULL, NULL, "E+layout_e", 1, false),
@@ -354,10 +354,8 @@ main(int argc, char *argv[])
               "extra,,,extra", NULL,
               "a:1+y:2+layout_c:3+layout_d(extra):4+z:3"
               "+foo:1|bar:1+foo:4|bar:4", 4, false),
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
-              "a:1+y:2+layout_c:3+layout_d:4+z:3", 4, false),
+              "a:1+y:2+layout_c:3+layout_d:4+layout_e:5+z:3", 5, false),
         /* Check that special indexes merge the KcCGST values in the expected order */
         ENTRY("layout_a,layout_b,layout_c", NULL, "option_3,option_2,option_1",
               "a:1+y:2+layout_c:3+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
@@ -428,7 +426,7 @@ main(int argc, char *argv[])
       .symbols = (_symbols) , .explicit_layouts = (_layouts),         \
       .should_fail = (_fail) }
 
-    struct test_data extended_wild_cards_data[] = {
+    const struct test_data extended_wild_cards_data[] = {
         ENTRY("extended-wild-cards", "l1", NULL, "pc+l10:1", 1, false),
         ENTRY("extended-wild-cards", "l1", "v1", "pc+l20:1", 1, false),
         ENTRY("extended-wild-cards", "l1", "v2", "pc+l30(v2):1", 1, false),
@@ -457,45 +455,42 @@ main(int argc, char *argv[])
 #undef ENTRY
 
     /* Test :all qualifier without special indexes, with option */
-    struct test_data all_qualified_alone1 = {
+    const struct test_data all_qualified_alone1 = {
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+extra_option:1"
-                   "+extra_option:2+extra_option:3+extra_option:4",
-        .explicit_layouts = 4,
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4"
+                   "+extra_option:5",
+        .explicit_layouts = 5,
     };
     assert(test_rules(ctx, &all_qualified_alone1));
 
     /* Test :all qualifier without special indexes, base for all layout */
-    struct test_data all_qualified_alone2 = {
+    const struct test_data all_qualified_alone2 = {
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_x,layout_a,layout_b,layout_c,layout_d",
         .variant = "",
         .options = "",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "base:1+base:2+base:3+base:4"
-                   "+symbols_a:2+symbols_b:3+default_symbols:4",
-        .explicit_layouts = 4,
+        .symbols = "base:1+base:2+base:3+base:4+base:5"
+                   "+symbols_a:2+symbols_b:3+default_symbols:4+default_symbols:5",
+        .explicit_layouts = 5,
     };
     assert(test_rules(ctx, &all_qualified_alone2));
 
     /* Test :all qualifier without special indexes, with option, too much layouts */
-    struct test_data all_qualified_invalid_layouts = {
+    const struct test_data all_qualified_invalid_layouts = {
         .rules = "all_qualifier-limit",
 
         .model = "my_model",
@@ -511,47 +506,43 @@ main(int argc, char *argv[])
     assert(test_rules(ctx, &all_qualified_invalid_layouts));
 
     /* Test :all qualifier with special indexes */
-    struct test_data all_qualified_with_special_indexes1 = {
+    const struct test_data all_qualified_with_special_indexes1 = {
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "extra1,,,,",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                   "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4"
-                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4",
-        .explicit_layouts = 4,
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4+extra_symbols:5"
+                   "+extra_option:1+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
+        .explicit_layouts = 5,
     };
     assert(test_rules(ctx, &all_qualified_with_special_indexes1));
 
     /* Test :all qualifier with special indexes
      * It uses :all combined with layout[any], which is valid but
      * :%i was probably the intended qualified, so raises warning */
-    struct test_data all_qualified_with_special_indexes2 = {
+    const struct test_data all_qualified_with_special_indexes2 = {
         .rules = "all_qualifier",
 
         .model = "my_model",
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
         .variant = "extra2,,extra3,,",
         .options = "my_option",
 
         .keycodes = "my_keycodes", .types = "my_types",
         .compat = "my_compat",
-        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                   "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
-                   "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
+        .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                   "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
+                   "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
                    "+extra_symbols1:3"
                    "+extra_option:1"
-                   "+extra_option:2+extra_option:3+extra_option:4",
-        .explicit_layouts = 4,
+                   "+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
+        .explicit_layouts = 5,
     };
     assert(test_rules(ctx, &all_qualified_with_special_indexes2));
 
