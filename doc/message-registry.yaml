@@ -339,6 +339,11 @@
   added: ALWAYS
   type: error
   description: "Cannot allocate memory"
+- id: "invalid-action-field"
+  code: 563
+  added: ALWAYS
+  type: error
+  description: "Unknown or unsupported action field"
 - id: "wrong-field-type"
   code: 578
   added: ALWAYS

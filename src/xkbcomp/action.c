@@ -153,7 +153,7 @@ static inline bool
 ReportIllegal(struct xkb_context *ctx, enum xkb_action_type action,
               enum action_field field)
 {
-    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+    log_err(ctx, XKB_ERROR_INVALID_ACTION_FIELD,
             "Field %s is not defined for an action of type %s; "
             "Action definition ignored\n",
             fieldText(field), ActionTypeText(action));
@@ -177,7 +177,11 @@ HandleNoAction(struct xkb_context *ctx, const struct xkb_mod_set *mods,
                const ExprDef *array_ndx, const ExprDef *value)
 
 {
-    return true;
+    log_err(ctx, XKB_ERROR_INVALID_ACTION_FIELD,
+            "The \"%s\" action takes no argument, but got \"%s\" field; "
+            "Action definition ignored\n",
+            ActionTypeText(action->type), fieldText(field));
+    return false;
 }
 
 static bool
@@ -820,7 +824,7 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
 
         enum action_field fieldNdx;
         if (!stringToField(fieldRtrn, &fieldNdx)) {
-            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+            log_err(ctx, XKB_ERROR_INVALID_ACTION_FIELD,
                     "Unknown field name %s\n", fieldRtrn);
             return false;
         }
@@ -847,7 +851,7 @@ SetDefaultActionField(struct xkb_context *ctx, ActionsInfo *info,
 
     enum action_field action_field;
     if (!stringToField(field, &action_field)) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(ctx, XKB_ERROR_INVALID_ACTION_FIELD,
                 "\"%s\" is not a legal field name\n", field);
         return false;
     }

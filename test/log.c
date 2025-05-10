@@ -200,6 +200,40 @@ test_keymaps(void)
                 "warning: [XKB-516] Type \"default\" has 1 levels, but <> has 2 levels; Ignoring extra symbols\n",
             .error = false
         },
+        /* Invalid action fields */
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    NoAction.data = 1;\n"
+                "    interpret VoidSymbol { action= VoidAction(data=<garbage>); };\n"
+                "  };\n"
+                "};",
+            .log =
+                "error: [XKB-563] The \"NoAction\" action takes no argument, but got \"data\" field; Action definition ignored\n"
+                "error: [XKB-563] The \"VoidAction\" action takes no argument, but got \"data\" field; Action definition ignored\n"
+                "error: Failed to compile xkb_compatibility\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
+        /* Invalid action fields */
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols {\n"
+                "    NoAction.data = 1;\n"
+                "    key <> { [TerminateServer(data=<garbage>)] };\n"
+                "  };\n"
+                "};",
+            .log =
+                "error: [XKB-563] The \"NoAction\" action takes no argument, but got \"data\" field; Action definition ignored\n"
+                "error: [XKB-563] The \"Terminate\" action takes no argument, but got \"data\" field; Action definition ignored\n"
+                "error: [XKB-796] Illegal action definition for <>; Action for group 1/level 1 ignored\n"
+                "error: Failed to compile xkb_symbols\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
         /* Unsupported legacy X11 actions */
         {
             .input =
@@ -227,7 +261,8 @@ test_keymaps(void)
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         struct xkb_keymap *keymap =
             test_compile_buffer(ctx, keymaps[k].input, strlen(keymaps[k].input));
-        assert(keymaps[k].error ^ !!keymap);
+        assert_printf(keymaps[k].error ^ !!keymap,
+                      "%s\n", darray_items(log_string));
         xkb_keymap_unref(keymap);
         assert_printf(streq_not_null(darray_items(log_string), keymaps[k].log),
                       "Expected:\n%s\nGot:\n%s\n",

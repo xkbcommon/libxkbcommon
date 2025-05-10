@@ -61,6 +61,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_CONFLICTING_KEY_NAME, "Conflicting key name"},
     {XKB_ERROR_INVALID_FILE_ENCODING, "Invalid file encoding"},
     {XKB_ERROR_ALLOCATION_ERROR, "Allocation error"},
+    {XKB_ERROR_INVALID_ACTION_FIELD, "Invalid action field"},
     {XKB_ERROR_WRONG_FIELD_TYPE, "Wrong field type"},
     {XKB_ERROR_CANNOT_RESOLVE_RMLVO, "Cannot resolve rmlvo"},
     {XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE, "Invalid unicode escape sequence"},
