@@ -47,6 +47,8 @@ enum xkb_message_code {
     XKB_ERROR_MALFORMED_NUMBER_LITERAL = 34,
     /** Conflicting “preserve” entries in a key type */
     XKB_WARNING_CONFLICTING_KEY_TYPE_PRESERVE_ENTRIES = 43,
+    /** The result of the operation is not mathematically correct */
+    XKB_ERROR_INTEGER_OVERFLOW = 52,
     /** Warn on unsupported modifier mask */
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
     /** Expected an array entry, but the index is missing */

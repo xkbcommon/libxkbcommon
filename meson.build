@@ -243,6 +243,7 @@ libxkbcommon_sources = [
     'src/utils.c',
     'src/utils.h',
     'src/util-mem.h',
+    'src/utils-checked-arithmetic.h',
     'src/utils-numbers.h',
     'src/utils-paths.c',
     'src/utils-paths.h',

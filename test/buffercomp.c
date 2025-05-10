@@ -462,9 +462,57 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "  };\n"
                 "  xkb_symbols {\n"
                 "    key <> {\n"
-                /* FIXME: Unchecked overflow */
-                "      [MovePointer(x=0xffffffff + 1,\n"
-                "                   y=0x80000000 * 2)]\n"
+                /* Checked int64_t underflow */
+                "      [MovePointer(x=-0x7fffffffffffffff - 2,\n"
+                "                   y=0)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <> {\n"
+                /* Checked int64_t underflow */
+                "      [MovePointer(x=-0x7fffffffffffffff * 2,\n"
+                "                   y=0)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <> {\n"
+                "      [MovePointer(x=0,\n"
+                /* Checked int64_t overflow */
+                "                   y=0x7fffffffffffffff + 1)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <> {\n"
+                "      [MovePointer(x=0,\n"
+                /* Checked int64_t overflow */
+                "                   y=0x7fffffffffffffff * 2)]\n"
                 "    };\n"
                 "  };\n"
                 "};",
