@@ -928,11 +928,14 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
              act; act = (ExprDef *) act->common.next, act_index++) {
             union xkb_action toAct = { 0 };
             if (!HandleActionDef(info->ctx, &info->default_actions, &info->mods,
-                                 act, &toAct))
+                                 act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %u/level %u ignored\n",
                         KeyInfoText(info, keyi), ndx + 1, level + 1);
+                /* Ensure action type is reset */
+                toAct.type = ACTION_TYPE_NONE;
+            }
             if (toAct.type == ACTION_TYPE_NONE) {
                 /* Drop action */
             } else if (likely(num_actions == 1)) {
