@@ -35,6 +35,14 @@
   added: ALWAYS
   type: warning
   description: "Conflicting “preserve” entries in a key type"
+- id: "integer-overflow"
+  code: 52
+  added: 1.10.0
+  type: error
+  description: "The result of the operation is not mathematically correct"
+  details: |
+    The result of the operation is not representable in the corresponding
+    datatype and overflowed.
 - id: "unsupported-modifier-mask"
   code: 60
   added: ALWAYS

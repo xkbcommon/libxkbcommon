@@ -11,6 +11,7 @@
 #include "expr.h"
 #include "keysym.h"
 #include "xkbcomp/ast.h"
+#include "utils-checked-arithmetic.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, uint32_t *val_rtrn);
@@ -240,13 +241,31 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
 
         switch (expr->common.type) {
         case STMT_EXPR_ADD:
-            *val_rtrn = l + r;
+            if (ckd_add(val_rtrn, l, r)) {
+                log_err(ctx, XKB_ERROR_INTEGER_OVERFLOW,
+                        "Addition %"PRId64" + %"PRId64" has an invalid "
+                        "mathematical result: %"PRId64"\n",
+                        l, r, *val_rtrn);
+                return false;
+            }
             break;
         case STMT_EXPR_SUBTRACT:
-            *val_rtrn = l - r;
+            if (ckd_sub(val_rtrn, l, r)) {
+                log_err(ctx, XKB_ERROR_INTEGER_OVERFLOW,
+                        "Substraction %"PRId64" - %"PRId64" has an invalid "
+                        "mathematical result: %"PRId64"\n",
+                        l, r, *val_rtrn);
+                return false;
+            }
             break;
         case STMT_EXPR_MULTIPLY:
-            *val_rtrn = l * r;
+            if (ckd_mul(val_rtrn, l, r)) {
+                log_err(ctx, XKB_ERROR_INTEGER_OVERFLOW,
+                        "Multiplication %"PRId64" * %"PRId64" has an invalid "
+                        "mathematical result: %"PRId64"\n",
+                        l, r, *val_rtrn);
+                return false;
+            }
             break;
         case STMT_EXPR_DIVIDE:
             if (r == 0) {
