@@ -1507,21 +1507,24 @@ test_unicode_keysyms(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
-test_void_action(struct xkb_context *ctx, bool update_output_files)
+test_no_action_void_action(struct xkb_context *ctx, bool update_output_files)
 {
     const char keymap_str[] =
         "xkb_keymap {\n"
-        "  xkb_keycodes { <> = 1; };\n"
+        "  xkb_keycodes { <1> = 1; <2> = 2; <3> = 3; };\n"
         "  xkb_symbols {\n"
+        /* These actions take no argument */
+        "   key <1> { [x], [NoAction(mods=1)] };\n"
+        "   key <2> { [y], [VoidAction(mods=1)] };\n"
         /* Check that we can overwrite NoAction, but not the contrary */
-        "   key <> { [NoAction()] };\n"
-        "   key <> { [VoidAction()] };\n"
-        "   key <> { [NoAction()] };\n"
+        "   key <3> { [NoAction()] };\n"
+        "   key <3> { [VoidAction()] };\n"
+        "   key <3> { [NoAction()] };\n"
         "  };\n"
         "};";
     assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
                                keymap_str, sizeof(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "voidaction",
+                               GOLDEN_TESTS_OUTPUTS "no_void_action",
                                update_output_files));
 }
 
@@ -1651,7 +1654,7 @@ main(int argc, char *argv[])
     test_empty_compound_statements(ctx, update_output_files);
     test_escape_sequences(ctx, update_output_files);
     test_unicode_keysyms(ctx, update_output_files);
-    test_void_action(ctx, update_output_files);
+    test_no_action_void_action(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);

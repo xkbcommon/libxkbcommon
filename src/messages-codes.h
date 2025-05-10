@@ -125,6 +125,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_FILE_ENCODING = 542,
     /** Cannot allocate memory */
     XKB_ERROR_ALLOCATION_ERROR = 550,
+    /** Unknown or unsupported action field */
+    XKB_ERROR_INVALID_ACTION_FIELD = 563,
     /** Warn when a field has not the expected type */
     XKB_ERROR_WRONG_FIELD_TYPE = 578,
     /** Cannot resolve a given (Rules, Model, Layout, Variant, Options) configuration */
