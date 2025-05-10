@@ -20,11 +20,6 @@ xkb_compatibility {
 };
 
 xkb_symbols {
-	key <>                   {
-		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [             MovePtr(x=+0,y=+0) ]
-	};
 };
 
 };
