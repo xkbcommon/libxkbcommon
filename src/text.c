@@ -138,6 +138,7 @@ const LookupEntry useModMapValueNames[] = {
 
 const LookupEntry actionTypeNames[] = {
     { "NoAction", ACTION_TYPE_NONE },
+    { "VoidAction", ACTION_TYPE_VOID },
     { "SetMods", ACTION_TYPE_MOD_SET },
     { "LatchMods", ACTION_TYPE_MOD_LATCH },
     { "LockMods", ACTION_TYPE_MOD_LOCK },

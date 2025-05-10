@@ -301,6 +301,7 @@ xkb_action_breaks_latch(const union xkb_action *action,
 {
     switch (action->type) {
     case ACTION_TYPE_NONE:
+    case ACTION_TYPE_VOID:
     case ACTION_TYPE_PTR_BUTTON:
     case ACTION_TYPE_PTR_LOCK:
     case ACTION_TYPE_CTRL_SET:

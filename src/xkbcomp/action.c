@@ -710,6 +710,7 @@ typedef bool (*actionHandler)(struct xkb_context *ctx,
 
 static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_NONE] = HandleNoAction,
+    [ACTION_TYPE_VOID] = HandleNoAction,
     [ACTION_TYPE_MOD_SET] = HandleSetLatchLockMods,
     [ACTION_TYPE_MOD_LATCH] = HandleSetLatchLockMods,
     [ACTION_TYPE_MOD_LOCK] = HandleSetLatchLockMods,
