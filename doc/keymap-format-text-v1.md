@@ -148,22 +148,22 @@ Some additional resources are:
   Note that this is provided for information only, as it may change
   depending on the user configuration.
 
-  | Modifier     | Type    | Usual mapping | Comment                     |
-  | ------------ | ------- | ------------- | --------------------------- |
-  | `Shift`      | Real    | `Shift`       | The usual [Shift]           |
-  | `Lock`       | Real    | `Lock`        | The usual [Caps Lock][Lock] |
-  | `Control`    | Real    | `Control`     | The usual [Control]         |
-  | `Mod1`       | Real    | `Mod1`        | Not conventional            |
-  | `Mod2`       | Real    | `Mod2`        | Not conventional            |
-  | `Mod3`       | Real    | `Mod3`        | Not conventional            |
-  | `Mod4`       | Real    | `Mod4`        | Not conventional            |
-  | `Mod5`       | Real    | `Mod5`        | Not conventional            |
-  | `Alt`        | Virtual | `Mod1`        | The usual [Alt]             |
-  | `Meta`       | Virtual | `Mod1` or `Mod4` | The legacy [Meta] key    |
-  | `NumLock`    | Virtual | `Mod2`        | The usual [NumLock]         |
-  | `Super`      | Virtual | `Mod4`        | The usual [Super]/GUI       |
-  | `LevelThree` | Virtual | `Mod5`        | [ISO][ISO9995] level 3, aka [AltGr] |
-  | `LevelFive`  | Virtual | `Mod3`        | [ISO][ISO9995] level 5      |
+  | Modifier     | Type    | Usual mapping     | Comment                     |
+  | ------------ | ------- | ----------------- | --------------------------- |
+  | `Shift`      | Real    | `Shift` (fixed)   | The usual [Shift]           |
+  | `Lock`       | Real    | `Lock` (fixed)    | The usual [Caps Lock][Lock] |
+  | `Control`    | Real    | `Control` (fixed) | The usual [Control]         |
+  | `Mod1`       | Real    | `Mod1` (fixed)    | Not conventional            |
+  | `Mod2`       | Real    | `Mod2` (fixed)    | Not conventional            |
+  | `Mod3`       | Real    | `Mod3` (fixed)    | Not conventional            |
+  | `Mod4`       | Real    | `Mod4` (fixed)    | Not conventional            |
+  | `Mod5`       | Real    | `Mod5` (fixed)    | Not conventional            |
+  | `Alt`        | Virtual | `Mod1`            | The usual [Alt]             |
+  | `Meta`       | Virtual | `Mod1`            | The legacy [Meta] key       |
+  | `NumLock`    | Virtual | `Mod2`            | The usual [NumLock]         |
+  | `Super`      | Virtual | `Mod4`            | The usual [Super]/GUI       |
+  | `LevelThree` | Virtual | `Mod5`            | [ISO][ISO9995] level 3, aka [AltGr] |
+  | `LevelFive`  | Virtual | `Mod3`            | [ISO][ISO9995] level 5      |
 
   [usual modifiers]: @ref usual-modifiers
   [Shift]: https://en.wikipedia.org/wiki/Control_key
@@ -1444,6 +1444,24 @@ xkb_symbols {
 ```
 @endfigure
 
+<!--
+Feature removed in libxkbcommon
+
+### Set default values
+
+To change the default value of any key type field, use the following syntax:
+
+```c
+type.FIELD = VALUE;
+```
+
+E.g.
+
+```c
+type.modifiers = Shift;
+```
+-->
+
 ### Key types examples {#key-type-examples}
 
 #### Definitions examples
@@ -1957,9 +1975,14 @@ This will cause the respective portion of the group state (see
 Note: the above conditions are disjunctive, i.e. if any of them are
 satisfied the LED is lit.
 
-### Default values
+### Set default values
 
-@todo e.g. `setMods.clearLocks= True;`
+One may change the default values of the following statements:
+
+- `interpret`: use `interpret.FIELD = VALUE;`
+- `indicator`: use `indicator.FIELD = VALUE;`
+- actions: use `ACTION_NAME.FIELD = VALUE;`.
+  E.g. `setMods.clearLocks= True;`.
 
 
 ## The “xkb_symbols” section {#the-xkb_symbols-section}
@@ -2348,6 +2371,15 @@ key  <LALT> {
 
 @todo Document `modifier_map`
 
+### Set default values
+
+One may change the default values of the following statements:
+
+- `key`: use `key.FIELD = VALUE;`. E.g. `key.type = "ALPHABETIC";`.
+- `action`: use `ACTION_NAME.FIELD = VALUE;`.
+  E.g. `setMods.clearLocks= True;`.
+
+
 ## Virtual modifier statements {#virtual-modifier-statements}
 
 <!-- TODO: rework this section -->
@@ -2551,39 +2583,33 @@ In order to define and use a modifier, one must:
 
 ## Key actions {#key-actions}
 
-@todo list of all actions and their parameters
-
 The following table provide an overview of the available actions:
 
 | Category | Action name         | Alias            | Description                        |
 |----------|---------------------|------------------|------------------------------------|
-| [Ineffectual action] | [`NoAction`][no-action]|   | **Default action**: *implicitly* do nothing. |
-| ^        | [`VoidAction`][void-action]|           | *Explicitly* do nothing.           |
-| [Modifier action] | `SetMods`  |                  | Modifies the _depressed_ modifiers |
-| ^        | `LatchMods`         |                  | Modifies the _latched_ modifiers   |
-| ^        | `LockMods`          |                  | Modifies the _locked_ modifiers    |
-| [Group action] | `SetGroup`    |                  | <span class="todo">TODO</span> |
-| ^        | `LatchGroup`        |                  | <span class="todo">TODO</span> |
-| ^        | `LockGroup`         |                  | <span class="todo">TODO</span> |
-| [Legacy action] | `MovePointer`| `MovePtr`        | <span class="todo">TODO</span> |
-| ^        | `PointerButton`     | `PtrBtn`         | <span class="todo">TODO</span> |
-| ^        | `LockPointerButton` | `LockPtrBtn`     | <span class="todo">TODO</span> |
-| ^        | `SetPointerDefault` | `SetPtrDflt`     | <span class="todo">TODO</span> |
-| ^        | `SetControls`       |                  | <span class="todo">TODO</span> |
-| ^        | `LockControls`      |                  | <span class="todo">TODO</span> |
-| ^        | `TerminateServer`   | `Terminate`      | <span class="todo">TODO</span> |
-| ^        | `SwitchScreen`      |                  | <span class="todo">TODO</span> |
-| ^        | `Private`           |                  | <span class="todo">TODO</span> |
-| [Unsupported legacy action]| [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code. |
-| ^        | `ISOLock`           |                  | Convert ordinary modifier key actions into lock actions while this action is active. |
-| ^        | `DeviceButton`      | `DevBtn`         | Emulate an event from an arbitrary input device such as a joystick. |
-| ^        | `LockDeviceButton`  | `LockDevBtn`     | Emulate an event from an arbitrary input device such as a joystick. |
+| [Ineffectual action] | [`NoAction`][NoAction] |   | **Default action**: *implicitly* do nothing |
+| ^        | [`VoidAction`][VoidAction] |           | *Explicitly* do nothing            |
+| [Modifier action] | [`SetMods`][SetMods] |        | Modifies the <em>[depressed]</em> modifiers |
+| ^        | [`LatchMods`][Latchmods] |             | Modifies the <em>[latched]</em> modifiers   |
+| ^        | [`LockMods`][LockMods] |               | Modifies the <em>[locked]</em> modifiers    |
+| [Group action] | [`SetGroup`][SetGroup] |         | Modifies the _base_ group          |
+| ^        | [`LatchGroup`][LatchGroup] |           | Modifies the _latched_ group       |
+| ^        | [`LockGroup`][LockGroup] |             | Modifies the _locked_ group        |
+| [Legacy action] | `MovePointer`| `MovePtr`        | Move the mouse pointer             |
+| ^        | `PointerButton`     | `PtrBtn`         | Simulate a mouse button press      |
+| ^        | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
+| ^        | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
+| ^        | [`SetControls`][SetControls] |         | Set the standard XKB controls      |
+| ^        | [`LockControls`][LockControls] |       | Lock the standard XKB controls     |
+| ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
+| ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
+| ^        | [`Private`][Private]|                  | Raw encoding of an action          |
+| [Unsupported legacy action]| [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code |
+| ^        | `ISOLock`           |                  | Convert ordinary modifier key actions into lock actions while this action is active |
+| ^        | `DeviceButton`      | `DevBtn`         | Emulate an event from an arbitrary input device such as a joystick |
+| ^        | `LockDeviceButton`  | `LockDevBtn`     | Emulate an event from an arbitrary input device such as a joystick |
 | ^        | `DeviceValuator`    | `DevVal`         | <span class="todo">TODO</span> |
-| ^        | `MessageAction`     | `Message`        | Generate an arbitrary special-purpose XKB event. |
-
-[no-action]: @ref no-action
-[void-action]: @ref void-action
-[redirectkey]: @ref redirect-key-action
+| ^        | `MessageAction`     | `Message`        | Generate an arbitrary special-purpose XKB event |
 
 Common syntax:
 - Boolean values:
@@ -2593,17 +2619,23 @@ Common syntax:
 ### Ineffectual actions {#ineffectual-actions}
 
 [ineffectual action]: @ref ineffectual-actions
+[NoAction]:   @ref no-action
+[VoidAction]: @ref void-action
 
 <dl>
 <dt>`NoAction` @anchor no-action</dt>
 <dd>
 **Default action**: *implicitly* do nothing.
 Does *not* override previous actions and is dropped.
+
+No parameters.
 </dd>
 <dt>`VoidAction` @anchor void-action</dt>
 <dd>
 *Explicitly* do nothing.
 *Does* override previous actions and is not dropped.
+
+No parameters.
 
 @note This is a libxkbcommon *extension*. In order to maintain backward-compatibility,
 it serializes to `LockControls(controls=none,affect=neither)`.
@@ -2616,45 +2648,137 @@ it serializes to `LockControls(controls=none,affect=neither)`.
 
 [modifier action]: @ref modifiers-actions
 [modifier actions]: @ref modifiers-actions
-
-@todo default values
+[SetMods]:   @ref set-mods-action
+[LatchMods]: @ref latch-mods-action
+[LockMods]:  @ref lock-mods-action
 
 There are 3 modifiers actions:
 
 <dl>
-  <dt>`SetMods`</dt>
-  <dd>
-  Modifies the _depressed_ modifiers.
+<dt>`SetMods` @anchor set-mods-action</dt>
+<dd>
+Modifies the <em>[depressed]</em> modifiers.
 
-  Parameters:
-  - `modifiers` or `mods`: the list of modifiers to modify,
-    separated by `+`, or the special value `modMapMods`. The latter
-    means the parameter value has to be read from the `vmodmap`
-    attribute of the key.
-  - `clearLocks`: boolean (see its use hereinafter).
-  </dd>
-  <dt>`LatchMods`</dt>
-  <dd>
-  Modifies the _latched_ modifiers
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`modifiers`</th>
+<td>`mods`</td>
+<td>Modifier mask</td>
+<td>`none` (0)</td>
+<td>
+The list of modifiers to modify, separated by `+`, or the special value
+`modMapMods`. The latter means the parameter value has to be read from the
+`vmodmap` attribute of the key.
+</td>
+<tr>
+<th>`clearLocks`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref set-modifier-action-effects)</td>
+</tr>
+</tbody>
+</table>
+</dd>
 
-  Parameters:
-  - `modifiers` or `mods`: see `SetMods`.
-  - `clearLocks`: boolean (see its use hereinafter).
-  - `latchToLock`: boolean (see its use hereinafter).
-  </dd>
-  <dt>`LockMods`</dt>
-  <dd>
-  Modifies the _locked_ modifiers.
+<dt>`LatchMods` @anchor latch-mods-action</dt>
+<dd>
+Modifies the <em>[latched]</em> modifiers
 
-  Parameters:
-  - `modifiers` or `mods`: see `SetMods`.
-  - `affect`:
-    - `lock`: the action only locks the modifier, but cannot unlock it.
-    - `unlock`: the action only unlocks modifier, but cannot lock it.
-    - `both`: the first key press locks the modifier and the second key
-      press releases the modifier. It is a default mode.
-    - `neither`: do not lock nor unlock, i.e. do nothing.
-  </dd>
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`modifiers`</th>
+<td>`mods`</td>
+<td>Modifier mask</td>
+<td>`none` (0)</td>
+<td>see [`SetMods`][SetMods].</td>
+<tr>
+<th>`clearLocks`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref latch-modifier-action-effects)</td>
+</tr>
+<tr>
+<th>`latchToLock`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref latch-modifier-action-effects)</td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+
+<dt>`LockMods` @anchor lock-mods-action</dt>
+<dd>
+Modifies the <em>[locked]</em> modifiers.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`modifiers`</th>
+<td>`mods`</td>
+<td>Modifier mask</td>
+<td>`none` (0)</td>
+<td>see [`SetMods`][SetMods]</td>
+<tr>
+<th>`affect`</th>
+<td></td>
+<td>
+enumeration:
+- `lock`
+- `unlock`
+- `both`
+- `neither`
+</td>
+<td>`both`</td>
+<td>
+- `lock`: the action only locks the modifier, but cannot unlock it.
+- `unlock`: the action only unlocks modifier, but cannot lock it.
+- `both`: the first key press locks the modifier and the second key
+  press releases the modifier..
+- `neither`: do not lock nor unlock, i.e. do nothing.
+</td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+
 </dl>
 
 @todo highlight that there is reference counting for
@@ -2663,110 +2787,274 @@ the modifiers, e.g. to manage multiple physical keys for the same modifier.
 These actions perform different tasks on key press and on key release:
 
 <table>
-    <caption>
-        Effects of modifiers actions
-    </caption>
-    <!-- <thead> -->
-        <tr>
-            <th>Action</th>
-            <th>On key press</th>
-            <th>On key release</th>
-        </tr>
-    <!-- </thead> -->
-    <!-- <tbody> -->
-        <tr>
-            <th><code>SetMods</code></th>
-            <td>
-                <ul>
-                    <li>Adds modifiers to <em>depressed</em> modifiers</li>
-                </ul>
-            </td>
-            <td>
-                <ul>
-                    <li>
-                        Removes modifiers from <em>depressed</em> modifiers,
-                        provided that no other key which affects the same
-                        modifiers is logically down.
-                    </li>
-                    <li>
-                        If <code>clearLocks=yes</code> and no other key
-                        were operated simultaneously with this key,
-                        then the modifiers will be removed as well from
-                        the <em>locked</em> modifiers.
-                    </li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <th><code>LatchMods</code></th>
-            <td>
-                <ul>
-                    <li>Adds modifiers to <em>latched</em> modifiers.</li>
-                </ul>
-            </td>
-            <td>
-                <ul>
-                    <li>Removes modifiers from <em>latched</em> modifiers.</li>
-                    <li>
-                        If <code>clearLocks=yes</code> and no other key
-                        has been pressed since this key press, then the
-                        modifiers will be removed as well from the
-                        <em>locked</em> modifiers.
-                    </li>
-                    <li>
-                        If <code>latchToLock=yes</code> then the modifiers
-                        are added to the <em>locked</em> modifiers.
-                    </li>
-                </ul>
-            </td>
-        </tr>
-        <tr>
-            <th>
-                <code>LockMods</code>
-            </th>
-            <td>
-                <ul>
-                    <li>Adds modifiers to <em>depressed</em> modifiers.</li>
-                    <li>
-                        Toggle these modifiers in <em>locked</em> modifiers.</li>
-                    </li>
-                </ul>
-            </td>
-            <td>
-                <ul>
-                    <li>Removes modifiers from <em>depressed</em> modifiers.</li>
-                    <li><em>Locked</em> modifiers stay unchanged.</li>
-                </ul>
-            </td>
-        </tr>
-    <!-- </tbody> -->
+  <caption>
+    Effects of modifiers actions @anchor modifier-actions-effects
+  </caption>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>On key press</th>
+      <th>On key release</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>`SetMods` @anchor latch-modifier-action-effects</th>
+      <td>
+        <ul>
+          <li>
+            Adds modifiers to <em>[depressed]</em> modifiers
+          </li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>
+            Removes modifiers from <em>[depressed]</em> modifiers,
+            provided that no other key which affects the same
+            modifiers is logically down.
+          </li>
+          <li>
+            If <code>clearLocks=yes</code> and no other key
+            were operated simultaneously with this key,
+            then the modifiers will be removed as well from
+            the <em>[locked]</em> modifiers.
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+        <th>`LatchMods` @anchor set-modifier-action-effects</th>
+        <td>
+          <ul>
+            <li>Adds modifiers to <em>[latched]</em> modifiers.</li>
+          </ul>
+        </td>
+        <td>
+          <ul>
+            <li>
+              Removes modifiers from <em>[latched]</em> modifiers.
+            </li>
+            <li>
+              If <code>clearLocks=yes</code> and no other key
+              has been pressed since this key press, then the
+              modifiers will be removed as well from the
+              <em>[locked]</em> modifiers.
+            </li>
+            <li>
+              If <code>latchToLock=yes</code> then the modifiers
+              are added to the <em>[locked]</em> modifiers.
+            </li>
+          </ul>
+        </td>
+    </tr>
+    <tr>
+        <th>`LockMods` @anchor lock-modifier-action-effects</th>
+        <td>
+          <ul>
+            <li>
+              Adds modifiers to <em>[depressed]</em> modifiers.
+            </li>
+            <li>
+              Toggle these modifiers in <em>[locked]</em> modifiers.</li>
+            </li>
+          </ul>
+        </td>
+        <td>
+          <ul>
+            <li>
+              Removes modifiers from <em>[depressed]</em> modifiers.
+            </li>
+            <li>
+              *[Locked]* modifiers stay unchanged.
+            </li>
+          </ul>
+        </td>
+    </tr>
+  </tbody>
 </table>
-
-@todo Finish
 
 ### Group actions {#group-actions}
 
 [group action]: @ref group-actions
 [group actions]: @ref group-actions
+[SetGroup]:   @ref set-group-action
+[LatchGroup]: @ref latch-group-action
+[LockGroup]:  @ref lock-group-action
 
 There are 3 group actions:
 
 <dl>
-    <dt>SetGroup</dt>
-    <dd>
-        <span class="todo">TODO</span>
-    </dd>
-    <dt>LatchGroup</dt>
-    <dd>
-        <span class="todo">TODO</span>
-    </dd>
-    <dt>LockGroup</dt>
-    <dd>
-        <span class="todo">TODO</span>
-    </dd>
+<dt>`SetGroup` @anchor set-group-action</dt>
+<dd>
+Modifies the *base* group.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`group`</th>
+<td>
+Group index:
+- 1-based numbering
+- either absolute (no sign) or relative (`+`/`-` sign)
+</td>
+<td>0</td>
+<td>Target group or group delta</td>
+<tr>
+<th>`clearLocks`</th>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref set-group-action-effects)</td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+
+<dt>`LatchGroup` @anchor latch-group-action</dt>
+<dd>
+Modifies the *latched* group.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`group`</th>
+<td>Group index (see [`SetGroup`][SetGroup])</td>
+<td>0</td>
+<td>Target group or group delta</td>
+<tr>
+<th>`clearLocks`</th>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref latch-group-action-effects)</td>
+</tr>
+<tr>
+<th>`latchToLock`</th>
+<td>boolean</td>
+<td>`false`</td>
+<td>See its use [hereinafter](@ref latch-group-action-effects)</td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+
+<dt>`LockGroup` @anchor lock-group-action</dt>
+<dd>
+Modifies the *locked* group.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`group`</th>
+<td>Group index (see [`SetGroup`][SetGroup])</td>
+<td>0</td>
+<td>Target group or group delta</td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+
 </dl>
 
-@todo Describe each action
+<table>
+<caption>Effects of group actions</caption>
+<thead>
+<tr>
+<th>Action</th>
+<th>On key press</th>
+<th>On key release</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<th>`SetGroup` @anchor set-group-action-effects</th>
+<td>
+
+- If the `group` parameter is *absolute*, key press events sets the *base*
+  keyboard group to `group`.
+- Otherwise, it adds `group` to the *base* keyboard group.
+
+In either case, the resulting *effective* keyboard group is brought back into
+range depending on the value of the `GroupsWrap` control for the keyboard.
+</td>
+<td>
+If *no* keys were operated simultaneously with this key and the `clearLocks`
+parameter is set, key release also sets the *locked* keyboard group to `Group1`.
+</td>
+</tr>
+
+<tr>
+<th>`LatchGroup` @anchor latch-group-action-effects</th>
+<td>
+Same as `SetGroup`.
+</td>
+<td>
+Same as `SetGroup`.
+
+If no keys were operated simultaneously with the latching group key and the
+`clearLocks` parameter was not set or had no effect, key release has the following
+additional effects:
+
+- If `latchToLock` parameter is set and the *latched* keyboard group is not the
+  first group, the key release adds the *delta* applied by the corresponding key
+  press to the locked keyboard group and subtracts it from the latched keyboard
+  group. The *locked* and *effective* keyboard group are brought back into range
+  according to the value of the global `GroupsWrap` control for the keyboard.
+- Otherwise, key release adds the key press *delta* to the latched keyboard
+  group.
+</td>
+</tr>
+
+<tr>
+<th>`LockGroup` @anchor lock-group-action-effects</th>
+<td>
+
+- If the `group` is absolute, key press sets the *locked* keyboard group to
+  `group`.
+- Otherwise, key press adds `group` to the *locked* keyboard group.
+
+In either case, the resulting *locked* and *effective* group is brought back
+into range depending on the value of the `GroupsWrap` control for the keyboard.
+</td>
+<td>
+Key release has no effect.
+</td>
+</tr>
+
+</tbody>
+</table>
+
 
 ### Legacy X11 actions {#legacy-x11-actions}
 
@@ -2778,27 +3066,209 @@ and validated but have no effect. This allows to use keymaps defined in
 
 #### Pointer actions
 
-| Action | Alias | Description |
-|---|---|---|
-| `MovePointer` | `MovePtr` | |
-| `PointerButton` | `PtrBtn` | |
-| `LockPtrButton` | `LockPtrBtn` | |
-| `LockPointerButton` | `LockPointerBtn` | |
-| `SetPointerDefault` | `SetPtrDflt` | |
+<dl>
+<dt>`MovePointer`<dt>
+<dt>`MovePtr`</dt>
+<dd>
+Move the mouse pointer
 
-@todo Describe each action
+@todo MovePointer parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`PointerButton`</dt>
+<dt>`PtrBtn`</dt>
+<dd>
+Simulate a mouse button press
+
+@todo PointerButton parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`LockPointerButton`</dt>
+<dt>`LockPointerBtn`</dt>
+<dt>`LockPtrButton`</dt>
+<dt>`LockPtrBtn`</dt>
+<dd>
+Simulate a mouse button press, locked until this actiion’s key is pressed again
+
+@todo LockPointerButton parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`SetPointerDefault`</dt>
+<dt>`SetPtrDflt`</dt>
+<dd>
+Set the default select button (???)
+
+@todo SetPointerDefault parameters
+<!-- blank required by Doxgen -->
+
+<dd>
+</dl>
+
 
 #### Control flags actions
 
-@todo `SetControls`, `LockControls`
+[SetControls]:  @ref set-controls-action
+[LockControls]: @ref lock-controls-action
+
+<dl>
+<dt>`SetControls` @anchor set-controls-action</dt>
+<dd>
+
+Set the standard XKB controls
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Alias</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`controls`</th>
+<td>`ctrls`</td>
+<td>
+Mask of the following enumeration:
+
+- `RepeatKeys`
+- `Repeat`
+- `AutoRepeat`
+- `SlowKeys`
+- `BounceKeys`
+- `StickyKeys`
+- `MouseKeys`
+- `MouseKeysAccel`
+- `AccessXKeys`
+- `AccessXTimeout`
+- `AccessXFeedback`
+- `AudibleBell`
+- `IgnoreGroupLock`
+- `Overlay1`
+- `Overlay2`
+
+Plus 2 special values:
+- `all`
+- `none`
+</td>
+<td>0</td>
+<td>Standard XKB controls</td>
+</tbody>
+</table>
+
+</dd>
+<dt>`LockControls` @anchor lock-controls-action</dt>
+<dd>
+Lock the standard XKB controls
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Alias</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`controls`</th>
+<td>`ctrls`</td>
+<td>Mask (see [`SetControls`][SetControls])</td>
+<td>0</td>
+<td>Standard XKB controls</td>
+<tr>
+<th>`affect`</th>
+<td></td>
+<td>
+enumeration:
+- `lock`
+- `unlock`
+- `both`
+- `neither`
+</td>
+<td>`both`</td>
+<td><span class="todo">TODO</span></td>
+</tr>
+</tbody>
+</table>
+
+</dd>
+</dl>
 
 #### Server actions
 
-@todo `TerminateServer`, `SwitchScreen`
+[TerminateServer]: @ref terminate-server-action
 
-#### Private action
+<dl>
+<dt>`TerminateServer` @anchor terminate-server-action</dt>
+<dd>
+Shut down the X server
 
-@todo `Private`
+No parameters.
+</dd>
+<dt>`SwitchScreen`</dt>
+<dd>
+
+@todo SwitchScreen
+<!-- blank for Doxygen -->
+
+</dd>
+</dl>
+
+#### Private action {#private-action}
+
+[Private]: @ref private-action
+
+Raw encoding of an action. Aimed to support arbitrary action unknown to the XKB
+compiler.
+
+@warning This assumes that the corresponding action’s C `struct` is laid out in
+memory exactly as described in the XKB specification and libraries. However,
+libxkbcommon have changed these `struct`s in various ways, so this assumption is
+no longer true and the actions defined in the XKB protocol are unsupported.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`type`</th>
+<td>integer</td>
+<td>0</td>
+<td>
+Action type, as encoded in the XKB protocol
+</td>
+<tr>
+<th>`data`</th>
+<td>byte array or a string of *exactly 7 bytes*</td>
+<td>"0000000"</td>
+<td>Raw byte encoding of the action following the XKB protocol</td>
+</tr>
+</tbody>
+</table>
+
+Examples:
+- `Private(type=123, data="abcdefg");`
+- `Private(type=123, data[1]=0, data[2]=100, data[3]=12);`
 
 ### Unsupported legacy X11 actions {#unsupported-legacy-x11-actions}
 
@@ -2809,28 +3279,47 @@ and but *not validated* and are then completely *ignored*.
 
 #### Redirect key {#redirect-key-action}
 
-@todo `RedirectKey`
+[redirectkey]: @ref redirect-key-action
 
-`RedirectKey` emulates pressing a key with a different key code. Fields:
-
-
-<dl>
-<dt>`key` (also: `keycode`, `kc`)</dt>
-<dd>
-Target keycode
-</dd>
-<dt>`clearmodifiers` (also: `clearmods`)</dt>
-<dd>
-Modifiers to clear
-</dd>
-<dt>`modifiers` (also: `mods`)</dt>
-<dd>
-Modifiers to add
-</dd>
-</dl>
+`RedirectKey` emulates pressing a key with a different key code.
 
 `RedirectKey` normally redirects to another key on the *same device* as the key
 or button which caused the event, else on the *core* keyboard device.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`key`</th>
+<td>`keycode`, `kc`</td>
+<td>keycode</td>
+<td>0</td>
+<td>Target keycode to emulate</td>
+<tr>
+<th>`clearmodifiers`</th>
+<td>`clearmods`</td>
+<td>modifier mask</td>
+<td>`none` (0)</td>
+<td>Modifiers to clear</td>
+</tr>
+<tr>
+<th>`modifiers`</th>
+<td>`mods`</td>
+<td>modifier mask</td>
+<td>`none` (0)</td>
+<td>Modifiers to add</td>
+</tr>
+</tbody>
+</table>
 
 <table>
 <caption>Effects</caption>
@@ -2842,17 +3331,17 @@ or button which caused the event, else on the *core* keyboard device.
 <tr>
 <td>
 
-Key press causes a key press event for the key specified by the `key` field
+Key press causes a key press event for the key specified by the `key` parameter
 instead of for the actual key. The state reported in this event reports of the
 current *effective* modifiers changed as follow:
-- Modifiers in the `clearmodifiers` field are cleared.
-- Modifiers in the `modifiers` field are set.
+- Modifiers in the `clearmodifiers` parameter are cleared.
+- Modifiers in the `modifiers` parameter are set.
 </td>
 <td>
 
-Key release causes a key release event for the key specified by the `key` field;
-the state field for this event consists of the *effective* modifiers at the time
-of the release, changed as described on the key press.
+Key release causes a key release event for the key specified by the `key`
+parameter; the state field for this event consists of the *effective*
+modifiers at the time of the release, changed as described on the key press.
 </td>
 </thead>
 
@@ -2862,9 +3351,31 @@ of the release, changed as described on the key press.
 
 #### Device actions
 
-@todo `DeviceButton`, `LockDeviceButton`, `DeviceValuator`
+<dl>
+<dt>`DeviceButton`</dt>
+<dd>
 
-#### Message actions
+@todo DeviceButton
+<!-- blank for Doxygen -->
+
+</dd>
+<dt>`LockDeviceButton`</dt>
+<dd>
+
+@todo LockDeviceButton
+<!-- blank for Doxygen -->
+
+</dd>
+<dt>`DeviceValuator`</dt>
+<dd>
+
+@todo DeviceValuator
+<!-- blank for Doxygen -->
+
+</dd>
+</dl>
+
+#### Message
 
 @todo `ActionMessage`
 
