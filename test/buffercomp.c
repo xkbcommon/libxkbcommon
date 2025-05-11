@@ -1565,6 +1565,50 @@ test_keymap_from_rules(struct xkb_context *ctx)
     free(dump);
 }
 
+static void
+test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
+                                    bool update_output_files)
+{
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <1> = 1;\n"
+        "    <2> = 2;\n"
+        "    <3> = 3;\n"
+        "    <4> = 4;\n"
+        "    <5> = 5;\n"
+        "    <6> = 6;\n"
+        "  };\n"
+        "  xkb_compat {\n"
+        "    RedirectKey.key = <1>;\n"
+        "    RedirectKey.data = <1>;\n" /* invalid field */
+        "    ISOLock.modifiers = modMapMods;\n"
+        "    DeviceButton.data = <1>;\n" /* invalid field */
+        "    LockDeviceButton.data = <1>;\n" /* invalid field */
+        "    DeviceValuator.data = <1>;\n" /* invalid field */
+        "    ActionMessage.data = <1>;\n" /* invalid field */
+        "    interpret ISO_Lock {\n"
+        "      action=ISOLock(affect=all);\n"
+        "    };\n"
+        "    interpret VoidSymbol {\n"
+        "      action=RedirectKey(data=<1>);\n" /* invalid field */
+        "    };\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "   key <1> { [ISOLock(affect=all)] };\n"
+        "   key <2> { [RedirectKey(data=<1>)] };\n" /* invalid field */
+        "   key <3> { [DeviceButton(data=<1>)] };\n" /* invalid field */
+        "   key <4> { [LockDeviceButton(data=<1>)] };\n" /* invalid field */
+        "   key <5> { [DeviceValuator(data=<1>)] };\n" /* invalid field */
+        "   key <6> { [ActionMessage(data=<1>)] };\n" /* invalid field */
+        "  };\n"
+        "};";
+    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+                               keymap_str, sizeof(keymap_str),
+                               GOLDEN_TESTS_OUTPUTS "unsupported-x11-actions",
+                               update_output_files));
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -1610,6 +1654,7 @@ main(int argc, char *argv[])
     test_void_action(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
+    test_unsupported_legacy_x11_actions(ctx, update_output_files);
 
     xkb_context_unref(ctx);
 

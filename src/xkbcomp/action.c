@@ -15,6 +15,8 @@
 #include "config.h"
 
 #include "context.h"
+#include "keymap.h"
+#include "messages-codes.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -597,6 +599,16 @@ HandleSetLockControls(struct xkb_context *ctx, const struct xkb_mod_set *mods,
 }
 
 static bool
+HandleUnsupportedLegacy(struct xkb_context *ctx, const struct xkb_mod_set *mods,
+                        union xkb_action *action, enum action_field field,
+                        const ExprDef *array_ndx, const ExprDef *value)
+
+{
+    /* Do not check any field */
+    return true;
+}
+
+static bool
 HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
               union xkb_action *action, enum action_field field,
               const ExprDef *array_ndx, const ExprDef *value)
@@ -725,6 +737,7 @@ static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_SWITCH_VT] = HandleSwitchScreen,
     [ACTION_TYPE_CTRL_SET] = HandleSetLockControls,
     [ACTION_TYPE_CTRL_LOCK] = HandleSetLockControls,
+    [ACTION_TYPE_UNSUPPORTED_LEGACY] = HandleUnsupportedLegacy,
     [ACTION_TYPE_PRIVATE] = HandlePrivate,
 };
 
@@ -756,6 +769,19 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
      *     latchMods.clearLocks = True;
      */
     *action = info->actions[handler_type];
+
+    if (handler_type == ACTION_TYPE_UNSUPPORTED_LEGACY) {
+        log_warn(ctx, XKB_WARNING_UNSUPPORTED_LEGACY_ACTION,
+                 "Unsupported legacy action type \"%s\".\n", action_name);
+        /*
+         * Degrade to an uneffective supported action type.
+         * Fields will still be processed with the original action type.
+         */
+        action->type = ACTION_TYPE_NONE;
+        /* FIXME: Degrading to NoAction() has the following drawbacks:
+         * - It disables overwriting a previous action.
+         * - It enables interpretations. */
+    }
 
     /*
      * Now change the action properties as specified for this

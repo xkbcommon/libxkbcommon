@@ -170,6 +170,7 @@ test_keymaps(void)
                 "error: [XKB-822] Failed to parse input xkb string\n",
             .error = true
         },
+        /* Extra lines & spaces intented to check the file positions */
         {
             .input =
                 "xkb_keymap {\n"
@@ -197,6 +198,27 @@ test_keymaps(void)
                 "warning: [XKB-523] Alias of <1> for <> declared more than once; First definition ignored\n"
                 "warning: [XKB-286] The type \"TWO_LEVEL\" for key '<>' group 1 was not previously defined; Using the default type\n"
                 "warning: [XKB-516] Type \"default\" has 1 levels, but <> has 2 levels; Ignoring extra symbols\n",
+            .error = false
+        },
+        /* Unsupported legacy X11 actions */
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_compat {\n"
+                /* This is a valid entry */
+                "    interpret ISO_Lock+AnyOf(all) {\n"
+                "      action= ISOLock(modifiers=modMapMods,affect=all);\n"
+                "    };\n"
+                /* This uses invalid field, but we do not check fields of
+                 * legacy actions */
+                "    interpret VoidSymbol+AnyOf(all) {\n"
+                "      action= RedirectKey(data=<garbage>);\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .log =
+                "warning: [XKB-362] Unsupported legacy action type \"ISOLock\".\n"
+                "warning: [XKB-362] Unsupported legacy action type \"RedirectKey\".\n",
             .error = false
         }
     };
