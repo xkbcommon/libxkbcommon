@@ -99,6 +99,8 @@ enum xkb_message_code {
     XKB_ERROR_INCLUDED_FILE_NOT_FOUND = 338,
     /** Use of an operator that is unknown and thus unsupported */
     XKB_ERROR_UNKNOWN_OPERATOR = 345,
+    /** Use of a legacy X11 action that is not supported */
+    XKB_WARNING_UNSUPPORTED_LEGACY_ACTION = 362,
     /** An entry is duplicated and will be ignored */
     XKB_WARNING_DUPLICATE_ENTRY = 378,
     /** Included files form cycle */

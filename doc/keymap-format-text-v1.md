@@ -2574,9 +2574,16 @@ The following table provide an overview of the available actions:
 | ^        | `TerminateServer`   | `Terminate`      | <span class="todo">TODO</span> |
 | ^        | `SwitchScreen`      |                  | <span class="todo">TODO</span> |
 | ^        | `Private`           |                  | <span class="todo">TODO</span> |
+| [Unsupported legacy action]| [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code. |
+| ^        | `ISOLock`           |                  | Convert ordinary modifier key actions into lock actions while this action is active. |
+| ^        | `DeviceButton`      | `DevBtn`         | Emulate an event from an arbitrary input device such as a joystick. |
+| ^        | `LockDeviceButton`  | `LockDevBtn`     | Emulate an event from an arbitrary input device such as a joystick. |
+| ^        | `DeviceValuator`    | `DevVal`         | <span class="todo">TODO</span> |
+| ^        | `MessageAction`     | `Message`        | Generate an arbitrary special-purpose XKB event. |
 
 [no-action]: @ref no-action
 [void-action]: @ref void-action
+[redirectkey]: @ref redirect-key-action
 
 Common syntax:
 - Boolean values:
@@ -2761,9 +2768,9 @@ There are 3 group actions:
 
 @todo Describe each action
 
-### Unsupported legacy actions {#legacy-actions}
+### Legacy X11 actions {#legacy-x11-actions}
 
-[legacy action]: @ref legacy-actions
+[legacy action]: @ref legacy-x11-actions
 
 @attention The following legacy actions are kept for compatibility only: they are parsed
 and validated but have no effect. This allows to use keymaps defined in
@@ -2792,6 +2799,74 @@ and validated but have no effect. This allows to use keymaps defined in
 #### Private action
 
 @todo `Private`
+
+### Unsupported legacy X11 actions {#unsupported-legacy-x11-actions}
+
+[unsupported legacy action]: @ref unsupported-legacy-x11-actions
+
+@attention The following legacy actions are **unsupported**: they are parsed
+and but *not validated* and are then completely *ignored*.
+
+#### Redirect key {#redirect-key-action}
+
+@todo `RedirectKey`
+
+`RedirectKey` emulates pressing a key with a different key code. Fields:
+
+
+<dl>
+<dt>`key` (also: `keycode`, `kc`)</dt>
+<dd>
+Target keycode
+</dd>
+<dt>`clearmodifiers` (also: `clearmods`)</dt>
+<dd>
+Modifiers to clear
+</dd>
+<dt>`modifiers` (also: `mods`)</dt>
+<dd>
+Modifiers to add
+</dd>
+</dl>
+
+`RedirectKey` normally redirects to another key on the *same device* as the key
+or button which caused the event, else on the *core* keyboard device.
+
+<table>
+<caption>Effects</caption>
+<thead>
+<tr>
+<th>On key *press*</th>
+<th>On key *release*</th>
+</tr>
+<tr>
+<td>
+
+Key press causes a key press event for the key specified by the `key` field
+instead of for the actual key. The state reported in this event reports of the
+current *effective* modifiers changed as follow:
+- Modifiers in the `clearmodifiers` field are cleared.
+- Modifiers in the `modifiers` field are set.
+</td>
+<td>
+
+Key release causes a key release event for the key specified by the `key` field;
+the state field for this event consists of the *effective* modifiers at the time
+of the release, changed as described on the key press.
+</td>
+</thead>
+
+#### ISO lock
+
+@todo `ISOLock`
+
+#### Device actions
+
+@todo `DeviceButton`, `LockDeviceButton`, `DeviceValuator`
+
+#### Message actions
+
+@todo `ActionMessage`
 
 ## The “xkb_geometry” section {#the-xkb_geometry-section}
 

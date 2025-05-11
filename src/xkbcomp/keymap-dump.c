@@ -502,6 +502,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
         break;
 
     default:
+        /* Unsupported legacy actions should have degraded to NoAction */
+        assert(action->type != ACTION_TYPE_UNSUPPORTED_LEGACY);
         write_buf(buf,
                   "%s%s(type=0x%02x,data[0]=0x%02x,data[1]=0x%02x,data[2]=0x%02x,data[3]=0x%02x,data[4]=0x%02x,data[5]=0x%02x,data[6]=0x%02x)%s",
                   prefix, type, action->type, action->priv.data[0],

@@ -211,6 +211,14 @@
   added: ALWAYS
   type: error
   description: "Use of an operator that is unknown and thus unsupported"
+- id: "unsupported-legacy-action"
+  code: 362
+  added: 1.10.0
+  type: warning
+  description: "Use of a legacy X11 action that is not supported"
+  details: |
+    This action will be treated as `NoAction()`. See @ref unsupported-legacy-x11-actions ""
+    for further information.
 - id: "duplicate-entry"
   code: 378
   added: ALWAYS

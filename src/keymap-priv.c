@@ -147,7 +147,7 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
         return false;
 
     /* Ensure we support all action types */
-    static_assert(ACTION_TYPE_INTERNAL == 17 &&
+    static_assert(ACTION_TYPE_INTERNAL == 18 &&
                   ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                   "Missing action type");
 
@@ -187,6 +187,8 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
     case ACTION_TYPE_CTRL_LOCK:
         return (a->ctrls.flags == b->ctrls.flags &&
                 a->ctrls.ctrls == b->ctrls.ctrls);
+    case ACTION_TYPE_UNSUPPORTED_LEGACY:
+        return true;
     case ACTION_TYPE_PRIVATE:
         return (a->priv.data == b->priv.data);
     case ACTION_TYPE_INTERNAL:
