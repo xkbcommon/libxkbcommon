@@ -441,6 +441,13 @@
   added: ALWAYS
   type: error
   description: "Keymap compilation failed"
+- id: "unknown-action-type"
+  code: 844
+  added: ALWAYS
+  type: error
+  description: "Unknown action type"
+  details: |
+    See @ref key-actions "" for the list of supported actions.
 - id: "conflicting-key-action"
   code: 883
   added: ALWAYS

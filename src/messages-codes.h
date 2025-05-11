@@ -157,6 +157,8 @@ enum xkb_message_code {
     XKB_ERROR_UNKNOWN_FIELD = 812,
     /** Keymap compilation failed */
     XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
+    /** Unknown action type */
+    XKB_ERROR_UNKNOWN_ACTION_TYPE = 844,
     /** Warn if there are conflicting actions while merging keys */
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */
