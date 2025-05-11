@@ -742,10 +742,11 @@ HandleActionDef(struct xkb_context *ctx, ActionsInfo *info,
         return false;
     }
 
-    const char *str = xkb_atom_text(ctx, def->action.name);
+    const char *action_name = xkb_atom_text(ctx, def->action.name);
     enum xkb_action_type handler_type;
-    if (!stringToActionType(str, &handler_type)) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID, "Unknown action %s\n", str);
+    if (!stringToActionType(action_name, &handler_type)) {
+        log_err(ctx, XKB_ERROR_UNKNOWN_ACTION_TYPE,
+                "Unknown action %s\n", action_name);
         return false;
     }
 
@@ -813,8 +814,10 @@ SetDefaultActionField(struct xkb_context *ctx, ActionsInfo *info,
                       ExprDef *value, enum merge_mode merge)
 {
     enum xkb_action_type action;
-    if (!stringToActionType(elem, &action))
+    if (!stringToActionType(elem, &action)) {
+        log_err(ctx, XKB_ERROR_UNKNOWN_ACTION_TYPE, "Unknown action %s\n", elem);
         return false;
+    }
 
     enum action_field action_field;
     if (!stringToField(field, &action_field)) {
