@@ -421,7 +421,7 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
             if (production->has_string) {
                 node->leaf.utf8 = darray_size(table->utf8);
                 darray_append_items(table->utf8, production->string,
-                                    (unsigned)strlen(production->string) + 1);
+                                    (darray_size_t)strlen(production->string) + 1);
             }
             if (production->has_keysym) {
                 node->leaf.keysym = production->keysym;

@@ -1091,7 +1091,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         darray_appends_nullterminate(*expanded, &pfx, 1);
     darray_appends_nullterminate(*expanded,
                                  expanded_value->sval.start,
-                                 expanded_value->sval.len);
+                                 (darray_size_t) expanded_value->sval.len);
     if (sfx != 0)
         darray_appends_nullterminate(*expanded, &sfx, 1);
     expanded_value->matched = true;
@@ -1113,7 +1113,7 @@ expand_qualifier_in_kccgst_value(
     struct matcher *m, struct scanner *s,
     struct sval value, darray_char *expanded,
     bool has_layout_idx_range, bool has_separator,
-    unsigned int prefix_idx, size_t *i)
+    darray_size_t prefix_idx, size_t *i)
 {
     const char *str = value.start;
 
@@ -1129,7 +1129,8 @@ expand_qualifier_in_kccgst_value(
         /* Check for more layouts (slow path) */
         if (darray_size(m->rmlvo.layouts) > 1) {
             char layout_index[MAX_LAYOUT_INDEX_STR_LENGTH + 1];
-            const size_t prefix_length = darray_size(*expanded) - prefix_idx - 1;
+            const darray_size_t prefix_length =
+                darray_size(*expanded) - prefix_idx - 1;
             xkb_layout_index_t l;
             for (l = 1;
                  l < MIN(XKB_MAX_GROUPS, darray_size(m->rmlvo.layouts));
@@ -1153,9 +1154,9 @@ expand_qualifier_in_kccgst_value(
 
 static inline void
 #ifdef _MSC_VER
-concat_kccgst(darray_char *into, size_t size, _In_reads_(size) const char* from)
+concat_kccgst(darray_char *into, darray_size_t size, _In_reads_(size) const char* from)
 #else
-concat_kccgst(darray_char *into, size_t size, const char from[static size])
+concat_kccgst(darray_char *into, darray_size_t size, const char from[static size])
 #endif
 {
     /*
@@ -1187,7 +1188,7 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
 {
     const char *str = value.start;
     darray_char expanded = darray_new();
-    unsigned int last_item_idx = 0;
+    darray_size_t last_item_idx = 0;
     bool has_separator = false;
 
     for (size_t i = 0; i < value.len; ) {
@@ -1258,7 +1259,7 @@ matcher_append_pending_kccgst(struct matcher *m)
              * options. Process them sequentially. */
             register const struct kccgst_buffer* const buf = &m->pending_kccgst;
             size_t offset = 0;
-            for (unsigned k = 0; k < darray_size(buf->slices); k++) {
+            for (darray_size_t k = 0; k < darray_size(buf->slices); k++) {
                 register const struct kccgst_buffer_slice * const slice =
                     &darray_item(buf->slices, k);
                 if (slice->kccgst == kccgst && slice->layout == layout &&
@@ -1408,7 +1409,8 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                      */
                     register struct kccgst_buffer * const buf =
                         &m->pending_kccgst;
-                    const size_t prev_buffer_length = darray_size(buf->buffer);
+                    const darray_size_t prev_buffer_length =
+                        darray_size(buf->buffer);
                     append_expanded_kccgst_value(m, s, false, &buf->buffer,
                                                  value, idx);
                     const uint32_t length = (uint32_t) (darray_size(buf->buffer)
