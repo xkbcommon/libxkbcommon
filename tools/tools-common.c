@@ -210,11 +210,11 @@ tools_print_keycode_state(const char *prefix,
 
     layout = xkb_state_key_get_layout(state, keycode);
     if (fields & PRINT_LAYOUT) {
-        printf("layout [ %s (%d) ] ",
+        printf("layout [ %s (%"PRIu32") ] ",
                xkb_keymap_layout_get_name(keymap, layout), layout);
     }
 
-    printf("level [ %d ] ",
+    printf("level [ %"PRIu32" ] ",
            xkb_state_key_get_level(state, keycode, layout));
 
     printf("mods [ ");

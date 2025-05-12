@@ -49,12 +49,16 @@ test_init(void)
 void
 print_detailed_state(struct xkb_state *state)
 {
-    fprintf(stderr, "  Layout: base: %d, latched: %d, locked: %d, effective: %u\n",
+    fprintf(stderr,
+            "  Layout: base: %"PRId32", latched: %"PRId32", locked: %"PRId32", "
+            "effective: %"PRIu32"\n",
             xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED),
             xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED),
             xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED),
             xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE));
-    fprintf(stderr, "  Modifiers: base: 0x%x, latched: 0x%x, locked: 0x%x, effective: 0x%x\n",
+    fprintf(stderr,
+            "  Modifiers: base: %#"PRIx32", latched: %#"PRIx32", "
+            "locked: %#"PRIx32", effective: %#"PRIx32"\n",
             xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED),
             xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED),
             xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED),
@@ -135,7 +139,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 #if HAVE_TOOLS
         tools_print_keycode_state("", state, NULL, kc, XKB_CONSUMED_MODE_XKB, PRINT_ALL_FIELDS);
 #endif
-        fprintf(stderr, "op %-6s got %u syms for keycode %3u: [", opstr, nsyms, kc);
+        fprintf(stderr, "op %-6s got %d syms for keycode %3"PRIu32": [", opstr, nsyms, kc);
 
         for (int i = 0; i < nsyms; i++) {
             keysym = va_arg(ap, int);

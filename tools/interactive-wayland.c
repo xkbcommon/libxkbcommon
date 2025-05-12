@@ -239,7 +239,7 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
         stride = width * 2;
         break;
     default:
-        fprintf(stderr, "Unsupported SHM format %d\n", inter->shm_format);
+        fprintf(stderr, "Unsupported SHM format %"PRIu32"\n", inter->shm_format);
         exit(EXIT_FAILURE);
     }
 
@@ -615,7 +615,7 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
         seat->compose_state = xkb_compose_state_new(seat->inter->compose_table,
                                                     XKB_COMPOSE_STATE_NO_FLAGS);
     }
-    ret = asprintf(&seat->name_str, "seat:%d",
+    ret = asprintf(&seat->name_str, "seat:%"PRIu32,
                    wl_proxy_get_id((struct wl_proxy *) seat->wl_seat));
     assert(ret >= 0);
     wl_list_insert(&inter->seats, &seat->link);

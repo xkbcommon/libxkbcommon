@@ -149,7 +149,8 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
                         found = false;
                         log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                                  "Repeated interpretation ignored for keysym "
-                                 "#%u \"%s\" at level %u/group %u on key %s.\n",
+                                 "#%d \"%s\" at level %"PRIu32"/group %"PRIu32" "
+                                 "on key %s.\n",
                                  s + 1, KeysymText(keymap->ctx, syms[s]),
                                  level + 1, group + 1,
                                  KeyNameText(keymap->ctx, key->name));
@@ -308,7 +309,8 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
                         log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                                 "Cannot use multiple %s actions "
                                 "in the same level. Action #%u "
-                                "for key %s in group %u/level %u ignored.\n",
+                                "for key %s in group %"PRIu32"/level %"PRIu32" "
+                                "ignored.\n",
                                 (mod_action ? "modifiers" : "group"),
                                 j + 1, KeyNameText(keymap->ctx, key->name),
                                 g + 1, l + 1);

@@ -155,8 +155,8 @@ test_keysym(xkb_keysym_t keysym, const char *expected)
 
     xkb_keysym_get_name(keysym, s, sizeof(s));
 
-    fprintf(stderr, "Expected keysym %#x -> %s\n", keysym, expected);
-    fprintf(stderr, "Received keysym %#x -> %s\n\n", keysym, s);
+    fprintf(stderr, "Expected keysym %#06"PRIx32" -> %s\n", keysym, expected);
+    fprintf(stderr, "Received keysym %#06"PRIx32" -> %s\n\n", keysym, s);
 
     return streq(s, expected);
 }
@@ -168,9 +168,9 @@ test_deprecated(xkb_keysym_t keysym, const char *name,
     const char *reference;
     bool deprecated = xkb_keysym_is_deprecated(keysym, name, &reference);
 
-    fprintf(stderr, "Expected keysym %#x -> deprecated: %d, reference: %s\n",
+    fprintf(stderr, "Expected keysym %#06"PRIx32" -> deprecated: %d, reference: %s\n",
             keysym, expected_deprecated, expected_reference);
-    fprintf(stderr, "Received keysym %#x -> deprecated: %d, reference: %s\n",
+    fprintf(stderr, "Received keysym %#06"PRIx32" -> deprecated: %d, reference: %s\n",
             keysym, deprecated, reference);
 
     return deprecated == expected_deprecated &&
@@ -193,10 +193,10 @@ test_utf8(xkb_keysym_t keysym, const char *expected)
 
     assert(expected != NULL);
 
-    fprintf(stderr, "Expected keysym %#x -> %s (%u bytes)\n", keysym, expected,
-            (unsigned) strlen(expected));
-    fprintf(stderr, "Received keysym %#x -> %s (%u bytes)\n\n", keysym, s,
-            (unsigned) strlen(s));
+    fprintf(stderr, "Expected keysym %#06"PRIx32" -> %s (%zu bytes)\n", keysym, expected,
+            strlen(expected));
+    fprintf(stderr, "Received keysym %#06"PRIx32" -> %s (%zu bytes)\n\n", keysym, s,
+            strlen(s));
 
     return streq(s, expected);
 }
@@ -393,7 +393,7 @@ get_keysym_name(xkb_keysym_t keysym, char *buffer, size_t size)
 {
     int name_length = xkb_keysym_get_name(keysym, buffer, size);
     if (name_length < 0) {
-        snprintf(buffer, size, "(unknown: 0x%lx)", (unsigned long)keysym);
+        snprintf(buffer, size, "(unknown: %#06"PRIx32")", keysym);
     }
 }
 
@@ -406,8 +406,8 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
     get_keysym_name(expected, expected_name, XKB_KEYSYM_NAME_MAX_SIZE);
     get_keysym_name(actual, actual_name, XKB_KEYSYM_NAME_MAX_SIZE);
 
-    fprintf(stderr, "Code point 0x%lx: expected keysym: %s, actual: %s\n\n",
-            (unsigned long)ucs, expected_name, actual_name);
+    fprintf(stderr, "Code point %#"PRIx32": expected keysym: %s, actual: %s\n\n",
+            ucs, expected_name, actual_name);
     return expected == actual;
 }
 

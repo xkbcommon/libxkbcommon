@@ -39,7 +39,7 @@ xkb_x11_state_new_from_device(struct xkb_keymap *keymap,
 
     if (device_id < 0 || device_id > 255) {
         log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "illegal device ID: %d", device_id);
+                     "illegal device ID: %"PRId32, device_id);
         return NULL;
     }
 
