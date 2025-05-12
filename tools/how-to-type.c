@@ -132,7 +132,6 @@ main(int argc, char *argv[])
     char name[XKB_KEYSYM_NAME_MAX_SIZE];
     struct xkb_keymap *keymap = NULL;
     xkb_keycode_t min_keycode, max_keycode;
-    xkb_mod_index_t num_mods;
     enum options {
         OPT_KEYSYM,
         OPT_ENABLE_ENV_NAMES,
@@ -260,7 +259,7 @@ main(int argc, char *argv[])
 
     min_keycode = xkb_keymap_min_keycode(keymap);
     max_keycode = xkb_keymap_max_keycode(keymap);
-    num_mods = xkb_keymap_num_mods(keymap);
+    const xkb_mod_index_t num_mods = xkb_keymap_num_mods(keymap);
     for (xkb_keycode_t keycode = min_keycode; keycode <= max_keycode; keycode++) {
         const char *key_name;
         xkb_layout_index_t num_layouts;
