@@ -429,7 +429,7 @@ struct xkb_keymap {
     struct xkb_key *keys;
 
     /* aliases in no particular order */
-    unsigned int num_key_aliases;
+    darray_size_t num_key_aliases;
     struct xkb_key_alias *key_aliases;
 
     struct xkb_key_type *types;

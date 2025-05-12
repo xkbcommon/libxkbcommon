@@ -607,15 +607,12 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 static bool
 CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
-    AliasInfo *alias;
-    unsigned i, num_key_aliases;
-    struct xkb_key_alias *key_aliases;
-
     /*
      * Do some sanity checking on the aliases. We can't do it before
      * because keys and their aliases may be added out-of-order.
      */
-    num_key_aliases = 0;
+    AliasInfo *alias;
+    darray_size_t num_key_aliases = 0;
     darray_foreach(alias, info->aliases) {
         /* Check that ->real is a key. */
         if (!XkbKeyByName(keymap, alias->real, false)) {
@@ -644,13 +641,13 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     }
 
     /* Copy key aliases. */
-    key_aliases = NULL;
+    struct xkb_key_alias *key_aliases = NULL;
     if (num_key_aliases > 0) {
         key_aliases = calloc(num_key_aliases, sizeof(*key_aliases));
         if (!key_aliases)
             return false;
 
-        i = 0;
+        darray_size_t i = 0;
         darray_foreach(alias, info->aliases) {
             if (alias->real != XKB_ATOM_NONE) {
                 key_aliases[i].alias = alias->alias;

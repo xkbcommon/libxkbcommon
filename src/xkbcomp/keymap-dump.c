@@ -261,7 +261,7 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
         }
 
 
-    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
+    for (darray_size_t i = 0; i < keymap->num_key_aliases; i++)
         write_buf(buf, "\talias %-14s = %s;\n",
                   KeyNameText(keymap->ctx, keymap->key_aliases[i].alias),
                   KeyNameText(keymap->ctx, keymap->key_aliases[i].real));
