@@ -97,7 +97,6 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 
     const xkb_keysym_t *syms;
     xkb_keysym_t sym;
-    unsigned int nsyms, i;
     char ksbuf[XKB_KEYSYM_NAME_MAX_SIZE];
     const char *opstr = NULL;
 
@@ -122,7 +121,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
                 goto fail;
         }
 
-        nsyms = xkb_state_key_get_syms(state, kc, &syms);
+        const int nsyms = xkb_state_key_get_syms(state, kc, &syms);
         if (nsyms == 1) {
             sym = xkb_state_key_get_one_sym(state, kc);
             syms = &sym;
@@ -138,7 +137,7 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 #endif
         fprintf(stderr, "op %-6s got %u syms for keycode %3u: [", opstr, nsyms, kc);
 
-        for (i = 0; i < nsyms; i++) {
+        for (int i = 0; i < nsyms; i++) {
             keysym = va_arg(ap, int);
             xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
             fprintf(stderr, "%s%s", (i != 0) ? ", " : "", ksbuf);
