@@ -1545,11 +1545,11 @@ test_serialisation(struct xkb_keymap *keymap, bool pure_vmods)
     const struct test_active_mods_entry *test_data = pure_vmods
                                                    ? test_data_virtual
                                                    : test_data_real;
-    unsigned k_max = pure_vmods
-                   ? ARRAY_SIZE(test_data_virtual)
-                   : ARRAY_SIZE(test_data_real);
+    unsigned int k_max = pure_vmods
+                       ? ARRAY_SIZE(test_data_virtual)
+                       : ARRAY_SIZE(test_data_real);
 
-    for (unsigned k = 0; k < k_max; k++) {
+    for (unsigned int k = 0; k < k_max; k++) {
         const struct test_active_mods_entry *entry = &test_data[k];
 #define check_mods(keymap, state_, entry, type)                                     \
         for (xkb_mod_index_t idx = 0; idx < xkb_keymap_num_mods(keymap); idx++) {   \
@@ -1888,7 +1888,7 @@ test_overlapping_mods(struct xkb_context *context)
         { .state = mod3 | mod4, .active = mod3 | mod4 | super | hyper },
     };
 
-    for (unsigned k = 0; k < ARRAY_SIZE(test_data1); k++) {
+    for (unsigned int k = 0; k < ARRAY_SIZE(test_data1); k++) {
         const struct test_active_mods_entry *entry = &test_data1[k];
         xkb_state_update_mask(state, entry->state, 0, 0, 0, 0, 0);
         check_mods(keymap, state, entry, XKB_STATE_MODS_DEPRESSED);
@@ -1975,7 +1975,7 @@ test_overlapping_mods(struct xkb_context *context)
         { .state = mod1 | mod3 | mod4, .active = mod1 | mod3 | mod4 | alt | meta | super | hyper },
     };
 
-    for (unsigned k = 0; k < ARRAY_SIZE(test_data2); k++) {
+    for (unsigned int k = 0; k < ARRAY_SIZE(test_data2); k++) {
         const struct test_active_mods_entry *entry = &test_data2[k];
         xkb_state_update_mask(state, entry->state, 0, 0, 0, 0, 0);
         check_mods(keymap, state, entry, XKB_STATE_MODS_DEPRESSED);
@@ -2069,7 +2069,7 @@ test_overlapping_mods(struct xkb_context *context)
         { .state = mod1 | mod3 | mod4, .active = mod1 | mod3 | mod4 | alt | meta | super | hyper },
     };
 
-    for (unsigned k = 0; k < ARRAY_SIZE(test_data3); k++) {
+    for (unsigned int k = 0; k < ARRAY_SIZE(test_data3); k++) {
         const struct test_active_mods_entry *entry = &test_data3[k];
         xkb_state_update_mask(state, entry->state, 0, 0, 0, 0, 0);
         check_mods(keymap, state, entry, XKB_STATE_MODS_DEPRESSED);
@@ -2621,7 +2621,7 @@ test_multiple_actions(struct xkb_context *ctx)
         xkb_state_update_mask(state, 0, 0, 0, 0, 0, layout);
         assert(xkb_state_key_get_layout(state, q) == layout);
         assert(xkb_state_key_get_one_sym(state, q) == ad01[layout]);
-        for (unsigned k = 0; k < ARRAY_SIZE(mod_keys); k++) {
+        for (unsigned int k = 0; k < ARRAY_SIZE(mod_keys); k++) {
             /* Temporarily switch to first layout + set Control modifier */
             xkb_state_update_key(state, mod_keys[k], XKB_KEY_DOWN);
             assert(xkb_state_key_get_layout(state, q) == 0);

@@ -416,7 +416,7 @@ test_number_parsers(void)
     }
 
     /* Random */
-    for (unsigned k = 0; k < 10000; k++) {
+    for (unsigned int k = 0; k < 10000; k++) {
         const uint32_t x32 = rand_uint32();
         const uint64_t x64 = rand_uint64();
         int count;
@@ -432,27 +432,27 @@ test_number_parsers(void)
         assert(count > 0);
         test_parse_to(uint32_t, hex, buffer, count, x32);
         /* Hex: some garbage after */
-        buffer[count] = (char) (((unsigned) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) rand()) % '0');
         test_parse_to(uint32_t, hex, buffer, count, x32);
         /* Hex: Upper case (64 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIX64, x64);
         assert(count > 0);
         test_parse_to(uint64_t, hex, buffer, count, x64);
         /* Hex: some garbage after */
-        buffer[count] = (char) (((unsigned) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) rand()) % '0');
         test_parse_to(uint64_t, hex, buffer, count, x64);
         /* Decimal (32 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu32, x32);
         assert(count > 0);
         test_parse_to(uint32_t, dec, buffer, count, x32);
         /* Decimal: some garbage after */
-        buffer[count] = (char) (((unsigned) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) rand()) % '0');
         test_parse_to(uint32_t, dec, buffer, count, x32);
         /* Decimal (64 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu64, x64);
         assert(count > 0);
         test_parse_to(uint64_t, dec, buffer, count, x64);
-        buffer[count] = (char) (((unsigned) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) rand()) % '0');
         test_parse_to(uint64_t, dec, buffer, count, x64);
     }
 }

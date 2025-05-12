@@ -510,7 +510,7 @@ test_virtual_modifiers_mapping_hack(struct xkb_context *context)
         },
     };
 
-    for (unsigned k = 0; k < ARRAY_SIZE(mods); k++) {
+    for (unsigned int k = 0; k < ARRAY_SIZE(mods); k++) {
         const xkb_mod_mask_t index =
             xkb_keymap_mod_get_index(keymap, mods[k].name);
         assert_printf(index == mods[k].index,

@@ -217,10 +217,10 @@ is_graph(char ch)
  * Note: this is 1-based! It's more useful this way, and returns 0 when
  * mask is all 0s.
  */
-static inline unsigned
+static inline unsigned int
 msb_pos(uint32_t mask)
 {
-    unsigned pos = 0;
+    unsigned int pos = 0;
     while (mask) {
         pos++;
         mask >>= 1u;

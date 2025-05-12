@@ -411,13 +411,13 @@ matcher_group_add_element(struct matcher *m, struct scanner *s,
 static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
-                unsigned include_depth,
+                unsigned int include_depth,
                 FILE *file,
                 const char *path);
 
 static void
 matcher_include(struct matcher *m, struct scanner *parent_scanner,
-                unsigned include_depth,
+                unsigned int include_depth,
                 struct sval inc)
 {
     struct scanner s; /* parses the !include value */
@@ -1452,7 +1452,7 @@ gettok(struct matcher *m, struct scanner *s)
 
 static bool
 matcher_match(struct matcher *m, struct scanner *s,
-              unsigned include_depth,
+              unsigned int include_depth,
               const char *string, size_t len,
               const char *file_name)
 {
@@ -1647,7 +1647,7 @@ error:
 static bool
 read_rules_file(struct xkb_context *ctx,
                 struct matcher *matcher,
-                unsigned include_depth,
+                unsigned int include_depth,
                 FILE *file,
                 const char *path)
 {
