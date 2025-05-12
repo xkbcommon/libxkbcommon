@@ -1623,9 +1623,9 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
     if (type_name == XKB_ATOM_NONE) {
         log_warn(keymap->ctx, XKB_WARNING_CANNOT_INFER_KEY_TYPE,
                  "Couldn't find an automatic type for key '%s' "
-                 "group %d with %lu levels; Using the default type\n",
+                 "group %d with %u levels; Using the default type\n",
                  KeyNameText(keymap->ctx, keyi->name), group + 1,
-                 (unsigned long) darray_size(groupi->levels));
+                 darray_size(groupi->levels));
         goto use_default;
     }
 

@@ -89,7 +89,7 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
         table->index_size *= 2;
         table->index = realloc(table->index, table->index_size * sizeof(*table->index));
         memset(table->index, 0, table->index_size * sizeof(*table->index));
-        for (size_t j = 1; j < darray_size(table->strings); j++) {
+        for (darray_size_t j = 1; j < darray_size(table->strings); j++) {
             const char *s = darray_item(table->strings, j);
             uint32_t hash = hash_buf(s, strlen(s));
             for (size_t i = 0; i < table->index_size; i++) {
