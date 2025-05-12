@@ -47,7 +47,7 @@ test_rules(struct xkb_context *ctx, struct test_data *data)
                 data->geometry, data->explicit_layouts);
 
     bool passed = true;
-    xkb_layout_index_t explicit_layouts;
+    xkb_layout_index_t explicit_layouts = 0;
     for (int k = 0; k < 2; k++) {
         bool ok;
         const struct xkb_rule_names rmlvo = {
