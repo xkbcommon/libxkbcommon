@@ -101,7 +101,7 @@ FindInterpForKey(struct xkb_keymap *keymap, const struct xkb_key *key,
      */
     for (int s = 0; s < num_syms; s++) {
         bool found = false;
-        for (unsigned int i = 0; i < keymap->num_sym_interprets; i++) {
+        for (darray_size_t i = 0; i < keymap->num_sym_interprets; i++) {
             const struct xkb_sym_interpret *interp = &keymap->sym_interprets[i];
             xkb_mod_mask_t mods;
 

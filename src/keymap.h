@@ -435,7 +435,7 @@ struct xkb_keymap {
     struct xkb_key_type *types;
     unsigned int num_types;
 
-    unsigned int num_sym_interprets;
+    darray_size_t num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
 
     /**

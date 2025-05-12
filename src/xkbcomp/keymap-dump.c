@@ -588,15 +588,15 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
     copy_to_buf(buf, "\tinterpret.repeat= False;\n");
 
     /* xkbcomp requires at least one interpret entry. */
-    const unsigned int num_sym_interprets = keymap->num_sym_interprets
-                                          ? keymap->num_sym_interprets
-                                          : 1;
+    const darray_size_t num_sym_interprets = keymap->num_sym_interprets
+                                           ? keymap->num_sym_interprets
+                                           : 1;
     const struct xkb_sym_interpret* const sym_interprets
         = keymap->num_sym_interprets
         ? keymap->sym_interprets
         : &default_interpret;
 
-    for (unsigned i = 0; i < num_sym_interprets; i++) {
+    for (darray_size_t i = 0; i < num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &sym_interprets[i];
 
         write_buf(buf, "\tinterpret %s+%s(%s) {",
