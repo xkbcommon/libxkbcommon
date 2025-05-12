@@ -53,7 +53,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         struct xkb_key *key;
         xkb_keys_foreach(key, keymap) {
             if (key->groups) {
-                for (unsigned i = 0; i < key->num_groups; i++) {
+                for (xkb_layout_index_t i = 0; i < key->num_groups; i++) {
                     if (key->groups[i].levels) {
                         for (xkb_level_index_t j = 0;
                              j < XkbKeyNumLevels(key, i);

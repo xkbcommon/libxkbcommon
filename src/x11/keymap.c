@@ -436,7 +436,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
         FAIL_UNLESS(key->num_groups <= ARRAY_SIZE(wire_sym_map->kt_index));
         ALLOC_OR_FAIL(key->groups, key->num_groups);
 
-        for (unsigned j = 0; j < key->num_groups; j++) {
+        for (xkb_layout_index_t j = 0; j < key->num_groups; j++) {
             FAIL_UNLESS(wire_sym_map->kt_index[j] < keymap->num_types);
             key->groups[j].type = &keymap->types[wire_sym_map->kt_index[j]];
 

@@ -1865,8 +1865,8 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 
     keymap->mods = info->mods;
 
-    darray_steal(info->group_names,
-                 &keymap->group_names, &keymap->num_group_names);
+    keymap->num_group_names = (xkb_layout_index_t)darray_size(info->group_names);
+    darray_steal(info->group_names, &keymap->group_names, NULL);
 
     darray_foreach(keyi, info->keys)
         if (!CopySymbolsDefToKeymap(keymap, info, keyi))
