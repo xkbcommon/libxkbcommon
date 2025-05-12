@@ -45,12 +45,12 @@ struct xkb_context {
 char *
 xkb_context_getenv(struct xkb_context *ctx, const char *name);
 
-unsigned int
+darray_size_t
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);
 
 const char *
 xkb_context_failed_include_path_get(struct xkb_context *ctx,
-                                    unsigned int idx);
+                                    darray_size_t idx);
 
 const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx);

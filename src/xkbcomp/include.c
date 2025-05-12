@@ -160,13 +160,11 @@ DirectoryForInclude(enum xkb_file_type type)
 static void
 LogIncludePaths(struct xkb_context *ctx)
 {
-    unsigned int i;
-
     if (xkb_context_num_include_paths(ctx) > 0) {
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "%d include paths searched:\n",
                 xkb_context_num_include_paths(ctx));
-        for (i = 0; i < xkb_context_num_include_paths(ctx); i++)
+        for (unsigned int i = 0; i < xkb_context_num_include_paths(ctx); i++)
             log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                     "\t%s\n",
                     xkb_context_include_path_get(ctx, i));
@@ -180,7 +178,9 @@ LogIncludePaths(struct xkb_context *ctx)
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "%d include paths could not be added:\n",
                 xkb_context_num_failed_include_paths(ctx));
-        for (i = 0; i < xkb_context_num_failed_include_paths(ctx); i++)
+        for (darray_size_t i = 0;
+             i < xkb_context_num_failed_include_paths(ctx);
+             i++)
             log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                     "\t%s\n",
                     xkb_context_failed_include_path_get(ctx, i));
