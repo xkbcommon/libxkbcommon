@@ -74,7 +74,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         }
         free(keymap->types);
     }
-    for (unsigned int k = 0; k < keymap->num_sym_interprets; k++) {
+    for (darray_size_t k = 0; k < keymap->num_sym_interprets; k++) {
         clear_interpret(&keymap->sym_interprets[k]);
     }
     free(keymap->sym_interprets);
