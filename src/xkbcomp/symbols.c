@@ -1604,7 +1604,6 @@ static const struct xkb_key_type *
 FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
                  xkb_layout_index_t group, bool *explicit_type)
 {
-    unsigned int i;
     GroupInfo *groupi = &darray_item(keyi->groups, group);
     xkb_atom_t type_name = groupi->type;
 
@@ -1630,6 +1629,7 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
         goto use_default;
     }
 
+    darray_size_t i;
     for (i = 0; i < keymap->num_types; i++)
         if (keymap->types[i].name == type_name)
             break;

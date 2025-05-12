@@ -356,10 +356,10 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     keymap->canonical_state_mask |= extra_canonical_mods;
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    for (unsigned int i = 0; i < keymap->num_types; i++) {
+    for (darray_size_t i = 0; i < keymap->num_types; i++) {
         ComputeEffectiveMask(keymap, &keymap->types[i].mods);
 
-        for (unsigned int j = 0; j < keymap->types[i].num_entries; j++) {
+        for (darray_size_t j = 0; j < keymap->types[i].num_entries; j++) {
             if (has_unbound_vmods(keymap,
                                   keymap->types[i].entries[j].mods.mods)) {
                 /*

@@ -68,7 +68,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         free(keymap->keys);
     }
     if (keymap->types) {
-        for (unsigned i = 0; i < keymap->num_types; i++) {
+        for (darray_size_t i = 0; i < keymap->num_types; i++) {
             free(keymap->types[i].entries);
             free(keymap->types[i].level_names);
         }
@@ -456,7 +456,7 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
      */
     if (level == 0) {
         bool empty_mapped = false;
-        for (unsigned i = 0; i < type->num_entries && count < masks_size; i++)
+        for (darray_size_t i = 0; i < type->num_entries && count < masks_size; i++)
             if (entry_is_active(&type->entries[i]) &&
                 type->entries[i].mods.mask == 0) {
                 empty_mapped = true;
@@ -468,7 +468,7 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
     }
 
     /* Now search explicit mappings. */
-    for (unsigned i = 0; i < type->num_entries && count < masks_size; i++) {
+    for (darray_size_t i = 0; i < type->num_entries && count < masks_size; i++) {
         if (entry_is_active(&type->entries[i]) &&
             type->entries[i].level == level) {
             masks_out[count++] = type->entries[i].mods.mask;

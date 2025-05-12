@@ -230,9 +230,9 @@ struct xkb_key_type {
     xkb_atom_t name;
     struct xkb_mods mods;
     xkb_level_index_t num_levels;
-    unsigned int num_level_names;
+    xkb_level_index_t num_level_names;
     xkb_atom_t *level_names;
-    unsigned int num_entries;
+    darray_size_t num_entries;
     struct xkb_key_type_entry *entries;
 };
 
@@ -433,7 +433,7 @@ struct xkb_keymap {
     struct xkb_key_alias *key_aliases;
 
     struct xkb_key_type *types;
-    unsigned int num_types;
+    darray_size_t num_types;
 
     darray_size_t num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
