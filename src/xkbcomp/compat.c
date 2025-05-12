@@ -513,9 +513,8 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
 
             /* Parse actions and add only defined actions */
             darray(union xkb_action) actions = darray_new();
-            unsigned int act_index = 0;
             for (ExprDef *act = value->actions.actions;
-                 act; act = (ExprDef *) act->common.next, act_index++) {
+                 act; act = (ExprDef *) act->common.next) {
                 union xkb_action toAct = { 0 };
                 if (!HandleActionDef(info->ctx, &info->default_actions,
                                      &info->mods, act, &toAct)) {

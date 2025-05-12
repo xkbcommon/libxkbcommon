@@ -158,7 +158,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t kc)
 /* Empty action used for empty levels */
 static const union xkb_action dummy_action = { .type = ACTION_TYPE_NONE };
 
-static unsigned int
+static xkb_action_count_t
 xkb_key_get_actions(struct xkb_state *state, const struct xkb_key *key,
                     const union xkb_action **actions)
 {
@@ -167,7 +167,7 @@ xkb_key_get_actions(struct xkb_state *state, const struct xkb_key *key,
     if (level == XKB_LEVEL_INVALID)
         goto err;
 
-    const unsigned int count =
+    const xkb_action_count_t count =
         xkb_keymap_key_get_actions_by_level(state->keymap, key,
                                             layout, level, actions);
     if (!count)
@@ -372,8 +372,9 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * or promote it to a lock if it's the same group delta & flags and
          * latchToLock option is enabled. */
         const union xkb_action *actions = NULL;
-        const unsigned int count = xkb_key_get_actions(state, key, &actions);
-        for (unsigned int k = 0; k < count; k++) {
+        const xkb_action_count_t count =
+            xkb_key_get_actions(state, key, &actions);
+        for (xkb_action_count_t k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_GROUP_LATCH &&
                 actions[k].group.group == filter->action.group.group &&
                 actions[k].group.flags == filter->action.group.flags) {
@@ -533,8 +534,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * or promote it to a lock or plain base set if it's the same
          * modifier. */
         const union xkb_action *actions = NULL;
-        const unsigned int count = xkb_key_get_actions(state, key, &actions);
-        for (unsigned int k = 0; k < count; k++) {
+        const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
+        for (xkb_action_count_t k = 0; k < count; k++) {
             if (actions[k].type == ACTION_TYPE_MOD_LATCH &&
                 actions[k].mods.flags == filter->action.mods.flags &&
                 actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
@@ -650,7 +651,7 @@ xkb_filter_apply_all(struct xkb_state *state,
 
     /* No filter consumed this event, so proceed with the key actions */
     const union xkb_action *actions = NULL;
-    const unsigned int count = xkb_key_get_actions(state, key, &actions);
+    const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
 
     /*
      * Process actions sequentially.
@@ -659,7 +660,7 @@ xkb_filter_apply_all(struct xkb_state *state,
      * actions (see `CheckMultipleActionsCategories`). Allowing multiple such
      * actions requires a refactor of the state handling.
      */
-    for (unsigned int k = 0; k < count; k++) {
+    for (xkb_action_count_t k = 0; k < count; k++) {
         /*
          * It's possible for the keymap to set action->type explicitly, like so:
          *     interpret XF86_Next_VMode {

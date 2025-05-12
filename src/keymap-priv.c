@@ -263,7 +263,7 @@ XkbWrapGroupIntoRange(int32_t group,
     }
 }
 
-unsigned int
+xkb_action_count_t
 xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
                                     const struct xkb_key *key,
                                     xkb_layout_index_t layout,
@@ -293,7 +293,7 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
         default:
             *actions = key->groups[layout].levels[level].a.actions;
     }
-    return (int) count;
+    return count;
 
 err:
     *actions = NULL;

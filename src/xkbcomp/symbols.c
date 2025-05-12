@@ -923,9 +923,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
         /* Parse actions and add only defined actions */
         darray(union xkb_action) actions = darray_new();
-        unsigned int act_index = 0;
         for (ExprDef *act = actionList->actions;
-             act; act = (ExprDef *) act->common.next, act_index++) {
+             act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
             if (!HandleActionDef(info->ctx, &info->default_actions, &info->mods,
                                  act, &toAct)) {
