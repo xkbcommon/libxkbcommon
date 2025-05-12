@@ -1501,23 +1501,23 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
 static struct xkb_key *
 FindKeyForSymbol(struct xkb_keymap *keymap, xkb_keysym_t sym)
 {
-    struct xkb_key *key;
-    xkb_layout_index_t group;
-    bool got_one_group, got_one_level;
-
-    group = 0;
+    bool got_one_group;
+    xkb_layout_index_t group = 0;
     do {
         xkb_level_index_t level = 0;
         got_one_group = false;
+        bool got_one_level;
         do {
             got_one_level = false;
+            struct xkb_key *key;
             xkb_keys_foreach(key, keymap) {
                 if (group < key->num_groups &&
                     level < XkbKeyNumLevels(key, group)) {
                     got_one_group = got_one_level = true;
-                    unsigned int num_syms = key->groups[group].levels[level].num_syms;
+                    const xkb_keysym_count_t num_syms =
+                        key->groups[group].levels[level].num_syms;
                     if (num_syms > 1) {
-                        for (unsigned int k = 0; k < num_syms; k++) {
+                        for (xkb_keysym_count_t k = 0; k < num_syms; k++) {
                             if (key->groups[group].levels[level].s.syms[k] == sym)
                                 return key;
                         }
