@@ -277,44 +277,45 @@ test_get_path(const char *path_rel)
 char *
 test_read_file(const char *path_rel)
 {
-    struct stat info;
-    char *ret, *tmp, *path;
-    int fd;
-
-    path = test_get_path(path_rel);
+    char *path = test_get_path(path_rel);
     if (!path)
         return NULL;
 
-    fd = open(path, O_RDONLY);
+    FILE* file = fopen(path, "rb");
     free(path);
+
+    if (!file)
+        return NULL;
+
+    const int fd = fileno(file);
     if (fd < 0)
         return NULL;
 
+    struct stat info;
     if (fstat(fd, &info) != 0) {
-        close(fd);
+        fclose(file);
         return NULL;
     }
 
-    ret = malloc(info.st_size + 1);
+    char* ret = malloc(info.st_size + 1);
     if (!ret) {
-        close(fd);
+        fclose(file);
         return NULL;
     }
 
-    size_t remaining = info.st_size;
-    ssize_t count;
-    tmp = ret;
-    while ((count = read(fd, tmp, remaining)) > 0) {
-        remaining -= count;
-        tmp += count;
-    }
-    ret[info.st_size] = '\0';
-    close(fd);
-
-    if (remaining != 0) {
+    const size_t size = info.st_size;
+    const size_t count = fread(ret, sizeof(*ret), size, file);
+    if (count != size) {
+        if (!feof(file))
+            printf("Error reading file %s: unexpected end of file\n", path_rel);
+        else if (ferror(file))
+            perror("Error reading file");
+        fclose(file);
         free(ret);
         return NULL;
     }
+    fclose(file);
+    ret[count] = '\0';
 
     return ret;
 }
