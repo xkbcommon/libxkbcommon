@@ -700,7 +700,6 @@ static bool
 write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
           const struct xkb_key *key)
 {
-    xkb_layout_index_t group;
     bool simple = true;
 
     write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
@@ -709,7 +708,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         simple = false;
 
         bool multi_type = false;
-        for (group = 1; group < key->num_groups; group++) {
+        for (xkb_layout_index_t group = 1; group < key->num_groups; group++) {
             if (key->groups[group].type != key->groups[0].type) {
                 multi_type = true;
                 break;
@@ -717,7 +716,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         }
 
         if (multi_type) {
-            for (group = 0; group < key->num_groups; group++) {
+            for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
                 if (!key->groups[group].explicit_type)
                     continue;
 
@@ -800,7 +799,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
     }
     else {
         assert(key->num_groups > 0);
-        for (group = 0; group < key->num_groups; group++) {
+        for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
             if (group != 0)
                 copy_to_buf(buf, ",");
             write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
