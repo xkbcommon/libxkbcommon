@@ -479,7 +479,7 @@ struct xkb_keymap {
     xkb_atom_t *group_names;
 
     struct xkb_led leds[XKB_MAX_LEDS];
-    unsigned int num_leds;
+    xkb_led_index_t num_leds;
 
     char *keycodes_section_name;
     char *symbols_section_name;

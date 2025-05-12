@@ -37,7 +37,7 @@ typedef struct {
     xkb_keycode_t min_key_code;
     darray(xkb_atom_t) key_names;
     LedNameInfo led_names[XKB_MAX_LEDS];
-    unsigned int num_led_names;
+    xkb_led_index_t num_led_names;
     darray(AliasInfo) aliases;
 
     struct xkb_context *ctx;

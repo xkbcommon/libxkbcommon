@@ -58,7 +58,7 @@ typedef struct {
     darray(SymInterpInfo) interps;
     LedInfo default_led;
     LedInfo leds[XKB_MAX_LEDS];
-    unsigned int num_leds;
+    xkb_led_index_t num_leds;
     ActionsInfo default_actions;
     struct xkb_mod_set mods;
 
