@@ -321,7 +321,7 @@ static void
 add_production(struct xkb_compose_table *table, struct scanner *s,
                const struct production *production)
 {
-    unsigned lhs_pos = 0;
+    unsigned int lhs_pos = 0;
     uint32_t curr = darray_size(table->nodes) == 1 ? 0 : 1;
     uint32_t *pptr = NULL;
     struct compose_node *node = NULL;
@@ -449,7 +449,7 @@ resolve_modifier(const char *name)
         { "Caps", 1 },
     };
 
-    for (unsigned i = 0; i < ARRAY_SIZE(mods); i++)
+    for (unsigned int i = 0; i < ARRAY_SIZE(mods); i++)
         if (streq(name, mods[i].name))
             return mods[i].mod;
 
@@ -476,11 +476,11 @@ parse_string_literal(struct xkb_context *ctx, const char *string)
 
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
-      unsigned include_depth);
+      unsigned int include_depth);
 
 static bool
 do_include(struct xkb_compose_table *table, struct scanner *s,
-           const char *path, unsigned include_depth)
+           const char *path, unsigned int include_depth)
 {
     FILE *file;
     bool ok;
@@ -526,7 +526,7 @@ err_file:
 
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
-      unsigned include_depth)
+      unsigned int include_depth)
 {
     enum rules_token tok;
     union lvalue val;

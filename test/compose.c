@@ -683,7 +683,7 @@ test_eq_entry_va(struct xkb_compose_table_entry *entry, xkb_keysym_t keysym_ref,
     const xkb_keysym_t *sequence = xkb_compose_table_entry_sequence(entry, &nsyms);
 
     xkb_keysym_t keysym;
-    for (unsigned k = 0; ; k++) {
+    for (unsigned int k = 0; ; k++) {
         keysym = va_arg(ap, xkb_keysym_t);
         if (keysym == XKB_KEY_NoSymbol) {
             return (k == nsyms - 1);

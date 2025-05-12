@@ -953,7 +953,7 @@ test_explicit_actions(struct xkb_context *ctx)
 
     struct xkb_keymap *keymaps[] = { original, roundtrip };
 
-    for (unsigned k = 0; k < ARRAY_SIZE(keymaps); k++) {
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         assert(keymaps[k]);
 
         /*
@@ -974,7 +974,7 @@ test_explicit_actions(struct xkb_context *ctx)
             /* No explicit actions, check defaults */
             { .name = "AD06", .repeats = true , .vmodmap = 0 },
         };
-        for (unsigned i = 0; i < ARRAY_SIZE(keys); i++) {
+        for (unsigned int i = 0; i < ARRAY_SIZE(keys); i++) {
             xkb_keycode_t kc = xkb_keymap_key_by_name(keymaps[k], keys[i].name);
             assert(kc != XKB_KEYCODE_INVALID);
             assert(keys[i].repeats == xkb_keymap_key_repeats(keymaps[k], kc));

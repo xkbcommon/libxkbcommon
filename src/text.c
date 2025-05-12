@@ -292,7 +292,7 @@ LedStateMaskText(struct xkb_context *ctx, const LookupEntry *lookup,
     if (mask == 0)
         return "0";
 
-    for (unsigned i = 0; mask; i++) {
+    for (unsigned int i = 0; mask; i++) {
         int ret;
 
         if (!(mask & (1u << i)))
@@ -326,7 +326,7 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
     if (mask == CONTROL_ALL)
         return "all";
 
-    for (unsigned i = 0; mask; i++) {
+    for (unsigned int i = 0; mask; i++) {
         int ret;
 
         if (!(mask & (1u << i)))
