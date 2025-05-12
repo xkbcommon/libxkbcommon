@@ -330,13 +330,9 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
 static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
-    struct xkb_key *key;
-    struct xkb_mod *mod;
-    struct xkb_led *led;
-    unsigned int i, j;
-
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
+    struct xkb_key *key;
     xkb_keys_foreach(key, keymap) {
         if (!ApplyInterpsToKey(keymap, key))
             return false;
@@ -344,23 +340,26 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update keymap->mods, the virtual -> real mod mapping. */
+    xkb_mod_index_t idx;
+    struct xkb_mod *mod;
     xkb_keys_foreach(key, keymap)
-        xkb_vmods_enumerate(i, mod, &keymap->mods)
-            if (key->vmodmap & (UINT32_C(1) << i))
+        xkb_vmods_enumerate(idx, mod, &keymap->mods)
+            if (key->vmodmap & (UINT32_C(1) << idx))
                 mod->mapping |= key->modmap;
 
     /* Update the canonical modifiers state mask */
     assert(keymap->canonical_state_mask == MOD_REAL_MASK_ALL);
     xkb_mod_mask_t extra_canonical_mods = 0;
-    xkb_vmods_enumerate(i, mod, &keymap->mods)
+    xkb_vmods_enumerate(idx, mod, &keymap->mods) {
         extra_canonical_mods |= mod->mapping;
+    }
     keymap->canonical_state_mask |= extra_canonical_mods;
 
     /* Now update the level masks for all the types to reflect the vmods. */
-    for (i = 0; i < keymap->num_types; i++) {
+    for (unsigned int i = 0; i < keymap->num_types; i++) {
         ComputeEffectiveMask(keymap, &keymap->types[i].mods);
 
-        for (j = 0; j < keymap->types[i].num_entries; j++) {
+        for (unsigned int j = 0; j < keymap->types[i].num_entries; j++) {
             if (has_unbound_vmods(keymap,
                                   keymap->types[i].entries[j].mods.mods)) {
                 /*
@@ -382,9 +381,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
 
     /* Update action modifiers. */
-    xkb_keys_foreach(key, keymap)
-        for (i = 0; i < key->num_groups; i++)
-            for (j = 0; j < XkbKeyNumLevels(key, i); j++) {
+    xkb_keys_foreach(key, keymap) {
+        for (xkb_layout_index_t i = 0; i < key->num_groups; i++) {
+            for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
                 if (key->groups[i].levels[j].num_actions == 1) {
                     UpdateActionMods(keymap, &key->groups[i].levels[j].a.action,
                                      key->modmap);
@@ -397,8 +396,11 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
                     }
                 }
             }
+        }
+    }
 
     /* Update vmod -> led maps. */
+    struct xkb_led *led;
     xkb_leds_foreach(led, keymap)
         ComputeEffectiveMask(keymap, &led->mods);
 

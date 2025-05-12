@@ -380,7 +380,7 @@ struct xkb_mod {
 
 struct xkb_mod_set {
     struct xkb_mod mods[XKB_MAX_MODS];
-    unsigned int num_mods;
+    xkb_mod_index_t num_mods;
     xkb_mod_mask_t explicit_vmods;
 };
 
