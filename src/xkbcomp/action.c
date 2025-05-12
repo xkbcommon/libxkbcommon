@@ -670,7 +670,7 @@ HandlePrivate(struct xkb_context *ctx, const struct xkb_mod_set *mods,
             size_t len = strlen(str);
             if (len < 1 || len > sizeof(act->data)) {
                 log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
-                         "A private action has %ld data bytes; "
+                         "A private action has %zu data bytes; "
                          "Illegal data ignored\n", sizeof(act->data));
                 return false;
             }

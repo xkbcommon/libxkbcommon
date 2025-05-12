@@ -162,7 +162,7 @@ LogIncludePaths(struct xkb_context *ctx)
 {
     if (xkb_context_num_include_paths(ctx) > 0) {
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
-                "%d include paths searched:\n",
+                "%u include paths searched:\n",
                 xkb_context_num_include_paths(ctx));
         for (unsigned int i = 0; i < xkb_context_num_include_paths(ctx); i++)
             log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
@@ -176,7 +176,7 @@ LogIncludePaths(struct xkb_context *ctx)
 
     if (xkb_context_num_failed_include_paths(ctx) > 0) {
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
-                "%d include paths could not be added:\n",
+                "%u include paths could not be added:\n",
                 xkb_context_num_failed_include_paths(ctx));
         for (darray_size_t i = 0;
              i < xkb_context_num_failed_include_paths(ctx);
@@ -247,7 +247,7 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 {
     if (include_depth >= INCLUDE_MAX_DEPTH) {
         log_err(ctx, XKB_ERROR_RECURSIVE_INCLUDE,
-                "Exceeded include depth threshold (%d)",
+                "Exceeded include depth threshold (%u)",
                 INCLUDE_MAX_DEPTH);
         return true;
     } else {

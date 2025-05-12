@@ -298,14 +298,14 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
         if (report && old->level != new->level) {
             log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY,
                      "Multiple map entries for %s in %s; "
-                     "Using %d, ignoring %d\n",
+                     "Using %"PRIu32", ignoring %"PRIu32"\n",
                      MapEntryTxt(info, new), TypeTxt(info, type),
                      (clobber ? new->level : old->level) + 1,
                      (clobber ? old->level : new->level) + 1);
         }
         else {
             log_vrb(info->ctx, 10, XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY,
-                    "Multiple occurrences of map[%s]= %d in %s; Ignored\n",
+                    "Multiple occurrences of map[%s]= %"PRIu32" in %s; Ignored\n",
                     MapEntryTxt(info, new), new->level + 1,
                     TypeTxt(info, type));
             return true;
@@ -488,7 +488,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
     /* Same level, same name. */
     if (darray_item(type->level_names, level) == name) {
         log_vrb(info->ctx, 10, XKB_WARNING_DUPLICATE_ENTRY,
-                "Duplicate names for level %d of key type %s; Ignored\n",
+                "Duplicate names for level %"PRIu32" of key type %s; Ignored\n",
                 level + 1, TypeTxt(info, type));
         return true;
     }
@@ -500,7 +500,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
                             darray_item(type->level_names, level));
         new = xkb_atom_text(info->ctx, name);
         log_vrb(info->ctx, 1, XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES,
-                "Multiple names for level %d of key type %s; "
+                "Multiple names for level %"PRIu32" of key type %s; "
                 "Using %s, ignoring %s\n",
                 level + 1, TypeTxt(info, type),
                 (clobber ? new : old), (clobber ? old : new));
@@ -531,7 +531,7 @@ SetLevelName(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
     xkb_atom_t level_name = XKB_ATOM_NONE;
     if (!ExprResolveString(info->ctx, value, &level_name)) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
-                "Non-string name for level %d in key type %s; "
+                "Non-string name for level %"PRIu32" in key type %s; "
                 "Ignoring illegal level name definition\n",
                 level + 1, xkb_atom_text(info->ctx, type->name));
         return false;

@@ -429,7 +429,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
 
     if (include_depth >= MAX_INCLUDE_DEPTH) {
         scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                    "maximum include depth (%d) exceeded; "
+                    "maximum include depth (%u) exceeded; "
                     "maybe there is an include loop?",
                     MAX_INCLUDE_DEPTH);
         return;

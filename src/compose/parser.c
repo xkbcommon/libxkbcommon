@@ -490,7 +490,7 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
 
     if (include_depth >= MAX_INCLUDE_DEPTH) {
         scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
-                    "maximum include depth (%d) exceeded; maybe there is an include loop?",
+                    "maximum include depth (%u) exceeded; maybe there is an include loop?",
                     MAX_INCLUDE_DEPTH);
         return false;
     }
@@ -628,7 +628,7 @@ lhs_keysym_tok:
                                  keysym, val.string.str, val.string.str, "%s", "");
         if (production.len + 1 > MAX_LHS_LEN) {
             scanner_warn(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
-                         "too many keysyms (%d) on left-hand side; skipping line",
+                         "too many keysyms (%u) on left-hand side; skipping line",
                          MAX_LHS_LEN + 1);
             goto skip;
         }
@@ -692,9 +692,9 @@ rhs:
         if (val.string.len > sizeof(production.string)) {
             scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
                          "right-hand side string is too long: "
-                         "expected max: %d, got: %d; skipping line",
-                         (int)sizeof(production.string) - 1,
-                         (int)val.string.len - 1);
+                         "expected max: %zu, got: %zu; skipping line",
+                         sizeof(production.string) - 1,
+                         val.string.len - 1);
             goto skip;
         }
         memcpy(production.string, val.string.str, val.string.len);

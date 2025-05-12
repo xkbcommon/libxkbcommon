@@ -242,14 +242,14 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
      * a maximum of at least 255, else XWayland really starts hating life.
      * If this is a problem and people really need strictly bounded keymaps,
      * we should probably control this with a flag. */
-    write_buf(buf, "\tminimum = %u;\n", MIN(keymap->min_key_code, 8));
-    write_buf(buf, "\tmaximum = %u;\n", MAX(keymap->max_key_code, 255));
+    write_buf(buf, "\tminimum = %"PRIu32";\n", MIN(keymap->min_key_code, 8));
+    write_buf(buf, "\tmaximum = %"PRIu32";\n", MAX(keymap->max_key_code, 255));
 
     xkb_keys_foreach(key, keymap) {
         if (key->name == XKB_ATOM_NONE)
             continue;
 
-        write_buf(buf, "\t%-20s = %u;\n",
+        write_buf(buf, "\t%-20s = %"PRIu32";\n",
                   KeyNameText(keymap->ctx, key->name), key->keycode);
     }
 
@@ -306,7 +306,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
             str = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                               entry->mods.mods);
-            write_buf(buf, "\t\tmap[%s]= %u;\n",
+            write_buf(buf, "\t\tmap[%s]= %"PRIu32";\n",
                       str, entry->level + 1);
 
             if (entry->preserve.mods)
@@ -317,7 +317,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
 
         for (xkb_level_index_t n = 0; n < type->num_level_names; n++)
             if (type->level_names[n]) {
-                write_buf(buf, "\t\tlevel_name[%u]= ", n + 1);
+                write_buf(buf, "\t\tlevel_name[%"PRIu32"]= ", n + 1);
                 write_buf_string_literal(
                     buf, xkb_atom_text(keymap->ctx, type->level_names[n]));
                 copy_to_buf(buf, ";\n");
@@ -423,7 +423,7 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_GROUP_SET:
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
-        write_buf(buf, "%s%s(group=%s%d%s%s)%s", prefix, type,
+        write_buf(buf, "%s%s(group=%s%"PRId32"%s%s)%s", prefix, type,
                   (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
                   (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
                   (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
@@ -451,11 +451,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
     case ACTION_TYPE_PTR_BUTTON:
         write_buf(buf, "%s%s(button=", prefix, type);
         if (action->btn.button > 0 && action->btn.button <= 5)
-            write_buf(buf, "%d", action->btn.button);
+            write_buf(buf, "%u", action->btn.button);
         else
             copy_to_buf(buf, "default");
         if (action->btn.count)
-            write_buf(buf, ",count=%d", action->btn.count);
+            write_buf(buf, ",count=%u", action->btn.count);
         if (args)
             write_buf(buf, "%s", args);
         write_buf(buf, ")%s", suffix);
@@ -722,7 +722,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
                 const struct xkb_key_type * const type = key->groups[group].type;
                 /* TODO: This will require using integer indexes when > 4 */
-                write_buf(buf, "\n\t\ttype[Group%u]= ", group + 1);
+                write_buf(buf, "\n\t\ttype[Group%"PRIu32"]= ", group + 1);
                 write_buf_string_literal(
                   buf, xkb_atom_text(keymap->ctx, type->name));
                 copy_to_buf(buf, ",");
@@ -770,7 +770,8 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         break;
 
     case RANGE_REDIRECT:
-        write_buf(buf, "\n\t\tgroupsRedirect= Group%u,",
+        /* TODO: This will require using integer indexes when > 4 */
+        write_buf(buf, "\n\t\tgroupsRedirect= Group%"PRIu32",",
                     key->out_of_range_group_number + 1);
         break;
 
@@ -802,12 +803,14 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
             if (group != 0)
                 copy_to_buf(buf, ",");
-            write_buf(buf, "\n\t\tsymbols[Group%u]= [ ", group + 1);
+            /* TODO: This will require using integer indexes when > 4 */
+            write_buf(buf, "\n\t\tsymbols[Group%"PRIu32"]= [ ", group + 1);
             if (!write_keysyms(keymap, buf, buf2, key, group, show_actions))
                 return false;
             copy_to_buf(buf, " ]");
             if (show_actions) {
-                write_buf(buf, ",\n\t\tactions[Group%u]= [ ", group + 1);
+                /* TODO: This will require using integer indexes when > 4 */
+                write_buf(buf, ",\n\t\tactions[Group%"PRIu32"]= [ ", group + 1);
                 if (!write_actions(keymap, buf, buf2, key, group))
                     return false;
                 copy_to_buf(buf, " ]");
@@ -835,7 +838,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 
     for (group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group]) {
-            write_buf(buf, "\tname[Group%u]=", group + 1);
+            /* TODO: This will require using integer indexes when > 4 */
+            write_buf(buf, "\tname[Group%"PRIu32"]=", group + 1);
             write_buf_string_literal(
                 buf, xkb_atom_text(keymap->ctx, keymap->group_names[group]));
             copy_to_buf(buf, ";\n");

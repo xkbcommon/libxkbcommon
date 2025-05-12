@@ -250,7 +250,7 @@ main(int argc, char *argv[])
         goto err;
     }
 
-    printf("keysym: %s (%#x)\n", name, keysym);
+    printf("keysym: %s (%#06"PRIx32")\n", name, keysym);
     printf("%-8s %-9s %-8s %-20s %-7s %-s\n",
            "KEYCODE", "KEY NAME", "LAYOUT", "LAYOUT NAME", "LEVEL#", "MODIFIERS");
 

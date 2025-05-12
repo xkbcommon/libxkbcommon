@@ -457,7 +457,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_INTEGER_LITERAL:
         if (expr->integer.ival < 0 || expr->integer.ival > UINT32_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Mask %s%#"PRIx64" is out of range (0..%#"PRIx32")\n",
+                    "Mask %s%#"PRIxMAX" is out of range (0..%#"PRIx32")\n",
                     expr->integer.ival < 0 ? "-" : "",
                     imaxabs(expr->integer.ival),
                     UINT32_MAX);
@@ -542,7 +542,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
             return false;
         if (v < 0 || v > UINT32_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Mask %s%#"PRIx64" is out of range (0..%#"PRIx32")\n",
+                    "Mask %s%#"PRIxMAX" is out of range (0..%#"PRIx32")\n",
                     v < 0 ? "-" : "", imaxabs(v), UINT32_MAX);
             return false;
         }

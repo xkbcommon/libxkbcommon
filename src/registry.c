@@ -729,7 +729,7 @@ parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
                     config->popularity = RXKB_POPULARITY_EXOTIC;
                 else
                     log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                            "xml:%d: invalid popularity attribute: expected "
+                            "xml:%u: invalid popularity attribute: expected "
                             "'standard' or 'exotic', got: '%s'\n",
                             ci->line, raw_popularity);
             }
@@ -751,7 +751,7 @@ parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
 
             if (!config->name || !strlen(config->name))  {
                 log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                        "xml:%d: missing required element 'name'\n",
+                        "xml:%u: missing required element 'name'\n",
                         ci->line);
                 config_item_free(config);
                 return false;

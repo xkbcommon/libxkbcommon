@@ -231,7 +231,7 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
 
             if (report) {
                 log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_TYPE_MERGING_GROUPS,
-                         "Multiple definitions for group %d type of key %s; "
+                         "Multiple definitions for group %"PRIu32" type of key %s; "
                          "Using %s, ignoring %s\n",
                          group + 1, KeyNameText(info->ctx, key_name),
                          xkb_atom_text(info->ctx, use),
@@ -292,8 +292,8 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
             /* Incompatible keysyms */
             if (report && !(intoHasNoKeysym || fromHasNoKeysym)) {
                 log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_SYMBOL,
-                            "Multiple symbols for level %d/group %u on key %s; "
-                            "Using %s, ignoring %s\n",
+                            "Multiple symbols for level %u/group "
+                            "%"PRIu32" on key %s; Using %s, ignoring %s\n",
                             i + 1, group + 1, KeyNameText(info->ctx, key_name),
                             (clobber ? "from" : "to"),
                             (clobber ? "to" : "from"));
@@ -347,8 +347,8 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                 if (unlikely(intoLevel->num_actions > 1)) {
                     log_warn(
                         info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                        "Multiple actions for level %d/group %u on key %s; "
-                        "%s\n",
+                        "Multiple actions for level %u/group %"PRIu32" "
+                        "on key %s; %s\n",
                         i + 1, group + 1, KeyNameText(info->ctx, key_name),
                         clobber ? "Using from, ignoring to"
                                 : "Using to, ignoring from");
@@ -362,8 +362,8 @@ MergeGroups(SymbolsInfo *info, GroupInfo *into, GroupInfo *from, bool clobber,
                         : &fromLevel->a.action;
 
                     log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                                "Multiple actions for level %d/group %u "
-                                "on key %s; Using %s, ignoring %s\n",
+                                "Multiple actions for level %u/group "
+                                "%"PRIu32" on key %s; Using %s, ignoring %s\n",
                                 i + 1, group + 1,
                                 KeyNameText(info->ctx, key_name),
                                 ActionTypeText(use->type),
@@ -685,8 +685,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
             if (next_incl.explicit_group >= XKB_MAX_GROUPS) {
                 log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                        "Cannot set explicit group to %d - must be between 1..%d; "
-                        "Ignoring group number\n",
+                        "Cannot set explicit group to %"PRIu32" - "
+                        "must be between 1..%u; Ignoring group number\n",
                         next_incl.explicit_group + 1, XKB_MAX_GROUPS);
                 next_incl.explicit_group = info->explicit_group;
             }
@@ -784,7 +784,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     if (value->common.type != STMT_EXPR_KEYSYM_LIST) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Expected a list of symbols, found %s; "
-                "Ignoring symbols for group %u of %s\n",
+                "Ignoring symbols for group %"PRIu32" of %s\n",
                 stmt_type_to_string(value->common.type), ndx + 1,
                 KeyInfoText(info, keyi));
         return false;
@@ -792,7 +792,7 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     if (groupi->defined & GROUP_FIELD_SYMS) {
         log_err(info->ctx, XKB_ERROR_CONFLICTING_KEY_SYMBOLS_ENTRY,
-                "Symbols for key %s, group %u already defined; "
+                "Symbols for key %s, group %"PRIu32" already defined; "
                 "Ignoring duplicate definition\n",
                 KeyInfoText(info, keyi), ndx + 1);
         return false;
@@ -826,8 +826,8 @@ AddSymbolsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
         if (unlikely(darray_size(keysymList->syms) > MAX_KEYSYMS_PER_LEVEL)) {
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Key %s has too many keysyms for group %u, level %u; "
-                    "expected max %u, got: %u\n",
+                    "Key %s has too many keysyms for group %"PRIu32", "
+                    "level %"PRIu32"; expected max %u, got: %u\n",
                     KeyInfoText(info, keyi), ndx + 1, level + 1,
                     MAX_KEYSYMS_PER_LEVEL, darray_size(keysymList->syms));
             return false;
@@ -875,14 +875,14 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
     if (value->common.type != STMT_EXPR_ACTION_LIST) {
         log_wsgo(info->ctx, XKB_ERROR_INVALID_EXPRESSION_TYPE,
                  "Bad expression type (%d) for action list value; "
-                 "Ignoring actions for group %u of %s\n",
+                 "Ignoring actions for group %"PRIu32" of %s\n",
                  value->common.type, ndx, KeyInfoText(info, keyi));
         return false;
     }
 
     if (groupi->defined & GROUP_FIELD_ACTS) {
         log_wsgo(info->ctx, XKB_WARNING_CONFLICTING_KEY_ACTION,
-                 "Actions for key %s, group %u already defined\n",
+                 "Actions for key %s, group %"PRIu32" already defined\n",
                  KeyInfoText(info, keyi), ndx);
         return false;
     }
@@ -913,8 +913,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
         if (unlikely(num_actions > MAX_ACTIONS_PER_LEVEL)) {
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Key %s has too many actions for group %u, level %u; "
-                    "expected max %u, got: %u\n",
+                    "Key %s has too many actions for group %"PRIu32", "
+                    "level %"PRIu32"; expected max %u, got: %u\n",
                     KeyInfoText(info, keyi), ndx + 1, level + 1,
                     MAX_ACTIONS_PER_LEVEL, num_actions);
             return false;
@@ -929,7 +929,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
                                  act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
-                        "Action for group %u/level %u ignored\n",
+                        "Action for group %"PRIu32"/level %"PRIu32" ignored\n",
                         KeyInfoText(info, keyi), ndx + 1, level + 1);
                 /* Ensure action type is reset */
                 toAct.type = ACTION_TYPE_NONE;
@@ -1177,7 +1177,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     if (!ExprResolveString(info->ctx, value, &name)) {
         log_err(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE,
                 "Group name must be a string; "
-                "Illegal name for group %d ignored\n", group);
+                "Illegal name for group %"PRIu32" ignored\n", group);
         return false;
     }
 
@@ -1191,8 +1191,8 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     else {
         log_warn(info->ctx, XKB_WARNING_NON_BASE_GROUP_NAME,
                  "An explicit group was specified for the '%s' map, "
-                 "but it provides a name for a group other than Group1 (%d); "
-                 "Ignoring group name '%s'\n",
+                 "but it provides a name for a group other than Group1 "
+                 "(%"PRIu32"); Ignoring group name '%s'\n",
                  info->name, group,
                  xkb_atom_text(info->ctx, name));
         return false;
@@ -1347,7 +1347,7 @@ SetExplicitGroup(SymbolsInfo *info, KeyInfo *keyi)
 
     if (warn) {
         log_warn(info->ctx, XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE,
-                 "For the map %s the explicit group %u is specified, "
+                 "For the map %s the explicit group %"PRIu32" is specified, "
                  "but key %s has more than one group defined; "
                  "All groups except first one will be ignored\n",
                  info->name, info->explicit_group + 1, KeyInfoText(info, keyi));
@@ -1623,7 +1623,7 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
     if (type_name == XKB_ATOM_NONE) {
         log_warn(keymap->ctx, XKB_WARNING_CANNOT_INFER_KEY_TYPE,
                  "Couldn't find an automatic type for key '%s' "
-                 "group %d with %u levels; Using the default type\n",
+                 "group %"PRIu32" with %u levels; Using the default type\n",
                  KeyNameText(keymap->ctx, keyi->name), group + 1,
                  darray_size(groupi->levels));
         goto use_default;
@@ -1636,7 +1636,7 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
 
     if (i >= keymap->num_types) {
         log_warn(keymap->ctx, XKB_WARNING_UNDEFINED_KEY_TYPE,
-                 "The type \"%s\" for key '%s' group %d "
+                 "The type \"%s\" for key '%s' group %"PRIu32" "
                  "was not previously defined; Using the default type\n",
                  xkb_atom_text(keymap->ctx, type_name),
                  KeyNameText(keymap->ctx, keyi->name), group + 1);
@@ -1724,7 +1724,7 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
             struct xkb_level *leveli;
 
             log_vrb(info->ctx, 1, XKB_WARNING_EXTRA_SYMBOLS_IGNORED,
-                    "Type \"%s\" has %d levels, but %s has %u levels; "
+                    "Type \"%s\" has %"PRIu32" levels, but %s has %u levels; "
                     "Ignoring extra symbols\n",
                     xkb_atom_text(keymap->ctx, type->name), type->num_levels,
                     KeyInfoText(info, keyi),

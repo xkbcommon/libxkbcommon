@@ -124,7 +124,7 @@ test_compose_seq_va(struct xkb_compose_table *table, va_list ap)
             xkb_keysym_get_name(expected_keysym, buffer, sizeof(buffer));
             fprintf(stderr, "expected keysym: %s\n", buffer);
             xkb_keysym_get_name(keysym, buffer, sizeof(buffer));
-            fprintf(stderr, "got keysym (%#x): %s\n", keysym, buffer);
+            fprintf(stderr, "got keysym (%#06"PRIx32"): %s\n", keysym, buffer);
             goto fail;
         }
     }
