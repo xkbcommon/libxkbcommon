@@ -85,7 +85,7 @@ struct xkb_state {
 static const struct xkb_key_type_entry *
 get_entry_for_mods(const struct xkb_key_type *type, xkb_mod_mask_t mods)
 {
-    for (unsigned i = 0; i < type->num_entries; i++)
+    for (darray_size_t i = 0; i < type->num_entries; i++)
         if (entry_is_active(&type->entries[i]) &&
             type->entries[i].mods.mask == mods)
             return &type->entries[i];
@@ -1678,7 +1678,7 @@ key_get_consumed(struct xkb_state *state, const struct xkb_key *key,
         const struct xkb_level* const no_mods_level =
             &key->groups[group].levels[no_mods_leveli];
 
-        for (unsigned i = 0; i < type->num_entries; i++) {
+        for (darray_size_t i = 0; i < type->num_entries; i++) {
             const struct xkb_key_type_entry* const entry = &type->entries[i];
             if (!entry_is_active(entry))
                 continue;

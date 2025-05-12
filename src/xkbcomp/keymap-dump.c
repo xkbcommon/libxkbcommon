@@ -282,7 +282,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
     if (!write_vmods(keymap, buf))
         return false;
 
-    for (unsigned i = 0; i < keymap->num_types; i++) {
+    for (darray_size_t i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type *type = &keymap->types[i];
 
         copy_to_buf(buf, "\ttype ");
@@ -293,7 +293,7 @@ write_types(struct xkb_keymap *keymap, struct buf *buf)
                   ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                               type->mods.mods));
 
-        for (unsigned j = 0; j < type->num_entries; j++) {
+        for (darray_size_t j = 0; j < type->num_entries; j++) {
             const char *str;
             const struct xkb_key_type_entry *entry = &type->entries[j];
 

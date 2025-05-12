@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "vmod.h"
@@ -508,7 +509,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
             return true;
     }
 
-    /* XXX: What about different level, same name? */
+    /* FIXME: What about different level, same name? */
 
 finish:
     darray_item(type->level_names, level) = name;
@@ -685,11 +686,10 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
 static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
-    unsigned num_types;
-    struct xkb_key_type *types;
-
-    num_types = darray_empty(info->types) ? 1 : darray_size(info->types);
-    types = calloc(num_types, sizeof(*types));
+    const darray_size_t num_types = darray_empty(info->types)
+                                  ? 1
+                                  : darray_size(info->types);
+    struct xkb_key_type *types = calloc(num_types, sizeof(*types));
     if (!types)
         return false;
 
@@ -709,14 +709,16 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->num_level_names = 0;
     }
     else {
-        for (unsigned i = 0; i < num_types; i++) {
+        for (darray_size_t i = 0; i < num_types; i++) {
             KeyTypeInfo *def = &darray_item(info->types, i);
             struct xkb_key_type *type = &types[i];
 
             type->name = def->name;
             type->mods.mods = def->mods;
             type->num_levels = def->num_levels;
-            darray_steal(def->level_names, &type->level_names, &type->num_level_names);
+            type->num_level_names =
+                (xkb_level_index_t) darray_size(def->level_names);
+            darray_steal(def->level_names, &type->level_names, NULL);
             darray_steal(def->entries, &type->entries, &type->num_entries);
         }
     }
