@@ -149,6 +149,9 @@ enum rules_mlvo {
     _MLVO_NUM_ENTRIES
 };
 
+typedef uint8_t mlvo_index_t;
+typedef uint8_t mlvo_mask_t;
+
 static const struct sval rules_mlvo_svals[_MLVO_NUM_ENTRIES] = {
     [MLVO_MODEL] = SVAL_INIT("model"),
     [MLVO_LAYOUT] = SVAL_INIT("layout"),
@@ -164,6 +167,9 @@ enum rules_kccgst {
     KCCGST_GEOMETRY,
     _KCCGST_NUM_ENTRIES
 };
+
+typedef uint8_t kccgst_index_t;
+typedef uint8_t kccgst_mask_t;
 
 static const struct sval rules_kccgst_svals[_KCCGST_NUM_ENTRIES] = {
     [KCCGST_KEYCODES] = SVAL_INIT("keycodes"),
@@ -198,9 +204,9 @@ struct group {
 };
 
 struct mapping {
-    int mlvo_at_pos[_MLVO_NUM_ENTRIES];
-    unsigned int num_mlvo;
-    unsigned int defined_mlvo_mask;
+    enum rules_mlvo mlvo_at_pos[_MLVO_NUM_ENTRIES];
+    mlvo_index_t num_mlvo;
+    mlvo_mask_t defined_mlvo_mask;
     bool has_layout_idx_range;
     /* This member has 2 uses:
      * • Keep track of layout and variant indexes while parsing MLVO headers.
@@ -218,9 +224,9 @@ struct mapping {
         xkb_layout_mask_t active;
         xkb_layout_mask_t layouts_candidates_mask;
     };
-    int kccgst_at_pos[_KCCGST_NUM_ENTRIES];
-    unsigned int num_kccgst;
-    unsigned int defined_kccgst_mask;
+    enum rules_kccgst kccgst_at_pos[_KCCGST_NUM_ENTRIES];
+    kccgst_index_t num_kccgst;
+    kccgst_mask_t defined_kccgst_mask;
 };
 
 enum mlvo_match_type {
@@ -248,9 +254,9 @@ enum wildcard_match_type {
 struct rule {
     struct sval mlvo_value_at_pos[_MLVO_NUM_ENTRIES];
     enum mlvo_match_type match_type_at_pos[_MLVO_NUM_ENTRIES];
-    unsigned int num_mlvo_values;
+    mlvo_index_t num_mlvo_values;
     struct sval kccgst_value_at_pos[_KCCGST_NUM_ENTRIES];
-    unsigned int num_kccgst_values;
+    kccgst_index_t num_kccgst_values;
     bool skip;
 };
 
@@ -381,7 +387,7 @@ matcher_free(struct matcher *m)
         darray_free(group->elements);
     darray_free(m->pending_kccgst.buffer);
     darray_free(m->pending_kccgst.slices);
-    for (int i = 0; i < _KCCGST_NUM_ENTRIES; i++)
+    for (kccgst_index_t i = 0; i < (kccgst_index_t) _KCCGST_NUM_ENTRIES; i++)
         darray_free(m->kccgst[i]);
     darray_free(m->groups);
     free(m);
@@ -519,10 +525,10 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
 static void
 matcher_mapping_start_new(struct matcher *m)
 {
-    for (unsigned i = 0; i < _MLVO_NUM_ENTRIES; i++)
-        m->mapping.mlvo_at_pos[i] = -1;
-    for (unsigned i = 0; i < _KCCGST_NUM_ENTRIES; i++)
-        m->mapping.kccgst_at_pos[i] = -1;
+    for (mlvo_index_t i = 0; i < (mlvo_index_t) _MLVO_NUM_ENTRIES; i++)
+        m->mapping.mlvo_at_pos[i] = _MLVO_NUM_ENTRIES;
+    for (kccgst_index_t i = 0; i < (kccgst_index_t) _KCCGST_NUM_ENTRIES; i++)
+        m->mapping.kccgst_at_pos[i] = _KCCGST_NUM_ENTRIES;
     m->mapping.has_layout_idx_range = false;
     m->mapping.layout_idx = m->mapping.variant_idx = XKB_LAYOUT_INVALID;
     m->mapping.num_mlvo = m->mapping.num_kccgst = 0;
@@ -688,7 +694,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
     }
 
     m->mapping.mlvo_at_pos[m->mapping.num_mlvo] = mlvo;
-    m->mapping.defined_mlvo_mask |= 1u << mlvo;
+    m->mapping.defined_mlvo_mask |= (mlvo_mask_t) 1u << mlvo;
     m->mapping.num_mlvo++;
 }
 
@@ -764,7 +770,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
     }
 
     m->mapping.kccgst_at_pos[m->mapping.num_kccgst] = kccgst;
-    m->mapping.defined_kccgst_mask |= 1u << kccgst;
+    m->mapping.defined_kccgst_mask |= (kccgst_mask_t) 1u << kccgst;
     m->mapping.num_kccgst++;
 }
 
@@ -853,7 +859,7 @@ matcher_rule_set_mlvo_common(struct matcher *m, struct scanner *s,
                              struct sval ident,
                              enum mlvo_match_type match_type)
 {
-    if (m->rule.num_mlvo_values + 1 > m->mapping.num_mlvo) {
+    if (m->rule.num_mlvo_values >= m->mapping.num_mlvo) {
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid rule: has more values than the mapping line; "
                     "ignoring rule");
@@ -891,7 +897,7 @@ static void
 matcher_rule_set_kccgst(struct matcher *m, struct scanner *s,
                         struct sval ident)
 {
-    if (m->rule.num_kccgst_values + 1 > m->mapping.num_kccgst) {
+    if (m->rule.num_kccgst_values >= m->mapping.num_kccgst) {
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid rule: has more values than the mapping line; "
                     "ignoring rule");
@@ -905,7 +911,7 @@ matcher_rule_set_kccgst(struct matcher *m, struct scanner *s,
 static bool
 match_group(struct matcher *m, struct sval group_name, struct sval to)
 {
-    struct group *group;
+    struct group *group = NULL;
     struct sval *element;
     bool found = false;
 
@@ -1241,7 +1247,7 @@ matcher_append_pending_kccgst(struct matcher *m)
      * Handle pending KcCGST values
      * See note: “Layout index ranges and merging KcCGST values”
      */
-    for (unsigned int i = 0; i < m->mapping.num_kccgst; i++) {
+    for (kccgst_index_t i = 0; i < m->mapping.num_kccgst; i++) {
         const enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
         /* For each relevant layout, append the relevant KcCGST values to
          * the output. */
@@ -1287,7 +1293,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
     xkb_layout_mask_t candidate_layouts = m->mapping.layouts_candidates_mask;
     xkb_layout_index_t idx;
     /* Loop over MLVO pattern components */
-    for (unsigned i = 0; i < m->mapping.num_mlvo; i++) {
+    for (mlvo_index_t i = 0; i < m->mapping.num_mlvo; i++) {
         enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
         struct sval value = m->rule.mlvo_value_at_pos[i];
         enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
@@ -1360,7 +1366,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
              idx++)
         {
             if (candidate_layouts & (UINT32_C(1) << idx)) {
-                for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+                for (kccgst_index_t i = 0; i < m->mapping.num_kccgst; i++) {
                     const enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
                     const struct sval value = m->rule.kccgst_value_at_pos[i];
                     /*
@@ -1418,7 +1424,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         }
     } else {
         /* Numeric index or no index */
-        for (unsigned i = 0; i < m->mapping.num_kccgst; i++) {
+        for (kccgst_index_t i = 0; i < m->mapping.num_kccgst; i++) {
             enum rules_kccgst kccgst = m->mapping.kccgst_at_pos[i];
             struct sval value = m->rule.kccgst_value_at_pos[i];
             append_expanded_kccgst_value(m, s, true, &m->kccgst[kccgst], value,
