@@ -602,7 +602,7 @@ struct xkb_level *
 xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
                          xkb_layout_index_t layout, xkb_level_index_t level);
 
-unsigned int
+xkb_action_count_t
 xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
                                     const struct xkb_key *key,
                                     xkb_layout_index_t layout,

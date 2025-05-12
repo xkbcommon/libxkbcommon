@@ -333,7 +333,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     struct xkb_key *key;
     struct xkb_mod *mod;
     struct xkb_led *led;
-    unsigned int i, j, k;
+    unsigned int i, j;
 
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
@@ -389,7 +389,8 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
                     UpdateActionMods(keymap, &key->groups[i].levels[j].a.action,
                                      key->modmap);
                 } else {
-                    for (k = 0; k < key->groups[i].levels[j].num_actions; k++) {
+                    for (xkb_action_count_t k = 0;
+                         k < key->groups[i].levels[j].num_actions; k++) {
                         UpdateActionMods(keymap,
                                          &key->groups[i].levels[j].a.actions[k],
                                          key->modmap);
