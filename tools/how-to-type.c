@@ -124,14 +124,9 @@ main(int argc, char *argv[])
     bool keysym_mode = false;
     int err = EXIT_FAILURE;
     struct xkb_context *ctx = NULL;
-    char *endp;
-    long val;
-    uint32_t codepoint;
-    xkb_keysym_t keysym;
     int ret;
     char name[XKB_KEYSYM_NAME_MAX_SIZE];
     struct xkb_keymap *keymap = NULL;
-    xkb_keycode_t min_keycode, max_keycode;
     enum options {
         OPT_KEYSYM,
         OPT_ENABLE_ENV_NAMES,
@@ -198,12 +193,14 @@ main(int argc, char *argv[])
         goto parse_error;
     }
 
+    xkb_keysym_t keysym;
     if (keysym_mode) {
-        // Try to parse keysym name or hexadecimal value (0xNNNN)
+        /* Try to parse keysym name or hexadecimal value (0xNNNN) */
         keysym = xkb_keysym_from_name(argv[optind], XKB_KEYSYM_NO_FLAGS);
         if (keysym == XKB_KEY_NoSymbol) {
-            // Try to parse numeric keysym in base 10, without prefix
-            val = strtol(argv[optind], &endp, 10);
+            /* Try to parse numeric keysym in base 10, without prefix */
+            char *endp = NULL;
+            const long int val = strtol(argv[optind], &endp, 10);
             if (errno != 0 || !isempty(endp) || val <= 0 || val > XKB_KEYSYM_MAX) {
                 fprintf(stderr, "ERROR: Failed to convert argument to keysym\n");
                 goto parse_error;
@@ -211,7 +208,7 @@ main(int argc, char *argv[])
             keysym = (uint32_t) val;
         }
     } else {
-        codepoint = parse_char_or_codepoint(argv[optind]);
+        const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
         if (codepoint == INVALID_UTF8_CODE_POINT)
             goto parse_error;
 
@@ -257,36 +254,28 @@ main(int argc, char *argv[])
     printf("%-8s %-9s %-8s %-20s %-7s %-s\n",
            "KEYCODE", "KEY NAME", "LAYOUT", "LAYOUT NAME", "LEVEL#", "MODIFIERS");
 
-    min_keycode = xkb_keymap_min_keycode(keymap);
-    max_keycode = xkb_keymap_max_keycode(keymap);
+    const xkb_keycode_t min_keycode = xkb_keymap_min_keycode(keymap);
+    const xkb_keycode_t max_keycode = xkb_keymap_max_keycode(keymap);
     const xkb_mod_index_t num_mods = xkb_keymap_num_mods(keymap);
     for (xkb_keycode_t keycode = min_keycode; keycode <= max_keycode; keycode++) {
-        const char *key_name;
-        xkb_layout_index_t num_layouts;
-
-        key_name = xkb_keymap_key_get_name(keymap, keycode);
+        const char* const key_name = xkb_keymap_key_get_name(keymap, keycode);
         if (!key_name) {
             continue;
         }
 
-        num_layouts = xkb_keymap_num_layouts_for_key(keymap, keycode);
+        const xkb_layout_index_t num_layouts =
+            xkb_keymap_num_layouts_for_key(keymap, keycode);
         for (xkb_layout_index_t layout = 0; layout < num_layouts; layout++) {
-            const char *layout_name;
-            xkb_level_index_t num_levels;
-
-            layout_name = xkb_keymap_layout_get_name(keymap, layout);
+            const char *layout_name = xkb_keymap_layout_get_name(keymap, layout);
             if (!layout_name) {
                 layout_name = "?";
             }
 
-            num_levels = xkb_keymap_num_levels_for_key(keymap, keycode, layout);
+            const xkb_level_index_t num_levels =
+                xkb_keymap_num_levels_for_key(keymap, keycode, layout);
             for (xkb_level_index_t level = 0; level < num_levels; level++) {
-                int num_syms;
                 const xkb_keysym_t *syms;
-                size_t num_masks;
-                xkb_mod_mask_t masks[100];
-
-                num_syms = xkb_keymap_key_get_syms_by_level(
+                const int num_syms = xkb_keymap_key_get_syms_by_level(
                     keymap, keycode, layout, level, &syms
                 );
                 if (num_syms != 1) {
@@ -296,11 +285,12 @@ main(int argc, char *argv[])
                     continue;
                 }
 
-                num_masks = xkb_keymap_key_get_mods_for_level(
+                xkb_mod_mask_t masks[100];
+                const size_t num_masks = xkb_keymap_key_get_mods_for_level(
                     keymap, keycode, layout, level, masks, ARRAY_SIZE(masks)
                 );
                 for (size_t i = 0; i < num_masks; i++) {
-                    xkb_mod_mask_t mask = masks[i];
+                     const xkb_mod_mask_t mask = masks[i];
 
                     printf("%-8u %-9s %-8u %-20s %-7u [ ",
                            keycode, key_name, layout + 1, layout_name, level + 1);
