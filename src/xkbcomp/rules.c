@@ -349,7 +349,7 @@ matcher_new(struct xkb_context *ctx,
 
     m->ctx = ctx;
     m->rmlvo.model.sval.start = rmlvo->model;
-    m->rmlvo.model.sval.len = (unsigned int) strlen_safe(rmlvo->model);
+    m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
     m->rmlvo.layouts = split_comma_separated_mlvo(rmlvo->layout);
     m->rmlvo.variants = split_comma_separated_mlvo(rmlvo->variant);
     m->rmlvo.options = split_comma_separated_mlvo(rmlvo->options);
@@ -636,7 +636,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: \"%.*s\" is not a valid value here; "
                     "ignoring rule set",
-                    ident.len, ident.start);
+                    (unsigned int) ident.len, ident.start);
         m->mapping.active = false;
         return;
     }
@@ -645,7 +645,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: \"%.*s\" appears twice on the same line; "
                     "ignoring rule set",
-                    mlvo_sval.len, mlvo_sval.start);
+                    (unsigned int) mlvo_sval.len, mlvo_sval.start);
         m->mapping.active = false;
         return;
     }
@@ -660,7 +660,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
             scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "invalid mapping: \"%.*s\" may only be followed by a "
                         "valid group index; ignoring rule set",
-                        mlvo_sval.len, mlvo_sval.start);
+                        (unsigned int) mlvo_sval.len, mlvo_sval.start);
             m->mapping.active = false;
             return;
         }
@@ -675,7 +675,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
             scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                         "invalid mapping: \"%.*s\" cannot be followed by a group "
                         "index; ignoring rule set",
-                        mlvo_sval.len, mlvo_sval.start);
+                        (unsigned int) mlvo_sval.len, mlvo_sval.start);
             m->mapping.active = false;
             return;
         }
@@ -755,7 +755,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: \"%.*s\" is not a valid value here; "
                     "ignoring rule set",
-                    ident.len, ident.start);
+                    (unsigned int) ident.len, ident.start);
         m->mapping.active = false;
         return;
     }
@@ -764,7 +764,7 @@ matcher_mapping_set_kccgst(struct matcher *m, struct scanner *s, struct sval ide
         scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
                     "invalid mapping: \"%.*s\" appears twice on the same line; "
                     "ignoring rule set",
-                    kccgst_sval.len, kccgst_sval.start);
+                    (unsigned int) kccgst_sval.len, kccgst_sval.start);
         m->mapping.active = false;
         return;
     }
@@ -980,7 +980,7 @@ match_value_and_mark(struct matcher *m, struct sval val,
 static bool
 expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
                              struct sval value, xkb_layout_index_t layout_idx,
-                             darray_char *expanded, unsigned *i)
+                             darray_char *expanded, size_t *i)
 {
     const char *str = value.start;
 
@@ -1113,7 +1113,7 @@ expand_qualifier_in_kccgst_value(
     struct matcher *m, struct scanner *s,
     struct sval value, darray_char *expanded,
     bool has_layout_idx_range, bool has_separator,
-    unsigned int prefix_idx, unsigned int *i)
+    unsigned int prefix_idx, size_t *i)
 {
     const char *str = value.start;
 
@@ -1190,7 +1190,7 @@ append_expanded_kccgst_value(struct matcher *m, struct scanner *s,
     unsigned int last_item_idx = 0;
     bool has_separator = false;
 
-    for (unsigned i = 0; i < value.len; ) {
+    for (size_t i = 0; i < value.len; ) {
         /* Check if that's a start of an expansion or qualifier */
         switch (str[i]) {
             /* Qualifier */
@@ -1727,22 +1727,22 @@ xkb_components_from_rules(struct xkb_context *ctx,
     if (!mval->matched && mval->sval.len > 0)
         log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Unrecognized RMLVO model \"%.*s\" was ignored\n",
-                mval->sval.len, mval->sval.start);
+                (unsigned int) mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.layouts)
         if (!mval->matched && mval->sval.len > 0)
             log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
+                    (unsigned int) mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.variants)
         if (!mval->matched && mval->sval.len > 0)
             log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
+                    (unsigned int) mval->sval.len, mval->sval.start);
     darray_foreach(mval, matcher->rmlvo.options)
         if (!mval->matched && mval->sval.len > 0)
             log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                     "Unrecognized RMLVO option \"%.*s\" was ignored\n",
-                    mval->sval.len, mval->sval.start);
+                    (unsigned int) mval->sval.len, mval->sval.start);
 
     /* Set the number of explicit layouts */
     if (out->symbols != NULL && explicit_layouts != NULL) {

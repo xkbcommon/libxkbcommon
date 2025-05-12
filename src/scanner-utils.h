@@ -21,7 +21,7 @@
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
     const char *start;
-    unsigned int len;
+    size_t len;
 };
 typedef darray(struct sval) darray_sval;
 

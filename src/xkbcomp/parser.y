@@ -927,7 +927,7 @@ KeySymLit       :       IDENT
                                     param,
                                     XKB_WARNING_UNRECOGNIZED_KEYSYM,
                                     "unrecognized keysym \"%.*s\"",
-                                    $1.len, $1.start
+                                    (unsigned int) $1.len, $1.start
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
