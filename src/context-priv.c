@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#include "darray.h"
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
 #include "context.h"
@@ -26,7 +27,7 @@ xkb_context_getenv(struct xkb_context *ctx, const char *name)
     }
 }
 
-unsigned int
+darray_size_t
 xkb_context_num_failed_include_paths(struct xkb_context *ctx)
 {
     return darray_size(ctx->failed_includes);
@@ -34,7 +35,7 @@ xkb_context_num_failed_include_paths(struct xkb_context *ctx)
 
 const char *
 xkb_context_failed_include_path_get(struct xkb_context *ctx,
-                                    unsigned int idx)
+                                    darray_size_t idx)
 {
     if (idx >= xkb_context_num_failed_include_paths(ctx))
         return NULL;
