@@ -84,7 +84,7 @@ XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 xkb_atom_t
 XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name)
 {
-    for (unsigned i = 0; i < keymap->num_key_aliases; i++)
+    for (darray_size_t i = 0; i < keymap->num_key_aliases; i++)
         if (keymap->key_aliases[i].alias == name)
             return keymap->key_aliases[i].real;
 
