@@ -23,6 +23,8 @@ struct keymap_test_data {
     /** Resulting file *path* to reference serialization,
      *  or NULL if the keymap string should not compile. */
     const char * const expected;
+    /** Optionally skip the test */
+    bool skip;
 };
 
 /* Our keymap compiler is the xkbcommon buffer compiler */
@@ -442,6 +444,11 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
     const char not_null_terminated[] = { '1' };
     assert(!test_compile_buffer(ctx, not_null_terminated,
                                 sizeof(not_null_terminated)));
+    const bool skipOverflow = sizeof(int64_t) >= sizeof (long long);
+    if (skipOverflow) {
+        fprintf(stderr,
+                "[WARNING] %s: cannot use checked arithmetic\n", __func__);
+    }
 
     const struct keymap_test_data keymaps[] = {
         {
@@ -468,7 +475,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    };\n"
                 "  };\n"
                 "};",
-            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb",
+            .skip = skipOverflow
         },
         {
             .keymap =
@@ -484,7 +492,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    };\n"
                 "  };\n"
                 "};",
-            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb",
+            .skip = skipOverflow
         },
         {
             .keymap =
@@ -500,7 +509,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    };\n"
                 "  };\n"
                 "};",
-            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb",
+            .skip = skipOverflow
         },
         {
             .keymap =
@@ -516,7 +526,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "    };\n"
                 "  };\n"
                 "};",
-            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb"
+            .expected = GOLDEN_TESTS_OUTPUTS "integers-overflow.xkb",
+            .skip = skipOverflow
         },
         {
             .keymap =
@@ -560,6 +571,10 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        if (keymaps[k].skip) {
+            fprintf(stderr, "INFO: skip test\n");
+            continue;
+        }
         assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
