@@ -38,21 +38,6 @@ Some additional resources are:
 
 @tableofcontents{html:2}
 
-<!--
-## Table of contents
-
-1. [Terminology][terminology]
-2. [Introduction to the XKB text format][introduction]
-3. [The xkb_keymap block][xkb_keymap]
-4. [The xkb_keycodes section][xkb_keycodes]
-5. [The xkb_types section][xkb_types]
-6. [The xkb_compat section][xkb_compat]
-7. [The xkb_symbols section][xkb_symbols]
-8. [Virtual modifier statements][virtual modifier statements]
-9. [Modifiers bindings][modifiers bindings]
-10. [Key actions][actions]
--->
-
 [terminology]: @ref terminology
 [introduction]: @ref introduction-to-the-xkb-text-format
 [xkb_keymap]: @ref the-xkb_keymap-block
@@ -61,7 +46,6 @@ Some additional resources are:
 [xkb_compat]: @ref the-xkb_compat-section
 [xkb_symbols]: @ref the-xkb_symbols-section
 [virtual modifier statements]:@ref virtual-modifier-statements
-[modifiers bindings]: @ref modifiers-bindings
 [actions]: @ref key-actions
 
 ## Terminology {#terminology}
@@ -122,7 +106,7 @@ Some additional resources are:
   <dl>
     <dt><a name="real-modifier-def">Real modifiers</a></dt>
     <dd>
-    They are the 8 _predefined_ (AKA core, X11) modifiers
+    They are the 8 _predefined_ (AKA *core*, *X11*) modifiers
     (see [usual modifiers] hereinafter).
 
     Real modifiers ensure backward compatibility: indeed
@@ -192,7 +176,7 @@ Some additional resources are:
     </dd>
   </dl>
 
-  See [modifiers bindings] for further details.
+  See [modifiers declaration and binding] for further details.
   </dd>
 
   [depressed]: @ref depressed-mod-def
@@ -1867,11 +1851,31 @@ forms (all of which are optional):
 
 When set to `level1`, the interpret will only match keysyms which are
 on the first level of the first group of the keys. This can be useful
-in conjunction with e.g. a `virtualModifier` statement, because
-`virtualModifier` is an attribute of the key rather than a specific
-level.
+in conjunction with e.g. a [`virtualModifier`](@ref interpret-virtualModifier)
+statement, because `virtualModifier` is an attribute of the key rather than a
+specific level.
 
 Note: the other possible value is `any` and is the default value.
+
+See [virtual modifier map] for further information.
+
+#### “virtualModifier” statement {#interpret-virtualModifier}
+
+    virtualModifier = NumLock;
+
+Add this virtual modifier to the key’s `vmodmap`. The given virtual
+modifier must be declared at the top level of the file with a
+`virtual_modifiers` statement, e.g.:
+
+    virtual_modifiers NumLock;
+
+See [virtual modifier map] for further information.
+
+#### “repeat” statement {#interpret-repeat}
+
+    repeat = True;
+
+Set whether the key should repeat or not. Must be a boolean value.
 
 #### “action” statement {#interpret-action}
 
@@ -1884,22 +1888,6 @@ Since 1.9.0, it is also possible to assign a sequence of actions, mirroring
 the feature used in the [key statement](@ref key-multiple-symbols-per-level).
 
     action = {SetMods(modifiers=NumLock),SetGroup(group=2)};
-
-#### “virtualModifier” statement {#interpret-virtualModifier}
-
-    virtualModifier = NumLock;
-
-Add this virtual modifier to the key’s `vmodmap`. The given virtual
-modifier must be declared at the top level of the file with a
-`virtual_modifiers` statement, e.g.:
-
-    virtual_modifiers NumLock;
-
-#### “repeat” statement {#interpret-repeat}
-
-    repeat = True;
-
-Set whether the key should repeat or not. Must be a boolean value.
 
 ### LED map statements {#indicator-effect}
 
@@ -2346,6 +2334,8 @@ key  <LALT> {
 ```
 @endfigure
 
+See [virtual modifier map]  for further information.
+
 [interpret mechanism]: @ref interpret-mechanism
 
 #### Repeat {#key-repeat}
@@ -2369,7 +2359,15 @@ key  <LALT> {
 
 ### Real Modifier map {#modmap-statement}
 
-@todo Document `modifier_map`
+Bind a [*real* modifier](@ref real-modifier) to a key, e.g.:
+
+```c
+// Bind the real modifier `Control` to the key `<LCTL>` and/or the first key with
+// the keysym `Control_L`.
+modifier_map Control { <LCTL>, Control_L };
+```
+
+See [real modifier map] for further information.
 
 ### Set default values
 
@@ -2380,44 +2378,360 @@ One may change the default values of the following statements:
   E.g. `setMods.clearLocks= True;`.
 
 
-## Virtual modifier statements {#virtual-modifier-statements}
+## Modifiers declaration and binding {#modifiers-declaration-and-binding}
 
-<!-- TODO: rework this section -->
-
-Statements of the form:
-
-    virtual_modifiers LControl;
-
-Can appear in the `xkb_types`, `xkb_compat`, `xkb_symbols` sections.
-
-## Modifiers bindings {#modifiers-bindings}
+[modifiers declaration and binding]: @ref modifiers-declaration-and-binding
 
 ### Real and virtual modifiers
 
-Modifiers are a particularly tricky part of XKB. For historical reasons they are
-divided in two categories: [real modifiers] and [virtual modifiers].
+[Modifiers] are a particularly tricky part of XKB and deserve their own section.
+For historical reasons they are divided in two categories:
 
-Note that in X11, the maximum of virtual modifiers is 16
-(see `XkbNumVirtualMods`).
+<dl>
+<dt><a name="real-modifier">Real modifier</a></dt>
+<dd>
 
-The following table summarizes the modifiers defined
-in <code>[xkeyboard-config]</code> (this is subject to change).
+They are the **8** *predefined* (AKA *core*, *X11*) modifiers:
+
+| Name      | Description                |
+| --------- | -------------------------- |
+| `Shift`   | Used to type upper case letters of [bicameral scripts]; keyboard shortcuts |
+| `Lock`    | Used to type upper case letters of [bicameral scripts]: “Caps Lock” |
+| `Control` | Used in keyboard shortcuts |
+| `Mod1`    | Generic modifier 1         |
+| `Mod2`    | Generic modifier 2         |
+| `Mod3`    | Generic modifier 3         |
+| `Mod4`    | Generic modifier 4         |
+| `Mod5`    | Generic modifier 5         |
+
+[bicameral scripts]: https://en.wikipedia.org/wiki/Letter_case#Bicameral_script
+
+They are the modifiers defined in the *core* X11 protocol. They are qualified as
+“real”, because in the XKB protocol they denote the *bits* that *encode* the
+modifiers state. See @ref modifiers-encoding "" for further information.
+
+Since they are predefined, they require no [explicit declaration](@ref virtual-modifier-statements)
+and have a *fixed* [encoding](@ref modifiers-encoding).
+</dd>
+<dt><a name="virtual-modifier">Virtual modifier</a></dt>
+<dd>
+
+They are the modifiers that are *not* predefined. They require an
+[*explicit* declaration](@ref virtual-modifier-statements) and their
+[encoding](@ref modifiers-encoding) is *user-defined*.
+
+Note that in X11, the maximum of virtual modifiers is **16** (see
+`XkbNumVirtualMods`), whereas up to **24** virtual modifiers can be defined in
+libxkbcommon.
+</dd>
+</dl>
+
+### Modifiers declarations {#virtual-modifier-statements}
+
+*Virtual* modifiers must be declared before their first use with the
+`virtual_modifiers` statement:
+
+- Declare a *single* modifier:
+  ```c
+  virtual_modifiers MyModifier;
+  ```
+- Declare *multiple* modifiers using a comma-separated list:
+  ```c
+  virtual_modifiers M1, M2, M3.
+  ```
+
+Furthermore, it is possible to set the [explicit modifier encoding] with the
+following syntax:
+
+- Use a *real* modifier mask:
+  ```c
+  // Single modifier: real modifier
+  virtual_modifiers M1 = Mod3;
+  // Single modifier: using mask as a plus-separated list
+  virtual_modifiers M2 = Mod4+Mod5;
+  // Multiple modifiers
+  virtual_modifiers M1 = Mod3, M2 = Mod4+Mod5;
+  ```
+- Use a *numeric* mask:
+  ```c
+  virtual_modifiers M1 = 0x20;
+  virtual_modifiers M2 = 0xC0;
+  virtual_modifiers M1 = 0x20, M2 = 0xC0;
+  ```
+
+This can be done in the [`xkb_types`][xkb_types], [`xkb_compat`][xkb_compat] and
+[`xkb_symbols`][xkb_symbols] sections.
+
+### Modifiers key bindings {#modifiers-bindings}
+
+[modifiers bindings]: @ref modifiers-bindings
+
+Each key has two **modifiers maps**:
+
+<dl>
+<dt><a name="real-modifier-map">*Real* modifier map</a></dt>
+<dd>
+
+List the [*real* modifiers](@ref real-modifier) associated to the key.
+
+It is used as a compatibility layer for the X11 core protocol and to apply
+[interpretations].
+
+See @ref set-real-mod-map "" for further information.
+</dd>
+<dt><a name="virtual-modifier-map">*Real* modifier map</a></dt>
+<dd>
+
+List the [*virtual* modifiers](@ref virtual-modifier) associated to the key.
+
+It is used to set the [implicit encoding](@ref implicit-modifier-encoding)
+of virtual modifiers.
+
+See @ref set-virtual-mod-map "" for further information.
+</dd>
+</dl>
+
+[real modifier map]: @ref real-modifier-map
+[real modifier maps]: @ref real-modifier-map
+[virtual modifier map]: @ref virtual-modifier-map
+
+#### Setting the real modifier map {#set-real-mod-map}
+
+The [real modifier map] is set in the [`xkb_symbols`][xkb_symbols] section
+using the `modifier_map` statement:
+
+- Bind *directly* to a **keycode**, e.g.:
+  ```c
+  // Bind `Mod1` to the keycode <LALT>.
+  modifier_map Mod1 { <LALT> };
+  ```
+- Bind *indirectly* via a **keysym**, e.g.:
+  ```c
+  // Bind `Mod1` looking up for the keysym `Alt_L`
+  modifier_map Mod1 { Alt_L };
+  ```
+
+  Indirect bindings require to be resolved to a *single direct* bindings.
+  Given a keysym, there can be multiple keys that generate it, so the
+  corresponding key is chosen following this order:
+  1. by lowest group in which the keysym appears,
+  2. by lowest level,
+  3. by lowest key code.
+- Bind using a comma-separated **list** of keycodes and keysyms:
+  ```c
+  // Bind `Mod1` diretly to keycode <LALT> and indirectly via the keysym `Alt_L`
+  modifier_map Mod1 { <LALT>, Alt_L };
+  ```
+
+@note A key can be associated to _at most **one**_ real modifier.
+
+There is also a special entry, `None`, that enable *deleting* a previous entry:
+
+```c
+modifier_map None { <LALT> };
+```
+
+@note `None` must use the *exact* same target (keycode or keysym) in order to
+delete the corresponding previous entry:
+```c
+xkb_symbols {
+    key <LALT> { [Alt_L] };
+    modifier_map Mod1 { <LALT> };
+    // Does *not* delete previous entry (expected keycode, got keysym)
+    modifier_map None { Alt_L };
+    // *Does* delete previous entry (correct expected keycode)
+    modifier_map None { <LALT> };
+};
+```
+
+#### Setting the virtual modifier map {#set-virtual-mod-map}
+
+The [virtual modifier map] can be set in 2 ways:
+- *Directly* in the [`xkb_symbols`][xkb_symbols] section using the
+  `virtualModifiers` key property:
+  ```c
+  xkb_symbols {
+      // Virtual modifiers must be declared before use
+      virtual_modifiers Alt;
+
+      key <LALT> {
+          // Explicit virtual modifier map
+          virtualModifiers = Alt,
+          ...
+      };
+  };
+  ```
+- *Indirectly* using [interpretations] in [`xkb_compat`][xkb_compat] and the
+  corresponding [`xkb_symbols`][xkb_symbols] keysyms:
+  ```c
+  xkb_compat {
+      // Virtual modifiers must be declared before use
+      virtual_modifiers Alt, Super;
+
+      interpret Alt_L {
+          // Bind the virtual modifier…
+          virtualModifier = Alt;
+          // … independently of the group and level (default)
+          useModMap = AnyLevel;
+      };
+      interpret Super_L {
+          // Bind the virtual modifier…
+          virtualModifier = Super;
+          // … only if the keysym is on the first level of the first group
+          useModMap = Level1;
+      };
+  };
+  xkb_symbols {
+      // Successful bindings
+      key <LALT> { [Alt_L] };
+      key <LALT> { [No,Symbol, Alt_L] };    // independent of group and level
+      key <LALT> { [], [NoSymbol, Alt_L] }; // independent of group and level
+
+      key <LWIN> { [Super_L] };
+
+      // Unsuccessful bindings
+      key <LWIN> { [NoSymbol, Super_L] };   // requires first level
+      key <LWIN> { [], [Super_L] };         // requires first group
+  };
+  ```
+
+### Modifiers encoding {#modifiers-encoding}
+
+[modifier encoding]: @ref modifiers-encoding
+
+Each modifier has an associated **32 bit mask** used to *encode* it in the
+keyboard state. The keyboard state represents active modifiers with the bitwise
+OR of the encoding of each active modifiers.
+
+@note Display servers may use a different encoding in their protocols:
+- **Wayland protocol:** use the same *32-bit* encoding as libxkbcommon and
+  support its full range of modifiers.
+- **X11 protocol:** use a *8-bit* encoding. It supports only using
+  [real modifiers](@ref real-modifier) to encode
+  [virtual modifiers](@ref virtual-modifier).
+
+@important
+- [Real modifiers](@ref real-modifier) have a *fixed predefined* encoding.
+- [Virtual modifiers](@ref virtual-modifier) have a *user-defined* encoding.
+
+Virtual modifiers require to be encoded by the user,
+[*explicitly*](@ref explicit-modifier-encoding) and/or
+[*implicitly*](@ref implicit-modifier-encoding), the combination resulting in their
+[*effective*](@ref effective-modifier-encoding) encoding.
+
+<dl>
+<dt><a name="explicit-modifier-encoding">*Explicit* modifier encoding</a></dt>
+<dd>
+
+Virtual modifiers can optionally define an initial mapping using the
+[`virtual_modifiers`](@ref virtual-modifier-statements) statements:
+
+```c
+virtual_modifiers M1 = Mod1;     // Single real modifier
+virtual_modifiers M2 = Mod4+Mod5;// Real modifier mask
+virtual_modifiers M3 = 0x400;    // Numeric mask
+```
+
+See @ref virtual-modifier-statements "" for further information.
+
+@warning Although it is explicit, this may not be the
+[effective encoding][effective modifier encoding], detailed hereinafter.
+</dd>
+<dt><a name="implicit-modifier-encoding">*Implicit* modifier encoding</a></dt>
+<dd>
+
+Virtual modifiers *always* compute their implicit encoding, which is defined for
+a given virtual modifier by the bitwise OR of all the [real modifier maps]
+where the virtual modifier is in the [virtual modifier map] of the corresponding
+key.
+
+Example:
+
+```c
+xkb_symbols {
+    virtual_modifiers Alt;
+
+    // Virtual modifier map: Alt is bound to <LALT>
+    // Note: alternatively one can use xkb_compat interpretations.
+    key <LALT> { virtualModifier = Alt };
+
+    // Real modifier map: Mod1 is bound to <LALT>
+    modifier_map Mod1 { <LALT> };
+
+    // Implicit encoding: Alt = Mod1
+};
+```
+</dd>
+<dt><a name="effective-modifier-encoding">*Effective* modifier encoding</a></dt>
+<dd>
+The effective encoding is the bitwise OR of the [explicit modifier encoding]
+and the [implicit modifier encoding].
+
+Example:
+
+```c
+xkb_symbols {
+    virtual_modifiers Alt, Super, Hyper = 0x400;
+
+    // Virtual modifier maps
+    // Note: alternatively one can use xkb_compat interpretations.
+    key <LALT> { virtualModifier = Alt   }; // Alt is bound to <LALT>
+    key <LWIN> { virtualModifier = Super }; // Super is bound to <LWIN>
+    key <RWIN> { virtualModifier = Super }; // Super is bound to <RWIN>
+    key <HYPR> { virtualModifier = Hyper }; // Hyper is bound to <HYPR>
+
+    // Real modifier maps
+    modifier_map Mod1 { <LALT> }; // Mod1 is bound to <LALT>
+    modifier_map Mod4 { <LWIN> }; // Mod4 is bound to <LWIN>
+    modifier_map Mod5 { <RWIN> }; // Mod5 is bound to <RWIN>
+    modifier_map Mod3 { <HYPR> }; // Mod3 is bound to <HYPR>
+
+};
+```
+
+| Encoding  | Alt    | Super         | Hyper          |
+| --------- | ------ | ------------- | -------------- |
+| Explicit  | 0      | 0             | `0x400`        |
+| Implicit  | `Mod1` | `Mod4 + Mod5` | `Mod3`         |
+| Effecitve | `Mod1` | `Mod4 + Mod5` | `0x400 + Mod3` |
+</dd>
+</dl>
+
+[explicit modifier encoding]: @ref explicit-modifier-encoding
+[implicit modifier encoding]: @ref implicit-modifier-encoding
+[effective modifier encoding]: @ref effective-modifier-encoding
+
+<!--
+TODO: this requires the introduction of automated canonical modifiers, else we
+      rely only on the definition with explicit indexes.
+
+### Canonical and non-canonical modifiers
+
+A canonical modifier have an encoding defined by: `1u << index`.
+
+@todo
+-->
+
+### Usual modifiers and associated keysyms {#usual-modifiers-keysyms}
+
+The following table summarizes the modifiers defined in
+[`xkeyboard-config` 2.44][xkeyboard-config]:
 
 | Modifier     | Type    | Compat files     | Associated keysyms                                        |
 |--------------|---------|------------------|-----------------------------------------------------------|
 | `Shift`      | Real    | `compat/basic`   | `Shift_L`, `Shift_R`                                      |
-| ″            | ″       | `compat/iso9995` | `Shift_L`, `Shift_R`, `ISO_Level2_Latch`                  |
+| ^            | ^       | `compat/iso9995` | `Shift_L`, `Shift_R`, `ISO_Level2_Latch`                  |
 | `Lock`       | Real    | `compat/basic`,  | `Caps_Lock`                                               |
-| ″            | ″       | `compat/caps`    | ″                                                         |
+| ^            | ^       | `compat/caps`    | ^                                                         |
 | `Control`    | Real    | `compat/basic`   | `Control_L`, `Control_R`                                  |
 | `Alt`        | Virtual | `compat/misc`,   | `Alt_L`, `Alt_R`                                          |
-| ″            | ″       | `compat/pc`      | ″                                                         |
+| ^            | ^       | `compat/pc`      | ^                                                         |
 | `Meta`       | Virtual | `compat/misc`    | `Meta_L`, `Meta_R`                                        |
 | `Super`      | Virtual | `compat/misc`    | `Super_L`, `Super_R`                                      |
 | `Hyper`      | Virtual | `compat/misc`    | `Hyper_L`, `Hyper_R`                                      |
 | `ScrollLock` | Virtual | `compat/misc`    | `Scroll_Lock`                                             |
 | `NumLock`    | Virtual | `compat/basic`,  | `Num_Lock`,                                               |
-| ″            | ″       | `compat/level5`  | (`ISO_Level5_Lock`)                                       |
+| ^            | ^       | `compat/level5`  | (`ISO_Level5_Lock`)                                       |
 | `LevelThree` | Virtual | `compat/iso9995` | `ISO_Level3_Shift`, `ISO_Level3_Latch`, `ISO_Level3_Lock` |
 | `LevelFive`  | Virtual | `compat/level5`  | `ISO_Level5_Shift`, `ISO_Level5_Latch`, `ISO_Level5_Lock` |
 | `Kana_Lock`  | Virtual | `compat/japan`   | `Kana_Lock`                                               |
@@ -2426,7 +2740,59 @@ in <code>[xkeyboard-config]</code> (this is subject to change).
 | `Circle`     | Virtual | `compat/olpc`    | `KP_End`                                                  |
 | `Triangle`   | Virtual | `compat/olpc`    | `KP_Prior`                                                |
 
-### Define and use a modifier
+### Modifiers portability {#modifiers-portability}
+
+#### Avoid using numeric modifier masks
+
+@note Any field that accept virtual modifier *names* is a virtual modifier
+*mask*, denoting virtual modifiers *indices*. These indices are
+implementation-specific and should not be leaked. Therefore any *numeric* value
+used for these fields should be interpreted equally as a virtual modifier mask,
+and is thus implementation-specific.
+
+@important In order to preserve [modifier encoding] *portability*, XKB
+implementations are recommended to **avoid *numeric* modifier masks** and to
+**use virtual modifiers *names* whenever possible** when serializing the keymap.
+This avoids *leaking* the indices of the modifiers.
+
+#### xkbcomp and libxkbcommon implementations
+
+@attention This section is not part of the keymap text format specification and
+presents libxkbcommon’s *implementation details* that may change, solely for the
+purpose of informing other XKB implementation.
+**Users should not rely on this!**
+
+Both X11 xkbcomp and libxkbcommon currently implement modifiers indices as follow:
+
+1. Real modifiers have the following indices:
+   | Name      | Index |
+   | --------- | ----- |
+   | `Shift`   | 0     |
+   | `Lock`    | 1     |
+   | `Control` | 2     |
+   | `Mod1`    | 3     |
+   | `Mod2`    | 4     |
+   | `Mod3`    | 5     |
+   | `Mod4`    | 6     |
+   | `Mod5`    | 7     |
+2. Virtual modifiers names are assigned to virtual modifier indices following
+   their order of appearance in a keymap component, if that name was not
+   previously assigned.
+3. Indices are assigned in *ascending order*, from 0.
+4. If an index is already assigned to a different name, then the next free index
+   is used.
+5. The order of the relevant keymap components used for virtual mods assignment is:
+   1. [xkb_types]
+   2. [xkb_compat]
+   3. [xkb_symbols]
+6. A virtual modifier *mask* always denotes virtual modifiers *indices*.
+
+@note It suffices to declare all virtual modifiers in [xkb_types] \(or if empty,
+whatever non-empty section afterwards, in the order specified above) in their
+ascending indices order to use virtual modifiers indices
+**compatible with libxkbcommon**.
+
+### Example: define and use a modifier, step by step
 
 We will use the example of the _real_ modifier `Shift` and the virtual
 modifier `LevelThree` in `xkeyboard-config`.
