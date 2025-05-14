@@ -364,9 +364,6 @@ usage(FILE *fp, char *progname)
                 progname);
         fprintf(fp, "For both:\n"
                         "          --verbose (enable verbose debugging output)\n"
-#ifdef ENABLE_PRIVATE_APIS
-                        "          --print-modmaps (print real & virtual key modmaps)\n"
-#endif
                         "          --short (do not print layout nor Unicode keysym translation)\n"
                         "          --report-state-changes (report changes to the state)\n"
                         "          --enable-compose (enable Compose)\n"
@@ -412,9 +409,6 @@ main(int argc, char *argv[])
         OPT_COMPOSE,
         OPT_SHORT,
         OPT_REPORT_STATE,
-#ifdef ENABLE_PRIVATE_APIS
-        OPT_PRINT_MODMAPS,
-#endif
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
@@ -433,16 +427,12 @@ main(int argc, char *argv[])
         {"short",                no_argument,            0, OPT_SHORT},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
         {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
-#ifdef ENABLE_PRIVATE_APIS
-        {"print-modmaps",        no_argument,            0, OPT_PRINT_MODMAPS},
-#endif
         {0, 0, 0, 0},
     };
 
     setlocale(LC_ALL, "");
 
     bool has_rmlvo_options = false;
-    bool print_modmaps = false;
     while (1) {
         int option_index = 0;
         int opt = getopt_long(argc, argv, "h", opts, &option_index);

@@ -533,13 +533,6 @@ if build_tools
                    install_dir: dir_libexec)
         configh_data.set10('HAVE_XKBCLI_INTERACTIVE_EVDEV', true)
         install_man('tools/xkbcli-interactive-evdev.1')
-        # The same tool again, but with access to some private APIs.
-        executable('interactive-evdev',
-                'tools/interactive-evdev.c',
-                dependencies: [tools_dep],
-                c_args: ['-DENABLE_PRIVATE_APIS'],
-                include_directories: [include_directories('src', 'include')],
-                install: false)
     endif
 
     # Tools: interactive-x11
