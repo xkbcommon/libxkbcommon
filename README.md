@@ -3,8 +3,9 @@
 **libxkbcommon** is a keyboard keymap compiler and support library which
 processes a reduced subset of keymaps as defined by the [XKB] \(X Keyboard
 Extension) specification.  It also contains a module for handling *Compose*
-and dead keys and a separate *registry* library for listing available keyboard
-layouts.
+and dead keys, a separate *registry* library for listing available keyboard
+layouts and a fair set of <abbr title="Command-Line Interface">CLI</abbr>
+*tools*.
 
 [XKB]: doc/introduction-to-xkb.md
 
@@ -14,6 +15,7 @@ layouts.
 - [User-configuration](doc/user-configuration.md): instructions to add
   a *custom layout* or option.
 - [Quick Guide](doc/quick-guide.md): introduction on how to use this library.
+- [Tools](./README.md#tools): introduction to the `xkbcli` application.
 - [Frequently Asked Question (FAQ)](doc/faq.md).
 
 ## Building
@@ -49,6 +51,35 @@ in `X11/extensions/XKB.h` and friends, it has been substantially reworked to
 expose fewer internal details to clients.
 
 See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
+
+## Tools
+
+Libxkbcommon has a fair set of <abbr title="Command-Line Interface">CLI</abbr>
+*tools*, grouped under the `xkbcli` application:
+
+<dl>
+<dt>`xkbcli compile-keymap`</dt>
+<dd>Compile an XKB keymap</dd>
+<dt>`xkbcli compile-compose`</dt>
+<dd>Compile a compose file</dd>
+<dt>`xkbcli how-to-type`</dt>
+<dd>Show how to type a given Unicode codepoint</dd>
+<dt>`xkbcli interactive-wayland`</dt>
+<dd>Interactive debugger for XKB keymaps for Wayland</dd>
+<dt>`xkbcli interactive-x11`</dt>
+<dd>Interactive debugger for XKB keymaps for X11</dd>
+<dt>`xkbcli interactive-evdev`</dt>
+<dd>Interactive debugger for XKB keymaps for evdev</dd>
+<dt>`xkbcli dump-keymap-wayland`</dt>
+<dd>Dump a XKB keymap from a Wayland compositor</dd>
+<dt>`xkbcli dump-keymap-x11`</dt>
+<dd>Dump a XKB keymap from a X server</dd>
+<dt>`xkbcli list`</dt>
+<dd>List available layouts and more</dd>
+</dl>
+
+It may require the installation of the package `libxkbcommon-tools` or similar
+name.
 
 ## Dataset
 
