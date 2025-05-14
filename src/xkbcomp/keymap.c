@@ -348,6 +348,24 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
             if (key->vmodmap & (UINT32_C(1) << idx))
                 mod->mapping |= key->modmap;
 
+    /*
+     * Virtual modifiers that are not mapped, map to themselves. This excludes:
+     * - Modifiers mapped *explicitly*: e.g. `virtual_modifiers VMod1 = 0x1;`.
+     * - Modifiers mapped *implicitly* via vmodmap/modifier_map, i.e. the usual
+     *   way used in xkeyboard-config.
+     */
+    xkb_vmods_enumerate(i, mod, &keymap->mods) {
+        const xkb_mod_mask_t mask = UINT32_C(1) << i;
+        if (mod->mapping == 0 && !(keymap->mods.explicit_vmods & mask)) {
+            mod->mapping = mask;
+            /*
+             * Make the mapping explicit, so that it is interoperable without
+             * relying on the implementation-specific virtual modifiers indices.
+             */
+            keymap->mods.explicit_vmods |= mask;
+        }
+    }
+
     /* Update the canonical modifiers state mask */
     assert(keymap->canonical_state_mask == MOD_REAL_MASK_ALL);
     xkb_mod_mask_t extra_canonical_mods = 0;
