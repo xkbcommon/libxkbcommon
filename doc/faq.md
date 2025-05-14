@@ -77,13 +77,17 @@ log, expected/got results) and file a [bug report]!
 This project does not provide any keyboard layout database:
 - If you want to modify only your *local* keyboard configuration,
   see: [User-configuration](./user-configuration.md).
-- If you want to modify the standard keyboard layout database, please
-  first try it *locally* (see previous) and then file an issue or a merge request
-  at the [xkeyboard-config] project.
+- If you want to modify the standard keyboard layout database, please first try
+  it *locally* (see our [debugging tools]) and then file an issue or a merge
+  request at the [xkeyboard-config] project.
 
 See also the [keymap text format][text format] documentation for the syntax.
 
 [text format]: ./keymap-format-text-v1.md
+
+### How do I test my custom layout without installing it?
+
+Use our [debugging tools].
 
 ### How do I swap some keys?
 
