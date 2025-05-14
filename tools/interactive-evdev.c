@@ -43,12 +43,7 @@ static bool report_state_changes;
 static bool with_compose;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
-#ifdef ENABLE_PRIVATE_APIS
-#define DEFAULT_PRINT_FIELDS (PRINT_ALL_FIELDS & ~PRINT_MODMAPS)
-#else
-#define DEFAULT_PRINT_FIELDS PRINT_ALL_FIELDS
-#endif
-print_state_fields_mask_t print_fields = DEFAULT_PRINT_FIELDS;
+print_state_fields_mask_t print_fields = PRINT_ALL_FIELDS;
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
@@ -447,6 +442,7 @@ main(int argc, char *argv[])
     setlocale(LC_ALL, "");
 
     bool has_rmlvo_options = false;
+    bool print_modmaps = false;
     while (1) {
         int option_index = 0;
         int opt = getopt_long(argc, argv, "h", opts, &option_index);
@@ -530,7 +526,7 @@ main(int argc, char *argv[])
             break;
 #ifdef ENABLE_PRIVATE_APIS
         case OPT_PRINT_MODMAPS:
-            print_fields |= PRINT_MODMAPS;
+            print_modmaps = true;
             break;
 #endif
         case 'h':
@@ -638,7 +634,7 @@ too_much_arguments:
     }
 
 #ifdef ENABLE_PRIVATE_APIS
-    if (print_fields & PRINT_MODMAPS) {
+    if (print_modmaps) {
         print_keys_modmaps(keymap);
         putchar('\n');
         print_keymap_modmaps(keymap);

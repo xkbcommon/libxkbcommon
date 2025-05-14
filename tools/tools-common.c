@@ -177,12 +177,6 @@ tools_print_keycode_state(const char *prefix,
 
     print_keycode(keymap, "keycode [ ", keycode, " ] ");
 
-#ifdef ENABLE_PRIVATE_APIS
-    if (fields & PRINT_MODMAPS) {
-        print_key_modmaps(keymap, keycode);
-    }
-#endif
-
     printf("keysyms [ ");
     for (int i = 0; i < nsyms; i++) {
         xkb_keysym_get_name(syms[i], s, sizeof(s));
