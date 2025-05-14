@@ -21,11 +21,8 @@
 
 /* Fields that are printed in the interactive tools. */
 enum print_state_fields {
-#ifdef ENABLE_PRIVATE_APIS
-    PRINT_MODMAPS = (1u << 1),
-#endif
-    PRINT_LAYOUT = (1u << 2),
-    PRINT_UNICODE = (1u << 3),
+    PRINT_LAYOUT = (1u << 1),
+    PRINT_UNICODE = (1u << 2),
     PRINT_ALL_FIELDS = ((PRINT_UNICODE << 1) - 1),
     /*
      * Fields that can be hidden with the option --short.
