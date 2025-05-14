@@ -37,13 +37,6 @@ Print the full RMLVO with the defaults filled in for missing elements
 Print a keymap which only includes the KcCGST component names instead
 of the full keymap
 .
-.It Fl \-keymap Oo Ar PATH Oc , Fl \-from\-xkb Oo Ar PATH Oc
-Load the XKB file from a file, ignore RMLVO options. If
-.Ar PATH
-is empty or
-.Dq \- ,
-read the stdin.
-.
 .It Fl \-include Ar PATH
 Add the given path to the include path list.
 This option is order\-dependent, include paths given first are searched first.
@@ -55,6 +48,13 @@ to add the default include paths.
 .It Fl \-include\-defaults
 Add the default set of include directories.
 This option is order-dependent, include paths given first are searched first.
+.
+.It Fl \-keymap Oo Ar PATH Oc , Fl \-from\-xkb Oo Ar PATH Oc
+Load the XKB file from a file, ignore RMLVO options. If
+.Ar PATH
+is empty or
+.Dq \- ,
+read the stdin.
 .
 .It Fl \-rules Ar rules
 The XKB ruleset
