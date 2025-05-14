@@ -50,81 +50,109 @@ print_keycode(struct xkb_keymap *keymap, const char* prefix,
 #ifdef ENABLE_PRIVATE_APIS
 #include "src/keymap.h"
 
-void
-print_keymap_modmaps(struct xkb_keymap *keymap) {
-    printf("Modifiers mapping:\n");
-    for (xkb_mod_index_t vmod = 0; vmod < xkb_keymap_num_mods(keymap); vmod++) {
-        if (keymap->mods.mods[vmod].type & MOD_REAL)
-            continue;
-        printf("- %s: ", xkb_keymap_mod_get_name(keymap, vmod));
-        if (keymap->mods.mods[vmod].mapping) {
-            bool first = true;
-            for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-                if (keymap->mods.mods[vmod].mapping & (UINT32_C(1) << mod)) {
-                    if (first) {
-                        first = false;
-                        printf("%s", xkb_keymap_mod_get_name(keymap, mod));
-                    } else {
-                        printf("+ %s", xkb_keymap_mod_get_name(keymap, mod));
-                    }
-                }
-            }
-        } else {
-            printf("(unmapped)");
-        }
-        printf("\n");
-    }
-}
-
-#define MODMAP_PADDING  7
-#define VMODMAP_PADDING 9
+/* Variant of ModMaskText of main lib */
 static void
-print_key_modmaps(struct xkb_keymap *keymap, xkb_keycode_t keycode) {
-    const struct xkb_key *key = XkbKey(keymap, keycode);
-    if (key != NULL) {
-        xkb_mod_index_t mod;
+print_mod_mask(struct xkb_keymap *keymap,
+               enum mod_type type, xkb_mod_mask_t mask)
+{
+    /* We want to avoid boolean blindness, but we expected only 2 values */
+    assert(type == MOD_REAL || type == MOD_BOTH);
 
-        printf("modmap [ ");
-        if (key->modmap) {
-            for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-                if (key->modmap & (UINT32_C(1) << mod)) {
-                    printf("%-*s", MODMAP_PADDING,
-                           xkb_keymap_mod_get_name(keymap, mod));
-                    break;
-                }
-            }
-        } else {
-            printf("%*c", MODMAP_PADDING, ' ');
-        }
+    if (!mask) {
+        printf("0");
+        return;
+    }
 
-        printf(" ] vmodmap [ ");
-        size_t length = 0;
-        const char *mod_name;
-        for (mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
-            if (key->vmodmap & (UINT32_C(1) << mod)) {
-                mod_name = xkb_keymap_mod_get_name(keymap, mod);
-                length += strlen(mod_name) + 1;
-                printf("%s ", mod_name);
+    const xkb_mod_index_t num_mods = xkb_keymap_num_mods(keymap);
+    const xkb_mod_mask_t keymap_named_mods = (type == MOD_REAL)
+        ? MOD_REAL_MASK_ALL
+        : (xkb_mod_mask_t) ((UINT64_C(1) << num_mods) - 1);
+
+    /* Print known mods */
+    bool first = true;
+    xkb_mod_mask_t named = mask & keymap_named_mods;
+    for (xkb_mod_index_t mod = 0; named && mod < num_mods; mod++, named >>= 1) {
+        if (named & UINT32_C(0x1)) {
+            if (first) {
+                first = false;
+                printf("%s", xkb_keymap_mod_get_name(keymap, mod));
+            } else {
+                printf(" + %s", xkb_keymap_mod_get_name(keymap, mod));
             }
         }
-        if (length < VMODMAP_PADDING) {
-            printf("%*c", (unsigned int)(VMODMAP_PADDING - length), ' ');
-        }
-        printf("] ");
+    }
+    if (mask & ~keymap_named_mods) {
+        /* If some bits of the mask cannot be expressed with the known modifiers
+         * of the given type, print it as hexadecimal */
+        printf("%s%#"PRIx32, (first ? "" : " + "), mask & ~keymap_named_mods);
     }
 }
 
+/* Modifiers encodings, formatted as YAML */
+void
+print_modifiers_encodings(struct xkb_keymap *keymap) {
+    printf("Modifiers encodings:");
+
+    /* Find the padding required for modifier names */
+    int padding = 0;
+    for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
+        const char* name = xkb_keymap_mod_get_name(keymap, mod);
+        padding = MAX(padding, (int) strlen(name));
+    }
+
+    /* Print encodings */
+    static const char indent[] = "\n  ";
+    for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
+        if (mod == 0)
+            printf("%s# Real modifiers (predefined)", indent);
+        else if (mod == _XKB_MOD_INDEX_NUM_ENTRIES)
+            printf("\n%s# Virtual modifiers (keymap-dependent)", indent);
+        const char* name = xkb_keymap_mod_get_name(keymap, mod);
+        const xkb_mod_mask_t encoding = xkb_keymap_mod_get_mask(keymap, name);
+        const int count = printf("%s%s", indent, name);
+        printf(":%*s 0x%08"PRIx32,
+               MAX(0, padding - count + (int)sizeof(indent) - 1), "", encoding);
+        if (mod >= _XKB_MOD_INDEX_NUM_ENTRIES) {
+            printf(" # ");
+            if (encoding) {
+                if (!(encoding & MOD_REAL_MASK_ALL)) {
+                    /* Prevent printing the numeric form again */
+                    if (encoding == (UINT32_C(1) << mod))
+                        printf("Canonical virtual modifier");
+                    else
+                        printf("Non-canonical virtual modifier");
+                } else {
+                    print_mod_mask(keymap, MOD_REAL, encoding);
+                }
+                if (encoding & ~MOD_REAL_MASK_ALL)
+                    printf(" (incompatible with X11)");
+            } else {
+                printf("(unmapped)");
+            }
+        }
+    }
+    printf("\n");
+}
+
+/* Key modifier maps, formatted as YAML */
 void
 print_keys_modmaps(struct xkb_keymap *keymap) {
+    printf("Keys modifier maps:");
+    uint32_t count = 0;
     const struct xkb_key *key;
-    printf("Keys modmaps:\n");
     xkb_keys_foreach(key, keymap) {
-        if (key->modmap || key->vmodmap) {
-            print_keycode(keymap, "- ", key->keycode, ": ");
-            print_key_modmaps(keymap, key->keycode);
-            putchar('\n');
-        }
+        if (!key->modmap && !key->vmodmap)
+            continue;
+        print_keycode(keymap, "\n  ", key->keycode, ":");
+        printf("\n    real:    ");
+        print_mod_mask(keymap, MOD_REAL, key->modmap);
+        printf("\n    virtual: ");
+        print_mod_mask(keymap, MOD_BOTH, key->vmodmap);
+        count++;
     }
+    if (count == 0)
+        printf(" {} # No modifier map");
+    printf("\n");
 }
 #endif
 

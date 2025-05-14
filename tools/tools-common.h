@@ -35,7 +35,7 @@ typedef uint32_t print_state_fields_mask_t;
 
 #ifdef ENABLE_PRIVATE_APIS
 void
-print_keymap_modmaps(struct xkb_keymap *keymap);
+print_modifiers_encodings(struct xkb_keymap *keymap);
 void
 print_keys_modmaps(struct xkb_keymap *keymap);
 #endif
