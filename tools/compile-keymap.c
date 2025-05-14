@@ -29,6 +29,7 @@ enum output_format {
     OUTPUT_FORMAT_KEYMAP = 0,
     OUTPUT_FORMAT_RMLVO,
     OUTPUT_FORMAT_KCCGST,
+    OUTPUT_FORMAT_MODMAPS,
 };
 static bool verbose = false;
 static const char *includes[64] = { 0 };
@@ -92,6 +93,8 @@ usage(FILE *file, const char *progname)
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
            " --rmlvo\n"
            "    Print the full RMLVO with the defaults filled in for missing elements\n"
+           " --modmaps\n"
+           "    Print real and virtual key modmaps and modifiers encodings in YAML format\n"
            "\n",
            progname, DEFAULT_XKB_RULES,
            DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
@@ -131,6 +134,7 @@ parse_options(int argc, char **argv,
         /* Output */
         OPT_KCCGST,
         OPT_RMLVO,
+        OPT_MODMAPS,
     };
     static struct option opts[] = {
         /*
@@ -158,6 +162,7 @@ parse_options(int argc, char **argv,
          */
         {"kccgst",           no_argument,            0, OPT_KCCGST},
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
+        {"modmaps",          no_argument,            0, OPT_MODMAPS},
         {0, 0, 0, 0},
     };
 
@@ -263,6 +268,13 @@ parse_options(int argc, char **argv,
                 output_format != OUTPUT_FORMAT_RMLVO)
                 goto output_format_error;
             output_format = OUTPUT_FORMAT_RMLVO;
+            break;
+        case OPT_MODMAPS:
+            assert(!is_incompatible_with_keymap_input(OUTPUT_FORMAT_MODMAPS));
+            if (output_format != OUTPUT_FORMAT_KEYMAP &&
+                output_format != OUTPUT_FORMAT_MODMAPS)
+                goto output_format_error;
+            output_format = OUTPUT_FORMAT_MODMAPS;
             break;
         default:
             goto invalid_usage;
@@ -427,6 +439,25 @@ print_keymap(struct xkb_context *ctx, enum input_format format,
     return ret;
 }
 
+static int
+print_modmaps(struct xkb_context *ctx, enum input_format format,
+              const struct xkb_rule_names *rmlvo,
+              const char *path)
+{
+    int ret = EXIT_SUCCESS;
+    struct xkb_keymap *keymap = load_keymap(ctx, format, rmlvo, path);
+    if (!keymap) {
+        fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
+        ret = EXIT_FAILURE;
+    } else if (!test) {
+        print_modifiers_encodings(keymap);
+        printf("\n");
+        print_keys_modmaps(keymap);
+    }
+    xkb_keymap_unref(keymap);
+    return ret;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -480,6 +511,9 @@ main(int argc, char **argv)
     case OUTPUT_FORMAT_KCCGST:
         assert(input_format != INPUT_FORMAT_KEYMAP);
         rc = print_kccgst(ctx, &names);
+        break;
+    case OUTPUT_FORMAT_MODMAPS:
+        rc = print_modmaps(ctx, input_format, &names, keymap_path);
         break;
     default:
         rc = print_keymap(ctx, input_format, &names, keymap_path);

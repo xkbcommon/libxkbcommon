@@ -33,12 +33,10 @@ enum print_state_fields {
 };
 typedef uint32_t print_state_fields_mask_t;
 
-#ifdef ENABLE_PRIVATE_APIS
 void
 print_modifiers_encodings(struct xkb_keymap *keymap);
 void
 print_keys_modmaps(struct xkb_keymap *keymap);
-#endif
 
 void
 tools_print_keycode_state(const char *prefix,
