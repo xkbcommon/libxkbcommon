@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Fix the following HTML tag unknown to Doxygen:
+# - <abbr>: see https://github.com/doxygen/doxygen/issues/11574
+
+find "$1" -name "*.html" -type f -exec \
+     "$2" -iE 's/&lt;abbr title="\(.*\)"&gt;\(.*\)&lt;\/abbr&gt;/<abbr title="\1">\2<\/abbr>/g' {} +
