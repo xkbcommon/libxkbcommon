@@ -1159,6 +1159,23 @@ You can disable the documentation with -Denable-docs=false.''')
             build_by_default: true,
         )
     endif
+    # Fix HTML tags unknown to Doxygen
+    sed_program = find_program('sed', required: false)
+    if sed_program.found()
+        doxygen_html_fix = find_program('scripts/doxygen-html-fix')
+        custom_target(
+            'doc-html-tags-fix',
+            input: doc_gen,
+            output: 'html-fake',
+            command: [
+                doxygen_html_fix,
+                meson.current_build_dir()/'html',
+                sed_program,
+            ],
+            install: false,
+            build_by_default: true,
+        )
+    endif
 endif
 
 configure_file(output: 'config.h', configuration: configh_data)
