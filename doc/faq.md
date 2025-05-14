@@ -1,5 +1,7 @@
 # Frequently Asked Question (FAQ) {#faq}
 
+@tableofcontents{html:2}
+
 ## XKB
 
 ### What is XKB?
@@ -87,6 +89,112 @@ See also the [keymap text format][text format] documentation for the syntax.
 
 🚧 TODO
 
+## Legacy X tools replacement
+
+### xmodmap
+
+<dl>
+<dt>`xmodmap -pm`</dt>
+<dd>
+
+There is no strict equivalent. Since 1.10 `xkbcli compile-keymap` has the option
+`--modmaps` to print the modifiers maps from a keymap, but it does not print
+keysyms. In order to get the output for the current keymap, use it with
+`xkbcli dump-keymap-*`:
+
+<dl>
+<dt>Wayland session</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap-wayland | xkbcli compile-keymap --modmaps
+```
+</dd>
+<dt>X11 session</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap-x11 | xkbcli compile-keymap --modmaps
+```
+</dd>
+</dl>
+</dd>
+<dt>`xmodmap -e "…"`</dt>
+<dt>`xmodmap /path/to/file`</dt>
+<dd>No equivalent: `xkbcli` does not modify the display server keymap.</dd>
+</dl>
+
+### setxkbmap
+
+<dl>
+<dt>`setxkbmap -print -layout …`<dt>
+<dd>
+
+Since 1.9 one can use the `--kccgst` option:
+
+```bash
+xkbcli compile-keymap --kccgst --layout …
+```
+</dd>
+<dt>`setxkbmap -query`</dt>
+<dd>
+
+No equivalent: `xkbcli` only query *raw* keymaps and has no access to the
+original [RMLVO] settings.
+</dd>
+<dt>`setxkbmap -layout …`</dt>
+<dd>
+No equivalent: `xkbcli` does not modify the display server keymap.
+One must use the tools *specific* to each display server in order order to
+achieve it.
+<!-- TODO: links to doc of most important DE -->
+
+If you use a custom layout, please have a look at @ref user-configuration "",
+which enables making custom layouts *discoverable* by keyboard configuration GUI.
+</dd>
+</dl>
+
+### xkbcomp
+
+<dl>
+<dt>`xkbcomp -xkb /path/to/keymap/file -`</dt>
+<dd>
+
+```bash
+xkbcli compile-keymap --keymap /path/to/keymap/file
+```
+</dd>
+<dt>`xkbcomp -xkb $DISPLAY -`</dt>
+<dd>
+
+<dl>
+<dt>Wayland session</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap-wayland
+```
+</dd>
+<dt>X11 session</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap-x11
+```
+</dd>
+</dl>
+</dd>
+<dt>`xkbcomp - $DISPLAY`</dt>
+<dt>`xkbcomp /path/to/keymap/file $DISPLAY`</dt>
+<dd>
+
+No equivalent: `xkbcli` does not modify the display server keymap.
+One must use the tools *specific* to each display server in order order to
+achieve it. Please have a look at @ref user-configuration "", which enables
+making custom layouts *discoverable* by keyboard configuration GUI.
+</dd>
+</dl>
+
 ## API
 
 ### Modifiers
@@ -118,3 +226,4 @@ xkb_state_unref(state);
 
 [virtual modifiers]: @ref virtual-modifier-def
 [real modifiers]: @ref real-modifier-def
+[RMLVO]: @ref RMLVO-intro
