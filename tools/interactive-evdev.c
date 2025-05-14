@@ -637,7 +637,7 @@ too_much_arguments:
     if (print_modmaps) {
         print_keys_modmaps(keymap);
         putchar('\n');
-        print_keymap_modmaps(keymap);
+        print_modifiers_encodings(keymap);
         putchar('\n');
     }
 #endif
