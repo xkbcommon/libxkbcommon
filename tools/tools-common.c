@@ -27,10 +27,12 @@
 #include <termios.h>
 #endif
 
+#include "xkbcommon/xkbcommon.h"
 #include "tools-common.h"
 #include "src/utils.h"
 #include "src/keysym.h"
 #include "src/compose/parser.h"
+#include "src/keymap.h"
 
 #ifdef _WIN32
 #define S_ISFIFO(mode) 0
@@ -46,9 +48,6 @@ print_keycode(struct xkb_keymap *keymap, const char* prefix,
         printf("%s%-4d%s", prefix, keycode, suffix);
     }
 }
-
-#ifdef ENABLE_PRIVATE_APIS
-#include "src/keymap.h"
 
 /* Variant of ModMaskText of main lib */
 static void
@@ -154,7 +153,6 @@ print_keys_modmaps(struct xkb_keymap *keymap) {
         printf(" {} # No modifier map");
     printf("\n");
 }
-#endif
 
 void
 tools_print_keycode_state(const char *prefix,
