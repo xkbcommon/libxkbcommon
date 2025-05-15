@@ -7,7 +7,7 @@ all_bullets = true
 single_file = true
 orphan_prefix = "+"
 title_format = """\
-{name} [{version}] - {project_date}
+{name} [{version}] – {project_date}
 =================================
 
 [{version}]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-{version}\
