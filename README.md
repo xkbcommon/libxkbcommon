@@ -22,6 +22,7 @@ layouts and a fair set of <!--!
   a *custom layout* or option.
 - [Quick Guide](doc/quick-guide.md): introduction on how to use this library.
 - [Tools](./README.md#tools): introduction to the `xkbcli` application.
+- [Release notes](doc/release-notes.md).
 - [Frequently Asked Question (FAQ)](doc/faq.md).
 
 ## Building

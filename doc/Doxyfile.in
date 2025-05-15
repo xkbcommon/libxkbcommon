@@ -31,6 +31,9 @@ INPUT                  = @INPUT@
 FILE_PATTERNS          = *.c \
                          *.h
 
+# These are included in other file but we do not want them as standalone
+EXCLUDE                = NEWS.md meson_options.txt
+
 RECURSIVE              = YES
 
 USE_MDFILE_AS_MAINPAGE = README.md
