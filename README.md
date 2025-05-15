@@ -1,11 +1,17 @@
 # libxkbcommon
 
+<!--
+NOTE: This file is carefully formatted to support both Github and Doxygen.
+They handle line breaks differently!
+-->
+
 **libxkbcommon** is a keyboard keymap compiler and support library which
 processes a reduced subset of keymaps as defined by the [XKB] \(X Keyboard
-Extension) specification.  It also contains a module for handling *Compose*
+Extension) specification. It also contains a module for handling *Compose*
 and dead keys, a separate *registry* library for listing available keyboard
-layouts and a fair set of <abbr title="Command-Line Interface">CLI</abbr>
-*tools*.
+layouts and a fair set of <!--!
+@rawHtml --><abbr title="Command-Line Interface">CLI</abbr><!--!
+@endRawHtml --> *tools*.
 
 [XKB]: doc/introduction-to-xkb.md
 
@@ -20,7 +26,7 @@ layouts and a fair set of <abbr title="Command-Line Interface">CLI</abbr>
 
 ## Building
 
-libxkbcommon is built with [Meson](http://mesonbuild.com/):
+libxkbcommon is built with [Meson](http://mesonbuild.com):
 
 ```bash
 meson setup build
@@ -33,9 +39,9 @@ using the X11 keyboard configuration resource files thusly:
 
 ```bash
 meson setup build \
-    -Denable-x11=false \
-    -Dxkb-config-root=/usr/share/X11/xkb \
-    -Dx-locale-root=/usr/share/X11/locale
+      -Denable-x11=false \
+      -Dxkb-config-root=/usr/share/X11/xkb \
+      -Dx-locale-root=/usr/share/X11/locale
 meson compile -C build
 ```
 
@@ -54,27 +60,29 @@ See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
 
 ## Tools
 
+<!--! @rawHtml -->
 Libxkbcommon has a fair set of <abbr title="Command-Line Interface">CLI</abbr>
-*tools*, grouped under the `xkbcli` application:
+<code>tools</code>, grouped under the <code>xkbcli</code> application:
+<!--! @endRawHtml -->
 
 <dl>
-<dt>`xkbcli compile-keymap`</dt>
+<dt><code>xkbcli compile-keymap</code></dt>
 <dd>Compile an XKB keymap</dd>
-<dt>`xkbcli compile-compose`</dt>
+<dt><code>xkbcli compile-compose</code></dt>
 <dd>Compile a compose file</dd>
-<dt>`xkbcli how-to-type`</dt>
+<dt><code>xkbcli how-to-type</code></dt>
 <dd>Show how to type a given Unicode codepoint</dd>
-<dt>`xkbcli interactive-wayland`</dt>
+<dt><code>xkbcli interactive-wayland</code></dt>
 <dd>Interactive debugger for XKB keymaps for Wayland</dd>
-<dt>`xkbcli interactive-x11`</dt>
+<dt><code>xkbcli interactive-x11</code></dt>
 <dd>Interactive debugger for XKB keymaps for X11</dd>
-<dt>`xkbcli interactive-evdev`</dt>
+<dt><code>xkbcli interactive-evdev</code></dt>
 <dd>Interactive debugger for XKB keymaps for evdev</dd>
-<dt>`xkbcli dump-keymap-wayland`</dt>
+<dt><code>xkbcli dump-keymap-wayland</code></dt>
 <dd>Dump a XKB keymap from a Wayland compositor</dd>
-<dt>`xkbcli dump-keymap-x11`</dt>
+<dt><code>xkbcli dump-keymap-x11</code></dt>
 <dd>Dump a XKB keymap from a X server</dd>
-<dt>`xkbcli list`</dt>
+<dt><code>xkbcli list</code></dt>
 <dd>List available layouts and more</dd>
 </dl>
 
@@ -102,11 +110,9 @@ See [Compatibility](doc/compatibility.md) notes.
 
 ## Development
 
-An extremely rudimentary homepage can be found at
-    https://xkbcommon.org
+An project’s homepage can be found at https://xkbcommon.org.
 
-xkbcommon is maintained in git at
-    https://github.com/xkbcommon/libxkbcommon
+xkbcommon is maintained in git at: https://github.com/xkbcommon/libxkbcommon
 
 Patches are always welcome, and may be sent to either
 <xorg-devel@lists.x.org> or <wayland-devel@lists.freedesktop.org>

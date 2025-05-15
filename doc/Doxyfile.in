@@ -70,7 +70,10 @@ DOTFILE_DIRS           = doc/diagrams
 
 DOT_IMAGE_FORMAT       = svg
 
+# Workaround HTML tags not supported by Doxygen
 ALIASES                += figure="@htmlonly[block]<figure>@endhtmlonly"
 ALIASES                += endfigure="@htmlonly[block]</figure>@endhtmlonly"
 ALIASES                += figcaption="@htmlonly[block]<figcaption>@endhtmlonly"
 ALIASES                += endfigcaption="@htmlonly[block]</figcaption>@endhtmlonly"
+ALIASES                += rawHtml="@htmlonly<!--"
+ALIASES                += endRawHtml="-->@endhtmlonly"
