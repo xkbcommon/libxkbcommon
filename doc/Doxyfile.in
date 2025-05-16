@@ -59,6 +59,8 @@ HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
 HTML_EXTRA_FILES       = meson_options.txt
 
+HTML_COLORSTYLE        = TOGGLE
+
 TIMESTAMP              = NO
 
 ENUM_VALUES_PER_LINE   = 1
