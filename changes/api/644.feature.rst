@@ -1,1 +1,0 @@
-Improved syntax errors in XKB files to include the expected/got tokens.
