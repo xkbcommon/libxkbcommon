@@ -32,7 +32,7 @@ FILE_PATTERNS          = *.c \
                          *.h
 
 # These are included in other file but we do not want them as standalone
-EXCLUDE                = NEWS.md meson_options.txt
+EXCLUDE                = LICENSE NEWS.md meson_options.txt
 
 RECURSIVE              = YES
 
@@ -56,8 +56,6 @@ GENERATE_TREEVIEW      = NO
 FULL_SIDEBAR           = NO
 
 HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
-
-HTML_EXTRA_FILES       = meson_options.txt
 
 HTML_COLORSTYLE        = TOGGLE
 
