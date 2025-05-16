@@ -1,3 +1,79 @@
+libxkbcommon [1.10.0] – 2025-05-21
+==================================
+
+[1.10.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.10.0
+
+## API
+
+### Breaking changes
+
+- *Modifiers masks* handling has been refactored to properly handle virtual
+  modifiers. Modifier masks are now always considered as an *opaque encoding* of
+  the modifiers state:
+  - Modifiers masks should not be interpreted by other means than the provided API.
+    In particular, one should not assume that modifiers masks always denote the
+    modifiers *indexes* of the keymap.
+  - It enables using virtual modifiers with arbitrary mappings. E.g. one can now
+    reliably create virtual modifiers without relying on the legacy X11 mechanism,
+    that requires a careful use of keys’ real and virtual modmaps.
+  - It enables *interoperability* with further implementations of XKB.
+- Changed *Compose* behavior so that sequences defined later always override
+  ones defined earlier, even if the new sequence is shorter.
+
+  Contributed by Jules Bertholet
+
+### Deprecated
+
+- Server applications using `xkb_state_update_mask()` should migrate to using
+  `xkb_state_update_latched_locked()` instead, for proper handling of the keyboard
+  state. ([#310](https://github.com/xkbcommon/libxkbcommon/issues/310))
+- The following modifiers names in `xkbcommon/xkbcommon-names.h` are now deprecated
+  and will be removed in a future version:
+  - `XKB_MOD_NAME_ALT`: use `XKB_VMOD_NAME_ALT` instead.
+  - `XKB_MOD_NAME_LOGO`: use `XKB_VMOD_NAME_SUPER` instead.
+  - `XKB_MOD_NAME_NUM`: use `XKB_VMOD_NAME_NUM` instead.
+
+  ([#538](https://github.com/xkbcommon/libxkbcommon/issues/538))
+
+### New
+
+- Added `xkb_state_update_latched_locked()` to update the keyboard state to change
+  the latched and locked state of the modifiers and layout.
+
+  This entry point is intended for *server* applications and should not be used
+  by *client* applications. This can be use for e.g. a GUI layout switcher.
+  ([#310](https://github.com/xkbcommon/libxkbcommon/issues/310))
+- Added `xkb_keymap_mod_get_mask()` to query the mapping of a modifier.
+- Added `VoidAction()` action to match the keysym pair `NoSymbol`/`VoidSymbol`.
+  It enables erasing a previous action and breaks latches.
+
+  This is a libxkbcommon extension. When serializing it will be converted to
+  `LockControls(controls=none,affect=neither)` for backward compatibility.
+  ([#622](https://github.com/xkbcommon/libxkbcommon/issues/622))
+- Improved syntax errors in XKB files to include the expected/got tokens.
+  ([#644](https://github.com/xkbcommon/libxkbcommon/issues/644))
+
+### Fixes
+
+- *Compose*: fixed sequence not fully overriden if the new sequence has no
+  keysym or string.
+
+
+## Tools
+
+### New
+
+- `xkbcli-compile-keymap`: Added option `--modmaps` that prints modifiers mappings.
+  This is similar to the legacy `xmodmap -pm`.
+
+
+## Build system
+
+### Breaking changes
+
+- Removed support for byacc -- use bison instead. ([#644](https://github.com/xkbcommon/libxkbcommon/issues/644))
+
+
 libxkbcommon [1.9.2] – 2025-05-07
 =================================
 
