@@ -1096,6 +1096,7 @@ You can disable the documentation with -Denable-docs=false.''')
 
     doxygen_input = [
         'README.md',
+        'LICENSE',
         'NEWS.md',
         'meson_options.txt',
         'doc/debugging.md',
@@ -1112,6 +1113,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/keymap-format-text-v1.md',
         'doc/message-registry.md',
         'doc/release-notes.md',
+        'doc/license.md',
         'include/xkbcommon/xkbcommon.h',
         'include/xkbcommon/xkbcommon-compose.h',
         'include/xkbcommon/xkbcommon-keysyms.h',

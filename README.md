@@ -127,6 +127,10 @@ The maintainers are:
 - [Ran Benita](mailto:ran@unusedvar.com)
 - [Pierre Le Marre](mailto:dev@wismill.eu)
 
+## License
+
+See the [LICENSE](doc/license.md) file.
+
 ## Credits
 
 Many thanks are due to Dan Nicholson for his heroic work in getting xkbcommon
