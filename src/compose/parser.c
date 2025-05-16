@@ -15,7 +15,10 @@
 #include "config.h"
 
 #include <errno.h>
+#include <string.h>
 
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
 #include "table.h"
@@ -417,15 +420,36 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
                              "skipping line");
                 return;
             }
-            node->is_leaf = true;
+
+            /* NOTE: If there was a previous entry, its string may *not* be
+             * reused in the UTF8 table and the corresponding memory is then
+             * wasted! */
             if (production->has_string) {
-                node->leaf.utf8 = darray_size(table->utf8);
-                darray_append_items(table->utf8, production->string,
-                                    (darray_size_t)strlen(production->string) + 1);
+                const size_t len = strlen(production->string);
+                if (node->is_leaf && node->leaf.utf8 &&
+                    len <= strlen(&darray_item(table->utf8, node->leaf.utf8))) {
+                    /* There is a previous entry with an overwritable string */
+                    memcpy(&darray_item(table->utf8, node->leaf.utf8),
+                           production->string, len + 1);
+                } else {
+                    /* Cannot reuse string: allocate new one */
+                    node->leaf.utf8 = darray_size(table->utf8);
+                    darray_append_items(table->utf8, production->string,
+                                        (darray_size_t)strlen(production->string) + 1);
+                }
+            } else {
+                /* Ensure we reset possible previous entry */
+                node->leaf.utf8 = 0;
             }
+
             if (production->has_keysym) {
                 node->leaf.keysym = production->keysym;
+            } else {
+                /* Ensure we reset possible previous entry */
+                node->leaf.keysym = XKB_KEY_NoSymbol;
             }
+
+            node->is_leaf = true;
             return;
         }
     }
