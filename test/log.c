@@ -358,7 +358,7 @@ test_compose(void)
             .log =
                 "warning: (input string):2:7: this compose sequence is a duplicate of another; skipping line\n"
                 "warning: (input string):4:11: a sequence already exists which is a prefix of this sequence; overriding\n"
-                "warning: (input string):6:11: this compose sequence is a prefix of another; skipping line\n",
+                "warning: (input string):6:11: this compose sequence is a prefix of another; overriding\n",
             .error = false
         }
     };
