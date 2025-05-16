@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 
 #include "test.h"
 #include "src/utf8.h"
@@ -413,12 +414,36 @@ test_conflicting(struct xkb_context *ctx)
         XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "foo",  XKB_KEY_B,
         XKB_KEY_NoSymbol));
 
-    // new same length as old #3
+    // new same length as old #3: overwritable string: do not allocate
     assert(test_compose_seq_buffer(ctx,
         "<A> <B>      :  \"foo\"  A \n"
-        "<A> <B>      :  \"bar\"  A \n",
+        "<A> <B>      :  \"qu\"   A \n",
         XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
-        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_A,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "qu",   XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #4: no-overwritable string: allocate
+    assert(test_compose_seq_buffer(ctx,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :  \"quux\" A \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "quux", XKB_KEY_A,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #5: ensure string is reset
+    assert(test_compose_seq_buffer(ctx,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :           B \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "B",    XKB_KEY_B,
+        XKB_KEY_NoSymbol));
+
+    // new same length as old #6: ensure keysym is reset
+    assert(test_compose_seq_buffer(ctx,
+        "<A> <B>      :  \"foo\"  A \n"
+        "<A> <B>      :  \"bar\"    \n",
+        XKB_KEY_A,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSING,  "",     XKB_KEY_NoSymbol,
+        XKB_KEY_B,              XKB_COMPOSE_FEED_ACCEPTED,  XKB_COMPOSE_COMPOSED,   "bar",  XKB_KEY_NoSymbol,
         XKB_KEY_NoSymbol));
 }
 
