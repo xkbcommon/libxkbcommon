@@ -483,9 +483,8 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
     }
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
-        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Unknown field encountered; "
-                "Assignment to field \"%s\" ignored\n", field);
+        log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
+                "Default defined for unknown field \"%s\"; Ignored\n", field);
         return false;
     }
 

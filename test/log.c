@@ -254,7 +254,52 @@ test_keymaps(void)
                 "warning: [XKB-362] Unsupported legacy action type \"ISOLock\".\n"
                 "warning: [XKB-362] Unsupported legacy action type \"RedirectKey\".\n",
             .error = false
-        }
+        },
+        /* Invalid global var */
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_keycodes { foobar; };\n"
+                "};",
+            .log =
+                "error: [XKB-639] Default defined for unknown field \"foobar\"; Ignored\n"
+                "error: Failed to compile xkb_keycodes\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_types { foobar; };\n"
+                "};",
+            .log =
+                "error: [XKB-639] Default defined for unknown field \"foobar\"; Ignored\n"
+                "error: Failed to compile xkb_types\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_compat { foobar; };\n"
+                "};",
+            .log =
+                "error: [XKB-639] Default defined for unknown field \"foobar\"; Ignored\n"
+                "error: Failed to compile xkb_compatibility\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
+        {
+            .input =
+                "default xkb_keymap {\n"
+                "  xkb_symbols { foobar; };\n"
+                "};",
+            .log =
+                "error: [XKB-639] Default defined for unknown field \"foobar\"; Ignored\n"
+                "error: Failed to compile xkb_symbols\n"
+                "error: [XKB-822] Failed to compile keymap\n",
+            .error = true
+        },
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {

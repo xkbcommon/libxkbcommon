@@ -738,10 +738,14 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         ret = SetLedMapField(info, &temp, field, ndx, stmt->value);
         MergeLedMap(info, &info->default_led, &temp, true);
     }
-    else {
+    else if (elem) {
         ret = SetDefaultActionField(info->ctx, &info->default_actions,
                                     &info->mods, elem, field, ndx,
                                     stmt->value, stmt->merge);
+    } else {
+        log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
+                "Default defined for unknown field \"%s\"; Ignored\n", field);
+        return false;
     }
     return ret;
 }
