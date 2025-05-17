@@ -16,6 +16,8 @@
 - [ ] Ensure all items in the current milestone are processed. Remaining items
   must be *explicitly* postponed by changing their milestone.
 
+- [ ] Ensure the keysyms header is up-to-date (see [xorgproto])
+
 - [ ] Create a release branch: `git checkout -b release/vMAJOR.MINOR.PATCH master`
 
 - [ ] Update the `NEWS.md` file for the release, following [the corresponding instructions](changes/README.md).
@@ -33,6 +35,8 @@
 - [ ] Tag `git pull && git tag --annotate -m xkbcommon-<MAJOR.MINOR.PATCH> xkbcommon-<MAJOR.MINOR.PATCH>`.
 
 - [ ] Push the tag `git push origin xkbcommon-<MAJOR.MINOR.PATCH>`.
+
+[xorgproto]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/tree/master/include/X11
 
 #### Send announcement email to wayland-devel
 
@@ -60,6 +64,9 @@ git commit: <git commit sha>
   Check carefully that there is no warning during generation with Doxygen.
   It may be necessary to use another version of Doxygen to get a clean build.
   Building from source using the main branch is also a good option.
+
+- [ ] Apply manual Doxygen fixes:
+  - [ ] Fix labels of the TOC in the “Release notes” page.
 
 - [ ] Update the `current` symlink: `ln -nsrf doc/<MAJOR.MINOR.PATCH> doc/current`.
 
