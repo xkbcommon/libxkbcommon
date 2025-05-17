@@ -375,6 +375,11 @@
   added: ALWAYS
   type: error
   description: "Invalid _real_ modifier"
+- id: "unknown-default-field"
+  code: 639
+  added: 1.10.0
+  type: error
+  description: "Cannot set default value to a an unknown field"
 - id: "unknown-char-escape-sequence"
   code: 645
   added: ALWAYS

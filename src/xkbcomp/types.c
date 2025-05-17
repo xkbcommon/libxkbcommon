@@ -636,6 +636,35 @@ HandleKeyTypeDef(KeyTypesInfo *info, KeyTypeDef *def)
     return true;
 }
 
+static bool
+HandleGlobalVar(KeyTypesInfo *info, VarDef *stmt)
+{
+    const char *elem, *field;
+    ExprDef *arrayNdx;
+
+    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field,
+                        &arrayNdx))
+        return false;           /* internal error, already reported */
+
+    if (elem && istreq(elem, "type")) {
+        log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
+                "Support for changing the default type has been removed; "
+                "Statement ignored\n");
+        return true;
+    }
+    else if (elem) {
+        log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
+                "Default defined for unknown element \"%s\"; "
+                "Value for field \"%s.%s\" ignored\n", elem, elem, field);
+    }
+    else if (field) {
+        log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
+                "Default defined for unknown field \"%s\"; Ignored\n", field);
+    }
+
+    return false;
+}
+
 static void
 HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
 {
@@ -653,10 +682,7 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
             ok = HandleKeyTypeDef(info, (KeyTypeDef *) stmt);
             break;
         case STMT_VAR:
-            log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
-                    "Support for changing the default type has been removed; "
-                    "Statement ignored\n");
-            ok = true;
+            ok = HandleGlobalVar(info, (VarDef*) stmt);
             break;
         case STMT_VMOD:
             ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
