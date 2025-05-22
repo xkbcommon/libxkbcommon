@@ -494,6 +494,8 @@ if build_tools
     # Tool: compile-keymap
     xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
                                        'tools/compile-keymap.c',
+                                       'src/keymap-formats.c',
+                                       'src/keymap-formats.h',
                                        dependencies: tools_dep,
                                        install: true,
                                        install_dir: dir_libexec)
@@ -517,6 +519,8 @@ if build_tools
     # Tool: how-to-type
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
+               'src/keymap-formats.c',
+               'src/keymap-formats.h',
                'src/utf8-decoding.c',
                'src/utf8-decoding.h',
                dependencies: tools_dep,
@@ -529,6 +533,8 @@ if build_tools
     if cc.has_header('linux/input.h')
         executable('xkbcli-interactive-evdev',
                    'tools/interactive-evdev.c',
+                   'src/keymap-formats.c',
+                   'src/keymap-formats.h',
                    dependencies: tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -556,6 +562,8 @@ if build_tools
 
         executable('xkbcli-dump-keymap-x11',
                    'tools/interactive-x11.c',
+                   'src/keymap-formats.c',
+                   'src/keymap-formats.h',
                    dependencies: x11_tools_dep,
                    c_args: ['-DKEYMAP_DUMP'],
                    install: true,
@@ -593,6 +601,8 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         ]
         executable('xkbcli-interactive-wayland',
                    'tools/interactive-wayland.c',
+                   'src/keymap-formats.c',
+                   'src/keymap-formats.h',
                    xdg_shell_sources,
                    dependencies: [tools_dep, wayland_client_dep],
                    install: true,
@@ -602,6 +612,8 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
 
         executable('xkbcli-dump-keymap-wayland',
                    'tools/interactive-wayland.c',
+                   'src/keymap-formats.c',
+                   'src/keymap-formats.h',
                    xdg_shell_sources,
                    dependencies: [tools_dep, wayland_client_dep],
                    c_args: ['-DKEYMAP_DUMP'],
@@ -739,6 +751,8 @@ test(
         'test/keymap.c',
         'test/keysym.h',
         'test/keysym-case-mapping.h',
+        'src/keymap-formats.c',
+        'src/keymap-formats.h',
         dependencies: test_dep),
     env: test_env,
 )
@@ -1027,6 +1041,8 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         executable(
             'bench-compile-keymap',
             'bench/compile-keymap.c',
+            'src/keymap-formats.c',
+            'src/keymap-formats.h',
             dependencies: test_dep
         ),
         env: bench_env,
@@ -1036,6 +1052,8 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         executable(
             'bench-dump-keymap',
             'bench/compile-keymap.c',
+            'src/keymap-formats.c',
+            'src/keymap-formats.h',
             dependencies: test_dep,
             c_args: ['-DKEYMAP_DUMP'],
         ),
@@ -1111,7 +1129,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/compatibility.md',
         'doc/user-configuration.md',
         'doc/rules-format.md',
-        'doc/keymap-format-text-v1.md',
+        'doc/keymap-text-format-v1-2.md',
         'doc/message-registry.md',
         'doc/release-notes.md',
         'doc/license.md',
