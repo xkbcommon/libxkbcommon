@@ -176,7 +176,7 @@ have_version_script = cc.links(
 map_to_def = find_program('scripts/map-to-def')
 
 # libxkbcommon.
-bison = find_program('bison', 'win_bison', required: true, version: '>= 2.3a')
+bison = find_program('bison', 'win_bison', required: true, version: '>= 3.6')
 yacc = bison
 yacc_gen = generator(
     bison,

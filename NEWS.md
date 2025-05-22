@@ -71,7 +71,9 @@ libxkbcommon [1.10.0] – 2025-05-21
 
 ### Breaking changes
 
-- Removed support for byacc -- use bison instead. ([#644](https://github.com/xkbcommon/libxkbcommon/issues/644))
+- Removed support for byacc -- use bison instead.
+  ([#644](https://github.com/xkbcommon/libxkbcommon/issues/644))
+- Required bison ≥ 3.6.
 
 
 libxkbcommon [1.9.2] – 2025-05-07
