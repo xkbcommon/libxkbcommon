@@ -50,6 +50,10 @@ jobs:
           git clone --depth=1 https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config.git
           pushd "xkeyboard-config"
           BUILDDIR=build
+          # xkeyboard-config 2.45+ uses symlinks for legacy unversioned files,
+          # but meson cannot overwrite < 2.45 which used regular files and directories.
+          rm /usr/share/pkgconfig/xkeyboard-config.pc
+          rm -r /usr/share/X11/xkb
           meson setup $BUILDDIR -Dprefix=/usr
           meson install -C $BUILDDIR
           popd
