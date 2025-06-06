@@ -13,9 +13,14 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
+#include <string.h>
 
+#include "messages-codes.h"
+#include "utils.h"
 #include "xkbcomp-priv.h"
 #include "include.h"
+#include "scanner-utils.h"
+#include "utils-paths.h"
 
 /**
  * Parse an include statement. Each call returns a file name, along with
@@ -187,6 +192,81 @@ LogIncludePaths(struct xkb_context *ctx)
     }
 }
 
+static size_t
+expand_percent(struct xkb_context *ctx, const char* parent_file_name,
+               const char* typeDir, char *buf, size_t buf_size,
+               const char *name, size_t name_len)
+{
+    struct scanner s;
+    scanner_init(&s, ctx, name, name_len, parent_file_name, NULL);
+    s.buf_pos = 0;
+
+    while (!scanner_eof(&s) && !scanner_eol(&s)) {
+        if (scanner_chr(&s, '%')) {
+            if (scanner_chr(&s, '%')) {
+                scanner_buf_append(&s, '%');
+            }
+            else if (scanner_chr(&s, 'H')) {
+                const char *home = xkb_context_getenv(ctx, "HOME");
+                if (!home) {
+                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+                                "%%H was used in an include statement, but the "
+                                "HOME environment variable is not set");
+                    return 0;
+                }
+                if (!scanner_buf_appends(&s, home)) {
+                    scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                                "include path after expanding %%H is too long");
+                    return 0;
+                }
+            }
+            else if (scanner_chr(&s, 'S')) {
+                const char *default_root =
+                    xkb_context_include_path_get_system_path(ctx);
+                if (!scanner_buf_appends(&s, default_root) ||
+                    !scanner_buf_append(&s, '/') ||
+                    !scanner_buf_appends(&s, typeDir)) {
+                    scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                                "include path after expanding %%S is too long");
+                    return 0;
+                }
+            }
+            else if (scanner_chr(&s, 'E')) {
+                const char *default_root =
+                    xkb_context_include_path_get_extra_path(ctx);
+                if (!scanner_buf_appends(&s, default_root) ||
+                    !scanner_buf_append(&s, '/') ||
+                    !scanner_buf_appends(&s, typeDir)) {
+                    scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                                "include path after expanding %%E is too long");
+                    return 0;
+                }
+            }
+            else {
+                scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                            "unknown %% format (%c) in include statement",
+                            scanner_peek(&s));
+                return 0;
+            }
+        }
+        else {
+            scanner_buf_append(&s, scanner_next(&s));
+        }
+    }
+    if (!scanner_buf_append(&s, '\0')) {
+        scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                    "include path is too long; max: %zu", sizeof(s.buf));
+        return 0;
+    }
+    if (unlikely(s.buf_pos > buf_size)) {
+        scanner_err(&s, XKB_ERROR_INSUFFICIENT_BUFFER_SIZE,
+                    "include path is too long: %zu > %zu", s.buf_pos, buf_size);
+        return 0;
+    }
+    memcpy(buf, s.buf, s.buf_pos);
+    return s.buf_pos;
+}
+
 /**
  * Return an open file handle to the first file (counting from offset) with the
  * given name in the include paths, starting at the offset.
@@ -198,47 +278,111 @@ LogIncludePaths(struct xkb_context *ctx)
  * If this function returns NULL, no more files are available.
  */
 FILE *
-FindFileInXkbPath(struct xkb_context *ctx, const char *name,
-                  enum xkb_file_type type, char **pathRtrn,
-                  unsigned int *offset)
+FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
+                  const char *name, size_t name_len, enum xkb_file_type type,
+                  char *buf, size_t buf_size, unsigned int *offset)
 {
-    unsigned int i;
+    if (unlikely(name_len + 1 > buf_size)) {
+        log_err(ctx, XKB_ERROR_INVALID_PATH,
+                "Path is too long: expected max length of %zu, "
+                "got raw path: %.*s\n",
+                buf_size, (unsigned int) name_len, name);
+        return NULL;
+    }
+
     FILE *file = NULL;
-    char buf[PATH_MAX];
-    const char *typeDir;
+    char *name_buffer = NULL;
+    const char *typeDir = DirectoryForInclude(type);
 
-    typeDir = DirectoryForInclude(type);
+    /* Detect %-expansion */
+    size_t k;
+    bool require_expansion = false;
+    for (k = 0; k < name_len; k++) {
+        if (name[k] == '%') {
+            require_expansion = true;
+            break;
+        }
+    }
 
-    for (i = *offset; i < xkb_context_num_include_paths(ctx); i++) {
-        if (!snprintf_safe(buf, sizeof(buf), "%s/%s/%s",
+    if (require_expansion) {
+        /* Slow path: process %-expansion */
+
+        /* Copy prefix (usual case: k == 0) */
+        assert(k < buf_size);
+        memcpy(buf, name, k);
+        /* Proceed to %-expansion */
+        size_t count = expand_percent(ctx, parent_file_name, typeDir,
+                                      buf + k, buf_size - k,
+                                      name + k, name_len - k);
+        if (!count)
+            return NULL;
+        count += k;
+        assert(buf[count - 1] == '\0');
+        if (is_absolute(buf)) {
+            /* Absolute path: path is already in buffer */
+            goto open_absolute_path;
+        } else {
+            /* Relative path: dup the buffer and replace the name.
+             * Unlikely to happen, because %-expansion is meant to use
+             * absolute paths. */
+            name_buffer = strndup(buf, count);
+            if (!name_buffer) {
+                log_err(ctx, XKB_ERROR_ALLOCATION_ERROR,
+                        "Cannot allocate a copy of the file name: %s.\n", buf);
+                return NULL;
+            }
+            name = name_buffer;
+            name_len = count;
+            goto process_relative_path;
+        }
+    }
+
+    if (is_absolute(name)) {
+        /* Copy path to buffer */
+        memcpy(buf, name, name_len);
+        buf[name_len] = '\0';
+
+open_absolute_path:
+        file = fopen(buf, "rb");
+        /* Ensure any later call to FindFileInXkbPath will fail.
+         * This is needed for the unlikely case where parsing or map lookup
+         * fails for this file, which normally leads to try the next include
+         * path, which does not make sense here as the path is absolute. */
+        *offset = xkb_context_num_include_paths(ctx);
+        return file;
+    }
+
+process_relative_path:
+
+    for (unsigned int i = *offset; i < xkb_context_num_include_paths(ctx); i++) {
+        if (!snprintf_safe(buf, buf_size, "%s/%s/%.*s",
                            xkb_context_include_path_get(ctx, i),
-                           typeDir, name)) {
+                           typeDir, (unsigned int) name_len, name)) {
             log_err(ctx, XKB_ERROR_INVALID_PATH,
                     "Path is too long: expected max length of %zu, "
-                    "got: %s/%s/%s\n",
-                    sizeof(buf), xkb_context_include_path_get(ctx, i),
-                    typeDir, name);
+                    "got: %s/%s/%.*s\n",
+                    buf_size, xkb_context_include_path_get(ctx, i),
+                    typeDir, (unsigned int) name_len, name);
             continue;
         }
 
         file = fopen(buf, "rb");
         if (file) {
-            if (pathRtrn)
-                *pathRtrn = strdup(buf);
             *offset = i;
             goto out;
         }
     }
 
-    /* We only print warnings if we can't find the file on the first lookup */
+    /* We only print warnings if we can’t find the file on the first lookup */
     if (*offset == 0) {
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
-                "Couldn't find file \"%s/%s\" in include paths\n",
-                typeDir, name);
+                "Couldn't find file \"%s/%.*s\" in include paths\n",
+                typeDir, (unsigned int) name_len, name);
         LogIncludePaths(ctx);
     }
 
 out:
+    free(name_buffer);
     return file;
 }
 
@@ -269,10 +413,15 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
     XkbFile *xkb_file = NULL;  /* Exact match */
     XkbFile *candidate = NULL; /* Weak match */
     unsigned int offset = 0;
+    char buf[PATH_MAX];
 
-    FILE* file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
-    if (!file)
-        return NULL;
+    const size_t stmt_file_len = strlen(stmt->file);
+
+    // FIXME: use parent file name instead of “(unknow)”.
+    FILE* file = FindFileInXkbPath(ctx, "(unknown)",
+                                   stmt->file, stmt_file_len, file_type,
+                                   buf, sizeof(buf), &offset);
+
 
     while (file) {
         xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
@@ -312,7 +461,9 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
         }
 
         offset++;
-        file = FindFileInXkbPath(ctx, stmt->file, file_type, NULL, &offset);
+        file = FindFileInXkbPath(ctx, "(unknown)",
+                                 stmt->file, stmt_file_len, file_type,
+                                 buf, sizeof(buf), &offset);
     }
 
     if (!xkb_file) {

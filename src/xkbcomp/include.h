@@ -24,9 +24,9 @@ ParseIncludeMap(char **str_inout, char **file_rtrn, char **map_rtrn,
                 char *nextop_rtrn, char **extra_data);
 
 FILE *
-FindFileInXkbPath(struct xkb_context *ctx, const char *name,
-                  enum xkb_file_type type, char **pathRtrn,
-                  unsigned int *offset);
+FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
+                  const char *name, size_t name_len, enum xkb_file_type type,
+                  char *buf, size_t buf_size, unsigned int *offset);
 
 bool
 ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth);

@@ -821,9 +821,54 @@ If no section name is provided, the [default map] is looked up.
 
 [default map]: @ref default-map-def
 
-The path may be absolute or relative to its corresponding directory in a XKB
+The path is usually relative to its corresponding directory in a XKB
 configuration: e.g. given the configuration directory `<XKB>`, files of
-section type `xkb_symbols` are looked up in `<XKB>/symbols`.
+section type `xkb_symbols` are looked up in `<XKB>/symbols`. Since 1.11,
+the paths can also be absolute or use **%-expansion**:
+
+<!--
+[WARNING]: Doxygen parsing is a mess. \% does not work as expected
+in Markdown code quotes, e.g. `\%H` gives `\H`. But using <code> tags
+or %%H seems to do the job though.
+-->
+<dl>
+<dt>`%%`</dt>
+<dd>A literal %.</dd>
+<dt><code>\%H</code></dt>
+<dd>The value of the `$HOME` environment variable.</dd>
+<dt><code>\%S</code></dt>
+<dd>
+The *main* system-installed XKB directory of the corresponding [component]
+\(usually `/usr/share/X11/xkb/<component>`).
+
+This enables e.g. to override a system file using @ref user-configuration ""
+with the exact *same name*:
+
+```c
+// File: ~/.config/xkb/symbols/de
+xkb_symbols "basic" {
+    // Include the system file /usr/share/X11/xkb.
+    //
+    // Note that it is not be possible to use `include "de(basic)"` because
+    // it would create an include *loop*.
+    include "%S/de(basic)"
+    // Override the system file entries
+    key <AB01> { [z, Z] };
+    key <AD06> { [y, Y] };
+}
+```
+</dd>
+<dt><code>\%E</code></dt>
+<dd>
+The *extra* system-wide XKB directory of the corresponding [component]
+\(usually `/etc/xkb/<component>`).
+</dd>
+</dl>
+
+[component]: @ref keymap-components-table
+
+@warning Absolute paths and `%`-expansion are supported by libxkbcommon but not
+by the legacy X11 tools.
 
 The `include` keyword uses the *default* [merge mode]. The following keywords
 can be used instead to use the corresponding *explicit* [merge modes][]:
@@ -850,6 +895,9 @@ The following example illustrates the complete syntax:
 include "<PATH>"
 // Augment merge mode, 1 file with an implicit section name
 augment "<PATH>(<SECTION_NAME>)"
+// Absolute path and %-expansion
+include "/usr/share/X11/xkb/symbols/pc"
+include "%S/pc"
 // Override merge mode, 2 files: a first file with an implicit section name merged
 // using the augment mode with a second file with an explicit section name
 override "<PATH_1>|<PATH_2>(<SECTION_NAME>)

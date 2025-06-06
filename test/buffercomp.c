@@ -8,12 +8,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "src/keysym.h"
 #include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
 #include "xkbcommon/xkbcommon.h"
+#include "test-config.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -336,6 +338,55 @@ test_recursive_includes(struct xkb_context *ctx)
         keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
+}
+
+static void
+test_include_paths(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+    const char simple_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes \"test\" { include \"evdev\" };\n"
+        "  xkb_types    \"test\" { include \"complete\" };\n"
+        "  xkb_symbols  \"test\" { include \"pc+us(basic)\" };\n"
+        "};";
+    keymap = test_compile_buffer(ctx, simple_str, sizeof(simple_str));
+    char *expected =
+        xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    xkb_keymap_unref(keymap);
+
+    setenv("XKB_CONFIG_ROOT", TEST_XKB_CONFIG_ROOT, 1);
+
+    const char* keymaps[] = {
+        "xkb_keymap {\n"
+        "  xkb_keycodes \"test\" { include \"%S/evdev\" };\n"
+        "  xkb_types    \"test\" { include \"%S/complete\" };\n"
+        "  xkb_symbols  \"test\" { include \"%S/pc+%S/us(basic)\" };\n"
+        "};",
+/* Windows absolute path contains “:”, which has special meaning in XKB includes,
+ * so skip it. */
+#ifndef _WIN32
+        "xkb_keymap {\n"
+        "  xkb_keycodes \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/keycodes/evdev\" };\n"
+        "  xkb_types    \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/types/complete\" };\n"
+        "  xkb_symbols  \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/symbols/pc+"
+                                               TEST_XKB_CONFIG_ROOT "/symbols/us(basic)\" };\n"
+        "};",
+#endif
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        assert(keymap);
+        char *got =
+            xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+        assert_streq_not_null("test_include_paths", expected, got);
+        free(got);
+        xkb_keymap_unref(keymap);
+    }
+
+    free(expected);
 }
 
 static void
@@ -1704,6 +1755,7 @@ main(int argc, char *argv[])
     test_optional_components(ctx, update_output_files);
     test_bidi_chars(ctx, update_output_files);
     test_recursive_includes(ctx);
+    test_include_paths(ctx);
     test_include_default_maps(update_output_files);
     test_alloc_limits(ctx);
     test_integers(ctx, update_output_files);
