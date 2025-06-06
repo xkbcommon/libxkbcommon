@@ -56,6 +56,12 @@ struct scanner {
     const char *s;
     size_t pos;
     size_t len;
+    /*
+     * Internal buffer.
+     * Since this is used to handle paths that are possibly absolute, in theory
+     * we should size it to PATH_MAX. However it is very unlikely to reach such
+     * long paths in our context.
+     */
     char buf[1024];
     size_t buf_pos;
     /* The position of the start of the current token. */

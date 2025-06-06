@@ -420,106 +420,40 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
                 unsigned int include_depth,
                 struct sval inc)
 {
-    struct scanner s; /* parses the !include value */
-
-    scanner_init(&s, m->ctx, inc.start, inc.len,
-                 parent_scanner->file_name, NULL);
-    s.token_pos = s.pos;
-    s.buf_pos = 0;
-
     if (include_depth >= MAX_INCLUDE_DEPTH) {
-        scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
+        scanner_err(parent_scanner, XKB_LOG_MESSAGE_NO_ID,
                     "maximum include depth (%u) exceeded; "
                     "maybe there is an include loop?",
                     MAX_INCLUDE_DEPTH);
         return;
     }
 
-    /* Proceed to %-expansion */
-    while (!scanner_eof(&s) && !scanner_eol(&s)) {
-        if (scanner_chr(&s, '%')) {
-            if (scanner_chr(&s, '%')) {
-                scanner_buf_append(&s, '%');
-            }
-            else if (scanner_chr(&s, 'H')) {
-                const char *home = xkb_context_getenv(m->ctx, "HOME");
-                if (!home) {
-                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                                "%%H was used in an include statement, but the "
-                                "HOME environment variable is not set");
-                    return;
-                }
-                if (!scanner_buf_appends(&s, home)) {
-                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                                "include path after expanding %%H is too long");
-                    return;
-                }
-            }
-            else if (scanner_chr(&s, 'S')) {
-                const char *default_root =
-                    xkb_context_include_path_get_system_path(m->ctx);
-                if (!scanner_buf_appends(&s, default_root) ||
-                    !scanner_buf_appends(&s, "/rules")) {
-                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                                "include path after expanding %%S is too long");
-                    return;
-                }
-            }
-            else if (scanner_chr(&s, 'E')) {
-                const char *default_root =
-                    xkb_context_include_path_get_extra_path(m->ctx);
-                if (!scanner_buf_appends(&s, default_root) ||
-                    !scanner_buf_appends(&s, "/rules")) {
-                    scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                                "include path after expanding %%E is too long");
-                    return;
-                }
-            }
-            else {
-                scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                            "unknown %% format (%c) in include statement",
-                            scanner_peek(&s));
-                return;
-            }
-        }
-        else {
-            scanner_buf_append(&s, scanner_next(&s));
-        }
-    }
-    if (!scanner_buf_append(&s, '\0')) {
-        scanner_err(&s, XKB_LOG_MESSAGE_NO_ID,
-                    "include path is too long");
-        return;
-    }
-
     /* Lookup rules file in XKB paths only if the include path is relative */
     unsigned int offset = 0;
-    FILE *file;
-    bool absolute_path = is_absolute(s.buf);
-    if (absolute_path)
-        file = fopen(s.buf, "rb");
-    else
-        file = FindFileInXkbPath(m->ctx, s.buf, FILE_TYPE_RULES, NULL, &offset);
+    char buf[PATH_MAX];
+    FILE *file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
+                                   inc.start, inc.len, FILE_TYPE_RULES,
+                                   buf, sizeof(buf), &offset);
 
     while (file) {
-        bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, s.buf);
+        bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, buf);
         fclose(file);
         if (ret)
             return;
         /* Failed to parse rules or get all the components */
         log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "No components returned from included XKB rules \"%s\"\n",
-                s.buf);
-        if (absolute_path)
-            break;
+                buf);
         /* Try next XKB path */
         offset++;
-        file = FindFileInXkbPath(m->ctx, s.buf, FILE_TYPE_RULES, NULL, &offset);
+        file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
+                                 inc.start, inc.len, FILE_TYPE_RULES,
+                                 buf, sizeof(buf), &offset);
     }
 
     log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Failed to open included XKB rules \"%s\"\n",
-            s.buf);
+            buf);
 }
 
 static void
@@ -1692,12 +1626,14 @@ xkb_components_from_rules(struct xkb_context *ctx,
 {
     bool ret = false;
     FILE *file;
-    char *path = NULL;
     struct matcher *matcher = NULL;
     struct matched_sval *mval;
     unsigned int offset = 0;
+    char path[PATH_MAX];
 
-    file = FindFileInXkbPath(ctx, rmlvo->rules, FILE_TYPE_RULES, &path, &offset);
+    file = FindFileInXkbPath(ctx, "(unknown)",
+                             rmlvo->rules, strlen(rmlvo->rules), FILE_TYPE_RULES,
+                             path, sizeof(path), &offset);
     if (!file) {
         log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Cannot load XKB rules \"%s\"\n", rmlvo->rules);
@@ -1769,6 +1705,5 @@ err_out:
     if (file)
         fclose(file);
     matcher_free(matcher);
-    free(path);
     return ret;
 }
