@@ -262,7 +262,7 @@ test_get_path(const char *path_rel)
     if (!srcdir)
         srcdir = ".";
 
-    if (is_absolute(path_rel))
+    if (is_absolute_path(path_rel))
         return strdup(path_rel);
 
     path = asprintf_safe("%s/test/data%s%s", srcdir,

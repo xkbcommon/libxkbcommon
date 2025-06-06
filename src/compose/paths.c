@@ -140,7 +140,7 @@ get_xdg_xcompose_file_path(struct xkb_context *ctx)
     const char *home;
 
     xdg_config_home = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
-    if (!xdg_config_home || !is_absolute(xdg_config_home)) {
+    if (!xdg_config_home || !is_absolute_path(xdg_config_home)) {
         home = xkb_context_getenv(ctx, "HOME");
         if (!home)
             return NULL;
@@ -186,7 +186,7 @@ get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
     if (!resolved)
         return NULL;
 
-    if (is_absolute(resolved)) {
+    if (is_absolute_path(resolved)) {
         path = resolved;
     }
     else {

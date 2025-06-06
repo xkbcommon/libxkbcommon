@@ -79,23 +79,23 @@ static void
 test_path_functions(void)
 {
     /* Absolute paths */
-    assert(!is_absolute(""));
+    assert(!is_absolute_path(""));
 #ifdef _WIN32
-    assert(!is_absolute("path\\test"));
-    assert(is_absolute("c:\\test"));
-    assert(!is_absolute("c:test"));
-    assert(is_absolute("c:\\"));
-    assert(is_absolute("c:/"));
-    assert(!is_absolute("c:"));
-    assert(is_absolute("\\\\foo"));
-    assert(is_absolute("\\\\?\\foo"));
-    assert(is_absolute("\\\\?\\UNC\\foo"));
-    assert(is_absolute("/foo"));
-    assert(is_absolute("\\foo"));
+    assert(!is_absolute_path("path\\test"));
+    assert(is_absolute_path("c:\\test"));
+    assert(!is_absolute_path("c:test"));
+    assert(is_absolute_path("c:\\"));
+    assert(is_absolute_path("c:/"));
+    assert(!is_absolute_path("c:"));
+    assert(is_absolute_path("\\\\foo"));
+    assert(is_absolute_path("\\\\?\\foo"));
+    assert(is_absolute_path("\\\\?\\UNC\\foo"));
+    assert(is_absolute_path("/foo"));
+    assert(is_absolute_path("\\foo"));
 #else
-    assert(!is_absolute("test/path"));
-    assert(is_absolute("/test" ));
-    assert(is_absolute("/" ));
+    assert(!is_absolute_path("test/path"));
+    assert(is_absolute_path("/test" ));
+    assert(is_absolute_path("/" ));
 #endif
 }
 

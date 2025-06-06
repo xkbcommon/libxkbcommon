@@ -318,7 +318,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
             return NULL;
         count += k;
         assert(buf[count - 1] == '\0');
-        if (is_absolute(buf)) {
+        if (is_absolute_path(buf)) {
             /* Absolute path: path is already in buffer */
             goto open_absolute_path;
         } else {
@@ -337,7 +337,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
         }
     }
 
-    if (is_absolute(name)) {
+    if (is_absolute_path(name)) {
         /* Copy path to buffer */
         memcpy(buf, name, name_len);
         buf[name_len] = '\0';
