@@ -11,7 +11,7 @@
 
 /* Caller must ensure that the input is not NULL or empty */
 bool
-is_absolute(const char *path)
+is_absolute_path(const char *path)
 {
 #ifdef _WIN32
     /*
