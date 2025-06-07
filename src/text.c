@@ -90,7 +90,7 @@ const LookupEntry groupMaskNames[] = {
     { "Group7", 0x40 },
     { "Group8", 0x80 },
     { "none", 0x00 },
-    { "all", 0xff },
+    { "all", XKB_ALL_GROUPS },
     { NULL, 0 }
 };
 

@@ -55,13 +55,13 @@ xkb_compatibility {
 	};
 	indicator "A" {
 		whichGroupState= locked;
-		groups= 0xfe;
+		groups= 0xfffffffe;
 		whichModState= locked;
 		modifiers= M2;
 		controls= SlowKeys;
 	};
 	indicator "B" {
-		groups= 0xfe;
+		groups= 0xfffffffe;
 		whichModState= base;
 		modifiers= M4;
 		controls= AudibleBell;
