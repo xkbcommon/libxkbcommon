@@ -192,7 +192,7 @@ for the protocol. Some priceless resources are:
 [XKB Protocol]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html
 [xkbcommon-x11]: @ref x11-overview
 [Wayland]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard
-[compatibility]: @ref xkb-v1-compatibility
+[compatibility]: @ref xkbcommon-compatibility
 [keymap-text-format-v1-v2]: doc/keymap-text-format-v1-v2.md
 [ivan-pascal]: https://web.archive.org/web/20190724015820/http://pascal.tsu.ru/en/xkb/
 [unreliable-guide]: https://www.charvolant.org/doug/xkb/html/index.html

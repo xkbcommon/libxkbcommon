@@ -201,7 +201,7 @@ or %%H seems to do the job though.
 -->
 @note
 - Include processes the rules in the file path specified in the `ident`,
-  in order. **%-expansion** is performed, as follows:
+  in order. **%-expansion** is performed, as follows: @rules-include-expansion
   <dl>
     <dt>`%%`</dt>
     <dd>A literal %.</dd>
@@ -221,10 +221,10 @@ or %%H seems to do the job though.
   **Note:** This feature is supported by libxkbcommon but not by the legacy X11
   tools.
 
-- @anchor rules-special-indexes
+- @anchor rules-extended-layout-indexes
   (Since version `1.8.0`)
-  The following *special indexes* can be used to avoid repetition and clarify
-  the semantics:
+  The following *extended layout indexes* can be used to avoid repetition and
+  clarify the semantics:
 
   <dl>
     <dt>`single`</dt>
@@ -301,7 +301,7 @@ or %%H seems to do the job though.
     </dt>
     <dd>
         (Since version `1.8.0`)
-        In case the mapping uses a @ref rules-special-indexes "special index",
+        In case the mapping uses an @ref rules-extended-layout-indexes "extended layout index",
         `%%i` corresponds to the index of the matched layout.
     </dd>
   </dl>
