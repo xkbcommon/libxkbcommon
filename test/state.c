@@ -1846,7 +1846,8 @@ test_overlapping_mods(struct xkb_context *context)
     struct xkb_state *state;
 
     /* Super and Hyper are overlapping (full overlap) */
-    keymap = test_compile_rules(context, "evdev", NULL, "us", NULL,
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                NULL, "us", NULL,
                                 "overlapping_modifiers:super_hyper,"
                                 "grp:win_space_toggle");
     assert(keymap);
@@ -1945,7 +1946,8 @@ test_overlapping_mods(struct xkb_context *context)
 
     /* Super and Hyper are overlapping (full overlap).
      * Alt overlaps with Meta (incomplete overlap) */
-    keymap = test_compile_rules(context, "evdev", NULL, "us", NULL,
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                NULL, "us", NULL,
                                 "overlapping_modifiers:meta,"
                                 "grp:win_space_toggle");
     assert(keymap);
@@ -2038,7 +2040,8 @@ test_overlapping_mods(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 
     /* Super and Hyper overlaps with Meta; Alt overlaps with Meta */
-    keymap = test_compile_rules(context, "evdev", NULL, "us", NULL,
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                NULL, "us", NULL,
                                 "overlapping_modifiers:super_hyper,"
                                 "overlapping_modifiers:meta");
     assert(keymap);
@@ -2686,7 +2689,8 @@ main(void)
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};
     for (size_t r = 0; r < ARRAY_SIZE(rules); r++) {
         fprintf(stderr, "=== Rules set: %s ===\n", rules[r]);
-        keymap = test_compile_rules(context, rules[r], "pc104", "us,ru", NULL,
+        keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, rules[r],
+                                    "pc104", "us,ru", NULL,
                                     "grp:menu_toggle,grp:lwin_latch,"
                                     "grp:rwin_latch_lock_clear,lv3:lsgt_latch");
         assert(keymap);

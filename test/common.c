@@ -421,8 +421,8 @@ test_compile_buffer(struct xkb_context *context, const char *buf, size_t len)
 }
 
 struct xkb_keymap *
-test_compile_rules(struct xkb_context *context, const char *rules,
-                   const char *model, const char *layout,
+test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
+                   const char *rules, const char *model, const char *layout,
                    const char *variant, const char *options)
 {
     struct xkb_keymap *keymap;
@@ -435,11 +435,11 @@ test_compile_rules(struct xkb_context *context, const char *rules,
     };
 
     if (!rules && !model && !layout && !variant && !options)
-        keymap = xkb_keymap_new_from_names2(context, NULL,
-                                            XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+        keymap = xkb_keymap_new_from_names2(context, NULL, format,
+                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
     else
-        keymap = xkb_keymap_new_from_names2(context, &rmlvo,
-                                            XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+        keymap = xkb_keymap_new_from_names2(context, &rmlvo, format,
+                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
 
     if (!keymap) {
         fprintf(stderr,

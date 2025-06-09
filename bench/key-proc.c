@@ -10,6 +10,7 @@
 
 #include "../test/test.h"
 #include "bench.h"
+#include "xkbcommon/xkbcommon.h"
 
 #define BENCHMARK_ITERATIONS 20000000
 
@@ -47,7 +48,8 @@ main(void)
     ctx = test_get_context(0);
     assert(ctx);
 
-    keymap = test_compile_rules(ctx, "evdev", "pc104", "us,ru,il,de",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "pc104", "us,ru,il,de",
                                 ",,,neo", "grp:menu_toggle");
     assert(keymap);
 
