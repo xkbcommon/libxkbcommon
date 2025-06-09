@@ -35,10 +35,10 @@ enum update_files {
 
 /* xkbcommon buffer compiler */
 static struct xkb_keymap *
-compile_buffer(struct xkb_context *context, const char *buf, size_t len,
-               void *private)
+compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
+               const char *buf, size_t len, void *private)
 {
-    return test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1, buf, len);
+    return test_compile_buffer(context, format, buf, len);
 }
 
 static bool
@@ -47,8 +47,8 @@ test_compile(struct xkb_context *ctx, const char* xkb_root,
              const char *keymap_str, size_t keymap_len,
              const char *path, bool update)
 {
-    return test_compile_output(ctx, compile_buffer, NULL,
-                               test_title, keymap_str, keymap_len,
+    return test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, compile_buffer,
+                               NULL, test_title, keymap_str, keymap_len,
                                path, !!update);
 }
 
