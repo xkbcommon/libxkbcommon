@@ -1,0 +1,51 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<>                   = 1;
+	indicator 1 = "1";
+	indicator 2 = "2";
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret a+AnyOfOrNone(all) {
+		action= SetGroup(group=1);
+	};
+	interpret b+AnyOfOrNone(all) {
+		action= SetGroup(group=-2);
+	};
+	interpret c+AnyOfOrNone(all) {
+		action= SetGroup(group=+3);
+	};
+	indicator "1" {
+		groups= 0x08;
+	};
+	indicator "2" {
+		groups= 0xfe;
+	};
+};
+
+xkb_symbols {
+	name[1]="1";
+	name[2]="2";
+	name[3]="3";
+	name[4]="4";
+
+	key <>                   {
+		groupsRedirect= 4,
+		symbols[1]= [               a ],
+		symbols[2]= [               b ],
+		symbols[3]= [               c ],
+		symbols[4]= [               d ]
+	};
+};
+
+};

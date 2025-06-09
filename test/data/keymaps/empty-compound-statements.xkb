@@ -61,16 +61,16 @@ xkb_symbols {
 	key <Q>                  {	[               q ] };
 	key <W>                  {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [        SetMods(modifiers=none) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [        SetMods(modifiers=none) ]
 	};
 	key <E>                  {
 		type= "t1",
-		symbols[Group1]= [               e ]
+		symbols[1]= [               e ]
 	};
 	key <U>                  {
-		symbols[Group1]= [        NoSymbol ],
-		symbols[Group2]= [               u ]
+		symbols[1]= [        NoSymbol ],
+		symbols[2]= [               u ]
 	};
 	key <I>                  {	[               i ] };
 	key <A>                  {
@@ -81,17 +81,17 @@ xkb_symbols {
 	};
 	key <F>                  {
 		type= "t2",
-		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+		symbols[1]= [        NoSymbol,        NoSymbol ]
 	};
 	key <G>                  {
 		type= "t2",
-		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+		symbols[1]= [        NoSymbol,        NoSymbol ]
 	};
 	key <H>                  {
-		type[Group1]= "t1",
-		type[Group2]= "t2",
-		symbols[Group1]= [        NoSymbol ],
-		symbols[Group2]= [        NoSymbol,        NoSymbol ]
+		type[1]= "t1",
+		type[2]= "t2",
+		symbols[1]= [        NoSymbol ],
+		symbols[2]= [        NoSymbol,        NoSymbol ]
 	};
 	key <X>                  {
 		virtualMods= M1
@@ -105,19 +105,19 @@ xkb_symbols {
 	key <B>                  {
 		type= "t2",
 		virtualMods= none,
-		symbols[Group1]= [        NoSymbol,        NoSymbol ]
+		symbols[1]= [        NoSymbol,        NoSymbol ]
 	};
 	key <N>                  {
 		type= "t1",
 		virtualMods= none,
-		symbols[Group1]= [        NoSymbol ]
+		symbols[1]= [        NoSymbol ]
 	};
 	key <M>                  {
-		type[Group1]= "t1",
-		type[Group2]= "t2",
+		type[1]= "t1",
+		type[2]= "t2",
 		virtualMods= none,
-		symbols[Group1]= [        NoSymbol ],
-		symbols[Group2]= [        NoSymbol,        NoSymbol ]
+		symbols[1]= [        NoSymbol ],
+		symbols[2]= [        NoSymbol,        NoSymbol ]
 	};
 	modifier_map Shift { <Z> };
 	modifier_map Lock { <X> };

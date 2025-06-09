@@ -1073,667 +1073,667 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 };
 
 xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
-	name[Group1]="English (US)";
-	name[Group2]="Russian";
-	name[Group3]="Canadian Multilingual";
-	name[Group4]="German (Neo 2)";
+	name[1]="English (US)";
+	name[2]="Russian";
+	name[3]="Canadian Multilingual";
+	name[4]="German (Neo 2)";
 
 	key <ESC>                {	[          Escape ] };
 	key <AE01>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               1,          exclam ],
-		symbols[Group2]= [               1,          exclam ],
-		symbols[Group3]= [               1,          exclam,       plusminus,        NoSymbol,     onesuperior,      exclamdown,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               1,          degree,     onesuperior,    onesubscript,     ordfeminine,        NoSymbol,         notsign,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               1,          exclam ],
+		symbols[2]= [               1,          exclam ],
+		symbols[3]= [               1,          exclam,       plusminus,        NoSymbol,     onesuperior,      exclamdown,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               1,          degree,     onesuperior,    onesubscript,     ordfeminine,        NoSymbol,         notsign,        NoSymbol ]
 	};
 	key <AE02>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               2,              at ],
-		symbols[Group2]= [               2,        quotedbl ],
-		symbols[Group3]= [               2,              at,              at,        NoSymbol,     twosuperior,        NoSymbol,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               2,         section,     twosuperior,    twosubscript,       masculine,        NoSymbol,       logicalor,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               2,              at ],
+		symbols[2]= [               2,        quotedbl ],
+		symbols[3]= [               2,              at,              at,        NoSymbol,     twosuperior,        NoSymbol,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               2,         section,     twosuperior,    twosubscript,       masculine,        NoSymbol,       logicalor,        NoSymbol ]
 	};
 	key <AE03>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               3,      numbersign ],
-		symbols[Group2]= [               3,      numerosign ],
-		symbols[Group3]= [               3,      numbersign,        sterling,        NoSymbol,   threesuperior,        sterling,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               3,           U2113,   threesuperior,  threesubscript,      numerosign,        NoSymbol,      logicaland,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               3,      numbersign ],
+		symbols[2]= [               3,      numerosign ],
+		symbols[3]= [               3,      numbersign,        sterling,        NoSymbol,   threesuperior,        sterling,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               3,           U2113,   threesuperior,  threesubscript,      numerosign,        NoSymbol,      logicaland,        NoSymbol ]
 	};
 	key <AE04>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               4,          dollar ],
-		symbols[Group2]= [               4,       semicolon ],
-		symbols[Group3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               4,  guillemotright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               4,          dollar ],
+		symbols[2]= [               4,       semicolon ],
+		symbols[3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               4,  guillemotright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
 	};
 	key <AE05>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               5,         percent ],
-		symbols[Group2]= [               5,         percent ],
-		symbols[Group3]= [               5,         percent,        currency,        NoSymbol,         onehalf,    threeeighths,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               5,   guillemotleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               5,         percent ],
+		symbols[2]= [               5,         percent ],
+		symbols[3]= [               5,         percent,        currency,        NoSymbol,         onehalf,    threeeighths,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               5,   guillemotleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
 	};
 	key <AE06>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [ { H, E, L, L, O },     asciicircum ],
-		symbols[Group2]= [               6,           colon ],
-		symbols[Group3]= [               6,        question,         notsign,        NoSymbol,   threequarters,     fiveeighths,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               6,          dollar,            cent,           U26A5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ { H, E, L, L, O },     asciicircum ],
+		symbols[2]= [               6,           colon ],
+		symbols[3]= [               6,        question,         notsign,        NoSymbol,   threequarters,     fiveeighths,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               6,          dollar,            cent,           U26A5,        sterling,        NoSymbol,           U2225,        NoSymbol ]
 	};
 	key <AE07>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [ { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },       ampersand ],
-		symbols[Group2]= [               7,        question ],
-		symbols[Group3]= [               7,       ampersand,       braceleft,        NoSymbol,        NoSymbol,    seveneighths,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               7,        EuroSign,             yen,           U03F0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ { Y, E, S, space, T, H, I, S, space, I, S, space, D, O, G },       ampersand ],
+		symbols[2]= [               7,        question ],
+		symbols[3]= [               7,       ampersand,       braceleft,        NoSymbol,        NoSymbol,    seveneighths,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               7,        EuroSign,             yen,           U03F0,        currency,        NoSymbol,      rightarrow,        NoSymbol ]
 	};
 	key <AE08>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               8,        asterisk ],
-		symbols[Group2]= [               8,        asterisk ],
-		symbols[Group3]= [               8,        asterisk,      braceright,        NoSymbol,        NoSymbol,       trademark,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               8, doublelowquotemark, singlelowquotemark,           U27E8,             Tab,    ISO_Left_Tab,           U221E,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               8,        asterisk ],
+		symbols[2]= [               8,        asterisk ],
+		symbols[3]= [               8,        asterisk,      braceright,        NoSymbol,        NoSymbol,       trademark,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               8, doublelowquotemark, singlelowquotemark,           U27E8,             Tab,    ISO_Left_Tab,           U221E,        NoSymbol ]
 	};
 	key <AE09>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               9,       parenleft ],
-		symbols[Group2]= [               9,       parenleft ],
-		symbols[Group3]= [               9,       parenleft,     bracketleft,        NoSymbol,        NoSymbol,       plusminus,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               9, leftdoublequotemark, leftsinglequotemark,           U27E9,       KP_Divide,       KP_Divide,       variation,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               9,       parenleft ],
+		symbols[2]= [               9,       parenleft ],
+		symbols[3]= [               9,       parenleft,     bracketleft,        NoSymbol,        NoSymbol,       plusminus,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               9, leftdoublequotemark, leftsinglequotemark,           U27E9,       KP_Divide,       KP_Divide,       variation,        NoSymbol ]
 	};
 	key <AE10>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [               0,      parenright ],
-		symbols[Group2]= [               0,      parenright ],
-		symbols[Group3]= [               0,      parenright,    bracketright,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               0, rightdoublequotemark, rightsinglequotemark,   zerosubscript,     KP_Multiply,     KP_Multiply,        emptyset,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [               0,      parenright ],
+		symbols[2]= [               0,      parenright ],
+		symbols[3]= [               0,      parenright,    bracketright,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               0, rightdoublequotemark, rightsinglequotemark,   zerosubscript,     KP_Multiply,     KP_Multiply,        emptyset,        NoSymbol ]
 	};
 	key <AE11>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           minus,      underscore ],
-		symbols[Group2]= [           minus,      underscore ],
-		symbols[Group3]= [           minus,      underscore,         onehalf,        NoSymbol,        NoSymbol,    questiondown,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [           minus,          emdash,        NoSymbol,           U2011,     KP_Subtract,     KP_Subtract,          hyphen,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           minus,      underscore ],
+		symbols[2]= [           minus,      underscore ],
+		symbols[3]= [           minus,      underscore,         onehalf,        NoSymbol,        NoSymbol,    questiondown,        NoSymbol,        NoSymbol ],
+		symbols[4]= [           minus,          emdash,        NoSymbol,           U2011,     KP_Subtract,     KP_Subtract,          hyphen,        NoSymbol ]
 	};
 	key <AE12>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           equal,            plus ],
-		symbols[Group2]= [           equal,            plus ],
-		symbols[Group3]= [           equal,            plus,         notsign,        NoSymbol,    dead_cedilla,     dead_ogonek,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [      dead_grave,    dead_cedilla,  dead_abovering, dead_abovereversedcomma,  dead_diaeresis,        NoSymbol,     dead_macron,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           equal,            plus ],
+		symbols[2]= [           equal,            plus ],
+		symbols[3]= [           equal,            plus,         notsign,        NoSymbol,    dead_cedilla,     dead_ogonek,        NoSymbol,        NoSymbol ],
+		symbols[4]= [      dead_grave,    dead_cedilla,  dead_abovering, dead_abovereversedcomma,  dead_diaeresis,        NoSymbol,     dead_macron,        NoSymbol ]
 	};
 	key <BKSP>               {	[       BackSpace,       BackSpace ] };
 	key <TAB>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [             Tab,    ISO_Left_Tab ],
-		symbols[Group2]= [             Tab,    ISO_Left_Tab ],
-		symbols[Group3]= [             Tab,    ISO_Left_Tab ],
-		symbols[Group4]= [             Tab,    ISO_Left_Tab,       Multi_key, ISO_Level5_Lock,        NoSymbol,        NoSymbol,        NoSymbol, ISO_Level5_Lock ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [             Tab,    ISO_Left_Tab ],
+		symbols[2]= [             Tab,    ISO_Left_Tab ],
+		symbols[3]= [             Tab,    ISO_Left_Tab ],
+		symbols[4]= [             Tab,    ISO_Left_Tab,       Multi_key, ISO_Level5_Lock,        NoSymbol,        NoSymbol,        NoSymbol, ISO_Level5_Lock ]
 	};
 	key <AD01>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               q,               Q ],
-		symbols[Group2]= [ Cyrillic_shorti, Cyrillic_SHORTI ],
-		symbols[Group3]= [               q,               Q,        NoSymbol,        NoSymbol,        NoSymbol,     Greek_OMEGA,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               x,               X,        ellipsis,        Greek_xi,           Prior,           Prior,        Greek_XI,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               q,               Q ],
+		symbols[2]= [ Cyrillic_shorti, Cyrillic_SHORTI ],
+		symbols[3]= [               q,               Q,        NoSymbol,        NoSymbol,        NoSymbol,     Greek_OMEGA,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               x,               X,        ellipsis,        Greek_xi,           Prior,           Prior,        Greek_XI,        NoSymbol ]
 	};
 	key <AD02>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               w,               W ],
-		symbols[Group2]= [    Cyrillic_tse,    Cyrillic_TSE ],
-		symbols[Group3]= [               w,               W,        NoSymbol,        NoSymbol,         lstroke,         Lstroke,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               v,               V,      underscore,        NoSymbol,       BackSpace,       BackSpace,         radical,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               w,               W ],
+		symbols[2]= [    Cyrillic_tse,    Cyrillic_TSE ],
+		symbols[3]= [               w,               W,        NoSymbol,        NoSymbol,         lstroke,         Lstroke,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               v,               V,      underscore,        NoSymbol,       BackSpace,       BackSpace,         radical,        NoSymbol ]
 	};
 	key <AD03>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               e,               E ],
-		symbols[Group2]= [      Cyrillic_u,      Cyrillic_U ],
-		symbols[Group3]= [               e,               E,        NoSymbol,        NoSymbol,              oe,              OE,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               l,               L,     bracketleft,     Greek_lamda,              Up,              Up,     Greek_LAMDA,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               e,               E ],
+		symbols[2]= [      Cyrillic_u,      Cyrillic_U ],
+		symbols[3]= [               e,               E,        NoSymbol,        NoSymbol,              oe,              OE,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               l,               L,     bracketleft,     Greek_lamda,              Up,              Up,     Greek_LAMDA,        NoSymbol ]
 	};
 	key <AD04>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               r,               R ],
-		symbols[Group2]= [     Cyrillic_ka,     Cyrillic_KA ],
-		symbols[Group3]= [               r,               R,        NoSymbol,        NoSymbol,       paragraph,      registered,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               c,               C,    bracketright,       Greek_chi,          Delete,          Delete,           U2102,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               r,               R ],
+		symbols[2]= [     Cyrillic_ka,     Cyrillic_KA ],
+		symbols[3]= [               r,               R,        NoSymbol,        NoSymbol,       paragraph,      registered,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               c,               C,    bracketright,       Greek_chi,          Delete,          Delete,           U2102,        NoSymbol ]
 	};
 	key <AD05>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               t,               T ],
-		symbols[Group2]= [     Cyrillic_ie,     Cyrillic_IE ],
-		symbols[Group3]= [               t,               T,        NoSymbol,        NoSymbol,          tslash,          Tslash,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               w,               W,     asciicircum,     Greek_omega,            Next,            Next,     Greek_OMEGA,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               t,               T ],
+		symbols[2]= [     Cyrillic_ie,     Cyrillic_IE ],
+		symbols[3]= [               t,               T,        NoSymbol,        NoSymbol,          tslash,          Tslash,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               w,               W,     asciicircum,     Greek_omega,            Next,            Next,     Greek_OMEGA,        NoSymbol ]
 	};
 	key <AD06>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               y,               Y ],
-		symbols[Group2]= [     Cyrillic_en,     Cyrillic_EN ],
-		symbols[Group3]= [               y,               Y,        NoSymbol,        NoSymbol,       leftarrow,             yen,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               y,               Y ],
+		symbols[2]= [     Cyrillic_en,     Cyrillic_EN ],
+		symbols[3]= [               y,               Y,        NoSymbol,        NoSymbol,       leftarrow,             yen,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
 	};
 	key <AD07>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               u,               U ],
-		symbols[Group2]= [    Cyrillic_ghe,    Cyrillic_GHE ],
-		symbols[Group3]= [               u,               U,        NoSymbol,        NoSymbol,       downarrow,         uparrow,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               h,               H,            less,       Greek_psi,            KP_7,            KP_7,       Greek_PSI,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               u,               U ],
+		symbols[2]= [    Cyrillic_ghe,    Cyrillic_GHE ],
+		symbols[3]= [               u,               U,        NoSymbol,        NoSymbol,       downarrow,         uparrow,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               h,               H,            less,       Greek_psi,            KP_7,            KP_7,       Greek_PSI,        NoSymbol ]
 	};
 	key <AD08>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               i,               I ],
-		symbols[Group2]= [    Cyrillic_sha,    Cyrillic_SHA ],
-		symbols[Group3]= [               i,               I,        NoSymbol,        NoSymbol,      rightarrow,        idotless,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               g,               G,         greater,     Greek_gamma,            KP_8,            KP_8,     Greek_GAMMA,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               i,               I ],
+		symbols[2]= [    Cyrillic_sha,    Cyrillic_SHA ],
+		symbols[3]= [               i,               I,        NoSymbol,        NoSymbol,      rightarrow,        idotless,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               g,               G,         greater,     Greek_gamma,            KP_8,            KP_8,     Greek_GAMMA,        NoSymbol ]
 	};
 	key <AD09>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               o,               O ],
-		symbols[Group2]= [  Cyrillic_shcha,  Cyrillic_SHCHA ],
-		symbols[Group3]= [               o,               O,         section,        NoSymbol,          oslash,          Oslash,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               f,               F,           equal,       Greek_phi,            KP_9,            KP_9,       Greek_PHI,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               o,               O ],
+		symbols[2]= [  Cyrillic_shcha,  Cyrillic_SHCHA ],
+		symbols[3]= [               o,               O,         section,        NoSymbol,          oslash,          Oslash,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               f,               F,           equal,       Greek_phi,            KP_9,            KP_9,       Greek_PHI,        NoSymbol ]
 	};
 	key <AD10>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               p,               P ],
-		symbols[Group2]= [     Cyrillic_ze,     Cyrillic_ZE ],
-		symbols[Group3]= [               p,               P,       paragraph,        NoSymbol,           thorn,           THORN,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               q,               Q,       ampersand,           U03D5,          KP_Add,          KP_Add,           U211A,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               p,               P ],
+		symbols[2]= [     Cyrillic_ze,     Cyrillic_ZE ],
+		symbols[3]= [               p,               P,       paragraph,        NoSymbol,           thorn,           THORN,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               q,               Q,       ampersand,           U03D5,          KP_Add,          KP_Add,           U211A,        NoSymbol ]
 	};
 	key <AD11>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [     bracketleft,       braceleft ],
-		symbols[Group2]= [     Cyrillic_ha,     Cyrillic_HA ],
-		symbols[Group3]= [ dead_circumflex,  dead_diaeresis,      dead_grave,        NoSymbol,        NoSymbol,  dead_abovering,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [          ssharp,           U1E9E,           U017F, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [     bracketleft,       braceleft ],
+		symbols[2]= [     Cyrillic_ha,     Cyrillic_HA ],
+		symbols[3]= [ dead_circumflex,  dead_diaeresis,      dead_grave,        NoSymbol,        NoSymbol,  dead_abovering,        NoSymbol,        NoSymbol ],
+		symbols[4]= [          ssharp,           U1E9E,           U017F, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
 	};
 	key <AD12>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [    bracketright,      braceright ],
-		symbols[Group2]= [ Cyrillic_hardsign, Cyrillic_HARDSIGN ],
-		symbols[Group3]= [        ccedilla,        Ccedilla,      asciitilde,        NoSymbol,      dead_tilde,     dead_macron,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [      dead_acute,      dead_tilde,     dead_stroke, dead_abovecomma, dead_doubleacute,        NoSymbol,      dead_breve,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [    bracketright,      braceright ],
+		symbols[2]= [ Cyrillic_hardsign, Cyrillic_HARDSIGN ],
+		symbols[3]= [        ccedilla,        Ccedilla,      asciitilde,        NoSymbol,      dead_tilde,     dead_macron,        NoSymbol,        NoSymbol ],
+		symbols[4]= [      dead_acute,      dead_tilde,     dead_stroke, dead_abovecomma, dead_doubleacute,        NoSymbol,      dead_breve,        NoSymbol ]
 	};
 	key <RTRN>               {	[          Return ] };
 	key <LCTL>               {	[       Control_L ] };
 	key <AC01>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               a,               A ],
-		symbols[Group2]= [     Cyrillic_ef,     Cyrillic_EF ],
-		symbols[Group3]= [               a,               A,        NoSymbol,        NoSymbol,              ae,              AE,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               u,               U,       backslash,        NoSymbol,            Home,            Home,      includedin,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               a,               A ],
+		symbols[2]= [     Cyrillic_ef,     Cyrillic_EF ],
+		symbols[3]= [               a,               A,        NoSymbol,        NoSymbol,              ae,              AE,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               u,               U,       backslash,        NoSymbol,            Home,            Home,      includedin,        NoSymbol ]
 	};
 	key <AC02>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               s,               S ],
-		symbols[Group2]= [   Cyrillic_yeru,   Cyrillic_YERU ],
-		symbols[Group3]= [               s,               S,        NoSymbol,        NoSymbol,          ssharp,         section,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               i,               I,           slash,      Greek_iota,            Left,            Left,        integral,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               s,               S ],
+		symbols[2]= [   Cyrillic_yeru,   Cyrillic_YERU ],
+		symbols[3]= [               s,               S,        NoSymbol,        NoSymbol,          ssharp,         section,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               i,               I,           slash,      Greek_iota,            Left,            Left,        integral,        NoSymbol ]
 	};
 	key <AC03>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               d,               D ],
-		symbols[Group2]= [     Cyrillic_ve,     Cyrillic_VE ],
-		symbols[Group3]= [               d,               D,        NoSymbol,        NoSymbol,             eth,             ETH,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               a,               A,       braceleft,     Greek_alpha,            Down,            Down,           U2200,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               d,               D ],
+		symbols[2]= [     Cyrillic_ve,     Cyrillic_VE ],
+		symbols[3]= [               d,               D,        NoSymbol,        NoSymbol,             eth,             ETH,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               a,               A,       braceleft,     Greek_alpha,            Down,            Down,           U2200,        NoSymbol ]
 	};
 	key <AC04>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               f,               F ],
-		symbols[Group2]= [      Cyrillic_a,      Cyrillic_A ],
-		symbols[Group3]= [               f,               F,        NoSymbol,        NoSymbol,        NoSymbol,     ordfeminine,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               e,               E,      braceright,   Greek_epsilon,           Right,           Right,           U2203,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               f,               F ],
+		symbols[2]= [      Cyrillic_a,      Cyrillic_A ],
+		symbols[3]= [               f,               F,        NoSymbol,        NoSymbol,        NoSymbol,     ordfeminine,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               e,               E,      braceright,   Greek_epsilon,           Right,           Right,           U2203,        NoSymbol ]
 	};
 	key <AC05>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               g,               G ],
-		symbols[Group2]= [     Cyrillic_pe,     Cyrillic_PE ],
-		symbols[Group3]= [               g,               G,        NoSymbol,        NoSymbol,             eng,             ENG,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               o,               O,        asterisk,   Greek_omicron,             End,             End,       elementof,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               g,               G ],
+		symbols[2]= [     Cyrillic_pe,     Cyrillic_PE ],
+		symbols[3]= [               g,               G,        NoSymbol,        NoSymbol,             eng,             ENG,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               o,               O,        asterisk,   Greek_omicron,             End,             End,       elementof,        NoSymbol ]
 	};
 	key <AC06>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               h,               H ],
-		symbols[Group2]= [     Cyrillic_er,     Cyrillic_ER ],
-		symbols[Group3]= [               h,               H,        NoSymbol,        NoSymbol,         hstroke,         Hstroke,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               s,               S,        question,     Greek_sigma,    questiondown,        NoSymbol,     Greek_SIGMA,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               h,               H ],
+		symbols[2]= [     Cyrillic_er,     Cyrillic_ER ],
+		symbols[3]= [               h,               H,        NoSymbol,        NoSymbol,         hstroke,         Hstroke,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               s,               S,        question,     Greek_sigma,    questiondown,        NoSymbol,     Greek_SIGMA,        NoSymbol ]
 	};
 	key <AC07>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               j,               J ],
-		symbols[Group2]= [      Cyrillic_o,      Cyrillic_O ],
-		symbols[Group3]= [               j,               J,        NoSymbol,        NoSymbol,           U0133,           U0132,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               n,               N,       parenleft,        Greek_nu,            KP_4,            KP_4,           U2115,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               j,               J ],
+		symbols[2]= [      Cyrillic_o,      Cyrillic_O ],
+		symbols[3]= [               j,               J,        NoSymbol,        NoSymbol,           U0133,           U0132,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               n,               N,       parenleft,        Greek_nu,            KP_4,            KP_4,           U2115,        NoSymbol ]
 	};
 	key <AC08>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               k,               K ],
-		symbols[Group2]= [     Cyrillic_el,     Cyrillic_EL ],
-		symbols[Group3]= [               k,               K,        NoSymbol,        NoSymbol,             kra,        NoSymbol,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               r,               R,      parenright,       Greek_rho,            KP_5,            KP_5,           U211D,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               k,               K ],
+		symbols[2]= [     Cyrillic_el,     Cyrillic_EL ],
+		symbols[3]= [               k,               K,        NoSymbol,        NoSymbol,             kra,        NoSymbol,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               r,               R,      parenright,       Greek_rho,            KP_5,            KP_5,           U211D,        NoSymbol ]
 	};
 	key <AC09>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               l,               L ],
-		symbols[Group2]= [     Cyrillic_de,     Cyrillic_DE ],
-		symbols[Group3]= [               l,               L,        NoSymbol,        NoSymbol,           U0140,           U013F,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               t,               T,           minus,       Greek_tau,            KP_6,            KP_6, partialderivative,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               l,               L ],
+		symbols[2]= [     Cyrillic_de,     Cyrillic_DE ],
+		symbols[3]= [               l,               L,        NoSymbol,        NoSymbol,           U0140,           U013F,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               t,               T,           minus,       Greek_tau,            KP_6,            KP_6, partialderivative,        NoSymbol ]
 	};
 	key <AC10>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [       semicolon,           colon ],
-		symbols[Group2]= [    Cyrillic_zhe,    Cyrillic_ZHE ],
-		symbols[Group3]= [       semicolon,           colon,          degree,        NoSymbol,      dead_acute, dead_doubleacute,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               d,               D,           colon,     Greek_delta,    KP_Separator,           comma,     Greek_DELTA,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [       semicolon,           colon ],
+		symbols[2]= [    Cyrillic_zhe,    Cyrillic_ZHE ],
+		symbols[3]= [       semicolon,           colon,          degree,        NoSymbol,      dead_acute, dead_doubleacute,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               d,               D,           colon,     Greek_delta,    KP_Separator,           comma,     Greek_DELTA,        NoSymbol ]
 	};
 	key <AC11>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [      apostrophe,        quotedbl ],
-		symbols[Group2]= [      Cyrillic_e,      Cyrillic_E ],
-		symbols[Group3]= [          egrave,          Egrave,       braceleft,        NoSymbol,        NoSymbol,      dead_caron,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               y,               Y,              at,   Greek_upsilon,          period,      KP_Decimal,           nabla,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [      apostrophe,        quotedbl ],
+		symbols[2]= [      Cyrillic_e,      Cyrillic_E ],
+		symbols[3]= [          egrave,          Egrave,       braceleft,        NoSymbol,        NoSymbol,      dead_caron,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               y,               Y,              at,   Greek_upsilon,          period,      KP_Decimal,           nabla,        NoSymbol ]
 	};
 	key <TLDE>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           grave,      asciitilde ],
-		symbols[Group2]= [     Cyrillic_io,     Cyrillic_IO ],
-		symbols[Group3]= [           slash,       backslash,             bar,        NoSymbol,        NoSymbol,          hyphen,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [ dead_circumflex,      dead_caron,           U21BB,           U02DE,   dead_abovedot, Pointer_EnableKeys,   dead_belowdot,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           grave,      asciitilde ],
+		symbols[2]= [     Cyrillic_io,     Cyrillic_IO ],
+		symbols[3]= [           slash,       backslash,             bar,        NoSymbol,        NoSymbol,          hyphen,        NoSymbol,        NoSymbol ],
+		symbols[4]= [ dead_circumflex,      dead_caron,           U21BB,           U02DE,   dead_abovedot, Pointer_EnableKeys,   dead_belowdot,        NoSymbol ]
 	};
 	key <LFSH>               {
-		type[Group4]= "TWO_LEVEL",
-		symbols[Group1]= [         Shift_L ],
-		symbols[Group2]= [         Shift_L ],
-		symbols[Group3]= [         Shift_L ],
-		symbols[Group4]= [         Shift_L,       Caps_Lock ]
+		type[4]= "TWO_LEVEL",
+		symbols[1]= [         Shift_L ],
+		symbols[2]= [         Shift_L ],
+		symbols[3]= [         Shift_L ],
+		symbols[4]= [         Shift_L,       Caps_Lock ]
 	};
 	key <BKSL>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "ONE_LEVEL",
-		symbols[Group1]= [       backslash,             bar ],
-		symbols[Group2]= [       backslash,           slash ],
-		symbols[Group3]= [          agrave,          Agrave,      braceright,        NoSymbol,        NoSymbol,      dead_breve,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [ ISO_Level3_Shift ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [       backslash,             bar ],
+		symbols[2]= [       backslash,           slash ],
+		symbols[3]= [          agrave,          Agrave,      braceright,        NoSymbol,        NoSymbol,      dead_breve,        NoSymbol,        NoSymbol ],
+		symbols[4]= [ ISO_Level3_Shift ]
 	};
 	key <AB01>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "FOUR_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               z,               Z ],
-		symbols[Group2]= [     Cyrillic_ya,     Cyrillic_YA ],
-		symbols[Group3]= [               z,               Z,   guillemotleft,        NoSymbol ],
-		symbols[Group4]= [      udiaeresis,      Udiaeresis,      numbersign,        NoSymbol,          Escape,          Escape,           union,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               z,               Z ],
+		symbols[2]= [     Cyrillic_ya,     Cyrillic_YA ],
+		symbols[3]= [               z,               Z,   guillemotleft,        NoSymbol ],
+		symbols[4]= [      udiaeresis,      Udiaeresis,      numbersign,        NoSymbol,          Escape,          Escape,           union,        NoSymbol ]
 	};
 	key <AB02>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "FOUR_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               x,               X ],
-		symbols[Group2]= [    Cyrillic_che,    Cyrillic_CHE ],
-		symbols[Group3]= [               x,               X,  guillemotright,        NoSymbol ],
-		symbols[Group4]= [      odiaeresis,      Odiaeresis,          dollar,           U03F5,             Tab,             Tab,    intersection,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               x,               X ],
+		symbols[2]= [    Cyrillic_che,    Cyrillic_CHE ],
+		symbols[3]= [               x,               X,  guillemotright,        NoSymbol ],
+		symbols[4]= [      odiaeresis,      Odiaeresis,          dollar,           U03F5,             Tab,             Tab,    intersection,        NoSymbol ]
 	};
 	key <AB03>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               c,               C ],
-		symbols[Group2]= [     Cyrillic_es,     Cyrillic_ES ],
-		symbols[Group3]= [               c,               C,        NoSymbol,        NoSymbol,            cent,       copyright,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [      adiaeresis,      Adiaeresis,             bar,       Greek_eta,          Insert,          Insert,           U2135,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               c,               C ],
+		symbols[2]= [     Cyrillic_es,     Cyrillic_ES ],
+		symbols[3]= [               c,               C,        NoSymbol,        NoSymbol,            cent,       copyright,        NoSymbol,        NoSymbol ],
+		symbols[4]= [      adiaeresis,      Adiaeresis,             bar,       Greek_eta,          Insert,          Insert,           U2135,        NoSymbol ]
 	};
 	key <AB04>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               v,               V ],
-		symbols[Group2]= [     Cyrillic_em,     Cyrillic_EM ],
-		symbols[Group3]= [               v,               V,        NoSymbol,        NoSymbol, leftdoublequotemark, leftsinglequotemark,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               p,               P,      asciitilde,        Greek_pi,          Return,          Return,        Greek_PI,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               v,               V ],
+		symbols[2]= [     Cyrillic_em,     Cyrillic_EM ],
+		symbols[3]= [               v,               V,        NoSymbol,        NoSymbol, leftdoublequotemark, leftsinglequotemark,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               p,               P,      asciitilde,        Greek_pi,          Return,          Return,        Greek_PI,        NoSymbol ]
 	};
 	key <AB05>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               b,               B ],
-		symbols[Group2]= [      Cyrillic_i,      Cyrillic_I ],
-		symbols[Group3]= [               b,               B,        NoSymbol,        NoSymbol, rightdoublequotemark, rightsinglequotemark,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               z,               Z,           grave,      Greek_zeta,            Undo,            Undo,           U2124,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               b,               B ],
+		symbols[2]= [      Cyrillic_i,      Cyrillic_I ],
+		symbols[3]= [               b,               B,        NoSymbol,        NoSymbol, rightdoublequotemark, rightsinglequotemark,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               z,               Z,           grave,      Greek_zeta,            Undo,            Undo,           U2124,        NoSymbol ]
 	};
 	key <AB06>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               n,               N ],
-		symbols[Group2]= [     Cyrillic_te,     Cyrillic_TE ],
-		symbols[Group3]= [               n,               N,        NoSymbol,        NoSymbol,           U0149,           U266A,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               b,               B,            plus,      Greek_beta,           colon,        NoSymbol,           U21D0,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               n,               N ],
+		symbols[2]= [     Cyrillic_te,     Cyrillic_TE ],
+		symbols[3]= [               n,               N,        NoSymbol,        NoSymbol,           U0149,           U266A,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               b,               B,            plus,      Greek_beta,           colon,        NoSymbol,           U21D0,        NoSymbol ]
 	};
 	key <AB07>               {
-		type[Group1]= "ALPHABETIC",
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [               m,               M ],
-		symbols[Group2]= [ Cyrillic_softsign, Cyrillic_SOFTSIGN ],
-		symbols[Group3]= [               m,               M,              mu,        NoSymbol,              mu,       masculine,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               m,               M,         percent,        Greek_mu,            KP_1,            KP_1,        ifonlyif,        NoSymbol ]
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [               m,               M ],
+		symbols[2]= [ Cyrillic_softsign, Cyrillic_SOFTSIGN ],
+		symbols[3]= [               m,               M,              mu,        NoSymbol,              mu,       masculine,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               m,               M,         percent,        Greek_mu,            KP_1,            KP_1,        ifonlyif,        NoSymbol ]
 	};
 	key <AB08>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           comma,            less ],
-		symbols[Group2]= [     Cyrillic_be,     Cyrillic_BE ],
-		symbols[Group3]= [           comma,      apostrophe,            less,        NoSymbol,  Greek_horizbar,        multiply,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [           comma,          endash,        quotedbl,           U03F1,            KP_2,            KP_2,           U21D2,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           comma,            less ],
+		symbols[2]= [     Cyrillic_be,     Cyrillic_BE ],
+		symbols[3]= [           comma,      apostrophe,            less,        NoSymbol,  Greek_horizbar,        multiply,        NoSymbol,        NoSymbol ],
+		symbols[4]= [           comma,          endash,        quotedbl,           U03F1,            KP_2,            KP_2,           U21D2,        NoSymbol ]
 	};
 	key <AB09>               {
-		type[Group2]= "ALPHABETIC",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [          period,         greater ],
-		symbols[Group2]= [     Cyrillic_yu,     Cyrillic_YU ],
-		symbols[Group3]= [          period,        quotedbl,         greater,        NoSymbol,  periodcentered,        division,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [          period, enfilledcircbullet,      apostrophe,           U03D1,            KP_3,            KP_3,           U21A6,        NoSymbol ]
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [          period,         greater ],
+		symbols[2]= [     Cyrillic_yu,     Cyrillic_YU ],
+		symbols[3]= [          period,        quotedbl,         greater,        NoSymbol,  periodcentered,        division,        NoSymbol,        NoSymbol ],
+		symbols[4]= [          period, enfilledcircbullet,      apostrophe,           U03D1,            KP_3,            KP_3,           U21A6,        NoSymbol ]
 	};
 	key <AB10>               {
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		symbols[Group1]= [           slash,        question ],
-		symbols[Group2]= [          period,           comma ],
-		symbols[Group3]= [          eacute,          Eacute,      dead_acute,        NoSymbol,        NoSymbol,   dead_abovedot,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [               j,               J,       semicolon,     Greek_theta,       semicolon,        NoSymbol,     Greek_THETA,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [           slash,        question ],
+		symbols[2]= [          period,           comma ],
+		symbols[3]= [          eacute,          Eacute,      dead_acute,        NoSymbol,        NoSymbol,   dead_abovedot,        NoSymbol,        NoSymbol ],
+		symbols[4]= [               j,               J,       semicolon,     Greek_theta,       semicolon,        NoSymbol,     Greek_THETA,        NoSymbol ]
 	};
 	key <RTSH>               {
-		type[Group4]= "TWO_LEVEL",
-		symbols[Group1]= [         Shift_R ],
-		symbols[Group2]= [         Shift_R ],
-		symbols[Group3]= [         Shift_R ],
-		symbols[Group4]= [         Shift_R,       Caps_Lock ]
+		type[4]= "TWO_LEVEL",
+		symbols[1]= [         Shift_R ],
+		symbols[2]= [         Shift_R ],
+		symbols[3]= [         Shift_R ],
+		symbols[4]= [         Shift_R,       Caps_Lock ]
 	};
 	key <KPMU>               {
-		type[Group1]= "CTRL+ALT",
-		type[Group2]= "CTRL+ALT",
-		type[Group3]= "CTRL+ALT",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
-		symbols[Group2]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
-		symbols[Group3]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
-		symbols[Group4]= [     KP_Multiply,     KP_Multiply,           U2219,           U2299,        multiply,        NoSymbol,           U2297,        NoSymbol ]
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
+		symbols[2]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
+		symbols[3]= [     KP_Multiply,     KP_Multiply,     KP_Multiply,     KP_Multiply,   XF86ClearGrab ],
+		symbols[4]= [     KP_Multiply,     KP_Multiply,           U2219,           U2299,        multiply,        NoSymbol,           U2297,        NoSymbol ]
 	};
 	key <LALT>               {	[           Alt_L,          Meta_L ] };
 	key <SPCE>               {
-		type[Group3]= "FOUR_LEVEL",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           space ],
-		symbols[Group2]= [           space ],
-		symbols[Group3]= [           space,           space,    nobreakspace,        NoSymbol ],
-		symbols[Group4]= [           space,           space,           space,    nobreakspace,            KP_0,            KP_0,           U202F,        NoSymbol ]
+		type[3]= "FOUR_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           space ],
+		symbols[2]= [           space ],
+		symbols[3]= [           space,           space,    nobreakspace,        NoSymbol ],
+		symbols[4]= [           space,           space,           space,    nobreakspace,            KP_0,            KP_0,           U202F,        NoSymbol ]
 	};
 	key <CAPS>               {
 		type= "ONE_LEVEL",
-		symbols[Group1]= [       Caps_Lock ],
-		symbols[Group2]= [       Caps_Lock ],
-		symbols[Group3]= [       Caps_Lock ],
-		symbols[Group4]= [ ISO_Level3_Shift ]
+		symbols[1]= [       Caps_Lock ],
+		symbols[2]= [       Caps_Lock ],
+		symbols[3]= [       Caps_Lock ],
+		symbols[4]= [ ISO_Level3_Shift ]
 	};
 	key <FK01>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F1,              F1,              F1,              F1, XF86Switch_VT_1 ]
+		symbols[1]= [              F1,              F1,              F1,              F1, XF86Switch_VT_1 ]
 	};
 	key <FK02>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F2,              F2,              F2,              F2, XF86Switch_VT_2 ]
+		symbols[1]= [              F2,              F2,              F2,              F2, XF86Switch_VT_2 ]
 	};
 	key <FK03>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F3,              F3,              F3,              F3, XF86Switch_VT_3 ]
+		symbols[1]= [              F3,              F3,              F3,              F3, XF86Switch_VT_3 ]
 	};
 	key <FK04>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F4,              F4,              F4,              F4, XF86Switch_VT_4 ]
+		symbols[1]= [              F4,              F4,              F4,              F4, XF86Switch_VT_4 ]
 	};
 	key <FK05>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F5,              F5,              F5,              F5, XF86Switch_VT_5 ]
+		symbols[1]= [              F5,              F5,              F5,              F5, XF86Switch_VT_5 ]
 	};
 	key <FK06>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F6,              F6,              F6,              F6, XF86Switch_VT_6 ]
+		symbols[1]= [              F6,              F6,              F6,              F6, XF86Switch_VT_6 ]
 	};
 	key <FK07>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F7,              F7,              F7,              F7, XF86Switch_VT_7 ]
+		symbols[1]= [              F7,              F7,              F7,              F7, XF86Switch_VT_7 ]
 	};
 	key <FK08>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F8,              F8,              F8,              F8, XF86Switch_VT_8 ]
+		symbols[1]= [              F8,              F8,              F8,              F8, XF86Switch_VT_8 ]
 	};
 	key <FK09>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [              F9,              F9,              F9,              F9, XF86Switch_VT_9 ]
+		symbols[1]= [              F9,              F9,              F9,              F9, XF86Switch_VT_9 ]
 	};
 	key <FK10>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [             F10,             F10,             F10,             F10, XF86Switch_VT_10 ]
+		symbols[1]= [             F10,             F10,             F10,             F10, XF86Switch_VT_10 ]
 	};
 	key <NMLK>               {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        Num_Lock ],
-		symbols[Group2]= [        Num_Lock ],
-		symbols[Group3]= [        Num_Lock ],
-		symbols[Group4]= [             Tab,    ISO_Left_Tab,           equal,        approxeq,        notequal, Pointer_EnableKeys,       identical,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        Num_Lock ],
+		symbols[2]= [        Num_Lock ],
+		symbols[3]= [        Num_Lock ],
+		symbols[4]= [             Tab,    ISO_Left_Tab,           equal,        approxeq,        notequal, Pointer_EnableKeys,       identical,        NoSymbol ]
 	};
 	key <SCLK>               {	[     Scroll_Lock ] };
 	key <KP7>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [         KP_Home,            KP_7 ],
-		symbols[Group2]= [         KP_Home,            KP_7 ],
-		symbols[Group3]= [         KP_Home,            KP_7 ],
-		symbols[Group4]= [            KP_7,           U2714,           U2195,           U226A,         KP_Home,         KP_Home,         upstile,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [         KP_Home,            KP_7 ],
+		symbols[2]= [         KP_Home,            KP_7 ],
+		symbols[3]= [         KP_Home,            KP_7 ],
+		symbols[4]= [            KP_7,           U2714,           U2195,           U226A,         KP_Home,         KP_Home,         upstile,        NoSymbol ]
 	};
 	key <KP8>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [           KP_Up,            KP_8 ],
-		symbols[Group2]= [           KP_Up,            KP_8 ],
-		symbols[Group3]= [           KP_Up,            KP_8 ],
-		symbols[Group4]= [            KP_8,           U2718,         uparrow,    intersection,           KP_Up,           KP_Up,           U22C2,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [           KP_Up,            KP_8 ],
+		symbols[2]= [           KP_Up,            KP_8 ],
+		symbols[3]= [           KP_Up,            KP_8 ],
+		symbols[4]= [            KP_8,           U2718,         uparrow,    intersection,           KP_Up,           KP_Up,           U22C2,        NoSymbol ]
 	};
 	key <KP9>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        KP_Prior,            KP_9 ],
-		symbols[Group2]= [        KP_Prior,            KP_9 ],
-		symbols[Group3]= [        KP_Prior,            KP_9 ],
-		symbols[Group4]= [            KP_9,          dagger,           U20D7,           U226B,        KP_Prior,        KP_Prior,           U2309,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        KP_Prior,            KP_9 ],
+		symbols[2]= [        KP_Prior,            KP_9 ],
+		symbols[3]= [        KP_Prior,            KP_9 ],
+		symbols[4]= [            KP_9,          dagger,           U20D7,           U226B,        KP_Prior,        KP_Prior,           U2309,        NoSymbol ]
 	};
 	key <KPSU>               {
-		type[Group1]= "CTRL+ALT",
-		type[Group2]= "CTRL+ALT",
-		type[Group3]= "CTRL+ALT",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
-		symbols[Group2]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
-		symbols[Group3]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
-		symbols[Group4]= [     KP_Subtract,     KP_Subtract,           U2212,           U2296,           U2216,        NoSymbol,           U2238,        NoSymbol ]
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
+		symbols[2]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
+		symbols[3]= [     KP_Subtract,     KP_Subtract,     KP_Subtract,     KP_Subtract,  XF86Prev_VMode ],
+		symbols[4]= [     KP_Subtract,     KP_Subtract,           U2212,           U2296,           U2216,        NoSymbol,           U2238,        NoSymbol ]
 	};
 	key <KP4>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [         KP_Left,            KP_4 ],
-		symbols[Group2]= [         KP_Left,            KP_4 ],
-		symbols[Group3]= [         KP_Left,            KP_4 ],
-		symbols[Group4]= [            KP_4,            club,       leftarrow,      includedin,         KP_Left,         KP_Left,           U2286,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [         KP_Left,            KP_4 ],
+		symbols[2]= [         KP_Left,            KP_4 ],
+		symbols[3]= [         KP_Left,            KP_4 ],
+		symbols[4]= [            KP_4,            club,       leftarrow,      includedin,         KP_Left,         KP_Left,           U2286,        NoSymbol ]
 	};
 	key <KP5>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        KP_Begin,            KP_5 ],
-		symbols[Group2]= [        KP_Begin,            KP_5 ],
-		symbols[Group3]= [        KP_Begin,            KP_5 ],
-		symbols[Group4]= [            KP_5,        EuroSign,           colon,           U22B6,        KP_Begin,        KP_Begin,           U22B7,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        KP_Begin,            KP_5 ],
+		symbols[2]= [        KP_Begin,            KP_5 ],
+		symbols[3]= [        KP_Begin,            KP_5 ],
+		symbols[4]= [            KP_5,        EuroSign,           colon,           U22B6,        KP_Begin,        KP_Begin,           U22B7,        NoSymbol ]
 	};
 	key <KP6>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        KP_Right,            KP_6 ],
-		symbols[Group2]= [        KP_Right,            KP_6 ],
-		symbols[Group3]= [        KP_Right,            KP_6 ],
-		symbols[Group4]= [            KP_6,           U2023,      rightarrow,        includes,        KP_Right,        KP_Right,           U2287,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        KP_Right,            KP_6 ],
+		symbols[2]= [        KP_Right,            KP_6 ],
+		symbols[3]= [        KP_Right,            KP_6 ],
+		symbols[4]= [            KP_6,           U2023,      rightarrow,        includes,        KP_Right,        KP_Right,           U2287,        NoSymbol ]
 	};
 	key <KPAD>               {
-		type[Group1]= "CTRL+ALT",
-		type[Group2]= "CTRL+ALT",
-		type[Group3]= "CTRL+ALT",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
-		symbols[Group2]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
-		symbols[Group3]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
-		symbols[Group4]= [          KP_Add,          KP_Add,       plusminus,           U2295,           U2213,        NoSymbol,           U2214,        NoSymbol ]
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
+		symbols[2]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
+		symbols[3]= [          KP_Add,          KP_Add,          KP_Add,          KP_Add,  XF86Next_VMode ],
+		symbols[4]= [          KP_Add,          KP_Add,       plusminus,           U2295,           U2213,        NoSymbol,           U2214,        NoSymbol ]
 	};
 	key <KP1>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [          KP_End,            KP_1 ],
-		symbols[Group2]= [          KP_End,            KP_1 ],
-		symbols[Group3]= [          KP_End,            KP_1 ],
-		symbols[Group4]= [            KP_1,         diamond,           U2194,   lessthanequal,          KP_End,          KP_End,       downstile,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [          KP_End,            KP_1 ],
+		symbols[2]= [          KP_End,            KP_1 ],
+		symbols[3]= [          KP_End,            KP_1 ],
+		symbols[4]= [            KP_1,         diamond,           U2194,   lessthanequal,          KP_End,          KP_End,       downstile,        NoSymbol ]
 	};
 	key <KP2>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [         KP_Down,            KP_2 ],
-		symbols[Group2]= [         KP_Down,            KP_2 ],
-		symbols[Group3]= [         KP_Down,            KP_2 ],
-		symbols[Group4]= [            KP_2,           heart,       downarrow,           union,         KP_Down,         KP_Down,           U22C3,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [         KP_Down,            KP_2 ],
+		symbols[2]= [         KP_Down,            KP_2 ],
+		symbols[3]= [         KP_Down,            KP_2 ],
+		symbols[4]= [            KP_2,           heart,       downarrow,           union,         KP_Down,         KP_Down,           U22C3,        NoSymbol ]
 	};
 	key <KP3>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [         KP_Next,            KP_3 ],
-		symbols[Group2]= [         KP_Next,            KP_3 ],
-		symbols[Group3]= [         KP_Next,            KP_3 ],
-		symbols[Group4]= [            KP_3,           U2660,           U21CC, greaterthanequal,         KP_Next,         KP_Next,           U230B,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [         KP_Next,            KP_3 ],
+		symbols[2]= [         KP_Next,            KP_3 ],
+		symbols[3]= [         KP_Next,            KP_3 ],
+		symbols[4]= [            KP_3,           U2660,           U21CC, greaterthanequal,         KP_Next,         KP_Next,           U230B,        NoSymbol ]
 	};
 	key <KP0>                {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [       KP_Insert,            KP_0 ],
-		symbols[Group2]= [       KP_Insert,            KP_0 ],
-		symbols[Group3]= [       KP_Insert,            KP_0 ],
-		symbols[Group4]= [            KP_0,           U2423,         percent,           U2030,       KP_Insert,       KP_Insert,           U25A1,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [       KP_Insert,            KP_0 ],
+		symbols[2]= [       KP_Insert,            KP_0 ],
+		symbols[3]= [       KP_Insert,            KP_0 ],
+		symbols[4]= [            KP_0,           U2423,         percent,           U2030,       KP_Insert,       KP_Insert,           U25A1,        NoSymbol ]
 	};
 	key <KPDL>               {
-		type[Group2]= "KEYPAD",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [       KP_Delete,      KP_Decimal ],
-		symbols[Group2]= [       KP_Delete,    KP_Separator ],
-		symbols[Group3]= [       KP_Delete,      KP_Decimal ],
-		symbols[Group4]= [    KP_Separator,          period,           comma,         minutes,       KP_Delete,       KP_Delete,         seconds,        NoSymbol ]
+		type[2]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [       KP_Delete,      KP_Decimal ],
+		symbols[2]= [       KP_Delete,    KP_Separator ],
+		symbols[3]= [       KP_Delete,      KP_Decimal ],
+		symbols[4]= [    KP_Separator,          period,           comma,         minutes,       KP_Delete,       KP_Delete,         seconds,        NoSymbol ]
 	};
 	key <LVL3>               {	[ ISO_Level3_Shift ] };
 	key <LSGT>               {
-		type[Group1]= "FOUR_LEVEL",
-		type[Group3]= "EIGHT_LEVEL_SEMIALPHABETIC",
-		type[Group4]= "ONE_LEVEL",
-		symbols[Group1]= [            less,         greater,             bar,       brokenbar ],
-		symbols[Group2]= [           slash,             bar ],
-		symbols[Group3]= [          ugrave,          Ugrave,          degree,        NoSymbol,        NoSymbol,       brokenbar,        NoSymbol,        NoSymbol ],
-		symbols[Group4]= [ ISO_Level5_Shift ]
+		type[1]= "FOUR_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [            less,         greater,             bar,       brokenbar ],
+		symbols[2]= [           slash,             bar ],
+		symbols[3]= [          ugrave,          Ugrave,          degree,        NoSymbol,        NoSymbol,       brokenbar,        NoSymbol,        NoSymbol ],
+		symbols[4]= [ ISO_Level5_Shift ]
 	};
 	key <FK11>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [             F11,             F11,             F11,             F11, XF86Switch_VT_11 ]
+		symbols[1]= [             F11,             F11,             F11,             F11, XF86Switch_VT_11 ]
 	};
 	key <FK12>               {
 		type= "CTRL+ALT",
-		symbols[Group1]= [             F12,             F12,             F12,             F12, XF86Switch_VT_12 ]
+		symbols[1]= [             F12,             F12,             F12,             F12, XF86Switch_VT_12 ]
 	};
 	key <AB11>               {
 		repeat= No,
-		symbols[Group1]= [                      Control_L, {                      Control_L,                    Mode_switch } ],
-		actions[Group1]= [     SetMods(modifiers=Control), {     SetMods(modifiers=Control),             SetGroup(group=+1) } ],
-		symbols[Group2]= [ {                      Control_L,                    Mode_switch },                      Control_L ],
-		actions[Group2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
+		symbols[1]= [                      Control_L, {                      Control_L,                    Mode_switch } ],
+		actions[1]= [     SetMods(modifiers=Control), {     SetMods(modifiers=Control),             SetGroup(group=+1) } ],
+		symbols[2]= [ {                      Control_L,                    Mode_switch },                      Control_L ],
+		actions[2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
 	};
 	key <KATA>               {	[        Katakana ] };
 	key <HIRA>               {	[        Hiragana ] };
@@ -1741,41 +1741,41 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 	key <HKTG>               {	[ Hiragana_Katakana ] };
 	key <MUHE>               {	[        Muhenkan ] };
 	key <KPEN>               {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        KP_Enter ],
-		symbols[Group2]= [        KP_Enter ],
-		symbols[Group3]= [        KP_Enter ],
-		symbols[Group4]= [        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        KP_Enter ],
+		symbols[2]= [        KP_Enter ],
+		symbols[3]= [        KP_Enter ],
+		symbols[4]= [        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        KP_Enter,        NoSymbol ]
 	};
 	key <RCTL>               {
 		type= "ONE_LEVEL",
-		symbols[Group1]= [       Control_R ],
-		symbols[Group2]= [       Control_R ],
-		symbols[Group3]= [ ISO_Level5_Shift ]
+		symbols[1]= [       Control_R ],
+		symbols[2]= [       Control_R ],
+		symbols[3]= [ ISO_Level5_Shift ]
 	};
 	key <KPDV>               {
-		type[Group1]= "CTRL+ALT",
-		type[Group2]= "CTRL+ALT",
-		type[Group3]= "CTRL+ALT",
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
-		symbols[Group2]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
-		symbols[Group3]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
-		symbols[Group4]= [       KP_Divide,       KP_Divide,        division,           U2300,           U2215,        NoSymbol,           U2223,        NoSymbol ]
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
+		symbols[2]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
+		symbols[3]= [       KP_Divide,       KP_Divide,       KP_Divide,       KP_Divide,      XF86Ungrab ],
+		symbols[4]= [       KP_Divide,       KP_Divide,        division,           U2300,           U2215,        NoSymbol,           U2223,        NoSymbol ]
 	};
 	key <PRSC>               {
 		type= "PC_ALT_LEVEL2",
-		symbols[Group1]= [           Print,         Sys_Req ]
+		symbols[1]= [           Print,         Sys_Req ]
 	};
 	key <RALT>               {
-		type[Group1]= "TWO_LEVEL",
-		type[Group2]= "TWO_LEVEL",
-		type[Group3]= "ONE_LEVEL",
-		type[Group4]= "ONE_LEVEL",
-		symbols[Group1]= [           Alt_R,          Meta_R ],
-		symbols[Group2]= [           Alt_R,          Meta_R ],
-		symbols[Group3]= [ ISO_Level3_Shift ],
-		symbols[Group4]= [ ISO_Level5_Shift ]
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [           Alt_R,          Meta_R ],
+		symbols[2]= [           Alt_R,          Meta_R ],
+		symbols[3]= [ ISO_Level3_Shift ],
+		symbols[4]= [ ISO_Level5_Shift ]
 	};
 	key <LNFD>               {	[        Linefeed ] };
 	key <HOME>               {	[            Home ] };
@@ -1793,16 +1793,16 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 	key <VOL+>               {	[ XF86AudioRaiseVolume ] };
 	key <POWR>               {	[    XF86PowerOff ] };
 	key <KPEQ>               {
-		type[Group4]= "EIGHT_LEVEL",
-		symbols[Group1]= [        KP_Equal ],
-		symbols[Group2]= [        KP_Equal ],
-		symbols[Group3]= [        KP_Equal ],
-		symbols[Group4]= [        KP_Equal,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ]
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [        KP_Equal ],
+		symbols[2]= [        KP_Equal ],
+		symbols[3]= [        KP_Equal ],
+		symbols[4]= [        KP_Equal,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol,        NoSymbol ]
 	};
 	key <I126>               {	[       plusminus ] };
 	key <PAUS>               {
 		type= "PC_CONTROL_LEVEL2",
-		symbols[Group1]= [           Pause,           Break ]
+		symbols[1]= [           Pause,           Break ]
 	};
 	key <I128>               {	[     XF86LaunchA ] };
 	key <I129>               {	[      KP_Decimal,      KP_Decimal ] };

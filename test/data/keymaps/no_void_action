@@ -24,18 +24,18 @@ xkb_compatibility {
 xkb_symbols {
 	key <1>                  {
 		repeat= No,
-		symbols[Group1]= [                              x ],
-		actions[Group1]= [                     NoAction() ]
+		symbols[1]= [                              x ],
+		actions[1]= [                     NoAction() ]
 	};
 	key <2>                  {
 		repeat= No,
-		symbols[Group1]= [                              y ],
-		actions[Group1]= [                     NoAction() ]
+		symbols[1]= [                              y ],
+		actions[1]= [                     NoAction() ]
 	};
 	key <3>                  {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [ LockControls(controls=none,affect=neither) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ LockControls(controls=none,affect=neither) ]
 	};
 };
 

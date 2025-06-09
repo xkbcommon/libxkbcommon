@@ -73,7 +73,7 @@ xkb_compatibility "merge_modes_defaults" {
 };
 
 xkb_symbols "merge_modes_defaults" {
-	name[Group1]="yyy";
+	name[1]="yyy";
 
 	key <A>                  {	[               a,               A ] };
 	key <S>                  {	[               s,               S ] };
@@ -90,7 +90,7 @@ xkb_symbols "merge_modes_defaults" {
 	key <G>                  {
 		type= "ONE_LEVEL",
 		repeat= Yes,
-		symbols[Group1]= [               g ]
+		symbols[1]= [               g ]
 	};
 	modifier_map Shift { <A> };
 	modifier_map Control { <S> };

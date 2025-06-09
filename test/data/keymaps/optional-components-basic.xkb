@@ -22,7 +22,7 @@ xkb_compatibility {
 xkb_symbols {
 	key <>                   {
 		type= "default",
-		symbols[Group1]= [               a ]
+		symbols[1]= [               a ]
 	};
 };
 

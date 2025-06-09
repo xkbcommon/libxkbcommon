@@ -35,12 +35,12 @@ xkb_compatibility "Le_cÅ_ur_a___ses_raisons_que_la_raison_ne_con_naÃ_t_point" {
 };
 
 xkb_symbols "La_libertÃ__commence_oÃ__lâ__ignorance_finit_" {
-	name[Group1]="\nÿ";
-	name[Group2]="\00427";
+	name[1]="\nÿ";
+	name[2]="\00427";
 
 	key <>                   {
 		type= "%1ğŸºâœ¨ğŸ•Šï¸\0014",
-		symbols[Group1]= [               a,               A ]
+		symbols[1]= [               a,               A ]
 	};
 };
 

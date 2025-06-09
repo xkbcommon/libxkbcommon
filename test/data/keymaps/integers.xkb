@@ -23,10 +23,10 @@ xkb_compatibility {
 xkb_symbols {
 	key <>                   {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [              MovePtr(x=0,y=+0) ],
-		symbols[Group2]= [                       NoSymbol ],
-		actions[Group2]= [           MovePtr(x=2,y=32766) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [              MovePtr(x=0,y=+0) ],
+		symbols[2]= [                       NoSymbol ],
+		actions[2]= [           MovePtr(x=2,y=32766) ]
 	};
 };
 

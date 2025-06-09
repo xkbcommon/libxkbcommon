@@ -279,48 +279,48 @@ xkb_compatibility "(unnamed)" {
 };
 
 xkb_symbols "(unnamed)" {
-	name[Group1]="English (US)";
-	name[Group2]="Czech";
-	name[Group3]="German (Neo 2)";
+	name[1]="English (US)";
+	name[2]="Czech";
+	name[3]="German (Neo 2)";
 
 	key <AD05>               {
 		//// repeat=Yes is set with the default *interpretation*, but
 		//// using explicit actions makes the key keep the initial value,
 		//// i.e. repeat=No.
 		//repeat= Yes,
-		symbols[Group1]= [                              t,                              T ],
-		//actions[Group1]= [                     NoAction(),                     NoAction() ],
-		symbols[Group2]= [                    Cyrillic_ie,                    Cyrillic_IE ],
-		actions[Group2]= [                     NoAction(),                     NoAction() ],
-		symbols[Group3]= [                              w,                              W ]//,
-		//actions[Group3]= [                     NoAction(),                     NoAction() ]
+		symbols[1]= [                              t,                              T ],
+		//actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ie,                    Cyrillic_IE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              w,                              W ]//,
+		//actions[3]= [                     NoAction(),                     NoAction() ]
 	};
 	key <AD06>               {
-		type[Group3]= "EIGHT_LEVEL_ALPHABETIC_LEVEL_FIVE_LOCK",
-		symbols[Group1]= [               y,               Y ],
-		symbols[Group2]= [               z,               Z,       leftarrow,             yen ],
-		symbols[Group3]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
+		type[3]= "EIGHT_LEVEL_ALPHABETIC_LEVEL_FIVE_LOCK",
+		symbols[1]= [               y,               Y ],
+		symbols[2]= [               z,               Z,       leftarrow,             yen ],
+		symbols[3]= [               k,               K,          exclam,     Greek_kappa,      exclamdown,        NoSymbol,        multiply,        NoSymbol ]
 	};
 	key <LFSH>               {
-		type[Group3]= "TWO_LEVEL",
-		symbols[Group1]= [         Shift_L ],
-		symbols[Group2]= [         Shift_L ],
-		symbols[Group3]= [         Shift_L,       Caps_Lock ]
+		type[3]= "TWO_LEVEL",
+		symbols[1]= [         Shift_L ],
+		symbols[2]= [         Shift_L ],
+		symbols[3]= [         Shift_L,       Caps_Lock ]
 	};
 	//// This should set the key’s EXPLICIT_INTERP explicit flag and
 	//// the group 2 explicit_actions, but it should still allow to
 	//// interpret the keysyms in groups 1 and 3.
 	key <LALT>               {
-		type[Group1]= "ONE_LEVEL",
-		type[Group2]= "TWO_LEVEL",
-		type[Group3]= "TWO_LEVEL",
+		type[1]= "ONE_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "TWO_LEVEL",
 		//repeat= No,
-		symbols[Group1]= [                        Shift_L ],
-		//actions[Group1]= [ SetMods(modifiers=Shift,clearLocks) ],
-		symbols[Group2]= [               ISO_Level3_Shift,                      Multi_key ],
-		actions[Group2]= [  SetMods(modifiers=LevelThree),                     NoAction() ],
-		symbols[Group3]= [               ISO_Level5_Shift,               ISO_Level3_Shift ]//,
-		//actions[Group3]= [ SetMods(modifiers=LevelFive,clearLocks), SetMods(modifiers=LevelThree,clearLocks) ]
+		symbols[1]= [                        Shift_L ],
+		//actions[1]= [ SetMods(modifiers=Shift,clearLocks) ],
+		symbols[2]= [               ISO_Level3_Shift,                      Multi_key ],
+		actions[2]= [  SetMods(modifiers=LevelThree),                     NoAction() ],
+		symbols[3]= [               ISO_Level5_Shift,               ISO_Level3_Shift ]//,
+		//actions[3]= [ SetMods(modifiers=LevelFive,clearLocks), SetMods(modifiers=LevelThree,clearLocks) ]
 	};
 	key <LVL3>               {
 		type= "ONE_LEVEL",
@@ -329,32 +329,32 @@ xkb_symbols "(unnamed)" {
 		//// disable them.
 		//repeat= No,
 		//virtualMods= LevelThree,
-		symbols[Group1]= [               ISO_Level3_Shift ],
-		//actions[Group1]= [ SetMods(modifiers=LevelThree,clearLocks) ],
-		symbols[Group2]= [               ISO_Level3_Shift ],
-		actions[Group2]= [  SetMods(modifiers=LevelThree) ],
-		symbols[Group3]= [               ISO_Level3_Shift ]//,
-		//actions[Group3]= [ SetMods(modifiers=LevelThree,clearLocks) ]
+		symbols[1]= [               ISO_Level3_Shift ],
+		//actions[1]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[2]= [               ISO_Level3_Shift ],
+		actions[2]= [  SetMods(modifiers=LevelThree) ],
+		symbols[3]= [               ISO_Level3_Shift ]//,
+		//actions[3]= [ SetMods(modifiers=LevelThree,clearLocks) ]
 	};
 	key <LSGT>               {
-		symbols[Group1]= [            less,         greater,             bar,       brokenbar ],
-		symbols[Group2]= [       backslash,             bar,           slash,        NoSymbol ],
-		symbols[Group3]= [ ISO_Level5_Shift ]
+		symbols[1]= [            less,         greater,             bar,       brokenbar ],
+		symbols[2]= [       backslash,             bar,           slash,        NoSymbol ],
+		symbols[3]= [ ISO_Level5_Shift ]
 	};
 	key <RALT>               {
-		type[Group1]= "TWO_LEVEL",
-		type[Group2]= "ONE_LEVEL",
-		type[Group3]= "ONE_LEVEL",
-		symbols[Group1]= [           Alt_R,          Meta_R ],
-		symbols[Group2]= [ ISO_Level3_Shift ],
-		symbols[Group3]= [ ISO_Level5_Shift ]
+		type[1]= "TWO_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		symbols[1]= [           Alt_R,          Meta_R ],
+		symbols[2]= [ ISO_Level3_Shift ],
+		symbols[3]= [ ISO_Level5_Shift ]
 	};
 	key <COMP>               {	[  ISO_Next_Group,            Menu ] };
 	key <MDSW>               {
 		type= "ONE_LEVEL",
-		symbols[Group1]= [ ISO_Level5_Shift ],
-		symbols[Group2]= [ ISO_Level5_Shift ],
-		symbols[Group3]= [ ISO_Level5_Shift ]
+		symbols[1]= [ ISO_Level5_Shift ],
+		symbols[2]= [ ISO_Level5_Shift ],
+		symbols[3]= [ ISO_Level5_Shift ]
 	};
 	key <ALT>                {	[        NoSymbol,           Alt_L ] };
 	key <META>               {	[        NoSymbol,          Meta_L ] };
