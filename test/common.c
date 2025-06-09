@@ -391,12 +391,13 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
 }
 
 struct xkb_keymap *
-test_compile_string(struct xkb_context *context, const char *string)
+test_compile_string(struct xkb_context *context, enum xkb_keymap_format format,
+                    const char *string)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_keymap_new_from_string(context, string,
-                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_string(context, string, format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "Failed to compile string\n");
         return NULL;
