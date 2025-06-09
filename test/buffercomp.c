@@ -31,10 +31,10 @@ struct keymap_test_data {
 
 /* Our keymap compiler is the xkbcommon buffer compiler */
 static struct xkb_keymap *
-compile_buffer(struct xkb_context *context, const char *buf, size_t len,
-               void *private)
+compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
+               const char *buf, size_t len, void *private)
 {
-    return test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1, buf, len);
+    return test_compile_buffer(context, format, buf, len);
 }
 
 static void
@@ -232,7 +232,8 @@ test_optional_components(struct xkb_context *ctx, bool update_output_files)
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -264,7 +265,8 @@ test_bidi_chars(struct xkb_context *ctx, bool update_output_files)
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -456,7 +458,8 @@ test_include_default_maps(bool update_output_files)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -636,7 +639,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
             fprintf(stderr, "INFO: skip test\n");
             continue;
         }
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -768,7 +772,8 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -856,7 +861,8 @@ test_masks(struct xkb_context *ctx, bool update_output_files) {
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -918,7 +924,8 @@ test_interpret(struct xkb_context *ctx, bool update_output_files)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -1078,7 +1085,8 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
     };
     for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap,
                                    strlen(keymaps[k].keymap),
                                    keymaps[k].expected,
@@ -1235,7 +1243,8 @@ test_key_keysyms_as_strings(struct xkb_context *ctx, bool update_output_files)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -1394,7 +1403,8 @@ test_modifier_maps(struct xkb_context *ctx, bool update_output_files)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -1495,7 +1505,8 @@ test_empty_compound_statements(struct xkb_context *ctx, bool update_output_files
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -1559,7 +1570,8 @@ test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
         "  };\n"
         "};";
     const char expected[] = GOLDEN_TESTS_OUTPUTS "escape-sequences.xkb";
-    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                               compile_buffer, NULL, __func__,
                                keymap, ARRAY_SIZE(keymap),
                                expected, update_output_files));
 }
@@ -1627,7 +1639,8 @@ test_unicode_keysyms(struct xkb_context *ctx, bool update_output_files)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
@@ -1649,7 +1662,8 @@ test_no_action_void_action(struct xkb_context *ctx, bool update_output_files)
         "   key <3> { [NoAction()] };\n"
         "  };\n"
         "};";
-    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                               compile_buffer, NULL, __func__,
                                keymap_str, sizeof(keymap_str),
                                GOLDEN_TESTS_OUTPUTS "no_void_action",
                                update_output_files));
@@ -1669,7 +1683,8 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
     for (unsigned int i = 0; i <= 1; i++) {
         fprintf(stderr, "------\n*** %s, trailing '\\0': %d ***\n", __func__, i);
 
-        assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
                                    original, strlen(original) + i, path,
                                    update_output_files));
     }
@@ -1735,7 +1750,8 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
         "   key <6> { [ActionMessage(data=<1>)] };\n" /* invalid field */
         "  };\n"
         "};";
-    assert(test_compile_output(ctx, compile_buffer, NULL, __func__,
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                               compile_buffer, NULL, __func__,
                                keymap_str, sizeof(keymap_str),
                                GOLDEN_TESTS_OUTPUTS "unsupported-x11-actions",
                                update_output_files));

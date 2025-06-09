@@ -49,10 +49,10 @@ test_explicit_actions(struct xkb_context *ctx)
 }
 
 static struct xkb_keymap*
-compile_string(struct xkb_context *context,
+compile_string(struct xkb_context *context, enum xkb_keymap_format format,
                const char *buf, size_t len, void *private)
 {
-    return test_compile_string(context, XKB_KEYMAP_FORMAT_TEXT_V1, buf);
+    return test_compile_string(context, format, buf);
 }
 
 int
@@ -86,7 +86,8 @@ main(int argc, char *argv[])
      * to a string. */
     char *original = test_read_file(DATA_PATH);
     assert(original);
-    assert(test_compile_output(ctx, compile_string, NULL, "Round-trip",
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, compile_string,
+                               NULL, "Round-trip",
                                original, 0 /* unused */, DATA_PATH,
                                update_output_files));
     free(original);

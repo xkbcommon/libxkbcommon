@@ -454,7 +454,7 @@ test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
 }
 
 bool
-test_compile_output(struct xkb_context *ctx,
+test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
                     test_compile_buffer_t compile_buffer,
                     void *compile_buffer_private, const char *test_title,
                     const char *keymap_str, size_t keymap_len,
@@ -463,8 +463,9 @@ test_compile_output(struct xkb_context *ctx,
     int success = true;
     fprintf(stderr, "*** %s ***\n", test_title);
 
-    struct xkb_keymap *keymap =
-        compile_buffer(ctx, keymap_str, keymap_len, compile_buffer_private);
+    struct xkb_keymap *keymap = compile_buffer(
+        ctx, format, keymap_str, keymap_len, compile_buffer_private
+    );
 
     if (!rel_path) {
         /* No path given: expect compilation failure */
@@ -514,7 +515,7 @@ test_compile_output(struct xkb_context *ctx,
                 if (k > 0)
                     continue;
                 /* Test round trip */
-                keymap = compile_buffer(ctx, expected, strlen(expected),
+                keymap = compile_buffer(ctx, format, expected, strlen(expected),
                                         compile_buffer_private);
                 if (!keymap) {
                     fprintf(stderr,

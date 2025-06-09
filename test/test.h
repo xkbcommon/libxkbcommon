@@ -93,11 +93,12 @@ test_compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
                     const char *buf, size_t len);
 
 typedef struct xkb_keymap * (*test_compile_buffer_t)(struct xkb_context *context,
+                                                     enum xkb_keymap_format format,
                                                      const char *buf, size_t len,
                                                      void *private);
 
 bool
-test_compile_output(struct xkb_context *ctx,
+test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
                     test_compile_buffer_t compile_buffer,
                     void *compile_buffer_private, const char *test_title,
                     const char *keymap_str, size_t keymap_len,
