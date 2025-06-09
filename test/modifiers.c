@@ -642,7 +642,7 @@ test_pure_virtual_modifiers(struct xkb_context *context)
         "  xkb_compat { include \"complete+basic(invalid-pure-virtual-modifiers)\" };"
         "  xkb_symbols { include \"pc(pc105-pure-virtual-modifiers)\" };"
         "};";
-    keymap = test_compile_string(context, keymap_str);
+    keymap = test_compile_string(context, XKB_KEYMAP_FORMAT_TEXT_V1, keymap_str);
     assert(!keymap);
 }
 

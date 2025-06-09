@@ -280,7 +280,7 @@ test_no_extra_groups(void)
         "  xkb_symbols { include \"pc+multiple-groups(1)+multiple-groups(2):2"
                                   "+inet(evdev)\" };"
         "};";
-    keymap = test_compile_string(context, keymap_str);
+    keymap = test_compile_string(context, XKB_KEYMAP_FORMAT_TEXT_V1, keymap_str);
     kc = xkb_keymap_key_by_name(keymap, "RALT");
     assert(kc != XKB_KEYCODE_INVALID);
     assert(xkb_keymap_num_layouts_for_key(keymap, kc) == 4);

@@ -29,7 +29,7 @@ test_explicit_actions(struct xkb_context *ctx)
     char *got = NULL;
 
     /* Try original */
-    keymap = test_compile_string(ctx, original);
+    keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, original);
     free(original);
     assert(keymap);
     got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
@@ -38,7 +38,7 @@ test_explicit_actions(struct xkb_context *ctx)
     free(got);
 
     /* Try round-trip */
-    keymap = test_compile_string(ctx, expected);
+    keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, expected);
     assert(keymap);
     got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     xkb_keymap_unref(keymap);
@@ -52,7 +52,7 @@ static struct xkb_keymap*
 compile_string(struct xkb_context *context,
                const char *buf, size_t len, void *private)
 {
-    return test_compile_string(context, buf);
+    return test_compile_string(context, XKB_KEYMAP_FORMAT_TEXT_V1, buf);
 }
 
 int
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
     assert(ctx);
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
-    keymap = test_compile_string(ctx, "");
+    keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "");
     assert(!keymap);
 
     /* Load in a prebuilt keymap, make sure we can compile it from a string,
@@ -98,7 +98,7 @@ main(int argc, char *argv[])
     dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
     xkb_keymap_unref(keymap);
-    keymap = test_compile_string(ctx, dump);
+    keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, dump);
     assert(keymap);
     /* Now test that the dump of the dump is equal to the dump! */
     dump2 = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);

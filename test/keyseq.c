@@ -949,7 +949,8 @@ test_explicit_actions(struct xkb_context *ctx)
     char *dump = xkb_keymap_get_as_string(original,
                                           XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
-    struct xkb_keymap *roundtrip = test_compile_string(ctx, dump);
+    struct xkb_keymap *roundtrip =
+        test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, dump);
     free(dump);
 
     struct xkb_keymap *keymaps[] = { original, roundtrip };
