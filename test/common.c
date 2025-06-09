@@ -407,12 +407,13 @@ test_compile_string(struct xkb_context *context, enum xkb_keymap_format format,
 }
 
 struct xkb_keymap *
-test_compile_buffer(struct xkb_context *context, const char *buf, size_t len)
+test_compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
+                    const char *buf, size_t len)
 {
     struct xkb_keymap *keymap;
 
-    keymap = xkb_keymap_new_from_buffer(context, buf, len,
-                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_buffer(context, buf, len, format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "Failed to compile keymap from memory buffer\n");
         return NULL;

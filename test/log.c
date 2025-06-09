@@ -305,7 +305,8 @@ test_keymaps(void)
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, keymaps[k].input, strlen(keymaps[k].input));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                keymaps[k].input, strlen(keymaps[k].input));
         assert_printf(keymaps[k].error ^ !!keymap,
                       "%s\n", darray_items(log_string));
         xkb_keymap_unref(keymap);

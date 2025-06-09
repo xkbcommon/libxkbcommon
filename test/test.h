@@ -89,7 +89,8 @@ test_compile_string(struct xkb_context *context, enum xkb_keymap_format format,
                     const char *string);
 
 struct xkb_keymap *
-test_compile_buffer(struct xkb_context *context, const char *buf, size_t len);
+test_compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
+                    const char *buf, size_t len);
 
 typedef struct xkb_keymap * (*test_compile_buffer_t)(struct xkb_context *context,
                                                      const char *buf, size_t len,

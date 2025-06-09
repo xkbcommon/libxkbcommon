@@ -204,7 +204,8 @@ test_group_wrap(struct xkb_context *ctx)
     for (int32_t g = 0; g < (int32_t)ARRAY_SIZE(keymaps); g++) {
         fprintf(stderr, "------\n*** %s: #%"PRId32" groups ***\n", __func__, g);
         struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, keymaps[g], strlen(keymaps[g]));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                keymaps[g], strlen(keymaps[g]));
         assert(keymap);
         struct xkb_state *state = xkb_state_new(keymap);
         assert(state);
@@ -2155,7 +2156,8 @@ test_inactive_key_type_entry(struct xkb_context *context)
         "    };\n"
         "};";
     struct xkb_keymap *keymap =
-        test_compile_buffer(context, keymap_str, sizeof(keymap_str));
+        test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            keymap_str, sizeof(keymap_str));
     assert(keymap);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -2211,7 +2213,8 @@ test_caps_keysym_transformation(struct xkb_context *context)
         "};";
 
     struct xkb_keymap* const keymap =
-        test_compile_buffer(context, keymap_str, sizeof(keymap_str));
+        test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            keymap_str, sizeof(keymap_str));
     assert(keymap);
 
     xkb_mod_index_t shift = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
@@ -2483,7 +2486,9 @@ test_leds(struct xkb_context *ctx)
         "    };\n"
         "};";
 
-    struct xkb_keymap *keymap = test_compile_buffer(ctx, buf, ARRAY_SIZE(buf));
+    struct xkb_keymap *keymap =
+        test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            buf, ARRAY_SIZE(buf));
     assert(keymap);
 
     const xkb_led_index_t caps_idx = _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_CAPS);
@@ -2598,8 +2603,9 @@ test_multiple_actions(struct xkb_context *ctx)
         "    key <RCTL> { [1], [2], [3], [4] };\n"
         "  };\n"
         "};";
-    struct xkb_keymap *keymap = test_compile_buffer(ctx, keymap_str,
-                                                    sizeof(keymap_str));
+    struct xkb_keymap *keymap =
+        test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            keymap_str, sizeof(keymap_str));
     assert(keymap);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -2652,8 +2658,9 @@ test_void_action(struct xkb_context *ctx)
         "  xkb_keycodes { <> = 1; };\n"
         "  xkb_symbols  { key <> { [VoidAction()], [VoidAction()] }; };\n"
         "};";
-    struct xkb_keymap *keymap = test_compile_buffer(ctx, keymap_str,
-                                                    sizeof(keymap_str));
+    struct xkb_keymap *keymap =
+        test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            keymap_str, sizeof(keymap_str));
     assert(keymap);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
