@@ -931,6 +931,61 @@ test_interpret(struct xkb_context *ctx, bool update_output_files)
     }
 }
 
+static void
+test_group_indexes_names(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct {
+        const char* keymap;
+        const char* expected_v1;
+        const char* expected_v2;
+    } keymaps[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <> = 1;\n"
+                "    indicator 1 = \"1\";\n"
+                "    indicator 2 = \"2\";\n"
+                "  };\n"
+                "  xkb_compat {\n"
+                "    interpret a { action = SetGroup(group=Group1);  };\n"
+                "    interpret b { action = SetGroup(group=-Group2); };\n"
+                "    interpret c { action = SetGroup(group=+Group3); };\n"
+                "    indicator \"1\" { groups = Group4; };\n"
+                "    indicator \"2\" { groups = All-Group1; };\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    name[Group1] = \"1\";\n"
+                "    name[Group2] = \"2\";\n"
+                "    name[Group3] = \"3\";\n"
+                "    name[Group4] = \"4\";\n"
+                "    key <> {\n"
+                "      groupsredirect=Group4,\n"
+                "      symbols[Group1]=[a],\n"
+                "      symbols[Group2]=[b],\n"
+                "      symbols[Group3]=[c],\n"
+                "      symbols[Group4]=[d]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected_v1 = GOLDEN_TESTS_OUTPUTS "group-index-names-1.xkb",
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-1.xkb"
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected_v1, update_output_files));
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected_v2, update_output_files));
+    }
+}
+
 /* Test various multi-{keysym,action} syntaxes */
 static void
 test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
@@ -1794,6 +1849,7 @@ main(int argc, char *argv[])
     test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);
     test_interpret(ctx, update_output_files);
+    test_group_indexes_names(ctx, update_output_files);
     test_multi_keysyms_actions(ctx, update_output_files);
     test_key_keysyms_as_strings(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);

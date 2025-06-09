@@ -26,8 +26,8 @@ xkb_compatibility {
 xkb_symbols {
 	key <a>                  {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [      SetMods(modifiers=0x1100) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [      SetMods(modifiers=0x1100) ]
 	};
 };
 

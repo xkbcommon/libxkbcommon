@@ -175,68 +175,68 @@ xkb_compatibility "basic" {
 xkb_symbols {
 	key <01>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control) ]
 	};
 	key <02>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control),             SetGroup(group=+1) ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control),             SetGroup(group=+1) ]
 	};
 	key <04>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [                     NoAction(),             SetGroup(group=+1) ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [                     NoAction(),             SetGroup(group=+1) ]
 	};
 	key <05>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control) ]
 	};
 	key <07>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control) ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control) ]
 	};
 	key <08>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control),             SetGroup(group=+1) ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control),             SetGroup(group=+1) ]
 	};
 	key <09>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) } ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) } ]
 	};
 	key <10>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1), Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1), Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
 	};
 	key <11>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [     SetMods(modifiers=Control), {             SetGroup(group=+1), Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [     SetMods(modifiers=Control), {             SetGroup(group=+1), Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
 	};
 	key <12>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) ]
 	};
 	key <13>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) } ]
 	};
 	key <14>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), { Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00),     SetMods(modifiers=Control) },                     NoAction() ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), { Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00),     SetMods(modifiers=Control) },                     NoAction() ]
 	};
 	key <15>                 {
 		repeat= No,
-		symbols[Group1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
-		actions[Group1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) },     SetMods(modifiers=Control),                     NoAction() ]
+		symbols[1]= [                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[1]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) }, { Private(type=0x11,data[0]=0x66,data[1]=0x6f,data[2]=0x6f,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00), Private(type=0x11,data[0]=0x62,data[1]=0x61,data[2]=0x72,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00) },     SetMods(modifiers=Control),                     NoAction() ]
 	};
 };
 

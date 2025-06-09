@@ -41,7 +41,7 @@ xkb_compatibility {
 xkb_symbols "level3" {
 	key <LVL3>               {
 		type= "ONE_LEVEL",
-		symbols[Group1]= [ ISO_Level3_Shift ]
+		symbols[1]= [ ISO_Level3_Shift ]
 	};
 	key <RALT>               {	[ ISO_Level3_Shift, ISO_Level3_Lock ] };
 	modifier_map Mod5 { <LVL3> };
