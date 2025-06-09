@@ -32,9 +32,9 @@ struct keymap_test_data {
 /* Our keymap compiler is the xkbcommon buffer compiler */
 static struct xkb_keymap *
 compile_buffer(struct xkb_context *context, const char *buf, size_t len,
-                     void *private)
+               void *private)
 {
-    return test_compile_buffer(context, buf, len);
+    return test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1, buf, len);
 }
 
 static void
@@ -44,24 +44,28 @@ test_encodings(struct xkb_context *ctx)
 
     /* Accept UTF-8 encoded BOM (U+FEFF) */
     const char utf8_with_bom[] = "\xef\xbb\xbfxkb_keymap {};";
-    keymap = test_compile_buffer(ctx, utf8_with_bom, sizeof(utf8_with_bom));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 utf8_with_bom, sizeof(utf8_with_bom));
     assert(keymap);
     xkb_keymap_unref(keymap);
 
     /* Reject UTF-16LE encoded string */
     const char utf16_le[] = "x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;\0";
-    keymap = test_compile_buffer(ctx, utf16_le, sizeof(utf16_le));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 utf16_le, sizeof(utf16_le));
     assert(!keymap);
 
     /* Reject UTF-16LE with BOM encoded string */
     const char utf16_le_with_bom[] =
         "\xff\xfex\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;\0";
-    keymap = test_compile_buffer(ctx, utf16_le_with_bom, sizeof(utf16_le_with_bom));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 utf16_le_with_bom, sizeof(utf16_le_with_bom));
     assert(!keymap);
 
     /* Reject UTF-16BE encoded string */
     const char utf16_be[] = "\0x\0k\0b\0_\0k\0e\0y\0m\0a\0p\0 \0{\0}\0;";
-    keymap = test_compile_buffer(ctx, utf16_be, sizeof(utf16_be));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 utf16_be, sizeof(utf16_be));
     assert(!keymap);
 }
 
@@ -112,7 +116,8 @@ test_floats(struct xkb_context *ctx)
     for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, tests[k].keymap, strlen(tests[k].keymap));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                tests[k].keymap, strlen(tests[k].keymap));
         assert(tests[k].valid ^ !keymap);
         xkb_keymap_unref(keymap);
     }
@@ -153,7 +158,8 @@ test_component_syntax_error(struct xkb_context *ctx)
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         const struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
 }
@@ -335,7 +341,8 @@ test_recursive_includes(struct xkb_context *ctx)
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u %s ***\n", __func__, k, keymaps[k]);
         k++;
-        keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                     keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
 }
@@ -350,7 +357,8 @@ test_include_paths(struct xkb_context *ctx)
         "  xkb_types    \"test\" { include \"complete\" };\n"
         "  xkb_symbols  \"test\" { include \"pc+us(basic)\" };\n"
         "};";
-    keymap = test_compile_buffer(ctx, simple_str, sizeof(simple_str));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 simple_str, sizeof(simple_str));
     char *expected =
         xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     xkb_keymap_unref(keymap);
@@ -377,7 +385,8 @@ test_include_paths(struct xkb_context *ctx)
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        keymap = test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+        keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                     keymaps[k], strlen(keymaps[k]));
         assert(keymap);
         char *got =
             xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
@@ -482,7 +491,8 @@ test_alloc_limits(struct xkb_context *ctx)
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         const struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
 }
@@ -493,8 +503,8 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
      * syntax error, but it should still exit *cleanly*, not as previously where
      * the use of strtoll would trigger a memory violation. */
     const char not_null_terminated[] = { '1' };
-    assert(!test_compile_buffer(ctx, not_null_terminated,
-                                sizeof(not_null_terminated)));
+    assert(!test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                not_null_terminated, sizeof(not_null_terminated)));
     const bool skipOverflow = sizeof(int64_t) >= sizeof (long long);
     if (skipOverflow) {
         fprintf(stderr,
@@ -1271,7 +1281,8 @@ test_invalid_symbols_fields(struct xkb_context *ctx)
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         const struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, keymaps[k], strlen(keymaps[k]));
+            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                keymaps[k], strlen(keymaps[k]));
         assert(!keymap);
     }
 }
@@ -1496,9 +1507,11 @@ test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
     /* Similarly to `test_integers`, test that escape sequences at the end of
      * a buffer raise a syntax error but no memory violation */
     const char bad_octal[] = { '"', '\\', '1' };
-    assert(!test_compile_buffer(ctx, bad_octal, sizeof(bad_octal)));
+    assert(!test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                bad_octal, sizeof(bad_octal)));
     const char bad_unicode[] = { '"', '\\', 'u', '{', '1' };
-    assert(!test_compile_buffer(ctx, bad_unicode, sizeof(bad_unicode)));
+    assert(!test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                bad_unicode, sizeof(bad_unicode)));
 
     const char keymap[] =
         "default xkb_keymap \"\" {\n"
@@ -1677,7 +1690,8 @@ test_keymap_from_rules(struct xkb_context *ctx)
     char *dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     assert(dump);
     xkb_keymap_unref(keymap);
-    keymap = test_compile_buffer(ctx, dump, strlen(dump));
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 dump, strlen(dump));
     assert(keymap);
     xkb_keymap_unref(keymap);
     free(dump);
@@ -1747,7 +1761,8 @@ main(int argc, char *argv[])
     assert(ctx);
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
-    struct xkb_keymap *keymap = test_compile_buffer(ctx, "", 0);
+    struct xkb_keymap *keymap =
+        test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "", 0);
     assert(!keymap);
 
     test_encodings(ctx);

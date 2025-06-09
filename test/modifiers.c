@@ -318,7 +318,8 @@ test_explicit_virtual_modifiers(struct xkb_context *context)
     for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         struct xkb_keymap *keymap = test_compile_buffer(
-            context, tests[k].keymap, strlen(tests[k].keymap)
+            context, XKB_KEYMAP_FORMAT_TEXT_V1,
+            tests[k].keymap, strlen(tests[k].keymap)
         );
         assert(keymap);
 
