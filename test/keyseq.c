@@ -18,7 +18,7 @@ test_group_latch(struct xkb_context *ctx)
 {
     /* Absolute group, no lock */
     struct xkb_keymap *keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch_group2,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -190,7 +190,7 @@ test_group_latch(struct xkb_context *ctx)
 
     /* Absolute group, latch-to-lock */
     keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch_group2_lock,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -222,7 +222,7 @@ test_group_latch(struct xkb_context *ctx)
 
     /* Relative group (positive), no lock */
     keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -237,7 +237,7 @@ test_group_latch(struct xkb_context *ctx)
 
     /* Relative group (positive), latch-to-lock */
     keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch_lock,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -274,7 +274,7 @@ test_group_latch(struct xkb_context *ctx)
 
     /* Relative group (negative), no lock */
     keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch_negative,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -418,7 +418,7 @@ test_group_latch(struct xkb_context *ctx)
 
     /* Relative group (negative), no lock */
     keymap = test_compile_rules(
-        ctx, "evdev", "evdev",
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev", "pc104",
         "us,il,ru,de", ",,phonetic,neo",
         "grp:menu_latch_negative_lock,grp:sclk_toggle,grp:lctrl_rctrl_switch");
     assert(keymap);
@@ -462,7 +462,8 @@ test_mod_latch(struct xkb_context *context)
 {
     struct xkb_keymap *keymap;
 
-    keymap = test_compile_rules(context, "evdev", "", "latch", "", "");
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "", "latch", "", "");
     assert(keymap);
 
     /* Set: basic */
@@ -1013,8 +1014,8 @@ test_simultaneous_modifier_clear(struct xkb_context *context)
 {
     struct xkb_keymap *keymap;
 
-    keymap = test_compile_rules(context, "evdev", "pc104",
-                                "simultaneous-mods-latches", "", "");
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "pc104", "simultaneous-mods-latches", "", "");
     assert(keymap);
 
     /*
@@ -1092,8 +1093,8 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
     assert(ctx);
 
 
-    keymap = test_compile_rules(ctx, "evdev", "evdev",
-                                "us,il,ru,de", ",,phonetic,neo",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "evdev", "us,il,ru,de", ",,phonetic,neo",
                                 "grp:alt_shift_toggle,grp:menu_toggle");
     assert(keymap);
 
@@ -1369,7 +1370,8 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
                         KEY_V,           BOTH,  XKB_KEY_p,               FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, rules, "", "de", "neo", "");
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, rules,
+                                "", "de", "neo", "");
     assert(keymap);
     assert(test_key_seq(keymap,
                         /* Level 5. */
@@ -1421,7 +1423,8 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
 
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, rules,
+                                "", "us,il,ru", "",
                                 "grp:alt_shift_toggle_bidir,grp:menu_toggle");
     assert(keymap);
 
@@ -1460,8 +1463,9 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
                         KEY_H,         BOTH, XKB_KEY_h,              FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, rules, "", "us,il,ru", "",
-                                "grp:switch,grp:lswitch,grp:menu_toggle");
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, rules,
+                                 "", "us,il,ru", "",
+                                 "grp:switch,grp:lswitch,grp:menu_toggle");
     assert(keymap);
 
     /* Test depressed group works (Mode_switch). */
@@ -1503,7 +1507,8 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
                         KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, rules, "", "us", "euro", "");
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, rules,
+                                "", "us", "euro", "");
     assert(keymap);
 
     assert(test_key_seq(keymap,
@@ -1523,7 +1528,8 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
                         KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, rules, "applealu_ansi", "us", "",
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, rules,
+                                "applealu_ansi", "us", "",
                                 "terminate:ctrl_alt_bksp");
     assert(keymap);
 

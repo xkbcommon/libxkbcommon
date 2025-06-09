@@ -54,7 +54,8 @@ test_modifiers_names(struct xkb_context *context)
 {
     struct xkb_keymap *keymap;
 
-    keymap = test_compile_rules(context, "evdev", "pc104", "us", NULL, NULL);
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                                "pc104", "us", NULL, NULL);
     assert(keymap);
 
     /* Real modifiers
@@ -387,8 +388,10 @@ test_explicit_virtual_modifiers(struct xkb_context *context)
 static void
 test_virtual_modifiers_mapping_hack(struct xkb_context *context)
 {
-    struct xkb_keymap *keymap = test_compile_rules(context, "evdev",
-                                                   "pc104", "us", NULL, NULL);
+    struct xkb_keymap *keymap = test_compile_rules(context,
+                                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                   "evdev", "pc104",
+                                                   "us", NULL, NULL);
     assert(keymap);
 
     struct xkb_state* state = xkb_state_new(keymap);

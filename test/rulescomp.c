@@ -10,14 +10,14 @@
 #include "utils.h"
 
 static int
-test_rmlvo_va(struct xkb_context *context, const char *rules,
-              const char *model, const char *layout,
+test_rmlvo_va(struct xkb_context *context, enum xkb_keymap_format format,
+              const char *rules, const char *model, const char *layout,
               const char *variant, const char *options, va_list ap)
 {
     struct xkb_keymap *keymap;
     int ret;
 
-    keymap = test_compile_rules(context, rules, model, layout, variant,
+    keymap = test_compile_rules(context, format, rules, model, layout, variant,
                                 options);
     if (!keymap)
         return 0;
@@ -34,24 +34,24 @@ test_rmlvo_va(struct xkb_context *context, const char *rules,
 }
 
 static int
-test_rmlvo(struct xkb_context *context, const char *rules,
-           const char *model, const char *layout, const char *variant,
-           const char *options, ...)
+test_rmlvo(struct xkb_context *context, enum xkb_keymap_format format,
+           const char *rules, const char *model, const char *layout,
+           const char *variant, const char *options, ...)
 {
     va_list ap;
     int ret;
 
     va_start(ap, options);
-    ret = test_rmlvo_va(context, rules, model, layout, variant, options, ap);
+    ret = test_rmlvo_va(context, format, rules, model, layout, variant, options, ap);
     va_end(ap);
 
     return ret;
 }
 
 static int
-test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
-               const char *layout, const char *variant, const char *options,
-               ...)
+test_rmlvo_env(struct xkb_context *ctx, enum xkb_keymap_format format,
+               const char *rules, const char *model, const char *layout,
+               const char *variant, const char *options, ...)
 {
     va_list ap;
     int ret;
@@ -83,7 +83,7 @@ test_rmlvo_env(struct xkb_context *ctx, const char *rules, const char *model,
     else
         unsetenv("XKB_DEFAULT_OPTIONS");
 
-    ret = test_rmlvo_va(ctx, NULL, NULL, NULL, NULL, NULL, ap);
+    ret = test_rmlvo_va(ctx, format, NULL, NULL, NULL, NULL, NULL, ap);
 
     va_end(ap);
 
@@ -101,7 +101,9 @@ main(int argc, char *argv[])
 
 #define KS(name) xkb_keysym_from_name(name, 0)
 
-    assert(test_rmlvo(ctx, "evdev", "pc105", "us,il,ru,ca", ",,,multix", "grp:alts_toggle,ctrl:nocaps,compose:rwin",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "pc105", "us,il,ru,ca", ",,,multix",
+                      "grp:alts_toggle,ctrl:nocaps,compose:rwin",
                       KEY_Q,          BOTH, XKB_KEY_q,                    NEXT,
                       KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
                       KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
@@ -111,25 +113,30 @@ main(int argc, char *argv[])
                       KEY_LEFTSHIFT,  DOWN, XKB_KEY_Shift_L,              NEXT,
                       KEY_Q,          BOTH, XKB_KEY_Q,                    NEXT,
                       KEY_RIGHTMETA,  BOTH, XKB_KEY_Multi_key,            FINISH));
-    assert(test_rmlvo(ctx, "evdev",  "pc105", "us,in", "", "grp:alts_toggle",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "pc105", "us,in", "", "grp:alts_toggle",
                       KEY_A,          BOTH, XKB_KEY_a,                    NEXT,
                       KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
                       KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
                       KEY_RIGHTALT,   UP,   XKB_KEY_ISO_Level3_Shift,     NEXT,
                       KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
                       KEY_A,          BOTH, KS("U094b"),                  FINISH));
-    assert(test_rmlvo(ctx, "evdev", "pc105", "us", "intl", "",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "pc105", "us", "intl", "",
                       KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
-    assert(test_rmlvo(ctx, "evdev", "evdev", "us", "intl", "grp:alts_toggle",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "pc105", "us", "intl", "grp:alts_toggle",
                       KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
 
     /* 20 is not a legal group; make sure this is handled gracefully. */
-    assert(test_rmlvo(ctx, "evdev", "", "us:20", "", "",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "", "us:20", "", "",
                       KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
 
     /* Don't choke on missing values in RMLVO. Should just skip them.
        Currently generates us,us,ca. */
-    assert(test_rmlvo(ctx, "evdev", "", "us,,ca", "", "grp:alts_toggle",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                      "", "us,,ca", "", "grp:alts_toggle",
                       KEY_A,          BOTH, XKB_KEY_a,                    NEXT,
                       KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,                NEXT,
                       KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,       NEXT,
@@ -141,19 +148,24 @@ main(int argc, char *argv[])
                       KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,                NEXT,
                       KEY_APOSTROPHE, BOTH, XKB_KEY_dead_grave,           FINISH));
 
-    assert(test_rmlvo(ctx, "", "", "", "", "",
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                      "", "", "", "", "",
                       KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
 
-    assert(!test_rmlvo(ctx, "does-not-exist", "", "", "", "",
+    assert(!test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                       "does-not-exist", "", "", "", "",
                        KEY_A,          BOTH, XKB_KEY_a,                   FINISH));
 
-    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                          "", "us", "", "",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
-    assert(test_rmlvo_env(ctx, "evdev", "", "us", "", "ctrl:nocaps",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                          "evdev", "", "us", "", "ctrl:nocaps",
                           KEY_CAPSLOCK,   BOTH, XKB_KEY_Control_L,        FINISH));
 
     /* Ignores multix and generates us,ca. */
-    assert(test_rmlvo_env(ctx, "evdev", "", "us,ca", ",,,multix", "grp:alts_toggle",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                          "", "us,ca", ",,,multix", "grp:alts_toggle",
                           KEY_A,          BOTH, XKB_KEY_a,                NEXT,
                           KEY_LEFTALT,    DOWN, XKB_KEY_Alt_L,            NEXT,
                           KEY_RIGHTALT,   DOWN, XKB_KEY_ISO_Next_Group,   NEXT,
@@ -161,11 +173,11 @@ main(int argc, char *argv[])
                           KEY_LEFTALT,    UP,   XKB_KEY_Alt_L,            NEXT,
                           KEY_GRAVE,      UP,   XKB_KEY_numbersign,       FINISH));
 
-    assert(!test_rmlvo_env(ctx, "broken", "what-on-earth", "invalid", "", "",
+    assert(!test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "broken", "what-on-earth", "invalid", "", "",
                            KEY_A,          BOTH, XKB_KEY_a,               FINISH));
 
     /* Ensure a keymap with an empty xkb_keycodes compiles fine. */
-    assert(test_rmlvo_env(ctx, "base", "empty", "empty", "", "",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "base", "empty", "empty", "", "",
                           KEY_A,          BOTH, XKB_KEY_NoSymbol,         FINISH));
 
     /* Check replace merge mode: it should replace the whole <RALT> key */
@@ -176,20 +188,23 @@ main(int argc, char *argv[])
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(replace_options); k++) {
         const char* const options = replace_options[k];
-        assert(test_rmlvo(ctx, "merge-mode-replace", "", "us,de", "", options,
+        assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "merge-mode-replace",
+                          "", "us,de", "", options,
                           KEY_RIGHTALT,        BOTH, XKB_KEY_Alt_R,           NEXT,
                           KEY_COMPOSE,         BOTH, XKB_KEY_ISO_Next_Group,  NEXT,
                           KEY_RIGHTALT,        BOTH, XKB_KEY_Alt_R,           FINISH));
     }
 
     /* Has an illegal escape sequence, but shouldn't fail. */
-    assert(test_rmlvo_env(ctx, "evdev", "", "cz", "bksl", "",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+                          "", "cz", "bksl", "",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
 
     xkb_context_unref(ctx);
 
     ctx = test_get_context(0);
-    assert(test_rmlvo_env(ctx, "broken", "but", "ignored", "per", "ctx flags",
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "broken",
+                          "but", "ignored", "per", "ctx flags",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
 
     /* Test response to invalid flags. */

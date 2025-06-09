@@ -1669,7 +1669,8 @@ test_keymap_from_rules(struct xkb_context *ctx)
 {
     /* Make sure we can recompile our output for a normal keymap from rules. */
     fprintf(stderr, "------\n*** %s ***\n", __func__);
-    struct xkb_keymap *keymap = test_compile_rules(ctx, NULL, NULL,
+    struct xkb_keymap *keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                   NULL, NULL,
                                                    "ru,ca,de,us",
                                                    ",multix,neo,intl", NULL);
     assert(keymap);
