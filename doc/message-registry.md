@@ -303,7 +303,10 @@ key <AB08> {[ comma, semicolon, periodcentered, multiply ]};
   <dt>Summary</dt><dd>Warn when a group index is not supported</dd>
 </dl>
 
-xkbcommon supports group index in the range (1..4).
+xkbcommon supports different *group index* ranges, depending of the target
+*keymap format*:
+- `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..4
+- `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..32
 
 
 ### XKB-239 – Conflicting key type level names {#XKB-239}

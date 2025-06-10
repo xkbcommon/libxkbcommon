@@ -158,7 +158,10 @@
   type: error
   description: "Warn when a group index is not supported"
   details: |
-    xkbcommon supports group index in the range (1..{{XKB_MAX_GROUPS}}).
+    xkbcommon supports different *group index* ranges, depending of the target
+    *keymap format*:
+    - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..{{XKB_MAX_GROUPS_X11}}
+    - `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..{{XKB_MAX_GROUPS}}
 - id: "conflicting-key-type-level-names"
   code: 239
   added: ALWAYS

@@ -201,7 +201,7 @@ or %%H seems to do the job though.
 -->
 @note
 - Include processes the rules in the file path specified in the `ident`,
-  in order. **%-expansion** is performed, as follows: @rules-include-expansion
+  in order. **%-expansion** is performed, as follows: @anchor rules-include-expansion
   <dl>
     <dt>`%%`</dt>
     <dd>A literal %.</dd>

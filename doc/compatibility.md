@@ -118,8 +118,8 @@ Limited to **4** layouts.
 </td>
 <td>
 <details>
-<summary>❓ Planned for 1.11</summary>
-Enable up to **32** layouts.
+<summary>✅ Full support (since 1.11)</summary>
+Enable up to **32** layouts when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
 </details>
 </td>
 </tr>
@@ -283,7 +283,8 @@ Unused in [xkeyboard-config] layouts.
 <tr>
 <th>`VoidAction()`</th>
 <td>❌️ No support</td>
-<td colspan="2">✅ Full support (since 1.10)</td>
+<td>⚠️ Parsing only (since 1.10)</td>
+<td>✅ Full support (since 1.11)</td>
 </tr>
 <tr>
 <th rowspan="3">Modifiers</th>
@@ -606,7 +607,7 @@ Obsolete legacy file format tied to X11 ecosystem.
 <td colspan="2">
 <details>
 <summary>✅ Full support</summary>
-See @rules-include-expansion "rules include statement" for further details.
+See @ref rules-include-expansion "rules include statement" for further details.
 </details>
 </td>
 </tr>
