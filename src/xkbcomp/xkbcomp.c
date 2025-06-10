@@ -12,7 +12,10 @@
 #include "config.h"
 
 #include <stdbool.h>
+
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "keymap.h"
 #include "rules.h"
 
 bool
@@ -86,6 +89,10 @@ text_v1_keymap_new_from_names(struct xkb_keymap *keymap,
                 rmlvo->options);
         return false;
     }
+
+    const xkb_layout_index_t max_groups = format_max_groups(keymap->format);
+    if (keymap->num_groups > max_groups)
+        keymap->num_groups = max_groups;
 
     log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
             "Compiling from KcCGST: keycodes '%s', types '%s', "
