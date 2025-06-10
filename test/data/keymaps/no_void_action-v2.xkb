@@ -1,0 +1,42 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<1>                  = 1;
+	<2>                  = 2;
+	<3>                  = 3;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <1>                  {
+		repeat= No,
+		symbols[1]= [                              x ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <2>                  {
+		repeat= No,
+		symbols[1]= [                              y ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <3>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [                   VoidAction() ]
+	};
+};
+
+};
