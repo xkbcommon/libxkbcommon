@@ -14,6 +14,7 @@
 
 #include <assert.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
@@ -390,8 +391,8 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
 #define ACTION_PADDING 30
 
 static bool
-write_action(struct xkb_keymap *keymap, struct buf *buf,
-             const union xkb_action *action,
+write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf, const union xkb_action *action,
              const char *prefix, const char *suffix)
 {
     const char *type;
@@ -498,7 +499,11 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
          * We better not use `Private` either, because it could still be
          * interpreted by X11.
          */
-        write_buf(buf, "%sLockControls(controls=none,affect=neither)%s", prefix, suffix);
+        if (format == XKB_KEYMAP_FORMAT_TEXT_V1)
+            write_buf(buf, "%sLockControls(controls=none,affect=neither)%s",
+                      prefix, suffix);
+        else
+            write_buf(buf, "%sVoidAction()%s", prefix, suffix);
         break;
 
     default:
@@ -518,7 +523,8 @@ write_action(struct xkb_keymap *keymap, struct buf *buf,
 }
 
 static bool
-write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
+write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group)
 {
     static const union xkb_action noAction = { .type = ACTION_TYPE_NONE };
@@ -535,12 +541,14 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         );
         buf2->size = 0;
         if (count == 0) {
-            if (!write_action(keymap, buf2, &noAction, NULL, NULL))
+            if (!write_action(keymap, format,
+                              buf2, &noAction, NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
         else if (count == 1) {
-            if (!write_action(keymap, buf2, &(actions[0]), NULL, NULL))
+            if (!write_action(keymap, format,
+                              buf2, &(actions[0]), NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
@@ -550,7 +558,8 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 if (k != 0)
                     copy_to_buf(buf2, ", ");
                 size_t old_size = buf2->size;
-                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                if (!write_action(keymap, format,
+                                  buf2, &(actions[k]), NULL, NULL))
                     return false;
                 /* Check if padding is necessary */
                 if (buf2->size >= old_size + ACTION_PADDING)
@@ -559,7 +568,8 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
                 const int padding = (int)(old_size + ACTION_PADDING - buf2->size);
                 buf2->size = old_size;
                 write_buf(buf2, "%*s", padding, "");
-                if (!write_action(keymap, buf2, &(actions[k]), NULL, NULL))
+                if (!write_action(keymap, format,
+                                  buf2, &(actions[k]), NULL, NULL))
                     return false;
             }
             copy_to_buf(buf2, " }");
@@ -571,7 +581,8 @@ write_actions(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_compat(struct xkb_keymap *keymap, struct buf *buf)
+write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf)
 {
     const struct xkb_led *led;
 
@@ -627,14 +638,15 @@ write_compat(struct xkb_keymap *keymap, struct buf *buf)
             copy_to_buf(buf, "\n\t\taction= {");
             const char suffix[] = ", ";
             for (xkb_action_count_t k = 0; k < si->num_actions; k++) {
-                if (!write_action(keymap, buf, &si->a.actions[k], "", suffix))
+                if (!write_action(keymap, format,
+                                  buf, &si->a.actions[k], "", suffix))
                     return false;
             }
             buf->size -= sizeof(suffix) - 1; /* trailing comma */
             copy_to_buf(buf, "};");
             has_explicit_properties = true;
         } else if (si->num_actions == 1) {
-            if (!write_action(keymap, buf, &si->a.action,
+            if (!write_action(keymap, format, buf, &si->a.action,
                               "\n\t\taction= ", ";"))
                 return false;
             has_explicit_properties = true;
@@ -697,8 +709,8 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
-          const struct xkb_key *key)
+write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+          struct buf *buf, struct buf *buf2, const struct xkb_key *key)
 {
     bool simple = true;
 
@@ -807,7 +819,7 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
             copy_to_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[%"PRIu32"]= [ ", group + 1);
-                if (!write_actions(keymap, buf, buf2, key, group))
+                if (!write_actions(keymap, format, buf, buf2, key, group))
                     return false;
                 copy_to_buf(buf, " ]");
             }
@@ -819,34 +831,33 @@ write_key(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_symbols(struct xkb_keymap *keymap, struct buf *buf)
+write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              struct buf *buf)
 {
-    const struct xkb_key *key;
-    xkb_layout_index_t group;
-    xkb_mod_index_t i;
-    const struct xkb_mod *mod;
 
     if (keymap->symbols_section_name)
-        write_buf(buf, "xkb_symbols \"%s\" {\n",
-                  keymap->symbols_section_name);
+        write_buf(buf, "xkb_symbols \"%s\" {\n", keymap->symbols_section_name);
     else
         copy_to_buf(buf, "xkb_symbols {\n");
 
-    for (group = 0; group < keymap->num_group_names; group++)
+    bool has_group_names = false;
+    for (xkb_layout_index_t group = 0; group < keymap->num_group_names; group++)
         if (keymap->group_names[group]) {
             write_buf(buf, "\tname[%"PRIu32"]=", group + 1);
             write_buf_string_literal(
                 buf, xkb_atom_text(keymap->ctx, keymap->group_names[group]));
             copy_to_buf(buf, ";\n");
+            has_group_names = true;
         }
-    if (group > 0)
+    if (has_group_names)
         copy_to_buf(buf, "\n");
 
     struct buf buf2 = { NULL, 0, 0 };
+    const struct xkb_key *key;
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
         if (key->explicit) {
-            if (!write_key(keymap, buf, &buf2, key)) {
+            if (!write_key(keymap, format, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
             }
@@ -854,6 +865,8 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
     }
     free(buf2.buf);
 
+    xkb_mod_index_t i;
+    const struct xkb_mod *mod;
     xkb_rmods_enumerate(i, mod, &keymap->mods) {
         bool had_any = false;
         xkb_keys_foreach(key, keymap) {
@@ -876,22 +889,24 @@ write_symbols(struct xkb_keymap *keymap, struct buf *buf)
 }
 
 static bool
-write_keymap(struct xkb_keymap *keymap, struct buf *buf)
+write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+             struct buf *buf)
 {
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, buf) &&
             write_types(keymap, buf) &&
-            write_compat(keymap, buf) &&
-            write_symbols(keymap, buf) &&
+            write_compat(keymap, format, buf) &&
+            write_symbols(keymap, format, buf) &&
             check_write_buf(buf, "};\n"));
 }
 
 char *
-text_v1_keymap_get_as_string(struct xkb_keymap *keymap)
+text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
+                             enum xkb_keymap_format format)
 {
     struct buf buf = { NULL, 0, 0 };
 
-    if (!write_keymap(keymap, &buf)) {
+    if (!write_keymap(keymap, format, &buf)) {
         free(buf.buf);
         return NULL;
     }
