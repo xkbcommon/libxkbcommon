@@ -327,8 +327,8 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
-                 xkb_layout_index_t *group_rtrn)
+ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+                 const ExprDef *expr, xkb_layout_index_t *group_rtrn)
 {
     int64_t result = 0;
     bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
@@ -336,10 +336,10 @@ ExprResolveGroup(struct xkb_context *ctx, const ExprDef *expr,
     if (!ok)
         return false;
 
-    if (result <= 0 || result > XKB_MAX_GROUPS) {
+    if (result <= 0 || result > max_groups) {
         log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                "Group index %"PRId64" is out of range (1..%u)\n",
-                result, XKB_MAX_GROUPS);
+                "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
+                result, max_groups);
         return false;
     }
 

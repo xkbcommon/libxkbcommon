@@ -657,7 +657,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
             m->mapping.layout_idx_min = 1;
             m->mapping.layout_idx_max = MIN(XKB_MAX_GROUPS,
                                             darray_size(m->rmlvo.layouts));
-            m->mapping.layouts_candidates_mask =
+            m->mapping.layouts_candidates_mask = (xkb_layout_mask_t)
                 /* All but the first layout */
                 ((UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1)) &
                 ~UINT64_C(1);
@@ -667,7 +667,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
             m->mapping.layout_idx_min = 0;
             m->mapping.layout_idx_max = MIN(XKB_MAX_GROUPS,
                                             darray_size(m->rmlvo.layouts));
-            m->mapping.layouts_candidates_mask =
+            m->mapping.layouts_candidates_mask = (xkb_layout_mask_t)
                 /* All layouts */
                 (UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1);
             break;
