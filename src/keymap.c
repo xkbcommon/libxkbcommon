@@ -263,7 +263,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
         return NULL;
     }
 
-    return ops->keymap_get_as_string(keymap);
+    return ops->keymap_get_as_string(keymap, format);
 }
 
 /**
