@@ -13,9 +13,11 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
+#include "messages-codes.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 
@@ -26,6 +28,11 @@ struct buf {
     size_t size;
     size_t alloc;
 };
+
+#define xkb_abs(n) _Generic((n),                \
+                            int: abs,           \
+                            long int: labs,     \
+                            default: llabs )((n))
 
 static bool
 do_realloc(struct buf *buf, size_t at_least)
@@ -392,7 +399,8 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
 
 static bool
 write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             struct buf *buf, const union xkb_action *action,
+             xkb_layout_index_t max_groups, struct buf *buf,
+             const union xkb_action *action,
              const char *prefix, const char *suffix)
 {
     const char *type;
@@ -424,12 +432,17 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_GROUP_SET:
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
-        write_buf(buf, "%s%s(group=%s%"PRId32"%s%s)%s", prefix, type,
-                  (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
-                  (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
-                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
-                  (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
-                  suffix);
+        if ((uint32_t) xkb_abs(action->group.group) < max_groups) {
+            write_buf(buf, "%s%s(group=%s%"PRId32"%s%s)%s", prefix, type,
+                      (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
+                      (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
+                      (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
+                      (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
+                      suffix);
+        } else {
+            /* Unsupported group index: degrade to VoidAction() */
+            goto void_action;
+        }
         break;
 
     case ACTION_TYPE_TERMINATE:
@@ -491,6 +504,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         break;
 
     case ACTION_TYPE_VOID:
+void_action:
         /*
          * VoidAction() is a libxkbcommon extension.
          * Use LockControls as a backward-compatible fallback.
@@ -524,7 +538,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-              struct buf *buf, struct buf *buf2,
+              xkb_layout_index_t max_groups, struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group)
 {
     static const union xkb_action noAction = { .type = ACTION_TYPE_NONE };
@@ -541,13 +555,13 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         );
         buf2->size = 0;
         if (count == 0) {
-            if (!write_action(keymap, format,
+            if (!write_action(keymap, format, max_groups,
                               buf2, &noAction, NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
         }
         else if (count == 1) {
-            if (!write_action(keymap, format,
+            if (!write_action(keymap, format, max_groups,
                               buf2, &(actions[0]), NULL, NULL))
                 return false;
             write_buf(buf, "%*s", ACTION_PADDING, buf2->buf);
@@ -558,7 +572,7 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                 if (k != 0)
                     copy_to_buf(buf2, ", ");
                 size_t old_size = buf2->size;
-                if (!write_action(keymap, format,
+                if (!write_action(keymap, format, max_groups,
                                   buf2, &(actions[k]), NULL, NULL))
                     return false;
                 /* Check if padding is necessary */
@@ -568,7 +582,7 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                 const int padding = (int)(old_size + ACTION_PADDING - buf2->size);
                 buf2->size = old_size;
                 write_buf(buf2, "%*s", padding, "");
-                if (!write_action(keymap, format,
+                if (!write_action(keymap, format, max_groups,
                                   buf2, &(actions[k]), NULL, NULL))
                     return false;
             }
@@ -582,7 +596,7 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             struct buf *buf)
+             xkb_layout_index_t max_groups, struct buf *buf)
 {
     const struct xkb_led *led;
 
@@ -638,7 +652,7 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             copy_to_buf(buf, "\n\t\taction= {");
             const char suffix[] = ", ";
             for (xkb_action_count_t k = 0; k < si->num_actions; k++) {
-                if (!write_action(keymap, format,
+                if (!write_action(keymap, format, max_groups,
                                   buf, &si->a.actions[k], "", suffix))
                     return false;
             }
@@ -646,7 +660,7 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             copy_to_buf(buf, "};");
             has_explicit_properties = true;
         } else if (si->num_actions == 1) {
-            if (!write_action(keymap, format, buf, &si->a.action,
+            if (!write_action(keymap, format, max_groups, buf, &si->a.action,
                               "\n\t\taction= ", ";"))
                 return false;
             has_explicit_properties = true;
@@ -710,9 +724,11 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
 static bool
 write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+          xkb_layout_index_t max_groups,
           struct buf *buf, struct buf *buf2, const struct xkb_key *key)
 {
     bool simple = true;
+    const xkb_layout_index_t num_groups = MIN(key->num_groups, max_groups);
 
     write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
 
@@ -720,7 +736,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         simple = false;
 
         bool multi_type = false;
-        for (xkb_layout_index_t group = 1; group < key->num_groups; group++) {
+        for (xkb_layout_index_t group = 1; group < num_groups; group++) {
             if (key->groups[group].type != key->groups[0].type) {
                 multi_type = true;
                 break;
@@ -728,7 +744,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
 
         if (multi_type) {
-            for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+            for (xkb_layout_index_t group = 0; group < num_groups; group++) {
                 if (!key->groups[group].explicit_type)
                     continue;
 
@@ -781,20 +797,23 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         break;
 
     case RANGE_REDIRECT:
-        write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",",
-                    key->out_of_range_group_number + 1);
+        if (key->out_of_range_group_number < num_groups) {
+            /* TODO: Fallback or warning if condition fails? */
+            write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",",
+                      key->out_of_range_group_number + 1);
+        }
         break;
 
     default:
         break;
     }
 
-    if (key->num_groups > 1 || show_actions)
+    if (num_groups > 1 || show_actions)
         simple = false;
 
     if (simple) {
         const bool only_symbols = key->explicit == EXPLICIT_SYMBOLS;
-        if (key->num_groups == 0) {
+        if (num_groups == 0) {
             /* Remove trailing comma */
             if (buf->buf[buf->size - 1] == ',')
                 buf->size--;
@@ -809,8 +828,8 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         write_buf(buf, "%s", (only_symbols ? " };\n" : "\n\t};\n"));
     }
     else {
-        assert(key->num_groups > 0);
-        for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+        assert(num_groups > 0);
+        for (xkb_layout_index_t group = 0; group < num_groups; group++) {
             if (group != 0)
                 copy_to_buf(buf, ",");
             write_buf(buf, "\n\t\tsymbols[%"PRIu32"]= [ ", group + 1);
@@ -819,7 +838,8 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             copy_to_buf(buf, " ]");
             if (show_actions) {
                 write_buf(buf, ",\n\t\tactions[%"PRIu32"]= [ ", group + 1);
-                if (!write_actions(keymap, format, buf, buf2, key, group))
+                if (!write_actions(keymap, format, max_groups,
+                                   buf, buf2, key, group))
                     return false;
                 copy_to_buf(buf, " ]");
             }
@@ -832,7 +852,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-              struct buf *buf)
+              xkb_layout_index_t max_groups, struct buf *buf)
 {
 
     if (keymap->symbols_section_name)
@@ -840,8 +860,10 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     else
         copy_to_buf(buf, "xkb_symbols {\n");
 
+    const xkb_layout_index_t num_group_names = MIN(keymap->num_group_names,
+                                                   max_groups);
     bool has_group_names = false;
-    for (xkb_layout_index_t group = 0; group < keymap->num_group_names; group++)
+    for (xkb_layout_index_t group = 0; group < num_group_names; group++)
         if (keymap->group_names[group]) {
             write_buf(buf, "\tname[%"PRIu32"]=", group + 1);
             write_buf_string_literal(
@@ -857,7 +879,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
         if (key->explicit) {
-            if (!write_key(keymap, format, buf, &buf2, key)) {
+            if (!write_key(keymap, format, max_groups, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
             }
@@ -892,11 +914,19 @@ static bool
 write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
              struct buf *buf)
 {
+    const xkb_layout_index_t max_groups = format_max_groups(format);
+    if (keymap->num_groups > max_groups) {
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                "Cannot serialize %"PRIu32" groups in keymap format %d: "
+                "maximum is %"PRIu32"; discarding unsupported groups\n",
+                keymap->num_groups, format, max_groups);
+    }
+
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, buf) &&
             write_types(keymap, buf) &&
-            write_compat(keymap, format, buf) &&
-            write_symbols(keymap, format, buf) &&
+            write_compat(keymap, format, max_groups, buf) &&
+            write_symbols(keymap, format, max_groups, buf) &&
             check_write_buf(buf, "};\n"));
 }
 
