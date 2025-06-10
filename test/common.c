@@ -26,6 +26,8 @@
 #include <termios.h>
 #endif
 
+#include "xkbcommon/xkbcommon.h"
+
 #include "test.h"
 #include "utils.h"
 #include "utils-paths.h"
@@ -454,7 +456,8 @@ test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
 }
 
 bool
-test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
+test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format,
+                    enum xkb_keymap_format output_format,
                     test_compile_buffer_t compile_buffer,
                     void *compile_buffer_private, const char *test_title,
                     const char *keymap_str, size_t keymap_len,
@@ -464,15 +467,13 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
     fprintf(stderr, "*** %s ***\n", test_title);
 
     struct xkb_keymap *keymap = compile_buffer(
-        ctx, format, keymap_str, keymap_len, compile_buffer_private
+        ctx, input_format, keymap_str, keymap_len, compile_buffer_private
     );
 
     if (!rel_path) {
         /* No path given: expect compilation failure */
         if (keymap) {
-            char *got =
-                xkb_keymap_get_as_string(keymap,
-                                         XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+            char *got = xkb_keymap_get_as_string(keymap, output_format);
             xkb_keymap_unref(keymap);
             assert(got);
             fprintf(stderr,
@@ -487,7 +488,7 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
         return false;
     }
 
-    char *got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    char *got = xkb_keymap_get_as_string(keymap, output_format);
     if (!got) {
         fprintf(stderr, "Unexpected keymap serialization failure\n");
         return false;
@@ -495,7 +496,7 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
 
     xkb_keymap_unref(keymap);
 
-    char *path = test_get_path(rel_path);
+    char* const path = test_get_path(rel_path);
     assert(path);
 
     if (update_output_files) {
@@ -506,16 +507,20 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
         fclose(file);
     } else {
         fprintf(stderr, "Reading golden test output: %s\n", path);
-        char *expected = test_read_file(rel_path);
+        char* const expected = test_read_file(rel_path);
         assert(expected);
-        const char *label[2] = {"Golden test", "Roundtrip"};
+        static const char *label[2] = {"Golden test", "Roundtrip"};
+        bool test_round_trip =
+            (output_format == input_format ||
+             output_format == XKB_KEYMAP_USE_ORIGINAL_FORMAT);
         for (unsigned int k = 0; k < ARRAY_SIZE(label) && success; k++) {
             if (streq(expected, got)) {
                 fprintf(stderr, "%s succeeded.\n", label[k]);
-                if (k > 0)
-                    continue;
+                if (!test_round_trip)
+                    break;
                 /* Test round trip */
-                keymap = compile_buffer(ctx, format, expected, strlen(expected),
+                keymap = compile_buffer(ctx, input_format,
+                                        expected, strlen(expected),
                                         compile_buffer_private);
                 if (!keymap) {
                     fprintf(stderr,
@@ -524,14 +529,14 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format format,
                     break;
                 }
                 free(got);
-                got = xkb_keymap_get_as_string(keymap,
-                                               XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+                got = xkb_keymap_get_as_string(keymap, output_format);
                 if (!got) {
                     fprintf(stderr,
                             "Unexpected keymap roundtrip serialization failure\n");
                     success = false;
                 }
                 xkb_keymap_unref(keymap);
+                test_round_trip = false;
             } else {
                 fprintf(stderr,
                         "%s failed: dumped map differs from expected.\n",

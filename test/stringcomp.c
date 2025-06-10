@@ -86,8 +86,9 @@ main(int argc, char *argv[])
      * to a string. */
     char *original = test_read_file(DATA_PATH);
     assert(original);
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, compile_string,
-                               NULL, "Round-trip",
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                               XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                               compile_string, NULL, "Round-trip",
                                original, 0 /* unused */, DATA_PATH,
                                update_output_files));
     free(original);
