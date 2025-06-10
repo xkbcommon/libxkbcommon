@@ -291,7 +291,14 @@ constants = read_constants(
     Path(__file__).parent.parent / "src" / "keymap.h",
     (
         Constant(
-            "XKB_MAX_GROUPS", re.compile(r"^#define\s+XKB_MAX_GROUPS\s+(\d+)"), int
+            "XKB_MAX_GROUPS",
+            re.compile(r"^#define\s+XKB_MAX_GROUPS\s+(\d+)"),
+            int,
+        ),
+        Constant(
+            "XKB_MAX_GROUPS_X11",
+            re.compile(r"^#define\s+XKB_MAX_GROUPS_X11\s+(\d+)"),
+            int,
         ),
     ),
 )
