@@ -8,9 +8,11 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "context.h"
 #include "evdev-scancodes.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
@@ -18,6 +20,11 @@
 #include "utils.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
+
+static const enum xkb_keymap_format keymap_formats[] = {
+    XKB_KEYMAP_FORMAT_TEXT_V1,
+    XKB_KEYMAP_FORMAT_TEXT_V2
+};
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB
  * keycode set (where ESC is 9). */
@@ -160,53 +167,79 @@ test_group_wrap(struct xkb_context *ctx)
     assert(group_wrap(8, 4) == 0);
     assert(group_wrap(9, 4) == 1);
 
+
     /* Check state group computation */
-    const char* keymaps[] = {
-        /* 0 group */
-        "default xkb_keymap {\n"
-        "    xkb_keycodes { <> = 1; };\n"
-        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
-        "};",
-        /* 1 group */
-        "default xkb_keymap {\n"
-        "    xkb_keycodes { <> = 1; };\n"
-        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
-        "    xkb_symbols {\n"
-        "        key <> { [a] };\n"
-        "    };\n"
-        "};",
-        /* 2 groups */
-        "default xkb_keymap {\n"
-        "    xkb_keycodes { <> = 1; };\n"
-        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
-        "    xkb_symbols {\n"
-        "        key <> { [a], [b] };\n"
-        "    };\n"
-        "};",
-        /* 3 groups */
-        "default xkb_keymap {\n"
-        "    xkb_keycodes { <> = 1; };\n"
-        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
-        "    xkb_symbols {\n"
-        "        key <> { [a], [b], [c] };\n"
-        "    };\n"
-        "};",
-        /* 4 groups */
-        "default xkb_keymap {\n"
-        "    xkb_keycodes { <> = 1; };\n"
-        "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
-        "    xkb_symbols {\n"
-        "        key <> { [a], [b], [c], [d] };\n"
-        "    };\n"
-        "};",
+    const struct {
+        const char* keymap;
+        xkb_layout_index_t layout_count;
+    } keymaps[] = {
+        {
+            .keymap =
+                "default xkb_keymap {\n"
+                "    xkb_keycodes { <> = 1; };\n"
+                "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+                "};",
+            .layout_count = 0
+        },
+        {
+            .keymap =
+                "default xkb_keymap {\n"
+                "    xkb_keycodes { <> = 1; };\n"
+                "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+                "    xkb_symbols {\n"
+                "        key <> { [a] };\n"
+                "    };\n"
+                "};",
+            .layout_count = 1
+        },
+        {
+            .keymap =
+                "default xkb_keymap {\n"
+                "    xkb_keycodes { <> = 1; };\n"
+                "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+                "    xkb_symbols {\n"
+                "        key <> { [a], [b] };\n"
+                "    };\n"
+                "};",
+            .layout_count = 2
+        },
+        {
+            .keymap =
+                /* 3 groups */
+                "default xkb_keymap {\n"
+                "    xkb_keycodes { <> = 1; };\n"
+                "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+                "    xkb_symbols {\n"
+                "        key <> { [a], [b], [c] };\n"
+                "    };\n"
+                "};",
+            .layout_count = 3
+        },
+        {
+            .keymap =
+                /* 4 groups */
+                "default xkb_keymap {\n"
+                "    xkb_keycodes { <> = 1; };\n"
+                "    xkb_types { type \"ONE_LEVEL\" { map[none] = 1; }; };\n"
+                "    xkb_symbols {\n"
+                "        key <> { [a], [b], [c], [d] };\n"
+                "    };\n"
+                "};",
+            .layout_count = 4
+        },
     };
 
-    for (int32_t g = 0; g < (int32_t)ARRAY_SIZE(keymaps); g++) {
-        fprintf(stderr, "------\n*** %s: #%"PRId32" groups ***\n", __func__, g);
+    for (int32_t k = 0; k < (int32_t)ARRAY_SIZE(keymaps); k++) {
+    for (unsigned int f = 0; f < ARRAY_SIZE(keymap_formats); f++) {
+        const enum xkb_keymap_format format = keymap_formats[f];
+        const int32_t g = (int32_t) keymaps[k].layout_count;
+        fprintf(stderr, "------\n*** %s: #%"PRId32" groups, format %d ***\n",
+                __func__, g, format);
         struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                                keymaps[g], strlen(keymaps[g]));
+            test_compile_buffer(ctx, format,
+                                keymaps[k].keymap, strlen(keymaps[k].keymap));
         assert(keymap);
+        assert(xkb_keymap_num_layouts(keymap) == keymaps[k].layout_count);
         struct xkb_state *state = xkb_state_new(keymap);
         assert(state);
 
@@ -345,7 +378,7 @@ test_group_wrap(struct xkb_context *ctx)
 
         xkb_state_unref(state);
         xkb_keymap_unref(keymap);
-    }
+    }}
 }
 
 static inline xkb_mod_index_t
@@ -796,7 +829,8 @@ check_update_state(struct xkb_keymap *keymap,
                           mod_mask_get_effective(keymap, components->latched_mods),
                           mod_mask_get_effective(keymap, components->locked_mods),
                           components->base_group,
-                          components->latched_group, components->locked_group);
+                          components->latched_group,
+                          components->locked_group);
 
     if (changes != components->changes) {
         fprintf(stderr, "Expected state change: %u, but got: %u\n",
@@ -819,6 +853,58 @@ check_update_state(struct xkb_keymap *keymap,
         return false;
     }
     return check_state(expected, got);
+}
+
+static bool
+run_state_update(struct xkb_keymap *keymap,
+                 const struct test_state_components *components,
+                 struct xkb_state **expected, struct xkb_state **got)
+{
+    xkb_keysym_t keysym = XKB_KEY_NoSymbol;
+    enum xkb_state_component changes = 0;
+    switch (components->input_type) {
+        case INPUT_TYPE_COMPONENTS:
+            changes = xkb_state_update_latched_locked(
+                *got,
+                components->input.affect_latched_mods,
+                components->input.latched_mods,
+                components->input.affect_latched_group,
+                components->input.latched_group,
+                components->input.affect_locked_mods,
+                components->input.locked_mods,
+                components->input.affect_locked_group,
+                components->input.locked_group
+            );
+            break;
+        case INPUT_TYPE_KEY:
+            keysym =
+                xkb_state_key_get_one_sym(*got, components->key.keycode);
+            if (components->key.direction == DOWN ||
+                components->key.direction == BOTH)
+                changes = xkb_state_update_key(
+                    *got, components->key.keycode, XKB_KEY_DOWN
+                );
+            if (components->key.direction == UP ||
+                components->key.direction == BOTH)
+                changes = xkb_state_update_key(
+                    *got, components->key.keycode, XKB_KEY_UP
+                );
+            break;
+        case INPUT_TYPE_RESET:
+            xkb_state_unref(*got);
+            xkb_state_unref(*expected);
+            *got = xkb_state_new(keymap);
+            *expected = xkb_state_new(keymap);
+            assert(*got);
+            assert(*expected);
+            return true;
+        default:
+            assert_printf(false, "Unsupported input type: %d\n",
+                          components->input_type);
+    }
+    return check_update_state(
+        keymap, components, *expected, *got, keysym, changes
+    );
 }
 
 static void
@@ -1379,48 +1465,8 @@ test_update_latched_locked(struct xkb_keymap *keymap)
         // TODO
     };
     for (size_t k = 0; k < ARRAY_SIZE(test_data); k++) {
-        xkb_keysym_t keysym = XKB_KEY_NoSymbol;
-        enum xkb_state_component changes = 0;
-        switch (test_data[k].input_type) {
-            case INPUT_TYPE_COMPONENTS:
-                changes = xkb_state_update_latched_locked(
-                            state,
-                            test_data[k].input.affect_latched_mods,
-                            test_data[k].input.latched_mods,
-                            test_data[k].input.affect_latched_group,
-                            test_data[k].input.latched_group,
-                            test_data[k].input.affect_locked_mods,
-                            test_data[k].input.locked_mods,
-                            test_data[k].input.affect_locked_group,
-                            test_data[k].input.locked_group);
-                break;
-            case INPUT_TYPE_KEY:
-                keysym =
-                    xkb_state_key_get_one_sym(state, test_data[k].key.keycode);
-                if (test_data[k].key.direction == DOWN ||
-                    test_data[k].key.direction == BOTH)
-                    changes = xkb_state_update_key(
-                        state, test_data[k].key.keycode, XKB_KEY_DOWN
-                    );
-                if (test_data[k].key.direction == UP ||
-                    test_data[k].key.direction == BOTH)
-                    changes = xkb_state_update_key(
-                        state, test_data[k].key.keycode, XKB_KEY_UP
-                    );
-                break;
-            case INPUT_TYPE_RESET:
-                xkb_state_unref(state);
-                xkb_state_unref(expected);
-                state = xkb_state_new(keymap);
-                expected = xkb_state_new(keymap);
-                continue;
-            default:
-                assert(false);
-        }
         assert_printf(
-            check_update_state(
-                keymap, &test_data[k], expected, state, keysym, changes
-            ),
+            run_state_update(keymap, &test_data[k], &expected, &state),
             "%s #%zu: type: %d\n",
             __func__, k, test_data[k].input_type
         );
@@ -2180,7 +2226,7 @@ key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 }
 
 static void
-test_range(struct xkb_keymap *keymap)
+test_keycode_range(struct xkb_keymap *keymap)
 {
     xkb_keycode_t counter;
 
@@ -2709,7 +2755,7 @@ main(void)
         test_update_mask_mods(keymap, pure_vmods);
         test_repeat(keymap);
         test_consume(keymap, pure_vmods);
-        test_range(keymap);
+        test_keycode_range(keymap);
         test_get_utf8_utf32(keymap);
         test_ctrl_string_transformation(keymap);
 
