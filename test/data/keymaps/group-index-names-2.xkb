@@ -17,34 +17,38 @@ xkb_compatibility {
 	interpret.useModMapMods= AnyLevel;
 	interpret.repeat= False;
 	interpret a+AnyOfOrNone(all) {
-		action= SetGroup(group=1);
+		action= SetGroup(group=5);
 	};
 	interpret b+AnyOfOrNone(all) {
-		action= SetGroup(group=-2);
+		action= SetGroup(group=-6);
 	};
 	interpret c+AnyOfOrNone(all) {
-		action= SetGroup(group=+3);
+		action= SetGroup(group=+8);
 	};
 	indicator "1" {
-		groups= 0x08;
+		groups= 0x80;
 	};
 	indicator "2" {
-		groups= 0xfffffffe;
+		groups= 0xffffff7f;
 	};
 };
 
 xkb_symbols {
 	name[1]="1";
-	name[2]="2";
-	name[3]="3";
 	name[4]="4";
+	name[5]="5";
+	name[8]="8";
 
 	key <>                   {
-		groupsRedirect= 4,
+		groupsRedirect= 8,
 		symbols[1]= [               a ],
-		symbols[2]= [               b ],
-		symbols[3]= [               c ],
-		symbols[4]= [               d ]
+		symbols[2]= [               a ],
+		symbols[3]= [               a ],
+		symbols[4]= [               b ],
+		symbols[5]= [               c ],
+		symbols[6]= [               a ],
+		symbols[7]= [               a ],
+		symbols[8]= [               d ]
 	};
 };
 
