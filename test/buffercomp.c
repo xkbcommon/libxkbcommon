@@ -978,6 +978,83 @@ test_group_indexes_names(struct xkb_context *ctx, bool update_output_files)
             .expected_v1 = GOLDEN_TESTS_OUTPUTS "group-index-names-1.xkb",
             .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-1.xkb"
         },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <> = 1;\n"
+                "    indicator 1 = \"1\";\n"
+                "    indicator 2 = \"2\";\n"
+                "  };\n"
+                "  xkb_compat {\n"
+                "    interpret a { action = SetGroup(group=Group5);  };\n"
+                "    interpret b { action = SetGroup(group=-Group6); };\n"
+                "    interpret c { action = SetGroup(group=+Group8); };\n"
+                "    indicator \"1\" { groups = Group8; };\n"
+                "    indicator \"2\" { groups = All-Group8; };\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    name[Group1] = \"1\";\n"
+                "    name[Group4] = \"4\";\n"
+                "    name[Group5] = \"5\";\n"
+                "    name[Group8] = \"8\";\n"
+                "    key <> {\n"
+                "      groupsredirect=Group8,\n"
+                "      symbols[Group1]=[a],\n"
+                "      symbols[Group4]=[b],\n"
+                "      symbols[Group5]=[c],\n"
+                "      symbols[Group8]=[d]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-2.xkb"
+        },
+        /* No names above 8 */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret a { action = SetGroup(group=Group9); }; };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { indicator 1 = \"1\"; };\n"
+                "  xkb_compat { indicator \"1\" { groups = Group9; }; };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols { name[Group9] = \"1\"; };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols { key <> { groupsredirect=Group9 };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols { key <> { symbols[Group9] = [a] };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        }
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
@@ -1852,6 +1929,132 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
                                update_output_files));
 }
 
+static void
+test_extended_layout_indexes(struct xkb_context *ctx,
+                             bool update_output_files)
+{
+    const struct {
+        const char* keymap;
+        bool no_output;
+        union {
+            struct { bool compiles_v1; bool compiles_v2; };
+            struct {
+                const char* expected_v1;
+                const char* expected_v1_2;
+                const char* expected_v2;
+                const char* expected_v2_1;
+            };
+        };
+    } tests[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat { interpret a { action = SetGroup(group=5); }; };\n"
+                "};",
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = true,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { indicator 1 = \"a\"; };\n"
+                "  xkb_compat   { indicator \"a\" { groups=All-5; }; };\n"
+                "};",
+            .no_output = true,
+            .compiles_v1 = true,
+            .compiles_v2 = true,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols  { name[5] = \"5\"; };\n"
+                "};",
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = true,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols  { key <> { [1], [2], [3], [4], [5] }; };\n"
+                "};",
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = true,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <a> = 1;\n"
+                "    <b> = 2;\n"
+                "    <c> = 3;\n"
+                "    indicator 1 = \"a\";\n"
+                "  };\n"
+                "  xkb_compat {\n"
+                "    interpret a { action = SetGroup(group=5); };\n"
+                "    indicator \"a\" { groups=All-5; };\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    name[5] = \"G5\";\n"
+                "    name[1] = \"G1\";\n"
+                "    key <a> { symbols[1]=[a], symbols[5]=[Greek_alpha] };\n"
+                "    key <b> { actions[1]=[Latchgroup(group=-5)], actions[5]=[LockGroup(group=5)], [SetGroup(+9)] };\n"
+                "    key <c> { [1], [2], [3], [4], [5], [6], [7], [8], [9] };\n"
+                "  };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v1_2 = NULL,
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "extended-layout-indexes-v2.xkb",
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "extended-layout-indexes-v1.xkb",
+        }
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        if (tests[k].no_output) {
+            struct xkb_keymap *keymap =
+                test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                    tests[k].keymap, strlen(tests[k].keymap));
+            assert(!!keymap == tests[k].compiles_v1);
+            xkb_keymap_unref(keymap);
+            keymap =
+                test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                    tests[k].keymap, strlen(tests[k].keymap));
+            assert(!!keymap == tests[k].compiles_v2);
+            xkb_keymap_unref(keymap);
+            continue;
+        }
+        /* v1 → v1 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[k].keymap, strlen(tests[k].keymap),
+                                   tests[k].expected_v1, update_output_files));
+        /* v1 → v2 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   compile_buffer, NULL, __func__,
+                                   tests[k].keymap, strlen(tests[k].keymap),
+                                   tests[k].expected_v1_2, update_output_files));
+        /* v2 → v2 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[k].keymap, strlen(tests[k].keymap),
+                                   tests[k].expected_v2, update_output_files));
+        /* v2 → v1 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, NULL, __func__,
+                                   tests[k].keymap, strlen(tests[k].keymap),
+                                   tests[k].expected_v2_1, update_output_files));
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -1901,6 +2104,7 @@ main(int argc, char *argv[])
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);
+    test_extended_layout_indexes(ctx, update_output_files);
 
     xkb_context_unref(ctx);
 

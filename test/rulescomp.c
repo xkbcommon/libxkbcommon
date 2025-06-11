@@ -5,7 +5,13 @@
 
 #include "config.h"
 
+#include <assert.h>
+
+#include "xkbcommon/xkbcommon.h"
+
 #include "evdev-scancodes.h"
+#include "src/keymap.h"
+#include "src/keysym.h"
 #include "test.h"
 #include "utils.h"
 
@@ -90,6 +96,81 @@ test_rmlvo_env(struct xkb_context *ctx, enum xkb_keymap_format format,
     return ret;
 }
 
+/* Test more than 4 groups */
+static void
+test_extended_groups(struct xkb_context *ctx)
+{
+    struct {
+        enum xkb_keymap_format format;
+        const char *layouts;
+        xkb_layout_index_t num_layouts;
+    } tests[] = {
+        /* v1: 4 groups */
+        {
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .layouts = "cz,us,ca,de",
+            .num_layouts = XKB_MAX_GROUPS_X11
+        },
+        /* v1: 5 groups, discard 1 group */
+        {
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .layouts = "cz,us,ca,de,in",
+            .num_layouts = XKB_MAX_GROUPS_X11
+        },
+        /* v2: 5 groups */
+        {
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .layouts = "cz,us,ca,de,in",
+            .num_layouts = XKB_MAX_GROUPS_X11 + 1
+        },
+        /* v2: 32 groups */
+        {
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .layouts = "cz,us,ca,de,in,cz,us,ca,de,in,cz,us,ca,de,in,"
+                       "cz,us,ca,de,in,cz,us,ca,de,in,cz,us,ca,de,in,"
+                       "cz,us",
+            .num_layouts = XKB_MAX_GROUPS
+        },
+        /* v2: 33 groups, discard 1 group */
+        {
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .layouts = "cz,us,ca,de,in,cz,us,ca,de,in,cz,us,ca,de,in,"
+                       "cz,us,ca,de,in,cz,us,ca,de,in,cz,us,ca,de,in,"
+                       "cz,us,ca",
+            .num_layouts = XKB_MAX_GROUPS
+        },
+    };
+
+    for (size_t k = 0; k < ARRAY_SIZE(tests); k++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);
+        struct xkb_keymap *keymap =
+            test_compile_rules(ctx, tests[k].format, "evdev-modern",
+                               "pc105", tests[k].layouts, NULL, NULL);
+        assert(keymap);
+        assert(xkb_keymap_num_layouts(keymap) == tests[k].num_layouts);
+        xkb_keymap_unref(keymap);
+    }
+
+#define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
+    assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V2, "evdev-modern",
+                          "", "cz,us,ca,de,in,ru,il", ",,,,,phonetic,",
+                          "grp:menu_toggle",
+                          KEY_2,          BOTH, XKB_KEY_ecaron,           NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_y,                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_102ND,      BOTH, XKB_KEY_guillemetleft,    NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_z,                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, U(0x092c),                NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_Cyrillic_ze,      NEXT,
+                          KEY_COMPOSE,    BOTH, XKB_KEY_ISO_Next_Group,   NEXT,
+                          KEY_Y,          BOTH, XKB_KEY_hebrew_tet,       FINISH));
+#undef U
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -128,10 +209,13 @@ main(int argc, char *argv[])
                       "pc105", "us", "intl", "grp:alts_toggle",
                       KEY_GRAVE,      BOTH,  XKB_KEY_dead_grave,          FINISH));
 
-    /* 20 is not a legal group; make sure this is handled gracefully. */
-    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
-                      "", "us:20", "", "",
+    /* 33 is not a legal group; make sure this is handled gracefully. */
+#define EXCESSIVE_GROUPS 33
+    static_assert(EXCESSIVE_GROUPS > XKB_MAX_GROUPS, "Test upgrade required");
+    assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V2, "evdev",
+                      "", "us:" STRINGIFY(EXCESSIVE_GROUPS), "", "",
                       KEY_A,          BOTH, XKB_KEY_a,                    FINISH));
+#undef EXCESSIVE_GROUPS
 
     /* Don't choke on missing values in RMLVO. Should just skip them.
        Currently generates us,us,ca. */
@@ -199,6 +283,8 @@ main(int argc, char *argv[])
     assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
                           "", "cz", "bksl", "",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
+
+    test_extended_groups(ctx);
 
     xkb_context_unref(ctx);
 

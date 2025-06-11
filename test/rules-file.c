@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -397,10 +398,8 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
               "extra,,,extra", NULL,
               "a:1+y:2+layout_c:3+layout_d(extra):4+z:3"
               "+foo:1|bar:1+foo:4|bar:4", 4, false),
-        /* NOTE: 5 layouts is intentional;
-         * will require update when raising XKB_MAX_LAYOUTS */
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
-              "a:1+y:2+layout_c:3+layout_d:4+z:3", 4, false),
+              "a:1+y:2+layout_c:3+layout_d:4+layout_e:5+z:3", 5, false),
         /* Check that special indexes merge the KcCGST values in the expected order */
         ENTRY("layout_a,layout_b,layout_c", NULL, "option_3,option_2,option_1",
               "a:1+y:2+layout_c:3+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
@@ -467,6 +466,48 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
 }
 
 static void
+test_extended_layout_indexes(struct xkb_context *ctx)
+{
+    char layouts[(2 + MAX_LAYOUT_INDEX_STR_LENGTH) * XKB_MAX_GROUPS] = { 0 };
+    size_t count = 0;
+    for (xkb_layout_index_t l = 0; l < XKB_MAX_GROUPS; l++) {
+        count += snprintf(&layouts[count], sizeof(layouts) - count,
+                          "x%"PRIu32",", l + 1);
+    }
+    layouts[--count] = '\0';
+
+    static const char symbols_prefix[] = "pc+x1+";
+    static const char symbols_suffix[] = "+inet(evdev)";
+    char symbols[
+        (3 + 2 * MAX_LAYOUT_INDEX_STR_LENGTH) * XKB_MAX_GROUPS +
+        sizeof(symbols_prefix) + sizeof(symbols_suffix)
+    ] = { 0 };
+    memcpy(symbols, symbols_prefix, sizeof(symbols_prefix));
+    count = sizeof(symbols_prefix) - 1;
+    for (xkb_layout_index_t l = 1; l < XKB_MAX_GROUPS; l++) {
+        count += snprintf(&symbols[count], sizeof(symbols) - count,
+                          "x%"PRIu32":%"PRIu32"+", l + 1, l + 1);
+    }
+    memcpy(symbols + count - 1, symbols_suffix, sizeof(symbols_suffix));
+
+    const struct test_data test = {
+        .rules = "evdev-modern",
+
+        .model = "pc104",
+        .layout = layouts, .variant = "", .options = "",
+
+        .keycodes = "evdev+aliases(qwerty)",
+        .compat = "complete",
+        .types = "complete",
+        .symbols = symbols,
+        .geometry = "pc(pc104)",
+
+        .explicit_layouts = XKB_MAX_GROUPS
+    };
+    assert(test_rules(ctx, &test));
+}
+
+static void
 test_all_qualifier(struct xkb_context *ctx,
                    const char *too_much_layouts, const char *too_much_symbols)
 {
@@ -476,34 +517,31 @@ test_all_qualifier(struct xkb_context *ctx,
             .rules = "all_qualifier",
 
             .model = "my_model",
-            /* NOTE: 5 layouts is intentional;
-             * will require update when raising XKB_MAX_LAYOUTS */
             .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
             .variant = "",
             .options = "my_option",
 
             .keycodes = "my_keycodes", .types = "my_types",
             .compat = "my_compat",
-            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+extra_option:1"
-                       "+extra_option:2+extra_option:3+extra_option:4",
-            .explicit_layouts = 4,
+            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                       "+extra_option:1+extra_option:2+extra_option:3+extra_option:4"
+                       "+extra_option:5",
+            .explicit_layouts = 5,
         },
         /* Test :all qualifier without special indexes, base for all layout */
         {
             .rules = "all_qualifier",
 
             .model = "my_model",
-            /* NOTE: 5 layouts is intentional;
-             * will require update when raising XKB_MAX_LAYOUTS */
             .layout = "layout_x,layout_a,layout_b,layout_c,layout_d",
             .variant = "",
             .options = "",
 
             .keycodes = "my_keycodes", .types = "my_types",
             .compat = "my_compat",
-            .symbols = "base:1+base:2+base:3+base:4"
-                       "+symbols_a:2+symbols_b:3+default_symbols:4",
-            .explicit_layouts = 4,
+            .symbols = "base:1+base:2+base:3+base:4+base:5"
+                       "+symbols_a:2+symbols_b:3+default_symbols:4+default_symbols:5",
+            .explicit_layouts = 5,
         },
         /* Test :all qualifier without special indexes, with option, too much layouts */
         {
@@ -524,18 +562,16 @@ test_all_qualifier(struct xkb_context *ctx,
             .rules = "all_qualifier",
 
             .model = "my_model",
-            /* NOTE: 5 layouts is intentional;
-             * will require update when raising XKB_MAX_LAYOUTS */
             .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
             .variant = "extra1,,,,",
             .options = "my_option",
 
             .keycodes = "my_keycodes", .types = "my_types",
             .compat = "my_compat",
-            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                       "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4"
-                       "+extra_option:1+extra_option:2+extra_option:3+extra_option:4",
-            .explicit_layouts = 4,
+            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                       "+extra_symbols:1+extra_symbols:2+extra_symbols:3+extra_symbols:4+extra_symbols:5"
+                       "+extra_option:1+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
+            .explicit_layouts = 5,
         },
         /* Test :all qualifier with special indexes
          * It uses :all combined with layout[any], which is valid but
@@ -544,21 +580,19 @@ test_all_qualifier(struct xkb_context *ctx,
             .rules = "all_qualifier",
 
             .model = "my_model",
-            /* NOTE: 5 layouts is intentional;
-             * will require update when raising XKB_MAX_LAYOUTS */
             .layout = "layout_a,layout_b,layout_a,layout_b,layout_c",
             .variant = "extra2,,extra3,,",
             .options = "my_option",
 
             .keycodes = "my_keycodes", .types = "my_types",
             .compat = "my_compat",
-            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4"
-                       "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
-                       "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4"
+            .symbols = "symbols_a:1+symbols_b:2+symbols_a:3+symbols_b:4+symbols_c:5"
+                       "+extra_symbols1:1+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
+                       "+extra_symbols2:1+extra_symbols2:2+extra_symbols2:3+extra_symbols2:4+extra_symbols2:5"
                        "+extra_symbols1:3"
                        "+extra_option:1"
-                       "+extra_option:2+extra_option:3+extra_option:4",
-            .explicit_layouts = 4,
+                       "+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
+            .explicit_layouts = 5,
         }
     };
 
@@ -601,6 +635,7 @@ main(int argc, char *argv[])
     too_much_symbols[--i] = '\0';
 
     test_layout_index_ranges(ctx, too_much_layouts, too_much_symbols);
+    test_extended_layout_indexes(ctx);
     test_all_qualifier(ctx, too_much_layouts, too_much_symbols);
 
     xkb_context_unref(ctx);

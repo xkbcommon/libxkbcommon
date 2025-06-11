@@ -1,0 +1,65 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<a>                  = 1;
+	<b>                  = 2;
+	<c>                  = 3;
+	indicator 1 = "a";
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret a+AnyOfOrNone(all) {
+		action= SetGroup(group=5);
+	};
+	indicator "a" {
+		groups= 0xfffffffa;
+	};
+};
+
+xkb_symbols {
+	name[1]="G1";
+	name[5]="G5";
+
+	key <a>                  {
+		symbols[1]= [               a ],
+		symbols[2]= [               a ],
+		symbols[3]= [               a ],
+		symbols[4]= [               a ],
+		symbols[5]= [     Greek_alpha ]
+	};
+	key <b>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [           LatchGroup(group=-5) ],
+		symbols[2]= [                       NoSymbol ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [                       NoSymbol ],
+		actions[3]= [           LatchGroup(group=-5) ],
+		symbols[4]= [                       NoSymbol ],
+		actions[4]= [           LatchGroup(group=-5) ],
+		symbols[5]= [                       NoSymbol ],
+		actions[5]= [             LockGroup(group=5) ]
+	};
+	key <c>                  {
+		symbols[1]= [               1 ],
+		symbols[2]= [               2 ],
+		symbols[3]= [               3 ],
+		symbols[4]= [               4 ],
+		symbols[5]= [               5 ],
+		symbols[6]= [               6 ],
+		symbols[7]= [               7 ],
+		symbols[8]= [               8 ],
+		symbols[9]= [               9 ]
+	};
+};
+
+};
