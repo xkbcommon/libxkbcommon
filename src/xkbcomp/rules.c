@@ -19,6 +19,7 @@
 #include "rules.h"
 #include "include.h"
 #include "scanner-utils.h"
+#include "utils.h"
 #include "utils-numbers.h"
 #include "utils-paths.h"
 
@@ -471,6 +472,20 @@ matcher_mapping_start_new(struct matcher *m)
     m->mapping.active = true;
 }
 
+static int
+parse_layout_int_index(const char *s, size_t max_len, xkb_layout_index_t *out)
+{
+    /* We expect a NULL-terminated string of at least length 3 */
+    assert(max_len >= 3);
+    uint32_t val = 0;
+    const int count = parse_hex_to_uint32_t(&s[1], max_len - 2, &val);
+    if (count <= 0 || s[1 + count] != ']' || val == 0 || val > XKB_MAX_GROUPS)
+        return -1;
+    /* To zero-based index. */
+    *out = val - 1;
+    return count + 2; /* == length "[index]" */
+}
+
 /* Parse Kccgst layout index:
  * "[%i]" or "[n]", where "n" is a decimal number */
 static int
@@ -485,71 +500,70 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
         return 4; /* == length "[%i]" */
     }
     /* Numeric index */
-
-#define parse_layout_int_index(s, len, out) do {                                \
-    /* We expect a NULL-terminated string of at least length 3 */               \
-    assert((len) >= 3);                                                         \
-    uint32_t val = 0;                                                           \
-    const int count = parse_hex_to_uint32_t(&(s)[1], (len) - 2, &val);          \
-    if (count <= 0 || (s)[1 + count] != ']' || val == 0 || val > XKB_MAX_GROUPS)\
-        return -1;                                                              \
-    /* To zero-based index. */                                                  \
-    *(out) = val - 1;                                                           \
-    return count + 2; /* == length "[index]" */                                 \
-} while (0)
-
-    parse_layout_int_index(s, max_len, out);
+    return parse_layout_int_index(s, max_len, out);
 }
 
 /* Special layout indexes */
-#define LAYOUT_INDEX_SINGLE XKB_LAYOUT_INVALID
-#define LAYOUT_INDEX_FIRST  (XKB_LAYOUT_INVALID - 3)
-#define LAYOUT_INDEX_LATER  (XKB_LAYOUT_INVALID - 2)
-#define LAYOUT_INDEX_ANY    (XKB_LAYOUT_INVALID - 1)
+enum layout_index_ranges {
+    LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID,
+    LAYOUT_INDEX_FIRST  = XKB_LAYOUT_INVALID - 3,
+    LAYOUT_INDEX_LATER  = XKB_LAYOUT_INVALID - 2,
+    LAYOUT_INDEX_ANY    = XKB_LAYOUT_INVALID - 1
+};
 
-#if XKB_MAX_GROUPS >= LAYOUT_INDEX_FIRST
-    #error "Cannot define special indexes"
-#endif
-#if LAYOUT_INDEX_FIRST  >= LAYOUT_INDEX_LATER || \
-    LAYOUT_INDEX_LATER  >= LAYOUT_INDEX_ANY || \
-    LAYOUT_INDEX_ANY    >= XKB_LAYOUT_INVALID || \
-    LAYOUT_INDEX_SINGLE != XKB_LAYOUT_INVALID
-    #error "Special indexes must respect certain order"
-#endif
-
-#define LAYOUT_INDEX_SINGLE_STR "single"
-#define LAYOUT_INDEX_FIRST_STR  "first"
-#define LAYOUT_INDEX_LATER_STR  "later"
-#define LAYOUT_INDEX_ANY_STR    "any"
+static_assert((xkb_layout_index_t) XKB_MAX_GROUPS <
+              (xkb_layout_index_t) LAYOUT_INDEX_FIRST,
+              "Cannot define special indexes");
+static_assert((xkb_layout_index_t) LAYOUT_INDEX_FIRST <
+              (xkb_layout_index_t) LAYOUT_INDEX_LATER &&
+              (xkb_layout_index_t) LAYOUT_INDEX_LATER <
+              (xkb_layout_index_t) LAYOUT_INDEX_ANY &&
+              (xkb_layout_index_t) LAYOUT_INDEX_ANY <
+              (xkb_layout_index_t) LAYOUT_INDEX_SINGLE &&
+              (xkb_layout_index_t) LAYOUT_INDEX_SINGLE ==
+              (xkb_layout_index_t) XKB_LAYOUT_INVALID,
+              "Special indexes must respect certain order");
 
 /* Parse index of layout/variant in MLVO mapping */
 static int
 extract_mapping_layout_index(const char *s, size_t max_len,
                              xkb_layout_index_t *out)
 {
-    *out = XKB_LAYOUT_INVALID;
-    if (max_len < 3 || s[0] != '[')
+    static const struct {
+        const char* name;
+        int length;
+        enum layout_index_ranges range;
+    } names[] = {
+        { "single]", 7, LAYOUT_INDEX_SINGLE },
+        { "first]" , 6, LAYOUT_INDEX_FIRST  },
+        { "later]" , 6, LAYOUT_INDEX_LATER  },
+        { "any]"   , 4, LAYOUT_INDEX_ANY    },
+    };
+
+    /* Check for minimal `[` + index + `]` */
+    if (max_len < 3 || s[0] != '[') {
+        *out = XKB_LAYOUT_INVALID;
         return -1;
-#define if_index(s, index, out)                                    \
-    /* Compare s against "index]" */                               \
-    if (strncmp(s, index##_STR "]", sizeof(index##_STR)) == 0) {   \
-        *(out) = index;                                            \
-        return sizeof(index##_STR) + 1; /* == length("[index]") */ \
     }
-    else if_index(&s[1], LAYOUT_INDEX_SINGLE, out)
-    else if_index(&s[1], LAYOUT_INDEX_FIRST, out)
-    else if_index(&s[1], LAYOUT_INDEX_LATER, out)
-    else if_index(&s[1], LAYOUT_INDEX_ANY, out)
-    else {
-        /* Numeric index */
-        parse_layout_int_index(s, max_len, out);
+
+    /* Try named indexes ranges */
+    for (unsigned int k = 0; k < ARRAY_SIZE(names); k++) {
+        if (strncmp(&s[1], names[k].name, names[k].length) == 0) {
+            *out = (xkb_layout_index_t) names[k].range;
+            return names[k].length + 1; /* == length "[index]" */
+        }
     }
-#undef if_index
-#undef LAYOUT_INDEX_SINGLE
+
+    /* Try numeric index */
+    *out = XKB_LAYOUT_INVALID;
+    return parse_layout_int_index(s, max_len, out);
 }
 
-#define is_mlvo_mask_defined(m, mlvo) \
-    ((m)->mapping.defined_mlvo_mask & (1u << (mlvo)))
+static inline bool
+is_mlvo_mask_defined(struct matcher *m, enum rules_mlvo mlvo)
+{
+    return m->mapping.defined_mlvo_mask & (1u << mlvo);
+}
 
 static void
 matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
