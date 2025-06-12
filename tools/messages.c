@@ -74,6 +74,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT, "Incompatible actions and keysyms count"},
     {XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE, "Multiple groups at once"},
     {XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD, "Unsupported symbols field"},
+    {XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT, "Incompatible keymap text format"},
     {XKB_ERROR_RULES_INVALID_LAYOUT_INDEX_PERCENT_EXPANSION, "Rules invalid layout index percent expansion"},
     {XKB_ERROR_INVALID_XKB_SYNTAX, "Invalid xkb syntax"},
     {XKB_WARNING_UNDEFINED_KEYCODE, "Undefined keycode"},
