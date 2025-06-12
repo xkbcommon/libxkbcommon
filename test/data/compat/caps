@@ -9,3 +9,24 @@ partial xkb_compatibility "caps_lock" {
         action = LockMods(modifiers = Lock);
     };
 };
+
+partial xkb_compatibility "unlock-on-release" {
+    interpret Caps_Lock {
+        action = LockMods(modifiers = Lock, unlockOnPress=false);
+    };
+
+    interpret.repeat= False;
+    interpret Caps_Lock + Lock {
+        action = LockMods(modifiers = Lock, unlockOnPress=false);
+    };
+};
+
+partial xkb_compatibility "unlock-on-press" {
+    interpret Caps_Lock {
+        action = LockMods(modifiers = Lock, unlockOnPress);
+    };
+    interpret.repeat= False;
+    interpret Caps_Lock + Lock {
+        action = LockMods(modifiers = Lock, unlockOnPress);
+    };
+};

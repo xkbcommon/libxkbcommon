@@ -3209,6 +3209,18 @@ enumeration:
 - `neither`: do not lock nor unlock, i.e. do nothing.
 </td>
 </tr>
+<tr>
+<th>`unlockOnPress`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>
+Control whether [locked] modifiers are unlocked on key press or release.
+See [hereinafter](@ref lock-modifier-action-effects) for further details.
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -3286,24 +3298,22 @@ These actions perform different tasks on key press and on key release:
     <tr>
         <th>`LockMods` @anchor lock-modifier-action-effects</th>
         <td>
-          <ul>
-            <li>
-              Adds modifiers to <em>[depressed]</em> modifiers.
-            </li>
-            <li>
-              Toggle these modifiers in <em>[locked]</em> modifiers.</li>
-            </li>
-          </ul>
+        - If `unlockOnPress` is true and some of the target modifiers were
+          <em>[locked]</em> before the key press, then unlock them if `noUnlock`
+          false.
+        - Otherwise:
+          - add target modifiers to <em>[depressed]</em> modifiers;
+          - if `noLock` is false, add target modifiers to the <em>[locked]</em>
+            modifiers.
         </td>
         <td>
-          <ul>
-            <li>
-              Removes modifiers from <em>[depressed]</em> modifiers.
-            </li>
-            <li>
-              *[Locked]* modifiers stay unchanged.
-            </li>
-          </ul>
+        - If `unlockOnPress` is true and triggered unlocking on key press, do
+          nothing.
+        - Otherwise:
+          - remove modifiers from the <em>[depressed]</em> modifiers, if no
+            other key that affect the same modifiers is down;
+          - if `noUnlock` is false and if any target modifiers was locked before
+            the key press, *[unlock][locked]* them.
         </td>
     </tr>
   </tbody>

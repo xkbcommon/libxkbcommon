@@ -59,6 +59,7 @@ enum action_field {
     ACTION_FIELD_KEYCODE,
     ACTION_FIELD_MODS_TO_CLEAR,
     ACTION_FIELD_LOCK_ON_RELEASE,
+    ACTION_FIELD_UNLOCK_ON_PRESS,
 };
 
 void
@@ -111,6 +112,7 @@ static const LookupEntry fieldStrings[] = {
     { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR   },
     { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR   },
     { "lockOnRelease",    ACTION_FIELD_LOCK_ON_RELEASE },
+    { "unlockOnPress",    ACTION_FIELD_UNLOCK_ON_PRESS },
     { NULL,               0                            }
 };
 
@@ -301,10 +303,21 @@ HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
         return CheckBooleanFlag(ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
-    if (type == ACTION_TYPE_MOD_LOCK &&
-        field == ACTION_FIELD_AFFECT)
-        return CheckAffectField(ctx, action->type, array_ndx, value,
-                                &act->flags);
+    if (type == ACTION_TYPE_MOD_LOCK) {
+        if (field == ACTION_FIELD_AFFECT)
+            return CheckAffectField(ctx, action->type, array_ndx, value,
+                                    &act->flags);
+        if (field == ACTION_FIELD_UNLOCK_ON_PRESS) {
+            if (isModsUnLockOnPressSupported(format)) {
+                return CheckBooleanFlag(ctx, action->type, field,
+                                        ACTION_UNLOCK_ON_PRESS, array_ndx,
+                                        value, &act->flags);
+            } else {
+                return ReportFormatVersionMismatch(ctx, action->type, field,
+                                                   format, ">= 2");
+            }
+        }
+    }
 
     return ReportIllegal(ctx, action->type, field);
 }
