@@ -5,13 +5,108 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon.h"
+
 #include "evdev-scancodes.h"
 #include "test.h"
 #include "keymap.h"
+#include "utils.h"
 
 enum fake_keys {
     KEY_LVL3 = 84
 };
+
+static const enum xkb_keymap_format keymap_formats[] = {
+    XKB_KEYMAP_FORMAT_TEXT_V1,
+    XKB_KEYMAP_FORMAT_TEXT_V2,
+};
+
+static void
+test_group_lock(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    /*
+     * Group lock on press (all formats)
+     * Implicit lockOnRelease=false (XKB spec)
+     */
+    for (unsigned int f = 0; f < ARRAY_SIZE(keymap_formats); f++) {
+        keymap = test_compile_rules(ctx, keymap_formats[f],
+                                    "evdev", "pc105",
+                                    "us,de", "",
+                                    "grp:alt_shift_toggle");
+        assert(keymap);
+
+#define test_group_lock_on_press(keymap) assert(                      \
+    test_key_seq((keymap),                                            \
+                  KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                  KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,  \
+                  KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Next_Group, NEXT,  \
+                  /* Group change on press */                         \
+                  KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                  KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,  \
+                  /* Group change on press */                         \
+                  KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                  KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,  \
+                  KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                  KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH)\
+)
+
+        test_group_lock_on_press(keymap);
+
+        xkb_keymap_unref(keymap);
+    }
+
+    /*
+     * Group lock on press for format V2
+     * Explicit lockOnRelease=false (XKB spec)
+     */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle,grp:lockOnPress");
+    test_group_lock_on_press(keymap);
+    xkb_keymap_unref(keymap);
+
+#undef test_group_lock_on_press
+
+    /*
+     * Group lock on release for format V2
+     * Explicit lockOnRelease=true (XKB extension)
+     */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105",
+                                "us,de", "",
+                                "grp:alt_shift_toggle,grp:lockOnRelease");
+
+#define test_group_lock_on_release(keymap) assert(                   \
+    test_key_seq((keymap),                                           \
+                 KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                 KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,  \
+                 KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Next_Group, NEXT,  \
+                 /* Group lock on release */                         \
+                 KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                 KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,  \
+                 /* Key not released, no group change */             \
+                 KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                 KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,  \
+                 /* Group lock cancelled by intermediate key press */\
+                 KEY_Y,         BOTH, XKB_KEY_z,              NEXT,  \
+                 KEY_Y,         DOWN, XKB_KEY_z,              NEXT,  \
+                 KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Next_Group, NEXT,  \
+                 /* Group lock not cancelled by intermediate key release */\
+                 KEY_Y,         UP,   XKB_KEY_z,              NEXT,  \
+                 KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Next_Group, NEXT,  \
+                 /* Group lock on release */                         \
+                 KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                 KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH)\
+)
+
+    test_group_lock_on_release(keymap);
+    xkb_keymap_unref(keymap);
+
+#undef test_group_lock_on_release
+}
 
 static void
 test_group_latch(struct xkb_context *ctx)
@@ -1566,6 +1661,7 @@ main(void)
     test_keymaps(ctx, "evdev-pure-virtual-mods");
 
     test_simultaneous_modifier_clear(ctx);
+    test_group_lock(ctx);
     test_group_latch(ctx);
     test_mod_latch(ctx);
     test_explicit_actions(ctx);

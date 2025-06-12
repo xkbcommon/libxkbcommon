@@ -3413,6 +3413,17 @@ Modifies the *locked* group.
 <td>0</td>
 <td>Target group or group delta</td>
 </tr>
+<tr>
+<th>`lockOnRelease`</th>
+<td>boolean</td>
+<td>false</td>
+<td>
+Control whether to trigger the group change on key press (default) or release.
+See further details [hereinafter](@ref lock-group-action-effects)
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -3475,15 +3486,34 @@ additional effects:
 <th>`LockGroup` @anchor lock-group-action-effects</th>
 <td>
 
-- If the `group` is absolute, key press sets the *locked* keyboard group to
-  `group`.
-- Otherwise, key press adds `group` to the *locked* keyboard group.
+- If `lockOnRelease` is set, then key press has no effect.
+- Otherwise:
+  - if the `group` is absolute, key press sets the *locked* keyboard group to
+    `group`;
+  - otherwise, key press adds `group` to the *locked* keyboard group.
 
-In either case, the resulting *locked* and *effective* group is brought back
-into range depending on the value of the `GroupsWrap` control for the keyboard.
+  In either case, the resulting *locked* and *effective* group is brought back
+  into range depending on the value of the `GroupsWrap` control for the keyboard.
 </td>
 <td>
-Key release has no effect.
+
+- If `lockOnRelease` is not set, then key release has no effect.
+- Otherwise, if any other key was *pressed* after the locking key, then
+  key release has no effect.
+
+  <details>
+  <summary>This enables e.g. using `Alt+Shift` combination in any order.</summary>
+
+  - `Shift` down, `Alt` down, `Alt` up, `Shift` up
+  - `Shift` down, `Alt` down, `Shift` up, `Alt` up
+  - `Alt` down, `Shift` down, `Shift` up, `Alt` up
+  - `Alt` down, `Shift` down, `Alt` up, `Shift` up
+
+  This would not be possible if locking was cancelled by key *release* too.
+  </details>
+
+- Otherwise, it has the same effect than a key press *without* `lockOnRelease`
+  set.
 </td>
 </tr>
 
