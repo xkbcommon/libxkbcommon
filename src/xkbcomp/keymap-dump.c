@@ -423,10 +423,19 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         else
             args = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                                action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+        bool unlockOnPress = action->type == ACTION_TYPE_MOD_LOCK &&
+                             (action->group.flags & ACTION_UNLOCK_ON_PRESS);
+        if (unlockOnPress && !isModsUnLockOnPressSupported(format)) {
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                    "Cannot use \"LockMods(unlockOnPress=true)\" "
+                    "in keymap format %d\n", format);
+            unlockOnPress = false;
+        }
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
+                  (unlockOnPress) ? ",unlockOnPress" : "",
                   suffix);
         break;
 

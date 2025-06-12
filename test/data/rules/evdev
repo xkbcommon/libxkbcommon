@@ -1171,6 +1171,8 @@
   mod_led:compose	=	+ledcompose(compose)
   japan:kana_lock	=	+japan(kana_lock)
   caps:shiftlock	=	+ledcaps(shift_lock)
+  caps:unlock-on-release	=	+caps(unlock-on-release)
+  caps:unlock-on-press		=	+caps(unlock-on-press)
   grab:break_actions    =       +xfree86(grab_break)
   grp:lockOnRelease	=	+iso9995-v2(lockOnRelease)
   grp:lockOnPress	=	+iso9995-v2(lockOnPress)
