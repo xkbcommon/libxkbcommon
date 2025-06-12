@@ -1,0 +1,55 @@
+default partial
+xkb_compatibility "lockOnPress" {
+
+    virtual_modifiers AltGr;
+
+    interpret.repeat= False;
+
+    interpret ISO_Next_Group {
+	useModMapMods= level1;
+	virtualModifier= AltGr;
+	action= LockGroup(group=+1, lockOnRelease=false);
+    };
+
+    interpret ISO_Prev_Group {
+	useModMapMods= level1;
+	virtualModifier= AltGr;
+	action= LockGroup(group=-1, lockOnRelease=false);
+    };
+
+    interpret ISO_First_Group {
+	action= LockGroup(group=1, lockOnRelease=false);
+    };
+
+    interpret ISO_Last_Group {
+	action= LockGroup(group=2, lockOnRelease=false);
+    };
+};
+
+partial
+xkb_compatibility "lockOnRelease" {
+
+    virtual_modifiers AltGr;
+
+    interpret.repeat= False;
+
+    interpret ISO_Next_Group {
+	useModMapMods= level1;
+	virtualModifier= AltGr;
+	action= LockGroup(group=+1, lockOnRelease);
+    };
+
+    interpret ISO_Prev_Group {
+	useModMapMods= level1;
+	virtualModifier= AltGr;
+	action= LockGroup(group=-1, lockOnRelease);
+    };
+
+    interpret ISO_First_Group {
+	action= LockGroup(group=1, lockOnRelease);
+    };
+
+    interpret ISO_Last_Group {
+	action= LockGroup(group=2, lockOnRelease);
+    };
+};

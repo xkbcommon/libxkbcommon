@@ -315,8 +315,25 @@ Unused in [xkeyboard-config] layouts.
 </tr>
 <tr>
 <th>`LockGroup()`</th>
-<td>✅ Full support</td>
-<td colspan="2">✅ Full support (since 1.8)</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `lockOnRelease` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</details>
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `lockOnRelease` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support</summary>
+- `lockOnRelease` (since 1.11). See @ref lock-group-action "its documentation"
+  for further details.
+</details>
+</td>
 </tr>
 <tr>
 <th rowspan="9">Legacy action</th>
