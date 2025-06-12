@@ -58,6 +58,7 @@ enum action_field {
     ACTION_FIELD_DEVICE,
     ACTION_FIELD_KEYCODE,
     ACTION_FIELD_MODS_TO_CLEAR,
+    ACTION_FIELD_LOCK_ON_RELEASE,
 };
 
 void
@@ -76,40 +77,41 @@ InitActionsInfo(ActionsInfo *info)
 }
 
 static const LookupEntry fieldStrings[] = {
-    { "clearLocks",       ACTION_FIELD_CLEAR_LOCKS   },
-    { "latchToLock",      ACTION_FIELD_LATCH_TO_LOCK },
-    { "genKeyEvent",      ACTION_FIELD_GEN_KEY_EVENT },
-    { "generateKeyEvent", ACTION_FIELD_GEN_KEY_EVENT },
-    { "report",           ACTION_FIELD_REPORT        },
-    { "default",          ACTION_FIELD_DEFAULT       },
-    { "affect",           ACTION_FIELD_AFFECT        },
-    { "increment",        ACTION_FIELD_INCREMENT     },
-    { "modifiers",        ACTION_FIELD_MODIFIERS     },
-    { "mods",             ACTION_FIELD_MODIFIERS     },
-    { "group",            ACTION_FIELD_GROUP         },
-    { "x",                ACTION_FIELD_X             },
-    { "y",                ACTION_FIELD_Y             },
-    { "accel",            ACTION_FIELD_ACCEL         },
-    { "accelerate",       ACTION_FIELD_ACCEL         },
-    { "repeat",           ACTION_FIELD_ACCEL         },
-    { "button",           ACTION_FIELD_BUTTON        },
-    { "value",            ACTION_FIELD_VALUE         },
-    { "controls",         ACTION_FIELD_CONTROLS      },
-    { "ctrls",            ACTION_FIELD_CONTROLS      },
-    { "type",             ACTION_FIELD_TYPE          },
-    { "count",            ACTION_FIELD_COUNT         },
-    { "screen",           ACTION_FIELD_SCREEN        },
-    { "same",             ACTION_FIELD_SAME          },
-    { "sameServer",       ACTION_FIELD_SAME          },
-    { "data",             ACTION_FIELD_DATA          },
-    { "device",           ACTION_FIELD_DEVICE        },
-    { "dev",              ACTION_FIELD_DEVICE        },
-    { "key",              ACTION_FIELD_KEYCODE       },
-    { "keycode",          ACTION_FIELD_KEYCODE       },
-    { "kc",               ACTION_FIELD_KEYCODE       },
-    { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR },
-    { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR },
-    { NULL,               0                          }
+    { "clearLocks",       ACTION_FIELD_CLEAR_LOCKS     },
+    { "latchToLock",      ACTION_FIELD_LATCH_TO_LOCK   },
+    { "genKeyEvent",      ACTION_FIELD_GEN_KEY_EVENT   },
+    { "generateKeyEvent", ACTION_FIELD_GEN_KEY_EVENT   },
+    { "report",           ACTION_FIELD_REPORT          },
+    { "default",          ACTION_FIELD_DEFAULT         },
+    { "affect",           ACTION_FIELD_AFFECT          },
+    { "increment",        ACTION_FIELD_INCREMENT       },
+    { "modifiers",        ACTION_FIELD_MODIFIERS       },
+    { "mods",             ACTION_FIELD_MODIFIERS       },
+    { "group",            ACTION_FIELD_GROUP           },
+    { "x",                ACTION_FIELD_X               },
+    { "y",                ACTION_FIELD_Y               },
+    { "accel",            ACTION_FIELD_ACCEL           },
+    { "accelerate",       ACTION_FIELD_ACCEL           },
+    { "repeat",           ACTION_FIELD_ACCEL           },
+    { "button",           ACTION_FIELD_BUTTON          },
+    { "value",            ACTION_FIELD_VALUE           },
+    { "controls",         ACTION_FIELD_CONTROLS        },
+    { "ctrls",            ACTION_FIELD_CONTROLS        },
+    { "type",             ACTION_FIELD_TYPE            },
+    { "count",            ACTION_FIELD_COUNT           },
+    { "screen",           ACTION_FIELD_SCREEN          },
+    { "same",             ACTION_FIELD_SAME            },
+    { "sameServer",       ACTION_FIELD_SAME            },
+    { "data",             ACTION_FIELD_DATA            },
+    { "device",           ACTION_FIELD_DEVICE          },
+    { "dev",              ACTION_FIELD_DEVICE          },
+    { "key",              ACTION_FIELD_KEYCODE         },
+    { "keycode",          ACTION_FIELD_KEYCODE         },
+    { "kc",               ACTION_FIELD_KEYCODE         },
+    { "clearmods",        ACTION_FIELD_MODS_TO_CLEAR   },
+    { "clearmodifiers",   ACTION_FIELD_MODS_TO_CLEAR   },
+    { "lockOnRelease",    ACTION_FIELD_LOCK_ON_RELEASE },
+    { NULL,               0                            }
 };
 
 static bool
@@ -147,6 +149,19 @@ ReportMismatch(struct xkb_context *ctx, xkb_message_code_t code,
             "Value of %s field must be of type %s; "
             "Action %s definition ignored\n",
             fieldText(field), type, ActionTypeText(action));
+    return false;
+}
+
+static inline bool
+ReportFormatVersionMismatch(struct xkb_context *ctx,
+                            enum xkb_action_type action,
+                            enum action_field field,
+                            enum xkb_keymap_format format, const char *versions)
+{
+    log_err(ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+            "Field %s for an action of type %s requires keymap text format %s, "
+            " but got: %d; Action definition ignored\n",
+            fieldText(field), ActionTypeText(action), versions, format);
     return false;
 }
 
@@ -357,6 +372,18 @@ HandleSetLatchLockGroup(struct xkb_context *ctx, enum xkb_keymap_format format,
         return CheckBooleanFlag(ctx, action->type, field,
                                 ACTION_LATCH_TO_LOCK, array_ndx, value,
                                 &act->flags);
+    if (type == ACTION_TYPE_GROUP_LOCK &&
+        field == ACTION_FIELD_LOCK_ON_RELEASE) {
+        /* TODO: support this for `ACTION_TYPE_MOD_LOCK` too? */
+        if (isGroupLockOnReleaseSupported(format)) {
+            return CheckBooleanFlag(ctx, action->type, field,
+                                    ACTION_LOCK_ON_RELEASE, array_ndx, value,
+                                    &act->flags);
+        } else {
+            return ReportFormatVersionMismatch(ctx, action->type, field, format,
+                                               ">= v2");
+        }
+    }
 
     return ReportIllegal(ctx, action->type, field);
 }
