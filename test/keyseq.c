@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include "context.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "evdev-scancodes.h"
@@ -550,6 +551,76 @@ test_group_latch(struct xkb_context *ctx)
 #undef test_latch_not_broken_by_modifier
 #undef test_simultaneous_group_latches
 #undef test_no_latch_to_lock
+}
+
+static void
+test_mod_lock(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    /*
+     * Caps unlocks on release (all formats)
+     * Implicit unlockOnPress=false (XKB spec)
+     */
+    for (unsigned int f = 0; f < ARRAY_SIZE(keymap_formats); f++) {
+        keymap = test_compile_rules(ctx, keymap_formats[f],
+                                    "evdev", "pc105", "us", "", "");
+        assert(keymap);
+
+#define test_caps_unlocks_on_release(keymap) assert(                 \
+    test_key_seq((keymap),                                           \
+                 KEY_Y,         BOTH, XKB_KEY_y,              NEXT,  \
+                 /* Lock on press */                                 \
+                 KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock,      NEXT,  \
+                 KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,  \
+                 KEY_CAPSLOCK,  DOWN, XKB_KEY_Caps_Lock,      NEXT,  \
+                 /* No unlock on press */                            \
+                 KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,  \
+                 KEY_CAPSLOCK,  UP,   XKB_KEY_Caps_Lock,      NEXT,  \
+                 /* Unlock on release */                             \
+                 KEY_Y,         BOTH, XKB_KEY_y,              FINISH)\
+)
+
+        test_caps_unlocks_on_release(keymap);
+
+        xkb_keymap_unref(keymap);
+    }
+
+    /*
+     * Caps unlocks on press for format V2
+     * Explicit unlockOnPress=false (XKB spec)
+     */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105", "us", "",
+                                "caps:unlock-on-release");
+    assert(keymap);
+    test_caps_unlocks_on_release(keymap);
+    xkb_keymap_unref(keymap);
+
+#undef test_caps_unlocks_on_release
+
+    /*
+     * Caps unlocks on press for format V2
+     * Explicit unlockOnPress=true (XKB extension)
+     */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105", "us", "",
+                                "caps:unlock-on-press");
+    assert(keymap);
+
+    test_key_seq((keymap),
+                 KEY_Y,         BOTH, XKB_KEY_y,              NEXT,
+                 KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock,      NEXT,
+                 /* Lock on press */
+                 KEY_Y,         BOTH, XKB_KEY_Y,              NEXT,
+                 KEY_CAPSLOCK,  DOWN, XKB_KEY_Caps_Lock,      NEXT,
+                 /* Unlock on press */
+                 KEY_Y,         BOTH, XKB_KEY_y,              NEXT,
+                 KEY_CAPSLOCK,  UP,   XKB_KEY_Caps_Lock,      NEXT,
+                 KEY_Y,         BOTH, XKB_KEY_y,              FINISH);
+
+    xkb_keymap_unref(keymap);
+
 }
 
 static void
@@ -1663,6 +1734,7 @@ main(void)
     test_simultaneous_modifier_clear(ctx);
     test_group_lock(ctx);
     test_group_latch(ctx);
+    test_mod_lock(ctx);
     test_mod_latch(ctx);
     test_explicit_actions(ctx);
 
