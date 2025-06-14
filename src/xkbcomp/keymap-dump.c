@@ -17,6 +17,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
+#include "action.h"
 #include "messages-codes.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
@@ -422,10 +423,19 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         else
             args = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                                action->mods.mods.mods);
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s)%s", prefix, type, args,
+        bool unlockOnPress = action->type == ACTION_TYPE_MOD_LOCK &&
+                             (action->group.flags & ACTION_UNLOCK_ON_PRESS);
+        if (unlockOnPress && !isModsUnLockOnPressSupported(format)) {
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                    "Cannot use \"LockMods(unlockOnPress=true)\" "
+                    "in keymap format %d\n", format);
+            unlockOnPress = false;
+        }
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
+                  (unlockOnPress) ? ",unlockOnPress" : "",
                   suffix);
         break;
 
@@ -433,11 +443,20 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
         if ((uint32_t) xkb_abs(action->group.group) < max_groups) {
-            write_buf(buf, "%s%s(group=%s%"PRId32"%s%s)%s", prefix, type,
+            bool lockOnRelease = action->type == ACTION_TYPE_GROUP_LOCK &&
+                                 (action->group.flags & ACTION_LOCK_ON_RELEASE);
+            if (lockOnRelease && !isGroupLockOnReleaseSupported(format)) {
+                log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                        "Cannot use \"GroupLock(lockOnRelease=true)\" "
+                        "in keymap format %d\n", format);
+                lockOnRelease = false;
+            }
+            write_buf(buf, "%s%s(group=%s%"PRId32"%s%s%s)%s", prefix, type,
                       (!(action->group.flags & ACTION_ABSOLUTE_SWITCH) && action->group.group > 0) ? "+" : "",
                       (action->group.flags & ACTION_ABSOLUTE_SWITCH) ? action->group.group + 1 : action->group.group,
                       (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                       (action->type != ACTION_TYPE_GROUP_LOCK && (action->group.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
+                      (lockOnRelease) ? ",lockOnRelease" : "",
                       suffix);
         } else {
             /* Unsupported group index: degrade to VoidAction() */

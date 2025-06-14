@@ -29,3 +29,16 @@ SetDefaultActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
                       ActionsInfo *info, struct xkb_mod_set *mods,
                       const char *elem, const char *field, ExprDef *array_ndx,
                       ExprDef *value, enum merge_mode merge);
+static inline bool
+isModsUnLockOnPressSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}
+
+static inline bool
+isGroupLockOnReleaseSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}

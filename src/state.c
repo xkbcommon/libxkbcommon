@@ -28,6 +28,7 @@
 #include "keymap.h"
 #include "keysym.h"
 #include "utf8.h"
+#include "xkbcommon/xkbcommon.h"
 
 struct xkb_filter {
     union xkb_action action;
@@ -271,7 +272,18 @@ xkb_filter_group_set_func(struct xkb_state *state,
 static void
 xkb_filter_group_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    apply_group_delta(filter, state, locked_group);
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
+        /*
+         * Lock on key release: do nothing on key press.
+         *
+         * This is a keymap format v2 extension.
+         */
+        return;
+    } else {
+        /* Lock on key press */
+        apply_group_delta(filter, state, locked_group);
+    }
+
 }
 
 static bool
@@ -280,8 +292,19 @@ xkb_filter_group_lock_func(struct xkb_state *state,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
 {
-    if (key != filter->key)
+    if (key != filter->key) {
+        if ((filter->action.group.flags & ACTION_LOCK_ON_RELEASE) &&
+            direction == XKB_KEY_DOWN) {
+            /*
+             * Another key has been pressed after the locking key:
+             * cancel group lock on release.
+             *
+             * This is a keymap v2 extension.
+             */
+            filter->action.group.flags &= ~ACTION_LOCK_ON_RELEASE;
+        }
         return XKB_FILTER_CONTINUE;
+    }
 
     if (direction == XKB_KEY_DOWN) {
         filter->refcnt++;
@@ -290,6 +313,16 @@ xkb_filter_group_lock_func(struct xkb_state *state,
     if (--filter->refcnt > 0)
         return XKB_FILTER_CONSUME;
 
+    if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
+        /*
+         * Lock on key release
+         *
+         * This is a keymap v2 extension.
+         */
+        apply_group_delta(filter, state, locked_group);
+    } else {
+        /* Lock on key press: do nothing on key release. */
+    }
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
 }
@@ -484,9 +517,23 @@ xkb_filter_mod_lock_new(struct xkb_state *state, struct xkb_filter *filter)
 {
     filter->priv = (state->components.locked_mods &
                     filter->action.mods.mods.mask);
-    state->set_mods |= filter->action.mods.mods.mask;
-    if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-        state->components.locked_mods |= filter->action.mods.mods.mask;
+
+    if (filter->priv && (filter->action.mods.flags & ACTION_UNLOCK_ON_PRESS)) {
+        /*
+         * Some of the target modifiers were locked before key press: unlock.
+         *
+         * This is a keymap v2 extension: unlock-on-press.
+         */
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
+            state->components.locked_mods &= ~filter->priv;
+        /* No further action: cancel filter */
+        filter->func = NULL;
+    } else {
+        /* Set base mods; lock mods if relevant (XKB 1.0 spec) */
+        state->set_mods |= filter->action.mods.mods.mask;
+        if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
+            state->components.locked_mods |= filter->action.mods.mods.mask;
+    }
 }
 
 static bool

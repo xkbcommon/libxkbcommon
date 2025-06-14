@@ -431,6 +431,13 @@
   added: ALWAYS
   type: warning
   description: "A legacy X11 symbol field is not supported"
+- id: "incompatible-keymap-text-format"
+  code: 742
+  added: 1.11.0
+  type: error
+  description: "The keymap has features unsupported in the target format"
+  details: |
+    See @ref keymap-support "" for further details.
 - id: "invalid-xkb-syntax"
   code: 769
   added: ALWAYS

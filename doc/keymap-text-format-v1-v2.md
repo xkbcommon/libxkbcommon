@@ -3209,6 +3209,18 @@ enumeration:
 - `neither`: do not lock nor unlock, i.e. do nothing.
 </td>
 </tr>
+<tr>
+<th>`unlockOnPress`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>
+Control whether [locked] modifiers are unlocked on key press or release.
+See [hereinafter](@ref lock-modifier-action-effects) for further details.
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -3286,24 +3298,22 @@ These actions perform different tasks on key press and on key release:
     <tr>
         <th>`LockMods` @anchor lock-modifier-action-effects</th>
         <td>
-          <ul>
-            <li>
-              Adds modifiers to <em>[depressed]</em> modifiers.
-            </li>
-            <li>
-              Toggle these modifiers in <em>[locked]</em> modifiers.</li>
-            </li>
-          </ul>
+        - If `unlockOnPress` is true and some of the target modifiers were
+          <em>[locked]</em> before the key press, then unlock them if `noUnlock`
+          false.
+        - Otherwise:
+          - add target modifiers to <em>[depressed]</em> modifiers;
+          - if `noLock` is false, add target modifiers to the <em>[locked]</em>
+            modifiers.
         </td>
         <td>
-          <ul>
-            <li>
-              Removes modifiers from <em>[depressed]</em> modifiers.
-            </li>
-            <li>
-              *[Locked]* modifiers stay unchanged.
-            </li>
-          </ul>
+        - If `unlockOnPress` is true and triggered unlocking on key press, do
+          nothing.
+        - Otherwise:
+          - remove modifiers from the <em>[depressed]</em> modifiers, if no
+            other key that affect the same modifiers is down;
+          - if `noUnlock` is false and if any target modifiers was locked before
+            the key press, *[unlock][locked]* them.
         </td>
     </tr>
   </tbody>
@@ -3413,6 +3423,17 @@ Modifies the *locked* group.
 <td>0</td>
 <td>Target group or group delta</td>
 </tr>
+<tr>
+<th>`lockOnRelease`</th>
+<td>boolean</td>
+<td>false</td>
+<td>
+Control whether to trigger the group change on key press (default) or release.
+See further details [hereinafter](@ref lock-group-action-effects)
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -3475,15 +3496,34 @@ additional effects:
 <th>`LockGroup` @anchor lock-group-action-effects</th>
 <td>
 
-- If the `group` is absolute, key press sets the *locked* keyboard group to
-  `group`.
-- Otherwise, key press adds `group` to the *locked* keyboard group.
+- If `lockOnRelease` is set, then key press has no effect.
+- Otherwise:
+  - if the `group` is absolute, key press sets the *locked* keyboard group to
+    `group`;
+  - otherwise, key press adds `group` to the *locked* keyboard group.
 
-In either case, the resulting *locked* and *effective* group is brought back
-into range depending on the value of the `GroupsWrap` control for the keyboard.
+  In either case, the resulting *locked* and *effective* group is brought back
+  into range depending on the value of the `GroupsWrap` control for the keyboard.
 </td>
 <td>
-Key release has no effect.
+
+- If `lockOnRelease` is not set, then key release has no effect.
+- Otherwise, if any other key was *pressed* after the locking key, then
+  key release has no effect.
+
+  <details>
+  <summary>This enables e.g. using `Alt+Shift` combination in any order.</summary>
+
+  - `Shift` down, `Alt` down, `Alt` up, `Shift` up
+  - `Shift` down, `Alt` down, `Shift` up, `Alt` up
+  - `Alt` down, `Shift` down, `Shift` up, `Alt` up
+  - `Alt` down, `Shift` down, `Alt` up, `Shift` up
+
+  This would not be possible if locking was cancelled by key *release* too.
+  </details>
+
+- Otherwise, it has the same effect than a key press *without* `lockOnRelease`
+  set.
 </td>
 </tr>
 
