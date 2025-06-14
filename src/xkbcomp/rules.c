@@ -12,8 +12,12 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
 
+#include "context.h"
 #include "darray.h"
+#include "keymap.h"
+#include "messages-codes.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "rules.h"
@@ -180,11 +184,18 @@ static const struct sval rules_kccgst_svals[_KCCGST_NUM_ENTRIES] = {
     [KCCGST_GEOMETRY] = SVAL_INIT("geometry"),
 };
 
+static_assert(XKB_MAX_GROUPS < (1u << 30),
+              "Layout index does not fix in matched_sval::matched_layouts");
+#define OPTIONS_MATCH_ALL_GROUPS XKB_MAX_GROUPS
+#define OPTIONS_GROUP_SPECIFIER_PREFIX '!'
+
 /* We use this to keep score whether an mlvo was matched or not; if not,
  * we warn the user that his preference was ignored. */
 struct matched_sval {
     struct sval sval;
-    bool matched;
+    bool matched:1;
+    /* Used for layout-specific options */
+    xkb_layout_index_t layout:31;
 };
 typedef darray(struct matched_sval) darray_matched_sval;
 
@@ -313,7 +324,8 @@ strip_spaces(struct sval v)
 }
 
 static darray_matched_sval
-split_comma_separated_mlvo(const char *s)
+split_comma_separated_mlvo(struct xkb_context *ctx,
+                           enum rules_mlvo mlvo, const char *s)
 {
     darray_matched_sval arr = darray_new();
 
@@ -329,10 +341,58 @@ split_comma_separated_mlvo(const char *s)
     }
 
     while (true) {
-        struct matched_sval val = { .sval = { s, 0 } };
-        while (*s != '\0' && *s != ',') { s++; val.sval.len++; }
+        struct matched_sval val = {
+            .sval = { s, 0 },
+            .matched = false,
+            /* NOTE: Cannot store XKB_LAYOUT_INVALID */
+            .layout = OPTIONS_MATCH_ALL_GROUPS
+        };
+        while (*s != '\0' && *s != ',' && *s != OPTIONS_GROUP_SPECIFIER_PREFIX) {
+            s++;
+            val.sval.len++;
+        }
         val.sval = strip_spaces(val.sval);
+
+        if (*s == OPTIONS_GROUP_SPECIFIER_PREFIX) {
+            /* Handle numeric layout index */
+            s++;
+            const char* const layout_start = s;
+            xkb_layout_index_t layout = XKB_LAYOUT_INVALID;
+
+            int count = parse_dec_to_uint32_t(s, SIZE_MAX, &layout);
+            if (count > 0) {
+                /* Note: 1-indexed layout */
+                s += count;
+                if (layout == 0 || layout > XKB_MAX_GROUPS) {
+                    log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                            "Invalid layout index %"PRIu32" "
+                            "for the RMVLO component: \"%.*s\"\n", layout,
+                            (unsigned int) val.sval.len, val.sval.start);
+                } else if (mlvo != MLVO_OPTION) {
+                    log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
+                             "Layout index %"PRIu32" is not supported for "
+                             "the RMLVO component: \"%.*s\"\n", layout,
+                             (unsigned int) val.sval.len, val.sval.start);
+                } else {
+                    val.layout = layout - 1;
+                }
+            }
+
+            /* Consume until reaching next item or end of string */
+            const char* const layout_index_end = s;
+            while (*s != '\0' && *s != ',') { s++; }
+            if (count <= 0 || layout_index_end != s) {
+                log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                        "Invalid layout index \"%.*s\" for the RMLVO "
+                        "component \"%.*s\"; discarding specifier.\n",
+                        (unsigned int) (s - layout_start), layout_start,
+                        (unsigned int) val.sval.len, val.sval.start);
+                val.layout = OPTIONS_MATCH_ALL_GROUPS;
+            }
+        }
+
         darray_append(arr, val);
+
         if (*s == '\0') break;
         if (*s == ',') s++;
     }
@@ -351,9 +411,9 @@ matcher_new(struct xkb_context *ctx,
     m->ctx = ctx;
     m->rmlvo.model.sval.start = rmlvo->model;
     m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
-    m->rmlvo.layouts = split_comma_separated_mlvo(rmlvo->layout);
-    m->rmlvo.variants = split_comma_separated_mlvo(rmlvo->variant);
-    m->rmlvo.options = split_comma_separated_mlvo(rmlvo->options);
+    m->rmlvo.layouts = split_comma_separated_mlvo(ctx, MLVO_LAYOUT, rmlvo->layout);
+    m->rmlvo.variants = split_comma_separated_mlvo(ctx, MLVO_VARIANT, rmlvo->variant);
+    m->rmlvo.options = split_comma_separated_mlvo(ctx, MLVO_OPTION, rmlvo->options);
 
     if (darray_size(m->rmlvo.layouts) > darray_size(m->rmlvo.variants)) {
         /* Do not warn if no variants was provided */
@@ -630,7 +690,7 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
     }
 
     /* Check that if both layout and variant are defined, then they must have
-       the same index */
+     * the same index */
     if (((mlvo == MLVO_LAYOUT && is_mlvo_mask_defined(m, MLVO_VARIANT)) ||
          (mlvo == MLVO_VARIANT && is_mlvo_mask_defined(m, MLVO_LAYOUT))) &&
         m->mapping.layout_idx != m->mapping.variant_idx) {
@@ -1256,51 +1316,86 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
             to = &m->rmlvo.model;
             matched = match_value_and_mark(m, value, to, match_type,
                                            WILDCARD_MATCH_ALL);
-        }
-#define process_component(_component, m, value, idx, candidate_layouts, to,  \
-                          match_type, matched)                               \
-            if ((m)->mapping.has_layout_idx_range) {                         \
-                /* Special index: loop over the index range */               \
-                for ((idx) = (m)->mapping.layout_idx_min;                    \
-                     (idx) < (m)->mapping.layout_idx_max;                    \
-                     (idx)++)                                                \
-                {                                                            \
-                    /* Process only if index not skipped */                  \
-                    const xkb_layout_mask_t mask = UINT32_C(1) << (idx);     \
-                    if ((candidate_layouts) & mask) {                        \
-                        (to) = &darray_item((m)->rmlvo._component, (idx));   \
-                        if (match_value_and_mark(m, value, to, match_type,   \
-                                                 WILDCARD_MATCH_NONEMPTY)) { \
-                            /* Mark matched, keep index */                   \
-                            (matched) = true;                                \
-                        } else {                                             \
-                            /* Not matched, remove index */                  \
-                            (candidate_layouts) &= ~mask;                    \
-                        }                                                    \
-                    }                                                        \
-                }                                                            \
-            } else {                                                         \
-                /* Numeric index or no index */                              \
-                (to) = &darray_item((m)->rmlvo._component,                   \
-                                  (m)->mapping.layout_idx_min);              \
-                (matched) = match_value_and_mark(m, value, to, match_type,   \
-                                                 WILDCARD_MATCH_NONEMPTY);   \
+        } else if (m->mapping.has_layout_idx_range) {
+            /* Special index: loop over the index range */
+            for (idx = m->mapping.layout_idx_min;
+                 idx < m->mapping.layout_idx_max && candidate_layouts;
+                 idx++)
+            {
+                /* Process only if index not skipped */
+                const xkb_layout_mask_t mask = UINT32_C(1) << idx;
+                if (candidate_layouts & mask) {
+                    switch (mlvo) {
+                    case MLVO_LAYOUT:
+                        to = &darray_item(m->rmlvo.layouts, idx);
+                        if (match_value_and_mark(m, value, to, match_type,
+                                                 WILDCARD_MATCH_NONEMPTY)) {
+                            /* Mark matched, keep index */
+                            matched = true;
+                        } else {
+                            /* Not matched, remove index */
+                            candidate_layouts &= ~mask;
+                        }
+                        break;
+                    case MLVO_VARIANT:
+                        to = &darray_item(m->rmlvo.variants, idx);
+                        if (match_value_and_mark(m, value, to, match_type,
+                                                 WILDCARD_MATCH_NONEMPTY)) {
+                            /* Mark matched, keep index */
+                            matched = true;
+                        } else {
+                            /* Not matched, remove index */
+                            candidate_layouts &= ~mask;
+                        }
+                        break;
+                    default:
+                        assert(mlvo == MLVO_OPTION);
+                        bool found_option = false;
+                        darray_foreach(to, m->rmlvo.options) {
+                            if (to->layout != OPTIONS_MATCH_ALL_GROUPS &&
+                                to->layout != idx)
+                                continue;
+                            if (match_value_and_mark(m, value, to, match_type,
+                                                     WILDCARD_MATCH_ALL)) {
+                                /* Mark matched, keep index */
+                                matched = true;
+                                found_option = true;
+                                break;
+                            }
+                        }
+                        if (!found_option) {
+                            /* Not matched, remove index */
+                            candidate_layouts &= ~mask;
+                        }
+                    }
+                }
             }
-        else if (mlvo == MLVO_LAYOUT) {
-            process_component(layouts, m, value, idx, candidate_layouts, to,
-                              match_type, matched)
-        }
-        else if (mlvo == MLVO_VARIANT) {
-            process_component(variants, m, value, idx, candidate_layouts, to,
-                              match_type, matched)
-        }
-#undef process_component
-        else if (mlvo == MLVO_OPTION) {
-            darray_foreach(to, m->rmlvo.options) {
+        } else {
+            /* Numeric index or no index */
+            switch (mlvo) {
+            case MLVO_LAYOUT:
+                to = &darray_item(m->rmlvo.layouts,
+                                  m->mapping.layout_idx_min);
                 matched = match_value_and_mark(m, value, to, match_type,
-                                               WILDCARD_MATCH_ALL);
-                if (matched)
-                    break;
+                                               WILDCARD_MATCH_NONEMPTY);
+                break;
+            case MLVO_VARIANT:
+                to = &darray_item(m->rmlvo.variants,
+                                  m->mapping.layout_idx_min);
+                matched = match_value_and_mark(m, value, to, match_type,
+                                               WILDCARD_MATCH_NONEMPTY);
+                break;
+            default:
+                assert(mlvo == MLVO_OPTION);
+                darray_foreach(to, m->rmlvo.options) {
+                    if (to->layout != OPTIONS_MATCH_ALL_GROUPS &&
+                        to->layout != m->mapping.layout_idx_min)
+                        continue;
+                    matched = match_value_and_mark(m, value, to, match_type,
+                                                   WILDCARD_MATCH_ALL);
+                    if (matched)
+                        break;
+                }
             }
         }
 
