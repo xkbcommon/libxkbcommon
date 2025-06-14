@@ -109,6 +109,7 @@ struct rxkb_option {
     char *brief;
     char *description;
     enum rxkb_popularity popularity;
+    bool layout_specific;
 };
 
 static bool
@@ -305,6 +306,9 @@ DECLARE_GETTER_FOR_TYPE(rxkb_option, name);
 DECLARE_GETTER_FOR_TYPE(rxkb_option, brief);
 DECLARE_GETTER_FOR_TYPE(rxkb_option, description);
 DECLARE_TYPED_GETTER_FOR_TYPE(rxkb_option, popularity, enum rxkb_popularity);
+bool rxkb_option_is_layout_specific(struct rxkb_option *object) {
+    return object->layout_specific;
+}
 DECLARE_FIRST_NEXT_FOR_TYPE(rxkb_option, rxkb_option_group, options);
 
 static void
@@ -693,6 +697,7 @@ struct config_item {
     char *brief;
     char *vendor;
     enum rxkb_popularity popularity;
+    bool layout_specific;
 };
 
 #define config_item_new(popularity_) { \
@@ -700,7 +705,8 @@ struct config_item {
     .description = NULL, \
     .brief = NULL, \
     .vendor = NULL, \
-    .popularity = (popularity_) \
+    .popularity = (popularity_), \
+    .layout_specific = false \
 }
 
 static void
@@ -734,6 +740,14 @@ parse_config_item(struct rxkb_context *ctx, xmlNode *parent,
                             ci->line, raw_popularity);
             }
             xmlFree(raw_popularity);
+
+            /* Note: this is only useful for options */
+            xmlChar *raw_layout_specific =
+                xmlGetProp(ci, (const xmlChar*)"layout-specific");
+            if (raw_layout_specific &&
+                xmlStrEqual(raw_layout_specific, (const xmlChar*)"true"))
+                config->layout_specific = true;
+            xmlFree(raw_layout_specific);
 
             /* Process children */
             for (node = ci->children; node; node = node->next) {
@@ -1017,6 +1031,7 @@ parse_option(struct rxkb_context *ctx, struct rxkb_option_group *group,
         o->name = steal(&config.name);
         o->description = steal(&config.description);
         o->popularity = config.popularity;
+        o->layout_specific = config.layout_specific;
         list_append(&group->options, &o->base.link);
     }
 }
@@ -1174,6 +1189,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
         "<!ATTLIST group allowMultipleSelection (true|false) \"false\">\n"
         "<!ELEMENT option (configItem)>\n"
         "<!ELEMENT configItem (name, shortDescription?, description?, vendor?, countryList?, languageList?, hwList?)>\n"
+        "<!ATTLIST configItem layout-specific (true|false) \"false\">\n"
         "<!ATTLIST configItem popularity (standard|exotic) #IMPLIED>\n"
         "<!ELEMENT name (#PCDATA)>\n"
         "<!ELEMENT shortDescription (#PCDATA)>\n"
