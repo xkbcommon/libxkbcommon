@@ -671,6 +671,13 @@ RXKB_EXPORT enum rxkb_popularity
 rxkb_option_get_popularity(struct rxkb_option *o);
 
 /**
+ * Return if the given option accepts layout index specifiers to restrict its
+ * application to the corresponding layouts.
+ */
+RXKB_EXPORT bool
+rxkb_option_is_layout_specific(struct rxkb_option *o);
+
+/**
  * Increase the refcount of the argument by one.
  *
  * @returns The argument passed in to this function.
