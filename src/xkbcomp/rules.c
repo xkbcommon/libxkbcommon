@@ -478,7 +478,7 @@ parse_layout_int_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     /* We expect a NULL-terminated string of at least length 3 */
     assert(max_len >= 3);
     uint32_t val = 0;
-    const int count = parse_hex_to_uint32_t(&s[1], max_len - 2, &val);
+    const int count = parse_dec_to_uint32_t(&s[1], max_len - 2, &val);
     if (count <= 0 || s[1 + count] != ']' || val == 0 || val > XKB_MAX_GROUPS)
         return -1;
     /* To zero-based index. */
