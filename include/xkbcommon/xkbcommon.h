@@ -1033,7 +1033,31 @@ enum xkb_keymap_format {
 };
 
 /**
- * Create a keymap from RMLVO names.
+ * Create a keymap from a [RMLVO] builder.
+ *
+ * The primary keymap entry point: creates a new XKB keymap from a set of
+ * [RMLVO] \(Rules + Model + Layouts + Variants + Options) names.
+ *
+ * @param rmlvo   The [RMLVO] builder to use.  See `xkb_rmlvo_builder`.
+ * @param format  The text format of the keymap file to compile.
+ * @param flags   Optional flags for the keymap, or 0.
+ *
+ * @returns A keymap compiled according to the [RMLVO] names, or NULL if
+ * the compilation failed.
+ *
+ * @since 1.11.0
+ * @sa `xkb_keymap_new_from_names2()`, `xkb_rmlvo_builder`
+ * @memberof xkb_keymap
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ */
+XKB_EXPORT struct xkb_keymap *
+xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
+                          enum xkb_keymap_format format,
+                          enum xkb_keymap_compile_flags flags);
+
+/**
+ * Create a keymap from [RMLVO] names.
  *
  * Same as `xkb_keymap_new_from_names2()`, but with the keymap format fixed to:
  * `::XKB_KEYMAP_FORMAT_TEXT_V2`.
@@ -1042,8 +1066,10 @@ enum xkb_keymap_format {
  * @since 1.11.0: Deprecated
  * @since 1.11.0: Use internally `::XKB_KEYMAP_FORMAT_TEXT_V2` instead of
  * `::XKB_KEYMAP_FORMAT_TEXT_V1`
- * @sa xkb_keymap_new_from_names2(), xkb_rule_names
+ * @sa xkb_keymap_new_from_names2(), xkb_rule_names, xkb_keymap_new_from_rmlvo()
  * @memberof xkb_keymap
+ *
+ * [RMLVO]: @ref RMLVO-intro
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_names(struct xkb_context *context,
@@ -1051,10 +1077,10 @@ xkb_keymap_new_from_names(struct xkb_context *context,
                           enum xkb_keymap_compile_flags flags);
 
 /**
- * Create a keymap from RMLVO names.
+ * Create a keymap from [RMLVO] names.
  *
  * The primary keymap entry point: creates a new XKB keymap from a set of
- * RMLVO (Rules + Model + Layouts + Variants + Options) names.
+ * [RMLVO] \(Rules + Model + Layouts + Variants + Options) names.
  *
  * @param context The context in which to create the keymap.
  * @param names   The RMLVO names to use.  See xkb_rule_names.
@@ -1064,9 +1090,11 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * @returns A keymap compiled according to the RMLVO names, or NULL if
  * the compilation failed.
  *
- * @sa xkb_rule_names
+ * @sa xkb_rule_names, xkb_keymap_new_from_rmlvo()
  * @memberof xkb_keymap
  * @since 1.11.0
+ *
+ * [RMLVO]: @ref RMLVO-intro
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_names2(struct xkb_context *context,

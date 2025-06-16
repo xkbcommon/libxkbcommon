@@ -35,3 +35,8 @@ struct xkb_rmlvo_builder {
     int refcnt;
     struct xkb_context *ctx;
 };
+
+bool
+xkb_rmlvo_builder_to_rules_names(const struct xkb_rmlvo_builder *builder,
+                                 struct xkb_rule_names *rmlvo,
+                                 char *buf, size_t buf_size);

@@ -110,3 +110,61 @@ xkb_rmlvo_builder_unref(struct xkb_rmlvo_builder *rmlvo)
     xkb_context_unref(rmlvo->ctx);
     free(rmlvo);
 }
+
+bool
+xkb_rmlvo_builder_to_rules_names(const struct xkb_rmlvo_builder *builder,
+                                 struct xkb_rule_names *rmlvo,
+                                 char *buf, size_t buf_size)
+{
+    rmlvo->rules = builder->rules;
+    rmlvo->model = builder->model;
+
+    char *start = buf;
+    rmlvo->layout = start;
+    darray_size_t k;
+    struct xkb_rmlvo_builder_layout *layout;
+    darray_enumerate(k, layout, builder->layouts) {
+        int count = snprintf(start, buf_size, "%s%s",
+                             (k > 0 ? "," : ""), layout->layout);
+        if (count < 0 || (size_t) count >= buf_size)
+            return false;
+        buf_size -= count;
+        start += count;
+    }
+    if (buf_size <= 1)
+        return false;
+    *start = '\0';
+    start++;
+    buf_size--;
+
+    rmlvo->variant = start;
+    darray_enumerate(k, layout, builder->layouts) {
+        int count = snprintf(start, buf_size, "%s%s",
+                             (k > 0 ? "," : ""),
+                             (layout->variant ? layout->variant : ""));
+        if (count < 0 || (size_t) count >= buf_size)
+            return false;
+        buf_size -= count;
+        start += count;
+    }
+    if (buf_size <= 1)
+        return false;
+    *start = '\0';
+    start++;
+    buf_size--;
+
+    rmlvo->options = start;
+    char **option;
+    darray_enumerate(k, option, builder->options) {
+        int count = snprintf(start, buf_size, "%s%s",
+                             (k > 0 ? "," : ""), *option);
+        if (count < 0 || (size_t) count >= buf_size)
+            return false;
+        buf_size -= count;
+        start += count;
+    }
+    if (buf_size == 0)
+        return false;
+    *start = '\0';
+    return true;
+}

@@ -15,16 +15,14 @@
 #include "test.h"
 #include "utils.h"
 
+/* xkb_rule_names API */
 static int
 test_rmlvo_va(struct xkb_context *context, enum xkb_keymap_format format,
               const char *rules, const char *model, const char *layout,
               const char *variant, const char *options, va_list ap)
 {
-    struct xkb_keymap *keymap;
-    int ret;
-
-    keymap = test_compile_rules(context, format, rules, model, layout, variant,
-                                options);
+    struct xkb_keymap * const keymap =
+        test_compile_rules(context, format, rules, model, layout, variant, options);
     if (!keymap)
         return 0;
 
@@ -32,7 +30,29 @@ test_rmlvo_va(struct xkb_context *context, enum xkb_keymap_format format,
             strnull(rules), strnull(model), strnull(layout),
             strnull(variant), strnull(options));
 
-    ret = test_key_seq_va(keymap, ap);
+    const int ret = test_key_seq_va(keymap, ap);
+
+    xkb_keymap_unref(keymap);
+
+    return ret;
+}
+
+/* xkb_rmlvo_builder API */
+static int
+test_rmlvo_builder_va(struct xkb_context *context, enum xkb_keymap_format format,
+                      const char *rules, const char *model, const char *layout,
+                      const char *variant, const char *options, va_list ap)
+{
+    struct xkb_keymap * const keymap =
+        test_compile_rmlvo(context, format, rules, model, layout, variant, options);
+    if (!keymap)
+        return 0;
+
+    fprintf(stderr, "Compiled '%s' '%s' '%s' '%s' '%s'\n",
+            strnull(rules), strnull(model), strnull(layout),
+            strnull(variant), strnull(options));
+
+    const int ret = test_key_seq_va(keymap, ap);
 
     xkb_keymap_unref(keymap);
 
@@ -49,6 +69,11 @@ test_rmlvo(struct xkb_context *context, enum xkb_keymap_format format,
 
     va_start(ap, options);
     ret = test_rmlvo_va(context, format, rules, model, layout, variant, options, ap);
+    va_end(ap);
+
+    va_start(ap, options);
+    ret &= test_rmlvo_builder_va(context, format,
+                                 rules, model, layout, variant, options, ap);
     va_end(ap);
 
     return ret;
@@ -102,8 +127,8 @@ test_extended_groups(struct xkb_context *ctx)
 {
     struct {
         enum xkb_keymap_format format;
-        const char *layouts;
         xkb_layout_index_t num_layouts;
+        const char *layouts;
     } tests[] = {
         /* v1: 4 groups */
         {

@@ -62,8 +62,8 @@ test_rules(struct xkb_context *ctx, const struct test_data *data)
 
         if (k == 0) {
             /* Private API */
-            ok = xkb_components_from_rules(ctx, &rmlvo, &kccgst,
-                                           &explicit_layouts);
+            ok = xkb_components_from_rules_names(ctx, &rmlvo, &kccgst,
+                                                 &explicit_layouts);
         } else {
             /* Public API */
             ok = xkb_components_names_from_rules(ctx, &rmlvo, NULL, &kccgst);

@@ -13,12 +13,14 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "darray.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "context.h"
 #include "rules.h"
+#include "rmlvo.h"
 #include "include.h"
 #include "scanner-utils.h"
+#include "darray.h"
 #include "utils.h"
 #include "utils-numbers.h"
 #include "utils-paths.h"
@@ -341,7 +343,99 @@ split_comma_separated_mlvo(const char *s)
 }
 
 static struct matcher *
-matcher_new(struct xkb_context *ctx,
+matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules)
+{
+    struct matcher *m = calloc(1, sizeof(*m));
+    if (!m)
+        return NULL;
+
+    m->ctx = rmlvo->ctx;
+
+    /* Sanitize */
+    struct xkb_rule_names names = {
+        .rules = rmlvo->rules,
+        .model = rmlvo->model,
+        /* Initial values only used to detect missing entries */
+        .layout = (darray_empty(rmlvo->layouts)) ? NULL : "x",
+        .variant = (darray_empty(rmlvo->layouts)) ? NULL : "x",
+        .options = (darray_empty(rmlvo->options)) ? NULL : "x",
+    };
+    const enum RMLVO changed = xkb_context_sanitize_rule_names(rmlvo->ctx,
+                                                               &names);
+
+    /* Initialize matcher with sanitized names, if relevant */
+    if (changed & RMLVO_RULES) {
+        *rules = names.rules;
+    } else {
+        *rules = rmlvo->rules;
+    }
+
+    if (changed & RMLVO_MODEL) {
+        m->rmlvo.model.sval.start = names.model;
+    } else {
+        m->rmlvo.model.sval.start = rmlvo->model;
+    }
+    m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
+
+    assert((changed & RMLVO_LAYOUT) || !(changed & RMLVO_VARIANT));
+    if (changed & RMLVO_LAYOUT) {
+        /* Layout and variant are tied together */
+        m->rmlvo.layouts = split_comma_separated_mlvo(names.layout);
+        m->rmlvo.variants = split_comma_separated_mlvo(names.variant);
+        if (darray_size(m->rmlvo.layouts) > darray_size(m->rmlvo.variants)) {
+            /* Do not warn if no variants was provided */
+            if (!isempty(names.variant))
+                log_warn(m->ctx, XKB_LOG_MESSAGE_NO_ID,
+                        "More layouts than variants: \"%s\" vs. \"%s\".\n",
+                        names.layout ? names.layout : "(none)",
+                        names.variant ? names.variant : "(none)");
+            darray_resize0(m->rmlvo.variants, darray_size(m->rmlvo.layouts));
+        } else if (darray_size(m->rmlvo.layouts) < darray_size(m->rmlvo.variants)) {
+            log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Less layouts than variants: \"%s\" vs. \"%s\".\n",
+                    names.layout ? names.layout : "(none)",
+                    names.variant ? names.variant : "(none)");
+            darray_resize(m->rmlvo.variants, darray_size(m->rmlvo.layouts));
+            darray_shrink(m->rmlvo.variants);
+        }
+    } else {
+        struct xkb_rmlvo_builder_layout *layout;
+        darray_foreach(layout, rmlvo->layouts) {
+            struct matched_sval val = {
+                .sval = {
+                    .start = layout->layout,
+                    .len = strlen_safe(layout->layout)
+                },
+                .matched = false
+            };
+            darray_append(m->rmlvo.layouts, val);
+            val.sval.start = layout->variant;
+            val.sval.len = strlen_safe(layout->variant);
+            darray_append(m->rmlvo.variants, val);
+        }
+    }
+
+    if (changed & RMLVO_OPTIONS) {
+        m->rmlvo.options = split_comma_separated_mlvo(names.options);
+    } else {
+        char **option;
+        darray_foreach(option, rmlvo->options) {
+            struct matched_sval val = {
+                .sval = {
+                    .start = *option,
+                    .len = strlen_safe(*option)
+                },
+                .matched = false
+            };
+            darray_append(m->rmlvo.options, val);
+        }
+    }
+
+    return m;
+}
+
+static struct matcher *
+matcher_new_from_names(struct xkb_context *ctx,
             const struct xkb_rule_names *rmlvo)
 {
     struct matcher *m = calloc(1, sizeof(*m));
@@ -1632,29 +1726,26 @@ read_rules_file(struct xkb_context *ctx,
     return ret;
 }
 
-bool
-xkb_components_from_rules(struct xkb_context *ctx,
-                          const struct xkb_rule_names *rmlvo,
-                          struct xkb_component_names *out,
-                          xkb_layout_index_t *explicit_layouts)
+static bool
+xkb_resolve_rules(struct xkb_context *ctx,
+                  const char* rules, struct matcher *matcher,
+                  struct xkb_component_names *out,
+                  xkb_layout_index_t *explicit_layouts)
 {
     bool ret = false;
     FILE *file;
-    struct matcher *matcher = NULL;
     struct matched_sval *mval;
     unsigned int offset = 0;
     char path[PATH_MAX];
 
     file = FindFileInXkbPath(ctx, "(unknown)",
-                             rmlvo->rules, strlen(rmlvo->rules), FILE_TYPE_RULES,
+                             rules, strlen(rules), FILE_TYPE_RULES,
                              path, sizeof(path), &offset);
     if (!file) {
         log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                "Cannot load XKB rules \"%s\"\n", rmlvo->rules);
+                "Cannot load XKB rules \"%s\"\n", rules);
         goto err_out;
     }
-
-    matcher = matcher_new(ctx, rmlvo);
 
     ret = read_rules_file(ctx, matcher, 0, file, path);
     if (!ret ||
@@ -1718,6 +1809,41 @@ xkb_components_from_rules(struct xkb_context *ctx,
 err_out:
     if (file)
         fclose(file);
+
+    return ret;
+}
+
+bool
+xkb_components_from_rmlvo_builder(const struct xkb_rmlvo_builder *rmlvo,
+                                  struct xkb_component_names *out,
+                                  xkb_layout_index_t *explicit_layouts)
+{
+    const char *rules = rmlvo->rules;
+    struct matcher *matcher = matcher_new_from_rmlvo(rmlvo, &rules);
+    if (!matcher)
+        return false;
+
+    const bool ret = xkb_resolve_rules(rmlvo->ctx, rules, matcher,
+                                       out, explicit_layouts);
+
+    matcher_free(matcher);
+    return ret;
+}
+
+
+bool
+xkb_components_from_rules_names(struct xkb_context *ctx,
+                                const struct xkb_rule_names *rmlvo,
+                                struct xkb_component_names *out,
+                                xkb_layout_index_t *explicit_layouts)
+{
+    struct matcher *matcher = matcher_new_from_names(ctx, rmlvo);
+    if (!matcher)
+        return false;
+
+    const bool ret = xkb_resolve_rules(ctx, rmlvo->rules, matcher,
+                                       out, explicit_layouts);
+
     matcher_free(matcher);
     return ret;
 }
