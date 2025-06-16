@@ -231,6 +231,8 @@ libxkbcommon_sources = [
     'src/keymap.h',
     'src/keymap-priv.c',
     'src/messages-codes.h',
+    'src/rmlvo.c',
+    'src/rmlvo.h',
     'src/scanner-utils.c',
     'src/scanner-utils.h',
     'src/state.c',

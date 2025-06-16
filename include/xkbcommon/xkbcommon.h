@@ -291,6 +291,97 @@ typedef uint32_t xkb_led_mask_t;
  */
 
 /**
+ * @struct xkb_rmlvo_builder
+ * Opaque [RMLVO] configuration object.
+ *
+ * It denotes the configuration values by which a user picks a keymap.
+ *
+ * @see [Introduction to RMLVO][RMLVO]
+ * @see @ref rules-api ""
+ * @since 1.11.0
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ */
+struct xkb_rmlvo_builder;
+
+enum xkb_rmlvo_builder_flags {
+    XKB_RMLVO_BUILDER_NO_FLAGS = 0
+};
+
+/**
+ * Create a new [RMLVO] builder.
+ *
+ * @param context The context in which to create the builder.
+ * @param rules   The rules set.
+ * If `NULL` or the empty string `""`, a default value is used.
+ * If the `XKB_DEFAULT_RULES` environment variable is set, it is used
+ * as the default.  Otherwise the system default is used.
+ * @param model   The keyboard model.
+ * If `NULL` or the empty string `""`, a default value is used.
+ * If the `XKB_DEFAULT_MODEL` environment variable is set, it is used
+ * as the default.  Otherwise the system default is used.
+ * @param flags   Optional flags for the builder, or 0.
+ *
+ * @returns A `xkb_rmlvo_builder`, or `NULL` if the compilation failed.
+ *
+ * @see `xkb_rule_names` for a detailed description of `rules` and `model`.
+ * @since 1.11.0
+ * @memberof xkb_rmlvo_builder
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ */
+XKB_EXPORT struct xkb_rmlvo_builder*
+xkb_rmlvo_builder_new(struct xkb_context *context,
+                      const char *rules, const char *model,
+                      enum xkb_rmlvo_builder_flags flags);
+
+/**
+ * Append a layout to the given [RMLVO] builder.
+ *
+ * @param rmlvo   The builder to modify.
+ * @param layout  The name of the layout.
+ * @param variant The name of the layout variant, or `NULL` to select the
+ * default variant.
+ *
+ * @returns `true` if the call succeeded, otherwise `false`.
+ *
+ * @since 1.11.0
+ * @memberof xkb_rmlvo_builder
+ */
+XKB_EXPORT bool
+xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
+                                const char *layout,
+                                const char *variant);
+
+/**
+ * Append an option to the given [RMLVO] builder.
+ *
+ * @param rmlvo   The builder to modify.
+ * @param option  The name of the option.
+ *
+ * @returns `true` if the call succeeded, otherwise `false`.
+ *
+ * @since 1.11.0
+ * @memberof xkb_rmlvo_builder
+ */
+XKB_EXPORT bool
+xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
+                                const char *option);
+
+/**
+ * Release a reference on a [RMLVO] builder, and possibly free it.
+ *
+ * @param rmlvo The builder.  If it is `NULL`, this function does nothing.
+ *
+ * @since 1.11.0
+ * @memberof xkb_rmlvo_builder
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ */
+XKB_EXPORT void
+xkb_rmlvo_builder_unref(struct xkb_rmlvo_builder *rmlvo);
+
+/**
  * Names to compile a keymap with, also known as [RMLVO].
  *
  * The names are the common configuration values by which a user picks
