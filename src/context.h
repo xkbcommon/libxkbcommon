@@ -12,6 +12,7 @@
 #include "atom.h"
 #include "darray.h"
 #include "messages-codes.h"
+#include "rmlvo.h"
 #include "utils.h"
 
 struct xkb_context {
@@ -90,7 +91,7 @@ XKB_EXPORT_PRIVATE ATTR_PRINTF(4, 5) void
 xkb_log(struct xkb_context *ctx, enum xkb_log_level level, int verbosity,
         const char *fmt, ...);
 
-void
+enum RMLVO
 xkb_context_sanitize_rule_names(struct xkb_context *ctx,
                                 struct xkb_rule_names *rmlvo);
 

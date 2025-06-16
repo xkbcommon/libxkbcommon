@@ -12,10 +12,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include "darray.h"
 #include "xkbcommon/xkbcommon.h"
-#include "utils.h"
+#include "darray.h"
 #include "context.h"
+#include "rmlvo.h"
+#include "utils.h"
 
 char *
 xkb_context_getenv(struct xkb_context *ctx, const char *name)
@@ -150,20 +151,27 @@ xkb_context_get_default_options(struct xkb_context *ctx)
     return env ? env : DEFAULT_XKB_OPTIONS;
 }
 
-void
+enum RMLVO
 xkb_context_sanitize_rule_names(struct xkb_context *ctx,
                                 struct xkb_rule_names *rmlvo)
 {
-    if (isempty(rmlvo->rules))
+    enum RMLVO modified = 0;
+
+    if (isempty(rmlvo->rules)) {
         rmlvo->rules = xkb_context_get_default_rules(ctx);
-    if (isempty(rmlvo->model))
+        modified |= RMLVO_RULES;
+    }
+    if (isempty(rmlvo->model)) {
         rmlvo->model = xkb_context_get_default_model(ctx);
+        modified |= RMLVO_MODEL;
+    }
     /* Layout and variant are tied together, so don't try to use one from
      * the caller and one from the environment. */
     if (isempty(rmlvo->layout)) {
         rmlvo->layout = xkb_context_get_default_layout(ctx);
+        modified |= RMLVO_LAYOUT;
+        const char * const variant = xkb_context_get_default_variant(ctx);
         if (!isempty(rmlvo->variant)) {
-            const char *variant = xkb_context_get_default_variant(ctx);
             log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Layout not provided, but variant set to \"%s\": "
                      "ignoring variant and using defaults for both: "
@@ -172,9 +180,14 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
                      rmlvo->layout,
                      variant ? variant : "");
         }
-        rmlvo->variant = xkb_context_get_default_variant(ctx);
+        rmlvo->variant = variant;
+        modified |= RMLVO_VARIANT;
     }
     /* Options can be empty, so respect that if passed in. */
-    if (rmlvo->options == NULL)
+    if (rmlvo->options == NULL) {
         rmlvo->options = xkb_context_get_default_options(ctx);
+        modified |= RMLVO_OPTIONS;
+    }
+
+    return modified;
 }

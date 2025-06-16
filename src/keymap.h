@@ -25,6 +25,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 
+#include "rmlvo.h"
 #include "utils.h"
 #include "context.h"
 
@@ -611,6 +612,8 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
                                     const union xkb_action **actions);
 
 struct xkb_keymap_format_ops {
+    bool (*keymap_new_from_rmlvo)(struct xkb_keymap *keymap,
+                                  const struct xkb_rmlvo_builder *rmlvo);
     bool (*keymap_new_from_names)(struct xkb_keymap *keymap,
                                   const struct xkb_rule_names *names);
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,

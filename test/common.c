@@ -16,6 +16,7 @@
 #include <locale.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef _WIN32
@@ -450,6 +451,123 @@ test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
                 "Failed to compile RMLVO: '%s', '%s', '%s', '%s', '%s'\n",
                 rules, model, layout, variant, options);
         return NULL;
+    }
+
+    return keymap;
+}
+
+static struct xkb_rmlvo_builder *
+xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
+                                 const struct xkb_rule_names *names)
+{
+    struct xkb_rmlvo_builder * const rmlvo =
+        xkb_rmlvo_builder_new(context, names->rules, names->model,
+                              XKB_RMLVO_BUILDER_NO_FLAGS);
+    if (!rmlvo) {
+        fprintf(stderr, "ERROR: xkb_rmlvo_builder_new() failed\n");
+        return NULL;
+    }
+
+    char buf[1024] = { 0 };
+
+    if (!isempty(names->layout)) {
+        const char *l = names->layout;
+        const char *v = names->variant;
+        if (!names->variant)
+            v = "";
+        while (*l != '\0') {
+            const char *layout = l;
+            const char *variant = v;
+            char *start = buf;
+            size_t buf_size = sizeof(buf);
+            while (*l != '\0' && *l != ',') { l++; };
+            while (*v != '\0' && *v != ',') { v++; };
+
+            size_t len = l - layout;
+            if (len >= buf_size)
+                goto error;
+            memcpy(start, layout, len);
+            start[len] = '\0';
+            start += len;
+            buf_size -= len + 1;
+
+            len = v - variant;
+            if (len >= buf_size)
+                goto error;
+            ++start;
+            memcpy(start, variant, len);
+            start[len] = '\0';
+
+            if (!xkb_rmlvo_builder_append_layout(rmlvo, buf, start))
+                goto error;
+
+            if (*l == ',')
+                l++;
+            if (*v == ',')
+                v++;
+        }
+    }
+
+    if (!isempty(names->options)) {
+        const char *o = names->options;
+        while (*o != '\0') {
+            const char *option = o;
+            while (*o != '\0' && *o != ',') { o++; };
+            const size_t len = o - option;
+            if (len >= sizeof(buf))
+                goto error;
+            memcpy(buf, option, len);
+            buf[len] = '\0';
+            if (!xkb_rmlvo_builder_append_option(rmlvo, buf))
+                goto error;
+            if (*o == ',')
+                o++;
+        }
+    }
+
+    return rmlvo;
+
+error:
+    fprintf(stderr, "ERROR: %s\n", __func__);
+    xkb_rmlvo_builder_unref(rmlvo);
+    return NULL;
+}
+
+struct xkb_keymap *
+test_compile_rmlvo(struct xkb_context *context, enum xkb_keymap_format format,
+                   const char *rules, const char *model, const char *layout,
+                   const char *variant, const char *options)
+{
+    struct xkb_keymap *keymap = NULL;
+    const struct xkb_rule_names names = {
+        .rules = rules,
+        .model = model,
+        .layout = layout,
+        .variant = variant,
+        .options = options
+    };
+
+    struct xkb_rmlvo_builder *rmlvo = xkb_rules_names_to_rmlvo_builder(context,
+                                                                       &names);
+
+    if (!rmlvo) {
+        fprintf(stderr,
+                "Failed to create RMLVO builder: "
+                "'%s', '%s', '%s', '%s', '%s'\n",
+                rules, model, layout, variant, options);
+        return NULL;
+    }
+
+    keymap = xkb_keymap_new_from_rmlvo(rmlvo, format,
+                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+
+    xkb_rmlvo_builder_unref(rmlvo);
+
+    if (!keymap) {
+        fprintf(stderr,
+                "Failed to compile RMLVO from builder: "
+                "'%s', '%s', '%s', '%s', '%s'\n",
+                rules, model, layout, variant, options);
     }
 
     return keymap;

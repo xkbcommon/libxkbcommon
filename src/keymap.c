@@ -103,6 +103,39 @@ get_keymap_format_ops(enum xkb_keymap_format format)
 }
 
 struct xkb_keymap *
+xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
+                          enum xkb_keymap_format format,
+                          enum xkb_keymap_compile_flags flags)
+{
+    struct xkb_keymap *keymap;
+    const struct xkb_keymap_format_ops *ops;
+
+    ops = get_keymap_format_ops(format);
+    if (!ops || !ops->keymap_new_from_rmlvo) {
+        log_err_func(rmlvo->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unsupported keymap format: %d\n", format);
+        return NULL;
+    }
+
+    if (flags & ~(XKB_KEYMAP_COMPILE_NO_FLAGS)) {
+        log_err_func(rmlvo->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized flags: %#x\n", flags);
+        return NULL;
+    }
+
+    keymap = xkb_keymap_new(rmlvo->ctx, format, flags);
+    if (!keymap)
+        return NULL;
+
+    if (!ops->keymap_new_from_rmlvo(keymap, rmlvo)) {
+        xkb_keymap_unref(keymap);
+        return NULL;
+    }
+
+    return keymap;
+}
+
+struct xkb_keymap *
 xkb_keymap_new_from_names2(struct xkb_context *ctx,
                            const struct xkb_rule_names *rmlvo_in,
                            enum xkb_keymap_format format,

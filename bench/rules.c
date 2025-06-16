@@ -171,7 +171,7 @@ main(int argc, char *argv[])
         for (unsigned int i = 0; i < max_iterations; i++) {
             struct xkb_component_names kccgst;
 
-            assert(xkb_components_from_rules(context, &rmlvo, &kccgst, NULL));
+            assert(xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL));
             free(kccgst.keycodes);
             free(kccgst.types);
             free(kccgst.compatibility);
@@ -188,7 +188,7 @@ main(int argc, char *argv[])
         BENCH(stdev, max_iterations, elapsed, est,
             struct xkb_component_names kccgst;
 
-            assert(xkb_components_from_rules(context, &rmlvo, &kccgst, NULL));
+            assert(xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL));
             free(kccgst.keycodes);
             free(kccgst.types);
             free(kccgst.compatibility);

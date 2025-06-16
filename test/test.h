@@ -117,6 +117,11 @@ test_third_pary_compile_output(test_third_party_compile_buffer_t compile_buffer,
                                const char *rel_path, bool update_output_files);
 
 struct xkb_keymap *
+test_compile_rmlvo(struct xkb_context *context, enum xkb_keymap_format format,
+                   const char *rules, const char *model, const char *layout,
+                   const char *variant, const char *options);
+
+struct xkb_keymap *
 test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
                    const char *rules, const char *model, const char *layout,
                    const char *variant, const char *options);
