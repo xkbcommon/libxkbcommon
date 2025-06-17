@@ -201,10 +201,12 @@ main(int argc, char **argv)
 
             printf("  - name: '%s'\n"
                    "    brief: '%s'\n"
-                   "    description: '%s'\n",
+                   "    description: '%s'\n"
+                   "    layout-specific: %s\n",
                    rxkb_option_get_name(o),
                    brief ? brief : "",
-                   rxkb_option_get_description(o));
+                   rxkb_option_get_description(o),
+                   rxkb_option_is_layout_specific(o) ? "true" : "false");
             o = rxkb_option_next(o);
         }
 
