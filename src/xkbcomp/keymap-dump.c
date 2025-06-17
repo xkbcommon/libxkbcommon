@@ -424,7 +424,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             args = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
                                action->mods.mods.mods);
         bool unlockOnPress = action->type == ACTION_TYPE_MOD_LOCK &&
-                             (action->group.flags & ACTION_UNLOCK_ON_PRESS);
+                             (action->mods.flags & ACTION_UNLOCK_ON_PRESS);
         if (unlockOnPress && !isModsUnLockOnPressSupported(format)) {
             log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
                     "Cannot use \"LockMods(unlockOnPress=true)\" "
