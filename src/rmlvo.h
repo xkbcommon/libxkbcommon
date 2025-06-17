@@ -26,11 +26,18 @@ struct xkb_rmlvo_builder_layout {
 
 typedef darray(struct xkb_rmlvo_builder_layout) xkb_rmlvo_builder_layouts;
 
+struct xkb_rmlvo_builder_option {
+    char *option;
+    xkb_layout_index_t layout;
+};
+
+typedef darray(struct xkb_rmlvo_builder_option) xkb_rmlvo_builder_options;
+
 struct xkb_rmlvo_builder {
     char *rules;
     char *model;
     xkb_rmlvo_builder_layouts layouts;
-    darray(char *) options;
+    xkb_rmlvo_builder_options options;
 
     int refcnt;
     struct xkb_context *ctx;

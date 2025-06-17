@@ -687,6 +687,7 @@ test_dep = declare_dependency(
     sources: [
         'bench/bench.c',
         'bench/bench.h',
+        'src/utils-numbers.h',
         'test/common.c',
         'test/evdev-scancodes.h',
         'test/test.h',

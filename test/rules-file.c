@@ -602,6 +602,136 @@ test_all_qualifier(struct xkb_context *ctx,
     }
 }
 
+static void
+test_layout_specific_options(struct xkb_context *ctx)
+{
+    const struct test_data tests[] = {
+        /*
+         * 1 layout, no layout index
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = "opt1,opt2,opt3,opt4,opt5,opt6,opt7",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+s1:1+s3:1+s7",
+            .explicit_layouts = 1
+        },
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l2", .variant = NULL,
+            .options = "opt1,opt2,opt3,opt4,opt5,opt6,opt7",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l2:1+s1:1+s2:1+s3:1+s4:1+s7",
+            .explicit_layouts = 1
+        },
+        /*
+         * 1 layout, invalid layout index
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = "opt1!,opt2!1x,opt3!x,opt4!x1,opt5!!,opt6!+,opt7!|",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+s1:1+s3:1+s7",
+            .explicit_layouts = 1
+        },
+        /*
+         * 1 layout, matching layout index
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = "opt1!1,opt2!1,opt3!1,opt4!1,opt5!1,opt6!1,opt7!1",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+s1:1+s3:1",
+            .explicit_layouts = 1
+        },
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l2", .variant = NULL,
+            .options = "opt1!1,opt2!1,opt3!1,opt4!1,opt5!1,opt6!1,opt7!1",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l2:1+s1:1+s2:1+s3:1+s4:1",
+            .explicit_layouts = 1
+        },
+        /*
+         * 1 layout, non-matching layout index
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = "opt1!2,opt2!2,opt3!2,opt4!2,opt5!2,opt6!2,opt7!2",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1",
+            .explicit_layouts = 1
+        },
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l2", .variant = NULL,
+            .options = "opt1!2,opt2!2,opt3!2,opt4!2,opt5!2,opt6!2,opt7!2",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l2:1",
+            .explicit_layouts = 1
+        },
+        /*
+         * 2 layouts: no specifier
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt1,opt2,opt3,opt4,opt5,opt6,opt7",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+s1:1+s3:1+s3:2+s4:2+s5:1+s6:2+s7",
+            .explicit_layouts = 2
+        },
+        /* 2 layout: non-matching index */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt1!3,opt2!3,opt3!3,opt4!3,opt5!3,opt6!3,opt7!3",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2",
+            .explicit_layouts = 2
+        },
+        /*
+         * 2 layouts: specify only 1 layout for each option
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt1!1,opt2!1,opt3!1,opt4!1,opt5!1,opt6!1,opt7!1",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+s1:1+s3:1+s5:1",
+            .explicit_layouts = 2
+        },
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt1!2,opt2!2,opt3!2,opt4!2,opt5!2,opt6!2,opt7!2",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+s3:2+s4:2+s6:2",
+            .explicit_layouts = 2
+        },
+        /*
+         * 2 layouts: specify 2 layouts for each option
+         */
+        {
+            .rules = "layout-specific-options",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt1!1,opt1!2,opt2!1,opt2!2,opt3!1,opt3!2,"
+                       "opt4!1,opt4!2,opt5!1,opt5!2,opt6!1,opt6!2,opt7!1,opt7!2",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+s1:1+s3:1+s3:2+s4:2+s5:1+s6:2",
+            .explicit_layouts = 2
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_rules(ctx, &tests[k]));
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -637,6 +767,7 @@ main(int argc, char *argv[])
     test_layout_index_ranges(ctx, too_much_layouts, too_much_symbols);
     test_extended_layout_indexes(ctx);
     test_all_qualifier(ctx, too_much_layouts, too_much_symbols);
+    test_layout_specific_options(ctx);
 
     xkb_context_unref(ctx);
     return EXIT_SUCCESS;

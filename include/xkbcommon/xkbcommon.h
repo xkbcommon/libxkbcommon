@@ -338,20 +338,28 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
 /**
  * Append a layout to the given [RMLVO] builder.
  *
- * @param rmlvo   The builder to modify.
- * @param layout  The name of the layout.
- * @param variant The name of the layout variant, or `NULL` to select the
- * default variant.
+ * @param rmlvo         The builder to modify.
+ * @param layout        The name of the layout.
+ * @param variant       The name of the layout variant, or `NULL` to
+ * select the default variant.
+ * @param options       An array of options to apply only to this layout, or
+ * `NULL` if there is no such options.
+ * @param options_len   The length of @p options.
+ *
+ * @note The options are only effectual if the corresponding ruleset has the
+ * proper rules to handle them as *layout-specific* options.
  *
  * @returns `true` if the call succeeded, otherwise `false`.
  *
  * @since 1.11.0
  * @memberof xkb_rmlvo_builder
+ *
+ * [RMLVO]: @ref RMLVO-intro
  */
 XKB_EXPORT bool
 xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
-                                const char *layout,
-                                const char *variant);
+                                const char *layout, const char *variant,
+                                const char* const* options, size_t options_len);
 
 /**
  * Append an option to the given [RMLVO] builder.
@@ -363,6 +371,8 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
  *
  * @since 1.11.0
  * @memberof xkb_rmlvo_builder
+ *
+ * [RMLVO]: @ref RMLVO-intro
  */
 XKB_EXPORT bool
 xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
@@ -387,8 +397,8 @@ xkb_rmlvo_builder_unref(struct xkb_rmlvo_builder *rmlvo);
  * The names are the common configuration values by which a user picks
  * a keymap.
  *
- * If the entire struct is NULL, then each field is taken to be NULL.
- * You should prefer passing NULL instead of choosing your own defaults.
+ * If the entire struct is `NULL`, then each field is taken to be `NULL`.
+ * You should prefer passing `NULL` instead of choosing your own defaults.
  *
  * @see [Introduction to RMLVO][RMLVO]
  * @see @ref rules-api ""
