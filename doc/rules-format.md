@@ -594,3 +594,7 @@ we would have the following resolutions of <em>[symbols]</em>:
 | `be,gb` | `opt2`    | `pc+be+gb:2+opt2:1+opt2:2` | Matched: all layouts                   |
 | `be,gb` | `opt2!1`  | `pc+be+gb:2+opt2:1`        | Matched: only specified layout         |
 | `be,gb` | `opt2!2`  | `pc+be+gb:2+opt2:2`        | Matched: only specified layout         |
+
+@note Such option should use the attribute `layout-specific="true"` in the
+corresponding `configItem` tag of the XML registry file, so that keyboard
+configuration can expose this feature in their user interface.

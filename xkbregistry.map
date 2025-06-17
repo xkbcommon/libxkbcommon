@@ -59,3 +59,8 @@ global:
 local:
     *;
 };
+
+V_1.11.0 {
+global:
+    rxkb_option_is_layout_specific;
+} V_1.0.0;
