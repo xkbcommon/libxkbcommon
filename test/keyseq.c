@@ -5,7 +5,6 @@
 
 #include "config.h"
 
-#include "context.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "evdev-scancodes.h"
@@ -1094,6 +1093,92 @@ test_mod_latch(struct xkb_context *context)
         KEY_LEFTSHIFT , BOTH, XKB_KEY_Shift_L         , NEXT, /* Unlock Shift */
         KEY_1         , BOTH, XKB_KEY_1               , FINISH
     ));
+
+    xkb_keymap_unref(keymap);
+
+    /*
+     * Mod latch on release (all formats)
+     * Implicit latchOnPress=false (XKB spec)
+     */
+    for (unsigned int f = 0; f < ARRAY_SIZE(keymap_formats); f++) {
+        keymap = test_compile_rules(context, keymap_formats[f], "evdev",
+                                    "pc104", "de", "", "lv3:ralt_latch");
+        assert(keymap);
+#define test_mod_latch_on_release(keymap) assert(                     \
+    test_key_seq((keymap),                                            \
+                 KEY_A       , BOTH, XKB_KEY_a,                NEXT,  \
+                 /* Regular latch */                                  \
+                 KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_a,                NEXT,  \
+                 /* Latch to lock */                                  \
+                 KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 /* Unlock on release */                              \
+                 KEY_RIGHTALT, DOWN, XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_RIGHTALT, UP,   XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_a,                NEXT,  \
+                 /* Maintained pressed */                             \
+                 KEY_RIGHTALT, DOWN, XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 /* Degrade to set */                                 \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_ae,               NEXT,  \
+                 KEY_RIGHTALT, UP,   XKB_KEY_ISO_Level3_Latch, NEXT,  \
+                 KEY_A       , BOTH, XKB_KEY_a,                FINISH)\
+)
+        test_mod_latch_on_release(keymap);
+
+        xkb_keymap_unref(keymap);
+    }
+
+    /*
+     * Mod latch on release for format V2
+     * Explicit latchOnPress=false (XKB spec)
+     */
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2, "evdev",
+                                "pc104", "de", "", "lv3:ralt_latch,lv3:latchOnRelease");
+    assert(keymap);
+    test_mod_latch_on_release(keymap);
+    xkb_keymap_unref(keymap);
+
+#undef test_mod_latch_on_release
+
+    /*
+     * Mod latch on press for format V2
+     * Explicit latchOnPress=true (XKB extension)
+     */
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2, "evdev",
+                                "pc104", "de", "", "lv3:ralt_latch,lv3:latchOnPress");
+    assert(keymap);
+
+    assert(test_key_seq(keymap,
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        /* Regular latch */
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_ae,               NEXT,
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        /* Latch to lock */
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_ae,               NEXT,
+                        KEY_A       , BOTH, XKB_KEY_ae,               NEXT,
+                        /* Unlock on press */
+                        KEY_RIGHTALT, DOWN, XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        KEY_RIGHTALT, UP,   XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        /* Maintained pressed: latched on press */
+                        KEY_RIGHTALT, DOWN, XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_ae,               NEXT,
+                        /* Broken latch */
+                        KEY_A       , BOTH, XKB_KEY_a,                NEXT,
+                        KEY_RIGHTALT, UP,   XKB_KEY_ISO_Level3_Latch, NEXT,
+                        KEY_A       , BOTH, XKB_KEY_a,                FINISH));
 
     xkb_keymap_unref(keymap);
 }

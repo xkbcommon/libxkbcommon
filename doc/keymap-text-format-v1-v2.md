@@ -3163,6 +3163,17 @@ Modifies the <em>[latched]</em> modifiers
 <td>`false`</td>
 <td>See its use [hereinafter](@ref latch-modifier-action-effects)</td>
 </tr>
+<tr>
+<th>`latchOnPress`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>
+Control whether [latched] modifiers are latched on key press or release (default).
+See [hereinafter](@ref latch-modifier-action-effects) for further details.
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</tr>
 </tbody>
 </table>
 
@@ -3273,26 +3284,25 @@ These actions perform different tasks on key press and on key release:
     <tr>
         <th>`LatchMods` @anchor set-modifier-action-effects</th>
         <td>
-          <ul>
-            <li>Adds modifiers to <em>[latched]</em> modifiers.</li>
-          </ul>
+        - If `latchOnPress` is true, then:
+          - If `clearLocks` is true and target modifiers were locked,
+            then unlock them and clear the action.
+          - Otherwise add modifiers to the <em>[latched]</em> modifiers.
+        - Otherwise adds modifiers to <em>[depressed]</em> modifiers.
         </td>
         <td>
-          <ul>
-            <li>
-              Removes modifiers from <em>[latched]</em> modifiers.
-            </li>
-            <li>
-              If <code>clearLocks=yes</code> and no other key
-              has been pressed since this key press, then the
-              modifiers will be removed as well from the
-              <em>[locked]</em> modifiers.
-            </li>
-            <li>
-              If <code>latchToLock=yes</code> then the modifiers
-              are added to the <em>[locked]</em> modifiers.
-            </li>
-          </ul>
+        - If `latchOnPress` is false, then:
+          - Removes modifiers from <em>[depressed]</em> modifiers.
+        - If no keys were operated simultaneously with the latching modifier key:
+          - If `clearLocks` is true and target modifiers were locked,
+            then unlock then stop here and clear the action.
+          <!-- TODO: pending latch? -->
+          - Otherwise add modifiers to <em>[latched]</em> modifiers.
+          - If `latchToLock` is true and if the target modifiers are latched,
+            then unlatch them and <em>[lock][locked]</em> them.
+          - Latch target modifiers that were not used by `clearLocks` and
+            `latchToLock`.
+        - Otherwise unlatch the target modifiers and clear the action.
         </td>
     </tr>
     <tr>

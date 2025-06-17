@@ -1,0 +1,39 @@
+partial xkb_compatibility "latchOnPress" {
+
+    virtual_modifiers  LevelThree;
+
+    interpret.repeat= False;
+    setMods.clearLocks= True;
+    latchMods.clearLocks= True;
+    latchMods.latchToLock= True;
+
+    interpret ISO_Level3_Latch+Any {
+	useModMapMods= level1;
+	virtualModifier= LevelThree;
+	action= LatchMods(modifiers=LevelThree, latchOnPress);
+    };
+
+    interpret ISO_Level3_Latch {
+	action= LatchMods(modifiers=LevelThree, latchOnPress);
+    };
+};
+
+partial xkb_compatibility "latchOnRelease" {
+
+    virtual_modifiers  LevelThree;
+
+    interpret.repeat= False;
+    setMods.clearLocks= True;
+    latchMods.clearLocks= True;
+    latchMods.latchToLock= True;
+
+    interpret ISO_Level3_Latch+Any {
+	useModMapMods= level1;
+	virtualModifier= LevelThree;
+	action= LatchMods(modifiers=LevelThree, latchOnPress=false);
+    };
+
+    interpret ISO_Level3_Latch {
+	action= LatchMods(modifiers=LevelThree, latchOnPress=false);
+    };
+};

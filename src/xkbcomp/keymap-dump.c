@@ -431,11 +431,20 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                     "in keymap format %d\n", format);
             unlockOnPress = false;
         }
-        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s)%s", prefix, type, args,
+        bool latchOnPress = action->type == ACTION_TYPE_MOD_LATCH &&
+                            (action->group.flags & ACTION_LATCH_ON_PRESS);
+        if (latchOnPress && !isModsLatchOnPressSupported(format)) {
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                    "Cannot use \"LatchMods(latchOnPress=true)\" "
+                    "in keymap format %d\n", format);
+            latchOnPress = false;
+        }
+        write_buf(buf, "%s%s(modifiers=%s%s%s%s%s%s)%s", prefix, type, args,
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LOCK_CLEAR)) ? ",clearLocks" : "",
                   (action->type != ACTION_TYPE_MOD_LOCK && (action->mods.flags & ACTION_LATCH_TO_LOCK)) ? ",latchToLock" : "",
                   (action->type == ACTION_TYPE_MOD_LOCK) ? affect_lock_text(action->mods.flags, false) : "",
                   (unlockOnPress) ? ",unlockOnPress" : "",
+                  (latchOnPress) ? ",latchOnPress" : "",
                   suffix);
         break;
 
