@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 #include "test/utils-text.h"
-
-#define DATA_PATH "keymaps/stringcomp.data"
+#include "utils.h"
 
 static void
 test_explicit_actions(struct xkb_context *ctx)
@@ -84,14 +84,29 @@ main(int argc, char *argv[])
     /* Load in a prebuilt keymap, make sure we can compile it from a string,
      * then compare it to make sure we get the same result when dumping it
      * to a string. */
-    char *original = test_read_file(DATA_PATH);
-    assert(original);
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                               XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                               compile_string, NULL, "Round-trip",
-                               original, 0 /* unused */, DATA_PATH,
-                               update_output_files));
-    free(original);
+    static const struct {
+        const char* path;
+        enum xkb_keymap_format format;
+    } data[] = {
+        {
+            .path = "keymaps/stringcomp-v1.data",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+        },
+        {
+            .path = "keymaps/stringcomp-v2.data",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {
+        char *original = test_read_file(data[k].path);
+        assert(original);
+        assert(test_compile_output(ctx, data[k].format,
+                                XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                compile_string, NULL, "Round-trip",
+                                original, 0 /* unused */, data[k].path,
+                                update_output_files));
+        free(original);
+    }
 
     /* Make sure we can recompile our output for a normal keymap from rules. */
     keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, NULL,

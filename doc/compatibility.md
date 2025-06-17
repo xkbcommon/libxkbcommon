@@ -180,10 +180,21 @@ Ignored: fallback to `NoSymbol`.
 Parse error.
 </details>
 </td>
-<td colspan="2">
+<td>
+<details>
+<summary>⚠️ Parsing & handling, no serialization</summary>
+Currently limited to 1 action for each action type “group” and “modifier”.
+
+@since 1.8: Enable multiple actions per level (parsing, serializing & handling).
+@since 1.11: Serialize to `VoidAction()` for compatibility with X11.
+</details>
+</td>
+<td>
 <details>
 <summary>⚠️ Partial support</summary>
 Currently limited to 1 action for each action type “group” and “modifier”.
+
+@since 1.11
 </details>
 </td>
 </tr>
