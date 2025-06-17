@@ -599,22 +599,22 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
 
 /* Special layout indexes */
 enum layout_index_ranges {
-    LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID,
+    LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID - 4,
     LAYOUT_INDEX_FIRST  = XKB_LAYOUT_INVALID - 3,
     LAYOUT_INDEX_LATER  = XKB_LAYOUT_INVALID - 2,
     LAYOUT_INDEX_ANY    = XKB_LAYOUT_INVALID - 1
 };
 
 static_assert((xkb_layout_index_t) XKB_MAX_GROUPS <
-              (xkb_layout_index_t) LAYOUT_INDEX_FIRST,
+              (xkb_layout_index_t) LAYOUT_INDEX_SINGLE,
               "Cannot define special indexes");
-static_assert((xkb_layout_index_t) LAYOUT_INDEX_FIRST <
+static_assert((xkb_layout_index_t) LAYOUT_INDEX_SINGLE <
+              (xkb_layout_index_t) LAYOUT_INDEX_FIRST &&
+              (xkb_layout_index_t) LAYOUT_INDEX_FIRST <
               (xkb_layout_index_t) LAYOUT_INDEX_LATER &&
               (xkb_layout_index_t) LAYOUT_INDEX_LATER <
               (xkb_layout_index_t) LAYOUT_INDEX_ANY &&
               (xkb_layout_index_t) LAYOUT_INDEX_ANY <
-              (xkb_layout_index_t) LAYOUT_INDEX_SINGLE &&
-              (xkb_layout_index_t) LAYOUT_INDEX_SINGLE ==
               (xkb_layout_index_t) XKB_LAYOUT_INVALID,
               "Special indexes must respect certain order");
 
@@ -721,10 +721,14 @@ matcher_mapping_set_mlvo(struct matcher *m, struct scanner *s,
             m->mapping.active = false;
             return;
         }
+    } else if (mlvo == MLVO_LAYOUT) {
+        m->mapping.layout_idx = (xkb_layout_index_t) LAYOUT_INDEX_SINGLE;
+    } else if (mlvo == MLVO_VARIANT) {
+        m->mapping.variant_idx = (xkb_layout_index_t) LAYOUT_INDEX_SINGLE;
     }
 
     /* Check that if both layout and variant are defined, then they must have
-       the same index */
+     * the same index */
     if (((mlvo == MLVO_LAYOUT && is_mlvo_mask_defined(m, MLVO_VARIANT)) ||
          (mlvo == MLVO_VARIANT && is_mlvo_mask_defined(m, MLVO_LAYOUT))) &&
         m->mapping.layout_idx != m->mapping.variant_idx) {
@@ -746,6 +750,15 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
     /* Handle case where one of the index is XKB_LAYOUT_INVALID */
     xkb_layout_index_t idx = MIN(m->mapping.layout_idx, m->mapping.variant_idx);
     switch (idx) {
+        case XKB_LAYOUT_INVALID:
+            /* No layout nor variant */
+            assert(!is_mlvo_mask_defined(m, MLVO_LAYOUT) &&
+                   !is_mlvo_mask_defined(m, MLVO_VARIANT));
+            m->mapping.has_layout_idx_range = false;
+            m->mapping.layout_idx_min = XKB_LAYOUT_INVALID;
+            m->mapping.layout_idx_max = XKB_LAYOUT_INVALID;
+            m->mapping.layouts_candidates_mask = 0x1;
+            break;
         case LAYOUT_INDEX_LATER:
             m->mapping.has_layout_idx_range = true;
             m->mapping.layout_idx_min = 1;
@@ -765,8 +778,8 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
                 /* All layouts */
                 (UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1);
             break;
+        case LAYOUT_INDEX_SINGLE:
         case LAYOUT_INDEX_FIRST:
-        case XKB_LAYOUT_INVALID:
             /* No index or first index */
             idx = 0;
             /* fallthrough */
@@ -839,8 +852,9 @@ matcher_mapping_verify(struct matcher *m, struct scanner *s)
      */
 
     if (is_mlvo_mask_defined(m, MLVO_LAYOUT)) {
+        assert(m->mapping.layout_idx != XKB_LAYOUT_INVALID);
         switch (m->mapping.layout_idx) {
-            case XKB_LAYOUT_INVALID:
+            case LAYOUT_INDEX_SINGLE:
                 /* Layout rule without index matches when
                  * exactly 1 layout is specified */
                 if (darray_size(m->rmlvo.layouts) > 1)
@@ -861,8 +875,9 @@ matcher_mapping_verify(struct matcher *m, struct scanner *s)
     }
 
     if (is_mlvo_mask_defined(m, MLVO_VARIANT)) {
+        assert(m->mapping.variant_idx != XKB_LAYOUT_INVALID);
         switch (m->mapping.variant_idx) {
-            case XKB_LAYOUT_INVALID:
+            case LAYOUT_INDEX_SINGLE:
                 /* Variant rule without index matches
                  * when exactly 1 variant is specified */
                 if (darray_size(m->rmlvo.variants) > 1)
@@ -1039,6 +1054,14 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
     if (str[*i] == 'i' &&
         (*i + 1 == value.len || is_merge_mode_prefix(str[*i + 1])))
     {
+        if (layout_idx == XKB_LAYOUT_INVALID) {
+            scanner_err(
+                s, XKB_ERROR_RULES_INVALID_LAYOUT_INDEX_PERCENT_EXPANSION,
+                "Invalid %%i in %%-expansion: there is no corresponding "
+                "layout nor variant in the MLVO fields of the rules header."
+            );
+            goto error;
+        }
         (*i)++;
         char index_str[MAX_LAYOUT_INDEX_STR_LENGTH + 1];
         int count = snprintf(index_str, sizeof(index_str), "%"PRIu32,
@@ -1081,6 +1104,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         if (consumed == -1) goto error;
         if (idx == XKB_LAYOUT_INVALID) {
             /* %i encountered */
+            assert(layout_idx != XKB_LAYOUT_INVALID);
             idx = layout_idx;
             expanded_index = true;
         }
@@ -1173,8 +1197,7 @@ expand_qualifier_in_kccgst_value(
             char layout_index[MAX_LAYOUT_INDEX_STR_LENGTH + 1];
             const darray_size_t prefix_length =
                 darray_size(*expanded) - prefix_idx - 1;
-            xkb_layout_index_t l;
-            for (l = 1;
+            for (xkb_layout_index_t l = 1;
                  l < MIN(XKB_MAX_GROUPS, darray_size(m->rmlvo.layouts));
                  l++)
             {

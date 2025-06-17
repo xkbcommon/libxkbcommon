@@ -409,6 +409,22 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "rules-invalid-layout-index-percent-expansion"
+  code: 762
+  added: 1.11.0
+  type: error
+  description: "Cannot expand `%%i`: missing layout or variant in MLVO rule fields"
+  details: |
+    In a @ref rule-file-format "rules file", `%%i` denotes the index of the
+    matched layout. It can only be used in the [KcCGST] value of the rule if the
+    layout or variant is defined in the [MLVO] fields of the rule header.
+    Otherwise the rule is always discarded.
+
+    To fix the error, either remove the `:%%i` specifier or add a the relevant
+    [MLVO] field, e.g. `layout[any]`.
+
+    [KcCGST]: @ref KcCGST-intro
+    [MLVO]: @ref RMLVO-intro
 - id: "invalid-compose-syntax"
   code: 685
   added: ALWAYS

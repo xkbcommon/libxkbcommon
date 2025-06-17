@@ -88,3 +88,11 @@
   layout_c      option_2 = +MMM:%i skip1
   layout_c      option_1 = +NNN:%i skip2
   layout_b      option_1 = +OOO:%i skip3
+
+// Invalid %i (no layout nor variant): always discarded
+! model         = symbols
+  *             = +invalid:%i
+
+// Invalid %i (no layout nor variant): always discarded
+! option        = symbols
+  *             = +invalid-too:%i
