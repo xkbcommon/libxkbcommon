@@ -348,6 +348,8 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
  *
  * @note The options are only effectual if the corresponding ruleset has the
  * proper rules to handle them as *layout-specific* options.
+ * @note See `rxkb_option_is_layout_specific()` to query whether an option
+ * supports the layout-specific feature.
  *
  * @returns `true` if the call succeeded, otherwise `false`.
  *
@@ -464,6 +466,8 @@ struct xkb_rule_names {
      *
      * @note The layout index specifier is only effectual if the corresponding
      * ruleset has the proper rules to handle the option as *layout-specific*.
+     * @note See `rxkb_option_is_layout_specific()` to query whether an option
+     * supports the layout-specific feature.
      *
      * @since 1.11.0: Layout index specifier using `!`.
      */
