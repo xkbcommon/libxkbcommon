@@ -28,3 +28,5 @@ xkb_components_from_rules_names(struct xkb_context *ctx,
  */
 #define MAX_LAYOUT_INDEX_STR_LENGTH \
         (1 + ((sizeof(xkb_layout_index_t) * CHAR_BIT * 5) >> 4))
+
+#define OPTIONS_GROUP_SPECIFIER_PREFIX '!'
