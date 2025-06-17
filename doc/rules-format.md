@@ -563,3 +563,34 @@ Since version `1.8.0`, the previous code can be replaced with simply:
   *            misc:typo    = +typo(base):%i
   *            lv3:ralt_alt = +level3(ralt_alt):%i
 ```
+
+### Example: layout-specific options {#rules-layout-specific-options-example}
+
+Using the following example:
+
+```c
+! layout[first] = symbols
+  *             = pc
+
+! layout[any] = symbols
+  *           = %l[%i]%(v[%i])
+
+// Not layout-specific
+! option      = symbols
+  opt1        = +opt1
+
+// Layout-specific: note the range `[any]` and the `:%i` specifier
+! layout[any]   option     = symbols
+  *             opt2       = +opt2:%i
+```
+
+we would have the following resolutions of <em>[symbols]</em>:
+
+| Layout  | Option    | Symbols                    | Comment                                |
+| ------- | --------- | -------------------------- | -------------------------------------- |
+| `be,gb` | `opt1`    | `pc+be+gb:2+opt1`          | Matched: no layout index               |
+| `be,gb` | `opt1!1`  | `pc+be+gb:2`               | No match: not a layout-specific option |
+| `be,gb` | `opt1!2`  | `pc+be+gb:2`               | No match: not a layout-specific option |
+| `be,gb` | `opt2`    | `pc+be+gb:2+opt2:1+opt2:2` | Matched: all layouts                   |
+| `be,gb` | `opt2!1`  | `pc+be+gb:2+opt2:1`        | Matched: only specified layout         |
+| `be,gb` | `opt2!2`  | `pc+be+gb:2+opt2:2`        | Matched: only specified layout         |
