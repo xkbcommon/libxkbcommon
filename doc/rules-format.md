@@ -300,9 +300,13 @@ or %%H seems to do the job though.
         etc.
     </dt>
     <dd>
-        (Since version `1.8.0`)
         In case the mapping uses an @ref rules-extended-layout-indexes "extended layout index",
         `%%i` corresponds to the index of the matched layout.
+
+        ℹ️ Notes:
+        - Added in version `1.8.0`
+        - Since `1.11.0`: This feature can only be used if the rule header has
+          a `layout` or `variant` [MLVO] field.
     </dd>
   </dl>
 
