@@ -294,8 +294,25 @@ Unused in [xkeyboard-config] layouts.
 </tr>
 <tr>
 <th>`LatchModifiers()`</th>
-<td>✅ Full support</td>
-<td colspan="2">✅ Full support</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `latchOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</details>
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `latchOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support</summary>
+- `latchOnPress` parameter (since 1.11). See @ref latch-mods-action "its documentation"
+  for further details.
+</details>
+</td>
 </tr>
 <tr>
 <th>`LockModifiers()`</th>

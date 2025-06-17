@@ -563,8 +563,27 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 static void
 xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    filter->priv = LATCH_KEY_DOWN;
-    state->set_mods |= filter->action.mods.mods.mask;
+    if (filter->action.mods.flags & ACTION_LATCH_ON_PRESS) {
+        /*
+         * Latch on key press
+         *
+         * This is a keymap format v2 extension.
+         */
+        if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
+            (state->components.locked_mods & filter->action.mods.mods.mask) ==
+             filter->action.mods.mods.mask) {
+            /* Clear locks and do not latch */
+            state->components.locked_mods &= ~filter->action.mods.mods.mask;
+            filter->func = NULL;
+        } else {
+            filter->priv = LATCH_PENDING;
+            state->components.latched_mods |= filter->action.mods.mods.mask;
+            /* XXX beep beep! */
+        }
+    } else {
+        filter->priv = LATCH_KEY_DOWN;
+        state->set_mods |= filter->action.mods.mods.mask;
+    }
 }
 
 static bool
@@ -633,7 +652,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             state->components.locked_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
         }
-        else {
+        else if (!(filter->action.mods.flags & ACTION_LATCH_ON_PRESS)) {
             latch = LATCH_PENDING;
             state->clear_mods |= filter->action.mods.mods.mask;
             state->components.latched_mods |= filter->action.mods.mods.mask;

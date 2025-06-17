@@ -1027,6 +1027,7 @@
   lv3:switch		=	+level3(switch)
   lv3:ralt_switch	=	+level3(ralt_switch)
   lv3:ralt_switch_multikey	=	+level3(ralt_switch_multikey)
+  lv3:ralt_latch	=	+level3(ralt_latch)
   lv3:ralt_alt		=	+level3(ralt_alt)
   lv3:lalt_switch	=	+level3(lalt_switch)
   lv3:alt_switch	=	+level3(alt_switch)
@@ -1176,6 +1177,8 @@
   grab:break_actions    =       +xfree86(grab_break)
   grp:lockOnRelease	=	+iso9995-v2(lockOnRelease)
   grp:lockOnPress	=	+iso9995-v2(lockOnPress)
+  lv3:latchOnPress	=	+level3-v2(latchOnPress)
+  lv3:latchOnRelease	=	+level3-v2(latchOnRelease)
 
 
 ! option	=	types
