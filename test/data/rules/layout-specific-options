@@ -1,0 +1,33 @@
+! model			=	keycodes
+  *			=	evdev
+
+! model			=	compat
+  *			=	complete
+
+! model			=	types
+  *			=	complete
+
+! layout[first]		=	symbols
+  *			=	pc
+
+! layout[any]		=	symbols
+  *			=	+%l[%i]:%i
+
+! layout[first]	option	=	symbols
+  *		opt1	=	+s1:%i
+  l2		opt2	=	+s2:%i
+
+// Example from the commit introducing the feature
+! layout[any]	option	=	symbols
+  *		opt3	=	+s3:%i
+  l2		opt4	=	+s4:%i
+
+! layout[1]	option	= 	symbols
+  *		opt5	=	+s5:%i
+
+! layout[2]	option	= 	symbols
+  *		opt6	=	+s6:%i
+
+// Never layout-specific
+! option		=	symbols
+  opt7			=	+s7

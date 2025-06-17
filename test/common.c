@@ -10,6 +10,8 @@
  */
 
 #include "config.h"
+#include "darray.h"
+#include "keymap.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -33,6 +35,8 @@
 #include "utils.h"
 #include "utils-paths.h"
 #include "src/keysym.h"
+#include "src/xkbcomp/rules.h"
+#include "src/utils-numbers.h"
 
 #include "tools/tools-common.h"
 
@@ -460,7 +464,7 @@ static struct xkb_rmlvo_builder *
 xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
                                  const struct xkb_rule_names *names)
 {
-    struct xkb_rmlvo_builder * const rmlvo =
+    struct xkb_rmlvo_builder *rmlvo =
         xkb_rmlvo_builder_new(context, names->rules, names->model,
                               XKB_RMLVO_BUILDER_NO_FLAGS);
     if (!rmlvo) {
@@ -470,11 +474,68 @@ xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
 
     char buf[1024] = { 0 };
 
+    /* First parse options, and gather the layout-specific ones and
+     * append the others to the builder */
+    typedef darray(char *) darray_string;
+    darray(darray_string) loptions = darray_new();
+    if (!isempty(names->options)) {
+        const char *o = names->options;
+        while (*o != '\0') {
+            /* Get option name */
+            const char *option = o;
+            while (*o != '\0' && *o != ',' &&
+                   *o != OPTIONS_GROUP_SPECIFIER_PREFIX) {
+                    o++;
+            };
+            const size_t len = o - option;
+            if (len >= sizeof(buf))
+                goto error;
+            memcpy(buf, option, len);
+            buf[len] = '\0';
+
+            /* Check if layout-specific option */
+            xkb_layout_index_t layout = XKB_LAYOUT_INVALID;
+            if (*o == OPTIONS_GROUP_SPECIFIER_PREFIX) {
+                o++;
+                int count = parse_dec_to_uint32_t(o, SIZE_MAX, &layout);
+                if (count > 0 && layout > 0 && layout <= XKB_MAX_GROUPS) {
+                    o += count;
+                    layout--;
+                } else {
+                    layout = XKB_LAYOUT_INVALID;
+                }
+                const char* const layout_index_end = o;
+                while (*o != '\0' && *o != ',') { o++; }
+                if (count <= 0 || layout_index_end != o)
+                    layout = XKB_LAYOUT_INVALID;
+            }
+
+            if (layout != XKB_LAYOUT_INVALID) {
+                /* Save as layout-specific option, to be added with layout */
+                char *opt = strdup(buf);
+                if (!opt)
+                    goto error;
+                darray_resize0(loptions, layout + 1);
+                darray_append(darray_item(loptions, layout), opt);
+            } else {
+                /* Append layout-agnostic option */
+                if (!xkb_rmlvo_builder_append_option(rmlvo, buf))
+                    goto error;
+            }
+
+            if (*o == ',')
+                o++;
+        }
+    }
+
     if (!isempty(names->layout)) {
+        /* Process layout & variant together.
+         * Ignore variants without corresponding layout. */
         const char *l = names->layout;
         const char *v = names->variant;
         if (!names->variant)
             v = "";
+        xkb_layout_index_t layout_count = 0;
         while (*l != '\0') {
             const char *layout = l;
             const char *variant = v;
@@ -498,31 +559,38 @@ xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
             memcpy(start, variant, len);
             start[len] = '\0';
 
-            if (!xkb_rmlvo_builder_append_layout(rmlvo, buf, start))
+            /* Get layout-specific options */
+            char **opts = NULL;
+            size_t opts_count = 0;
+            if (layout_count < darray_size(loptions)) {
+                opts = darray_items(darray_item(loptions, layout_count));
+                opts_count = darray_size(darray_item(loptions, layout_count));
+            }
+
+            if (!xkb_rmlvo_builder_append_layout(rmlvo, buf, start,
+                                                 (const char* *) opts,
+                                                 opts_count))
                 goto error;
 
             if (*l == ',')
                 l++;
             if (*v == ',')
                 v++;
+
+            layout_count += 1;
         }
     }
 
-    if (!isempty(names->options)) {
-        const char *o = names->options;
-        while (*o != '\0') {
-            const char *option = o;
-            while (*o != '\0' && *o != ',') { o++; };
-            const size_t len = o - option;
-            if (len >= sizeof(buf))
-                goto error;
-            memcpy(buf, option, len);
-            buf[len] = '\0';
-            if (!xkb_rmlvo_builder_append_option(rmlvo, buf))
-                goto error;
-            if (*o == ',')
-                o++;
+exit:
+    {
+        darray_string *opts;
+        darray_foreach(opts, loptions) {
+            char **opt;
+            darray_foreach(opt, *opts)
+                free(*opt);
+            darray_free(*opts);
         }
+        darray_free(loptions);
     }
 
     return rmlvo;
@@ -530,7 +598,8 @@ xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
 error:
     fprintf(stderr, "ERROR: %s\n", __func__);
     xkb_rmlvo_builder_unref(rmlvo);
-    return NULL;
+    rmlvo = NULL;
+    goto exit;
 }
 
 struct xkb_keymap *

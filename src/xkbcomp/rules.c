@@ -393,6 +393,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
         }
 
         darray_append(arr, val);
+
         if (*s == '\0') break;
         if (*s == ',') s++;
     }
@@ -481,14 +482,16 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         m->rmlvo.options = split_comma_separated_mlvo(rmlvo->ctx, MLVO_OPTION,
                                                       names.options);
     } else {
-        char **option;
+        struct xkb_rmlvo_builder_option *option;
         darray_foreach(option, rmlvo->options) {
             struct matched_sval val = {
                 .sval = {
-                    .start = *option,
-                    .len = strlen_safe(*option)
+                    .start = option->option,
+                    .len = strlen_safe(option->option),
                 },
-                .layout = OPTIONS_MATCH_ALL_GROUPS,
+                .layout = (option->layout) == XKB_LAYOUT_INVALID
+                    ? OPTIONS_MATCH_ALL_GROUPS
+                    : option->layout,
                 .matched = false
             };
             darray_append(m->rmlvo.options, val);
