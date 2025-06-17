@@ -47,7 +47,7 @@ test_compile(struct xkb_context *ctx, const char* xkb_root,
              const char *keymap_str, size_t keymap_len,
              const char *path, bool update)
 {
-    return test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+    return test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
                                XKB_KEYMAP_USE_ORIGINAL_FORMAT, compile_buffer,
                                NULL, test_title, keymap_str, keymap_len,
                                path, !!update);

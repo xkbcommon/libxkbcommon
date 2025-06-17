@@ -1226,7 +1226,7 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
     };
     for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);
-        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                    compile_buffer, NULL, __func__,
                                    keymaps[k].keymap,
@@ -1236,6 +1236,20 @@ test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
     }
 #undef make_keymaps_with
 #undef make_keymap
+
+    /* V1 serialization */
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <> = 1; };\n"
+        "  xkb_compat { interpret A { action = {SetMods(), SetGroup()}; }; };\n"
+        "  xkb_symbols  { key <> { [{SetMods(), SetGroup()}] }; };\n"
+        "};";
+    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                               XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                               compile_buffer, NULL, __func__,
+                               keymap_str, ARRAY_SIZE(keymap_str),
+                               GOLDEN_TESTS_OUTPUTS "symbols-multi-actions-v1.xkb",
+                               update_output_files));
 }
 
 /* Test keysyms as strings */
@@ -1845,22 +1859,32 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
     /* Load in a prebuilt keymap, make sure we can compile it from memory,
      * then compare it to make sure we get the same result when dumping it
      * to a string. */
-    const char * const path = GOLDEN_TESTS_OUTPUTS "stringcomp.data";
-    char *original = test_read_file(path);
-    assert(original);
-
-    /* Load a prebuild keymap, once without, once with the trailing \0 */
-    for (unsigned int i = 0; i <= 1; i++) {
-        fprintf(stderr, "------\n*** %s, trailing '\\0': %d ***\n", __func__, i);
-
-        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                                   compile_buffer, NULL, __func__,
-                                   original, strlen(original) + i, path,
-                                   update_output_files));
+    static const struct {
+        const char* path;
+        enum xkb_keymap_format format;
+    } data[] = {
+        {
+            .path = "keymaps/stringcomp-v1.data",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+        },
+        {
+            .path = "keymaps/stringcomp-v2.data",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {
+        char *original = test_read_file(data[k].path);
+        assert(original);
+        /* Load a prebuild keymap, once without, once with the trailing \0 */
+        for (unsigned int i = 0; i <= 1; i++) {
+            assert(test_compile_output(ctx, data[k].format,
+                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                    compile_buffer, NULL, "Round-trip",
+                                    original, strlen(original) + i, data[k].path,
+                                    update_output_files));
+        }
+        free(original);
     }
-
-    free(original);
 }
 
 static void

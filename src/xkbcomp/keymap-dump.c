@@ -555,6 +555,10 @@ void_action:
     return true;
 }
 
+static const union xkb_action void_actions[] = {
+    { .type = ACTION_TYPE_VOID }
+};
+
 static bool
 write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
               xkb_layout_index_t max_groups, struct buf *buf, struct buf *buf2,
@@ -572,6 +576,16 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         xkb_action_count_t count = xkb_keymap_key_get_actions_by_level(
             keymap, key, group, level, &actions
         );
+
+        if (count > 1 && format < XKB_KEYMAP_FORMAT_TEXT_V2) {
+            /* V1: Degrade multiple actions to VoidAction() */
+            actions = void_actions;
+            count = 1;
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                    "Cannot serialize multiple actions per level "
+                    "in keymap format %d; degrade to VoidAction()\n", format);
+        }
+
         buf2->size = 0;
         if (count == 0) {
             if (!write_action(keymap, format, max_groups,
@@ -667,7 +681,21 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             has_explicit_properties = true;
         }
 
-        if (si->num_actions > 1) {
+        const union xkb_action *action = NULL;
+        xkb_action_count_t action_count = si->num_actions;
+        if (action_count <= 1) {
+            action = &si->a.action;
+        }
+        else if (format < XKB_KEYMAP_FORMAT_TEXT_V2) {
+            /* V1: Degrade multiple actions to VoidAction() */
+            action = &void_actions[0];
+            action_count = 1;
+            log_err(keymap->ctx, XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT,
+                    "Cannot serialize multiple actions per level "
+                    "in keymap format %d; degrade to VoidAction()\n", format);
+        }
+
+        if (action_count > 1) {
             copy_to_buf(buf, "\n\t\taction= {");
             const char suffix[] = ", ";
             for (xkb_action_count_t k = 0; k < si->num_actions; k++) {
@@ -678,8 +706,8 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             buf->size -= sizeof(suffix) - 1; /* trailing comma */
             copy_to_buf(buf, "};");
             has_explicit_properties = true;
-        } else if (si->num_actions == 1) {
-            if (!write_action(keymap, format, max_groups, buf, &si->a.action,
+        } else if (action_count == 1) {
+            if (!write_action(keymap, format, max_groups, buf, action,
                               "\n\t\taction= ", ";"))
                 return false;
             has_explicit_properties = true;
