@@ -577,7 +577,7 @@ if build_tools
     # Tools: interactive-wayland
     if get_option('enable-wayland')
         wayland_client_dep = dependency('wayland-client', version: '>=1.2.0', required: false)
-        wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.12', required: false)
+        wayland_protocols_dep = dependency('wayland-protocols', version: '>=1.15', required: false)
         wayland_scanner_dep = dependency('wayland-scanner', required: false, native: true)
         if not wayland_client_dep.found() or not wayland_protocols_dep.found() or not wayland_scanner_dep.found()
             error('''The Wayland xkbcli programs require wayland-client and wayland-protocols which were not found.
@@ -601,11 +601,17 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
             wayland_scanner_code_gen.process(xdg_shell_xml),
             wayland_scanner_client_header_gen.process(xdg_shell_xml),
         ]
+        xdg_decoration_xml = wayland_protocols_datadir/'unstable/xdg-decoration/xdg-decoration-unstable-v1.xml'
+        xdg_decoration_sources = [
+            wayland_scanner_code_gen.process(xdg_decoration_xml),
+            wayland_scanner_client_header_gen.process(xdg_decoration_xml),
+        ]
         executable('xkbcli-interactive-wayland',
                    'tools/interactive-wayland.c',
                    'src/keymap-formats.c',
                    'src/keymap-formats.h',
                    xdg_shell_sources,
+                   xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
                    install: true,
                    install_dir: dir_libexec)
@@ -617,6 +623,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                    'src/keymap-formats.c',
                    'src/keymap-formats.h',
                    xdg_shell_sources,
+                   xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
                    c_args: ['-DKEYMAP_DUMP'],
                    install: true,
