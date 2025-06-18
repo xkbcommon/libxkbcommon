@@ -25,6 +25,7 @@
 #include "src/keymap-formats.h"
 
 #include <wayland-client.h>
+#include "wayland-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include <wayland-util.h>
 
@@ -40,6 +41,7 @@ struct interactive_dpy {
     struct xdg_wm_base *shell;
     struct wl_shm *shm;
     uint32_t shm_format;
+    struct wl_buffer *buf;
 
     struct xkb_context *ctx;
     struct xkb_compose_table *compose_table;
@@ -223,7 +225,6 @@ static void
 buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
 {
     struct wl_shm_pool *pool;
-    struct wl_buffer *buf;
     struct wl_region *opaque;
     uint32_t stride;
     size_t size;
@@ -282,11 +283,14 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
     const int32_t iheight = (int32_t) height;
     const int32_t istride = (int32_t) stride;
 
-    buf = wl_shm_pool_create_buffer(pool, 0, iwidth, iheight, istride,
-                                    inter->shm_format);
-    wl_buffer_add_listener(buf, &buffer_listener, inter);
+    if (inter->buf)
+        wl_buffer_destroy(inter->buf);
 
-    wl_surface_attach(inter->wl_surf, buf, 0, 0);
+    inter->buf = wl_shm_pool_create_buffer(pool, 0, iwidth, iheight, istride,
+                                           inter->shm_format);
+    wl_buffer_add_listener(inter->buf, &buffer_listener, inter);
+
+    wl_surface_attach(inter->wl_surf, inter->buf, 0, 0);
     wl_surface_damage(inter->wl_surf, 0, 0, iwidth, iheight);
 
     opaque = wl_compositor_create_region(inter->compositor);
@@ -719,6 +723,8 @@ dpy_disconnect(struct interactive_dpy *inter)
         wl_compositor_destroy(inter->compositor);
     if (inter->shm)
         wl_shm_destroy(inter->shm);
+    if (inter->buf)
+        wl_buffer_destroy(inter->buf);
 
     /* Do one last roundtrip to try to destroy our wl_buffer. */
     wl_display_roundtrip(inter->dpy);
