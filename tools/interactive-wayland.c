@@ -27,6 +27,7 @@
 #include <wayland-client.h>
 #include "wayland-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
 #include <wayland-util.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -42,6 +43,8 @@ struct interactive_dpy {
     struct wl_shm *shm;
     uint32_t shm_format;
     struct wl_buffer *buf;
+    struct zxdg_decoration_manager_v1 *decoration_manager;
+    struct zxdg_toplevel_decoration_v1 *decoration;
 
     struct xkb_context *ctx;
     struct xkb_compose_table *compose_table;
@@ -323,9 +326,9 @@ toplevel_configure(void *data, struct xdg_toplevel *toplevel,
     struct interactive_dpy *inter = data;
 
     if (width == 0)
-        width = 200;
+        width = 400;
     if (height == 0)
-        height = 200;
+        height = 400;
 
     buffer_create(inter, width, height);
 }
@@ -351,6 +354,16 @@ static void surface_create(struct interactive_dpy *inter)
     xdg_toplevel_set_title(inter->xdg_top, "xkbcommon event tester");
     xdg_toplevel_set_app_id(inter->xdg_top,
                             "org.xkbcommon.test.interactive-wayland");
+    if (inter->decoration_manager) {
+        inter->decoration =
+            zxdg_decoration_manager_v1_get_toplevel_decoration(
+                inter->decoration_manager, inter->xdg_top
+            );
+            zxdg_toplevel_decoration_v1_set_mode(
+                inter->decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE
+            );
+    }
+
     wl_surface_commit(inter->wl_surf);
 }
 
@@ -682,6 +695,12 @@ registry_global(void *data, struct wl_registry *registry, uint32_t name,
         inter->shm = wl_registry_bind(registry, name, &wl_shm_interface,
                                       MIN(version, 1));
     }
+    else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
+        inter->decoration_manager = wl_registry_bind(
+            registry, name, &zxdg_decoration_manager_v1_interface,
+            MIN(version, 1)
+        );
+    }
 }
 
 static void
@@ -725,6 +744,10 @@ dpy_disconnect(struct interactive_dpy *inter)
         wl_shm_destroy(inter->shm);
     if (inter->buf)
         wl_buffer_destroy(inter->buf);
+    if (inter->decoration)
+        zxdg_toplevel_decoration_v1_destroy(inter->decoration);
+    if (inter->decoration_manager)
+        zxdg_decoration_manager_v1_destroy(inter->decoration_manager);
 
     /* Do one last roundtrip to try to destroy our wl_buffer. */
     wl_display_roundtrip(inter->dpy);
