@@ -295,6 +295,18 @@ HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
     if (field == ACTION_FIELD_MODIFIERS)
         return CheckModifierField(ctx, mods, action->type, array_ndx, value,
                                   &act->flags, &act->mods.mods);
+    if ((type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LOCK) &&
+        field == ACTION_FIELD_UNLOCK_ON_PRESS) {
+        /* TODO: This should be implemented for Latch too. */
+        if (isModsUnLockOnPressSupported(format)) {
+            return CheckBooleanFlag(ctx, action->type, field,
+                                    ACTION_UNLOCK_ON_PRESS, array_ndx,
+                                    value, &act->flags);
+        } else {
+            return ReportFormatVersionMismatch(ctx, action->type, field,
+                                                format, ">= 2");
+        }
+    }
     if ((type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LATCH) &&
         field == ACTION_FIELD_CLEAR_LOCKS)
         return CheckBooleanFlag(ctx, action->type, field,
@@ -316,21 +328,9 @@ HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
             }
         }
     }
-    if (type == ACTION_TYPE_MOD_LOCK) {
-        if (field == ACTION_FIELD_AFFECT)
-            return CheckAffectField(ctx, action->type, array_ndx, value,
-                                    &act->flags);
-        if (field == ACTION_FIELD_UNLOCK_ON_PRESS) {
-            if (isModsUnLockOnPressSupported(format)) {
-                return CheckBooleanFlag(ctx, action->type, field,
-                                        ACTION_UNLOCK_ON_PRESS, array_ndx,
-                                        value, &act->flags);
-            } else {
-                return ReportFormatVersionMismatch(ctx, action->type, field,
-                                                   format, ">= 2");
-            }
-        }
-    }
+    if (type == ACTION_TYPE_MOD_LOCK && field == ACTION_FIELD_AFFECT)
+        return CheckAffectField(ctx, action->type, array_ndx, value,
+                                &act->flags);
 
     return ReportIllegal(ctx, action->type, field);
 }
