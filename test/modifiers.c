@@ -103,7 +103,9 @@ test_modmap_none(struct xkb_context *context)
     const struct xkb_key *key;
     xkb_keycode_t keycode;
 
-    keymap = test_compile_file(context, "keymaps/modmap-none.xkb");
+    keymap = test_compile_file(
+        context, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/modmap-none.xkb"
+    );
     assert(keymap);
 
     keycode = xkb_keymap_key_by_name(keymap, "LVL3");
@@ -541,7 +543,9 @@ test_pure_virtual_modifiers(struct xkb_context *context)
 
     /* Test definition of >20 pure virtual modifiers.
      * We superate the X11 limit of 16 virtual modifiers. */
-    keymap = test_compile_file(context, "keymaps/pure-virtual-mods.xkb");
+    keymap = test_compile_file(
+        context, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/pure-virtual-mods.xkb"
+    );
     assert(keymap);
 
     assert(test_key_seq(keymap,

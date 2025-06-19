@@ -6,11 +6,13 @@
 #include "config.h"
 
 #include "test.h"
+#include "xkbcommon/xkbcommon.h"
 
 static int
 test_file(struct xkb_context *ctx, const char *path_rel)
 {
-    struct xkb_keymap *keymap = test_compile_file(ctx, path_rel);
+    struct xkb_keymap *keymap =
+        test_compile_file( ctx, XKB_KEYMAP_FORMAT_TEXT_V1, path_rel);
 
     if (!keymap)
         return 0;
