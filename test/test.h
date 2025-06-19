@@ -82,7 +82,8 @@ struct xkb_context *
 test_get_context(enum test_context_flags flags);
 
 struct xkb_keymap *
-test_compile_file(struct xkb_context *context, const char *path_rel);
+test_compile_file(struct xkb_context *context, enum xkb_keymap_format format,
+                  const char *path_rel);
 
 struct xkb_keymap *
 test_compile_string(struct xkb_context *context, enum xkb_keymap_format format,

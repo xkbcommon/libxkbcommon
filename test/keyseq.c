@@ -1192,8 +1192,9 @@ struct key_properties {
 static void
 test_explicit_actions(struct xkb_context *ctx)
 {
-    struct xkb_keymap *original =
-        test_compile_file(ctx, "keymaps/explicit-actions.xkb");
+    struct xkb_keymap *original = test_compile_file(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/explicit-actions.xkb"
+    );
     assert(original);
 
     /* Reload keymap from its dump */
@@ -1770,7 +1771,9 @@ test_keymaps(struct xkb_context *ctx, const char* rules)
                         KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  FINISH));
 
     xkb_keymap_unref(keymap);
-    keymap = test_compile_file(ctx, "keymaps/unbound-vmod.xkb");
+    keymap = test_compile_file(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/unbound-vmod.xkb"
+    );
     assert(keymap);
 
     assert(test_key_seq(keymap,

@@ -363,7 +363,8 @@ test_get_context(enum test_context_flags test_flags)
 }
 
 struct xkb_keymap *
-test_compile_file(struct xkb_context *context, const char *path_rel)
+test_compile_file(struct xkb_context *context, enum xkb_keymap_format format,
+                  const char *path_rel)
 {
     struct xkb_keymap *keymap;
     FILE *file;
@@ -381,8 +382,8 @@ test_compile_file(struct xkb_context *context, const char *path_rel)
     }
     assert(file != NULL);
 
-    keymap = xkb_keymap_new_from_file(context, file,
-                                      XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+    keymap = xkb_keymap_new_from_file(context, file, format,
+                                      XKB_KEYMAP_COMPILE_NO_FLAGS);
     fclose(file);
 
     if (!keymap) {
