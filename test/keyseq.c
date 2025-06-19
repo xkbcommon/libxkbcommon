@@ -553,6 +553,44 @@ test_group_latch(struct xkb_context *ctx)
 }
 
 static void
+test_mod_set(struct xkb_context *ctx)
+{
+    struct xkb_keymap *keymap;
+
+    /* Shift break caps: unlockOnPress=false */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105", "us", "",
+                                "shift:breaks_caps");
+    assert(test_key_seq(keymap,
+        KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock, NEXT,
+        KEY_A,         BOTH, XKB_KEY_A,         NEXT,
+        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,   NEXT,
+        KEY_A,         BOTH, XKB_KEY_a,         NEXT,
+        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,   NEXT,
+        /* Caps still locked: key was operated before Shift release */
+        KEY_A,         BOTH, XKB_KEY_A,         FINISH
+    ));
+    assert(keymap);
+
+    xkb_keymap_unref(keymap);
+
+    /* Shift break caps: unlockOnPress=true (XKB extension) */
+    keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                "evdev", "pc105", "us", "",
+                                "shift:breaks_caps-v2");
+    assert(keymap);
+    assert(test_key_seq(keymap,
+        KEY_CAPSLOCK,  BOTH, XKB_KEY_Caps_Lock, NEXT,
+        KEY_A,         BOTH, XKB_KEY_A,         NEXT,
+        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,   NEXT,
+        KEY_A,         BOTH, XKB_KEY_A,         NEXT,
+        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,   NEXT,
+        KEY_A,         BOTH, XKB_KEY_a,         FINISH
+    ));
+    xkb_keymap_unref(keymap);
+}
+
+static void
 test_mod_lock(struct xkb_context *ctx)
 {
     struct xkb_keymap *keymap;
@@ -1822,6 +1860,7 @@ main(void)
     test_simultaneous_modifier_clear(ctx);
     test_group_lock(ctx);
     test_group_latch(ctx);
+    test_mod_set(ctx);
     test_mod_lock(ctx);
     test_mod_latch(ctx);
     test_explicit_actions(ctx);

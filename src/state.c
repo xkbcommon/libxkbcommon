@@ -485,7 +485,22 @@ xkb_filter_group_latch_func(struct xkb_state *state,
 static void
 xkb_filter_mod_set_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    state->set_mods |= filter->action.mods.mods.mask;
+    const enum xkb_action_flags unlock = ACTION_UNLOCK_ON_PRESS
+                                       | ACTION_LOCK_CLEAR;
+    if ((filter->action.mods.flags & unlock) == unlock) {
+        /*
+         * Unlock on press
+         *
+         * This is a keymap v2 extension.
+         */
+        filter->priv = filter->action.mods.mods.mask
+                     & ~state->components.locked_mods;
+        state->components.locked_mods &= ~filter->action.mods.mods.mask;
+    } else {
+        filter->priv = filter->action.mods.mods.mask;
+    }
+
+    state->set_mods |= (xkb_mod_mask_t) filter->priv;
 }
 
 static bool
@@ -507,8 +522,10 @@ xkb_filter_mod_set_func(struct xkb_state *state,
         return XKB_FILTER_CONSUME;
     }
 
-    state->clear_mods |= filter->action.mods.mods.mask;
-    if (filter->action.mods.flags & ACTION_LOCK_CLEAR)
+    state->clear_mods |= (xkb_mod_mask_t) filter->priv;
+    const enum xkb_action_flags unlock = ACTION_UNLOCK_ON_PRESS
+                                       | ACTION_LOCK_CLEAR;
+    if ((filter->action.mods.flags & unlock) == ACTION_LOCK_CLEAR)
         state->components.locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;

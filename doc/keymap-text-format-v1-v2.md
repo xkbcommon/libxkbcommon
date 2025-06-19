@@ -3205,6 +3205,18 @@ The list of modifiers to modify, separated by `+`, or the special value
 <td>`false`</td>
 <td>See its use [hereinafter](@ref set-modifier-action-effects)</td>
 </tr>
+<tr>
+<th>`unlockOnPress`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>
+Control whether [locked] modifiers are unlocked on key press or release (default).
+See [hereinafter](@ref set-modifier-action-effects) for further details.
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 </dd>
@@ -3341,26 +3353,17 @@ These actions perform different tasks on key press and on key release:
     <tr>
       <th>`SetMods` @anchor latch-modifier-action-effects</th>
       <td>
-        <ul>
-          <li>
-            Adds modifiers to <em>[depressed]</em> modifiers
-          </li>
-        </ul>
+      - If `clearLocks` and `unlockOnPress` are true, unlock the target
+        modifiers.
+      - Adds modifiers to <em>[depressed]</em> modifiers that were not unlocked.
       </td>
       <td>
-        <ul>
-          <li>
-            Removes modifiers from <em>[depressed]</em> modifiers,
-            provided that no other key which affects the same
-            modifiers is logically down.
-          </li>
-          <li>
-            If <code>clearLocks=yes</code> and no other key
-            were operated simultaneously with this key,
-            then the modifiers will be removed as well from
-            the <em>[locked]</em> modifiers.
-          </li>
-        </ul>
+      - Removes modifiers added on press from <em>[depressed]</em> modifiers,
+        provided that no other key which affects the same modifiers is logically
+        down.
+      - If `clearLocks` is true, `unlockOnPress` is false and no other key were
+        operated simultaneously with this key, then the modifiers will be
+        removed as well from the <em>[locked]</em> modifiers.
       </td>
     </tr>
     <tr>

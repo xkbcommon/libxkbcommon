@@ -325,15 +325,32 @@ Unused in [xkeyboard-config] layouts.
 <tr>
 <th rowspan="3">Modifiers</th>
 <th>`SetModifiers()`</th>
-<td>✅ Full support</td>
-<td colspan="2">✅ Full support</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `unlockOnPress` parameter is not supported.
+</details>
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- `unlockOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support</summary>
+- `unlockOnPress` parameter (since 1.11). See @ref set-mods-action "its documentation"
+  for further details.
+</details>
+</td>
 </tr>
 <tr>
 <th>`LatchModifiers()`</th>
 <td>
 <details>
 <summary>⚠️ Partial support</summary>
-- `latchOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- `latchOnPress` parameter is not supported.
 </details>
 </td>
 <td>
@@ -355,7 +372,7 @@ Unused in [xkeyboard-config] layouts.
 <td>
 <details>
 <summary>⚠️ Partial support</summary>
-- `unlockOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- `unlockOnPress` parameter is not supported.
 </details>
 </td>
 <td>

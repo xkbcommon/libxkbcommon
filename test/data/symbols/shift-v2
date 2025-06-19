@@ -1,0 +1,18 @@
+xkb_symbols "breaks_caps" {
+    key <LFSH> {
+	type = "ALPHABETIC",
+	[Shift_L, Shift_L],
+    	[
+	    SetMods(modifiers=Shift),
+	    SetMods(modifiers=Shift+Lock,clearLocks,unlockOnPress)
+	]
+    };
+    key <RTSH> {
+	type = "ALPHABETIC",
+	[Shift_R, Shift_R],
+	[
+	    SetMods(modifiers=Shift),
+	    SetMods(modifiers=Shift+Lock,clearLocks,unlockOnPress)
+	]
+    };
+};
