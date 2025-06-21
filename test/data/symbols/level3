@@ -208,6 +208,16 @@ xkb_symbols "bksl_switch_latch" {
   include "level3(modifier_mapping)"
 };
 
+partial modifier_keys
+xkb_symbols "bksl_latch_no_lock" {
+  virtual_modifiers LevelThree;
+  key <BKSL> {
+    type[Group1]="ONE_LEVEL",
+    symbols[Group1] = [ ISO_Level3_Latch ],
+    actions[Group1] = [ LatchMods(modifiers=LevelThree, !clearLocks, !latchToLock)]
+  };
+};
+
 // The Less/Greater key (while pressed) chooses the third shift level,
 // and latches when pressed together with another third-level chooser.
 partial modifier_keys

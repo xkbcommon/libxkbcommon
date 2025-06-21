@@ -444,15 +444,18 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * don't actually latch.  Else we've actually hit the latching
          * stage, so set PENDING and move our group from base to
          * latched. */
-        if (latch == NO_LATCH ||
-            ((filter->action.group.flags & ACTION_LOCK_CLEAR) &&
-             state->components.locked_group)) {
+        if ((filter->action.group.flags & ACTION_LOCK_CLEAR) &&
+             state->components.locked_group) {
             if (latch == LATCH_PENDING)
                 state->components.latched_group -= priv.group_delta;
             else
                 state->components.base_group -= priv.group_delta;
-            if (filter->action.group.flags & ACTION_LOCK_CLEAR)
-                state->components.locked_group = 0;
+            state->components.locked_group = 0;
+            filter->func = NULL;
+        }
+        /* Broken latch */
+        else if (latch == NO_LATCH) {
+            state->components.base_group -= priv.group_delta;
             filter->func = NULL;
         }
         /* We may already have reached the latch state if pressing the
@@ -641,10 +644,9 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * don't actually latch.  Else we've actually hit the latching
          * stage, so set PENDING and move our modifier from base to
          * latched. */
-        if (latch == NO_LATCH ||
-            ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
-             (state->components.locked_mods & filter->action.mods.mods.mask) ==
-             filter->action.mods.mods.mask)) {
+        if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
+            (state->components.locked_mods & filter->action.mods.mods.mask) ==
+             filter->action.mods.mods.mask) {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
@@ -653,6 +655,11 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             else
                 state->clear_mods |= filter->action.mods.mods.mask;
             state->components.locked_mods &= ~filter->action.mods.mods.mask;
+            filter->func = NULL;
+        }
+        else if (latch == NO_LATCH) {
+            /* Broken latch */
+            state->clear_mods |= filter->action.mods.mods.mask;
             filter->func = NULL;
         }
         else if (!(filter->action.mods.flags & ACTION_LATCH_ON_PRESS)) {

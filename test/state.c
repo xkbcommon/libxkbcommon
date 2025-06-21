@@ -1198,6 +1198,33 @@ test_update_latched_locked(struct xkb_keymap *keymap)
             KEY_ENTRY(KEY_A, DOWN, XKB_KEY_a),
             .changes = XKB_STATE_LAYOUT_LATCHED
         },
+        /* Broken latch does not unlock if clearLocks is not set */
+        RESET_STATE,
+        {
+            GROUP_LOCK_ENTRY(1),
+            .locked_group=1, .group=1,
+            .leds=group2_led,
+            .changes=XKB_STATE_LAYOUT_LOCKED | XKB_STATE_LAYOUT_EFFECTIVE | XKB_STATE_LEDS
+        },
+        {
+            KEY_ENTRY(KEY_SCROLLLOCK, DOWN, XKB_KEY_ISO_Group_Latch),
+            .base_group=1, .latched_group=0, .locked_group=1, .group=0,
+            .leds=0,
+            .changes=XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE | XKB_STATE_LEDS
+        },
+        {
+            /* Breaks latch */
+            KEY_ENTRY(KEY_A, DOWN, XKB_KEY_a),
+            .base_group=1, .latched_group=0, .locked_group=1, .group=0,
+            .leds=0,
+            .changes=0
+        },
+        {
+            KEY_ENTRY(KEY_SCROLLLOCK, UP, XKB_KEY_ISO_Group_Latch),
+            .base_group=0, .latched_group=0, .locked_group=1, .group=1,
+            .leds=group2_led,
+            .changes=XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE | XKB_STATE_LEDS
+        },
 
         /*
          * Groups: latch + lock
@@ -1441,20 +1468,45 @@ test_update_latched_locked(struct xkb_keymap *keymap)
         {
             KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
             /* Pending latch */
-            .base_mods = 0, .latched_mods=level3, .locked_mods=capslock, .mods=capslock | level3,
+            .base_mods=0, .latched_mods=level3, .locked_mods=capslock, .mods=capslock | level3,
             .changes = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED
         },
         {
             KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
             /* Mutate to a lock */
-            .base_mods = 0, .latched_mods=0, .locked_mods=capslock | level3, .mods=capslock | level3,
+            .base_mods=0, .latched_mods=0, .locked_mods=capslock | level3, .mods=capslock | level3,
             .changes = XKB_STATE_MODS_DEPRESSED
         },
         {
             KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
             /* Unlock via latch’s ACTION_LOCK_CLEAR */
-            .base_mods = 0, .latched_mods=0, .locked_mods=capslock, .mods=capslock,
+            .base_mods=0, .latched_mods=0, .locked_mods=capslock, .mods=capslock,
             .changes = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+        },
+        /* Broken latch does not unlock if clearLocks is not set */
+        RESET_STATE,
+        {
+            /* Set capslock, to ensure that when *mutating* the latch to a lock,
+             * the `priv` field and refcnt fields are set accordingly. */
+            MOD_LOCK_ENTRY(level3, level3),
+            .locked_mods=level3, .mods=level3,
+            .changes=XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+        },
+        {
+            KEY_ENTRY(KEY_BACKSLASH, DOWN, XKB_KEY_ISO_Level3_Latch),
+            .base_mods=level3, .latched_mods=0, .locked_mods=level3, .mods=level3,
+            .changes = XKB_STATE_MODS_DEPRESSED
+        },
+        {
+            /* Breaks latch */
+            KEY_ENTRY(KEY_A, DOWN, XKB_KEY_a),
+            .base_mods=level3, .latched_mods=0, .locked_mods=level3, .mods=level3,
+            .changes = 0
+        },
+        {
+            KEY_ENTRY(KEY_BACKSLASH, UP, XKB_KEY_ISO_Level3_Latch),
+            .base_mods=0, .latched_mods=0, .locked_mods=level3, .mods=level3,
+            .changes = XKB_STATE_MODS_DEPRESSED
         },
         // TODO
 
@@ -3046,7 +3098,9 @@ main(void)
         keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, rules[r],
                                     "pc104", "us,ru", NULL,
                                     "grp:menu_toggle,grp:lwin_latch,"
-                                    "grp:rwin_latch_lock_clear,lv3:lsgt_latch");
+                                    "grp:rwin_latch_lock_clear,"
+                                    "grp:sclk_latch_no_lock,"
+                                    "lv3:lsgt_latch,lv3:bksl_latch_no_lock");
         assert(keymap);
         const bool pure_vmods = !!r;
 
