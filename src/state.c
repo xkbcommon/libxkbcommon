@@ -607,16 +607,19 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                 actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
                 filter->action = actions[k];
                 if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
+                    /* Mutate the action to LockMods() */
                     filter->action.type = ACTION_TYPE_MOD_LOCK;
                     filter->func = xkb_filter_mod_lock_func;
-                    state->components.locked_mods |= filter->action.mods.mods.mask;
+                    xkb_filter_mod_lock_new(state, filter);
                 }
                 else {
+                    /* Mutate the action to SetMods() */
                     filter->action.type = ACTION_TYPE_MOD_SET;
                     filter->func = xkb_filter_mod_set_func;
-                    state->set_mods |= filter->action.mods.mods.mask;
+                    xkb_filter_mod_set_new(state, filter);
                 }
                 filter->key = key;
+                /* Clear latches */
                 state->components.latched_mods &= ~filter->action.mods.mods.mask;
                 /* XXX beep beep! */
                 return XKB_FILTER_CONSUME;

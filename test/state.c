@@ -1429,6 +1429,33 @@ test_update_latched_locked(struct xkb_keymap *keymap)
             KEY_ENTRY(KEY_A, DOWN, XKB_KEY_A),
             .changes = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE
         },
+        /* Latch-to-lock */
+        RESET_STATE,
+        {
+            /* Set capslock, to ensure that when *mutating* the latch to a lock,
+             * the `priv` field and refcnt fields are set accordingly. */
+            MOD_LOCK_ENTRY(capslock, capslock),
+            .locked_mods=capslock, .mods=capslock,
+            .changes=XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS
+        },
+        {
+            KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
+            /* Pending latch */
+            .base_mods = 0, .latched_mods=level3, .locked_mods=capslock, .mods=capslock | level3,
+            .changes = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED
+        },
+        {
+            KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
+            /* Mutate to a lock */
+            .base_mods = 0, .latched_mods=0, .locked_mods=capslock | level3, .mods=capslock | level3,
+            .changes = XKB_STATE_MODS_DEPRESSED
+        },
+        {
+            KEY_ENTRY(KEY_102ND, BOTH, XKB_KEY_ISO_Level3_Latch),
+            /* Unlock via latch’s ACTION_LOCK_CLEAR */
+            .base_mods = 0, .latched_mods=0, .locked_mods=capslock, .mods=capslock,
+            .changes = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+        },
         // TODO
 
         /*
