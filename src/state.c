@@ -583,24 +583,32 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 static void
 xkb_filter_mod_latch_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    if (filter->action.mods.flags & ACTION_LATCH_ON_PRESS) {
+    /* Latch-on-press + clear-locks imply unlock-on-press */
+    const enum xkb_action_flags unlockOnPress = ACTION_UNLOCK_ON_PRESS
+                                              | ACTION_LATCH_ON_PRESS;
+
+    if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
+        (filter->action.mods.flags & unlockOnPress) &&
+        (state->components.locked_mods & filter->action.mods.mods.mask) ==
+         filter->action.mods.mods.mask) {
+        /*
+         * Unlock on press
+         *
+         * This is a keymap v2 extension: clear locks and do not latch.
+         */
+        state->components.locked_mods &= ~filter->action.mods.mods.mask;
+        filter->func = NULL;
+    } else if (filter->action.mods.flags & ACTION_LATCH_ON_PRESS) {
         /*
          * Latch on key press
          *
          * This is a keymap format v2 extension.
          */
-        if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
-            (state->components.locked_mods & filter->action.mods.mods.mask) ==
-             filter->action.mods.mods.mask) {
-            /* Clear locks and do not latch */
-            state->components.locked_mods &= ~filter->action.mods.mods.mask;
-            filter->func = NULL;
-        } else {
-            filter->priv = LATCH_PENDING;
-            state->components.latched_mods |= filter->action.mods.mods.mask;
-            /* XXX beep beep! */
-        }
+        filter->priv = LATCH_PENDING;
+        state->components.latched_mods |= filter->action.mods.mods.mask;
+        /* XXX beep beep! */
     } else {
+        /* XKB standard latch action */
         filter->priv = LATCH_KEY_DOWN;
         state->set_mods |= filter->action.mods.mods.mask;
     }
@@ -661,7 +669,13 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
          * don't actually latch.  Else we've actually hit the latching
          * stage, so set PENDING and move our modifier from base to
          * latched. */
+
+        /* Latch-on-press + clear-locks imply unlock-on-press */
+        const enum xkb_action_flags unlockOnPress = ACTION_UNLOCK_ON_PRESS
+                                                  | ACTION_LATCH_ON_PRESS;
+
         if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
+            !(filter->action.mods.flags & unlockOnPress) &&
             (state->components.locked_mods & filter->action.mods.mods.mask) ==
              filter->action.mods.mods.mask) {
             /* XXX: We might be a bit overenthusiastic about clearing
