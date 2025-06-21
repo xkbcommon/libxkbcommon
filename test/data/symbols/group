@@ -417,8 +417,6 @@ xkb_symbols "lctrl_toggle" {
     };
 };
 
-// Pressing the right Ctrl key switches to the next group.
-partial modifier_keys
 xkb_symbols "rctrl_toggle" {
     virtual_modifiers AltGr;
     key <RCTL> {
@@ -457,6 +455,15 @@ xkb_symbols "sclk_toggle" {
     key <SCLK> {
         virtualMods= AltGr,
         symbols[Group1] = [ ISO_Next_Group ]
+    };
+};
+
+partial modifier_keys
+xkb_symbols "sclk_latch_no_lock" {
+    virtual_modifiers AltGr;
+    key <SCLK> {
+        symbols[Group1] = [ ISO_Group_Latch ],
+	actions[Group1] = [ LatchGroup(group=+1,!latchToLock,!clearLocks) ]
     };
 };
 
