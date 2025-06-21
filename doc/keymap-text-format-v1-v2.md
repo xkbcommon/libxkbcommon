@@ -3268,6 +3268,20 @@ See [hereinafter](@ref latch-modifier-action-effects) for further details.
 
 @note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
 </tr>
+<tr>
+<th>`unlockOnPress`</th>
+<td></td>
+<td>boolean</td>
+<td>`false`</td>
+<td>
+Control whether [locked] modifiers are unlocked on key press or release (default).
+See [hereinafter](@ref latch-modifier-action-effects) for further details.
+
+@note It is *implied* if both `latchOnPress=true` and `clearLocks=true`.
+
+@note Available since 1.11, only with `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+</td>
+</tr>
 </tbody>
 </table>
 
@@ -3369,18 +3383,19 @@ These actions perform different tasks on key press and on key release:
     <tr>
         <th>`LatchMods` @anchor set-modifier-action-effects</th>
         <td>
-        - If `latchOnPress` is true, then:
-          - If `clearLocks` is true and target modifiers were locked,
-            then unlock them and clear the action.
-          - Otherwise add modifiers to the <em>[latched]</em> modifiers.
+        - If `unLockOnPress` and `clearLocks` are true and target modifiers were
+          locked, then unlocks them and clear the action.
+        - Otherwise if `latchOnPress` is true, then adds modifiers to the
+          <em>[latched]</em> modifiers.
         - Otherwise adds modifiers to <em>[depressed]</em> modifiers.
         </td>
         <td>
         - If `latchOnPress` is false, then:
           - Removes modifiers from <em>[depressed]</em> modifiers.
         - If no keys were operated simultaneously with the latching modifier key:
-          - If `clearLocks` is true and target modifiers were locked,
-            then unlock then stop here and clear the action.
+          - If `clearLocks` is true and `unLockOnPress` is false and target
+            modifiers were locked, then unlock then stop here and clear the
+            action.
           <!-- TODO: pending latch? -->
           - Otherwise add modifiers to <em>[latched]</em> modifiers.
           - If `latchToLock` is true and if the target modifiers are latched,

@@ -351,18 +351,22 @@ Unused in [xkeyboard-config] layouts.
 <details>
 <summary>⚠️ Partial support</summary>
 - `latchOnPress` parameter is not supported.
+- `unLockOnPress` parameter is not supported.
 </details>
 </td>
 <td>
 <details>
 <summary>⚠️ Partial support</summary>
 - `latchOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- `unLockOnPress` parameter is not supported. Use `::XKB_KEYMAP_FORMAT_TEXT_V2`.
 </details>
 </td>
 <td>
 <details>
 <summary>✅ Full support</summary>
 - `latchOnPress` parameter (since 1.11). See @ref latch-mods-action "its documentation"
+  for further details.
+- `unLockOnPress` parameter (since 1.11). See @ref latch-mods-action "its documentation"
   for further details.
 </details>
 </td>

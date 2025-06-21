@@ -295,9 +295,10 @@ HandleSetLatchLockMods(struct xkb_context *ctx, enum xkb_keymap_format format,
     if (field == ACTION_FIELD_MODIFIERS)
         return CheckModifierField(ctx, mods, action->type, array_ndx, value,
                                   &act->flags, &act->mods.mods);
-    if ((type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LOCK) &&
-        field == ACTION_FIELD_UNLOCK_ON_PRESS) {
-        /* TODO: This should be implemented for Latch too. */
+    if (field == ACTION_FIELD_UNLOCK_ON_PRESS) {
+        /* Ensure to update if a new modifier action is introduced. */
+        assert(type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LATCH ||
+               type == ACTION_TYPE_MOD_LOCK);
         if (isModsUnLockOnPressSupported(format)) {
             return CheckBooleanFlag(ctx, action->type, field,
                                     ACTION_UNLOCK_ON_PRESS, array_ndx,
