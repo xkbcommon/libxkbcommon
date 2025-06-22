@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "evdev-scancodes.h"
@@ -1151,6 +1152,102 @@ test_mod_latch(struct xkb_context *context)
                         KEY_RIGHTALT, UP,   XKB_KEY_ISO_Level3_Latch, NEXT,
                         KEY_A       , BOTH, XKB_KEY_a,                FINISH));
 
+    xkb_keymap_unref(keymap);
+
+    /*
+     * If `Caps_Lock` is on the second level of some key, and `Shift` is
+     * latched, pressing the key locks `Caps` while also breaking the `Shift`
+     * latch, ensuring that the next character is properly uppercase.
+     *
+     * Implemented using: multiple actions per level + VoidAction()
+     */
+    const char lock_breaks_latch[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <lshift> = 50; <a> = 38; };\n"
+        "  xkb_types { include \"basic\" };\n"
+        "  xkb_compat {\n"
+        "    interpret ISO_Level2_Latch {\n"
+        "      action = LatchMods(modifiers=Shift,latchToLock,clearLocks);\n"
+        "    };\n"
+        /* Activating CapsLock will break all latches */
+        "    interpret Caps_Lock {\n"
+        "      action = {LockMods(modifiers=Lock), VoidAction()};\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    key <lshift> { [ISO_Level2_Latch, Caps_Lock], type=\"ALPHABETIC\" };\n"
+        "    key <a> { [a, A] };\n"
+        "  };\n"
+        "};";
+    keymap = test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                 lock_breaks_latch, sizeof(lock_breaks_latch));
+    assert(keymap);
+    assert(test_key_seq(keymap,
+                        KEY_A        , BOTH, XKB_KEY_a,                NEXT,
+                        /* Regular latch */
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Level2_Latch, NEXT,
+                        KEY_A        , BOTH, XKB_KEY_A,                NEXT,
+                        KEY_A        , BOTH, XKB_KEY_a,                NEXT,
+                        /* Trigger CapsLock */
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Level2_Latch, NEXT,
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_Caps_Lock,        NEXT,
+                        /* CapsLock active, latch broken */
+                        KEY_A        , BOTH, XKB_KEY_A,                NEXT,
+                        KEY_A        , BOTH, XKB_KEY_A,                NEXT,
+                        /* Unlock Caps */
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_Caps_Lock,        NEXT,
+                        KEY_A        , BOTH, XKB_KEY_a,                NEXT,
+                        KEY_A        , BOTH, XKB_KEY_a,                FINISH));
+    xkb_keymap_unref(keymap);
+
+    /*
+     * Make a latch break a previous latch on the German E1 layout.
+     *
+     * Implemented using: multiple actions per level + VoidAction()
+     */
+    const char lv5_latch_breaks_lv3_latch[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <lshift> = 50; <ralt> = 108; <e> = 26; <f> = 41; };\n"
+        "  xkb_types  { include \"complete\" };\n"
+        "  xkb_compat { include \"complete\" };\n"
+        "  xkb_symbols {\n"
+        "    virtual_modifiers LevelFive;\n"
+        "    key <lshift> { [ISO_Level2_Latch], [LatchMods(modifiers=Shift)]};\n"
+        "    key <ralt> { [ISO_Level3_Latch] };\n"
+        /* Excerpt from the German E1 `de(e1)` layout */
+        "    key.type = \"EIGHT_LEVEL_SEMIALPHABETIC\";\n"
+        "    key <e> { [e,          E,          EuroSign,         any, schwa, SCHWA] };\n"
+        "    key <f> { [f,          F,          ISO_Level5_Latch, any, any,   any  ],\n"
+        /* Use VoidAction() to break previous latches */
+        "              [NoAction(), NoAction(), {VoidAction(), LatchMods(modifiers=LevelFive)}] };\n"
+        "  };\n"
+        "};";
+    keymap = test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                 lv5_latch_breaks_lv3_latch,
+                                 sizeof(lv5_latch_breaks_lv3_latch));
+    assert(keymap);
+    assert(test_key_seq(keymap,
+                        KEY_E       , BOTH, XKB_KEY_e,                 NEXT,
+                        /* Level 3 latch */
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch,  NEXT,
+                        KEY_E       , BOTH, XKB_KEY_EuroSign,          NEXT,
+                        KEY_E       , BOTH, XKB_KEY_e,                 NEXT,
+                        /* Level 3 latch */
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch,  NEXT,
+                        /* Level 5 latch */
+                        KEY_F,        BOTH, XKB_KEY_ISO_Level5_Latch,  NEXT,
+                        /* Level 3 latch broken, level 5 latch active */
+                        KEY_E       , BOTH, XKB_KEY_schwa,             NEXT,
+                        KEY_E       , BOTH, XKB_KEY_e,                 NEXT,
+                        /* Level 3 latch */
+                        KEY_RIGHTALT, BOTH, XKB_KEY_ISO_Level3_Latch,  NEXT,
+                        /* Level 5 latch */
+                        KEY_F,        BOTH, XKB_KEY_ISO_Level5_Latch,  NEXT,
+                        /* Level 3 latch broken, level 5 latch active */
+                        KEY_LEFTSHIFT, BOTH, XKB_KEY_ISO_Level2_Latch, NEXT,
+                        /* Shift + level 5 latches */
+                        KEY_E        , BOTH, XKB_KEY_SCHWA,            NEXT,
+                        KEY_E        , BOTH, XKB_KEY_e,                FINISH));
     xkb_keymap_unref(keymap);
 }
 

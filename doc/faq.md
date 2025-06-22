@@ -93,6 +93,36 @@ Use our [debugging tools].
 
 🚧 TODO
 
+### How do I break a latch before triggering another latch or lock?
+
+Consider the following use cases:
+1. If `Caps_Lock` is on the second level of some key, and `Shift` is
+   latched, pressing the key locks `Caps` while also breaking the `Shift`
+   latch, ensuring that the next character is properly uppercase.
+2. On the German E1 layout, `ISO_Level5_Latch` is on the third level
+   of `<AC04>`. So if a level 3 latch (typically on `<RALT>`) is used
+   to access it, the level 5 must break the previous level 3 latch,
+   else both latches would be active: the effective level would be 7
+   instead of the intended 5.
+
+Both uses cases can be implemented using the following features:
+- explicit action;
+- multiple actions per level;
+- `VoidAction()`: to break latches.
+
+Patch that fixes the first use case:
+
+```diff
+--- old
++++ new
+  key <LFSH> {
+      [ISO_Level2_Latch, Caps_Lock],
++     [LatchMods(modifiers=Shift,latchToLock,clearLocks),
++      {VoidAction(), LockMods(modifiers=Lock)}],
+      type=\"ALPHABETIC\"
+  };
+```
+
 ## Legacy X tools replacement
 
 ### xmodmap
