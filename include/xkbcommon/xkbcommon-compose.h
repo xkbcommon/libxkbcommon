@@ -30,7 +30,7 @@ extern "C" {
  * @parblock
  *
  * Compose and dead-keys are a common feature of many keyboard input
- * systems.  They extend the range of the keysysm that can be produced
+ * systems.  They extend the range of the keysyms that can be produced
  * directly from a keyboard by using a sequence of key strokes, instead
  * of just one.
  *
@@ -40,22 +40,22 @@ extern "C" {
  *     <Multi_key> <A> <T>      : "@"   at     # COMMERCIAL AT
  *
  * When the user presses a key which produces the `<dead_acute>` keysym,
- * nothing initially happens (thus the key is dubbed a "dead-key").  But
- * when the user enters `<a>`, "á" is "composed", in place of "a".  If
+ * nothing initially happens (thus the key is dubbed a *dead-key*).  But
+ * when the user enters `<a>`, “á” is *composed*, in place of “a”.  If
  * instead the user had entered a keysym which does not follow
  * `<dead_acute>` in any compose sequence, the sequence is said to be
- * "cancelled".
+ * *cancelled*.
  *
  * Compose files define many such sequences.  For a description of the
- * common file format for Compose files, see the Compose(5) man page.
+ * common file format for Compose files, see the `Compose(5)` man page.
  *
- * A successfuly-composed sequence has two results: a keysym and a UTF-8
+ * A successfully-composed sequence has two results: a keysym and a UTF-8
  * string.  At least one of the two is defined for each sequence.  If only
- * a keysym is given, the keysym's string representation is used for the
+ * a keysym is given, the keysym’s string representation is used for the
  * result string (using xkb_keysym_to_utf8()).
  *
  * This library provides low-level support for Compose file parsing and
- * processing.  Higher-level APIs (such as libX11's `Xutf8LookupString`(3))
+ * processing.  Higher-level APIs (such as libX11’s `Xutf8LookupString(3)`)
  * may be built upon it, or it can be used directly.
  *
  * @endparblock
@@ -136,37 +136,39 @@ enum xkb_compose_format {
  * - Compose files are written for a locale, and the locale is used when
  *   searching for the appropriate file to use.
  * - Compose files may reference the locale internally, with directives
- *   such as \%L.
+ *   such as `%%L`.
  *
- * As such, functions like xkb_compose_table_new_from_locale() require
- * a `locale` parameter.  This will usually be the current locale (see
- * locale(7) for more details).  You may also want to allow the user to
+ * As such, functions like `xkb_compose_table::xkb_compose_table_new_from_locale()`
+ * require a `locale` parameter.  This will usually be the current locale (see
+ * `locale(7)` for more details).  You may also want to allow the user to
  * explicitly configure it, so he can use the Compose file of a given
  * locale, but not use that locale for other things.
  *
  * You may query the current locale as follows:
- * @code
- *     const char *locale;
- *     locale = setlocale(LC_CTYPE, NULL);
- * @endcode
+ *
+ * ```c
+ * const char *locale;
+ * locale = setlocale(LC_CTYPE, NULL);
+ * ```
  *
  * This will only give useful results if the program had previously set
  * the current locale using setlocale(3), with `LC_CTYPE` or `LC_ALL`
- * and a non-NULL argument.
+ * and a non-`NULL` argument.
  *
  * If you prefer not to use the locale system of the C runtime library,
- * you may nevertheless obtain the user's locale directly using
- * environment variables, as described in locale(7).  For example,
- * @code
- *     const char *locale;
- *     locale = getenv("LC_ALL");
- *     if (!locale || !*locale)
- *         locale = getenv("LC_CTYPE");
- *     if (!locale || !*locale)
- *         locale = getenv("LANG");
- *     if (!locale || !*locale)
- *         locale = "C";
- * @endcode
+ * you may nevertheless obtain the user’s locale directly using
+ * environment variables, as described in `locale(7)`.  For example,
+ *
+ * ```c
+ * const char *locale;
+ * locale = getenv("LC_ALL");
+ * if (!locale || !*locale)
+ *     locale = getenv("LC_CTYPE");
+ * if (!locale || !*locale)
+ *     locale = getenv("LANG");
+ * if (!locale || !*locale)
+ *     locale = "C";
+ * ```
  *
  * Note that some locales supported by the C standard library may not
  * have a Compose file assigned.
@@ -190,7 +192,7 @@ enum xkb_compose_format {
  *    implementations, such as libX11, might not find a Compose file in
  *    this path.
  * 3. `HOME` - see Compose(5).
- * 4. `XLOCALEDIR` - if set, used as the base directory for the system's
+ * 4. `XLOCALEDIR` - if set, used as the base directory for the system’s
  *    X locale files, e.g. `/usr/share/X11/locale`, instead of the
  *    preconfigured directory.
  *
@@ -199,13 +201,13 @@ enum xkb_compose_format {
  * @param locale
  *     The current locale.  See @ref compose-locale.
  *     \n
- *     The value is copied, so it is safe to pass the result of getenv(3)
+ *     The value is copied, so it is safe to pass the result of `getenv(3)`
  *     (or similar) without fear of it being invalidated by a subsequent
- *     setenv(3) (or similar).
+ *     `setenv(3)` (or similar).
  * @param flags
  *     Optional flags for the compose table, or 0.
  *
- * @returns A compose table for the given locale, or NULL if the
+ * @returns A compose table for the given locale, or `NULL` if the
  * compilation failed or a Compose file was not found.
  *
  * @memberof xkb_compose_table
@@ -229,7 +231,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *context,
  * @param flags
  *     Optional flags for the compose table, or 0.
  *
- * @returns A compose table compiled from the given file, or NULL if
+ * @returns A compose table compiled from the given file, or `NULL` if
  * the compilation failed.
  *
  * @memberof xkb_compose_table
@@ -270,7 +272,7 @@ xkb_compose_table_ref(struct xkb_compose_table *table);
 /**
  * Release a reference on a compose table, and possibly free it.
  *
- * @param table The object.  If it is NULL, this function does nothing.
+ * @param table The object.  If it is `NULL`, this function does nothing.
  *
  * @memberof xkb_compose_table
  */
@@ -337,7 +339,7 @@ xkb_compose_table_entry_keysym(struct xkb_compose_table_entry *entry);
 /**
  * Get the right-hand result string of a Compose table entry.
  *
- * The string is UTF-8 encoded and NULL-terminated.
+ * The string is UTF-8 encoded and `NULL`-terminated.
  *
  * For example, given the following entry:
  *
@@ -428,7 +430,7 @@ enum xkb_compose_state_flags {
  * @param flags
  *     Optional flags for the compose state, or 0.
  *
- * @returns A new compose state, or NULL on failure.
+ * @returns A new compose state, or `NULL` on failure.
  *
  * @memberof xkb_compose_state
  */
@@ -449,7 +451,7 @@ xkb_compose_state_ref(struct xkb_compose_state *state);
 /**
  * Release a reference on a compose state object, and possibly free it.
  *
- * @param state The object.  If NULL, do nothing.
+ * @param state The object.  If `NULL`, do nothing.
  *
  * @memberof xkb_compose_state
  */
@@ -496,7 +498,7 @@ enum xkb_compose_feed_result {
  *
  * This function can advance into a compose sequence, cancel a sequence,
  * start a new sequence, or do nothing in particular.  The resulting
- * status may be observed with xkb_compose_state_get_status().
+ * status may be observed with `xkb_compose_state_get_status()`.
  *
  * Some keysyms, such as keysyms for modifier keys, are ignored - they
  * have no effect on the status or otherwise.
@@ -520,16 +522,16 @@ enum xkb_compose_feed_result {
                 possible sequences.
    @endverbatim
  *
- * The current Compose formats do not support multiple-keysyms.
- * Therefore, if you are using a function such as xkb_state_key_get_syms()
- * and it returns more than one keysym, consider feeding XKB_KEY_NoSymbol
+ * The current Compose formats do not support multiple-keysyms. Therefore, if
+ * you are using a function such as `xkb_state::xkb_state_key_get_syms()`
+ * and it returns more than one keysym, consider feeding `XKB_KEY_NoSymbol`
  * instead.
  *
  * @param state
  *     The compose state object.
  * @param keysym
  *     A keysym, usually obtained after a key-press event, with a
- *     function such as xkb_state_key_get_one_sym().
+ *     function such as `xkb_state::xkb_state_key_get_one_sym()`.
  *
  * @returns Whether the keysym was ignored.  This is useful, for example,
  * if you want to keep a record of the sequence matched thus far.
@@ -543,7 +545,7 @@ xkb_compose_state_feed(struct xkb_compose_state *state,
 /**
  * Reset the Compose sequence state machine.
  *
- * The status is set to XKB_COMPOSE_NOTHING, and the current sequence
+ * The status is set to `::XKB_COMPOSE_NOTHING`, and the current sequence
  * is discarded.
  *
  * @memberof xkb_compose_state
@@ -564,7 +566,7 @@ xkb_compose_state_get_status(struct xkb_compose_state *state);
  * Get the result Unicode/UTF-8 string for a composed sequence.
  *
  * See @ref compose-overview for more details.  This function is only
- * useful when the status is XKB_COMPOSE_COMPOSED.
+ * useful when the status is `::XKB_COMPOSE_COMPOSED`.
  *
  * @param[in] state
  *     The compose state.
@@ -574,17 +576,17 @@ xkb_compose_state_get_status(struct xkb_compose_state *state);
  *     Size of the buffer.
  *
  * @warning If the buffer passed is too small, the string is truncated
- * (though still NUL-terminated).
+ * (though still `NULL`-terminated).
  *
  * @returns
- *   The number of bytes required for the string, excluding the NUL byte.
+ *   The number of bytes required for the string, excluding the `NULL` byte.
  *   If the sequence is not complete, or does not have a viable result
  *   string, returns 0, and sets `buffer` to the empty string (if possible).
  * @returns
  *   You may check if truncation has occurred by comparing the return value
- *   with the size of `buffer`, similarly to the `snprintf`(3) function.
- *   You may safely pass NULL and 0 to `buffer` and `size` to find the
- *   required size (without the NUL-byte).
+ *   with the size of `buffer`, similarly to the `snprintf(3)` function.
+ *   You may safely pass `NULL` and 0 to `buffer` and `size` to find the
+ *   required size (without the `NULL`-byte).
  *
  * @memberof xkb_compose_state
  **/
@@ -596,10 +598,10 @@ xkb_compose_state_get_utf8(struct xkb_compose_state *state,
  * Get the result keysym for a composed sequence.
  *
  * See @ref compose-overview for more details.  This function is only
- * useful when the status is XKB_COMPOSE_COMPOSED.
+ * useful when the status is `::XKB_COMPOSE_COMPOSED`.
  *
  * @returns The result keysym.  If the sequence is not complete, or does
- * not specify a result keysym, returns XKB_KEY_NoSymbol.
+ * not specify a result keysym, returns `XKB_KEY_NoSymbol`.
  *
  * @memberof xkb_compose_state
  **/
