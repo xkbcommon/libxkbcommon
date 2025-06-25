@@ -33,30 +33,30 @@ extern "C" {
  * The xkbcommon-x11 module provides a means for creating an xkb_keymap
  * corresponding to the currently active keymap on the X server.  To do
  * so, it queries the XKB X11 extension using the xcb-xkb library.  It
- * can be used as a replacement for Xlib's keyboard handling.
+ * can be used as a replacement for Xlib’s keyboard handling.
  *
  * Following is an example workflow using xkbcommon-x11.  A complete
- * example may be found in the tools/interactive-x11.c file in the
+ * example may be found in the `tools/interactive-x11.c` file in the
  * xkbcommon source repository.  On startup:
  *
- * 1. Connect to the X server using xcb_connect().
+ * 1. Connect to the X server using `xcb_connect()`.
  * 2. Setup the XKB X11 extension.  You can do this either by using the
- *    xcb_xkb_use_extension() request directly, or by using the
- *    xkb_x11_setup_xkb_extension() helper function.
+ *    `xcb_xkb_use_extension()` request directly, or by using the
+ *    `xkb_x11_setup_xkb_extension()` helper function.
  *
  * The XKB extension supports using separate keymaps and states for
  * different keyboard devices.  The devices are identified by an integer
  * device ID and are managed by another X11 extension, XInput. The
- * original X11 protocol only had one keyboard device, called the "core
- * keyboard", which is still supported as a "virtual device".
+ * original X11 protocol only had one keyboard device, called the *core
+ * keyboard*, which is still supported as a *virtual device*.
  *
  * 3. We will use the core keyboard as an example.  To get its device ID,
- *    use either the xcb_xkb_get_device_info() request directly, or the
- *    xkb_x11_get_core_keyboard_device_id() helper function.
+ *    use either the `xcb_xkb_get_device_info()` request directly, or the
+ *    `xkb_x11_get_core_keyboard_device_id()` helper function.
  * 4. Create an initial xkb_keymap for this device, using the
- *    xkb_x11_keymap_new_from_device() function.
+ *    `xkb_x11_keymap_new_from_device()` function.
  * 5. Create an initial xkb_state for this device, using the
- *    xkb_x11_state_new_from_device() function.
+ *    `xkb_x11_state_new_from_device()` function.
  *
  * @note At this point, you may consider setting various XKB controls and
  * XKB per-client flags.  For example, enabling detectable autorepeat: \n
@@ -67,25 +67,25 @@ extern "C" {
  * setxkbmap or xmodmap was used):
  *
  * 6. Select to listen to at least the following XKB events:
- *    NewKeyboardNotify, MapNotify, StateNotify; using the
- *    xcb_xkb_select_events_aux() request.
- * 7. When NewKeyboardNotify or MapNotify are received, recreate the
- *    xkb_keymap and xkb_state as described above.
- * 8. When StateNotify is received, update the xkb_state accordingly
- *    using the xkb_state_update_mask() function.
+ *    `NewKeyboardNotify`, `MapNotify`, `StateNotify`; using the
+ *    `xcb_xkb_select_events_aux()` request.
+ * 7. When `NewKeyboardNotify` or `MapNotify` are received, recreate the
+ *    `xkb_keymap` and `xkb_state` as described above.
+ * 8. When `StateNotify` is received, update the `xkb_state` accordingly
+ *    using the `xkb_state::xkb_state_update_mask()` function.
  *
- * @note It is also possible to use the KeyPress/KeyRelease @p state
+ * @note It is also possible to use the `KeyPress`/`KeyRelease` @p state
  * field to find the effective modifier and layout state, instead of
- * using XkbStateNotify: \n
+ * using `XkbStateNotify`: \n
  * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Computing_A_State_Field_from_an_XKB_State
- * \n However, XkbStateNotify is more accurate.
+ * \n However, `XkbStateNotify` is more accurate.
  *
- * @note There is no need to call xkb_state_update_key(); the state is
+ * @note There is no need to call `xkb_state_update_key()`; the state is
  * already synchronized.
  *
  * Finally, when a key event is received, you can use ordinary xkbcommon
- * functions, like xkb_state_key_get_one_sym() and xkb_state_key_get_utf8(),
- * as you normally would.
+ * functions, like `xkb_state::xkb_state_key_get_one_sym()` and
+ * `xkb_state::xkb_state_key_get_utf8()`, as you normally would.
  *
  * @endparblock
  */
@@ -101,7 +101,7 @@ extern "C" {
  */
 #define XKB_X11_MIN_MINOR_XKB_VERSION 0
 
-/** Flags for the xkb_x11_setup_xkb_extension() function. */
+/** Flags for the `xkb_x11_setup_xkb_extension()` function. */
 enum xkb_x11_setup_xkb_extension_flags {
     /** Do not apply any flags. */
     XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS = 0
@@ -126,8 +126,8 @@ enum xkb_x11_setup_xkb_extension_flags {
  *     See @p minor_xkb_version.
  * @param minor_xkb_version
  *     The XKB extension version to request.  To operate correctly, you
- *     must have (major_xkb_version, minor_xkb_version) >=
- *     (XKB_X11_MIN_MAJOR_XKB_VERSION, XKB_X11_MIN_MINOR_XKB_VERSION),
+ *     must have (@p major_xkb_version, @p minor_xkb_version) >=
+ *     (`XKB_X11_MIN_MAJOR_XKB_VERSION`, `XKB_X11_MIN_MINOR_XKB_VERSION`),
  *     though this is not enforced.
  * @param flags
  *     Optional flags, or 0.
@@ -135,13 +135,13 @@ enum xkb_x11_setup_xkb_extension_flags {
  *     See @p minor_xkb_version_out.
  * @param[out] minor_xkb_version_out
  *     Backfilled with the compatible XKB extension version numbers picked
- *     by the server.  Can be NULL.
+ *     by the server.  Can be `NULL`.
  * @param[out] base_event_out
  *     Backfilled with the XKB base (also known as first) event code, needed
- *     to distinguish XKB events.  Can be NULL.
+ *     to distinguish XKB events.  Can be `NULL`.
  * @param[out] base_error_out
  *     Backfilled with the XKB base (also known as first) error code, needed
- *     to distinguish XKB errors.  Can be NULL.
+ *     to distinguish XKB errors.  Can be `NULL`.
  *
  * @returns 1 on success, or 0 on failure.
  */
@@ -160,7 +160,7 @@ xkb_x11_setup_xkb_extension(xcb_connection_t *connection,
  *
  * @param connection An XCB connection to the X server.
  *
- * @returns A device ID which may be used with other xkb_x11_* functions,
+ * @returns A device ID which may be used with other `xkb_x11_*` functions,
  *          or -1 on failure.
  */
 XKB_EXPORT int32_t
@@ -184,7 +184,7 @@ xkb_x11_get_core_keyboard_device_id(xcb_connection_t *connection);
  * @param flags
  *     Optional flags for the keymap, or 0.
  *
- * @returns A keymap retrieved from the X server, or NULL on failure.
+ * @returns A keymap retrieved from the X server, or `NULL` on failure.
  *
  * @memberof xkb_keymap
  */
@@ -197,7 +197,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *context,
 /**
  * Create a new keyboard state object from an X11 keyboard device.
  *
- * This function is the same as xkb_state_new(), only pre-initialized
+ * This function is the same as `xkb_state_new()`, only pre-initialized
  * with the state of the device at the time this function is called.
  *
  * @param keymap
@@ -208,7 +208,7 @@ xkb_x11_keymap_new_from_device(struct xkb_context *context,
  *     An XInput 1 device ID (in the range 0-255) with input class KEY.
  *     Passing values outside of this range is an error.
  *
- * @returns A new keyboard state object, or NULL on failure.
+ * @returns A new keyboard state object, or `NULL` on failure.
  *
  * @memberof xkb_state
  */
