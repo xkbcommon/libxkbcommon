@@ -1703,8 +1703,74 @@ enum xkb_state_component {
      *  Use this unless you explicitly care how the state came about. */
     XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
     /** LEDs (derived from the other state components). */
-    XKB_STATE_LEDS = (1 << 8)
+    XKB_STATE_LEDS = (1 << 8),
+    /** Locked controls */
+    XKB_STATE_CONTROLS_LOCKED = (1 << 9),
+    /** Effective controls */
+    XKB_STATE_CONTROLS_EFFECTIVE = (1 << 10)
 };
+
+/**
+ * **Global key controls**, which affect the way libxkbcommon handles the
+ * keyboard as a whole.
+ *
+ * This enum is bit-maskable.
+ *
+ * @since 1.11.0
+ */
+enum xkb_state_controls {
+    /**
+     * “*Sticky keys*” is an accessibility feature primarily aimed at helping
+     * people that find it difficult or impossible to press two keys at once.
+     *
+     * The `::XKB_CONTROL_STICKY_KEYS` control makes it easier for them to type
+     * by changing the behavior of the *modifier keys*. When *sticky keys* are
+     * enabled, <em>[set]</em> modifiers are transformed into <em>[latch]</em>
+     * modifiers: the user can first press a modifier, release it, then press
+     * another key.
+     *
+     * @sa `::XKB_CONTROL_LATCH_TO_LOCK`
+     * @since 1.11.0
+     *
+     * [set]:   @ref depressed-mod-def
+     * [latch]: @ref latched-mod-def
+     */
+    XKB_CONTROL_STICKY_KEYS = (1 << 3),
+    /**
+     * If both `::XKB_CONTROL_LATCH_TO_LOCK` and `::XKB_CONTROL_LATCH_TO_LOCK`
+     * are activated, they enable users to [lock] modifier keys without
+     * requiring special locking keys. The user can press a [latch] modifier
+     * twice in a row to lock it, and then unlock it by pressing it one more
+     * time.
+     *
+     * @sa `::XKB_CONTROL_STICKY_KEYS`
+     * @since 1.11.0
+     *
+     * [latch]: @ref latched-mod-def
+     * [lock]:  @ref locked-mod-def
+     */
+    XKB_CONTROL_LATCH_TO_LOCK = (1 << 9),
+};
+
+/**
+ * Update the keyboard state to change the [global key controls].
+ *
+ * @param state The keyboard state object.
+ * @param affect
+ * @param controls
+ *     Global key controls to lock or unlock. Only modifiers in @p affect
+ *     are considered.
+ *
+ * @since 1.11.0
+ *
+ * @memberof xkb_state
+ *
+ * [global key controls]: @ref xkb_state_controls
+ */
+XKB_EXPORT enum xkb_state_component
+xkb_state_update_locked_controls(struct xkb_state *state,
+                                 enum xkb_state_controls affect,
+                                 enum xkb_state_controls controls);
 
 /**
  * Update the keyboard state to reflect a given key being pressed or
@@ -1979,6 +2045,20 @@ enum xkb_state_match {
      *  modifier not specified in the arguments is active. */
     XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16)
 };
+
+/**
+ * Serialization of the [global key controls], to be used on the server side
+ * of serialization.
+ *
+ * @since 1.11.0
+ *
+ * @memberof xkb_state
+ *
+ * [global key controls]: @ref xkb_state_controls
+ */
+XKB_EXPORT enum xkb_state_controls
+xkb_state_serialize_controls(struct xkb_state *state,
+                             enum xkb_state_component components);
 
 /**
  * The counterpart to `xkb_state::xkb_state_update_mask()` for modifiers, to be

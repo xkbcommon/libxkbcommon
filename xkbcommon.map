@@ -139,4 +139,6 @@ global:
     xkb_rmlvo_builder_unref;
     xkb_keymap_new_from_rmlvo;
     xkb_keymap_new_from_names2;
+    xkb_state_update_locked_controls;
+    xkb_state_serialize_controls;
 } V_1.10.0;
