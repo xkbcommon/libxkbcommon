@@ -267,6 +267,46 @@ expand_percent(struct xkb_context *ctx, const char* parent_file_name,
     return s.buf_pos;
 }
 
+ssize_t
+expand_path(struct xkb_context *ctx, const char* parent_file_name,
+            const char *name, size_t name_len, enum xkb_file_type type,
+            char *buf, size_t buf_size)
+{
+    /* Detect %-expansion */
+    size_t k;
+    for (k = 0; k < name_len; k++) {
+        if (name[k] == '%') {
+            goto expand;
+        }
+    }
+
+    return 0;
+
+expand:
+    /* Process %-expansion */
+
+    /* Copy prefix (usual case: k == 0) */
+    if (unlikely(k >= buf_size)) {
+        log_err(ctx, XKB_ERROR_INVALID_PATH,
+                "Path is too long: %zu > %zu, "
+                "got raw path: %.*s\n",
+                k, buf_size, (unsigned int) name_len, name);
+        return -1;
+    }
+    memcpy(buf, name, k);
+
+    /* Proceed to %-expansion */
+    const char *typeDir = DirectoryForInclude(type);
+    size_t count = expand_percent(ctx, parent_file_name, typeDir,
+                                  buf + k, buf_size - k,
+                                  name + k, name_len - k);
+    if (!count)
+        return -1;
+    count += k;
+    assert(buf[count - 1] == '\0');
+    return (ssize_t) count - 1;
+}
+
 /**
  * Return an open file handle to the first file (counting from offset) with the
  * given name in the include paths, starting at the offset.
@@ -282,77 +322,12 @@ FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
                   const char *name, size_t name_len, enum xkb_file_type type,
                   char *buf, size_t buf_size, unsigned int *offset)
 {
-    if (unlikely(name_len + 1 > buf_size)) {
-        log_err(ctx, XKB_ERROR_INVALID_PATH,
-                "Path is too long: expected max length of %zu, "
-                "got raw path: %.*s\n",
-                buf_size, (unsigned int) name_len, name);
-        return NULL;
-    }
+    /* We do not handle absolute paths here */
+    assert(!is_absolute_path(name));
 
     FILE *file = NULL;
     char *name_buffer = NULL;
     const char *typeDir = DirectoryForInclude(type);
-
-    /* Detect %-expansion */
-    size_t k;
-    bool require_expansion = false;
-    for (k = 0; k < name_len; k++) {
-        if (name[k] == '%') {
-            require_expansion = true;
-            break;
-        }
-    }
-
-    if (require_expansion) {
-        /* Slow path: process %-expansion */
-
-        /* Copy prefix (usual case: k == 0) */
-        assert(k < buf_size);
-        memcpy(buf, name, k);
-        /* Proceed to %-expansion */
-        size_t count = expand_percent(ctx, parent_file_name, typeDir,
-                                      buf + k, buf_size - k,
-                                      name + k, name_len - k);
-        if (!count)
-            return NULL;
-        count += k;
-        assert(buf[count - 1] == '\0');
-        if (is_absolute_path(buf)) {
-            /* Absolute path: path is already in buffer */
-            goto open_absolute_path;
-        } else {
-            /* Relative path: dup the buffer and replace the name.
-             * Unlikely to happen, because %-expansion is meant to use
-             * absolute paths. */
-            name_buffer = strndup(buf, count);
-            if (!name_buffer) {
-                log_err(ctx, XKB_ERROR_ALLOCATION_ERROR,
-                        "Cannot allocate a copy of the file name: %s.\n", buf);
-                return NULL;
-            }
-            name = name_buffer;
-            name_len = count;
-            goto process_relative_path;
-        }
-    }
-
-    if (is_absolute_path(name)) {
-        /* Copy path to buffer */
-        memcpy(buf, name, name_len);
-        buf[name_len] = '\0';
-
-open_absolute_path:
-        file = fopen(buf, "rb");
-        /* Ensure any later call to FindFileInXkbPath will fail.
-         * This is needed for the unlikely case where parsing or map lookup
-         * fails for this file, which normally leads to try the next include
-         * path, which does not make sense here as the path is absolute. */
-        *offset = xkb_context_num_include_paths(ctx);
-        return file;
-    }
-
-process_relative_path:
 
     for (unsigned int i = *offset; i < xkb_context_num_include_paths(ctx); i++) {
         if (!snprintf_safe(buf, buf_size, "%s/%s/%.*s",
@@ -400,7 +375,7 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 }
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
+ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
                    enum xkb_file_type file_type)
 {
     /*
@@ -412,16 +387,57 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
      */
     XkbFile *xkb_file = NULL;  /* Exact match */
     XkbFile *candidate = NULL; /* Weak match */
-    unsigned int offset = 0;
     char buf[PATH_MAX];
 
-    const size_t stmt_file_len = strlen(stmt->file);
+    const char *stmt_file = stmt->file;
+    size_t stmt_file_len = strlen(stmt_file);
 
+    /* Process %-expansion, if any */
     // FIXME: use parent file name instead of “(unknow)”.
-    FILE* file = FindFileInXkbPath(ctx, "(unknown)",
-                                   stmt->file, stmt_file_len, file_type,
-                                   buf, sizeof(buf), &offset);
+    const ssize_t expanded = expand_path(ctx, "(unknown)",
+                                         stmt_file, stmt_file_len, file_type,
+                                         buf, sizeof(buf));
+    if (expanded < 0) {
+        /* Error */
+        return NULL;
+    } else if (expanded > 0) {
+        /* %-expanded */
+        stmt_file = buf;
+        stmt_file_len = (size_t) expanded;
+        assert(stmt_file[stmt_file_len] == '\0');
+    }
 
+    /* Lookup the first candidate */
+    FILE* file;
+    unsigned int offset = 0;
+    const bool absolute_path = is_absolute_path(stmt_file);
+    if (absolute_path) {
+        /* Absolute path: no need for lookup in XKB paths */
+        assert(stmt_file[stmt_file_len] == '\0');
+        file = fopen(stmt_file, "rb");
+    } else {
+        /* Relative path: lookup the first XKB path */
+        if (unlikely(expanded)) {
+            /*
+             * Relative path after expansion
+             *
+             * Unlikely to happen, because %-expansion is meant to use absolute
+             * paths. Considering that:
+             * - we do not resolve paths before expansion, leading to unexpected
+             *   result here;
+             * - we need the buffer afterwards, but it currently contains the
+             *   expanded path;
+             * - this is an edge case;
+             * we simply make the lookup fail.
+             */
+            file = NULL;
+        } else {
+            // FIXME: use parent file name instead of “(unknow)”.
+            file = FindFileInXkbPath(ctx, "(unknown)",
+                                     stmt_file, stmt_file_len, file_type,
+                                     buf, sizeof(buf), &offset);
+        }
+    }
 
     while (file) {
         xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
@@ -460,9 +476,14 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
             }
         }
 
+        if (absolute_path) {
+            /* There is no point to search further if the path is absolute */
+            break;
+        }
+
         offset++;
         file = FindFileInXkbPath(ctx, "(unknown)",
-                                 stmt->file, stmt_file_len, file_type,
+                                 stmt_file, stmt_file_len, file_type,
                                  buf, sizeof(buf), &offset);
     }
 
@@ -475,14 +496,10 @@ ProcessIncludeFile(struct xkb_context *ctx, IncludeStmt *stmt,
     }
 
     if (!xkb_file) {
-        if (stmt->map)
-            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
-                    "Couldn't process include statement for '%s(%s)'\n",
-                    stmt->file, stmt->map);
-        else
-            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
-                    "Couldn't process include statement for '%s'\n",
-                    stmt->file);
+        log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
+                "Couldn't process include statement for '%s%s%s%s)'\n",
+                stmt->file,
+                (stmt->map ? "(" : ""), stmt->map, (stmt->map ? ")" : ""));
     }
 
     return xkb_file;

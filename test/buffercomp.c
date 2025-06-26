@@ -359,7 +359,8 @@ test_include_paths(struct xkb_context *ctx)
         "xkb_keymap {\n"
         "  xkb_keycodes \"test\" { include \"evdev\" };\n"
         "  xkb_types    \"test\" { include \"complete\" };\n"
-        "  xkb_symbols  \"test\" { include \"pc+us(basic)\" };\n"
+        "  xkb_symbols  \"test\" { include \"pc+us(basic)+"
+                                            "level5\" };\n"
         "};";
     keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
                                  simple_str, sizeof(simple_str));
@@ -367,13 +368,12 @@ test_include_paths(struct xkb_context *ctx)
         xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
     xkb_keymap_unref(keymap);
 
-    setenv("XKB_CONFIG_ROOT", TEST_XKB_CONFIG_ROOT, 1);
-
-    const char* keymaps[] = {
+    static const char* keymaps[] = {
         "xkb_keymap {\n"
         "  xkb_keycodes \"test\" { include \"%S/evdev\" };\n"
         "  xkb_types    \"test\" { include \"%S/complete\" };\n"
-        "  xkb_symbols  \"test\" { include \"%S/pc+%S/us(basic)\" };\n"
+        "  xkb_symbols  \"test\" { include \"%S/pc+%S/us(basic)+"
+                                            "%S/level5\" };\n"
         "};",
 /* Windows absolute path contains “:”, which has special meaning in XKB includes,
  * so skip it. */
@@ -382,10 +382,20 @@ test_include_paths(struct xkb_context *ctx)
         "  xkb_keycodes \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/keycodes/evdev\" };\n"
         "  xkb_types    \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/types/complete\" };\n"
         "  xkb_symbols  \"test\" { include \"" TEST_XKB_CONFIG_ROOT "/symbols/pc+"
-                                               TEST_XKB_CONFIG_ROOT "/symbols/us(basic)\" };\n"
+                                               TEST_XKB_CONFIG_ROOT "/symbols/us(basic)+"
+                                               TEST_XKB_CONFIG_ROOT "/symbols/level5\" };\n"
         "};",
 #endif
     };
+
+    /* Relative path, which does not work as expected, because it is
+     * not resolved before %-expansion. */
+    setenv("XKB_CONFIG_ROOT", "..", 1);
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                 keymaps[0], strlen(keymaps[0]));
+    assert(!keymap);
+
+    setenv("XKB_CONFIG_ROOT", TEST_XKB_CONFIG_ROOT, 1);
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);

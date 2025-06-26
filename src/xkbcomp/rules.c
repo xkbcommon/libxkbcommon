@@ -591,14 +591,74 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         return;
     }
 
-    /* Lookup rules file in XKB paths only if the include path is relative */
+    const char *stmt_file = inc.start;
+    size_t stmt_file_len = inc.len;
+
+    /* Process %-expansion, if any */
+    char buf[PATH_MAX] = {0};
+    const ssize_t expanded = expand_path(m->ctx, parent_scanner->file_name,
+                                         stmt_file, stmt_file_len,
+                                         FILE_TYPE_RULES,
+                                         buf, sizeof(buf));
+    if (expanded < 0) {
+        /* Error */
+        return;
+    } else if (expanded > 0) {
+        /* %-expanded */
+        stmt_file = buf;
+        stmt_file_len = (size_t) expanded;
+        assert(stmt_file[stmt_file_len] == '\0');
+    }
+
+    /* Lookup the first candidate */
+    FILE* file;
     unsigned int offset = 0;
-    char buf[PATH_MAX];
-    FILE *file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
-                                   inc.start, inc.len, FILE_TYPE_RULES,
-                                   buf, sizeof(buf), &offset);
+    const bool absolute_path = is_absolute_path(stmt_file);
+    if (absolute_path) {
+        /* Absolute path: no need for lookup in XKB paths */
+        if (!expanded) {
+            /* No %expansion: ensure it’s NULL-terminated */
+            if (stmt_file_len < sizeof(buf)) {
+                memcpy(buf, stmt_file, stmt_file_len);
+                buf[stmt_file_len] = '\0';
+                stmt_file = buf;
+            } else {
+                log_err(m->ctx, XKB_ERROR_INVALID_PATH,
+                        "Path is too long: %zu > %zu, got raw path: %.*s\n",
+                        stmt_file_len, sizeof(buf),
+                        (unsigned int) stmt_file_len, stmt_file);
+                return;
+            }
+        } else {
+            /* %-expansion is always NULL-terminated */
+            assert(stmt_file[stmt_file_len] == '\0');
+        }
+        file = fopen(stmt_file, "rb");
+    } else {
+        /* Relative path: lookup the first XKB path */
+        if (unlikely(expanded)) {
+            /*
+             * Relative path after expansion
+             *
+             * Unlikely to happen, because %-expansion is meant to use absolute
+             * paths. Considering that:
+             * - we do not resolve paths before expansion, leading to unexpected
+             *   result here;
+             * - we need the buffer afterwards, but it currently contains the
+             *   expanded path;
+             * - this is an edge case;
+             * we simply make the lookup fail.
+             */
+            file = NULL;
+        } else {
+            file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
+                                     stmt_file, stmt_file_len, FILE_TYPE_RULES,
+                                     buf, sizeof(buf), &offset);
+        }
+    }
 
     while (file) {
+        assert(strlen_safe(buf) < sizeof(buf));
         bool ret = read_rules_file(m->ctx, m, include_depth + 1, file, buf);
         fclose(file);
         if (ret)
@@ -607,16 +667,22 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "No components returned from included XKB rules \"%s\"\n",
                 buf);
+
+        if (absolute_path) {
+            /* There is no point to search further if the path is absolute */
+            break;
+        }
+
         /* Try next XKB path */
         offset++;
         file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
-                                 inc.start, inc.len, FILE_TYPE_RULES,
+                                 stmt_file, stmt_file_len, FILE_TYPE_RULES,
                                  buf, sizeof(buf), &offset);
     }
 
     log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
-            "Failed to open included XKB rules \"%s\"\n",
-            buf);
+            "Failed to open included XKB rules \"%.*s\"\n",
+            (unsigned int) stmt_file_len, stmt_file);
 }
 
 static void

@@ -12,7 +12,7 @@ xkb_symbols "ralt_switch" {
   include "level3(modifier_mapping)"
 };
 
-default partial modifier_keys
+partial modifier_keys
 xkb_symbols "ralt_latch" {
   key <RALT> {
     type[Group1]="ONE_LEVEL",
