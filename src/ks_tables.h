@@ -7969,6 +7969,7 @@ static const struct name_keysym keysym_to_name[] = {
     { 0x1008ffb8, 28323 }, /* XF86FullScreen */
 };
 
+#define UNICODE_KEYSYM    0xfffe
 #define DEPRECATED_KEYSYM 0xffff
 
 struct deprecated_keysym {
@@ -8112,8 +8113,8 @@ static const struct deprecated_keysym deprecated_keysyms[] = {
     { 0x01000589, 2327             , 0, 0 }, /* Reference: Armenian_full_stop. Deprecated: Armenian_verjaket */
     { 0x0100058a, 2448             , 0, 0 }, /* Reference: Armenian_hyphen. Deprecated: Armenian_yentamna */
     { 0x010006cc, 12505            , 0, 0 }, /* Reference: Farsi_yeh. Deprecated: Arabic_farsi_yeh */
-    { 0x01002247, DEPRECATED_KEYSYM, 0, 0 }, /* Deprecated: notapproxeq */
-    { 0x01002248, DEPRECATED_KEYSYM, 0, 0 }, /* Deprecated: approxeq */
+    { 0x01002247, UNICODE_KEYSYM   , 0, 0 }, /* Deprecated: notapproxeq */
+    { 0x01002248, UNICODE_KEYSYM   , 0, 0 }, /* Deprecated: approxeq */
     { 0x100000a8, 17054            , 0, 0 }, /* Reference: hpmute_acute. Deprecated: mute_acute */
     { 0x100000a9, 17121            , 0, 0 }, /* Reference: hpmute_grave. Deprecated: mute_grave */
     { 0x100000aa, 17067            , 0, 0 }, /* Reference: hpmute_asciicircum. Deprecated: mute_asciicircum */
