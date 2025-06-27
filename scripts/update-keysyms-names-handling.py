@@ -128,12 +128,15 @@ print(
 
 entry_offsets: dict[str, int] = {}
 UINT16_MAX = (1 << 16) - 1
+UNICODE_KEYSYM = UINT16_MAX - 1
 DEPRECATED_KEYSYM = UINT16_MAX
 MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX_LOG2 = 8
 MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX = 1 << MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX_LOG2
 MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT_LOG2 = 4
 MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT = 1 << MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT_LOG2
-MAX_OFFSET = DEPRECATED_KEYSYM - 1
+MAX_OFFSET = UNICODE_KEYSYM - 1
+XKB_KEYSYM_UNICODE_MIN = 0x01000100
+XKB_KEYSYM_UNICODE_MAX = 0x0110FFFF
 
 print(
     """
@@ -263,7 +266,11 @@ def make_deprecated_entry(
     else:
         # Keysym is deprecated
         canonical_name = ""
-        canonical_index = "DEPRECATED_KEYSYM"
+        canonical_index = (
+            "DEPRECATED_KEYSYM"
+            if value < XKB_KEYSYM_UNICODE_MIN or value > XKB_KEYSYM_UNICODE_MAX
+            else "UNICODE_KEYSYM"
+        )
         deprecated_ks = keysyms
         explicit_deprecated_aliases_index = 0
     if non_deprecated_ks[1:]:
@@ -304,6 +311,7 @@ def generate_mixed_aliases(aliases: Iterable[Iterable[int]]):
             print(f"    {x},")
 
 
+print(f"#define UNICODE_KEYSYM    0x{UNICODE_KEYSYM:x}")
 print(f"#define DEPRECATED_KEYSYM 0x{DEPRECATED_KEYSYM:x}")
 # NOTE: Alternative implementation, useful the day the indexes do not fit uint16_t.
 # print(f"""

@@ -485,12 +485,38 @@ main(void)
     while (xkb_keysym_iterator_next(iter)) {
         count++;
         xkb_keysym_t ks = xkb_keysym_iterator_get_keysym(iter);
-        if (ks < XKB_KEYSYM_UNICODE_MIN || ks > XKB_KEYSYM_UNICODE_MAX)
+        if (ks < XKB_KEYSYM_UNICODE_MIN || ks > XKB_KEYSYM_UNICODE_MAX) {
             count_non_unicode++;
+        } else {
+            const uint32_t cp = ks - XKB_KEYSYM_UNICODE_OFFSET;
+            assert(cp);
+            const xkb_keysym_t ks2 = xkb_utf32_to_keysym(cp);
+            const char *ref;
+            assert_printf(!xkb_keysym_is_deprecated(ks2, NULL, &ref),
+                          "Unexpected deprecated keysym 0x%04"PRIx32" "
+                          "corresponding to code point U+%04"PRIX32"\n",
+                          ks2, cp);
+            const uint32_t cp2 = xkb_keysym_to_utf32(ks2);
+            assert_printf((ks2 == XKB_KEY_NoSymbol && cp2 == 0) ^
+                          (ks2 != XKB_KEY_NoSymbol && cp2 == cp),
+                          "Unexpected U+%04"PRIX32" != U+%04"PRIX32" "
+                          "for keysym 0x%04"PRIx32"\n",
+                          cp2, cp, ks2);
+        }
         assert(ks > ks_prev || count == 1);
         ks_prev = ks;
         /* Check assigned keysyms bounds */
         assert((int32_t)XKB_KEYSYM_MIN_ASSIGNED <= (int32_t)ks && ks <= XKB_KEYSYM_MAX_ASSIGNED);
+        /* Check that we do not convert UTF-32 into a deprecated keysyms */
+        const char *ref = NULL;
+        if (xkb_keysym_is_deprecated(ks, NULL, &ref)) {
+            const uint32_t cp = xkb_keysym_to_utf32(ks);
+            if (cp != 0) {
+                assert_printf(xkb_utf32_to_keysym(cp) != ks,
+                              "Unexpected xkb_utf32_to_keysym(0x%04"PRIX32") == 0x%04"PRIx32"\n",
+                              cp, ks);
+            }
+        }
         /* Check utf8 */
         /* Older implementation required 7 bytes for old UTF-8 (see RFC 2279) */
         char utf8[7];
@@ -748,6 +774,8 @@ main(void)
     assert(test_deprecated(XKB_KEY_topleftradical, NULL, true, NULL));
     assert(test_deprecated(XKB_KEY_topleftradical, "topleftradical", true, NULL));
     assert(test_deprecated(XKB_KEY_topleftradical, garbage_name, true, NULL));
+    assert(test_deprecated(XKB_KEY_downcaret, NULL, true, NULL));
+    assert(test_deprecated(XKB_KEY_downcaret, "downcaret", true, NULL));
     /* Mixed deprecated and not deprecated aliases */
     assert(test_deprecated(XKB_KEY_Mode_switch, NULL, false, "Mode_switch"));
     assert(test_deprecated(XKB_KEY_Mode_switch, "Mode_switch", false, "Mode_switch"));
@@ -758,7 +786,11 @@ main(void)
     assert(test_deprecated(XKB_KEY_SunAltGraph, NULL, false, "Mode_switch"));
     assert(test_deprecated(XKB_KEY_SunAltGraph, "SunAltGraph", true, "Mode_switch"));
     assert(test_deprecated(XKB_KEY_SunAltGraph, garbage_name, false, "Mode_switch"));
+    assert(test_deprecated(XKB_KEY_notapproxeq, "notapproxeq", true, NULL));
+    assert(test_deprecated(XKB_KEY_approxeq, "approxeq", true, NULL));
     /* Unicode is never deprecated */
+    assert(test_deprecated(0x01002247, "U2247", false, NULL));
+    assert(test_deprecated(0x01002248, "U2248", false, NULL));
     assert(test_deprecated(0x0100250C, "U250C", false, NULL));
     assert(test_deprecated(0x0100250C, "0x0100250C", false, NULL));
     assert(test_deprecated(XKB_KEYSYM_MAX, NULL, false, NULL));

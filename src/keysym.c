@@ -379,6 +379,19 @@ xkb_keysym_is_deprecated(xkb_keysym_t keysym,
                 /* All names are deprecated */
                 *reference_name = NULL;
                 return true;
+            } else if (deprecated_keysyms[mid].offset == UNICODE_KEYSYM) {
+                /* All names are deprecated, but Unicode notation is valid */
+                *reference_name = NULL;
+                if (name == NULL)
+                    return false;
+                if (name[0] != 'U')
+                    return true;
+                /* Since the current function is internal, assume the name
+                 * corresponds to the keysym value and just check its syntax. */
+                const char *start = name + 1;
+                while (is_xdigit(*start))
+                    start++;
+                return *start != '\0' && start > name + 1;
             }
             /* There is a reference name that is not deprecated */
             *reference_name = get_name_by_index(deprecated_keysyms[mid].offset);
