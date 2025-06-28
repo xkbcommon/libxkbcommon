@@ -6,6 +6,8 @@
 #include "config.h"
 
 #include "messages-codes.h"
+#include "utils.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
@@ -326,13 +328,46 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
     return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
 }
 
+struct GroupLookupEntry {
+    xkb_layout_index_t num_groups;
+    const LookupEntry *simple_lookup;
+};
+
+static bool
+GroupLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
+            uint32_t *val_rtrn)
+{
+    if (!priv || field == XKB_ATOM_NONE)
+        return false;
+
+    const struct GroupLookupEntry * const lookup = priv;
+    const char * const str = xkb_atom_text(ctx, field);
+    if (istreq(str, "last")) {
+        if (lookup->num_groups == 0) {
+            log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                    "Group index \"%s\" is only available when compiling\n"
+                    "a keymap using the RMLVO API.", str);
+            return false;
+        } else {
+            *val_rtrn = lookup->num_groups; /* 1-indexed */
+            return true;
+        }
+    }
+
+    return SimpleLookup(ctx, lookup->simple_lookup, field, val_rtrn);
+}
+
 bool
 ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
-                 const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+                 xkb_layout_index_t num_groups, const ExprDef *expr,
+                 xkb_layout_index_t *group_rtrn)
 {
     int64_t result = 0;
-    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                       groupNames);
+    const struct GroupLookupEntry priv = {
+        .num_groups = num_groups,
+        .simple_lookup = groupNames
+    };
+    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, GroupLookup, &priv);
     if (!ok)
         return false;
 

@@ -6,6 +6,7 @@
 
 #include "ast.h"
 #include "keymap.h"
+#include "xkbcommon/xkbcommon.h"
 
 /*
  * This struct contains the default values which every new action
@@ -21,13 +22,15 @@ InitActionsInfo(ActionsInfo *info);
 
 bool
 HandleActionDef(struct xkb_context *ctx, enum xkb_keymap_format format,
-                ActionsInfo *info, const struct xkb_mod_set *mods, ExprDef *def,
+                xkb_layout_index_t num_groups, ActionsInfo *info,
+                const struct xkb_mod_set *mods, ExprDef *def,
                 union xkb_action *action);
 
 bool
 SetDefaultActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
-                      ActionsInfo *info, struct xkb_mod_set *mods,
-                      const char *elem, const char *field, ExprDef *array_ndx,
+                      xkb_layout_index_t num_groups, ActionsInfo *info,
+                      struct xkb_mod_set *mods, const char *elem,
+                      const char *field, ExprDef *array_ndx,
                       ExprDef *value, enum merge_mode merge);
 
 static inline bool
