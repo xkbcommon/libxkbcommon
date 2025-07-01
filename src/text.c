@@ -81,28 +81,8 @@ const LookupEntry groupComponentMaskNames[] = {
 };
 
 const LookupEntry groupMaskNames[] = {
-    { "Group1", 0x01 },
-    { "Group2", 0x02 },
-    { "Group3", 0x04 },
-    { "Group4", 0x08 },
-    { "Group5", 0x10 },
-    { "Group6", 0x20 },
-    { "Group7", 0x40 },
-    { "Group8", 0x80 },
     { "none", 0x00 },
     { "all", XKB_ALL_GROUPS },
-    { NULL, 0 }
-};
-
-const LookupEntry groupNames[] = {
-    { "Group1", 1 },
-    { "Group2", 2 },
-    { "Group3", 3 },
-    { "Group4", 4 },
-    { "Group5", 5 },
-    { "Group6", 6 },
-    { "Group7", 7 },
-    { "Group8", 8 },
     { NULL, 0 }
 };
 

@@ -578,6 +578,30 @@ See @ref keymap-string-literal "string literal" for further information.
 </td>
 </tr>
 <tr>
+<th>Extended `GroupN` constants</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Only `Group1`..`Group8` are supported, although the resulting group must be in
+the range 1..4.
+</details>
+</td>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Only `Group1`..`Group4` are supported.
+
+Use `::XKB_KEYMAP_FORMAT_TEXT_V2` in order to support further groups.
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support (since 1.11)</summary>
+The pattern `Group<INDEX>` can be used for any valid group index `<INDEX>`.
+</details>
+</td>
+</tr>
+<tr>
 <th>Extended include</th>
 <td>❌️ No support</td>
 <td colspan="2">

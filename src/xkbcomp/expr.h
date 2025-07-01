@@ -42,6 +42,10 @@ ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
                  const ExprDef *expr, xkb_layout_index_t *group_rtrn);
 
 bool
+ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+                     const ExprDef *expr, xkb_layout_index_t *group_rtrn);
+
+bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr,
                   int64_t *btn_rtrn);
 

@@ -997,34 +997,36 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
                 "    indicator 2 = \"2\";\n"
                 "  };\n"
                 "  xkb_compat {\n"
-                "    interpret a { action = SetGroup(group=Group5);  };\n"
-                "    interpret b { action = SetGroup(group=-Group6); };\n"
-                "    interpret c { action = SetGroup(group=+Group8); };\n"
-                "    indicator \"1\" { groups = Group8; };\n"
-                "    indicator \"2\" { groups = All-Group8; };\n"
+                "    interpret a { action = SetGroup(group=Group32);  };\n"
+                "    interpret b { action = SetGroup(group=-Group32); };\n"
+                "    interpret c { action = SetGroup(group=+Group32); };\n"
+                "    indicator \"1\" { groups = Group32; };\n"
+                "    indicator \"2\" { groups = All-Group32; };\n"
                 "  };\n"
                 "  xkb_symbols {\n"
                 "    name[Group1] = \"1\";\n"
                 "    name[Group4] = \"4\";\n"
                 "    name[Group5] = \"5\";\n"
                 "    name[Group8] = \"8\";\n"
+                "    name[Group32] = \"32\";\n"
                 "    key <> {\n"
-                "      groupsredirect=Group8,\n"
+                "      groupsredirect=Group32,\n"
                 "      symbols[Group1]=[a],\n"
                 "      symbols[Group4]=[b],\n"
                 "      symbols[Group5]=[c],\n"
-                "      symbols[Group8]=[d]\n"
+                "      symbols[Group8]=[d],\n"
+                "      symbols[Group32]=[e]\n"
                 "    };\n"
                 "  };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-2.xkb"
         },
-        /* No names above 8 */
+        /* No names for groups above 32 */
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_compat { interpret a { action = SetGroup(group=Group9); }; };\n"
+                "  xkb_compat { interpret a { action = SetGroup(group=Group33); }; };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
@@ -1033,7 +1035,7 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
             .keymap =
                 "xkb_keymap {\n"
                 "  xkb_keycodes { indicator 1 = \"1\"; };\n"
-                "  xkb_compat { indicator \"1\" { groups = Group9; }; };\n"
+                "  xkb_compat { indicator \"1\" { groups = Group33; }; };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
@@ -1042,7 +1044,7 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
             .keymap =
                 "xkb_keymap {\n"
                 "  xkb_keycodes { <> = 1; };\n"
-                "  xkb_symbols { name[Group9] = \"1\"; };\n"
+                "  xkb_symbols { name[Group33] = \"1\"; };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
@@ -1051,7 +1053,7 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
             .keymap =
                 "xkb_keymap {\n"
                 "  xkb_keycodes { <> = 1; };\n"
-                "  xkb_symbols { key <> { groupsredirect=Group9 };\n"
+                "  xkb_symbols { key <> { groupsredirect=Group33 };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
@@ -1060,7 +1062,7 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
             .keymap =
                 "xkb_keymap {\n"
                 "  xkb_keycodes { <> = 1; };\n"
-                "  xkb_symbols { key <> { symbols[Group9] = [a] };\n"
+                "  xkb_symbols { key <> { symbols[Group33] = [a] };\n"
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
