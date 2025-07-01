@@ -106,10 +106,12 @@ istreq(const char *s1, const char *s2)
 }
 
 static inline bool
-istreq_prefix(const char *s1, const char *s2)
+istrneq(const char *s1, const char *s2, size_t len)
 {
-    return istrncmp(s1, s2, strlen(s1)) == 0;
+    return istrncmp(s1, s2, len) == 0;
 }
+
+#define istreq_prefix(s1, s2) istrneq(s1, s2, sizeof(s1) - 1)
 
 static inline char *
 strdup_safe(const char *s)
