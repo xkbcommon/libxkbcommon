@@ -471,7 +471,8 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_GROUP_SET:
     case ACTION_TYPE_GROUP_LATCH:
     case ACTION_TYPE_GROUP_LOCK:
-        if ((uint32_t) xkb_abs(action->group.group) < max_groups) {
+        if ((uint32_t) xkb_abs(action->group.group) <
+            (max_groups + !(action->group.flags & ACTION_ABSOLUTE_SWITCH))) {
             bool lockOnRelease = action->type == ACTION_TYPE_GROUP_LOCK &&
                                  (action->group.flags & ACTION_LOCK_ON_RELEASE);
             if (lockOnRelease && !isGroupLockOnReleaseSupported(format)) {

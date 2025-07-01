@@ -5,12 +5,16 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
 #include "messages-codes.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "expr.h"
 #include "keysym.h"
 #include "xkbcomp/ast.h"
+#include "utils.h"
+#include "utils-numbers.h"
 #include "utils-checked-arithmetic.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
@@ -66,6 +70,52 @@ SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
     }
 
     return false;
+}
+
+struct named_integer_pattern {
+    const char *prefix;
+    size_t prefix_length;
+    uint32_t min;
+    uint32_t max;
+    const LookupEntry *entries;
+    bool is_mask;
+    enum xkb_message_code error_id;
+};
+
+/* Parse a number expressed with the pattern `<prefix><decimal number>` */
+static bool
+NamedIntegerPatternLookup(struct xkb_context *ctx, const void *priv,
+                          xkb_atom_t field, uint32_t *val_rtrn)
+{
+    if (!priv || field == XKB_ATOM_NONE)
+        return false;
+
+    const char * const str = xkb_atom_text(ctx, field);
+    const struct named_integer_pattern * const pattern = priv;
+
+    const int count = (istrneq(str, pattern->prefix, pattern->prefix_length))
+        ? parse_dec_to_uint32_t(str + pattern->prefix_length, SIZE_MAX, val_rtrn)
+        : 0;
+
+    if (count > 0 && *(str + pattern->prefix_length + count) == '\0') {
+        if (*val_rtrn < pattern->min || *val_rtrn > pattern->max) {
+            log_err(ctx, pattern->error_id,
+                    "%s index %"PRIu32" is out of range (%"PRIu32"..%"PRIu32")\n",
+                    pattern->prefix, *val_rtrn, pattern->min, pattern->max);
+            return false;
+        }
+        if (pattern->is_mask) {
+            /* Compute mask (bit 0 = min index) */
+            assert(*val_rtrn - pattern->min < 32);
+            *val_rtrn = UINT32_C(1) << (*val_rtrn - pattern->min);
+        }
+        return true;
+    } else {
+        return (
+            pattern->entries &&
+            SimpleLookup(ctx, pattern->entries, field, val_rtrn)
+        );
+    }
 }
 
 /* Data passed in the *priv argument for LookupModMask. */
@@ -330,13 +380,22 @@ bool
 ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
                  const ExprDef *expr, xkb_layout_index_t *group_rtrn)
 {
+    const struct named_integer_pattern group_name_pattern = {
+        /* Prefix is title-cased, because it is also used in error messages */
+        .prefix = "Group",
+        .prefix_length = sizeof("Group") - 1,
+        .min = 1,
+        .max = max_groups,
+        .is_mask = false,
+        .entries = NULL,
+        .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+    };
     int64_t result = 0;
-    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                       groupNames);
-    if (!ok)
+    if (!ExprResolveIntegerLookup(ctx, expr, &result, NamedIntegerPatternLookup,
+                                  &group_name_pattern))
         return false;
 
-    if (result <= 0 || result > max_groups) {
+    if (result < 1 || result > max_groups) {
         log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
                 result, max_groups);
@@ -630,4 +689,22 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
 
     *ndx_rtrn = ndx;
     return true;
+}
+
+bool
+ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+                     const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+{
+    const struct named_integer_pattern group_name_pattern = {
+        /* Prefix is title-cased, because it is also used in error messages */
+        .prefix = "Group",
+        .prefix_length = sizeof("Group") - 1,
+        .min = 1,
+        .max = max_groups,
+        .is_mask = true,
+        .entries = groupMaskNames,
+        .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX
+    };
+    return ExprResolveMaskLookup(ctx, expr, group_rtrn,
+                                 NamedIntegerPatternLookup, &group_name_pattern);
 }

@@ -639,7 +639,8 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(info->ctx, value, &mask, groupMaskNames))
+        const xkb_layout_index_t max_groups = format_max_groups(info->format);
+        if (!ExprResolveGroupMask(info->ctx, max_groups, value, &mask))
             return ReportLedBadType(info, ledi, field, "group mask");
 
         ledi->led.groups = mask;
