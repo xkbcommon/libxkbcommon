@@ -221,9 +221,9 @@ or %%H seems to do the job though.
   **Note:** This feature is supported by libxkbcommon but not by the legacy X11
   tools.
 
-- @anchor rules-extended-layout-indexes
+- @anchor rules-extended-layout-indices
   (Since version `1.8.0`)
-  The following *extended layout indexes* can be used to avoid repetition and
+  The following *extended layout indices* can be used to avoid repetition and
   clarify the semantics:
 
   <dl>
@@ -300,7 +300,7 @@ or %%H seems to do the job though.
         etc.
     </dt>
     <dd>
-        In case the mapping uses an @ref rules-extended-layout-indexes "extended layout index",
+        In case the mapping uses an @ref rules-extended-layout-indices "extended layout index",
         `%%i` corresponds to the index of the matched layout.
 
         ℹ️ Notes:
@@ -510,7 +510,7 @@ Using the following example:
 
 ! layout[2] = symbols
   *         = +%l[2]%(v[2])
-// Repeat the previous rules set with indexes 3 and 4
+// Repeat the previous rules set with indices 3 and 4
 
 ! layout     option          = symbols
  $azerty     caps:digits_row = +capslock(digits_row)
@@ -521,7 +521,7 @@ Using the following example:
  $azerty     caps:digits_row = +capslock(digits_row):1
   *          misc:typo       = +typo(base):1
   *          lv3:ralt_alt    = +level3(ralt_alt):1
-// Repeat the previous rules set for indexes 2 to 4
+// Repeat the previous rules set for indices 2 to 4
 ```
 
 we would have the following resolutions of <em>[symbols]</em>:

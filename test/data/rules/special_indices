@@ -69,7 +69,7 @@
 ! option        = symbols
   my_option     = +extra_option
 
-// Used to check that special indexes merge the KcCGST values in the
+// Used to check that special indices merge the KcCGST values in the
 // expected order.
 ! layout[any] option   = symbols
   layout_c    option_2 = +HHH:%i

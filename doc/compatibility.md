@@ -731,7 +731,7 @@ the standard *merge* `|` and *override* `+` modes.
 </td>
 </tr>
 <tr>
-<th>Extended layout indexes</th>
+<th>Extended layout indices</th>
 <td>❌️ No support</td>
 <td colspan="2">
 <details>
@@ -746,7 +746,7 @@ the RMLVO configuration. Acts as both `layout` and `layout[1]`.
 
 - the `:all` qualifier: it applies the qualified item to all layouts.
 
-See @ref rules-extended-layout-indexes "extended layout indexes" for further
+See @ref rules-extended-layout-indices "extended layout indices" for further
 details.
 </details>
 </td>

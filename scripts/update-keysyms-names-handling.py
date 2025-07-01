@@ -313,7 +313,7 @@ def generate_mixed_aliases(aliases: Iterable[Iterable[int]]):
 
 print(f"#define UNICODE_KEYSYM    0x{UNICODE_KEYSYM:x}")
 print(f"#define DEPRECATED_KEYSYM 0x{DEPRECATED_KEYSYM:x}")
-# NOTE: Alternative implementation, useful the day the indexes do not fit uint16_t.
+# NOTE: Alternative implementation, useful the day the indices do not fit uint16_t.
 # print(f"""
 # struct deprecated_keysym {{
 #     xkb_keysym_t keysym;

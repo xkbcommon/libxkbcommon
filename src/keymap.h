@@ -446,7 +446,7 @@ struct xkb_keymap {
     /**
      * Modifiers configuration.
      * This is *internal* to the keymap; other implementations may use different
-     * virtual modifiers indexes. Ours depends on:
+     * virtual modifiers indices. Ours depends on:
      *   1. the order of the parsing of the keymap components;
      *   2. the order of the virtual modifiers declarations;
      */
@@ -458,7 +458,7 @@ struct xkb_keymap {
      * all *virtual* modifiers mappings.
      *
      * [WARNING] The bits that do not correspond to *real* modifiers should
-     * *not* be interpreted as corresponding to indexes of virtual modifiers of
+     * *not* be interpreted as corresponding to indices of virtual modifiers of
      * the keymap. Indeed, one may use explicit vmod mapping with an arbitrary
      * value.
      *

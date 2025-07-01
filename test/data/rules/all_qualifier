@@ -38,11 +38,11 @@
   layout_c      = +symbols_c:5
   *             = +default_symbols:5
 
-// Combine with special indexes
+// Combine with special indices
 ! layout[first] variant[first] = symbols
   *             extra1         = +extra_symbols:all
 
-// Combine with special indexes (valid but raises a warning)
+// Combine with special indices (valid but raises a warning)
 ! layout[any] variant[any] = symbols
   *           extra2       = +extra_symbols1:%i+extra_symbols2:all
   *           extra3       = +extra_symbols2:all+extra_symbols1:%i
