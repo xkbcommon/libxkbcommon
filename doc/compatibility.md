@@ -602,6 +602,24 @@ The pattern `Group<INDEX>` can be used for any valid group index `<INDEX>`.
 </td>
 </tr>
 <tr>
+<th>Extended `LevelN` constants</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Only `Level1`..`Level8` are supported.
+</details>
+</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.11)</summary>
+Since 1.11, the pattern `Level<INDEX>` can be used for any valid level index
+`<INDEX>`.
+
+Before 1.11, only `Level1`..`Level8` were supported.
+</details>
+</td>
+</tr>
+<tr>
 <th>Extended include</th>
 <td>❌️ No support</td>
 <td colspan="2">

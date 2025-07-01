@@ -26,7 +26,6 @@ extern const LookupEntry ctrlMaskNames[];
 extern const LookupEntry modComponentMaskNames[];
 extern const LookupEntry groupComponentMaskNames[];
 extern const LookupEntry groupMaskNames[];
-extern const LookupEntry levelNames[];
 extern const LookupEntry buttonNames[];
 extern const LookupEntry useModMapValueNames[];
 extern const LookupEntry actionTypeNames[];
