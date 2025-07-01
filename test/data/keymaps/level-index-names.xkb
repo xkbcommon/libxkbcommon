@@ -1,0 +1,26 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+};
+
+xkb_types {
+	type "X" {
+		modifiers= Shift;
+		map[Shift]= 2048;
+		level_name[2048]= "x";
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+};
+
+};

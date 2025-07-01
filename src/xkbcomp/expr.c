@@ -410,10 +410,19 @@ bool
 ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_level_index_t *level_rtrn)
 {
+    static const struct named_integer_pattern level_name_pattern = {
+        /* Prefix is title-cased, because it is also used in error messages */
+        .prefix = "Level",
+        .prefix_length = sizeof("Level") - 1,
+        .min = 1,
+        .max = XKB_LEVEL_MAX_IMPL,
+        .is_mask = false,
+        .entries = NULL,
+        .error_id = XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
+    };
     int64_t result = 0;
-    bool ok = ExprResolveIntegerLookup(ctx, expr, &result, SimpleLookup,
-                                       levelNames);
-    if (!ok)
+    if (!ExprResolveIntegerLookup(ctx, expr, &result, NamedIntegerPatternLookup,
+                                  &level_name_pattern))
         return false;
 
     if (result < 1 || result > XKB_LEVEL_MAX_IMPL) {

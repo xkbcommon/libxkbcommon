@@ -86,18 +86,6 @@ const LookupEntry groupMaskNames[] = {
     { NULL, 0 }
 };
 
-const LookupEntry levelNames[] = {
-    { "Level1", 1 },
-    { "Level2", 2 },
-    { "Level3", 3 },
-    { "Level4", 4 },
-    { "Level5", 5 },
-    { "Level6", 6 },
-    { "Level7", 7 },
-    { "Level8", 8 },
-    { NULL, 0 }
-};
-
 const LookupEntry buttonNames[] = {
     { "Button1", 1 },
     { "Button2", 2 },

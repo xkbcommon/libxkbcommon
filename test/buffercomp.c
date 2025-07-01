@@ -1084,6 +1084,64 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
     }
 }
 
+static void
+test_level_indices_names(struct xkb_context *ctx,
+                            bool update_output_files)
+{
+    const struct {
+        const char* keymap;
+        const char* expected;
+    } keymaps[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                "    type \"X\" {\n"
+                "      modifiers = Shift;\n"
+                "      map[Shift] = Level2048;\n"
+                "      level_name[Level2048] = \"x\";\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "level-index-names.xkb"
+        },
+        /* No names above 2048 */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                "    type \"X\" {\n"
+                "      modifiers = Shift;\n"
+                "      map[Shift] = Level2049;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                "    type \"X\" {\n"
+                "      modifiers = Shift;\n"
+                "      level_name[Level2049] = \"x\";\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL,
+        },
+    };
+
+    for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
+    }
+}
+
 /* Test various multi-{keysym,action} syntaxes */
 static void
 test_multi_keysyms_actions(struct xkb_context *ctx, bool update_output_files)
@@ -2129,6 +2187,7 @@ main(int argc, char *argv[])
     test_masks(ctx, update_output_files);
     test_interpret(ctx, update_output_files);
     test_group_indices_names(ctx, update_output_files);
+    test_level_indices_names(ctx, update_output_files);
     test_multi_keysyms_actions(ctx, update_output_files);
     test_key_keysyms_as_strings(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);
