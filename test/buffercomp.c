@@ -949,7 +949,7 @@ test_interpret(struct xkb_context *ctx, bool update_output_files)
 }
 
 static void
-test_group_indexes_names(struct xkb_context *ctx, bool update_output_files)
+test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
 {
     const struct {
         const char* keymap;
@@ -1964,7 +1964,7 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
 }
 
 static void
-test_extended_layout_indexes(struct xkb_context *ctx,
+test_extended_layout_indices(struct xkb_context *ctx,
                              bool update_output_files)
 {
     const struct {
@@ -2042,8 +2042,8 @@ test_extended_layout_indexes(struct xkb_context *ctx,
                 "};",
             .expected_v1 = NULL,
             .expected_v1_2 = NULL,
-            .expected_v2 = GOLDEN_TESTS_OUTPUTS "extended-layout-indexes-v2.xkb",
-            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "extended-layout-indexes-v1.xkb",
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "extended-layout-indices-v2.xkb",
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "extended-layout-indices-v1.xkb",
         }
     };
 
@@ -2126,7 +2126,7 @@ main(int argc, char *argv[])
     test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);
     test_interpret(ctx, update_output_files);
-    test_group_indexes_names(ctx, update_output_files);
+    test_group_indices_names(ctx, update_output_files);
     test_multi_keysyms_actions(ctx, update_output_files);
     test_key_keysyms_as_strings(ctx, update_output_files);
     test_invalid_symbols_fields(ctx);
@@ -2138,7 +2138,7 @@ main(int argc, char *argv[])
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);
-    test_extended_layout_indexes(ctx, update_output_files);
+    test_extended_layout_indices(ctx, update_output_files);
 
     xkb_context_unref(ctx);
 

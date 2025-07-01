@@ -374,7 +374,7 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
       .geometry = (strncmp((_rules), "evdev", 5) == 0) ? "pc(pc104)" : NULL,\
       .explicit_layouts = (_count), .should_fail = (_should_fail) }
 #define ENTRY(layout, variant, options, symbols, count, should_fail)           \
-        ENTRY2("special_indexes", NULL, layout, variant, options,              \
+        ENTRY2("special_indices", NULL, layout, variant, options,              \
                "default_keycodes", "default_types", "default_compat", symbols, \
                count, should_fail)
 
@@ -400,13 +400,13 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
               "+foo:1|bar:1+foo:4|bar:4", 4, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
               "a:1+y:2+layout_c:3+layout_d:4+layout_e:5+z:3", 5, false),
-        /* Check that special indexes merge the KcCGST values in the expected order */
+        /* Check that special indices merge the KcCGST values in the expected order */
         ENTRY("layout_a,layout_b,layout_c", NULL, "option_3,option_2,option_1",
               "a:1+y:2+layout_c:3+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
               3, false),
 #undef ENTRY
         /* Test index ranges: too much layouts */
-        ENTRY2("special_indexes-limit", NULL, too_much_layouts, NULL, NULL,
+        ENTRY2("special_indices-limit", NULL, too_much_layouts, NULL, NULL,
                "default_keycodes", "default_types", "default_compat", too_much_symbols,
                XKB_MAX_GROUPS, false),
 #define ENTRY(model, layout, variant, options, compat, symbols, count, should_fail) \
@@ -466,7 +466,7 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
 }
 
 static void
-test_extended_layout_indexes(struct xkb_context *ctx)
+test_extended_layout_indices(struct xkb_context *ctx)
 {
     char layouts[(2 + MAX_LAYOUT_INDEX_STR_LENGTH) * XKB_MAX_GROUPS] = { 0 };
     size_t count = 0;
@@ -512,7 +512,7 @@ test_all_qualifier(struct xkb_context *ctx,
                    const char *too_much_layouts, const char *too_much_symbols)
 {
     const struct test_data tests[] = {
-        /* Test :all qualifier without special indexes, with option */
+        /* Test :all qualifier without special indices, with option */
         {
             .rules = "all_qualifier",
 
@@ -528,7 +528,7 @@ test_all_qualifier(struct xkb_context *ctx,
                        "+extra_option:5",
             .explicit_layouts = 5,
         },
-        /* Test :all qualifier without special indexes, base for all layout */
+        /* Test :all qualifier without special indices, base for all layout */
         {
             .rules = "all_qualifier",
 
@@ -543,7 +543,7 @@ test_all_qualifier(struct xkb_context *ctx,
                        "+symbols_a:2+symbols_b:3+default_symbols:4+default_symbols:5",
             .explicit_layouts = 5,
         },
-        /* Test :all qualifier without special indexes, with option, too much layouts */
+        /* Test :all qualifier without special indices, with option, too much layouts */
         {
             .rules = "all_qualifier-limit",
 
@@ -557,7 +557,7 @@ test_all_qualifier(struct xkb_context *ctx,
             .symbols = too_much_symbols,
             .explicit_layouts = XKB_MAX_GROUPS,
         },
-        /* Test :all qualifier with special indexes */
+        /* Test :all qualifier with special indices */
         {
             .rules = "all_qualifier",
 
@@ -573,7 +573,7 @@ test_all_qualifier(struct xkb_context *ctx,
                        "+extra_option:1+extra_option:2+extra_option:3+extra_option:4+extra_option:5",
             .explicit_layouts = 5,
         },
-        /* Test :all qualifier with special indexes
+        /* Test :all qualifier with special indices
          * It uses :all combined with layout[any], which is valid but
          * :%i was probably the intended qualified, so raises warning */
         {
@@ -765,7 +765,7 @@ main(int argc, char *argv[])
     too_much_symbols[--i] = '\0';
 
     test_layout_index_ranges(ctx, too_much_layouts, too_much_symbols);
-    test_extended_layout_indexes(ctx);
+    test_extended_layout_indices(ctx);
     test_all_qualifier(ctx, too_much_layouts, too_much_symbols);
     test_layout_specific_options(ctx);
 

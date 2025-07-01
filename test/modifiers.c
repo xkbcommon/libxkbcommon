@@ -59,7 +59,7 @@ test_modifiers_names(struct xkb_context *context)
     assert(keymap);
 
     /* Real modifiers
-     * The indexes and masks are fixed and always valid */
+     * The indices and masks are fixed and always valid */
     assert(test_real_mod(keymap, XKB_MOD_NAME_SHIFT, XKB_MOD_INDEX_SHIFT, ShiftMask));
     assert(test_real_mod(keymap, XKB_MOD_NAME_CAPS, XKB_MOD_INDEX_CAPS, LockMask));
     assert(test_real_mod(keymap, XKB_MOD_NAME_CTRL, XKB_MOD_INDEX_CTRL, ControlMask));
@@ -75,7 +75,7 @@ test_modifiers_names(struct xkb_context *context)
     assert(test_real_mod(keymap, XKB_MOD_NAME_LOGO, XKB_MOD_INDEX_MOD4, Mod4Mask));
 
     /* Virtual modifiers
-     * The indexes depends on the keymap files */
+     * The indices depends on the keymap files */
     assert(test_virtual_mod(keymap, XKB_VMOD_NAME_ALT,    XKB_MOD_INDEX_MOD5 + 2,  Mod1Mask));
     assert(test_virtual_mod(keymap, XKB_VMOD_NAME_META,   XKB_MOD_INDEX_MOD5 + 11, Mod1Mask));
     assert(test_virtual_mod(keymap, XKB_VMOD_NAME_NUM,    XKB_MOD_INDEX_MOD5 + 1,  Mod2Mask));
@@ -447,7 +447,7 @@ test_virtual_modifiers_mapping_hack(struct xkb_context *context)
             .mapping = UINT32_C(1) << XKB_MOD_INDEX_MOD5
         },
         /* Virtual modifiers
-         * The indexes depends on the keymap files */
+         * The indices depends on the keymap files */
         {
             .name = XKB_VMOD_NAME_ALT,
             .index = XKB_MOD_INDEX_MOD5 + 2,

@@ -2855,10 +2855,10 @@ test_void_action(struct xkb_context *ctx)
 }
 
 static void
-test_extended_layout_indexes(struct xkb_context *ctx)
+test_extended_layout_indices(struct xkb_context *ctx)
 {
     const char keymap_str[] =
-        "xkb_keymap \"extended-layout-indexes\" {\n"
+        "xkb_keymap \"extended-layout-indices\" {\n"
         "  xkb_keycodes {\n"
         "    <> = 1;\n"
         "    <set-1>   = 10;\n"
@@ -3123,7 +3123,7 @@ main(void)
     test_leds(context);
     test_multiple_actions(context);
     test_void_action(context);
-    test_extended_layout_indexes(context);
+    test_extended_layout_indices(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;

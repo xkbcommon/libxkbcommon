@@ -12,7 +12,7 @@ libxkbcommon [1.10.0] – 2025-05-21
   the modifiers state:
   - Modifiers masks should not be interpreted by other means than the provided API.
     In particular, one should not assume that modifiers masks always denote the
-    modifiers *indexes* of the keymap.
+    modifiers *indices* of the keymap.
   - It enables using virtual modifiers with arbitrary mappings. E.g. one can now
     reliably create virtual modifiers without relying on the legacy X11 mechanism,
     that requires a careful use of keys’ real and virtual modmaps.
@@ -287,7 +287,7 @@ libxkbcommon [1.8.1] – 2025-03-12
 
 ### Fixes
 
-- Fixed segfault due to invalid arithmetic to bring *negative* layout indexes
+- Fixed segfault due to invalid arithmetic to bring *negative* layout indices
   into range. It triggers with the following settings:
 
   - layouts count (per key or total) N: `N > 0`, and
@@ -429,7 +429,7 @@ libxkbcommon [1.8.0] – 2025-02-04
 - Rules: Use XKB paths to resolve relative paths in include statements.
   ([#501](https://github.com/xkbcommon/libxkbcommon/issues/501))
 
-- Rules: Added support for special layouts indexes:
+- Rules: Added support for special layouts indices:
   - *single*: matches a single layout; `layout[single]` is the same as without
     explicit index: `layout`.
   - *first*: matches the first layout/variant, no matter how many layouts are in
@@ -654,7 +654,7 @@ API
 
   Contributed by Mikhail Gusarov.
 
-- Rules: Fixed a bug where variant indexes were ignored with the layout index
+- Rules: Fixed a bug where variant indices were ignored with the layout index
   used instead. They are practically always the same, but don’t have to be.
 
   Contributed by \@wysiwys.

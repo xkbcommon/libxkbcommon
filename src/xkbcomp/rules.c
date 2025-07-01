@@ -222,7 +222,7 @@ struct mapping {
     mlvo_mask_t defined_mlvo_mask;
     bool has_layout_idx_range;
     /* This member has 2 uses:
-     * • Keep track of layout and variant indexes while parsing MLVO headers.
+     * • Keep track of layout and variant indices while parsing MLVO headers.
      * • Store layout/variant range afterwards.
      * Thus provide 2 structs to reflect these semantics in the code. */
     union {
@@ -231,7 +231,7 @@ struct mapping {
     };
     /* This member has 2 uses:
      * • Check if the mapping is active by interpreting the value as a boolean.
-     * • Keep track of the remaining layout indexes to match.
+     * • Keep track of the remaining layout indices to match.
      * Thus provide 2 names to reflect these semantics in the code. */
     union {
         xkb_layout_mask_t active;
@@ -731,7 +731,7 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
     return parse_layout_int_index(s, max_len, out);
 }
 
-/* Special layout indexes */
+/* Special layout indices */
 enum layout_index_ranges {
     LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID - 4,
     LAYOUT_INDEX_FIRST  = XKB_LAYOUT_INVALID - 3,
@@ -741,7 +741,7 @@ enum layout_index_ranges {
 
 static_assert((xkb_layout_index_t) XKB_MAX_GROUPS <
               (xkb_layout_index_t) LAYOUT_INDEX_SINGLE,
-              "Cannot define special indexes");
+              "Cannot define special indices");
 static_assert((xkb_layout_index_t) LAYOUT_INDEX_SINGLE <
               (xkb_layout_index_t) LAYOUT_INDEX_FIRST &&
               (xkb_layout_index_t) LAYOUT_INDEX_FIRST <
@@ -750,7 +750,7 @@ static_assert((xkb_layout_index_t) LAYOUT_INDEX_SINGLE <
               (xkb_layout_index_t) LAYOUT_INDEX_ANY &&
               (xkb_layout_index_t) LAYOUT_INDEX_ANY <
               (xkb_layout_index_t) XKB_LAYOUT_INVALID,
-              "Special indexes must respect certain order");
+              "Special indices must respect certain order");
 
 /* Parse index of layout/variant in MLVO mapping */
 static int
@@ -774,7 +774,7 @@ extract_mapping_layout_index(const char *s, size_t max_len,
         return -1;
     }
 
-    /* Try named indexes ranges */
+    /* Try named indices ranges */
     for (unsigned int k = 0; k < ARRAY_SIZE(names); k++) {
         if (strncmp(&s[1], names[k].name, names[k].length) == 0) {
             *out = (xkb_layout_index_t) names[k].range;
@@ -1322,7 +1322,7 @@ expand_qualifier_in_kccgst_value(
         str[*i] == 'a' && str[*i+1] == 'l' && str[*i+2] == 'l') {
         if (has_layout_idx_range)
             scanner_vrb(s, 2, XKB_LOG_MESSAGE_NO_ID,
-                        "Using :all qualifier with indexes range "
+                        "Using :all qualifier with indices range "
                         "is not recommended.");
         /* Add at least one layout */
         darray_appends_nullterminate(*expanded, "1", 1);
@@ -1617,7 +1617,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                     /*
                      * [NOTE] Layout index ranges and merging KcCGST values
                      *
-                     * Layout indexes match following first the order of the
+                     * Layout indices match following first the order of the
                      * rules in the file, then their natural order. So do not
                      * merge with the output for now but buffer the resulting
                      * KcCGST value and wait reaching the end of the rule set.

@@ -932,7 +932,7 @@ override "<PATH_1>|<PATH_2>(<SECTION_NAME>)
 
 @important Since xkbcommon 1.9.0 the included files are processed in *isolation*
 and are not affected by the parent file (e.g. defaults), except for the virtual
-modifiers indexes.
+modifiers indices.
 
 @important Since xkbcommon 1.9.0 local merge modes are *not* propagated outside
 the section scope, i.e. an included file does not leaks its local merge modes to
