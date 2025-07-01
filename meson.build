@@ -1053,6 +1053,8 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
             'bench/compile-keymap.c',
             'src/keymap-formats.c',
             'src/keymap-formats.h',
+            'src/utils.c',
+            'src/utils.h',
             dependencies: test_dep
         ),
         env: bench_env,

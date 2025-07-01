@@ -43,6 +43,8 @@ usage(FILE *fp, char **argv)
            " --output-format <format>\n"
            "    The keymap format to use for serializing (default: %d)\n"
 #endif
+           " --keymap\n"
+           "    Load the corresponding XKB file, ignore RMLVO options.\n"
            " --rules <rules>\n"
            "    The XKB ruleset (default: '%s')\n"
            " --model <model>\n"
@@ -63,6 +65,28 @@ usage(FILE *fp, char **argv)
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
 
+static struct xkb_keymap *
+load_keymap(struct xkb_context *ctx, const char *keymap_path,
+            const struct xkb_rule_names * rmlvo, enum xkb_keymap_format format,
+            enum xkb_keymap_compile_flags flags)
+{
+    if (keymap_path) {
+        FILE *file = fopen(keymap_path, "r");
+        if (!file) {
+            fprintf(stderr, "ERROR: cannot open file: %s\n", keymap_path);
+            return NULL;
+        }
+        struct xkb_keymap *keymap = xkb_keymap_new_from_file(
+            ctx, file, format, XKB_KEYMAP_COMPILE_NO_FLAGS
+        );
+        fclose(file);
+        return keymap;
+    } else {
+        return xkb_keymap_new_from_names2(ctx, rmlvo, format,
+                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
+    }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -76,6 +100,7 @@ main(int argc, char **argv)
 #endif
     bool explicit_iterations = false;
     int ret = 0;
+    char *keymap_path = NULL;
     struct xkb_rule_names rmlvo = {
         .rules = DEFAULT_XKB_RULES,
         .model = DEFAULT_XKB_MODEL,
@@ -91,6 +116,7 @@ main(int argc, char **argv)
     enum options {
         OPT_KEYMAP_INPUT_FORMAT,
         OPT_KEYMAP_OUTPUT_FORMAT,
+        OPT_KEYMAP,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -106,6 +132,7 @@ main(int argc, char **argv)
 #ifdef KEYMAP_DUMP
         {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
 #endif
+        {"keymap",           required_argument,      0, OPT_KEYMAP},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
         {"layout",           required_argument,      0, OPT_LAYOUT},
@@ -145,6 +172,9 @@ main(int argc, char **argv)
             }
             break;
 #endif
+        case OPT_KEYMAP:
+            keymap_path = optarg;
+            break;
         case OPT_RULES:
             rmlvo.rules = optarg;
             break;
@@ -204,18 +234,51 @@ main(int argc, char **argv)
     if (!context)
         exit(1);
 
-    struct xkb_keymap *keymap;
+    struct xkb_keymap *keymap = load_keymap(context, keymap_path, &rmlvo,
+                                            keymap_input_format,
+                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
 
-    keymap = xkb_keymap_new_from_names2(context, &rmlvo, keymap_input_format,
-                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!keymap) {
         fprintf(stderr, "ERROR: Cannot compile keymap.\n");
+        ret = EXIT_FAILURE;
         goto keymap_error;
-        exit(EXIT_FAILURE);
     }
+
 #ifndef KEYMAP_DUMP
-    char *keymap_str = xkb_keymap_get_as_string(keymap,
-                                                XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    /* Cache the keymap input to mitigate I/O latency */
+    char *keymap_str = NULL;
+    size_t keymap_str_length = 0;
+    FILE *keymap_file = NULL;
+    if (keymap_path) {
+        /* Load keymap file into memory */
+        keymap_file = fopen(keymap_path, "r");
+        if (!keymap_file) {
+            fprintf(stderr, "ERROR: cannot open file: %s\n", keymap_path);
+            ret = EXIT_FAILURE;
+            goto keymap_error;
+        }
+        if (!map_file(keymap_file, &keymap_str, &keymap_str_length)) {
+            fclose(keymap_file);
+            ret = EXIT_FAILURE;
+            goto keymap_error;
+        }
+    } else {
+        /*
+         * Serialize from RMLVO
+         *
+         * This has the caveat that the benchmarked input is different from the
+         * original KcCGST files.
+         */
+        keymap_str = xkb_keymap_get_as_string(
+            keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT
+        );
+        if (!keymap_str) {
+            fprintf(stderr, "ERROR: cannot serialize keymap\n");
+            ret = EXIT_FAILURE;
+            goto keymap_error;
+        }
+        keymap_str_length = strlen(keymap_str);
+    }
     xkb_keymap_unref(keymap);
 #endif
 
@@ -248,9 +311,10 @@ main(int argc, char **argv)
             assert(s);
             free(s);
 #else
-            keymap = xkb_keymap_new_from_string(
-                context, keymap_str,
-                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            keymap = xkb_keymap_new_from_buffer(
+                context, keymap_str, keymap_str_length,
+                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS
+            );
             assert(keymap);
             xkb_keymap_unref(keymap);
 #endif
@@ -270,9 +334,10 @@ main(int argc, char **argv)
         );
 #else
         BENCH(stdev, max_iterations, elapsed, est,
-            keymap = xkb_keymap_new_from_string(
-                context, keymap_str,
-                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            keymap = xkb_keymap_new_from_buffer(
+                context, keymap_str, keymap_str_length,
+                keymap_input_format, XKB_KEYMAP_COMPILE_NO_FLAGS
+            );
             assert(keymap);
             xkb_keymap_unref(keymap);
         );
@@ -291,7 +356,12 @@ main(int argc, char **argv)
 #ifdef KEYMAP_DUMP
     xkb_keymap_unref(keymap);
 #else
-    free(keymap_str);
+    if (keymap_str && keymap_file) {
+        unmap_file(keymap_str, keymap_str_length);
+        fclose(keymap_file);
+    } else {
+        free(keymap_str);
+    }
 #endif
 
     struct bench_time total_elapsed;
