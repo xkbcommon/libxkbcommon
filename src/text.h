@@ -25,7 +25,6 @@ LookupValue(const LookupEntry tab[], unsigned int value);
 extern const LookupEntry ctrlMaskNames[];
 extern const LookupEntry modComponentMaskNames[];
 extern const LookupEntry groupComponentMaskNames[];
-extern const LookupEntry groupMaskNames[];
 extern const LookupEntry buttonNames[];
 extern const LookupEntry useModMapValueNames[];
 extern const LookupEntry actionTypeNames[];
