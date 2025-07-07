@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdbool.h>
 

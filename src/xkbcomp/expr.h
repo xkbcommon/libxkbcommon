@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "xkbcommon/xkbcommon.h"
 
 #include "ast.h"

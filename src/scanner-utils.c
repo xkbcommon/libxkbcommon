@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "config.h"
+
 #include "scanner-utils.h"
 
 struct scanner_loc

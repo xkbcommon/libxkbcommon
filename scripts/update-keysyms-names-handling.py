@@ -140,6 +140,8 @@ XKB_KEYSYM_UNICODE_MAX = 0x0110FFFF
 
 print(
     """
+#include "config.h"
+
 #include <stddef.h>
 #include <stdint.h>
 

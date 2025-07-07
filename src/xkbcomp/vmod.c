@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: HPND
  */
 
-#include "atom.h"
 #include "config.h"
 
 #include <stdint.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "atom.h"
 #include "keymap.h"
 #include "text.h"
 #include "expr.h"

@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "messages-codes.h"
 
 struct xkb_message_entry {

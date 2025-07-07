@@ -3,9 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 #include "config.h"
-#include "utils.h"
-#include "xkbcommon/xkbcommon-keysyms.h"
-#include "xkbcommon/xkbcommon.h"
 
 #include <assert.h>
 #include <locale.h>
@@ -20,11 +17,14 @@
 #include "test/keysym-case-mapping.h"
 #endif
 
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon.h"
 #include "test.h"
 #include "utils.h"
 #include "utils-numbers.h"
 #include "src/keysym.h" /* For unexported is_lower/upper/keypad() */
 #include "test/keysym.h"
+#include "utils.h"
 
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {

@@ -56,8 +56,9 @@
  * @version 1.0 (2024-12-07)
  */
 
-#ifndef JTCKDINT_H_
-#define JTCKDINT_H_
+#pragma once
+
+#include "config.h"
 
 #ifdef __has_include
 #define __ckd_has_include(x) __has_include(x)
@@ -407,4 +408,3 @@ __ckd_declare_mul(__ckd_mul_uint128, unsigned __int128)
 
 #endif /* GNU */
 #endif /* stdckdint.h */
-#endif /* JTCKDINT_H_ */

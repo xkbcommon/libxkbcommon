@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 /* Originally taken from: https://ccodearchive.net/info/darray.html
  * But modified for libxkbcommon. */
 
