@@ -20,6 +20,7 @@
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -126,14 +127,27 @@ enum xkb_action_controls {
     CONTROL_AX = (1 << 6),
     CONTROL_AX_TIMEOUT = (1 << 7),
     CONTROL_AX_FEEDBACK = (1 << 8),
-    CONTROL_BELL = (1 << 9),
-    CONTROL_IGNORE_GROUP_LOCK = (1 << 10),
+    CONTROL_AX_LATCH_TO_LOCK = (1 << 9),
+    CONTROL_BELL = (1 << 10),
+    CONTROL_IGNORE_GROUP_LOCK = (1 << 11),
     CONTROL_ALL = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | CONTROL_STICKY | \
          CONTROL_MOUSEKEYS | CONTROL_MOUSEKEYS_ACCEL | CONTROL_AX | \
-         CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | CONTROL_BELL | \
-         CONTROL_IGNORE_GROUP_LOCK)
+         CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | CONTROL_AX_LATCH_TO_LOCK | \
+         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
+    CONTROL_PUBLIC_API = CONTROL_STICKY
 };
+
+static_assert(
+    CONTROL_STICKY == (enum xkb_action_controls) XKB_CONTROL_STICKY_KEYS,
+    "Private value should match public API"
+);
+static_assert(
+    CONTROL_AX_LATCH_TO_LOCK == (enum xkb_action_controls) XKB_CONTROL_LATCH_TO_LOCK,
+    "Private value should match public API"
+);
+
+#define XKB_STATE_CONTROLS_ALL (XKB_CONTROL_STICKY_KEYS | XKB_CONTROL_LATCH_TO_LOCK)
 
 enum xkb_match_operation {
     MATCH_NONE,

@@ -1,0 +1,7 @@
+default
+xkb_symbols {
+	key <FK01> {
+		type[1] = "PC_CONTROL_LEVEL2",
+		[F1, StickyKeys_Enable]
+	};
+};
