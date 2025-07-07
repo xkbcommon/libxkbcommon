@@ -9,6 +9,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 

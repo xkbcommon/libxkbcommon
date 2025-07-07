@@ -10,8 +10,6 @@
  */
 
 #include "config.h"
-#include "darray.h"
-#include "keymap.h"
 
 #include <stdlib.h>
 #include <limits.h>
@@ -31,6 +29,8 @@
 
 #include "xkbcommon/xkbcommon.h"
 
+#include "darray.h"
+#include "keymap.h"
 #include "test.h"
 #include "utils.h"
 #include "utils-paths.h"

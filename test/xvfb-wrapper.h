@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "config.h"
+
 int xvfb_wrapper(int (*f)(char* display));
 
 int x11_tests_run(void);

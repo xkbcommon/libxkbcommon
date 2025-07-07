@@ -20,6 +20,8 @@
  /* Don't use compat names in internal code. */
 #define _XKBCOMMON_COMPAT_H
 
+#include "config.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 

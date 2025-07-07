@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include <xcb/xkb.h>
 
 #include "keymap.h"

@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 struct parser_param;
 struct scanner;
 

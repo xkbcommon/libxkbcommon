@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/utils.h"
 #include "src/context.h"

@@ -2,6 +2,8 @@
 //       Do not edit manually!
 #pragma once
 
+#include "config.h"
+
 #include <stdint.h>
 
 /*

@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "ast.h"
 #include "utils.h"
 

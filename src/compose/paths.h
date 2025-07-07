@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "config.h"
+
 #include "xkbcommon/xkbcommon.h"
 
 char *

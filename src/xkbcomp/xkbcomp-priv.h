@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include "keymap.h"
 #include "ast.h"
 
