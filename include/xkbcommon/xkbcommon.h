@@ -390,6 +390,21 @@ xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
                                 const char *option);
 
 /**
+ * Take a new reference on a [RMLVO] builder.
+ *
+ * @param rmlvo The builder to reference.
+ *
+ * @returns The passed in builder.
+ *
+ * @since 1.11.0
+ * @memberof xkb_rmlvo_builder
+ *
+ * [RMLVO]: @ref RMLVO-intro
+ */
+XKB_EXPORT struct xkb_rmlvo_builder *
+xkb_rmlvo_builder_ref(struct xkb_rmlvo_builder *rmlvo);
+
+/**
  * Release a reference on a [RMLVO] builder, and possibly free it.
  *
  * @param rmlvo The builder.  If it is `NULL`, this function does nothing.

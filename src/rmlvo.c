@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -136,9 +137,18 @@ xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
     return true;
 }
 
+struct xkb_rmlvo_builder *
+xkb_rmlvo_builder_ref(struct xkb_rmlvo_builder *rmlvo)
+{
+    assert(rmlvo->refcnt > 0);
+    rmlvo->refcnt++;
+    return rmlvo;
+}
+
 void
 xkb_rmlvo_builder_unref(struct xkb_rmlvo_builder *rmlvo)
 {
+    assert(!rmlvo || rmlvo->refcnt > 0);
     if (!rmlvo || --rmlvo->refcnt > 0)
         return;
 
