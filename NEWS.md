@@ -1,3 +1,230 @@
+libxkbcommon [1.11.0] – 2025-08-08
+==================================
+
+The highlight of this release is the introduction of a new keymap text format,
+`::XKB_KEYMAP_FORMAT_TEXT_V2`, in order to fix decade-old issues inherited from
+the X11 ecosystem. See the API section for documentation of its use.
+
+[1.11.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.11.0
+
+## Keymap text format
+
+### New
+
+A new keymap text format **v2** has been introduced as a superset of the legacy
+**v1** format. The format is not yet frozen and considered a living standard,
+although future iterations should be backward-compatible. See the
+[compatibility page] for detailed information of the features of each format.
+
+- Added the new parameter `lockOnRelease` for the key action `LockGroup()`
+  ([#420](https://github.com/xkbcommon/libxkbcommon/issues/420)).
+
+  It enables to use e.g. the combination `Alt + Shift` *alone* to
+  switch layouts, while keeping the use of `Alt + Shift + other key`
+  (typically for keyboard shortcuts).
+
+  It enables to fix a [20-year old issue][xserver-258] inherited from the X11
+  ecosystem, by extending the [XKB protocol key actions].
+
+  As it is incompatible with X11, this feature is available only using
+  `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- Added the new parameter `unlockOnPress` for the key modifier action `SetMods()`,
+  `LatchMods()` and `LockMods()`
+  ([#372](https://github.com/xkbcommon/libxkbcommon/issues/372) and
+  [#780](https://github.com/xkbcommon/libxkbcommon/issues/780)).
+
+  It enables e.g. to deactivate `CapsLock` *on press* rather than on release,
+  as in other platforms such as Windows.
+
+  It enables to fix the following two issues inherited from the X11 ecosystem,
+  by extending the [XKB protocol key actions]<!---->:
+  - a [18-year old issue][xkeyboard-config-74];
+  - a [12-year old issue][xserver-312].
+
+  As it is incompatible with X11, this feature is available only using
+  `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+
+- Added the new parameter `latchOnPress` for the key action `LatchMods()`.
+
+  Some keyboard layouts use `ISO_Level3_Latch` or `ISO_Level5_Latch` to define
+  “built-in” dead keys. `latchOnPress` enables to behave as usual dead keys, i.e.
+  to latch on press and to deactivate as soon as another (non-modifier) key is
+  pressed.
+
+  As it is incompatible with X11, this feature is available only using
+  `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- Raised the layout count limit from 4 to 32. Requires using
+  `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+  ([#37](https://github.com/xkbcommon/libxkbcommon/issues/37))
+
+  It enables to fix a [16-year old issue][xserver-262] inherited from the X11
+  ecosystem.
+- Virtual modifiers are now mapped to their <em>[canonical encoding]</em> if they
+  are not mapped *explicitly* (`virtual_modifiers M = …`) nor *implicitly*
+  (using `modifier_map`/`virtualModifier`).
+
+  This feature is enabled only when using `::XKB_KEYMAP_FORMAT_TEXT_V2`, as it may
+  result in encodings not compatible with X11.
+
+- Added support for the constants `Level<INDEX>` for *any* valid level index,
+  instead of the previous limited range `Level1`..`Level8`.
+- Enable to use absolute paths and `%`-expansion variables for including
+  *keymap components*, in the same fashion than the *rules* files.
+
+[compatibility page]: https://xkbcommon.org/doc/current/xkbcommon-compatibility.html
+[XKB protocol key actions]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Actions
+[xkeyboard-config-74]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/issues/74
+[xserver-258]: https://gitlab.freedesktop.org/xorg/xserver/-/issues/258
+[xserver-262]: https://gitlab.freedesktop.org/xorg/xserver/-/issues/262
+[xserver-312]: https://gitlab.freedesktop.org/xorg/xserver/-/issues/312
+[canonical encoding]: https://xkbcommon.org/doc/current/keymap-text-format-v1-v2.html#canonical-and-non-canonical-modifiers
+
+
+## Rules text format
+
+### New
+
+- Added support for *layout-specific options*. It enables specifying a
+  layout index for each option by appending `!` + 1-indexed layout, so that it
+  applies only if the layout matches.
+  ([#500](https://github.com/xkbcommon/libxkbcommon/issues/500))
+
+
+## API
+
+### Breaking changes
+
+- `xkb_keymap_new_from_names()` now uses the new keymap format
+  `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+- When using `::XKB_KEYMAP_FORMAT_TEXT_V1`, multiple actions per level are now
+  serialized using `VoidAction()`, in order to maintain compatibility with X11.
+  ([#793](https://github.com/xkbcommon/libxkbcommon/issues/793))
+
+### Deprecated
+
+- `xkb_keymap_new_from_names()` is now deprecated; please use
+  `xkb_keymap_new_from_names2()` instead with an explicit keymap format.
+
+### New
+
+- Added the new keymap format `::XKB_KEYMAP_FORMAT_TEXT_V2`, which enables
+  libxkbcommon’s extensions incompatible with X11.
+
+  Note that *fallback* mechanisms ensure that it is possible to parse using one
+  format and serialize using another.
+
+  **Wayland compositors** may use the new format to *parse* keymaps, but they
+  *must* use the previous format `::XKB_KEYMAP_FORMAT_TEXT_V1` whenever
+  *serializing* for interchange. Since almost features available only in the v2
+  format deal with state handling which is managed in the server, clients should
+  not be affected by a v2-to-v1 conversion.
+
+  **Client applications** should use the previous `::XKB_KEYMAP_FORMAT_TEXT_V1`
+  to parse keymaps, at least for now. They may use `::XKB_KEYMAP_FORMAT_TEXT_V2`
+  only if used with a Wayland compositor using the same version of libxkbcommon
+  *and* serializing to the new format. This precaution will be necessary until
+  the new format is stabilized.
+- Added `xkb_keymap_new_from_names2()` as an alternative to `xkb_keymap_new_from_names()`,
+  which is deprecated.
+- Added `xkb_keymap_new_from_rmlvo()` to compile a keymap using the new RMLVO
+  builder API.
+- Added a API to safely build a RMLVO configuration:
+  - `xkb_rmlvo_builder_new()`
+  - `xkb_rmlvo_builder_append_layout()`
+  - `xkb_rmlvo_builder_append_option()`
+  - `xkb_rmlvo_builder_ref()`
+  - `xkb_rmlvo_builder_unref()`
+- Added `xkb_keymap_mod_get_mask2()` to query the mapping of a modifier by its
+  index rather than it name.
+- Update keysyms using latest [xorgproto]
+    \(commit: `ce7786ebb90f70897f8038d02ae187ab22766ab2`).
+
+  Additions ([xorgproto-93]):
+
+  - `XKB_KEY_XF86MediaSelectCD` (alias for `XKB_KEY_XF86CD`)
+  - `XKB_KEY_XF86OK`
+  - `XKB_KEY_XF86GoTo`
+  - `XKB_KEY_XF86VendorLogo`
+  - `XKB_KEY_XF86MediaSelectProgramGuide`
+  - `XKB_KEY_XF86MediaSelectHome`
+  - `XKB_KEY_XF86MediaLanguageMenu`
+  - `XKB_KEY_XF86MediaTitleMenu`
+  - `XKB_KEY_XF86AudioChannelMode`
+  - `XKB_KEY_XF86MediaSelectPC`
+  - `XKB_KEY_XF86MediaSelectTV`
+  - `XKB_KEY_XF86MediaSelectCable`
+  - `XKB_KEY_XF86MediaSelectVCR`
+  - `XKB_KEY_XF86MediaSelectVCRPlus`
+  - `XKB_KEY_XF86MediaSelectSatellite`
+  - `XKB_KEY_XF86MediaSelectTape`
+  - `XKB_KEY_XF86MediaSelectRadio`
+  - `XKB_KEY_XF86MediaSelectTuner`
+  - `XKB_KEY_XF86MediaPlayer`
+  - `XKB_KEY_XF86MediaSelectTeletext`
+  - `XKB_KEY_XF86MediaSelectDVD` (alias for `XKB_KEY_XF86DVD`)
+  - `XKB_KEY_XF86MediaSelectAuxiliary`
+  - `XKB_KEY_XF86MediaPlaySlow`
+  - `XKB_KEY_XF86NumberEntryMode`
+
+    [xorgproto-93]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/93
+- Registry: added `rxkb_option_is_layout_specific()` to query if an option accepts
+  layout index specifiers to restrict its application to the corresponding layouts.
+  ([#500](https://github.com/xkbcommon/libxkbcommon/issues/500))
+
+### Fixes
+
+- Fixed incorrect implementation of `latchToLock` for `LatchMods()`, which could
+  result in unintended `CapsLock` unlock.
+  ([#808](https://github.com/xkbcommon/libxkbcommon/issues/808))
+- Fixed `xkb_utf32_to_keysym()` returning deprecated keysyms for some
+  Unicode code points.
+- Fixed breaking a latch not honoring `clearLocks=no`.
+
+
+## Tools
+
+### Breaking changes
+
+- The tools now use:
+
+  - `::XKB_KEYMAP_FORMAT_TEXT_V2` as a default *input* format.
+  - `::XKB_KEYMAP_USE_ORIGINAL_FORMAT` as a default *output* format.
+    So if the input format is not specified, it will resolve to
+    `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+
+  The formats can be explicitly specified using the new `--*format` options.
+
+### New
+
+- Added `--*format` options to various tools for specifying and explicit keymap
+  format for parsing and serializing.
+- Added commands that automatically select the appropriate backend:
+  - `xkbcli interactive`: try Wayland, X11 then fallback to the evdev backend.
+  - `xkbcli dump-keymap`: try Wayland then fallback to the X11 backend.
+- Improved `xkbcli interactive-*`:
+  - Print key release events.
+  - Print detailed state change events.
+  - Added `--uniline` to enable uniline event output (default).
+  - Added `--multiline` to enable multiline event output, which provides
+    more details than the uniline mode.
+  - Wayland and X11: Added `--local-state` to enable handling the keyboard state
+    with a local state machine instead of the display server.
+    ([#832](https://github.com/xkbcommon/libxkbcommon/issues/832))
+  - Wayland and X11: Added `--keymap` to enable to use a custom keymap instead
+    of the keymap from the display server. Implies `--local-state`.
+    ([#833](https://github.com/xkbcommon/libxkbcommon/issues/833))
+- `xkbcli how-to-type`: Added `--keymap` to enable loading the keymap from a
+  file or stdin instead of resolving RMLVO names.
+- `xkbcli how-to-type`: Added Compose support, enabled by default and disabled
+  using `--disable-compose`.
+  ([#361](https://github.com/xkbcommon/libxkbcommon/issues/361))
+- `xkbcli-list`: Added `layout-specific` field for options.
+  ([#500](https://github.com/xkbcommon/libxkbcommon/issues/500))
+- Added `--verbose` to various tools, so that all tools have the option.
+  ([#833](https://github.com/xkbcommon/libxkbcommon/issues/833))
+
+
+
 libxkbcommon [1.10.0] – 2025-05-21
 ==================================
 
