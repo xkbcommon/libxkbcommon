@@ -136,6 +136,7 @@ global:
     xkb_rmlvo_builder_new;
     xkb_rmlvo_builder_append_layout;
     xkb_rmlvo_builder_append_option;
+    xkb_rmlvo_builder_ref;
     xkb_rmlvo_builder_unref;
     xkb_keymap_new_from_rmlvo;
     xkb_keymap_new_from_names2;
