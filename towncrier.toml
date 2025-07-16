@@ -17,6 +17,14 @@ issue_format = "[#{issue}](https://github.com/xkbcommon/libxkbcommon/issues/{iss
 # Sections configuration
 
 [[tool.towncrier.section]]
+name = "Keymap text format"
+path = "keymap-text-format"
+
+[[tool.towncrier.section]]
+name = "Rules text format"
+path = "rules-text-format"
+
+[[tool.towncrier.section]]
 name = "API"
 path = "api"
 
