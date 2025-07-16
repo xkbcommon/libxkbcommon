@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "utils.h"
 #include "table.h"
 #include "parser.h"
@@ -55,6 +57,7 @@ xkb_compose_table_new(struct xkb_context *ctx,
 struct xkb_compose_table *
 xkb_compose_table_ref(struct xkb_compose_table *table)
 {
+    assert(table->refcnt > 0);
     table->refcnt++;
     return table;
 }
@@ -62,6 +65,7 @@ xkb_compose_table_ref(struct xkb_compose_table *table)
 void
 xkb_compose_table_unref(struct xkb_compose_table *table)
 {
+    assert(!table || table->refcnt > 0);
     if (!table || --table->refcnt > 0)
         return;
     free(table->locale);

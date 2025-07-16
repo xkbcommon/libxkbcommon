@@ -8,9 +8,10 @@
 
 #include "config.h"
 
+#include <assert.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
@@ -171,6 +172,7 @@ xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 struct xkb_context *
 xkb_context_ref(struct xkb_context *ctx)
 {
+    assert(ctx->refcnt > 0);
     ctx->refcnt++;
     return ctx;
 }
@@ -182,6 +184,7 @@ xkb_context_ref(struct xkb_context *ctx)
 void
 xkb_context_unref(struct xkb_context *ctx)
 {
+    assert(!ctx || ctx->refcnt > 0);
     if (!ctx || --ctx->refcnt > 0)
         return;
 

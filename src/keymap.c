@@ -23,6 +23,7 @@
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
 {
+    assert(keymap->refcnt > 0);
     keymap->refcnt++;
     return keymap;
 }
@@ -46,6 +47,7 @@ clear_interpret(struct xkb_sym_interpret *interp)
 void
 xkb_keymap_unref(struct xkb_keymap *keymap)
 {
+    assert(!keymap || keymap->refcnt > 0);
     if (!keymap || --keymap->refcnt > 0)
         return;
 

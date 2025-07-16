@@ -25,10 +25,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
 #include "keysym.h"
 #include "utf8.h"
-#include "xkbcommon/xkbcommon.h"
 
 struct xkb_filter {
     union xkb_action action;
@@ -883,6 +883,7 @@ xkb_state_new(struct xkb_keymap *keymap)
 struct xkb_state *
 xkb_state_ref(struct xkb_state *state)
 {
+    assert(state->refcnt > 0);
     state->refcnt++;
     return state;
 }
@@ -890,6 +891,7 @@ xkb_state_ref(struct xkb_state *state)
 void
 xkb_state_unref(struct xkb_state *state)
 {
+    assert(!state || state->refcnt > 0);
     if (!state || --state->refcnt > 0)
         return;
 

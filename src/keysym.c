@@ -10,8 +10,10 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
+
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "utils.h"
@@ -141,7 +143,14 @@ xkb_keysym_iterator_new(bool iterate_only_explicit_keysyms)
 struct xkb_keysym_iterator*
 xkb_keysym_iterator_unref(struct xkb_keysym_iterator *iter)
 {
-    free(iter);
+    /*
+     * [NOTE] If we ever make this API public, add:
+     * - an `refcnt` member,
+     * - `xkb_keysym_iterator_ref()`,
+     * - `assert(!iter || iter->refcnt > 0)`.
+     */
+    if (iter)
+        free(iter);
     return NULL;
 }
 
