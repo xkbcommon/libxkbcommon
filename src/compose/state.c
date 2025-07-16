@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "table.h"
 #include "utils.h"
 #include "keysym.h"
@@ -50,6 +52,7 @@ xkb_compose_state_new(struct xkb_compose_table *table,
 struct xkb_compose_state *
 xkb_compose_state_ref(struct xkb_compose_state *state)
 {
+    assert(state->refcnt > 0);
     state->refcnt++;
     return state;
 }
@@ -57,6 +60,7 @@ xkb_compose_state_ref(struct xkb_compose_state *state)
 void
 xkb_compose_state_unref(struct xkb_compose_state *state)
 {
+    assert(!state || state->refcnt > 0);
     if (!state || --state->refcnt > 0)
         return;
 
