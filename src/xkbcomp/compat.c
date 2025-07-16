@@ -64,6 +64,7 @@ typedef struct {
     struct xkb_mod_set mods;
 
     enum xkb_keymap_format format;
+    xkb_layout_index_t num_groups;
     struct xkb_context *ctx;
 } CompatInfo;
 
@@ -143,11 +144,12 @@ InitLED(LedInfo *info)
 static void
 InitCompatInfo(CompatInfo *info, struct xkb_context *ctx,
                unsigned int include_depth, enum xkb_keymap_format format,
-               const struct xkb_mod_set *mods)
+               xkb_layout_index_t num_groups, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
     info->ctx = ctx;
     info->format = format;
+    info->num_groups = num_groups;
     info->include_depth = include_depth;
     InitActionsInfo(&info->default_actions);
     InitVMods(&info->mods, mods, include_depth > 0);
@@ -458,7 +460,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
     }
 
     InitCompatInfo(&included, info->ctx, info->include_depth + 1,
-                   info->format, &info->mods);
+                   info->format, info->num_groups, &info->mods);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -473,7 +475,7 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         }
 
         InitCompatInfo(&next_incl, info->ctx, info->include_depth + 1,
-                       info->format, &included.mods);
+                       info->format, info->num_groups, &included.mods);
         next_incl.default_interp = info->default_interp;
         next_incl.default_led = info->default_led;
 
@@ -521,7 +523,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             for (ExprDef *act = value->actions.actions;
                  act; act = (ExprDef *) act->common.next) {
                 union xkb_action toAct = { 0 };
-                if (!HandleActionDef(info->ctx, info->format,
+                if (!HandleActionDef(info->ctx, info->format, info->num_groups,
                                      &info->default_actions, &info->mods,
                                      act, &toAct)) {
                     darray_free(actions);
@@ -556,7 +558,7 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                 darray_steal(actions, &si->interp.a.actions, NULL);
             }
         }
-        else if (HandleActionDef(info->ctx, info->format,
+        else if (HandleActionDef(info->ctx, info->format, info->num_groups,
                                  &info->default_actions, &info->mods,
                                  value, &si->interp.a.action))
             si->interp.num_actions =
@@ -640,7 +642,7 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
             return ReportLedNotArray(info, ledi, field);
 
         const xkb_layout_index_t max_groups = format_max_groups(info->format);
-        if (!ExprResolveGroupMask(info->ctx, max_groups, value, &mask))
+        if (!ExprResolveGroupMask(info->ctx, max_groups, info->num_groups, value, &mask))
             return ReportLedBadType(info, ledi, field, "group mask");
 
         ledi->led.groups = mask;
@@ -747,7 +749,7 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         MergeLedMap(info, &info->default_led, &temp, true);
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->ctx, info->format,
+        ret = SetDefaultActionField(info->ctx, info->format, info->num_groups,
                                     &info->default_actions, &info->mods,
                                     elem, field, ndx,
                                     stmt->value, stmt->merge);
@@ -1011,7 +1013,8 @@ CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap)
 {
     CompatInfo info;
 
-    InitCompatInfo(&info, keymap->ctx, 0, keymap->format, &keymap->mods);
+    InitCompatInfo(&info, keymap->ctx, 0, keymap->format, keymap->num_groups,
+                   &keymap->mods);
 
     if (file != NULL)
         HandleCompatMapFile(&info, file);
