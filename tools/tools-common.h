@@ -55,8 +55,11 @@ tools_disable_stdin_echo(void);
 void
 tools_enable_stdin_echo(void);
 
+const char *
+select_backend(const char *wayland, const char *x11, const char *fallback);
+
 int
-tools_exec_command(const char *prefix, int argc, char **argv);
+tools_exec_command(const char *prefix, int argc, const char **argv);
 
 bool
 is_pipe_or_regular_file(int fd);

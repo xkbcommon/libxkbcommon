@@ -460,7 +460,7 @@ if build_tools
     )
     configh_data.set10('HAVE_TOOLS', true)
 
-    # Tool: xkbcli
+    # Tool: export-keysyms
     export_keysym_dep = [tools_dep]
     if icu_dep.found()
         export_keysym_dep += [icu_dep]
@@ -630,6 +630,30 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                    install_dir: dir_libexec)
         install_man('tools/xkbcli-dump-keymap-wayland.1')
         configh_data.set10('HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND', true)
+    endif
+
+    # Tool: interactive
+    if (
+       configh_data.get('HAVE_XKBCLI_INTERACTIVE_WAYLAND', 0) == 1 or
+       configh_data.get('HAVE_XKBCLI_INTERACTIVE_X11', 0) == 1 or
+       configh_data.get('HAVE_XKBCLI_INTERACTIVE_EVDEV', 0) == 1
+    )
+        executable('xkbcli-interactive', 'tools/interactive.c',
+                   dependencies: tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
+    endif
+
+    # Tool: dump-keymap
+    if (
+       configh_data.get('HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND', 0) == 1 or
+       configh_data.get('HAVE_XKBCLI_DUMP_KEYMAP_X11', 0) == 1
+    )
+        executable('xkbcli-dump-keymap', 'tools/interactive.c',
+                   c_args: ['-DKEYMAP_DUMP'],
+                   dependencies: tools_dep,
+                   install: true,
+                   install_dir: dir_libexec)
     endif
 
     # Tool: list
