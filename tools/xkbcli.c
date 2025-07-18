@@ -29,6 +29,12 @@ usage(void)
            "    List available rules, models, layouts, variants and options\n"
            "\n"
 #endif
+#if HAVE_XKBCLI_INTERACTIVE_WAYLAND || HAVE_XKBCLI_INTERACTIVE_X11
+           "  interactive\n"
+           "    Interactive debugger for XKB keymaps; automatically select from"
+           "    the following backends, if available: Wayland, X11 and evdev.\n"
+           "\n"
+#endif
 #if HAVE_XKBCLI_INTERACTIVE_WAYLAND
            "  interactive-wayland\n"
            "    Interactive debugger for XKB keymaps for Wayland\n"
@@ -42,6 +48,11 @@ usage(void)
 #if HAVE_XKBCLI_INTERACTIVE_EVDEV
            "  interactive-evdev\n"
            "    Interactive debugger for XKB keymaps for evdev\n"
+           "\n"
+#endif
+#if HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND || HAVE_XKBCLI_DUMP_KEYMAP_X11
+           "  dump-keymap\n"
+           "    Dump a XKB keymap from a Wayland or X11 compositor\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND
@@ -118,5 +129,5 @@ main(int argc, char **argv)
     argv += optind;
     argc -= optind;
 
-    return tools_exec_command("xkbcli", argc, argv);
+    return tools_exec_command("xkbcli", argc, (const char **) argv);
 }

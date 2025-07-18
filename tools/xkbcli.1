@@ -39,23 +39,34 @@ Compile a compose file, see
 Show how to type a given Unicode codepoint, see
 .Xr xkbcli\-how\-to\-type 1
 .
-.It Ic interactive\-x11
-Interactive debugger for XKB keymaps for X11, see
-.Xr xkbcli\-interactive\-x11 1
-.
-.It Ic interactive\-wayland
-Interactive debugger for XKB keymaps for Wayland, see
-.Xr xkbcli\-interactive\-wayland 1
+.It Ic interactive
+Interactive debugger for XKB keymaps that automatically select from the
+following backends, if available: Wayland, X11 and evdev.
+See the corresponding entries hereinafter.
 .
 .It Ic interactive\-evdev
 Interactive debugger for XKB keymaps for evdev, see
 .Xr xkbcli\-interactive\-evdev 1
 .
+.It Ic interactive\-wayland
+Interactive debugger for XKB keymaps for Wayland, see
+.Xr xkbcli\-interactive\-wayland 1
+.
+.It Ic interactive\-x11
+Interactive debugger for XKB keymaps for X11, see
+.Xr xkbcli\-interactive\-x11 1
+.
+.It Ic dump\-keymap
+Dump a XKB keymap from a Wayland or X11 compositor, see the corresponding
+entries hereinafter.
+.
 .It Ic dump\-keymap\-wayland
-Dump a XKB keymap from a Wayland compositor
+Dump a XKB keymap from a Wayland compositor, see
+.Xr xkbcli\-dump\-keymap\-wayland 1
 .
 .It Ic dump\-keymap\-x11
-Dump a XKB keymap from an X server
+Dump a XKB keymap from an X server, see
+.Xr xkbcli\-dump\-keymap\-x11 1
 .
 .It Ic list
 List available layouts and more, see

@@ -261,19 +261,20 @@ class TestXkbcli(unittest.TestCase):
         cls.xkbcli_how_to_type = XkbcliTool("how-to-type")
         cls.xkbcli_compile_keymap = XkbcliTool("compile-keymap")
         cls.xkbcli_compile_compose = XkbcliTool("compile-compose")
+        no_interactive_evdev = (
+            (
+                not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_EVDEV", "1")),
+                "evdev not enabled",
+            ),
+            (not os.path.exists("/dev/input/event0"), "event node required"),
+            (
+                not os.access("/dev/input/event0", os.R_OK),
+                "insufficient permissions",
+            ),
+        )
         cls.xkbcli_interactive_evdev = XkbcliTool(
             "interactive-evdev",
-            skipIf=(
-                (
-                    not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_EVDEV", "1")),
-                    "evdev not enabled",
-                ),
-                (not os.path.exists("/dev/input/event0"), "event node required"),
-                (
-                    not os.access("/dev/input/event0", os.R_OK),
-                    "insufficient permissions",
-                ),
-            ),
+            skipIf=no_interactive_evdev,
             skipError=(
                 (
                     lambda rc, stdout, stderr: "Couldn't find any keyboards" in stderr,
@@ -281,24 +282,61 @@ class TestXkbcli(unittest.TestCase):
                 ),
             ),
         )
+        no_interactive_x11 = (
+            (
+                not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_X11", "1")),
+                "x11 not enabled",
+            ),
+            (not os.getenv("DISPLAY"), "DISPLAY not set"),
+        )
         cls.xkbcli_interactive_x11 = XkbcliTool(
             "interactive-x11",
-            skipIf=(
-                (
-                    not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_X11", "1")),
-                    "x11 not enabled",
-                ),
-                (not os.getenv("DISPLAY"), "DISPLAY not set"),
+            skipIf=no_interactive_x11,
+        )
+        no_interactive_wayland = (
+            (
+                not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_WAYLAND", "1")),
+                "wayland not enabled",
             ),
+            (not os.getenv("WAYLAND_DISPLAY"), "WAYLAND_DISPLAY not set"),
         )
         cls.xkbcli_interactive_wayland = XkbcliTool(
             "interactive-wayland",
+            skipIf=no_interactive_wayland,
+        )
+
+        def has_no_backend(*skipped_backends):
+            return all(
+                reduce(lambda acc, cond: acc or cond[0], skipped_backend, False)
+                for skipped_backend in skipped_backends
+            )
+
+        cls.xkbcli_interactive = XkbcliTool(
+            "interactive",
             skipIf=(
                 (
-                    not int(os.getenv("HAVE_XKBCLI_INTERACTIVE_WAYLAND", "1")),
-                    "wayland not enabled",
+                    has_no_backend(
+                        no_interactive_wayland, no_interactive_x11, no_interactive_evdev
+                    ),
+                    "no available backend",
                 ),
-                (not os.getenv("WAYLAND_DISPLAY"), "WAYLAND_DISPLAY not set"),
+            ),
+        )
+        cls.xkbcli_dump_keymap_x11 = XkbcliTool(
+            "dump-keymap-x11",
+            skipIf=no_interactive_x11,
+        )
+        cls.xkbcli_dump_keymap_wayland = XkbcliTool(
+            "dump-keymap-wayland",
+            skipIf=no_interactive_wayland,
+        )
+        cls.xkbcli_dump_keymap = XkbcliTool(
+            "dump-keymap",
+            skipIf=(
+                (
+                    has_no_backend(no_interactive_wayland, no_interactive_x11),
+                    "no available backend",
+                ),
             ),
         )
         cls.all_tools = [
@@ -310,6 +348,10 @@ class TestXkbcli(unittest.TestCase):
             cls.xkbcli_interactive_evdev,
             cls.xkbcli_interactive_x11,
             cls.xkbcli_interactive_wayland,
+            cls.xkbcli_interactive,
+            cls.xkbcli_dump_keymap_x11,
+            cls.xkbcli_dump_keymap_wayland,
+            cls.xkbcli_dump_keymap,
         ]
 
     def test_help(self):

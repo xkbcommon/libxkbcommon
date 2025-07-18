@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -332,10 +333,35 @@ tools_enable_stdin_echo(void)
 
 #endif
 
-int
-tools_exec_command(const char *prefix, int real_argc, char **real_argv)
+static inline bool
+is_wayland_session(void)
 {
-    char *argv[64] = {NULL};
+    /* This simple check should be enough for our use case. */
+    return !isempty(getenv("WAYLAND_DISPLAY"));
+}
+
+static inline bool
+is_x11_session(void)
+{
+    /* This simple check should be enough for our use case. */
+    return !isempty(getenv("DISPLAY"));
+}
+
+const char *
+select_backend(const char *wayland, const char *x11, const char *fallback)
+{
+    if (wayland && is_wayland_session())
+        return wayland;
+    else if (x11 && is_x11_session())
+        return x11;
+    else
+        return fallback;
+}
+
+int
+tools_exec_command(const char *prefix, int real_argc, const char **real_argv)
+{
+    const char *argv[64] = {NULL};
     char executable[PATH_MAX];
     const char *command;
     int rc;
@@ -355,10 +381,10 @@ tools_exec_command(const char *prefix, int real_argc, char **real_argv)
     }
 
     argv[0] = executable;
-    for (int i = 1; i < real_argc; i++)
+    for (int i = 1; i < MIN(real_argc, (int) ARRAY_SIZE(argv)); i++)
         argv[i] = real_argv[i];
 
-    execv(executable, argv);
+    execv(executable, (char **) argv);
     if (errno == ENOENT) {
         fprintf(stderr, "Command '%s' is not available\n", command);
         return EXIT_INVALID_USAGE;

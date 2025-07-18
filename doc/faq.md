@@ -137,6 +137,13 @@ keysyms. In order to get the output for the current keymap, use it with
 `xkbcli dump-keymap-*`:
 
 <dl>
+<dt>Automatic session type detection</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap | xkbcli compile-keymap --modmaps
+```
+</dd>
 <dt>Wayland session</dt>
 <dd>
 
@@ -144,7 +151,7 @@ keysyms. In order to get the output for the current keymap, use it with
 xkbcli dump-keymap-wayland | xkbcli compile-keymap --modmaps
 ```
 </dd>
-<dt>X11 session</dt>
+<dt>X11 session / XWayland</dt>
 <dd>
 
 ```bash
@@ -202,6 +209,13 @@ xkbcli compile-keymap --keymap /path/to/keymap/file
 <dd>
 
 <dl>
+<dt>Automatic session type detection</dt>
+<dd>
+
+```bash
+xkbcli dump-keymap
+```
+</dd>
 <dt>Wayland session</dt>
 <dd>
 
@@ -226,6 +240,37 @@ No equivalent: `xkbcli` does not modify the display server keymap.
 One must use the tools *specific* to each display server in order order to
 achieve it. Please have a look at @ref user-configuration "", which enables
 making custom layouts *discoverable* by keyboard configuration GUI.
+</dd>
+</dl>
+
+### xev
+
+<dl>
+<dt>`xev -event keyboard`</dt>
+<dd>
+<dl>
+<dt>Automatic session type detection</dt>
+<dd>
+
+```bash
+xkbcli interactive
+```
+</dd>
+<dt>Wayland session</dt>
+<dd>
+
+```bash
+xkbcli interactive-wayland
+```
+</dd>
+<dt>X11 session</dt>
+<dd>
+
+```bash
+xkbcli interactive-x11
+```
+</dd>
+</dl>
 </dd>
 </dl>
 
