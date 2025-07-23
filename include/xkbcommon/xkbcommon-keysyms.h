@@ -2898,7 +2898,7 @@ SOFTWARE.
 #define XKB_KEY_XF86MediaSelectTeletext      0x10081184      /* v2.5.26 KEY_TEXT */
 #define XKB_KEY_XF86DVD                      0x10081185      /* v2.5.26 KEY_DVD */
 #define XKB_KEY_XF86MediaSelectDVD           0x10081185      /* Alias for XF86DVD */
-#define XKB_KEY_XF86MediaSelectAuxilliary    0x10081186      /* v2.5.26 KEY_AUX */
+#define XKB_KEY_XF86MediaSelectAuxiliary     0x10081186      /* v2.5.26 KEY_AUX */
 /* TODO: unclear media selector              _EVDEVK(0x187)     v2.5.26 KEY_MP3 */
 #define XKB_KEY_XF86Audio                    0x10081188      /* v2.5.26 KEY_AUDIO */
 /* Use: XKB_KEY_XF86Video                    _EVDEVK(0x189)     v2.5.26 KEY_VIDEO */
