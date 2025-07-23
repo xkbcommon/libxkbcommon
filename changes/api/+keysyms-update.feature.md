@@ -1,5 +1,5 @@
 Update keysyms using latest [xorgproto]
-  \(commit: `7fc33fe6d9cf0abc9b62ee976e5cb7ddcd050d1f`):
+  \(commit: `ce7786ebb90f70897f8038d02ae187ab22766ab2`):
 
   - Additions ([xorproto-93]):
 
@@ -24,7 +24,7 @@ Update keysyms using latest [xorgproto]
     - `XKB_KEY_XF86MediaPlayer`
     - `XKB_KEY_XF86MediaSelectTeletext`
     - `XKB_KEY_XF86MediaSelectDVD` (alias for `XKB_KEY_XF86DVD)
-    - `XKB_KEY_XF86MediaSelectAuxilliary`
+    - `XKB_KEY_XF86MediaSelectAuxiliary`
     - `XKB_KEY_XF86MediaPlaySlow`
     - `XKB_KEY_XF86NumberEntryMode`
 
