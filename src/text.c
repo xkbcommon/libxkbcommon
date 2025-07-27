@@ -80,12 +80,6 @@ const LookupEntry groupComponentMaskNames[] = {
     { NULL, 0 }
 };
 
-const LookupEntry groupMaskNames[] = {
-    { "none", 0x00 },
-    { "all", XKB_ALL_GROUPS },
-    { NULL, 0 }
-};
-
 const LookupEntry buttonNames[] = {
     { "Button1", 1 },
     { "Button2", 2 },
