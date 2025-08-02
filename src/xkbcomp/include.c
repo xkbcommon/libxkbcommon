@@ -496,10 +496,14 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
     }
 
     if (!xkb_file) {
-        log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
-                "Couldn't process include statement for '%s%s%s%s)'\n",
-                stmt->file,
-                (stmt->map ? "(" : ""), stmt->map, (stmt->map ? ")" : ""));
+        if (stmt->map)
+            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
+                    "Couldn't process include statement for '%s(%s)'\n",
+                    stmt->file, stmt->map);
+        else
+            log_err(ctx, XKB_ERROR_INVALID_INCLUDED_FILE,
+                    "Couldn't process include statement for '%s'\n",
+                    stmt->file);
     }
 
     return xkb_file;
