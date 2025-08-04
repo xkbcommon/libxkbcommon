@@ -13,6 +13,7 @@
 #include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "src/utils.h"
 #include "src/keysym.h"
 #include "src/utf8-decoding.h"
@@ -80,8 +81,11 @@ usage(FILE *fp, const char *argv0)
         "- a single character (requires a terminal which uses UTF-8 character encoding);\n"
         "- a Unicode code point, interpreted as hexadecimal if prefixed with '0x' or 'U+'\n"
         "  else as decimal;\n"
-        "- a keysym if --keysym is used: either a numeric value (hexadecimal if prefixed\n"
-        "  with '0x' else decimal) or a keysym name.\n"
+        "- a keysym if either the previous interpretations failed or if --keysym is used. \n"
+        "  The parameter is then either a keysym name or a numeric value (hexadecimal \n"
+        "  if prefixed with '0x' else decimal). Note that values '0' .. '9' are special: \n"
+        "  they are both names and numeric values. The default interpretation is names; \n"
+        "  use the hexadecimal form '0x0' .. '0x9' in order to interpret as numeric values.\n"
         "\n"
         "Options:\n"
         " --help\n"
@@ -89,7 +93,7 @@ usage(FILE *fp, const char *argv0)
         " --verbose\n"
         "    Enable verbose debugging output\n"
         " --keysym\n"
-        "    Treat the argument as a keysym, not a Unicode code point\n"
+        "    Treat the argument only as a keysym\n"
         "\n"
         "XKB-specific options:\n"
         " --format <format>\n"
@@ -217,29 +221,34 @@ main(int argc, char *argv[])
         goto parse_error;
     }
 
-    xkb_keysym_t keysym;
-    if (keysym_mode) {
+    xkb_keysym_t keysym = XKB_KEY_NoSymbol;
+    if (!keysym_mode) {
+        /* Try to parse code point */
+        const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
+        if (codepoint != INVALID_UTF8_CODE_POINT) {
+            keysym = xkb_utf32_to_keysym(codepoint);
+            if (keysym == XKB_KEY_NoSymbol) {
+                fprintf(stderr,
+                        "ERROR: Failed to convert code point to keysym\n");
+                goto parse_error;
+            }
+        } else {
+            /* Try to parse as keysym */
+        }
+    }
+    if (keysym == XKB_KEY_NoSymbol) {
         /* Try to parse keysym name or hexadecimal value (0xNNNN) */
         keysym = xkb_keysym_from_name(argv[optind], XKB_KEYSYM_NO_FLAGS);
         if (keysym == XKB_KEY_NoSymbol) {
             /* Try to parse numeric keysym in base 10, without prefix */
             char *endp = NULL;
+            errno = 0;
             const long int val = strtol(argv[optind], &endp, 10);
             if (errno != 0 || !isempty(endp) || val <= 0 || val > XKB_KEYSYM_MAX) {
                 fprintf(stderr, "ERROR: Failed to convert argument to keysym\n");
                 goto parse_error;
             }
             keysym = (uint32_t) val;
-        }
-    } else {
-        const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
-        if (codepoint == INVALID_UTF8_CODE_POINT)
-            goto parse_error;
-
-        keysym = xkb_utf32_to_keysym(codepoint);
-        if (keysym == XKB_KEY_NoSymbol) {
-            fprintf(stderr, "ERROR: Failed to convert code point to keysym\n");
-            goto parse_error;
         }
     }
 

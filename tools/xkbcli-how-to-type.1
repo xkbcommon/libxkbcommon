@@ -9,7 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op options
-.Ar character/codepoint/keysym
+.Ar character/code point/keysym
 .
 .Sh DESCRIPTION
 .Nm
@@ -17,7 +17,7 @@ prints the key combinations (keycode + modifiers) in the keymap's layouts which
 would produce the given Unicode code point or keysym.
 .
 .Pp
-.Ar codepoint/keysym
+.Ar code point/keysym
 is either:
 .
 .Bl -bullet -compact
@@ -31,11 +31,22 @@ or
 else as decimal;
 .
 .It
-a keysym if
+a keysym if either the previous interpretations failed or if
 .Fl \-keysym
-is used: either a \fInumeric\fP value (hexadecimal if prefixed with
+is used. The parameter is then either a keysym \fIname\fP or a \fInumeric\fP value
+(hexadecimal if prefixed with
 .Li 0x
-else decimal) or a keysym \fIname\fP.
+else decimal). Note that values
+.Li 0
+–
+.Li 9
+are special: they are both names and
+numeric values. The default interpretation is \fInames\fP; use the hexadecimal
+form
+.Li 0x0
+–
+.Li 0x9
+in order to interpret as numeric values.
 .El
 .
 .Sh EXAMPLES
@@ -72,7 +83,7 @@ layout.
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl \-keysym
-Treat the argument as a keysym, not a Unicode code point
+Treat the argument as only as a keysym
 .
 .It Fl \-format Ar keymap_format
 Specify the keymap format (numeric or label, e.g.\&
