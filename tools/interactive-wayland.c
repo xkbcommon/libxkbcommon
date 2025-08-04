@@ -452,13 +452,12 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         xkb_compose_state_feed(seat->compose_state, keysym);
     }
 
-    if (state != WL_KEYBOARD_KEY_STATE_RELEASED) {
-        char *prefix = asprintf_safe("%s: ", seat->name_str);
-        tools_print_keycode_state(prefix, seat->state, seat->compose_state, keycode,
-                                XKB_CONSUMED_MODE_XKB,
-                                PRINT_ALL_FIELDS);
-        free(prefix);
-    }
+    char * const prefix = asprintf_safe("%s: ", seat->name_str);
+    const enum xkb_key_direction direction =
+        (state == WL_KEYBOARD_KEY_STATE_RELEASED) ? XKB_KEY_UP : XKB_KEY_DOWN;
+    tools_print_keycode_state(prefix, seat->state, seat->compose_state, keycode,
+                              direction, XKB_CONSUMED_MODE_XKB, PRINT_ALL_FIELDS);
+    free(prefix);
 
     if (seat->compose_state) {
         enum xkb_compose_status status = xkb_compose_state_get_status(seat->compose_state);

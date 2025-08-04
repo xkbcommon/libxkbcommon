@@ -258,12 +258,11 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
         xkb_compose_state_feed(kbd->compose_state, keysym);
     }
 
-    if (value != KEY_STATE_RELEASE) {
-        tools_print_keycode_state(
-            NULL, kbd->state, kbd->compose_state, keycode,
-            consumed_mode, print_fields
-        );
-    }
+    tools_print_keycode_state(
+        NULL, kbd->state, kbd->compose_state, keycode,
+        (value == KEY_STATE_RELEASE) ? XKB_KEY_UP : XKB_KEY_DOWN,
+        consumed_mode, print_fields
+    );
 
     if (with_compose) {
         status = xkb_compose_state_get_status(kbd->compose_state);

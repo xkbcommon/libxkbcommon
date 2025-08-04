@@ -43,6 +43,7 @@ tools_print_keycode_state(const char *prefix,
                           struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
                           xkb_keycode_t keycode,
+                          enum xkb_key_direction direction,
                           enum xkb_consumed_mode consumed_mode,
                           print_state_fields_mask_t fields);
 

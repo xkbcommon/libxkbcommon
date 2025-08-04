@@ -12,7 +12,9 @@
 #include <string.h>
 
 #include <xcb/xkb.h>
+#include <xcb/xproto.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-x11.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
@@ -261,11 +263,12 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         }
 
         tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
-                                  XKB_CONSUMED_MODE_XKB,
+                                  XKB_KEY_DOWN, XKB_CONSUMED_MODE_XKB,
                                   PRINT_ALL_FIELDS);
 
         if (kbd->compose_state) {
-            enum xkb_compose_status status = xkb_compose_state_get_status(kbd->compose_state);
+            enum xkb_compose_status status =
+                xkb_compose_state_get_status(kbd->compose_state);
             if (status == XKB_COMPOSE_CANCELLED ||
                 status == XKB_COMPOSE_COMPOSED)
                 xkb_compose_state_reset(kbd->compose_state);
@@ -274,6 +277,14 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         /* Exit on ESC. */
         if (xkb_state_key_get_one_sym(kbd->state, keycode) == XKB_KEY_Escape)
             terminate = true;
+        break;
+    }
+    case XCB_KEY_RELEASE: {
+        xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
+        xkb_keycode_t keycode = event->detail;
+        tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
+                                  XKB_KEY_UP, XKB_CONSUMED_MODE_XKB,
+                                  PRINT_ALL_FIELDS);
         break;
     }
     default:
@@ -329,7 +340,7 @@ create_capture_window(xcb_connection_t *conn)
     xcb_window_t window = xcb_generate_id(conn);
     uint32_t values[2] = {
         screen->white_pixel,
-        XCB_EVENT_MASK_KEY_PRESS,
+        XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE,
     };
 
     cookie = xcb_create_window_checked(conn, XCB_COPY_FROM_PARENT,

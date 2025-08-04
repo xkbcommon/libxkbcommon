@@ -11,6 +11,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <fcntl.h>
@@ -160,34 +161,41 @@ tools_print_keycode_state(const char *prefix,
                           struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
                           xkb_keycode_t keycode,
+                          enum xkb_key_direction direction,
                           enum xkb_consumed_mode consumed_mode,
                           print_state_fields_mask_t fields)
 {
-    struct xkb_keymap *keymap;
-
     xkb_keysym_t sym;
-    const xkb_keysym_t *syms;
-    int nsyms;
 #define BUFFER_SIZE MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)
-    assert(XKB_KEYSYM_UTF8_MAX_SIZE <= BUFFER_SIZE);
+    static_assert(XKB_KEYSYM_UTF8_MAX_SIZE <= BUFFER_SIZE,
+                  "buffer too small");
     char s[BUFFER_SIZE];
 #undef BUFFER_SIZE
     xkb_layout_index_t layout;
     enum xkb_compose_status status;
 
-    keymap = xkb_state_get_keymap(state);
+    struct xkb_keymap * const keymap = xkb_state_get_keymap(state);
 
-    nsyms = xkb_state_key_get_syms(state, keycode, &syms);
+    if (prefix)
+        printf("%s", prefix);
+    printf("key %s", (direction == XKB_KEY_UP ? "up  " : "down"));
+    print_keycode(keymap, " [ ", keycode, " ] ");
+
+    if (direction == XKB_KEY_UP)
+        goto out;
+
+    const xkb_keysym_t *syms;
+    int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
 
     if (nsyms <= 0)
-        return;
+        goto out;
 
     status = XKB_COMPOSE_NOTHING;
     if (compose_state)
         status = xkb_compose_state_get_status(compose_state);
 
     if (status == XKB_COMPOSE_COMPOSING || status == XKB_COMPOSE_CANCELLED)
-        return;
+        goto out;
 
     if (status == XKB_COMPOSE_COMPOSED) {
         sym = xkb_compose_state_get_one_sym(compose_state);
@@ -259,6 +267,7 @@ tools_print_keycode_state(const char *prefix,
     }
     printf("] ");
 
+out:
     printf("\n");
 }
 
