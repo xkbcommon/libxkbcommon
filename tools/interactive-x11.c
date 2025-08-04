@@ -54,8 +54,10 @@ struct keyboard {
 static bool terminate;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+static const bool use_local_state = false;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
+static bool use_local_state = false;
 #endif
 
 static int
@@ -126,8 +128,10 @@ update_keymap(struct keyboard *kbd)
     if (!new_keymap)
         goto err_out;
 
-    new_state = xkb_x11_state_new_from_device(new_keymap, kbd->conn,
-                                              kbd->device_id);
+    new_state = (use_local_state)
+        ? xkb_state_new(new_keymap)
+        : xkb_x11_state_new_from_device(new_keymap, kbd->conn, kbd->device_id);
+
     if (!new_state)
         goto err_keymap;
 
@@ -236,6 +240,11 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         break;
 
     case XCB_XKB_STATE_NOTIFY: {
+        if (use_local_state) {
+            /* Ignore state update if using a local state machine */
+            break;
+        }
+
         const enum xkb_state_component changed =
             xkb_state_update_mask(kbd->state,
                                   event->state_notify.baseMods,
@@ -279,6 +288,14 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                 xkb_compose_state_reset(kbd->compose_state);
         }
 
+        if (use_local_state) {
+            /* Run our local state machine */
+            const enum xkb_state_component changed =
+                xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+            if (changed)
+                tools_print_state_changes(NULL, kbd->state, changed, print_options);
+        }
+
         /* Exit on ESC. */
         if (xkb_state_key_get_one_sym(kbd->state, keycode) == XKB_KEY_Escape)
             terminate = true;
@@ -290,6 +307,13 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
                                   XKB_KEY_UP, XKB_CONSUMED_MODE_XKB,
                                   print_options);
+        if (use_local_state) {
+            /* Run our local state machine */
+            const enum xkb_state_component changed =
+                xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
+            if (changed)
+                tools_print_state_changes(NULL, kbd->state, changed, print_options);
+        }
         break;
     }
     default:
@@ -378,7 +402,7 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 " [--format=<format>]"
 #else
-                " [--uniline] [--multiline] [--enable-compose]"
+                " [--uniline] [--multiline] [--local-state] [--enable-compose]"
 #endif
                 "\n",
                 progname);
@@ -386,9 +410,11 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 "    --format <FORMAT>    use keymap format FORMAT\n"
 #else
+                "    --enable-compose     enable Compose\n"
+                "    --local-state        enable local state handling and ignore modifiers/layouts\n"
+                "                         state updates from the X11 server\n"
                 "    -1, --uniline        enable uniline event output\n"
                 "    --multiline          enable multiline event output\n"
-                "    --enable-compose     enable Compose\n"
 #endif
                 "    --verbose            enable verbose debugging output\n"
                 "    --help               display this help and exit\n"
@@ -414,6 +440,7 @@ main(int argc, char *argv[])
         OPT_UNILINE,
         OPT_MULTILINE,
         OPT_COMPOSE,
+        OPT_LOCAL_STATE,
         OPT_KEYMAP_FORMAT,
     };
     static struct option opts[] = {
@@ -425,6 +452,7 @@ main(int argc, char *argv[])
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
 #endif
         {0, 0, 0, 0},
     };
@@ -455,6 +483,9 @@ main(int argc, char *argv[])
 #else
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case OPT_LOCAL_STATE:
+            use_local_state = true;
             break;
         case '1':
         case OPT_UNILINE:
