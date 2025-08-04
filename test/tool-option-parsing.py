@@ -13,22 +13,22 @@ import sys
 import tempfile
 import unittest
 from abc import ABCMeta, abstractmethod
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from functools import reduce
 from pathlib import Path
+from typing import ClassVar
 
 try:
-    top_builddir = os.environ["top_builddir"]
-    top_srcdir = os.environ["top_srcdir"]
+    top_builddir = Path(os.environ["top_builddir"])
+    top_srcdir = Path(os.environ["top_srcdir"])
 except KeyError:
     print(
         "Required environment variables not found: top_srcdir/top_builddir",
         file=sys.stderr,
     )
-    from pathlib import Path
 
-    top_srcdir = "."
+    top_srcdir = Path(".")
     try:
         top_builddir = next(Path(".").glob("**/meson-logs/")).parent
     except StopIteration:
@@ -176,7 +176,7 @@ def _disable_coredump():
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 
 
-def run_command(args, input: str | None = None):
+def run_command(args, input: str | None = None) -> tuple[int, str, str]:
     logger.debug("run command: {}".format(" ".join(args)))
 
     try:
@@ -190,20 +190,23 @@ def run_command(args, input: str | None = None):
         )
         return p.returncode, p.stdout, p.stderr
     except subprocess.TimeoutExpired as e:
-        return 0, e.stdout, e.stderr
+        return (
+            0,
+            e.stdout.decode("utf-8") if e.stdout else "",
+            e.stderr.decode("utf-8") if e.stderr else "",
+        )
 
 
+@dataclass
 class XkbcliTool:
-    xkbcli_tool = "xkbcli"
-    subtool = None
+    xkbcli_tool: ClassVar[str] = "xkbcli"
+    tool_path: ClassVar[Path] = top_builddir
 
-    def __init__(self, subtool=None, skipIf=(), skipError=()):
-        self.tool_path = top_builddir
-        self.subtool = subtool
-        self.skipIf = skipIf
-        self.skipError = skipError
+    subtool: str | None = None
+    skipIf: tuple[tuple[bool, str], ...] = ()
+    skipError: tuple[tuple[Callable[[int, str, str], bool], str], ...] = ()
 
-    def run_command(self, args, input: str | None = None):
+    def run_command(self, args, input: str | None = None) -> tuple[int, str, str]:
         for condition, reason in self.skipIf:
             if condition:
                 raise unittest.SkipTest(reason)
@@ -215,7 +218,7 @@ class XkbcliTool:
 
         return run_command(args, input=input)
 
-    def run_command_success(self, args, input: str | None = None):
+    def run_command_success(self, args, input: str | None = None) -> tuple[str, str]:
         rc, stdout, stderr = self.run_command(args, input=input)
         if rc != 0:
             for testfunc, reason in self.skipError:
@@ -224,7 +227,9 @@ class XkbcliTool:
         assert rc == 0, (rc, stdout, stderr)
         return stdout, stderr
 
-    def run_command_invalid(self, args, input: str | None = None):
+    def run_command_invalid(
+        self, args, input: str | None = None
+    ) -> tuple[int, str, str]:
         rc, stdout, stderr = self.run_command(args, input=input)
         assert rc == 2, (rc, stdout, stderr)
         return rc, stdout, stderr
@@ -246,6 +251,20 @@ class XkbcliTool:
 
 
 class TestXkbcli(unittest.TestCase):
+    xkbcli: ClassVar[XkbcliTool]
+    xkbcli_list: ClassVar[XkbcliTool]
+    xkbcli_how_to_type: ClassVar[XkbcliTool]
+    xkbcli_compile_keymap: ClassVar[XkbcliTool]
+    xkbcli_compile_compose: ClassVar[XkbcliTool]
+    xkbcli_interactive_evdev: ClassVar[XkbcliTool]
+    xkbcli_interactive_x11: ClassVar[XkbcliTool]
+    xkbcli_interactive_wayland: ClassVar[XkbcliTool]
+    xkbcli_interactive: ClassVar[XkbcliTool]
+    xkbcli_dump_keymap_x11: ClassVar[XkbcliTool]
+    xkbcli_dump_keymap_wayland: ClassVar[XkbcliTool]
+    xkbcli_dump_keymap: ClassVar[XkbcliTool]
+    all_tools: ClassVar[list[XkbcliTool]]
+
     @classmethod
     def setUpClass(cls):
         cls.xkbcli = XkbcliTool()
@@ -429,7 +448,7 @@ class TestXkbcli(unittest.TestCase):
         keymap_from_path2 = KeymapTarget(arg=False, path=Path(keymap_path))
         rmlvo = RmlvoTarget()
         kccgst = KccgstTarget()
-        for args in (
+        for entry in (
             # --keymap does not use RMLVO options
             ("--rules", "some-rules", keymap_from_stdin),
             ("--model", "some-model", keymap_from_stdin),
@@ -451,21 +470,21 @@ class TestXkbcli(unittest.TestCase):
             (rmlvo, keymap_from_stdin),
             (rmlvo, keymap_from_path1),
             (rmlvo, keymap_from_path2),
-            [kccgst, keymap_from_stdin],
-            [kccgst, keymap_from_path1],
-            [kccgst, keymap_from_path2],
-            [kccgst, rmlvo],
-            [kccgst, rmlvo, keymap_from_stdin],
-            [kccgst, rmlvo, keymap_from_path1],
-            [kccgst, rmlvo, keymap_from_path2],
+            (kccgst, keymap_from_stdin),
+            (kccgst, keymap_from_path1),
+            (kccgst, keymap_from_path2),
+            (kccgst, rmlvo),
+            (kccgst, rmlvo, keymap_from_stdin),
+            (kccgst, rmlvo, keymap_from_path1),
+            (kccgst, rmlvo, keymap_from_path2),
         ):
-            with self.subTest(args=args):
-                args = list(
+            with self.subTest(args=entry):
+                args: list[str] = list(
                     itertools.chain.from_iterable(
-                        arg.args if isinstance(arg, Target) else arg for arg in args
+                        arg.args if isinstance(arg, Target) else arg for arg in entry
                     )
                 )
-                input = reduce(
+                input: str | None = reduce(
                     lambda acc, arg: acc
                     or (arg.stdin if isinstance(arg, Target) else None),
                     args,
@@ -522,15 +541,50 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_compile_compose.run_command_success(args)
 
     def test_how_to_type(self):
-        for args in (
-            ["--verbose", "1"],
-            # Unicode codepoint conversions, we support whatever strtol does
-            ["123"],
-            ["0x123"],
-            ["0123"],
-        ):
+        for args in (["--verbose", "1"],):
             with self.subTest(args=args):
                 self.xkbcli_how_to_type.run_command_success(args)
+
+        @dataclass
+        class Entry:
+            args: list[str]
+            name: str
+            value: int
+
+        for entry in (
+            # Unicode codepoint conversions, we support whatever strtol does
+            Entry(args=["123"], name="braceleft", value=0x007B),
+            Entry(args=["0123"], name="braceleft", value=0x007B),
+            Entry(args=["0a"], name="Linefeed", value=0xFF0A),
+            Entry(args=["0x123"], name="gcedilla", value=0x03BB),
+            Entry(args=["U+123"], name="gcedilla", value=0x03BB),
+            # Characters
+            Entry(args=["1"], name="1", value=0x0031),
+            Entry(args=["a"], name="a", value=0x0061),
+            Entry(args=["á"], name="aacute", value=0x00E1),
+            # Keysyms names (fallback without --keysym option)
+            Entry(args=["acute"], name="acute", value=0x00B4),
+            Entry(args=["U123"], name="U0123", value=0x1000123),
+            # Keysyms names (with --keysym)
+            Entry(args=["--keysym", "1"], name="1", value=0x0031),
+            Entry(args=["--keysym", "a"], name="a", value=0x0061),
+            Entry(args=["--keysym", "acute"], name="acute", value=0x00B4),
+            Entry(args=["--keysym", "U123"], name="U0123", value=0x1000123),
+            # Keysym values
+            Entry(args=["--keysym", "123"], name="braceleft", value=0x007B),
+            Entry(args=["--keysym", "0x123"], name="0x00000123", value=0x0123),
+        ):
+            with self.subTest(args=args):
+                stdout, _stderr = self.xkbcli_how_to_type.run_command_success(
+                    entry.args
+                )
+                expected = f"keysym: {entry.name} (0x{entry.value:04x})"
+                lines = stdout.splitlines()
+                assert len(lines) >= 1
+                assert lines[0] == expected, (
+                    entry,
+                    f'expected: "{expected}", but got: "{lines[0]}"',
+                )
 
     def test_how_to_type_rmlvo(self):
         def run(rmlvo):
@@ -621,9 +675,9 @@ class TestXkbcli(unittest.TestCase):
 if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as tmpdir:
         # Use our own test xkeyboard-config copy.
-        os.environ["XKB_CONFIG_ROOT"] = top_srcdir + "/test/data"
+        os.environ["XKB_CONFIG_ROOT"] = str(top_srcdir / "test/data")
         # Use our own X11 locale copy.
-        os.environ["XLOCALEDIR"] = top_srcdir + "/test/data/locale"
+        os.environ["XLOCALEDIR"] = str(top_srcdir / "test/data/locale")
         # Use our own locale.
         os.environ["LC_CTYPE"] = "en_US.UTF-8"
         # libxkbcommon has fallbacks when XDG_CONFIG_HOME isn't set so we need
