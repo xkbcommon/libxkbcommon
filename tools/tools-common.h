@@ -48,7 +48,8 @@ tools_print_keycode_state(const char *prefix,
                           print_state_fields_mask_t fields);
 
 void
-tools_print_state_changes(enum xkb_state_component changed);
+tools_print_state_changes(const char *prefix, struct xkb_state *state,
+                          enum xkb_state_component changed);
 
 void
 tools_disable_stdin_echo(void);

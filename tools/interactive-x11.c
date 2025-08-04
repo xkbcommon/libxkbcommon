@@ -233,15 +233,18 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         update_keymap(kbd);
         break;
 
-    case XCB_XKB_STATE_NOTIFY:
-        xkb_state_update_mask(kbd->state,
-                              event->state_notify.baseMods,
-                              event->state_notify.latchedMods,
-                              event->state_notify.lockedMods,
-                              event->state_notify.baseGroup,
-                              event->state_notify.latchedGroup,
-                              event->state_notify.lockedGroup);
+    case XCB_XKB_STATE_NOTIFY: {
+        const enum xkb_state_component changed =
+            xkb_state_update_mask(kbd->state,
+                                  event->state_notify.baseMods,
+                                  event->state_notify.latchedMods,
+                                  event->state_notify.lockedMods,
+                                  event->state_notify.baseGroup,
+                                  event->state_notify.latchedGroup,
+                                  event->state_notify.lockedGroup);
+        tools_print_state_changes(NULL, kbd->state, changed);
         break;
+    }
 
     default:
         /* Ignore */
