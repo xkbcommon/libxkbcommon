@@ -75,10 +75,12 @@ struct interactive_seat {
 
 static bool terminate;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
-static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static bool dump_raw_keymap;
+#else
+static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
+static bool use_local_state = false;
 #endif
 
 #ifdef HAVE_MKOSTEMP
@@ -415,20 +417,22 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         fprintf(stderr, "ERROR: Failed to compile keymap!\n");
         return;
     }
+
 #ifdef KEYMAP_DUMP
     /* Dump the reformatted keymap */
     char *dump = xkb_keymap_get_as_string(seat->keymap, keymap_output_format);
     fprintf(stdout, "%s", dump);
     free(dump);
     return;
-#endif
-
-    xkb_state_unref(seat->state);
-    seat->state = xkb_state_new(seat->keymap);
-    if (!seat->state) {
-        fprintf(stderr, "ERROR: Failed to create XKB state!\n");
-        return;
+#else
+    /* Reset the state, except if unset or using a local state */
+    if (!seat->state || !use_local_state) {
+        xkb_state_unref(seat->state);
+        seat->state = xkb_state_new(seat->keymap);
+        if (!seat->state)
+            fprintf(stderr, "ERROR: Failed to create XKB state!\n");
     }
+#endif
 }
 
 static void
@@ -447,6 +451,7 @@ static void
 kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         uint32_t key, uint32_t state)
 {
+#ifndef KEYMAP_DUMP
     struct interactive_seat *seat = data;
     xkb_keycode_t keycode = key + EVDEV_OFFSET;
 
@@ -460,7 +465,6 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
         (state == WL_KEYBOARD_KEY_STATE_RELEASED) ? XKB_KEY_UP : XKB_KEY_DOWN;
     tools_print_keycode_state(prefix, seat->state, seat->compose_state, keycode,
                               direction, XKB_CONSUMED_MODE_XKB, print_options);
-    free(prefix);
 
     if (seat->compose_state) {
         enum xkb_compose_status status = xkb_compose_state_get_status(seat->compose_state);
@@ -468,10 +472,24 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
             xkb_compose_state_reset(seat->compose_state);
     }
 
+    if (use_local_state) {
+        /* Run our local state machine */
+        const enum xkb_state_component changed =
+            xkb_state_update_key(seat->state, keycode,
+                                 (state == WL_KEYBOARD_KEY_STATE_RELEASED
+                                         ? XKB_KEY_UP
+                                         : XKB_KEY_DOWN));
+        if (changed)
+            tools_print_state_changes(prefix, seat->state, changed, print_options);
+    }
+
+    free(prefix);
+
     /* Exit on ESC. */
     if (xkb_state_key_get_one_sym(seat->state, keycode) == XKB_KEY_Escape &&
         state != WL_KEYBOARD_KEY_STATE_PRESSED)
         terminate = true;
+#endif
 }
 
 static void
@@ -479,6 +497,12 @@ kbd_modifiers(void *data, struct wl_keyboard *wl_kbd, uint32_t serial,
               uint32_t mods_depressed, uint32_t mods_latched,
               uint32_t mods_locked, uint32_t group)
 {
+#ifndef KEYMAP_DUMP
+    if (use_local_state) {
+        /* Ignore state update if using a local state machine */
+        return;
+    }
+
     struct interactive_seat *seat = data;
 
     const enum xkb_state_component changed = xkb_state_update_mask(
@@ -487,6 +511,7 @@ kbd_modifiers(void *data, struct wl_keyboard *wl_kbd, uint32_t serial,
     char * const prefix = asprintf_safe("%s: ", seat->name_str);
     tools_print_state_changes(prefix, seat->state, changed, print_options);
     free(prefix);
+#endif
 }
 
 static void
@@ -770,7 +795,7 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 " [--raw] [--input-format] [--output-format] [--format]"
 #else
-                " [--format] [--enable-compose]"
+                " [--format] [--local-state] [--enable-compose]"
 #endif
                 "\n",
                 progname);
@@ -783,6 +808,8 @@ usage(FILE *fp, char *progname)
 #else
                 "    --format <FORMAT>  use keymap format FORMAT\n"
                 "    --enable-compose   enable Compose\n"
+                "    --local-state      enable local state handling and ignore modifiers/layouts\n"
+                "                       state updates from the compositor\n"
                 "    -1, --uniline      enable uniline event output\n"
                 "    --multiline        enable multiline event output\n"
 #endif
@@ -807,6 +834,7 @@ main(int argc, char *argv[])
         OPT_UNILINE,
         OPT_MULTILINE,
         OPT_COMPOSE,
+        OPT_LOCAL_STATE,
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
@@ -825,6 +853,7 @@ main(int argc, char *argv[])
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
+        {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
 #endif
         {0, 0, 0, 0},
     };
@@ -881,6 +910,9 @@ main(int argc, char *argv[])
 #else
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case OPT_LOCAL_STATE:
+            use_local_state = true;
             break;
         case '1':
         case OPT_UNILINE:
