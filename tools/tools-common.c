@@ -156,6 +156,80 @@ print_keys_modmaps(struct xkb_keymap *keymap) {
     printf("\n");
 }
 
+static void
+print_modifiers_names(struct xkb_state *state,
+                      enum xkb_state_component components,
+                      xkb_keycode_t keycode,
+                      enum xkb_consumed_mode consumed_mode)
+{
+    struct xkb_keymap * const keymap = xkb_state_get_keymap(state);
+    for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
+        if (xkb_state_mod_index_is_active(state, mod, components) <= 0)
+            continue;
+        const bool consumed =
+            keycode != XKB_KEYCODE_INVALID &&
+            xkb_state_mod_index_is_consumed2(state, keycode, mod, consumed_mode);
+        printf(" %s%s",
+               (consumed ? "-" : ""), xkb_keymap_mod_get_name(keymap, mod));
+    }
+}
+
+static void
+print_modifiers(struct xkb_state *state, enum xkb_state_component changed,
+                xkb_keycode_t keycode, bool show_consumed,
+                enum xkb_consumed_mode consumed_mode, bool verbose)
+{
+    static const struct {
+        enum xkb_state_component component;
+        unsigned int padding;
+        const char *label;
+    } types[] = {
+        { XKB_STATE_MODS_DEPRESSED, 0, "depressed" },
+        { XKB_STATE_MODS_LATCHED,   2, "latched"   },
+        { XKB_STATE_MODS_LOCKED,    3, "locked"    },
+        { XKB_STATE_MODS_EFFECTIVE, 0, "effective" },
+    };
+    if (changed) {
+        for (unsigned int k = 0; k < ARRAY_SIZE(types); k++) {
+            if (!(changed & types[k].component))
+                continue;
+            const xkb_mod_mask_t mods =
+                xkb_state_serialize_mods(state, types[k].component);
+            printf("%s-mods: 0x%08"PRIx32"; ", types[k].label, mods);
+        }
+    } else {
+        const xkb_mod_mask_t mods =
+            xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
+        printf("modifiers: 0x%08"PRIx32, mods);
+        print_modifiers_names(state, XKB_STATE_MODS_EFFECTIVE, keycode,
+                                consumed_mode);
+        printf("\n");
+    }
+}
+
+static void
+print_layouts(struct xkb_state *state, enum xkb_state_component changed,
+              xkb_keycode_t keycode, bool verbose)
+{
+    static const struct {
+        enum xkb_state_component component;
+        unsigned int padding;
+        const char *label;
+    } types[] = {
+        { XKB_STATE_LAYOUT_DEPRESSED, 0, "depressed" },
+        { XKB_STATE_LAYOUT_LATCHED,   2, "latched"   },
+        { XKB_STATE_LAYOUT_LOCKED,    3, "locked"    },
+        { XKB_STATE_LAYOUT_EFFECTIVE, 0, "effective" },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(types); k++) {
+        if (!(changed & types[k].component))
+            continue;
+        const xkb_layout_index_t layout =
+            xkb_state_serialize_layout(state, types[k].component);
+        printf("%s-layout: %"PRId32"; ", types[k].label, layout);
+    }
+}
+
 void
 tools_print_keycode_state(const char *prefix,
                           struct xkb_state *state,
@@ -272,28 +346,18 @@ out:
 }
 
 void
-tools_print_state_changes(enum xkb_state_component changed)
+tools_print_state_changes(const char *prefix, struct xkb_state *state,
+                          enum xkb_state_component changed)
 {
     if (changed == 0)
         return;
 
-    printf("changed [ ");
-    if (changed & XKB_STATE_LAYOUT_EFFECTIVE)
-        printf("effective-layout ");
-    if (changed & XKB_STATE_LAYOUT_DEPRESSED)
-        printf("depressed-layout ");
-    if (changed & XKB_STATE_LAYOUT_LATCHED)
-        printf("latched-layout ");
-    if (changed & XKB_STATE_LAYOUT_LOCKED)
-        printf("locked-layout ");
-    if (changed & XKB_STATE_MODS_EFFECTIVE)
-        printf("effective-mods ");
-    if (changed & XKB_STATE_MODS_DEPRESSED)
-        printf("depressed-mods ");
-    if (changed & XKB_STATE_MODS_LATCHED)
-        printf("latched-mods ");
-    if (changed & XKB_STATE_MODS_LOCKED)
-        printf("locked-mods ");
+    if (prefix)
+        printf("%s", prefix);
+    printf("state    [ ");
+    print_layouts(state, changed, XKB_KEYCODE_INVALID, false);
+    print_modifiers(state, changed, XKB_KEYCODE_INVALID, false,
+                    XKB_CONSUMED_MODE_XKB /* unused*/, false);
     if (changed & XKB_STATE_LEDS)
         printf("leds ");
     printf("]\n");

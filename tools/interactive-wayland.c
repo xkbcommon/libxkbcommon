@@ -478,8 +478,12 @@ kbd_modifiers(void *data, struct wl_keyboard *wl_kbd, uint32_t serial,
 {
     struct interactive_seat *seat = data;
 
-    xkb_state_update_mask(seat->state, mods_depressed, mods_latched,
-                          mods_locked, 0, 0, group);
+    const enum xkb_state_component changed = xkb_state_update_mask(
+        seat->state, mods_depressed, mods_latched, mods_locked, 0, 0, group
+    );
+    char * const prefix = asprintf_safe("%s: ", seat->name_str);
+    tools_print_state_changes(prefix, seat->state, changed);
+    free(prefix);
 }
 
 static void

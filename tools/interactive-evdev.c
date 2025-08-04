@@ -270,13 +270,13 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
             xkb_compose_state_reset(kbd->compose_state);
     }
 
-    if (value == KEY_STATE_RELEASE)
-        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
-    else
-        changed = xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+    changed = xkb_state_update_key(kbd->state, keycode,
+                                   (value == KEY_STATE_RELEASE
+                                        ? XKB_KEY_UP
+                                        : XKB_KEY_DOWN));
 
     if (report_state_changes)
-        tools_print_state_changes(changed);
+        tools_print_state_changes(NULL, kbd->state, changed);
 }
 
 static int
