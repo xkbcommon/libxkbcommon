@@ -44,7 +44,7 @@ static bool report_state_changes;
 static bool with_compose;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
-print_state_fields_mask_t print_fields = PRINT_ALL_FIELDS;
+enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
@@ -261,7 +261,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
     tools_print_keycode_state(
         NULL, kbd->state, kbd->compose_state, keycode,
         (value == KEY_STATE_RELEASE) ? XKB_KEY_UP : XKB_KEY_DOWN,
-        consumed_mode, print_fields
+        consumed_mode, print_options
     );
 
     if (with_compose) {
@@ -276,7 +276,7 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
                                         : XKB_KEY_DOWN));
 
     if (report_state_changes)
-        tools_print_state_changes(NULL, kbd->state, changed);
+        tools_print_state_changes(NULL, kbd->state, changed, print_options);
 }
 
 static int
@@ -365,7 +365,9 @@ usage(FILE *fp, char *progname)
         fprintf(fp, "For both:\n"
                         "          --format <FORMAT> (use keymap format FORMAT)\n"
                         "          --verbose (enable verbose debugging output)\n"
-                        "          --short (do not print layout nor Unicode keysym translation)\n"
+                        "          -1, --uniline (enable uniline event output)\n"
+                        "          --multiline (enable uniline event output)\n"
+                        "          --short (shorter event output)\n"
                         "          --report-state-changes (report changes to the state)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
@@ -397,6 +399,8 @@ main(int argc, char *argv[])
     struct sigaction act;
     enum options {
         OPT_VERBOSE,
+        OPT_UNILINE,
+        OPT_MULTILINE,
         OPT_INCLUDE,
         OPT_INCLUDE_DEFAULTS,
         OPT_ENABLE_ENV_NAMES,
@@ -416,6 +420,8 @@ main(int argc, char *argv[])
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
+        {"uniline",              no_argument,            0, OPT_UNILINE},
+        {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"include",              required_argument,      0, OPT_INCLUDE},
         {"include-defaults",     no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
@@ -439,13 +445,21 @@ main(int argc, char *argv[])
     bool has_rmlvo_options = false;
     while (1) {
         int option_index = 0;
-        int opt = getopt_long(argc, argv, "h", opts, &option_index);
+        int opt = getopt_long(argc, argv, "*1h", opts, &option_index);
         if (opt == -1)
             break;
 
         switch (opt) {
         case OPT_VERBOSE:
             verbose = true;
+            break;
+        case '1':
+        case OPT_UNILINE:
+            print_options |= PRINT_UNILINE;
+            break;
+        case '*':
+        case OPT_MULTILINE:
+            print_options &= ~PRINT_UNILINE;
             break;
         case OPT_INCLUDE:
             if (num_includes >= ARRAY_SIZE(includes))
@@ -513,7 +527,7 @@ main(int argc, char *argv[])
             with_compose = true;
             break;
         case OPT_SHORT:
-            print_fields &= ~PRINT_VERBOSE_FIELDS;
+            print_options &= ~PRINT_VERBOSE;
             break;
         case OPT_CONSUMED_MODE:
             if (strcmp(optarg, "gtk") == 0) {
@@ -551,6 +565,10 @@ too_much_arguments:
             usage(stderr, argv[0]);
             exit(EXIT_INVALID_USAGE);
         }
+    }
+
+    if (!(print_options & PRINT_VERBOSE) && (print_options & PRINT_UNILINE)) {
+        print_options &= ~PRINT_VERBOSE_ONE_LINE_FIELDS;
     }
 
     enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;

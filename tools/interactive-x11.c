@@ -54,6 +54,8 @@ struct keyboard {
 static bool terminate;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+#else
+static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 #endif
 
 static int
@@ -242,7 +244,7 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                                   event->state_notify.baseGroup,
                                   event->state_notify.latchedGroup,
                                   event->state_notify.lockedGroup);
-        tools_print_state_changes(NULL, kbd->state, changed);
+        tools_print_state_changes(NULL, kbd->state, changed, print_options);
         break;
     }
 
@@ -267,7 +269,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
 
         tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
                                   XKB_KEY_DOWN, XKB_CONSUMED_MODE_XKB,
-                                  PRINT_ALL_FIELDS);
+                                  print_options);
 
         if (kbd->compose_state) {
             enum xkb_compose_status status =
@@ -287,7 +289,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xkb_keycode_t keycode = event->detail;
         tools_print_keycode_state(NULL, kbd->state, kbd->compose_state, keycode,
                                   XKB_KEY_UP, XKB_CONSUMED_MODE_XKB,
-                                  PRINT_ALL_FIELDS);
+                                  print_options);
         break;
     }
     default:
@@ -376,7 +378,7 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 " [--format=<format>]"
 #else
-                " [--enable-compose]"
+                " [--uniline] [--multiline] [--enable-compose]"
 #endif
                 "\n",
                 progname);
@@ -384,6 +386,8 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 "    --format <FORMAT>    use keymap format FORMAT\n"
 #else
+                "    -1, --uniline        enable uniline event output\n"
+                "    --multiline          enable multiline event output\n"
                 "    --enable-compose     enable Compose\n"
 #endif
                 "    --help               display this help and exit\n"
@@ -404,6 +408,8 @@ main(int argc, char *argv[])
 
     bool with_compose = false;
     enum options {
+        OPT_UNILINE,
+        OPT_MULTILINE,
         OPT_COMPOSE,
         OPT_KEYMAP_FORMAT,
     };
@@ -412,6 +418,8 @@ main(int argc, char *argv[])
 #ifdef KEYMAP_DUMP
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
 #else
+        {"uniline",              no_argument,            0, OPT_UNILINE},
+        {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
 #endif
         {0, 0, 0, 0},
@@ -423,7 +431,7 @@ main(int argc, char *argv[])
         int opt;
         int option_index = 0;
 
-        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        opt = getopt_long(argc, argv, "*1h", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -440,6 +448,14 @@ main(int argc, char *argv[])
 #else
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case '1':
+        case OPT_UNILINE:
+            print_options |= PRINT_UNILINE;
+            break;
+        case '*':
+        case OPT_MULTILINE:
+            print_options &= ~PRINT_UNILINE;
             break;
 #endif
         case 'h':

@@ -146,7 +146,8 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
 #if HAVE_TOOLS
         tools_print_keycode_state("", state, NULL, kc,
                                   (op == DOWN ? XKB_KEY_DOWN : XKB_KEY_UP),
-                                  XKB_CONSUMED_MODE_XKB, PRINT_ALL_FIELDS);
+                                  XKB_CONSUMED_MODE_XKB,
+                                  PRINT_ALL_FIELDS | PRINT_UNILINE);
 #endif
         fprintf(stderr, "op %-6s got %d syms for keycode %3"PRIu32": [", opstr, nsyms, kc);
 
