@@ -516,9 +516,19 @@ class TestXkbcli(unittest.TestCase):
         assert rc == 1, (stdout, stderr)
         assert "Couldn't look up rules" in stderr
 
+    def test_compile_compose(self):
+        for args in (["--verbose"],):
+            with self.subTest(args=args):
+                self.xkbcli_compile_compose.run_command_success(args)
+
     def test_how_to_type(self):
-        # Unicode codepoint conversions, we support whatever strtol does
-        for args in (["123"], ["0x123"], ["0123"]):
+        for args in (
+            ["--verbose", "1"],
+            # Unicode codepoint conversions, we support whatever strtol does
+            ["123"],
+            ["0x123"],
+            ["0123"],
+        ):
             with self.subTest(args=args):
                 self.xkbcli_how_to_type.run_command_success(args)
 
@@ -577,6 +587,9 @@ class TestXkbcli(unittest.TestCase):
         # Note: --enable-compose fails if $prefix doesn't have the compose tables
         # installed
         for args in (
+            ["--verbose"],
+            ["--uniline"],
+            ["--multiline"],
             ["--report-state-changes"],
             ["--enable-compose"],
             ["--consumed-mode=xkb"],
@@ -587,12 +600,22 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_interactive_evdev.run_command_success(args)
 
     def test_interactive_x11(self):
-        # To be filled in if we handle something other than --help
-        pass
+        for args in (
+            ["--verbose"],
+            ["--uniline"],
+            ["--multiline"],
+        ):
+            with self.subTest(args=args):
+                self.xkbcli_interactive_x11.run_command_success(args)
 
     def test_interactive_wayland(self):
-        # To be filled in if we handle something other than --help
-        pass
+        for args in (
+            ["--verbose"],
+            ["--uniline"],
+            ["--multiline"],
+        ):
+            with self.subTest(args=args):
+                self.xkbcli_interactive_wayland.run_command_success(args)
 
 
 if __name__ == "__main__":
