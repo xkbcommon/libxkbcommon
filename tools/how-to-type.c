@@ -66,7 +66,7 @@ parse_char_or_codepoint(const char *raw) {
 static void
 usage(FILE *fp, const char *argv0)
 {
-    fprintf(fp, "Usage: %s [--help] [--keysym] [--rules <rules>] "
+    fprintf(fp, "Usage: %s [--help] [--verbose] [--keysym] [--rules <rules>] "
                 "[--model <model>] [--layout <layout>] [--variant <variant>] "
                 "[--options <options>] [--enable-environment-names] "
                 "<character/codepoint/keysym>\n", argv0);
@@ -86,6 +86,8 @@ usage(FILE *fp, const char *argv0)
         "Options:\n"
         " --help\n"
         "    Print this help and exit\n"
+        " --verbose\n"
+        "    Enable verbose debugging output\n"
         " --keysym\n"
         "    Treat the argument as a keysym, not a Unicode code point\n"
         "\n"
@@ -120,6 +122,7 @@ usage(FILE *fp, const char *argv0)
 int
 main(int argc, char *argv[])
 {
+    bool verbose = false;
     const char *rules = NULL;
     const char *model = NULL;
     const char *layout_ = NULL;
@@ -134,6 +137,7 @@ main(int argc, char *argv[])
     char name[XKB_KEYSYM_NAME_MAX_SIZE];
     struct xkb_keymap *keymap = NULL;
     enum options {
+        OPT_VERBOSE,
         OPT_KEYSYM,
         OPT_ENABLE_ENV_NAMES,
         OPT_KEYMAP_FORMAT,
@@ -145,6 +149,7 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"keysym",               no_argument,            0, OPT_KEYSYM},
         {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
@@ -167,6 +172,9 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_VERBOSE:
+            verbose = true;
+            break;
         case OPT_KEYSYM:
             keysym_mode = true;
             break;
@@ -251,6 +259,9 @@ main(int argc, char *argv[])
         fprintf(stderr, "ERROR: Failed to create XKB context\n");
         goto err;
     }
+
+    if (verbose)
+        tools_enable_verbose_logging(ctx);
 
     struct xkb_rule_names names = {
         .rules = rules,

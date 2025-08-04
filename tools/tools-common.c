@@ -653,6 +653,13 @@ tools_enable_stdin_echo(void)
 
 #endif
 
+void
+tools_enable_verbose_logging(struct xkb_context *ctx)
+{
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
+    xkb_context_set_log_verbosity(ctx, 10);
+}
+
 static inline bool
 is_wayland_session(void)
 {
