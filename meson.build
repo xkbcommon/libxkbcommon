@@ -454,6 +454,8 @@ if build_tools
         sources: [
             'tools/tools-common.h',
             'tools/tools-common.c',
+            'src/utf8-decoding.c',
+            'src/utf8-decoding.h',
         ],
         include_directories: [include_directories('tools', 'include')],
         dependencies: dep_libxkbcommon,
@@ -719,6 +721,8 @@ test_dep = declare_dependency(
         'bench/bench.c',
         'bench/bench.h',
         'src/utils-numbers.h',
+        'src/utf8-decoding.c',
+        'src/utf8-decoding.h',
         'test/common.c',
         'test/evdev-scancodes.h',
         'test/test.h',

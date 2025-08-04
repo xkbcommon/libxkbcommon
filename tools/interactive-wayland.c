@@ -75,6 +75,7 @@ struct interactive_seat {
 
 static bool terminate;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static bool dump_raw_keymap;
@@ -456,7 +457,7 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
     const enum xkb_key_direction direction =
         (state == WL_KEYBOARD_KEY_STATE_RELEASED) ? XKB_KEY_UP : XKB_KEY_DOWN;
     tools_print_keycode_state(prefix, seat->state, seat->compose_state, keycode,
-                              direction, XKB_CONSUMED_MODE_XKB, PRINT_ALL_FIELDS);
+                              direction, XKB_CONSUMED_MODE_XKB, print_options);
     free(prefix);
 
     if (seat->compose_state) {
@@ -482,7 +483,7 @@ kbd_modifiers(void *data, struct wl_keyboard *wl_kbd, uint32_t serial,
         seat->state, mods_depressed, mods_latched, mods_locked, 0, 0, group
     );
     char * const prefix = asprintf_safe("%s: ", seat->name_str);
-    tools_print_state_changes(prefix, seat->state, changed);
+    tools_print_state_changes(prefix, seat->state, changed, print_options);
     free(prefix);
 }
 
@@ -780,6 +781,8 @@ usage(FILE *fp, char *progname)
 #else
                 "    --format <FORMAT>  use keymap format FORMAT\n"
                 "    --enable-compose   enable Compose\n"
+                "    -1, --uniline      enable uniline event output\n"
+                "    --multiline        enable multiline event output\n"
 #endif
                 "    --help             display this help and exit\n"
         );
@@ -796,6 +799,8 @@ main(int argc, char *argv[])
 
     bool with_compose = false;
     enum options {
+        OPT_UNILINE,
+        OPT_MULTILINE,
         OPT_COMPOSE,
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
@@ -810,6 +815,8 @@ main(int argc, char *argv[])
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
         {"raw",                  no_argument,            0, OPT_RAW},
 #else
+        {"uniline",              no_argument,            0, OPT_UNILINE},
+        {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
 #endif
@@ -822,7 +829,7 @@ main(int argc, char *argv[])
         int opt;
         int option_index = 0;
 
-        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        opt = getopt_long(argc, argv, "*1h", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -865,6 +872,14 @@ main(int argc, char *argv[])
 #else
         case OPT_COMPOSE:
             with_compose = true;
+            break;
+        case '1':
+        case OPT_UNILINE:
+            print_options |= PRINT_UNILINE;
+            break;
+        case '*':
+        case OPT_MULTILINE:
+            print_options &= ~PRINT_UNILINE;
             break;
 #endif
         case 'h':

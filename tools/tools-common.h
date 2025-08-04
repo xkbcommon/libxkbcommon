@@ -20,18 +20,20 @@
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 /* Fields that are printed in the interactive tools. */
-enum print_state_fields {
-    PRINT_LAYOUT = (1u << 1),
-    PRINT_UNICODE = (1u << 2),
+enum print_state_options {
+    PRINT_LAYOUT = (1u << 0),
+    PRINT_UNICODE = (1u << 1),
     PRINT_ALL_FIELDS = ((PRINT_UNICODE << 1) - 1),
     /*
      * Fields that can be hidden with the option --short.
      * NOTE: If this value is modified, remember to update the documentation of
      *       the --short option in the corresponding tools.
      */
-    PRINT_VERBOSE_FIELDS = (PRINT_LAYOUT | PRINT_UNICODE)
+    PRINT_VERBOSE_ONE_LINE_FIELDS = (PRINT_LAYOUT | PRINT_UNICODE),
+    PRINT_VERBOSE = (1u << 2),
+    PRINT_UNILINE = (1u << 3),
+    DEFAULT_PRINT_OPTIONS = PRINT_ALL_FIELDS | PRINT_VERBOSE | PRINT_UNILINE
 };
-typedef uint32_t print_state_fields_mask_t;
 
 void
 print_modifiers_encodings(struct xkb_keymap *keymap);
@@ -45,11 +47,12 @@ tools_print_keycode_state(const char *prefix,
                           xkb_keycode_t keycode,
                           enum xkb_key_direction direction,
                           enum xkb_consumed_mode consumed_mode,
-                          print_state_fields_mask_t fields);
+                          enum print_state_options options);
 
 void
 tools_print_state_changes(const char *prefix, struct xkb_state *state,
-                          enum xkb_state_component changed);
+                          enum xkb_state_component changed,
+                          enum print_state_options options);
 
 void
 tools_disable_stdin_echo(void);
