@@ -20,7 +20,7 @@ static void
 usage(FILE *fp, char *progname)
 {
     fprintf(fp,
-            "Usage: %s [--help] [--locale LOCALE] [--test] [FILE]\n",
+            "Usage: %s [--help] [--verbose] [--locale LOCALE] [--test] [FILE]\n",
             progname);
     fprintf(fp,
             "\n"
@@ -29,6 +29,8 @@ usage(FILE *fp, char *progname)
             "Options:\n"
             " --help\n"
             "    Print this help and exit\n"
+            " --verbose\n"
+            "    Enable verbose debugging output\n"
             " --file FILE\n"
             "    Specify a Compose file to load.\n"
             "    DEPRECATED: use the positional argument instead.\n"
@@ -45,17 +47,20 @@ main(int argc, char *argv[])
     const char *locale = NULL;
     const char *path = NULL;
     enum xkb_compose_format format = XKB_COMPOSE_FORMAT_TEXT_V1;
+    bool verbose = false;
     bool test = false;
     enum options {
+        OPT_VERBOSE,
         OPT_FILE,
         OPT_LOCALE,
         OPT_TEST,
     };
     static struct option opts[] = {
-        {"help",   no_argument,       0, 'h'},
-        {"file",   required_argument, 0, OPT_FILE},
-        {"locale", required_argument, 0, OPT_LOCALE},
-        {"test",   no_argument,       0, OPT_TEST},
+        {"help",    no_argument,       0, 'h'},
+        {"verbose", no_argument,       0, OPT_VERBOSE},
+        {"file",    required_argument, 0, OPT_FILE},
+        {"locale",  required_argument, 0, OPT_LOCALE},
+        {"test",    no_argument,       0, OPT_TEST},
         {0, 0, 0, 0},
     };
 
@@ -75,6 +80,9 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_VERBOSE:
+            verbose = true;
+            break;
         case OPT_FILE:
             path = optarg;
             fprintf(stderr, "WARNING: the flag --file is deprecated\n");
@@ -124,6 +132,9 @@ main(int argc, char *argv[])
         fprintf(stderr, "ERROR: Couldn't create xkb context\n");
         return EXIT_FAILURE;
     }
+
+    if (verbose)
+        tools_enable_verbose_logging(ctx);
 
     int ret = EXIT_FAILURE;
     struct xkb_compose_table *compose_table = NULL;

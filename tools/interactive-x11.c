@@ -374,7 +374,7 @@ static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help]"
+                "Usage: %s [--help] [--verbose]"
 #ifdef KEYMAP_DUMP
                 " [--format=<format>]"
 #else
@@ -390,6 +390,7 @@ usage(FILE *fp, char *progname)
                 "    --multiline          enable multiline event output\n"
                 "    --enable-compose     enable Compose\n"
 #endif
+                "    --verbose            enable verbose debugging output\n"
                 "    --help               display this help and exit\n"
         );
 }
@@ -398,6 +399,7 @@ int
 main(int argc, char *argv[])
 {
     int ret;
+    bool verbose = false;
     xcb_connection_t *conn;
     uint8_t first_xkb_event;
     int32_t core_kbd_device_id;
@@ -408,13 +410,15 @@ main(int argc, char *argv[])
 
     bool with_compose = false;
     enum options {
+        OPT_VERBOSE,
         OPT_UNILINE,
         OPT_MULTILINE,
         OPT_COMPOSE,
         OPT_KEYMAP_FORMAT,
     };
     static struct option opts[] = {
-        {"help",                       no_argument, 0, 'h'},
+        {"help",                 no_argument,            0, 'h'},
+        {"verbose",              no_argument,            0, OPT_VERBOSE},
 #ifdef KEYMAP_DUMP
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
 #else
@@ -436,6 +440,9 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_VERBOSE:
+            verbose = true;
+            break;
 #ifdef KEYMAP_DUMP
         case OPT_KEYMAP_FORMAT:
             keymap_format = xkb_keymap_parse_format(optarg);
@@ -491,6 +498,9 @@ main(int argc, char *argv[])
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_conn;
     }
+
+    if (verbose)
+        tools_enable_verbose_logging(ctx);
 
     if (with_compose) {
         locale = setlocale(LC_CTYPE, NULL);

@@ -764,7 +764,7 @@ static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help]"
+                "Usage: %s [--help] [--verbose]"
 #ifdef KEYMAP_DUMP
                 " [--raw] [--input-format] [--output-format] [--format]"
 #else
@@ -784,6 +784,7 @@ usage(FILE *fp, char *progname)
                 "    -1, --uniline      enable uniline event output\n"
                 "    --multiline        enable multiline event output\n"
 #endif
+                "    --verbose          enable verbose debugging output\n"
                 "    --help             display this help and exit\n"
         );
 }
@@ -792,6 +793,7 @@ int
 main(int argc, char *argv[])
 {
     int ret = 0;
+    bool verbose = false;
     struct interactive_dpy inter;
     struct wl_registry *registry;
     const char *locale;
@@ -799,6 +801,7 @@ main(int argc, char *argv[])
 
     bool with_compose = false;
     enum options {
+        OPT_VERBOSE,
         OPT_UNILINE,
         OPT_MULTILINE,
         OPT_COMPOSE,
@@ -809,6 +812,7 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"verbose",              no_argument,            0, OPT_VERBOSE},
 #ifdef KEYMAP_DUMP
         {"input-format",         required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"output-format",        required_argument,      0, OPT_OUTPUT_KEYMAP_FORMAT},
@@ -834,6 +838,9 @@ main(int argc, char *argv[])
             break;
 
         switch (opt) {
+        case OPT_VERBOSE:
+            verbose = true;
+            break;
         case OPT_INPUT_KEYMAP_FORMAT:
             keymap_input_format = xkb_keymap_parse_format(optarg);
             if (!keymap_input_format) {
@@ -907,6 +914,9 @@ main(int argc, char *argv[])
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
     }
+
+    if (verbose)
+        tools_enable_verbose_logging(inter.ctx);
 
     if (with_compose) {
         locale = setlocale(LC_CTYPE, NULL);

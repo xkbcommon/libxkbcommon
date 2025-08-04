@@ -41,6 +41,9 @@ void
 print_keys_modmaps(struct xkb_keymap *keymap);
 
 void
+tools_enable_verbose_logging(struct xkb_context *ctx);
+
+void
 tools_print_keycode_state(const char *prefix,
                           struct xkb_state *state,
                           struct xkb_compose_state *compose_state,
