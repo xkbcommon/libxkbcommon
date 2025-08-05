@@ -405,6 +405,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     }
 #endif
 
+    xkb_keymap_unref(seat->keymap);
     seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
                                               keymap_input_format,
                                               XKB_KEYMAP_COMPILE_NO_FLAGS);
@@ -422,6 +423,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     return;
 #endif
 
+    xkb_state_unref(seat->state);
     seat->state = xkb_state_new(seat->keymap);
     if (!seat->state) {
         fprintf(stderr, "ERROR: Failed to create XKB state!\n");
