@@ -98,6 +98,9 @@ usage(FILE *fp, const char *argv0)
         "XKB-specific options:\n"
         " --format <format>\n"
         "    The keymap format to use (default: %d)\n"
+        " --keymap=<file>\n"
+        "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
+        "    is \"-\" or missing, then load from stdin.\n"
         " --rules <rules>\n"
         "    The XKB ruleset (default: '%s')\n"
         " --model <model>\n"
@@ -123,28 +126,26 @@ usage(FILE *fp, const char *argv0)
         DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
 }
 
-int
-main(int argc, char *argv[])
+enum input_keymap_source {
+    KEYMAP_SOURCE_AUTO,
+    KEYMAP_SOURCE_RMLVO,
+    KEYMAP_SOURCE_FILE
+};
+
+static int
+parse_options(int argc, char **argv, bool *verbose,
+              bool *keysym_mode, xkb_keysym_t *keysym,
+              enum input_keymap_source *keymap_source,
+              enum xkb_keymap_format *keymap_input_format,
+              const char **keymap_path,
+              bool *use_env_names, struct xkb_rule_names *names)
 {
-    bool verbose = false;
-    const char *rules = NULL;
-    const char *model = NULL;
-    const char *layout_ = NULL;
-    const char *variant = NULL;
-    const char *options = NULL;
-    bool use_env_names = false;
-    enum xkb_keymap_format keymap_format = DEFAULT_INPUT_KEYMAP_FORMAT;
-    bool keysym_mode = false;
-    int err = EXIT_FAILURE;
-    struct xkb_context *ctx = NULL;
-    int ret;
-    char name[XKB_KEYSYM_NAME_MAX_SIZE];
-    struct xkb_keymap *keymap = NULL;
     enum options {
         OPT_VERBOSE,
         OPT_KEYSYM,
         OPT_ENABLE_ENV_NAMES,
         OPT_KEYMAP_FORMAT,
+        OPT_KEYMAP,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -157,6 +158,7 @@ main(int argc, char *argv[])
         {"keysym",               no_argument,            0, OPT_KEYSYM},
         {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
+        {"keymap",               optional_argument,      0, OPT_KEYMAP},
         {"rules",                required_argument,      0, OPT_RULES},
         {"model",                required_argument,      0, OPT_MODEL},
         {"layout",               required_argument,      0, OPT_LAYOUT},
@@ -164,8 +166,6 @@ main(int argc, char *argv[])
         {"options",              required_argument,      0, OPT_OPTIONS},
         {0, 0, 0, 0},
     };
-
-    setlocale(LC_ALL, "");
 
     while (1) {
         int opt;
@@ -177,92 +177,197 @@ main(int argc, char *argv[])
 
         switch (opt) {
         case OPT_VERBOSE:
-            verbose = true;
+            *verbose = true;
             break;
         case OPT_KEYSYM:
-            keysym_mode = true;
+            *keysym_mode = true;
             break;
         case OPT_ENABLE_ENV_NAMES:
-            use_env_names = true;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_env_error;
+            *use_env_names = true;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case OPT_KEYMAP_FORMAT:
-            keymap_format = xkb_keymap_parse_format(optarg);
-            if (!keymap_format) {
+            *keymap_input_format = xkb_keymap_parse_format(optarg);
+            if (!*keymap_input_format) {
                 fprintf(stderr, "ERROR: invalid --format \"%s\"\n", optarg);
-                usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                goto invalid_usage;
             }
             break;
+        case OPT_KEYMAP:
+            if (*keymap_source == KEYMAP_SOURCE_RMLVO)
+                goto keymap_source_error;
+            *keymap_source = KEYMAP_SOURCE_FILE;
+            *keymap_path = optarg;
+            break;
         case OPT_RULES:
-            rules = optarg;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_source_error;
+            names->rules = optarg;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case OPT_MODEL:
-            model = optarg;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_source_error;
+            names->model = optarg;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case OPT_LAYOUT:
-            layout_ = optarg;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_source_error;
+            names->layout = optarg;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case OPT_VARIANT:
-            variant = optarg;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_source_error;
+            names->variant = optarg;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case OPT_OPTIONS:
-            options = optarg;
+            if (*keymap_source == KEYMAP_SOURCE_FILE)
+                goto keymap_source_error;
+            names->options = optarg;
+            *keymap_source = KEYMAP_SOURCE_RMLVO;
             break;
         case 'h':
             usage(stdout, argv[0]);
             exit(EXIT_SUCCESS);
         default:
-            usage(stderr, argv[0]);
-            exit(EXIT_INVALID_USAGE);
+            goto invalid_usage;
         }
     }
+
     if (argc - optind != 1) {
         fprintf(stderr, "ERROR: missing positional parameter\n");
-        goto parse_error;
+        goto invalid_usage;
     }
 
-    xkb_keysym_t keysym = XKB_KEY_NoSymbol;
-    if (!keysym_mode) {
+    /* Check for keymap input */
+    if (*keymap_source == KEYMAP_SOURCE_AUTO &&
+        is_pipe_or_regular_file(STDIN_FILENO)) {
+        /* Piping detected */
+        *keymap_source = KEYMAP_SOURCE_FILE;
+    }
+    if (isempty(*keymap_path) || strcmp(*keymap_path, "-") == 0)
+        *keymap_path = NULL;
+
+    *keysym = XKB_KEY_NoSymbol;
+    if (!*keysym_mode) {
         /* Try to parse code point */
         const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
         if (codepoint != INVALID_UTF8_CODE_POINT) {
-            keysym = xkb_utf32_to_keysym(codepoint);
-            if (keysym == XKB_KEY_NoSymbol) {
+            *keysym = xkb_utf32_to_keysym(codepoint);
+            if (*keysym == XKB_KEY_NoSymbol) {
                 fprintf(stderr,
                         "ERROR: Failed to convert code point to keysym\n");
-                goto parse_error;
+                goto invalid_usage;
             }
         } else {
             /* Try to parse as keysym */
         }
     }
-    if (keysym == XKB_KEY_NoSymbol) {
+    if (*keysym == XKB_KEY_NoSymbol) {
         /* Try to parse keysym name or hexadecimal value (0xNNNN) */
-        keysym = xkb_keysym_from_name(argv[optind], XKB_KEYSYM_NO_FLAGS);
-        if (keysym == XKB_KEY_NoSymbol) {
+        *keysym = xkb_keysym_from_name(argv[optind], XKB_KEYSYM_NO_FLAGS);
+        if (*keysym == XKB_KEY_NoSymbol) {
             /* Try to parse numeric keysym in base 10, without prefix */
             char *endp = NULL;
             errno = 0;
             const long int val = strtol(argv[optind], &endp, 10);
             if (errno != 0 || !isempty(endp) || val <= 0 || val > XKB_KEYSYM_MAX) {
                 fprintf(stderr, "ERROR: Failed to convert argument to keysym\n");
-                goto parse_error;
+                goto invalid_usage;
             }
-            keysym = (uint32_t) val;
+            *keysym = (uint32_t) val;
         }
     }
 
+    return EXIT_SUCCESS;
+
+keymap_env_error:
+    fprintf(stderr, "ERROR: --keymap is not compatible with "
+                    "--enable-environment-names\n");
+    goto invalid_usage;
+
+keymap_source_error:
+    fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
+    goto invalid_usage;
+
+invalid_usage:
+    usage(stderr, argv[0]);
+    return EXIT_INVALID_USAGE;
+}
+
+static struct xkb_keymap *
+load_keymap(struct xkb_context *ctx, enum input_keymap_source keymap_source,
+            enum xkb_keymap_format keymap_format, const char *keymap_path,
+            struct xkb_rule_names *names)
+{
+    if (keymap_source == KEYMAP_SOURCE_FILE) {
+        FILE *file = NULL;
+        if (keymap_path) {
+            /* Read from regular file */
+            file = fopen(keymap_path, "rb");
+        } else {
+            /* Read from stdin */
+            file = tools_read_stdin();
+        }
+        if (!file) {
+            fprintf(stderr, "ERROR: Failed to open keymap file \"%s\": %s\n",
+                    keymap_path ? keymap_path : "stdin", strerror(errno));
+            return NULL;
+        }
+        return xkb_keymap_new_from_file(ctx, file, keymap_format,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
+    } else {
+        return xkb_keymap_new_from_names2(ctx, names, keymap_format,
+                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
+    }
+}
+
+int
+main(int argc, char *argv[])
+{
+    setlocale(LC_ALL, "");
+
+    struct xkb_context *ctx = NULL;
+    struct xkb_keymap *keymap = NULL;
+
+    bool verbose = false;
+    bool use_env_names = false;
+    enum input_keymap_source keymap_source = KEYMAP_SOURCE_AUTO;
+    enum xkb_keymap_format keymap_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+    const char *keymap_path = NULL;
+    bool keysym_mode = false;
+    xkb_keysym_t keysym = XKB_KEY_NoSymbol;
+    struct xkb_rule_names names = {
+        .rules = NULL,
+        .model = NULL,
+        .layout = NULL,
+        .variant = NULL,
+        .options = NULL,
+    };
+
+    int ret = parse_options(argc, argv, &verbose, &keysym_mode, &keysym,
+                            &keymap_source, &keymap_format, &keymap_path,
+                            &use_env_names, &names);
+    if (ret != EXIT_SUCCESS)
+        goto err;
+
+    char name[XKB_KEYSYM_NAME_MAX_SIZE];
     ret = xkb_keysym_get_name(keysym, name, sizeof(name));
     if (ret < 0 || (size_t) ret >= sizeof(name)) {
         fprintf(stderr, "ERROR: Failed to get name of keysym\n");
+        ret = EXIT_FAILURE;
         goto err;
     }
-
+    ret = EXIT_FAILURE;
 
     const enum xkb_context_flags ctx_flags = (use_env_names)
                                            ? XKB_CONTEXT_NO_FLAGS
                                            : XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
-
     ctx = xkb_context_new(ctx_flags);
     if (!ctx) {
         fprintf(stderr, "ERROR: Failed to create XKB context\n");
@@ -272,15 +377,7 @@ main(int argc, char *argv[])
     if (verbose)
         tools_enable_verbose_logging(ctx);
 
-    struct xkb_rule_names names = {
-        .rules = rules,
-        .model = model,
-        .layout = layout_,
-        .variant = variant,
-        .options = options,
-    };
-    keymap = xkb_keymap_new_from_names2(ctx, &names, keymap_format,
-                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
+    keymap = load_keymap(ctx, keymap_source, keymap_format, keymap_path, &names);
     if (!keymap) {
         fprintf(stderr, "ERROR: Failed to create XKB keymap\n");
         goto err;
@@ -342,12 +439,9 @@ main(int argc, char *argv[])
         }
     }
 
-    err = EXIT_SUCCESS;
+    ret = EXIT_SUCCESS;
 err:
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
-    return err;
-parse_error:
-    usage(stderr, argv[0]);
-    exit(EXIT_INVALID_USAGE);
+    return ret;
 }
