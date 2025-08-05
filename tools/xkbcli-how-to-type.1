@@ -89,6 +89,13 @@ Treat the argument as only as a keysym
 Specify the keymap format (numeric or label, e.g.\&
 .Dq v1 )
 .
+.It Fl \-keymap Oo = Ar PATH Oc
+Load the XKB keymap from a file, ignore RMLVO options. If
+.Ar PATH
+is empty or
+.Dq \- ,
+read the stdin.
+.
 .It Fl \-rules Ar rules
 The XKB ruleset
 .
