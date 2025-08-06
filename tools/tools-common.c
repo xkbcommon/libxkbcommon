@@ -33,10 +33,10 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
+#include "src/compose/constants.h"
 #include "src/utils.h"
 #include "src/utf8-decoding.h"
 #include "src/keysym.h"
-#include "src/compose/parser.h"
 #include "src/keymap.h"
 
 #ifdef _WIN32

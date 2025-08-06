@@ -12,7 +12,7 @@
 
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/compose/escape.h"
-#include "src/compose/parser.h"
+#include "src/compose/constants.h"
 #include "src/keysym.h"
 #include "src/utils.h"
 #include "test/compose-iter.h"
@@ -55,6 +55,6 @@ xkb_compose_table_for_each(struct xkb_compose_table *table,
     if (darray_size(table->nodes) <= 1) {
         return;
     }
-    xkb_keysym_t syms[MAX_LHS_LEN];
+    xkb_keysym_t syms[COMPOSE_MAX_LHS_LEN];
     for_each_helper(table, iter, data, syms, 0, 1);
 }
