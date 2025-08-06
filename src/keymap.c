@@ -347,6 +347,17 @@ xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char* name)
 }
 
 /**
+ * Return the canonical mapping of a given modifier.
+ */
+xkb_mod_mask_t
+xkb_keymap_mod_get_mask2(struct xkb_keymap *keymap, xkb_mod_index_t idx)
+{
+    return (idx >= keymap->mods.num_mods)
+        ? 0
+        : keymap->mods.mods[idx].mapping;
+}
+
+/**
  * Return the total number of active groups in the keymap.
  */
 xkb_layout_index_t
