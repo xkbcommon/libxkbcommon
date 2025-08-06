@@ -84,6 +84,21 @@ static bool use_local_state = false;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
+static void
+surface_configure(void *data, struct xdg_surface *surface,
+                  uint32_t serial)
+{
+    struct interactive_dpy *inter = data;
+
+    xdg_surface_ack_configure(inter->xdg_surf, serial);
+    wl_surface_commit(inter->wl_surf);
+}
+
+static const struct xdg_surface_listener surface_listener = {
+    surface_configure,
+};
+
+#ifndef KEYMAP_DUMP
 #ifdef HAVE_MKOSTEMP
 static int
 create_tmpfile_cloexec(char *tmpname)
@@ -310,20 +325,6 @@ buffer_create(struct interactive_dpy *inter, uint32_t width, uint32_t height)
 }
 
 static void
-surface_configure(void *data, struct xdg_surface *surface,
-                  uint32_t serial)
-{
-    struct interactive_dpy *inter = data;
-
-    xdg_surface_ack_configure(inter->xdg_surf, serial);
-    wl_surface_commit(inter->wl_surf);
-}
-
-static const struct xdg_surface_listener surface_listener = {
-    surface_configure,
-};
-
-static void
 toplevel_configure(void *data, struct xdg_toplevel *toplevel,
                    int32_t width, int32_t height, struct wl_array *states)
 {
@@ -347,12 +348,16 @@ static const struct xdg_toplevel_listener toplevel_listener = {
     toplevel_configure,
     toplevel_close
 };
+#endif
 
 static void surface_create(struct interactive_dpy *inter)
 {
     inter->wl_surf = wl_compositor_create_surface(inter->compositor);
     inter->xdg_surf = xdg_wm_base_get_xdg_surface(inter->shell, inter->wl_surf);
     xdg_surface_add_listener(inter->xdg_surf, &surface_listener, inter);
+
+#ifndef KEYMAP_DUMP
+    /* Create a window only for the interactive tool */
     inter->xdg_top = xdg_surface_get_toplevel(inter->xdg_surf);
     xdg_toplevel_add_listener(inter->xdg_top, &toplevel_listener, inter);
     xdg_toplevel_set_title(inter->xdg_top, "xkbcommon event tester");
@@ -367,6 +372,7 @@ static void surface_create(struct interactive_dpy *inter)
                 inter->decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE
             );
     }
+#endif
 
     wl_surface_commit(inter->wl_surf);
 }
@@ -432,7 +438,6 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     char *dump = xkb_keymap_get_as_string(seat->keymap, keymap_output_format);
     fprintf(stdout, "%s", dump);
     free(dump);
-    return;
 #else
     /* Reset the state, except if unset or using a local state */
     if (!seat->state || !use_local_state) {
@@ -735,12 +740,14 @@ registry_global(void *data, struct wl_registry *registry, uint32_t name,
         inter->shm = wl_registry_bind(registry, name, &wl_shm_interface,
                                       MIN(version, 1));
     }
+#ifndef KEYMAP_DUMP
     else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
         inter->decoration_manager = wl_registry_bind(
             registry, name, &zxdg_decoration_manager_v1_interface,
             MIN(version, 1)
         );
     }
+#endif
 }
 
 static void
