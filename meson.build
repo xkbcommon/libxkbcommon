@@ -512,8 +512,6 @@ if build_tools
                'src/compose/dump.c',
                'src/compose/dump.h',
                'src/compose/escape.h',
-               'tools/tools-common.c',
-               'tools/tools-common.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -525,8 +523,6 @@ if build_tools
                'tools/how-to-type.c',
                'src/keymap-formats.c',
                'src/keymap-formats.h',
-               'src/utf8-decoding.c',
-               'src/utf8-decoding.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -558,6 +554,9 @@ if build_tools
         )
         executable('xkbcli-interactive-x11',
                    'tools/interactive-x11.c',
+                   'src/keymap-formats.c',
+                   'src/keymap-formats.h',
+                   'src/utils.h',
                    dependencies: x11_tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -568,6 +567,7 @@ if build_tools
                    'tools/interactive-x11.c',
                    'src/keymap-formats.c',
                    'src/keymap-formats.h',
+                   'src/utils.h',
                    dependencies: x11_tools_dep,
                    c_args: ['-DKEYMAP_DUMP'],
                    install: true,
@@ -612,6 +612,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                    'tools/interactive-wayland.c',
                    'src/keymap-formats.c',
                    'src/keymap-formats.h',
+                   'src/utils.h',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
@@ -624,6 +625,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                    'tools/interactive-wayland.c',
                    'src/keymap-formats.c',
                    'src/keymap-formats.h',
+                   'src/utils.h',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],

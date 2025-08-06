@@ -31,7 +31,21 @@ Print help and exit
 .
 .It Fl \-local\-state
 Enable local state handling and ignore modifiers/layouts state updates
-from the X11 server
+from the X11 server.
+.
+.It Fl \-keymap Oo Ar PATH Oc
+Load the XKB keymap from a file instead of the keymap from the compositor.
+It implies
+.Fl \-local\-state
+\&. If
+.Ar PATH
+is empty or
+.Dq \- ,
+read the stdin.
+.
+.It Fl \-format Ar keymap_format
+Specify the keymap format (numeric or label, e.g.\&
+.Dq v1 )
 .
 .It Fl \-enable\-compose
 Enable Compose functionality

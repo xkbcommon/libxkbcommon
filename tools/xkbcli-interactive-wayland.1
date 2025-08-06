@@ -37,6 +37,16 @@ Specify the keymap format (numeric or label, e.g.\&
 Enable local state handling and ignore modifiers/layouts state updates
 from the compositor
 .
+.It Fl \-keymap Oo Ar PATH Oc
+Load the XKB keymap from a file instead of the keymap from the compositor.
+It implies
+.Fl \-local\-state
+\&. If
+.Ar PATH
+is empty or
+.Dq \- ,
+read the stdin.
+.
 .It Fl \-enable\-compose
 Enable Compose functionality
 .
