@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "utils.h"
+#include "constants.h"
 #include "table.h"
 #include "parser.h"
 #include "paths.h"
@@ -261,7 +262,7 @@ xkb_compose_table_iterator_new(struct xkb_compose_table *table)
         return NULL;
     }
     iter->table = xkb_compose_table_ref(table);
-    sequence = calloc(MAX_LHS_LEN, sizeof(xkb_keysym_t));
+    sequence = calloc(COMPOSE_MAX_LHS_LEN, sizeof(xkb_keysym_t));
     if (!sequence) {
         free(iter);
         return NULL;

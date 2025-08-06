@@ -21,6 +21,7 @@
 #include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
+#include "constants.h"
 #include "table.h"
 #include "scanner-utils.h"
 #include "paths.h"
@@ -307,7 +308,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
 }
 
 struct production {
-    xkb_keysym_t lhs[MAX_LHS_LEN];
+    xkb_keysym_t lhs[COMPOSE_MAX_LHS_LEN];
     unsigned int len;
     xkb_keysym_t keysym;
     char string[XKB_COMPOSE_MAX_STRING_SIZE];
@@ -330,7 +331,8 @@ add_production(struct xkb_compose_table *table, struct scanner *s,
     struct compose_node *node = NULL;
 
     /* Warn before potentially going over the limit, discard silently after. */
-    if (darray_size(table->nodes) + production->len + MAX_LHS_LEN > MAX_COMPOSE_NODES)
+    if (darray_size(table->nodes) + production->len + COMPOSE_MAX_LHS_LEN >
+        MAX_COMPOSE_NODES)
         scanner_warn(s, XKB_LOG_MESSAGE_NO_ID,
                      "too many sequences for one Compose file; "
                      "will ignore further lines");
@@ -512,10 +514,10 @@ do_include(struct xkb_compose_table *table, struct scanner *s,
     size_t size;
     struct scanner new_s;
 
-    if (include_depth >= MAX_INCLUDE_DEPTH) {
+    if (include_depth >= COMPOSE_MAX_INCLUDE_DEPTH) {
         scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
                     "maximum include depth (%u) exceeded; maybe there is an include loop?",
-                    MAX_INCLUDE_DEPTH);
+                    COMPOSE_MAX_INCLUDE_DEPTH);
         return false;
     }
 
@@ -650,10 +652,10 @@ lhs_keysym_tok:
         }
         check_deprecated_keysyms(scanner_warn, s, s->ctx,
                                  keysym, val.string.str, val.string.str, "%s", "");
-        if (production.len + 1 > MAX_LHS_LEN) {
+        if (production.len + 1 > COMPOSE_MAX_LHS_LEN) {
             scanner_warn(s, XKB_ERROR_INVALID_COMPOSE_SYNTAX,
                          "too many keysyms (%u) on left-hand side; skipping line",
-                         MAX_LHS_LEN + 1);
+                         COMPOSE_MAX_LHS_LEN + 1);
             goto skip;
         }
         production.lhs[production.len++] = keysym;

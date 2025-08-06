@@ -184,6 +184,7 @@ yacc_gen = generator(
     arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
 )
 libxkbcommon_sources = [
+    'src/compose/constants.h',
     'src/compose/parser.c',
     'src/compose/parser.h',
     'src/compose/paths.c',
@@ -454,6 +455,7 @@ if build_tools
         sources: [
             'tools/tools-common.h',
             'tools/tools-common.c',
+            'src/compose/constants.h',
             'src/utf8-decoding.c',
             'src/utf8-decoding.h',
         ],
@@ -928,9 +930,12 @@ test(
         'test/compose-iter.h',
         'test/utils-text.c',
         'test/utils-text.h',
+        'src/compose/constants.h',
         'src/compose/dump.c',
         'src/compose/dump.h',
         'src/compose/escape.h',
+        'src/compose/escape.h',
+        'src/compose/parser.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1125,6 +1130,7 @@ benchmark(
         'bench-compose-traversal',
         'bench/compose-traversal.c',
         'bench/bench.h',
+        'src/compose/constants.h',
         'test/compose-iter.c',
         'test/compose-iter.h',
         'test/test.h',

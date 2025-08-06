@@ -16,6 +16,7 @@
 #include "test.h"
 #include "src/utf8.h"
 #include "src/keysym.h"
+#include "src/compose/constants.h"
 #include "src/compose/parser.h"
 #include "src/compose/escape.h"
 #include "src/compose/dump.h"
