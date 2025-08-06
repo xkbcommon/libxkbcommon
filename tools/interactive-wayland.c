@@ -20,9 +20,9 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
-#include "tools-common.h"
 #include "src/utils.h"
 #include "src/keymap-formats.h"
+#include "tools-common.h"
 
 #include <wayland-client.h>
 #include "wayland-client-protocol.h"
@@ -81,6 +81,7 @@ static bool dump_raw_keymap;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool use_local_state = false;
+static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
 #ifdef HAVE_MKOSTEMP
@@ -385,34 +386,42 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
            int fd, uint32_t size)
 {
     struct interactive_seat *seat = data;
-    void *buf;
-
-    buf = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-    if (buf == MAP_FAILED) {
-        fprintf(stderr, "ERROR: Failed to mmap keymap: %d\n", errno);
+#ifndef KEYMAP_DUMP
+    if (custom_keymap) {
+        /* Custom keymap: ignore keymap from the server */
         close(fd);
-        return;
-    }
-
+        if (!seat->keymap)
+            seat->keymap = xkb_keymap_ref(custom_keymap);
+    } else {
+#endif
+        void *buf = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+        if (buf == MAP_FAILED) {
+            fprintf(stderr, "ERROR: Failed to mmap keymap: %d\n", errno);
+            close(fd);
+            return;
+        }
 #ifdef KEYMAP_DUMP
-    /* We do not want to be interactive, so stop at next loop */
-    terminate = true;
-    if (dump_raw_keymap) {
-        /* Dump the raw keymap */
-        fprintf(stdout, "%s", (char *)buf);
+        /* We do not want to be interactive, so stop at next loop */
+        terminate = true;
+        if (dump_raw_keymap) {
+            /* Dump the raw keymap */
+            fprintf(stdout, "%s", (char *)buf);
+            munmap(buf, size);
+            close(fd);
+            /* Do not go further */
+            return;
+        }
+#endif
+        xkb_keymap_unref(seat->keymap);
+        seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx,
+                                                  buf, size - 1,
+                                                  keymap_input_format,
+                                                  XKB_KEYMAP_COMPILE_NO_FLAGS);
         munmap(buf, size);
         close(fd);
-        /* Do not go further */
-        return;
+#ifndef KEYMAP_DUMP
     }
 #endif
-
-    xkb_keymap_unref(seat->keymap);
-    seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx, buf, size - 1,
-                                              keymap_input_format,
-                                              XKB_KEYMAP_COMPILE_NO_FLAGS);
-    munmap(buf, size);
-    close(fd);
     if (!seat->keymap) {
         fprintf(stderr, "ERROR: Failed to compile keymap!\n");
         return;
@@ -795,7 +804,7 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 " [--raw] [--input-format] [--output-format] [--format]"
 #else
-                " [--format] [--local-state] [--enable-compose]"
+                " [--format] [--local-state] [--keymap FILE] [--enable-compose]"
 #endif
                 "\n",
                 progname);
@@ -810,6 +819,9 @@ usage(FILE *fp, char *progname)
                 "    --enable-compose   enable Compose\n"
                 "    --local-state      enable local state handling and ignore modifiers/layouts\n"
                 "                       state updates from the compositor\n"
+                "    --keymap [<FILE>]  use the given keymap instead of the keymap from the\n"
+                "                       compositor. It implies --local-state.\n"
+                "                       If <FILE> is \"-\" or missing, then load from stdin.\n"
                 "    -1, --uniline      enable uniline event output\n"
                 "    --multiline        enable multiline event output\n"
 #endif
@@ -825,10 +837,14 @@ main(int argc, char *argv[])
     bool verbose = false;
     struct interactive_dpy inter;
     struct wl_registry *registry;
-    const char *locale;
-    struct xkb_compose_table *compose_table = NULL;
 
+#ifndef KEYMAP_DUMP
+    bool with_keymap_file = false;
+    const char *keymap_path = NULL;
     bool with_compose = false;
+    struct xkb_compose_table *compose_table = NULL;
+#endif
+
     enum options {
         OPT_VERBOSE,
         OPT_UNILINE,
@@ -838,6 +854,7 @@ main(int argc, char *argv[])
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
+        OPT_KEYMAP,
         OPT_RAW,
     };
     static struct option opts[] = {
@@ -854,6 +871,7 @@ main(int argc, char *argv[])
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
+        {"keymap",               optional_argument,      0, OPT_KEYMAP},
 #endif
         {0, 0, 0, 0},
     };
@@ -908,10 +926,24 @@ main(int argc, char *argv[])
             dump_raw_keymap = true;
             break;
 #else
+        case OPT_KEYMAP:
+            with_keymap_file = true;
+            /* Optional arguments require `=`, but we want to make this
+             * requirement optional too, so that both `--keymap=xxx` and
+             * `--keymap xxx` work. */
+            if (!optarg && argv[optind] &&
+                (argv[optind][0] != '-' || strcmp(argv[optind], "-") == 0 )) {
+                keymap_path = argv[optind++];
+            } else {
+                keymap_path = optarg;
+            }
+            /* --local-state is implied */
+            goto local_state;
         case OPT_COMPOSE:
             with_compose = true;
             break;
         case OPT_LOCAL_STATE:
+local_state:
             use_local_state = true;
             break;
         case '1':
@@ -927,10 +959,40 @@ main(int argc, char *argv[])
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
         default:
+#ifndef KEYMAP_DUMP
+invalid_usage:
+#endif
             usage(stderr, argv[0]);
             return EXIT_INVALID_USAGE;
         }
     }
+
+#ifndef KEYMAP_DUMP
+    if (optind < argc && !isempty(argv[optind])) {
+        /* Some positional arguments left: use as a keymap input */
+        if (keymap_path)
+            goto too_much_arguments;
+        keymap_path = argv[optind++];
+        if (optind < argc) {
+            /* Further positional arguments is an error */
+too_much_arguments:
+            fprintf(stderr, "ERROR: Too many positional arguments\n");
+            goto invalid_usage;
+        }
+        with_keymap_file = true;
+    } else if (is_pipe_or_regular_file(STDIN_FILENO) && !with_keymap_file) {
+        /* No positional argument: piping detected */
+        with_keymap_file = true;
+    }
+
+    if (with_keymap_file) {
+        /* --local-state is implied with custom keymap */
+        use_local_state = true;
+    }
+
+    if (isempty(keymap_path) || strcmp(keymap_path, "-") == 0)
+        keymap_path = NULL;
+#endif
 
     memset(&inter, 0, sizeof(inter));
     wl_list_init(&inter.seats);
@@ -952,8 +1014,29 @@ main(int argc, char *argv[])
     if (verbose)
         tools_enable_verbose_logging(inter.ctx);
 
+#ifndef KEYMAP_DUMP
+    if (with_keymap_file) {
+        FILE *file = NULL;
+        if (keymap_path) {
+            /* Read from regular file */
+            file = fopen(keymap_path, "rb");
+        } else {
+            /* Read from stdin */
+            file = tools_read_stdin();
+        }
+        if (!file) {
+            fprintf(stderr, "ERROR: Failed to open keymap file \"%s\": %s\n",
+                    keymap_path ? keymap_path : "stdin", strerror(errno));
+            xkb_context_unref(inter.ctx);
+            goto err_out;
+        }
+        custom_keymap = xkb_keymap_new_from_file(inter.ctx, file,
+                                                 keymap_input_format,
+                                                 XKB_KEYMAP_COMPILE_NO_FLAGS);
+    }
+
     if (with_compose) {
-        locale = setlocale(LC_CTYPE, NULL);
+        const char *locale = setlocale(LC_CTYPE, NULL);
         compose_table =
             xkb_compose_table_new_from_locale(inter.ctx, locale,
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
@@ -965,6 +1048,7 @@ main(int argc, char *argv[])
     } else {
         inter.compose_table = NULL;
     }
+#endif
 
     registry = wl_display_get_registry(inter.dpy);
     wl_registry_add_listener(registry, &registry_listener, &inter);
@@ -997,8 +1081,13 @@ main(int argc, char *argv[])
     wl_registry_destroy(registry);
 err_conn:
     dpy_disconnect(&inter);
+#ifndef KEYMAP_DUMP
 err_compose:
     xkb_compose_table_unref(compose_table);
+#endif
 err_out:
+#ifndef KEYMAP_DUMP
+    xkb_keymap_unref(custom_keymap);
+#endif
     exit(ret >= 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
