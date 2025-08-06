@@ -1381,14 +1381,15 @@ XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 
 /**
- * Get the mapping of a modifier by name.
+ * Get the encoding of a modifier by name.
  *
  * In X11 terminology it corresponds to the mapping to the *[real modifiers]*.
  *
- * @returns The mapping of a modifier.  Note that it may be 0 if the name does
+ * @returns The encoding of a modifier.  Note that it may be 0 if the name does
  * not exist or if the modifier is not mapped.
  *
  * @since 1.10.0
+ * @sa `xkb_keymap_mod_get_mask2()`
  * @memberof xkb_keymap
  *
  * [real modifiers]: @ref real-modifier-def
@@ -1396,6 +1397,22 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 XKB_EXPORT xkb_mod_mask_t
 xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char *name);
 
+/**
+ * Get the encoding of a modifier by index.
+ *
+ * In X11 terminology it corresponds to the mapping to the *[real modifiers]*.
+ *
+ * @returns The encoding of a modifier.  Note that it may be 0 if the modifier is
+ * not mapped.
+ *
+ * @since 1.11.0
+ * @sa `xkb_keymap_mod_get_mask()`
+ * @memberof xkb_keymap
+ *
+ * [real modifiers]: @ref real-modifier-def
+ */
+XKB_EXPORT xkb_mod_mask_t
+xkb_keymap_mod_get_mask2(struct xkb_keymap *keymap, xkb_mod_index_t idx);
 
 /**
  * Get the number of layouts in the keymap.
