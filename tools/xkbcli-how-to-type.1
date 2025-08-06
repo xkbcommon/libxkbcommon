@@ -13,7 +13,7 @@
 .
 .Sh DESCRIPTION
 .Nm
-prints the key combinations (keycode + modifiers) in the keymap's layouts which
+prints the key combinations (keycode + modifiers) in the keymap’s layouts which
 would produce the given Unicode code point or keysym.
 .
 .Pp
@@ -55,7 +55,7 @@ in order to interpret as numeric values.
 .It Nm Fl \-layout Ar us 0x61
 .It Nm Fl \-layout Ar us U+0061
 .It Nm Fl \-layout Ar us a
-Print the key combinations that produce the letter "a"
+Print the key combinations that produce the letter “a”
 .Po
 decimal code point:
 .Ar 97 ,
@@ -68,7 +68,7 @@ layout.
 .It Nm Fl \-layout Ar us Fl \-keysym Ar 97
 .It Nm Fl \-layout Ar us Fl \-keysym Ar 0x61
 .It Nm Fl \-layout Ar us Fl \-keysym Ar a
-Print the key combinations that produce the keysym "a"
+Print the key combinations that produce the keysym “a”
 .Po
 decimal code:
 .Ar 97 ,
@@ -84,6 +84,9 @@ layout.
 .Bl -tag -width Ds
 .It Fl \-keysym
 Treat the argument as only as a keysym
+.
+.It Fl \-disable\-compose
+Disable Compose support
 .
 .It Fl \-format Ar keymap_format
 Specify the keymap format (numeric or label, e.g.\&
