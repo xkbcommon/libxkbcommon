@@ -111,8 +111,8 @@ print_modifiers_encodings(struct xkb_keymap *keymap) {
             printf("%s# Real modifiers (predefined)", indent);
         else if (mod == _XKB_MOD_INDEX_NUM_ENTRIES)
             printf("\n%s# Virtual modifiers (keymap-dependent)", indent);
+        const xkb_mod_mask_t encoding = xkb_keymap_mod_get_mask2(keymap, mod);
         const char* name = xkb_keymap_mod_get_name(keymap, mod);
-        const xkb_mod_mask_t encoding = xkb_keymap_mod_get_mask(keymap, name);
         const int count = printf("%s%s", indent, name);
         printf(":%*s 0x%08"PRIx32,
                MAX(0, padding - count + (int)sizeof(indent) - 1), "", encoding);

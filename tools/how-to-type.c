@@ -428,7 +428,9 @@ main(int argc, char *argv[])
                     printf("%-8u %-9s %-8u %-20s %-7u [ ",
                            keycode, key_name, layout + 1, layout_name, level + 1);
                     for (xkb_mod_index_t mod = 0; mod < num_mods; mod++) {
-                        if ((mask & (UINT32_C(1) << mod)) == 0) {
+                        const xkb_mod_mask_t mod_mask =
+                            xkb_keymap_mod_get_mask2(keymap, mod);
+                        if ((mask & mod_mask) != mod_mask) {
                             continue;
                         }
                         printf("%s ", xkb_keymap_mod_get_name(keymap, mod));
