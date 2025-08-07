@@ -2954,6 +2954,7 @@ SOFTWARE.
 #define XKB_KEY_XF86NotificationCenter       0x100811bc      /* v5.10   KEY_NOTIFICATION_CENTER */
 #define XKB_KEY_XF86PickupPhone              0x100811bd      /* v5.10   KEY_PICKUP_PHONE */
 #define XKB_KEY_XF86HangupPhone              0x100811be      /* v5.10   KEY_HANGUP_PHONE */
+#define XKB_KEY_XF86LinkPhone                0x100811bf      /* v6.14   KEY_LINK_PHONE */
 #define XKB_KEY_XF86Fn                       0x100811d0      /*         KEY_FN */
 #define XKB_KEY_XF86Fn_Esc                   0x100811d1      /*         KEY_FN_ESC */
 #define XKB_KEY_XF86FnRightShift             0x100811e5      /* v5.10   KEY_FN_RIGHT_SHIFT */
