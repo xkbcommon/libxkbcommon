@@ -641,7 +641,7 @@ enum xkb_keysym_flags {
  * @param flags A set of flags controlling how the search is done. If
  * invalid flags are passed, this will fail with `XKB_KEY_NoSymbol`.
  *
- * If you use the `::XKB_KEYSYM_CASE_INSENSITIVE`` flag and two keysym names
+ * If you use the `::XKB_KEYSYM_CASE_INSENSITIVE` flag and two keysym names
  * differ only by case, then the lower-case keysym name is returned.  For
  * instance, for KEY_a and KEY_A, this function would return KEY_a for the
  * case-insensitive search.  If this functionality is needed, it is
@@ -656,7 +656,7 @@ enum xkb_keysym_flags {
  *
  * @sa xkb_keysym_t
  * @since 1.9.0: Enable support for C0 and C1 control characters in the Unicode
-   notation.
+ * notation.
  */
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);

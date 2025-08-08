@@ -20,7 +20,10 @@ layouts and a fair set of <!--!
 - [Introduction to XKB][XKB]: to learn the essentials of XKB.
 - [User-configuration](doc/user-configuration.md): instructions to add
   a *custom layout* or option.
-- [Quick Guide](doc/quick-guide.md): introduction on how to use this library.
+- [Keymap format](doc/keymap-text-format-v1-v2.md): keymap components and keymap
+  text syntax documentation.
+- [Library quick Guide](doc/quick-guide.md): introduction on how to use
+  this library.
 - [Tools](./README.md#tools): introduction to the `xkbcli` application.
 - [Release notes](doc/release-notes.md).
 - [Frequently Asked Question (FAQ)](doc/faq.md).

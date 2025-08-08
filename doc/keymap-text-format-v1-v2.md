@@ -2798,6 +2798,8 @@ xkb_symbols {
 <th>`::XKB_KEYMAP_FORMAT_TEXT_V1`</th>
 <th>`::XKB_KEYMAP_FORMAT_TEXT_V2`</th>
 </tr>
+</thead>
+<tbody>
 <tr>
 <th>Alt</th>
 <td>8</td>
@@ -3560,7 +3562,6 @@ See further details [hereinafter](@ref lock-group-action-effects)
 <th>On key release</th>
 </tr>
 </thead>
-
 <tbody>
 
 <tr>
@@ -3913,6 +3914,8 @@ or button which caused the event, else on the *core* keyboard device.
 <th>On key *press*</th>
 <th>On key *release*</th>
 </tr>
+</thead>
+<tbody>
 <tr>
 <td>
 
@@ -3928,7 +3931,8 @@ Key release causes a key release event for the key specified by the `key`
 parameter; the state field for this event consists of the *effective*
 modifiers at the time of the release, changed as described on the key press.
 </td>
-</thead>
+</tbody>
+</table>
 
 #### ISO lock
 
