@@ -3,7 +3,8 @@
 ### Prerequisites
 
 - Have write access to xkbcommon Git repositories.
-- Be subscribed to the [wayland-devel](https://lists.freedesktop.org/mailman/listinfo/wayland-devel) mailing list.
+- Be subscribed to the [wayland-devel](https://lists.freedesktop.org/postorius/lists/wayland-devel.lists.freedesktop.org/) mailing list.
+  <!-- Old link: https://lists.freedesktop.org/mailman/listinfo/wayland-devel -->
 
 ### Steps
 
@@ -32,7 +33,7 @@
 
 - [ ] Merge the pull request.
 
-- [ ] Tag `git pull && git tag --annotate -m xkbcommon-<MAJOR.MINOR.PATCH> xkbcommon-<MAJOR.MINOR.PATCH>`.
+- [ ] Tag `git switch master && git pull && git tag --annotate -m xkbcommon-<MAJOR.MINOR.PATCH> xkbcommon-<MAJOR.MINOR.PATCH>`.
 
 - [ ] Push the tag `git push origin xkbcommon-<MAJOR.MINOR.PATCH>`.
 
@@ -70,7 +71,8 @@ git commit: <git commit sha>
 
 - [ ] Update the `current` symlink: `ln -nsrf doc/<MAJOR.MINOR.PATCH> doc/current`.
 
-- [ ] Grab a link to the announcement mail from the [wayland-devel archives](https://lists.freedesktop.org/archives/wayland-devel/).
+- [ ] Grab a link to the announcement mail from the [wayland-devel archives](https://lore.freedesktop.org/wayland-devel/).
+  <!-- Old archives: https://lists.freedesktop.org/archives/wayland-devel/ -->
 
 - [ ] Update the `index.html`:
     - "Our latest API- and ABI-stable release ..."
