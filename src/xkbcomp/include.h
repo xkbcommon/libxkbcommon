@@ -42,4 +42,4 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth);
 
 XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
-                   enum xkb_file_type file_type);
+                   enum xkb_file_type file_type, char *path, size_t path_size);

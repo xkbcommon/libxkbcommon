@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdint.h>
 
 #include "darray.h"
@@ -389,7 +390,9 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include, bool report)
         KeyNamesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES);
+        char path[PATH_MAX];
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES,
+                                  path, sizeof(path));
         if (!file) {
             info->errorCount += 10;
             ClearKeyNamesInfo(&included);
