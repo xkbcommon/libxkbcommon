@@ -22,20 +22,23 @@ enum xkb_file_type {
     FILE_TYPE_TYPES = 1,
     FILE_TYPE_COMPAT = 2,
     FILE_TYPE_SYMBOLS = 3,
+
+    /* File types which must be found in a keymap file. */
+    FIRST_KEYMAP_FILE_TYPE = FILE_TYPE_KEYCODES,
+    LAST_KEYMAP_FILE_TYPE = FILE_TYPE_SYMBOLS,
+
     /* Geometry is not compiled any more. */
     FILE_TYPE_GEOMETRY = 4,
 
     /* A top level file which includes the above files. */
     FILE_TYPE_KEYMAP,
 
-/* File types which must be found in a keymap file. */
-#define FIRST_KEYMAP_FILE_TYPE FILE_TYPE_KEYCODES
-#define LAST_KEYMAP_FILE_TYPE  FILE_TYPE_SYMBOLS
 
     /* This one doesn't mix with the others, but useful here as well. */
     FILE_TYPE_RULES,
 
-    _FILE_TYPE_NUM_ENTRIES
+    _FILE_TYPE_NUM_ENTRIES,
+    FILE_TYPE_INVALID = _FILE_TYPE_NUM_ENTRIES
 };
 
 enum stmt_type {
@@ -84,6 +87,7 @@ enum merge_mode {
     MERGE_AUGMENT,
     MERGE_OVERRIDE,
     MERGE_REPLACE,
+    _MERGE_MODE_NUM_ENTRIES,
 };
 
 const char *

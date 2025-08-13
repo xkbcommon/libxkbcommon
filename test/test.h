@@ -37,7 +37,7 @@
 #define assert_eq(test_name, expected, got, format, ...) \
     assert_printf(expected == got, \
                   test_name ". Expected " format ", got: " format "\n", \
-                  __VA_ARGS__, expected, got)
+                  ##__VA_ARGS__, expected, got)
 
 void
 test_init(void);
