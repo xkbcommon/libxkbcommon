@@ -1,0 +1,873 @@
+#!/usr/bin/env python3
+
+# Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+# SPDX-License-Identifier: MIT
+
+from __future__ import annotations
+
+import argparse
+from collections import defaultdict
+from collections.abc import Callable, Iterable, Iterator
+import dataclasses
+from dataclasses import dataclass
+from enum import StrEnum, auto, unique
+from functools import partial
+import itertools
+import multiprocessing
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import textwrap
+from typing import Any, ClassVar, Protocol, Self, TextIO, TypeVar, cast
+
+import rdflib
+import yaml
+
+# Meson needs to fill this in so we can call the tool in the buildir.
+EXTRA_PATH = "@MESON_BUILD_ROOT@"
+os.environ["PATH"] = ":".join(filter(bool, (EXTRA_PATH, os.getenv("PATH"))))
+
+
+@unique
+class Component(StrEnum):
+    Keycodes = auto()
+    Compatibility = auto()
+    Geometry = auto()
+    Symbols = auto()
+    Types = auto()
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        for c in cls:
+            if c.value == raw:
+                return c
+        raise ValueError(raw)
+
+    @property
+    def dir(self) -> Path:
+        match self:
+            case self.Compatibility:
+                return Path("compat")
+            case _:
+                return Path(self)
+
+
+@dataclass
+class Model:
+    name: str
+
+
+@dataclass
+class Layout:
+    name: str
+    variants: set[str]
+
+    PATTERN: ClassVar[re.Pattern[str]] = re.compile(
+        r"^(?P<file>[^\(]+)(?:\((?P<section>[^\)]+)\))$"
+    )
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        if m := cls.PATTERN.match(raw):
+            return cls(name=m.group("file"), variants={m.group("section")})
+        else:
+            return cls(name=raw, variants=set())
+
+
+@dataclass
+class Option:
+    name: str
+
+
+@dataclass
+class RMLVO:
+    rules: str
+    model: str
+    layout: str
+    variant: str
+    option: str
+
+    def __iter__(self) -> Iterator[tuple[str, str]]:
+        yield from dataclasses.asdict(self).items()
+
+
+@dataclass(unsafe_hash=True)
+class XkbFileRef:
+    file: str
+    section: str = ""
+    path: Path | None = None
+
+    PATTERN: ClassVar[re.Pattern[str]] = re.compile(
+        r"^(?P<file>[^\(]+)(?:\((?P<section>[^\)]+)\))$"
+    )
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        if m := cls.PATTERN.match(raw):
+            return cls(file=m.group("file"), section=m.group("section"))
+        else:
+            return cls(file=raw)
+
+    def resolve_path(self, xkb_roots: Iterable[Path], component: Component) -> bool:
+        args = ["introspection"] + list(
+            itertools.chain.from_iterable(("--include", str(p)) for p in xkb_roots)
+        )
+
+        args += ["--resolve", "--type", str(component.dir)]
+        if self.section:
+            args += ["--section", self.section]
+        args.append(self.file)
+
+        try:
+            completed = subprocess.run(args, check=True, capture_output=True)
+            raw = yaml.safe_load(completed.stdout)
+            self.path = raw["path"]
+            self.section = raw["section"]
+            return True
+        except subprocess.CalledProcessError:
+            print(f"ERROR cannot resolve: {self}", file=sys.stderr)
+            return False
+
+    @property
+    def uri(self) -> str:
+        if self.path is not None:
+            return f"file:{self.path}#section={self.section}"
+        else:
+            # FIXME
+            return f"file:{self.file}#section={self.section}"
+
+
+@dataclass
+class KcCGSTAcc:
+    keycodes: set[XkbFileRef]
+    compat: set[XkbFileRef]
+    geometry: set[XkbFileRef]
+    symbols: set[XkbFileRef]
+    types: set[XkbFileRef]
+
+    @classmethod
+    def parse_component(cls, raw: str) -> Iterator[XkbFileRef]:
+        start = 0
+        for k in range(0, len(raw)):
+            if raw[k] in ("+", "|", "^"):
+                current = raw[start:k]
+                start = k + 1
+                if not current:
+                    continue
+                raw_ref, *_ = current.split(":")
+                yield XkbFileRef.parse(raw_ref)
+        current = raw[start:]
+        if current:
+            raw_ref, *_ = current.split(":")
+            yield XkbFileRef.parse(raw_ref)
+
+    @classmethod
+    def parse(cls, raw: dict[str, str]) -> Self:
+        return cls(
+            keycodes=set(cls.parse_component(raw["keycodes"])),
+            compat=set(cls.parse_component(raw["compat"])),
+            geometry=set(cls.parse_component(raw.get("geometry", ""))),
+            symbols=set(cls.parse_component(raw["symbols"])),
+            types=set(cls.parse_component(raw["types"])),
+        )
+
+    def __iter__(self) -> Iterator[tuple[Component, XkbFileRef]]:
+        yield from ((Component.Keycodes, ref) for ref in self.keycodes)
+        yield from ((Component.Compatibility, ref) for ref in self.compat)
+        yield from ((Component.Geometry, ref) for ref in self.geometry)
+        yield from ((Component.Symbols, ref) for ref in self.symbols)
+        yield from ((Component.Types, ref) for ref in self.types)
+
+    @classmethod
+    def empty(cls) -> Self:
+        return cls(set(), set(), set(), set(), set())
+
+    def merge(self, other: Self):
+        self.keycodes.update(other.keycodes)
+        self.compat.update(other.compat)
+        self.geometry.update(other.geometry)
+        self.symbols.update(other.symbols)
+        self.types.update(other.types)
+
+    @classmethod
+    def _resolve_paths(
+        cls, xkb_roots: Iterable[Path], component: Component, refs: Iterable[XkbFileRef]
+    ):
+        for ref in refs:
+            ref.resolve_path(xkb_roots, component)
+
+    def resolve_paths(self, *xkb_roots: Path):
+        self._resolve_paths(
+            xkb_roots=xkb_roots, component=Component.Keycodes, refs=self.keycodes
+        )
+        self._resolve_paths(
+            xkb_roots=xkb_roots, component=Component.Compatibility, refs=self.compat
+        )
+        self._resolve_paths(
+            xkb_roots=xkb_roots, component=Component.Geometry, refs=self.geometry
+        )
+        self._resolve_paths(
+            xkb_roots=xkb_roots, component=Component.Symbols, refs=self.symbols
+        )
+        self._resolve_paths(
+            xkb_roots=xkb_roots, component=Component.Types, refs=self.types
+        )
+
+
+@dataclass
+class Registry:
+    rules: str
+    models: tuple[Model, ...]
+    layouts: tuple[Layout, ...]
+    options: tuple[Option, ...]
+
+    DEFAULT_RULES: ClassVar[str] = "@DEFAULT_XKB_RULES@"
+    DEFAULT_MODEL: ClassVar[str] = "@DEFAULT_XKB_MODEL@"
+    DEFAULT_LAYOUT: ClassVar[str] = "@DEFAULT_XKB_LAYOUT@"
+    DEFAULT_VARIANT: ClassVar[str] = "@DEFAULT_XKB_VARIANT@"
+    DEFAULT_OPTIONS: ClassVar[str] = "@DEFAULT_XKB_OPTIONS@"
+
+    @classmethod
+    def parse(cls, rules: str, *include: Path) -> Self:
+        args = (
+            "xkbcli-list",
+            "--ruleset",
+            rules,
+            "--load-exotic",
+            "--skip-default-paths",
+        ) + tuple(map(str, include))
+
+        try:
+            completed = subprocess.run(args, check=True, capture_output=True)
+        except subprocess.CalledProcessError as err:
+            raise ValueError(err.stderr)
+
+        raw: dict[str, Any] = yaml.safe_load(completed.stdout)
+
+        return cls(
+            rules=rules,
+            models=tuple(cls.parse_models(raw)),
+            layouts=tuple(cls.parse_layouts(raw)),
+            options=tuple(cls.parse_options(raw)),
+        )
+
+    @classmethod
+    def parse_models(cls, raw: dict[str, Iterable[dict[str, str]]]) -> Iterator[Model]:
+        for model in raw["models"]:
+            yield Model(model["name"])
+
+    @classmethod
+    def parse_layouts(
+        cls, raw: dict[str, Iterable[dict[str, str]]]
+    ) -> Iterator[Layout]:
+        layouts: dict[str, set[str]] = defaultdict(set)
+        for layout in raw["layouts"]:
+            layouts[layout["layout"]].add(layout.get("variant", ""))
+        yield from (
+            Layout(name=layout, variants=variants)
+            for layout, variants in layouts.items()
+        )
+
+    @classmethod
+    def parse_options(
+        cls, raw: dict[str, Iterable[dict[str, Any]]]
+    ) -> Iterator[Option]:
+        for option_group in raw["option_groups"]:
+            for option in option_group["options"]:
+                yield Option(option["name"])
+
+    def mlvo_iterator(
+        self,
+        models: Iterable[Model] | None = None,
+        layouts: Iterable[Layout] | None = None,
+        options: Iterable[Option] | None = None,
+    ) -> tuple[int, Callable[[], Iterator[RMLVO]]]:
+        models = self.models if models is None else models
+        layouts = self.layouts if layouts is None else layouts
+        options = self.options if options is None else options
+
+        # In order to avoid combinatorial explosion, we limit to
+        # model/layout/variant and layout/variant/options combinations.
+        count1 = len(models) * sum(len(l.variants) for l in layouts)
+        count2 = sum(len(l.variants) for l in layouts) * len(options)
+        count = count1 + count2
+
+        def iterate():
+            for m in models:
+                for l in layouts:
+                    for v in l.variants:
+                        yield RMLVO(
+                            rules=self.rules,
+                            model=m.name,
+                            layout=l.name,
+                            variant=v,
+                            option="",
+                        )
+            for opt in options:
+                for m in (Model(self.DEFAULT_MODEL),):
+                    for l in layouts:
+                        for v in l.variants:
+                            yield RMLVO(
+                                rules=self.rules,
+                                model=m.name,
+                                layout=l.name,
+                                variant=v,
+                                option=opt.name,
+                            )
+
+        return count, iterate
+
+    @classmethod
+    def _get_kccgst(
+        cls, xkb_roots: tuple[Path, ...], rmlvo: RMLVO
+    ) -> tuple[bool, KcCGSTAcc]:
+        args = ["xkbcli-compile-keymap", "--kccgst-yaml"]
+        args += list(
+            itertools.chain.from_iterable(("--include", str(p)) for p in xkb_roots)
+        )
+        args += list(itertools.chain.from_iterable((f"--{c}", v) for c, v in rmlvo))
+        try:
+            completed = subprocess.run(args, check=True, capture_output=True)
+            raw = yaml.safe_load(completed.stdout)
+            return True, KcCGSTAcc.parse(raw)
+        except subprocess.CalledProcessError:
+            return False, KcCGSTAcc.empty()
+
+    def get_kccgst(
+        self,
+        xkb_roots: Iterable[Path],
+        combos: Iterable[RMLVO],
+        combos_count: int,
+        njobs: int,
+        chunksize: int,
+        progress_bar: ProgressBar[Iterable[tuple[bool, KcCGSTAcc]]],
+    ) -> KcCGSTAcc:
+        # failed = False
+        acc = KcCGSTAcc.empty()
+        roots = tuple(xkb_roots)
+        with multiprocessing.Pool(njobs) as p:
+            f = partial(self._get_kccgst, roots)
+            results = p.imap_unordered(f, combos, chunksize=chunksize)
+            for ok, result in progress_bar(
+                results, total=combos_count, file=sys.stdout
+            ):
+                if not ok:
+                    # failed = True
+                    pass
+                else:
+                    acc.merge(result)
+
+        return acc
+
+
+T = TypeVar("T")
+
+
+# Needed because Callable does not handle keywords args
+class ProgressBar(Protocol[T]):
+    def __call__(self, x: T, total: int, file: TextIO | None) -> T: ...
+
+
+# The function generating the progress bar (if any).
+def create_progress_bar(verbose: bool) -> ProgressBar[T]:
+    def noop_progress_bar(x: T, total: int, file: TextIO | None = None) -> T:
+        return x
+
+    progress_bar: ProgressBar[T] = noop_progress_bar
+    if not verbose and os.isatty(sys.stdout.fileno()):
+        try:
+            from tqdm import tqdm
+
+            progress_bar = cast(ProgressBar[T], tqdm)
+        except ImportError:
+            pass
+
+    return progress_bar
+
+
+@unique
+class OutputFormat(StrEnum):
+    Dot = auto()
+    Rdf = auto()
+    # Svg = auto()
+    Yaml = auto()
+
+
+# RDF namespaces
+namespaces = {"xkb": "xkb:", "flags": "xkb:flags/"}
+
+
+def parse_file(path: Path) -> rdflib.Graph:
+    g = rdflib.Graph()
+    return g.parse(path)
+
+
+def run_dependencies(args: argparse.Namespace):
+    g = parse_file(args.path)
+
+    property_path = "(xkb:includes+/(rdf:first|rdf:rest)+/rdf:first)"
+    query_keymap = "SELECT (true AS ?ok) WHERE { [] rdf:type xkb:keymap . }"
+    query_root = """
+        SELECT ?path ?section
+        WHERE {
+            [] rdf:type xkb:Introspection;
+               xkb:path ?path ;
+               xkb:section ?section .
+        }
+    """
+    query_default = """
+        SELECT ?path ?section ?index ?default
+        WHERE {
+            [] rdf:type xkb:Introspection;
+               xkb:path ?path .
+            ?node
+               xkb:path ?path ;
+               xkb:section ?section ;
+               xkb:section-index ?index ;
+            OPTIONAL {
+                ?node xkb:flag flags:default .
+                BIND (true as ?default)
+            }
+        }
+        ORDER BY ASC(?index)
+    """
+
+    if args.file:
+        # Look for specific file
+        ref = XkbFileRef(file=args.file, section=args.section or "")
+        if args.file.is_absolute():
+            ref.path = args.file.resolve()
+        elif args.type:
+            if not ref.resolve_path(xkb_roots=args.include or (), component=args.type):
+                raise ValueError(f"Cannot resolve: {ref}")
+        else:
+            raise ValueError(f"Missing file type to resolve {ref}")
+        node = f"<{ref.uri}>"
+    elif r := g.query(query_keymap, initNs=namespaces):
+        # Look for keymap sections
+        node = "[ rdf:type xkb:keymap ] xkb:includes ?node . ?node"
+    elif rs := g.query(query_root, initNs=namespaces):
+        r0 = tuple(rs)[0]
+        if args.debug:
+            print(r0, file=sys.stderr)
+        path = Path(r0[0].toPython())
+        # Try to use the section from the CLI or from the xkb:Inspection
+        if (section := args.section) is None and not (
+            section := tuple(rs)[0][1].toPython()
+        ):
+            # No section defined: look for the default map (implicit or explicit)
+            if rs := g.query(query_default, initNs=namespaces):
+                rs = tuple(rs)
+                r0 = rs[0]
+                path = Path(r0[0].toPython())
+                for r in rs:
+                    if r[3].toPython():
+                        r0 = r
+                        break
+                if args.debug:
+                    print(
+                        *map(
+                            lambda x: tuple(
+                                map(lambda f: None if f is None else f.toPython(), x)
+                            ),
+                            rs,
+                        ),
+                        sep="\n",
+                        file=sys.stderr,
+                    )
+                    print("Found:", r0, file=sys.stderr)
+                section = r0[1]
+            else:
+                raise ValueError("Cannot determine map")
+        ref = XkbFileRef(path, section, path)
+        node = f"<{ref.uri}>"
+    else:
+        raise ValueError()
+
+    type_ = (
+        f"VALUES (?type) {{ (xkb:{args.type.value}) }}" if args.type is not None else ""
+    )
+    transitive = "+" if args.transitive else ""
+    query = textwrap.dedent(f"""\
+        SELECT DISTINCT ?type ?path ?section
+        WHERE {{
+                {type_}
+                {node}
+                    rdf:type ?type ;
+                    {property_path}{transitive} [
+                        xkb:path ?path ;
+                        xkb:section ?section
+                    ] .
+        }}
+    """)
+
+    if args.debug:
+        print(query, file=sys.stderr)
+
+    results: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for r in g.query(query, initNs=namespaces):
+        data = {"path": r[1].toPython(), "section": r[2].toPython()}
+        results[r[0].toPython().split(":")[1]].append(data)
+
+    for r in results.values():
+        r.sort(key=lambda x: x["path"])
+    yaml.dump(dict(results), stream=sys.stdout)
+
+
+def run_use(args: argparse.Namespace):
+    g = parse_file(args.path)
+
+    # Apply inference
+    xkb = rdflib.Namespace("xkb:")
+    used_in = xkb["used-in-rules"]
+    inc = xkb["includes"]
+    ts = []
+
+    def traverseList(node, g):
+        for f in g.objects(node, rdflib.RDF.first):
+            yield f
+        for r in g.objects(node, rdflib.RDF.rest):
+            yield from traverseList(r, g)
+
+    def includes(node, g):
+        for l in g.objects(node, inc):
+            for x in g.transitiveClosure(traverseList, l):
+                for y in g.transitiveClosure(traverseList, x):
+                    yield from g.objects(y, inc)
+
+    for f, rules in g.subject_objects(used_in):
+        for node in g.transitiveClosure(includes, f):
+            ts.append((node, used_in, rules))
+
+    for t in ts:
+        g.add(t)
+
+    type_ = (
+        f"VALUES (?type) {{ (xkb:{args.type.value}) }}" if args.type is not None else ""
+    )
+    rules = f'VALUES (?rules) {{ ("{args.rules}") }}' if args.rules is not None else ""
+
+    if args.file:
+        # Check for a specific file
+        if args.type is None:
+            raise ValueError("Missing mandatory component type")
+        ref = XkbFileRef(file=args.file, section=args.section)
+        ref.resolve_path(xkb_roots=args.include, component=args.type)
+        values = "VALUES " + (
+            f'(?path ?section) {{ ("{ref.path}" "{ref.section}") }}'
+            if args.section
+            else f'(?path) {{ ("{ref.path}") }}'
+        )
+    else:
+        values = ""
+
+    # property_path = "(xkb:includes/(rdf:first|rdf:rest)+/rdf:first/xkb:includes)"
+    if args.unused:
+        # filter = f"""\
+        # FILTER NOT EXISTS {{ ?node xkb:used-in-rules ?rules . }}
+        # FILTER NOT EXISTS {{
+        #     ?parent {property_path}+ ?node ;
+        #             rdf:type ?type ;
+        #             xkb:used-in-rules ?rules .
+        # }}"""
+        filter = "FILTER NOT EXISTS { ?node xkb:used-in-rules ?rules . }"
+    else:
+        # filter = f"""\
+        # FILTER EXISTS {{
+        #     {{ ?node xkb:used-in-rules ?rules . }}
+        #     UNION
+        #     {{
+        #         ?parent {property_path}+ ?node ;
+        #                 rdf:type ?type ;
+        #                 xkb:used-in-rules ?rules .
+        #     }}
+        # }}
+        # """
+        filter = "?node xkb:used-in-rules ?rules ."
+
+    query = textwrap.dedent(f"""\
+        SELECT DISTINCT ?rules ?type ?path ?section
+        WHERE {{
+                {type_}
+                {rules}
+                {values}
+                ?node
+                    rdf:type ?type ;
+                    xkb:path ?path ;
+                    xkb:section ?section .
+                {filter}
+                FILTER NOT EXISTS {{ ?node rdf:type xkb:Introspection }}
+        }}
+    """)
+
+    if args.debug:
+        print(query, file=sys.stderr)
+
+    result: dict[str, dict[str, str]] = defaultdict(list)
+
+    for r in g.query(query, initNs=namespaces):
+        data = {"path": r[2].toPython(), "section": r[3].toPython()}
+        if not args.unused:
+            data["rules"] = r[0].toPython()
+        # if args.type is None:
+        #     data["type"] = r[1].toPython().split(":")[1]
+        ty = r[1].toPython().split(":")[1]
+        result[ty].append(data)
+
+    for r in result.values():
+        r.sort(key=lambda x: x["path"])
+
+    yaml.dump(dict(result), stream=sys.stdout)
+
+
+def run_query(args: argparse.Namespace):
+    g = parse_file(args.path)
+    for r in g.query(args.query, initNs=namespaces):
+        print(r)
+
+
+def run_pretty(args: argparse.Namespace):
+    g = parse_file(args.path)
+    print(g.serialize())
+
+
+def get_xkb_files(path: Path, components: Iterable[Component]) -> Iterator[Path]:
+    for component in components:
+        for dirpath, _dirnames, filenames in (path / component.dir).walk():
+            # Discard files with suffixes, such as *.md files
+            yield from (
+                dirpath / f
+                for f in map(Path, filenames)
+                if not f.suffix and f.stem != "README"
+            )
+
+
+def run_process_trees(args: argparse.Namespace):
+    components = args.type if args.type else Component
+    paths = tuple(
+        itertools.chain.from_iterable(
+            map(partial(get_xkb_files, components=components), args.path)
+        )
+    )
+
+    tool_args: list[str] = ["introspection"]
+    tool_args += list(
+        itertools.chain.from_iterable(("--include", p) for p in args.path)
+    )
+    tool_args += args.extra
+    tool_args += list(map(str, paths))
+
+    try:
+        completed = subprocess.run(
+            tool_args,
+            check=True,
+        )
+        return completed.returncode
+    except subprocess.CalledProcessError as err:
+        return err.returncode
+
+
+def run_process_rules(args: argparse.Namespace):
+    registry = Registry.parse(args.rules, *args.path)
+    count, iterator = registry.mlvo_iterator(
+        models=args.model, layouts=args.layout, options=args.option
+    )
+    progress_bar: ProgressBar[Iterable[Any]] = create_progress_bar(False)
+    acc = registry.get_kccgst(
+        xkb_roots=args.path,
+        combos=iterator(),
+        combos_count=count,
+        njobs=args.jobs,
+        chunksize=args.chunksize,
+        progress_bar=progress_bar,
+    )
+    acc.resolve_paths(*args.path)
+    with args.output.open("wt", encoding="utf-8") as fd:
+        if args.rdf:
+            print("@prefix\txkb:\t<xkb:> .", file=fd)
+            for _ty, ref in acc:
+                print(f'<{ref.uri}>\txkb:used-in-rules\t"{args.rules}" .', file=fd)
+        else:
+            prev_ty = None
+            for ty, ref in acc:
+                if ty != prev_ty:
+                    print(f"{ty}:", file=fd)
+                    prev_ty = ty
+                print(f'- file: "{ref.file}"', file=fd)
+                print(f'  section: "{ref.section}"', file=fd)
+                if ref.path is not None:
+                    print(f'  path: "{ref.path}"', file=fd)
+                else:
+                    print("  path: null", file=fd)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        # FIXME: description
+        description="Tool to process the RDF output of xkbcommon introspection"
+    )
+    parser.add_argument("--debug", action="store_true", help="Debug mode")
+    subparsers = parser.add_subparsers()
+
+    # Dependencies
+    parser_deps = subparsers.add_parser(
+        "dependencies", aliases=("deps",), help="Dependencies of a map"
+    )
+    parser_deps.add_argument(
+        "path", type=argparse.FileType("rt", encoding="utf-8"), help="RDF Turtle file"
+    )
+    parser_deps.add_argument(
+        "-i", "--include", type=Path, action="append", default=[], help="XKB root path"
+    )
+    parser_deps.add_argument("-f", "--file", type=Path, help="XKB file")
+    parser_deps.add_argument("-s", "--section", type=str, help="Section in a XKB file")
+    parser_deps.add_argument(
+        "-t", "--type", type=Component.parse, help="Component type"
+    )
+    parser_deps.add_argument(
+        "-T", "--transitive", action="store_true", help="Enable transitive dependencies"
+    )
+    parser_deps.set_defaults(run=run_dependencies)
+
+    # Used/unused
+    parser_use = subparsers.add_parser("use", help="List used/unused file & sections")
+    parser_use.add_argument(
+        "path", type=argparse.FileType("rt", encoding="utf-8"), help="RDF Turtle file"
+    )
+    parser_use.add_argument(
+        "-U", "--unused", action="store_true", help="Search unused files"
+    )
+    parser_use.add_argument(
+        "-i", "--include", type=Path, action="append", default=[], help="XKB root path"
+    )
+    parser_use.add_argument("-r", "--rules", type=str, help="XKB ruleset")
+    parser_use.add_argument("-f", "--file", type=Path, help="XKB file")
+    parser_use.add_argument("-s", "--section", type=str, help="Section in a XKB file")
+    parser_use.add_argument("-t", "--type", type=Component.parse, help="Component type")
+    parser_use.set_defaults(run=run_use)
+
+    # Query
+    parser_query = subparsers.add_parser("query", help="SPARQL query")
+    parser_query.add_argument(
+        "path", type=argparse.FileType("rt", encoding="utf-8"), help="RDF Turtle file"
+    )
+    parser_query.add_argument(
+        "-q", "--query", type=str, help="SPARQL query", required=True
+    )
+    parser_query.set_defaults(run=run_query)
+
+    # Prettyfier
+    parser_pretty = subparsers.add_parser("pretty", help="Prettyfier")
+    parser_pretty.add_argument(
+        "path", type=argparse.FileType("rt", encoding="utf-8"), help="RDF Turtle file"
+    )
+    parser_pretty.set_defaults(run=run_pretty)
+
+    # XKB tree analyzer
+    parser_tree = subparsers.add_parser(
+        "tree",
+        help="Analyze XKB trees",
+        description="Analyze XKB trees",
+        epilog="Use `--` to pass extra arguments to the `introspection` tool",
+    )
+    parser_tree.add_argument(
+        "path",
+        nargs="*",
+        type=Path,
+        help="Path to a XKB tree",
+    )
+    parser_tree.add_argument(
+        "-t",
+        "--type",
+        default=[],
+        action="append",
+        type=Component.parse,
+        help="Component type",
+    )
+    parser_tree.set_defaults(run=run_process_trees)
+
+    # XKB rules analyzer
+    parser_rules = subparsers.add_parser(
+        "rules",
+        help="Analyze XKB rules",
+        description="Analyze XKB rules",
+        epilog="Use `--` to pass extra arguments to the `introspection` tool",
+    )
+    parser_rules.add_argument(
+        "path",
+        nargs="*",
+        type=Path,
+        help="Path to a XKB tree",
+    )
+    parser_rules.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        default=4 * (os.cpu_count() or 1),
+        help="number of processes to use",
+    )
+    parser_rules.add_argument("--chunksize", default=1, type=int)
+    parser_rules.add_argument(
+        "-r",
+        "--rules",
+        default="evdev",
+        type=str,
+        help="Ruleset",
+    )
+    parser_rules.add_argument(
+        "-m",
+        "--model",
+        action="append",
+        type=Model,
+        help="Only specific models",
+    )
+    parser_rules.add_argument(
+        "-l",
+        "--layout",
+        action="append",
+        type=Layout.parse,
+        help="Only specific layouts",
+    )
+    parser_rules.add_argument(
+        "-o",
+        "--option",
+        action="append",
+        type=Option,
+        help="Only specific options",
+    )
+    parser_rules.add_argument(
+        "-t",
+        "--type",
+        default=[],
+        action="append",
+        type=Component.parse,
+        help="Component type",
+    )
+    parser_rules.add_argument(
+        "--rdf",
+        action="store_true",
+        help="Output in RDF format",
+    )
+    parser_rules.add_argument("--output", type=Path, help="Output file", required=True)
+    parser_rules.set_defaults(run=run_process_rules)
+
+    # Misc
+    if "--" in sys.argv:
+        idx = sys.argv.index("--")
+        argv = sys.argv[1:idx]
+        extra = sys.argv[idx + 1 :]
+    else:
+        argv = sys.argv[1:]
+        extra = []
+
+    # Run
+    args = parser.parse_args(argv)
+    args.extra = extra
+
+    # [HACK]
+    if hasattr(args, "option") and args.option == [Option("-")]:
+        args.option = ()
+
+    exit(args.run(args))

@@ -1017,6 +1017,7 @@ MapName         :       STRING  { $$ = $1; }
 
 %%
 
+/* Parse a specific section */
 XkbFile *
 parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
 {
@@ -1074,4 +1075,26 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
                 scanner->file_name, safe_map_name(first));
 
     return first;
+}
+
+/* Parse the next section */
+bool
+parse_next(struct xkb_context *ctx, struct scanner *scanner, XkbFile **xkb_file)
+{
+    int ret;
+    struct parser_param param = {
+        .scanner = scanner,
+        .ctx = ctx,
+        .rtrn = NULL,
+        .more_maps = false,
+    };
+
+    if ((ret = yyparse(&param)) == 0 && param.more_maps) {
+        *xkb_file = param.rtrn;
+        return true;
+    } else {
+        FreeXkbFile(param.rtrn);
+        *xkb_file = NULL;
+        return (ret == 0);
+    }
 }

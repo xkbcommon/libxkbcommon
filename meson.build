@@ -145,6 +145,9 @@ elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_defi
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
+if cc.has_header_symbol('stdlib.h', 'realpath', prefix: system_ext_define)
+    configh_data.set('HAVE_REAL_PATH', 1)
+endif
 if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
     if host_machine.system() == 'windows'
         # see https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#maximum-path-length-limitation
@@ -719,6 +722,8 @@ m_dep = cc.find_library('m', required : false)
 libxkbcommon_test_internal = library(
     'xkbcommon-test-internal',
     libxkbcommon_sources,
+    'src/xkbcomp/keymap-file-iterator.c',
+    'src/xkbcomp/keymap-file-iterator.h',
     include_directories: include_directories('src', 'include'),
     c_args: ['-DENABLE_PRIVATE_APIS'],
     gnu_symbol_visibility: 'hidden',
@@ -740,6 +745,36 @@ test_dep = declare_dependency(
     link_with: libxkbcommon_test_internal,
     dependencies: [m_dep],
 )
+
+if build_tools
+    # Tool: introspection
+    executable(
+        'introspection',
+        'tools/introspection.c',
+        'src/utils.c',
+        'src/utils.h',
+        'src/keymap-formats.c',
+        'src/keymap-formats.h',
+        'src/xkbcomp/keymap-file-iterator.h',
+        dependencies: test_dep,
+        include_directories: include_directories('src', 'src/xkbcomp', 'include'),
+        install: false
+    )
+
+    introspection_config = configuration_data()
+    introspection_config.set('MESON_BUILD_ROOT', meson.current_build_dir())
+    introspection_config.set('DEFAULT_XKB_RULES', get_option('default-rules'))
+    introspection_config.set('DEFAULT_XKB_MODEL', get_option('default-model'))
+    introspection_config.set('DEFAULT_XKB_LAYOUT', get_option('default-layout'))
+    introspection_config.set('DEFAULT_XKB_VARIANT', get_option('default-variant'))
+    introspection_config.set('DEFAULT_XKB_OPTIONS', get_option('default-options'))
+    configure_file(
+        input: 'tools/introspection-query.py.in',
+        output: 'introspection-query',
+        configuration: introspection_config
+    )
+endif
+
 if get_option('enable-x11')
     libxkbcommon_x11_test_internal = library(
         'xkbcommon-x11-internal',
@@ -835,6 +870,15 @@ test(
 test(
     'buffercomp',
     executable('test-buffercomp', 'test/buffercomp.c', dependencies: test_dep),
+    env: test_env,
+)
+test(
+    'introspection',
+    executable(
+        'test-introspection',
+        'test/introspection.c',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 

@@ -122,6 +122,10 @@ typedef darray (unsigned long)  darray_ulong;
     (arr).size--; \
 } while (0)
 
+/* Same as `darray_append_string` but do count the final '\0' in the size */
+#define darray_append_string0(arr, string) \
+    darray_append_items((arr), (string), strlen(string) + 1)
+
 #define darray_append_lit(arr, stringLiteral) do { \
     darray_append_items(arr, stringLiteral, \
                         (darray_size_t) sizeof(stringLiteral)); \
