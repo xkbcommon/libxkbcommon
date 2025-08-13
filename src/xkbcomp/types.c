@@ -5,6 +5,8 @@
 
 #include "config.h"
 
+#include <limits.h>
+
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
@@ -215,7 +217,9 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         KeyTypesInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_TYPES);
+        char path[PATH_MAX];
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_TYPES,
+                                  path, sizeof(path));
         if (!file) {
             info->errorCount += 10;
             ClearKeyTypesInfo(&included);

@@ -14,6 +14,8 @@
 
 #include "config.h"
 
+#include <limits.h>
+
 #include "messages-codes.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
@@ -675,7 +677,9 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         SymbolsInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_SYMBOLS);
+        char path[PATH_MAX];
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_SYMBOLS,
+                                  path, sizeof(path));
         if (!file) {
             info->errorCount += 10;
             ClearSymbolsInfo(&included);

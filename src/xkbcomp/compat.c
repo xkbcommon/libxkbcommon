@@ -11,6 +11,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <limits.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "darray.h"
@@ -465,7 +466,9 @@ HandleIncludeCompatMap(CompatInfo *info, IncludeStmt *include)
         CompatInfo next_incl;
         XkbFile *file;
 
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_COMPAT);
+        char path[PATH_MAX];
+        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_COMPAT,
+                                  path, sizeof(path));
         if (!file) {
             info->errorCount += 10;
             ClearCompatInfo(&included);
