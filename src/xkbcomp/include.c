@@ -376,7 +376,7 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 
 XkbFile *
 ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
-                   enum xkb_file_type file_type)
+                   enum xkb_file_type file_type, char *path, size_t path_size)
 {
     /*
      * Resolve include statement:
@@ -387,7 +387,6 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
      */
     XkbFile *xkb_file = NULL;  /* Exact match */
     XkbFile *candidate = NULL; /* Weak match */
-    char buf[PATH_MAX];
 
     const char *stmt_file = stmt->file;
     size_t stmt_file_len = strlen(stmt_file);
@@ -396,13 +395,13 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
     // FIXME: use parent file name instead of “(unknow)”.
     const ssize_t expanded = expand_path(ctx, "(unknown)",
                                          stmt_file, stmt_file_len, file_type,
-                                         buf, sizeof(buf));
+                                         path, path_size);
     if (expanded < 0) {
         /* Error */
         return NULL;
     } else if (expanded > 0) {
         /* %-expanded */
-        stmt_file = buf;
+        stmt_file = path;
         stmt_file_len = (size_t) expanded;
         assert(stmt_file[stmt_file_len] == '\0');
     }
@@ -435,7 +434,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
             // FIXME: use parent file name instead of “(unknow)”.
             file = FindFileInXkbPath(ctx, "(unknown)",
                                      stmt_file, stmt_file_len, file_type,
-                                     buf, sizeof(buf), &offset);
+                                     path, path_size, &offset);
         }
     }
 
@@ -484,7 +483,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
         offset++;
         file = FindFileInXkbPath(ctx, "(unknown)",
                                  stmt_file, stmt_file_len, file_type,
-                                 buf, sizeof(buf), &offset);
+                                 path, path_size, &offset);
     }
 
     if (!xkb_file) {
