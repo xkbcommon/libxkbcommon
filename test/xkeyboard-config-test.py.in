@@ -678,8 +678,9 @@ def main() -> NoReturn:
     else:
         paths = tuple(Registry.parse_path(xkb_root, p) for p in args.paths)
 
-    print(f"{xkb_root=}", file=sys.stderr)
-    print(f"{paths=}", file=sys.stderr)
+    # This need to be valid YAML. Currently unused, so left as comments
+    print("# xkb root:", json.dumps(str(xkb_root)), file=sys.stderr)
+    print("# paths:", json.dumps(tuple(map(str, paths))), file=sys.stderr)
 
     if args.no_iterations:
         combos = (
