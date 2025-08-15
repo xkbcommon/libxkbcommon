@@ -36,6 +36,8 @@ EXCLUDE                = LICENSE NEWS.md meson_options.txt
 
 RECURSIVE              = YES
 
+EXAMPLE_PATH           = test
+
 USE_MDFILE_AS_MAINPAGE = README.md
 
 VERBATIM_HEADERS       = NO

@@ -278,14 +278,16 @@ xkbcli interactive-x11
 
 ### Modifiers
 
-#### How to get the virtual to real modifiers mappings?
+#### How to get the virtual modifier encoding?
 
-The [virtual modifiers] mappings to [real modifiers] is an implementation detail.
+The [virtual modifiers] encoding, (also: mappings to [real modifiers] in X11
+jargon) is an implementation detail.
 However, some applications may require it in order to interface with legacy code.
 
 ##### libxkbcommon ≥ 1.10
 
-Use the dedicated function `xkb_keymap::xkb_keymap_mod_get_mask()`.
+Use the dedicated functions `xkb_keymap::xkb_keymap_mod_get_mask()` (since 1.10)
+and `xkb_keymap::xkb_keymap_mod_get_mask2()` (since 1.11).
 
 ##### libxkbcommon ≤ 1.9
 
@@ -293,6 +295,7 @@ Use the following snippet:
 
 ```c
 // Find the real modifier mapping of the virtual modifier `LevelThree`
+#include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-names.h>
 const xkb_mod_index_t levelThree_idx = xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_LEVEL3);
 const xkb_mod_mask_t levelThree = UINT32_C(1) << levelThree_idx;
@@ -306,3 +309,10 @@ xkb_state_unref(state);
 [virtual modifiers]: @ref virtual-modifier-def
 [real modifiers]: @ref real-modifier-def
 [RMLVO]: @ref RMLVO-intro
+
+#### How to get the keys that trigger modifiers?
+
+There is no dedicated API, since the use cases are too diverse or niche.
+Nevertheless, the following snippet provide a minimal example to achieve it.
+
+@snippet "test/modifiers.c" xkb_keymap_mod_get_codes
