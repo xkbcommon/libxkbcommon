@@ -6,9 +6,11 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-names.h"
 #include "evdev-scancodes.h"
 #include "test.h"
 #include "keymap.h"
@@ -674,6 +676,124 @@ test_pure_virtual_modifiers(struct xkb_context *context)
     assert(!keymap);
 }
 
+/* Test FAQ snippet */
+//! [xkb_keymap_mod_get_codes]
+#include <xkbcommon/xkbcommon.h>
+/**
+ * Get the keycodes associated with a modifier by index.
+ *
+ * @param[in] keymap The keymap
+ * @param[in] idx The index of the modifier
+ * @param[out] codes_out A buffer in which the codes should be stored
+ * @param[out] codes_size The size of the codes_out buffer
+ *
+ * @returns the number of key codes in the keysyms_out array, or a negative
+ * in case of error.
+ */
+static ssize_t
+xkb_keymap_mod_get_codes(struct xkb_keymap *keymap, xkb_mod_index_t mod,
+                         xkb_keycode_t *codes_out, size_t codes_size)
+{
+    if (mod >= xkb_keymap_num_mods(keymap))
+        return -1;
+
+    ssize_t idx = 0;
+    for (xkb_keycode_t k = xkb_keymap_min_keycode(keymap);
+         k <= xkb_keymap_max_keycode(keymap) && idx >= 0; k++) {
+        /*
+         * We only test the first level of the first group.
+         *
+         * Since there is currently no way to reset the state, use a new one to
+         * avoid side effects (latches, etc.)
+         */
+        struct xkb_state * const state = xkb_state_new(keymap);
+        assert(state);
+
+        static const enum xkb_key_direction directions[] = {
+            XKB_KEY_DOWN,
+            XKB_KEY_UP
+        };
+
+        for (size_t d = 0; d < ARRAY_SIZE(directions); d++) {
+            if (xkb_state_update_key(state, k, directions[d]) &&
+                xkb_state_mod_index_is_active(state, mod,
+                                              XKB_STATE_MODS_EFFECTIVE)) {
+                if ((size_t) idx < codes_size) {
+                    assert(idx < (ssize_t) (SIZE_MAX / 2));
+                    codes_out[idx++] = k;
+                } else {
+                    idx = -2;
+                }
+                break;
+            }
+        }
+
+        xkb_state_unref(state);
+    }
+    return idx;
+}
+//! [xkb_keymap_mod_get_codes]
+
+static void
+test_get_modifier_keycodes(struct xkb_context *context)
+{
+    struct xkb_keymap *keymap = test_compile_rules(context,
+                                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                   "evdev", "pc104",
+                                                   "cz", NULL, NULL);
+    assert(keymap);
+
+#define MAX_KEYCODES_COUNT 10
+#define KEY_LVL3 (92 - EVDEV_OFFSET)
+    const struct {
+        const char *mod;
+        xkb_keycode_t keycodes[MAX_KEYCODES_COUNT];
+    } mods[] = {
+        { .mod = XKB_MOD_NAME_SHIFT, .keycodes = { KEY_LEFTSHIFT, KEY_RIGHTSHIFT, 0 } },
+        { .mod = XKB_MOD_NAME_CAPS, .keycodes = { KEY_CAPSLOCK, 0 } },
+        { .mod = XKB_MOD_NAME_CTRL, .keycodes = { KEY_LEFTCTRL, KEY_RIGHTCTRL, 0 } },
+        { .mod = XKB_MOD_NAME_MOD1, .keycodes = { KEY_LEFTALT, 0 } },
+        { .mod = XKB_MOD_NAME_MOD2, .keycodes = { KEY_NUMLOCK, 0 } },
+        { .mod = XKB_MOD_NAME_MOD3, .keycodes = { 0 } },
+        { .mod = XKB_MOD_NAME_MOD4, .keycodes = { KEY_LEFTMETA, KEY_RIGHTMETA, 0 } },
+        { .mod = XKB_MOD_NAME_MOD5, .keycodes = { KEY_LVL3, KEY_RIGHTALT, 0 } },
+        { .mod = XKB_VMOD_NAME_ALT, .keycodes = { KEY_LEFTALT, 0 } },
+        { .mod = XKB_VMOD_NAME_META, .keycodes = { KEY_LEFTALT, 0 } },
+        { .mod = XKB_VMOD_NAME_SUPER, .keycodes = { KEY_LEFTMETA, KEY_RIGHTMETA, 0 } },
+        { .mod = XKB_VMOD_NAME_HYPER, .keycodes = { KEY_LEFTMETA, KEY_RIGHTMETA, 0 } },
+        { .mod = XKB_VMOD_NAME_NUM, .keycodes = { KEY_NUMLOCK, 0 } },
+        { .mod = XKB_VMOD_NAME_LEVEL3, .keycodes = { KEY_LVL3, KEY_RIGHTALT, 0 } },
+        { .mod = XKB_VMOD_NAME_LEVEL5, .keycodes = { 0 } },
+    };
+
+    xkb_keycode_t got[MAX_KEYCODES_COUNT] = {0};
+    for (size_t m = 0; m < ARRAY_SIZE(mods); m++) {
+        const xkb_mod_index_t mod = xkb_keymap_mod_get_index(keymap, mods[m].mod);
+        assert(mod != XKB_MOD_INVALID);
+        const ssize_t count =
+            xkb_keymap_mod_get_codes(keymap, mod, got, ARRAY_SIZE(got));
+        assert(count >= 0);
+        const xkb_keycode_t * const expected = mods[m].keycodes;
+        for (size_t k = 0; k < ARRAY_SIZE(got); k++) {
+            if (expected[k] == 0) {
+                assert_printf(k == (size_t) count,
+                              "Mod %s: expected %zu, got %zd\n",
+                              mods[m].mod, k, count);
+                break;
+            }
+            assert_printf(k < (size_t) count,
+                          "Mod %s: Missing keycode 0x%"PRIu32"\n",
+                          mods[m].mod, expected[k]);
+            assert_printf(got[k] == expected[k] + EVDEV_OFFSET,
+                          "Mod %s: Expected keycode %"PRIu32" but got: %"PRIu32"\n",
+                          mods[m].mod, expected[k] + EVDEV_OFFSET, got[k]);
+        }
+    }
+
+    xkb_keymap_unref(keymap);
+}
+#undef MAX_KEYCODES_COUNT
+
 int
 main(void)
 {
@@ -687,6 +807,7 @@ main(void)
     test_explicit_virtual_modifiers(context);
     test_virtual_modifiers_mapping_hack(context);
     test_pure_virtual_modifiers(context);
+    test_get_modifier_keycodes(context);
 
     xkb_context_unref(context);
 
