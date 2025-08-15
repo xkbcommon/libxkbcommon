@@ -8,6 +8,7 @@
 
 #include "keymap.h"
 #include "ast.h"
+#include "scanner-utils.h"
 
 char *
 text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
@@ -16,11 +17,19 @@ text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
 XkbFile *
 XkbParseFile(struct xkb_context *ctx, FILE *file,
              const char *file_name, const char *map);
+bool
+XkbParseStringInit(struct xkb_context *ctx, struct scanner *scanner,
+                   const char *string, size_t len,
+                   const char *file_name, const char *map);
 
 XkbFile *
 XkbParseString(struct xkb_context *ctx,
                const char *string, size_t len,
                const char *file_name, const char *map);
+
+bool
+XkbParseStringNext(struct xkb_context *ctx, struct scanner *scanner,
+                   const char *map, XkbFile **out);
 
 void
 FreeXkbFile(XkbFile *file);
