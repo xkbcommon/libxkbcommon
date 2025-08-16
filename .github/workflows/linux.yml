@@ -58,6 +58,10 @@ jobs:
           meson install -C $BUILDDIR
           popd
           popd
+      - name: Create custom locale for testing
+        run: |
+          # The locale name must be kept in sync with the Compose test
+          sudo localedef -i en_US -f UTF-8 xx_YY.UTF-8
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
