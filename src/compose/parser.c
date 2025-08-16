@@ -263,7 +263,7 @@ lex_include_string(struct scanner *s, struct xkb_compose_table *table,
             else if (scanner_chr(s, 'L')) {
                 char *path = get_locale_compose_file_path(table->ctx, table->locale);
                 if (!path) {
-                    scanner_err(s, XKB_LOG_MESSAGE_NO_ID,
+                    scanner_err(s, XKB_ERROR_INVALID_COMPOSE_LOCALE,
                                 "failed to expand %%L to the locale Compose file");
                     return TOK_ERROR;
                 }

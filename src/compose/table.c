@@ -7,12 +7,13 @@
 
 #include <assert.h>
 
+#include "xkbcommon/xkbcommon.h"
+#include "messages-codes.h"
 #include "utils.h"
 #include "constants.h"
 #include "table.h"
 #include "parser.h"
 #include "paths.h"
-#include "xkbcommon/xkbcommon.h"
 
 static struct xkb_compose_table *
 xkb_compose_table_new(struct xkb_context *ctx,
@@ -191,7 +192,7 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
         goto found_path;
     free(path);
 
-    log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+    log_err(ctx, XKB_ERROR_INVALID_COMPOSE_LOCALE,
             "couldn't find a Compose file for locale \"%s\" (mapped to \"%s\")\n",
             locale, table->locale);
     xkb_compose_table_unref(table);
