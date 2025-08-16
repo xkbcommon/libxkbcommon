@@ -260,6 +260,7 @@ def get_new_code(
     """
     # Get all codes
     codes = frozenset(entry.code for entry in registry)
+    # Filter free ones
     free = tuple(code for code in range(args.min, args.max + 1) if code not in codes)
     print(*random.sample(free, k=args.count))
 
@@ -279,9 +280,9 @@ parser.set_defaults(func=generate)
 subparsers = parser.add_subparsers()
 new_id_parser = subparsers.add_parser("get-new-code", help="Get a new message codes")
 new_id_parser.set_defaults(func=get_new_code)
-new_id_parser.add_argument("--min", type=int, default=1)
-new_id_parser.add_argument("--max", type=int, default=999)
-new_id_parser.add_argument("--count", type=int, default=10)
+new_id_parser.add_argument("--min", type=int, default=1, help="default: %(default)s")
+new_id_parser.add_argument("--max", type=int, default=999, help="default: %(default)s")
+new_id_parser.add_argument("--count", type=int, default=10, help="default: %(default)s")
 generate_parser = subparsers.add_parser("generate", help="Generate files")
 
 args = parser.parse_args()

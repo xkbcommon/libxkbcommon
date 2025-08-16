@@ -409,6 +409,14 @@
   added: ALWAYS
   type: error
   description: "The target file of an include statement could not be processed"
+- id: "invalid-compose-locale"
+  code: 679
+  added: 1.12.0
+  type: error
+  description: "Invalid locale for Compose"
+  details: |
+    The locale is either invalid (not installed on the system) or not registered
+    in the X11 Compose registry.
 - id: "invalid-compose-syntax"
   code: 685
   added: ALWAYS

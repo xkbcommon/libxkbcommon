@@ -70,6 +70,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_UNKNOWN_DEFAULT_FIELD, "Unknown default field"},
     {XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE, "Unknown char escape sequence"},
     {XKB_ERROR_INVALID_INCLUDED_FILE, "Invalid included file"},
+    {XKB_ERROR_INVALID_COMPOSE_LOCALE, "Invalid compose locale"},
     {XKB_ERROR_INVALID_COMPOSE_SYNTAX, "Invalid compose syntax"},
     {XKB_ERROR_INCOMPATIBLE_ACTIONS_AND_KEYSYMS_COUNT, "Incompatible actions and keysyms count"},
     {XKB_WARNING_MULTIPLE_GROUPS_AT_ONCE, "Multiple groups at once"},
