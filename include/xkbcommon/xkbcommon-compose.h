@@ -196,6 +196,9 @@ enum xkb_compose_format {
  *    X locale files, e.g. `/usr/share/X11/locale`, instead of the
  *    preconfigured directory.
  *
+ * Since 1.12, system locales not registered in `$XLOCALEDIR` will fallback
+ * to `en_US.UTF-8`.
+ *
  * @param context
  *     The library context in which to create the compose table.
  * @param locale

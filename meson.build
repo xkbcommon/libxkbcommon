@@ -153,6 +153,9 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
         configh_data.set('PATH_MAX', 4096)
     endif
 endif
+if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
+    configh_data.set('HAVE_NEWLOCALE', 1)
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
