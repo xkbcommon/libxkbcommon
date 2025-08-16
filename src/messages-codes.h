@@ -145,6 +145,8 @@ enum xkb_message_code {
     XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE = 645,
     /** The target file of an include statement could not be processed */
     XKB_ERROR_INVALID_INCLUDED_FILE = 661,
+    /** Invalid locale for Compose */
+    XKB_ERROR_INVALID_COMPOSE_LOCALE = 679,
     /** The Compose file syntax is invalid and the entry cannot be parsed */
     XKB_ERROR_INVALID_COMPOSE_SYNTAX = 685,
     /** A level has a different number of keysyms and actions */
