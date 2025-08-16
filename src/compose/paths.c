@@ -5,7 +5,10 @@
 
 #include "config.h"
 
+#include <locale.h>
+
 #include "xkbcommon/xkbcommon.h"
+#include "messages-codes.h"
 #include "utils.h"
 #include "utils-paths.h"
 #include "context.h"
@@ -179,12 +182,49 @@ get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
      * is UTF-8 based, and since 99% of the time a C locale is really just
      * a misconfiguration for UTF-8, let's do the most helpful thing.
      */
+    static const char * const fallback = "en_US.UTF-8";
+    static const char * const registry = "compose.dir";
     if (streq(locale, "C"))
-        locale = "en_US.UTF-8";
+        locale = fallback;
 
-    resolved = resolve_name(ctx, "compose.dir", RIGHT_TO_LEFT, locale);
-    if (!resolved)
+    resolved = resolve_name(ctx, registry, RIGHT_TO_LEFT, locale);
+    if (!resolved) {
+#ifdef HAVE_NEWLOCALE
+        /*
+         * There is no extension mechanism for X11 Compose locales.
+         * Instead of failing, we just use `en_US.UTF-8` as a fallback because
+         * it is what most locales use anyway.
+         * But we still want to fail if the locale is invalid in the system,
+         * so that we can catch missing system locales and typos.
+         */
+        locale_t loc = newlocale(LC_ALL_MASK, locale, (locale_t) 0);
+        if (loc == (locale_t) 0) {
+            log_err(ctx, XKB_ERROR_INVALID_COMPOSE_LOCALE,
+                    "No Compose file for locale \"%s\": "
+                    "locale is either invalid or not installed\n", locale);
+            return NULL;
+        } else {
+            /*
+             * The locale is legit but have no entry in the X11 Compose registry,
+             * so use the `en_US.UTF-8` fallback.
+             */
+            freelocale(loc);
+            resolved = resolve_name(ctx, registry, RIGHT_TO_LEFT, fallback);
+            if (!resolved) {
+                log_err(ctx, XKB_ERROR_INVALID_COMPOSE_LOCALE,
+                        "No Compose file for locale \"%s\": "
+                        "failed to use fallback \"%s\"\n", locale, fallback);
+                return NULL;
+            } else {
+                log_warn(ctx, XKB_ERROR_INVALID_COMPOSE_LOCALE,
+                         "No Compose file for locale \"%s\": "
+                         "using locale fallback \"%s\"\n", locale, fallback);
+            }
+        }
+#else
         return NULL;
+#endif
+    }
 
     if (is_absolute_path(resolved)) {
         path = resolved;

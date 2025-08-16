@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
+#include <locale.h>
 #include <stdio.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
@@ -577,6 +578,24 @@ test_from_locale(struct xkb_context *ctx)
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
     assert(table);
     xkb_compose_table_unref(table);
+
+#ifdef HAVE_NEWLOCALE
+    /* Test custom locale. Require installing it system-wide */
+    /* NOTE: Keep the locale name in sync with the localedef call in our CI */
+    static const char * const custom_locale = "xx_YY.UTF-8";
+    locale_t loc = newlocale(LC_ALL, custom_locale, (locale_t) 0);
+    table = xkb_compose_table_new_from_locale(ctx, custom_locale,
+                                              XKB_COMPOSE_COMPILE_NO_FLAGS);
+    if (loc == (locale_t) 0) {
+        /* Locale is not installed: no fallback */
+        assert(!table);
+    } else {
+        /* Locale is installed */
+        freelocale(loc);
+        assert(table);
+        xkb_compose_table_unref(table);
+    }
+#endif
 
     /* Bogus - not found. */
     table = xkb_compose_table_new_from_locale(ctx, "blabla",
