@@ -84,6 +84,7 @@ enum merge_mode {
     MERGE_AUGMENT,
     MERGE_OVERRIDE,
     MERGE_REPLACE,
+    _MERGE_MODE_NUM_ENTRIES,
 };
 
 const char *

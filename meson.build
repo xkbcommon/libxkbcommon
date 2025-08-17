@@ -719,6 +719,8 @@ m_dep = cc.find_library('m', required : false)
 libxkbcommon_test_internal = library(
     'xkbcommon-test-internal',
     libxkbcommon_sources,
+    'src/xkbcomp/file_iterator.c',
+    'src/xkbcomp/file_iterator.h',
     include_directories: include_directories('src', 'include'),
     c_args: ['-DENABLE_PRIVATE_APIS'],
     gnu_symbol_visibility: 'hidden',
@@ -740,6 +742,22 @@ test_dep = declare_dependency(
     link_with: libxkbcommon_test_internal,
     dependencies: [m_dep],
 )
+
+if build_tools
+    # Tool: introspection
+    executable(
+        'introspection',
+        'tools/introspection.c',
+        'src/utils.c',
+        'src/utils.h',
+        'src/keymap-formats.c',
+        'src/keymap-formats.h',
+        dependencies: test_dep,
+        include_directories: include_directories('src', 'src/xkbcomp', 'include'),
+        install: false
+    )
+endif
+
 if get_option('enable-x11')
     libxkbcommon_x11_test_internal = library(
         'xkbcommon-x11-internal',
