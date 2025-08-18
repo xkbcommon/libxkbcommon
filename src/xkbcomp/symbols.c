@@ -753,7 +753,8 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, ndx_rtrn)) {
+    if (!ExprResolveGroup(info->ctx, info->max_groups, info->keymap->num_groups,
+                          arrayNdx, ndx_rtrn)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
@@ -929,6 +930,7 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
              act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
             if (!HandleActionDef(info->ctx, info->keymap->format,
+                                 info->keymap->num_groups,
                                  &info->default_actions, &info->mods,
                                  act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
@@ -1020,7 +1022,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->default_type = val;
             keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
-        else if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &ndx)) {
+        else if (!ExprResolveGroup(info->ctx, info->max_groups,
+                                   info->keymap->num_groups, arrayNdx, &ndx)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
@@ -1135,7 +1138,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "redirectgroups")) {
         xkb_layout_index_t grp = 0;
 
-        if (!ExprResolveGroup(info->ctx, info->max_groups, value, &grp)) {
+        if (!ExprResolveGroup(info->ctx, info->max_groups,
+                              info->keymap->num_groups, value, &grp)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
@@ -1170,7 +1174,8 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     }
 
     xkb_layout_index_t group = 0;
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &group)) {
+    if (!ExprResolveGroup(info->ctx, info->max_groups, info->keymap->num_groups,
+                          arrayNdx, &group)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
@@ -1276,6 +1281,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
     }
     else if (elem) {
         ret = SetDefaultActionField(info->ctx, info->keymap->format,
+                                    info->keymap->num_groups,
                                     &info->default_actions,
                                     &info->mods, elem, field, arrayNdx,
                                     stmt->value, stmt->merge);
