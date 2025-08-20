@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
+#include "keymap.h"
 #include "src/keysym.h"
 #include "test/keysym.h"
 #include "test.h"
@@ -482,34 +484,134 @@ test_include_default_maps(bool update_output_files)
 
 /* Test some limits related to allocations */
 static void
-test_alloc_limits(struct xkb_context *ctx)
+test_alloc_limits(struct xkb_context *ctx, bool update_output_files)
 {
-    const char * const keymaps[] = {
+    const struct keymap_test_data keymaps[] = {
         /* Keycodes */
-        "xkb_keymap {\n"
-        /* Valid keycode value, but we should not handle it
-         * with our *continuous* array! */
-        "  xkb_keycodes { <> = 0xfffffffe; };\n"
-        "  xkb_symbols { key <> {[a]}; };\n"
-        "};",
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                /* Valid & supported high keycode value */
+                "  xkb_keycodes { <> = 0xfffffffe; };\n"
+                "  xkb_symbols { key <> {[a]}; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <xxx> = 0xfffffffe;\n"
+                "    <> = 0xfffffffd;\n"
+                "    <> = 0xfffffffe;\n"
+                "  };\n"
+                "  xkb_symbols { key <> {[a]}; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <> = 7;\n"
+                "    <> = 8;\n"
+                "    <> = 0xfffffffd;\n"
+                "    <> = 0xfffffffe;\n"
+                "  };\n"
+                "  xkb_symbols { key <> {[a]}; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <> = 0xfffffffd;\n"
+                "    <> = 0xfffffffe;\n"
+                "    <> = 7;\n"
+                "    <> = 8;\n"
+                "  };\n"
+                "  xkb_symbols { key <> {[a]}; };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-2.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <min> = 0xfffffffd;\n"
+                "    <max> = 0xfffffffe;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <min> {[a]};\n"
+                "    key <max> {[b]};\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-3.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <max> = 0xfffffffe;\n"
+                "    <min> = 0xfffffffd;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <min> {[a]};\n"
+                "    key <max> {[b]};\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-3.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <a> = 0xf;\n"
+                "    <d> = 0x4000;\n"
+                "    <e> = 0xfffffffe;\n"
+                "    <c> = 0x2000;\n"
+                "    <b> = 0xfff;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <a> {[a]};\n"
+                "    key <b> {[b]};\n"
+                "    key <c> {[c]};\n"
+                "    key <d> {[d]};\n"
+                "    key <e> {[e]};\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "high-keycodes-4.xkb"
+        },
         /* Key types */
-        "xkb_keymap {\n"
-        "  xkb_types {\n"
-        "    type \"X\" { map[none] = 0xfffffffe; };\n" /* Invalid level index */
-        "  };\n"
-        "};",
-        "xkb_keymap {\n"
-        "  xkb_types {\n"
-        "    type \"X\" {levelname[0xfffffffe]=\"x\";};\n" /* Invalid level index */
-        "  };\n"
-        "};"
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                /* Invalid level index */
+                "    type \"X\" { map[none] = 0xfffffffe; };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                /* Invalid level index */
+                "    type \"X\" {levelname[0xfffffffe]=\"x\";};\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        }
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        const struct xkb_keymap *keymap =
-            test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                                keymaps[k], strlen(keymaps[k]));
-        assert(!keymap);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   keymaps[k].keymap, strlen(keymaps[k].keymap),
+                                   keymaps[k].expected, update_output_files));
     }
 }
 
@@ -679,9 +781,6 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    augment  <A> = 300;\n"
                 "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
-                "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
         },
@@ -692,9 +791,6 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    <A> = 300;\n"
                 "    override <A> = 1;\n"
                 "    augment  <A> = 0;\n"
-                "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
                 "  };\n"
                 "};",
             /* NOTE: same as previous */
@@ -708,9 +804,6 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    override <A> = 301;\n"
                 "    override <A> = 300;\n"
-                "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-2.xkb"
@@ -726,11 +819,7 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    augment  <B> = 301;\n"
                 "    override <A> = 1;\n"
                 "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
-                "  };\n"
                 "};",
-            /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
         },
         {
@@ -741,9 +830,6 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    <B> = 1;\n"
                 "    augment  <B> = 300;\n"
                 "    override <A> = 1;\n"
-                "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
                 "  };\n"
                 "};",
             /* NOTE: same as previous */
@@ -760,9 +846,6 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <B> = 300;\n"
                 "    augment  <A> = 0;\n"
                 "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
-                "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
         },
@@ -775,12 +858,23 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    override <A> = 1;\n"
                 "    augment  <B> = 302;\n"
                 "  };\n"
-                "  xkb_compat {\n"
-                "    interpret.repeat= False;\n"
-                "  };\n"
                 "};",
             /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+        },
+
+        /* High keycodes */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 1;\n"
+                "    include \"high\"\n"
+                "    <B> = 2;\n"
+                "  };\n"
+                "};",
+            /* NOTE: same as previous */
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-2.xkb"
         },
     };
 
@@ -791,6 +885,90 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                                    compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
+    }
+
+    /* Test random high keycodes do not trigger xkbcomp asserts */
+    static const unsigned int max_iterations = 1000;
+    char buffer[2048] = "";
+    for (unsigned int i = 0; i < max_iterations; i++) {
+        size_t available = sizeof(buffer);
+        char *buf = buffer;
+        int count = snprintf(buf, available,
+                             "default xkb_keymap { xkb_keycodes {\n");
+        assert(count > 0 && (size_t) count < available);
+        available -= (size_t) count;
+        buf += count;
+
+        static const struct {
+            xkb_keycode_t min;
+            xkb_keycode_t max;
+            unsigned int max_count;
+        } bounds[] = {
+            {
+                .min = 10 << 3, /* Avoid issue with digits */
+                .max = XKB_KEYCODE_MAX_CONTIGUOUS,
+                .max_count = 3
+            },
+            {
+                .min = XKB_KEYCODE_MAX_CONTIGUOUS + 1,
+                .max = XKB_KEYCODE_MAX,
+                .max_count = 10
+            },
+        };
+
+        xkb_keycode_t keycodes[13] = {0};
+        unsigned int keycode_index = 0;
+
+        for (size_t b = 0; b < ARRAY_SIZE(bounds); b++) {
+            assert(bounds[b].min < bounds[b].max);
+            const unsigned int keycode_count = rand() % (bounds[b].max_count + 1);
+            for (unsigned int k = 0; k < keycode_count; k++) {
+                /* Note: we do not care about keycode uniqueness */
+                const xkb_keycode_t kc =
+                    bounds[b].min + (rand() % (bounds[b].max - bounds[b].min + 1));
+                assert(keycode_index < ARRAY_SIZE(keycodes));
+                keycodes[keycode_index++] = kc;
+                count = snprintf(buf, available,
+                                "<%"PRIu32"> = 0x%"PRIx32";\n", kc, kc);
+                assert(count > 0 && (size_t) count < available);
+                available -= (size_t) count;
+                buf += count;
+            }
+        }
+
+        count = snprintf(buf, available, "}; xkb_symbols {\n");
+        assert(count > 0 && (size_t) count < available);
+        available -= (size_t) count;
+        buf += count;
+
+        for (unsigned int k = 0; k < keycode_index; k++) {
+            const xkb_keycode_t kc = keycodes[k];
+            count = snprintf(buf, available,
+                             "key <%"PRIu32"> { [ 0x%"PRIx32" ] };\n",
+                             kc, (kc >> 3));
+            assert(count > 0 && (size_t) count < available);
+            available -= (size_t) count;
+            buf += count;
+        }
+
+        count = snprintf(buf, available, "}; };");
+        assert(count > 0 && (size_t) count < available);
+
+        struct xkb_keymap * const keymap = xkb_keymap_new_from_string(
+            ctx, buffer, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS
+        );
+        assert(keymap);
+        for (unsigned int k = 0; k < keycode_index; k++) {
+            const xkb_keycode_t kc = keycodes[k];
+            const xkb_keysym_t *ks = NULL;
+            count = xkb_keymap_key_get_syms_by_level(keymap, kc, 0, 0, &ks);
+            assert_printf(count == 1, "%d\n", count);
+            const xkb_keysym_t expected = kc >> 3;
+            assert_printf(*ks == expected,
+                          "<%"PRIu32"> 0x%"PRIx32" != 0x%"PRIx32"\n",
+                          kc, *ks, expected);
+        }
+        xkb_keymap_unref(keymap);
     }
 }
 
@@ -2155,15 +2333,26 @@ main(int argc, char *argv[])
     test_init();
 
     bool update_output_files = false;
-    if (argc > 1) {
-        if (streq(argv[1], "update")) {
+    /* Default seed for pseudo-random generator */
+    unsigned int seed = (unsigned int) time(NULL);
+
+    int arg_index = 0;
+    while (++arg_index < argc) {
+        if (streq(argv[arg_index], "update")) {
             /* Update files with *obtained* results */
             update_output_files = true;
+        } else if (streq(argv[arg_index], "--seed") && arg_index + 1 < argc) {
+            seed = (unsigned int) atoi(argv[arg_index + 1]);
         } else {
-            fprintf(stderr, "ERROR: unsupported argument: \"%s\".\n", argv[1]);
-            exit(EXIT_FAILURE);
+            fprintf(stderr, "ERROR: unsupported argument: \"%s\".\n",
+                    argv[arg_index]);
+            exit(EXIT_INVALID_USAGE);
         }
     }
+
+    /* Initialize pseudo-random generator with program arg or current time */
+    fprintf(stderr, "Seed for the pseudo-random generator: %u\n", seed);
+    srand(seed);
 
     struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
@@ -2181,7 +2370,7 @@ main(int argc, char *argv[])
     test_recursive_includes(ctx);
     test_include_paths(ctx);
     test_include_default_maps(update_output_files);
-    test_alloc_limits(ctx);
+    test_alloc_limits(ctx, update_output_files);
     test_integers(ctx, update_output_files);
     test_keycodes(ctx, update_output_files);
     test_masks(ctx, update_output_files);

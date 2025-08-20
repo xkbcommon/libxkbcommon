@@ -1,0 +1,26 @@
+xkb_keymap {
+xkb_keycodes "high" {
+	minimum = 2;
+	maximum = 65535;
+	<B>                  = 2;
+	<A>                  = 65535;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+};
+
+};
