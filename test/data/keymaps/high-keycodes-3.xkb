@@ -1,0 +1,28 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 4294967294;
+	<min>                = 4294967293;
+	<max>                = 4294967294;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <min>                {	[               a ] };
+	key <max>                {	[               b ] };
+};
+
+};
