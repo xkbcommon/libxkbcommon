@@ -392,18 +392,22 @@ struct xkb_mod_set {
 };
 
 /*
- * Our current implementation with continuous arrays does not allow efficient
- * mapping of keycodes. Allowing the API max valid keycode XKB_KEYCODE_MAX could
- * result in memory exhaustion or memory waste (sparse arrays) with huge enough
- * valid values. Let’s be more conservative for now, based on the existing Linux
- * keycodes.
+ * Implementation with continuous arrays does not allow efficient mapping of
+ * sparse keycodes. Indeed, allowing the API max valid keycode XKB_KEYCODE_MAX
+ * could result in memory exhaustion or memory waste (sparse arrays) with huge
+ * enough valid values. However usual keycodes form a contiguous range with a
+ * that maximum that rarely exceeds 1000. In order to handle the whole keycode
+ * range, we define a threshold for the continuous array storage, above which we
+ * use a more space-efficient storage for sparse arrays.
+ *
+ * The current limit is arbitrary and serves as a minimal security.
  */
-#define XKB_KEYCODE_MAX_IMPL 0xfff
-static_assert(XKB_KEYCODE_MAX_IMPL < XKB_KEYCODE_MAX,
+#define XKB_KEYCODE_MAX_CONTIGUOUS 0xfff
+static_assert(XKB_KEYCODE_MAX_CONTIGUOUS < XKB_KEYCODE_MAX,
               "Valid keycodes");
-static_assert(XKB_KEYCODE_MAX_IMPL < darray_max_alloc(sizeof(xkb_atom_t)),
+static_assert(XKB_KEYCODE_MAX_CONTIGUOUS < darray_max_alloc(sizeof(xkb_atom_t)),
               "Max keycodes names");
-static_assert(XKB_KEYCODE_MAX_IMPL < darray_max_alloc(sizeof(struct xkb_key)),
+static_assert(XKB_KEYCODE_MAX_CONTIGUOUS < darray_max_alloc(sizeof(struct xkb_key)),
               "Max keymap keys");
 
 /*
@@ -433,6 +437,18 @@ struct xkb_keymap {
 
     xkb_keycode_t min_key_code;
     xkb_keycode_t max_key_code;
+    xkb_keycode_t num_keys;
+    /*
+     * Keys are divided into 2 ordered (possibly empty) lists:
+     *
+     *   Low keycodes (≤ XKB_KEYCODE_MAX_CONTIGUOUS)
+     *     Stored contiguously at indexes [0..num_keys_low).
+     *     Fast O(1) access.
+     *   High keycodes (> XKB_KEYCODE_MAX_CONTIGUOUS)
+     *     Stored noncontiguously at indexes [num_keys_low..num_keys).
+     *     Slow access via a binary search.
+     */
+    xkb_keycode_t num_keys_low;
     struct xkb_key *keys;
 
     /* aliases in no particular order */
@@ -495,8 +511,15 @@ struct xkb_keymap {
 };
 
 #define xkb_keys_foreach(iter, keymap) \
-    for ((iter) = (keymap)->keys + (keymap)->min_key_code; \
-         (iter) <= (keymap)->keys + (keymap)->max_key_code; \
+    /*
+     * Start at the first defined low or high keycode:
+     * - if there are some low keycodes, the index is min_key_code, because we
+     *   skip the previous undefined keycodes;
+     * - else the first item is the first high keycode.
+     */ \
+    for ((iter) = (keymap)->keys + \
+                  ((keymap)->num_keys_low == 0 ? 0 : (keymap)->min_key_code); \
+         (iter) < (keymap)->keys + (keymap)->num_keys; \
          (iter)++)
 
 #define xkb_mods_foreach(iter, mods_) \
@@ -545,9 +568,29 @@ clear_level(struct xkb_level *leveli);
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
-    if (kc < keymap->min_key_code || kc > keymap->max_key_code)
+    if (kc < keymap->min_key_code || kc > keymap->max_key_code) {
+        /* Unsupported keycode */
         return NULL;
-    return &keymap->keys[kc];
+    } else if (kc < keymap->num_keys_low) {
+        /* Low keycodes */
+        return &keymap->keys[kc];
+    } else {
+        /* High keycodes: use binary search */
+        xkb_keycode_t lower = keymap->num_keys_low;
+        xkb_keycode_t upper = keymap->num_keys;
+        while (lower < upper) {
+            const xkb_keycode_t mid = lower + (upper - 1 - lower) / 2;
+            const struct xkb_key * const key = &keymap->keys[mid];
+            if (key->keycode < kc) {
+                lower = mid + 1;
+            } else if (key->keycode > kc) {
+                upper = mid;
+            } else {
+                return key;
+            }
+        }
+        return NULL;
+    }
 }
 
 static inline xkb_level_index_t

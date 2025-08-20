@@ -422,6 +422,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     keymap->min_key_code = reply->minKeyCode;
     keymap->max_key_code = reply->maxKeyCode;
+    keymap->num_keys = keymap->num_keys_low = reply->maxKeyCode + 1;
 
     ALLOC_OR_FAIL(keymap->keys, keymap->max_key_code + 1);
 

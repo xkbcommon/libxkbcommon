@@ -1,0 +1,4 @@
+default xkb_keycodes {
+	<A> = 0xffff;
+	<B> = 0xfffffffe;
+};
