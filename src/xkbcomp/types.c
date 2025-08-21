@@ -145,7 +145,7 @@ AddKeyType(KeyTypesInfo *info, KeyTypeInfo *new, bool same_file)
         }
 
         if (same_file)
-            log_vrb(info->ctx, 4,
+            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
                     XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS,
                     "Multiple definitions of the %s key type; "
                     "Later definition ignored\n",
@@ -304,7 +304,8 @@ AddMapEntry(KeyTypesInfo *info, KeyTypeInfo *type,
                      (clobber ? old->level : new->level) + 1);
         }
         else {
-            log_vrb(info->ctx, 10, XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY,
+            log_vrb(info->ctx, XKB_LOG_VERBOSITY_VERBOSE,
+                    XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY,
                     "Multiple occurrences of map[%s]= %"PRIu32" in %s; Ignored\n",
                     MapEntryTxt(info, new), new->level + 1,
                     TypeTxt(info, type));
@@ -342,7 +343,8 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
                                  type, "map entry", "modifier mask");
 
     if (entry.mods.mods & (~type->mods)) {
-        log_vrb(info->ctx, 1, XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_BRIEF,
+                XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE,
                 "Map entry for modifiers not used by type %s; "
                 "Using %s instead of %s\n",
                 TypeTxt(info, type),
@@ -385,7 +387,8 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
 
         /* Map exists with same preserve; do nothing. */
         if (entry->preserve.mods == preserve_mods) {
-            log_vrb(info->ctx, 10, XKB_WARNING_DUPLICATE_ENTRY,
+            log_vrb(info->ctx, XKB_LOG_VERBOSITY_VERBOSE,
+                    XKB_WARNING_DUPLICATE_ENTRY,
                     "Identical definitions for preserve[%s] in %s; "
                     "Ignored\n",
                     ModMaskText(info->ctx, MOD_BOTH, &info->mods, mods),
@@ -394,7 +397,8 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
         }
 
         /* Map exists with different preserve; latter wins. */
-        log_vrb(info->ctx, 1, XKB_WARNING_CONFLICTING_KEY_TYPE_PRESERVE_ENTRIES,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_BRIEF,
+                XKB_WARNING_CONFLICTING_KEY_TYPE_PRESERVE_ENTRIES,
                 "Multiple definitions for preserve[%s] in %s; "
                 "Using %s, ignoring %s\n",
                 ModMaskText(info->ctx, MOD_BOTH, &info->mods, mods),
@@ -439,7 +443,8 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         mods &= type->mods;
         after = ModMaskText(info->ctx, MOD_BOTH, &info->mods, mods);
 
-        log_vrb(info->ctx, 1, XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_BRIEF,
+                XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE,
                 "Preserve entry for modifiers not used by the %s type; "
                 "Index %s converted to %s\n",
                 TypeTxt(info, type), before, after);
@@ -463,7 +468,8 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
         preserve_mods &= mods;
         after = ModMaskText(info->ctx, MOD_BOTH, &info->mods, preserve_mods);
 
-        log_vrb(info->ctx, 1, XKB_WARNING_ILLEGAL_KEY_TYPE_PRESERVE_RESULT,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_BRIEF,
+                XKB_WARNING_ILLEGAL_KEY_TYPE_PRESERVE_RESULT,
                 "Illegal value for preserve[%s] in type %s; "
                 "Converted %s to %s\n",
                 ModMaskText(info->ctx, MOD_BOTH, &info->mods, mods),
@@ -487,7 +493,7 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
 
     /* Same level, same name. */
     if (darray_item(type->level_names, level) == name) {
-        log_vrb(info->ctx, 10, XKB_WARNING_DUPLICATE_ENTRY,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_VERBOSE, XKB_WARNING_DUPLICATE_ENTRY,
                 "Duplicate names for level %"PRIu32" of key type %s; Ignored\n",
                 level + 1, TypeTxt(info, type));
         return true;
@@ -499,7 +505,8 @@ AddLevelName(KeyTypesInfo *info, KeyTypeInfo *type,
         old = xkb_atom_text(info->ctx,
                             darray_item(type->level_names, level));
         new = xkb_atom_text(info->ctx, name);
-        log_vrb(info->ctx, 1, XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES,
+        log_vrb(info->ctx, XKB_LOG_VERBOSITY_BRIEF,
+                XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES,
                 "Multiple names for level %"PRIu32" of key type %s; "
                 "Using %s, ignoring %s\n",
                 level + 1, TypeTxt(info, type),

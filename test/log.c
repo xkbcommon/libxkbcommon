@@ -82,7 +82,7 @@ test_basic(void)
     log_err(ctx, XKB_ERROR_MALFORMED_NUMBER_LITERAL, "second error: %lu\n", 115415UL);
     log_vrb(ctx, 6, XKB_LOG_MESSAGE_NO_ID, "second verbose 6\n");
 
-    xkb_context_set_log_verbosity(ctx, 0);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_MINIMAL);
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
     log_warn(ctx, XKB_LOG_MESSAGE_NO_ID, "third warning: %d\n", 87);
     log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "third debug: %s %s\n", "hello", "world");
@@ -123,7 +123,7 @@ test_keymaps(void)
     xkb_context_set_log_fn(ctx, log_fn);
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_WARNING);
-    xkb_context_set_log_verbosity(ctx, 10);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_VERBOSE);
 
     const struct test_data keymaps[] = {
         {
@@ -331,7 +331,7 @@ test_compose(void)
     xkb_context_set_log_fn(ctx, log_fn);
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_WARNING);
-    xkb_context_set_log_verbosity(ctx, 10);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_VERBOSE);
 
     const struct test_data composes[] = {
         {

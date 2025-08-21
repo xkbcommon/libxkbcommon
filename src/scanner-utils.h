@@ -87,13 +87,13 @@ scanner_token_location(struct scanner *s);
                       loc.column, ##__VA_ARGS__);                                   \
 } while(0)
 
-#define scanner_err(scanner, id, fmt, ...)                     \
-    scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, 0, id, \
-                          fmt, ##__VA_ARGS__)
+#define scanner_err(scanner, id, fmt, ...)              \
+    scanner_log_with_code(scanner, XKB_LOG_LEVEL_ERROR, \
+                          XKB_LOG_VERBOSITY_MINIMAL, id, fmt, ##__VA_ARGS__)
 
-#define scanner_warn(scanner, id, fmt, ...)                      \
-    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, 0, id, \
-                          fmt, ##__VA_ARGS__)
+#define scanner_warn(scanner, id, fmt, ...)               \
+    scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, \
+                          XKB_LOG_VERBOSITY_MINIMAL, id, fmt, ##__VA_ARGS__)
 
 #define scanner_vrb(scanner, verbosity, id, fmt, ...)                    \
     scanner_log_with_code(scanner, XKB_LOG_LEVEL_WARNING, verbosity, id, \

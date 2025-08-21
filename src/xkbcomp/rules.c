@@ -1321,7 +1321,7 @@ expand_qualifier_in_kccgst_value(
     if ((*i + 3 <= value.len || is_merge_mode_prefix(str[*i + 3])) &&
         str[*i] == 'a' && str[*i+1] == 'l' && str[*i+2] == 'l') {
         if (has_layout_idx_range)
-            scanner_vrb(s, 2, XKB_LOG_MESSAGE_NO_ID,
+            scanner_vrb(s, XKB_LOG_VERBOSITY_DETAILED, XKB_LOG_MESSAGE_NO_ID,
                         "Using :all qualifier with indices range "
                         "is not recommended.");
         /* Add at least one layout */
