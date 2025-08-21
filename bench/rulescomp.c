@@ -25,8 +25,7 @@ main(int argc, char *argv[])
     ctx = test_get_context(0);
     assert(ctx);
 
-    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    xkb_context_set_log_verbosity(ctx, 0);
+    xkb_enable_quiet_logging(ctx);
 
     bench_start(&bench);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {

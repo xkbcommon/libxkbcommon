@@ -537,10 +537,8 @@ main(int argc, char **argv)
     ctx = xkb_context_new(ctx_flags);
     assert(ctx);
 
-    if (verbose) {
-        xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
-        xkb_context_set_log_verbosity(ctx, 10);
-    }
+    if (verbose)
+        tools_enable_verbose_logging(ctx);
 
     if (num_includes == 0)
         includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;

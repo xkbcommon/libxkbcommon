@@ -52,8 +52,7 @@ main(int argc, char *argv[])
     }
     free(path);
 
-    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    xkb_context_set_log_verbosity(ctx, 0);
+    xkb_enable_quiet_logging(ctx);
 
     table = xkb_compose_table_new_from_file(ctx, file, "",
                                             XKB_COMPOSE_FORMAT_TEXT_V1,
