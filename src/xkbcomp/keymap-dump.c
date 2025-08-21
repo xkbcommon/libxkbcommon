@@ -989,7 +989,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             struct buf *buf)
+             enum xkb_keymap_serialize_flags flags, struct buf *buf)
 {
     const xkb_layout_index_t max_groups = format_max_groups(format);
     if (keymap->num_groups > max_groups) {
@@ -1009,11 +1009,12 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 char *
 text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
-                             enum xkb_keymap_format format)
+                             enum xkb_keymap_format format,
+                             enum xkb_keymap_serialize_flags flags)
 {
     struct buf buf = { NULL, 0, 0 };
 
-    if (!write_keymap(keymap, format, &buf)) {
+    if (!write_keymap(keymap, format, flags, &buf)) {
         free(buf.buf);
         return NULL;
     }
