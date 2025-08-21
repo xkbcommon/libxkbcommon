@@ -8,9 +8,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "../test/test.h"
 #include "bench.h"
-#include "xkbcommon/xkbcommon.h"
 
 #define BENCHMARK_ITERATIONS 20000000
 
@@ -56,8 +56,7 @@ main(void)
     state = xkb_state_new(keymap);
     assert(state);
 
-    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
-    xkb_context_set_log_verbosity(ctx, 0);
+    xkb_enable_quiet_logging(ctx);
 
     srand((unsigned) time(NULL));
 

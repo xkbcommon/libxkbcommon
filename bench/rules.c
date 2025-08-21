@@ -162,8 +162,7 @@ main(int argc, char *argv[])
     if (!context)
         exit(EXIT_FAILURE);
 
-    xkb_context_set_log_level(context, XKB_LOG_LEVEL_CRITICAL);
-    xkb_context_set_log_verbosity(context, 0);
+    xkb_enable_quiet_logging(context);
 
     if (explicit_iterations) {
         stdev = 0;

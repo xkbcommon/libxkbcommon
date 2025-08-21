@@ -38,6 +38,7 @@
 #include "src/utf8-decoding.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
+#include "src/messages-codes.h"
 
 #ifdef _WIN32
 #define S_ISFIFO(mode) 0
@@ -657,7 +658,7 @@ void
 tools_enable_verbose_logging(struct xkb_context *ctx)
 {
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_DEBUG);
-    xkb_context_set_log_verbosity(ctx, 10);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_VERBOSE);
 }
 
 static inline bool

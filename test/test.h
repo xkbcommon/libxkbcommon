@@ -15,6 +15,7 @@
 #define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
+#include "src/messages-codes.h"
 #include "utils.h"
 
 /* Automake test exit code to signify SKIP (à la PASS, FAIL, etc).
@@ -129,6 +130,12 @@ test_compile_rules(struct xkb_context *context, enum xkb_keymap_format format,
                    const char *rules, const char *model, const char *layout,
                    const char *variant, const char *options);
 
+static inline void
+xkb_enable_quiet_logging(struct xkb_context *ctx)
+{
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_CRITICAL);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_MINIMAL);
+}
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
