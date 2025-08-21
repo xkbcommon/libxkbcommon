@@ -1328,6 +1328,29 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 #define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
 
 /**
+ * Flags for keymap serialization.
+ *
+ * @since 1.12.0
+ */
+enum xkb_keymap_serialize_flags {
+    /** Do not apply any flags. */
+    XKB_KEYMAP_SERIALIZE_NO_FLAGS = 0,
+};
+
+/**
+ * Get the compiled keymap as a string.
+ *
+ * Same as `xkb_keymap::xkb_keymap_get_as_string2()` using
+ * `::XKB_KEYMAP_SERIALIZE_NO_FLAGS`.
+ *
+ * @sa `xkb_keymap::xkb_keymap_get_as_string2()`
+ * @memberof xkb_keymap
+ */
+XKB_EXPORT char *
+xkb_keymap_get_as_string(struct xkb_keymap *keymap,
+                         enum xkb_keymap_format format);
+
+/**
  * Get the compiled keymap as a string.
  *
  * @param keymap The keymap to get as a string.
@@ -1335,6 +1358,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  * in the special value `::XKB_KEYMAP_USE_ORIGINAL_FORMAT` to use the format
  * from which the keymap was originally created. When used as an *interchange*
  * format such as Wayland <code>[xkb_v1]</code>, the format should be explicit.
+ * @param flags  Optional flags for the serialization, or 0.
  *
  * @returns The keymap as a `NULL`-terminated string, or `NULL` if unsuccessful.
  *
@@ -1346,11 +1370,14 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
  *
  * @memberof xkb_keymap
  *
+ * @since 1.12.0
+ *
  * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
  */
 XKB_EXPORT char *
-xkb_keymap_get_as_string(struct xkb_keymap *keymap,
-                         enum xkb_keymap_format format);
+xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
+                          enum xkb_keymap_format format,
+                          enum xkb_keymap_serialize_flags flags);
 
 /** @} */
 
