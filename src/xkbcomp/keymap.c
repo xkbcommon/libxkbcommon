@@ -461,7 +461,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
         if (file->file_type < FIRST_KEYMAP_FILE_TYPE ||
             file->file_type > LAST_KEYMAP_FILE_TYPE) {
             if (file->file_type == FILE_TYPE_GEOMETRY) {
-                log_vrb(ctx, 1,
+                log_vrb(ctx, XKB_LOG_VERBOSITY_BRIEF,
                         XKB_WARNING_UNSUPPORTED_GEOMETRY_SECTION,
                         "Geometry sections are not supported; ignoring\n");
             } else {

@@ -945,7 +945,7 @@ SetDefaultActionField(struct xkb_context *ctx, enum xkb_keymap_format format,
      */
     if (!action_equal(into, &from)) {
         const bool replace = (merge != MERGE_AUGMENT);
-        log_vrb(ctx, 9, XKB_LOG_MESSAGE_NO_ID,
+        log_vrb(ctx, XKB_LOG_VERBOSITY_VERBOSE, XKB_LOG_MESSAGE_NO_ID,
                 "Conflicting field \"%s\" for default action \"%s\"; "
                 "Using %s, ignore %s\n",
                 fieldText(action_field), ActionTypeText(action),

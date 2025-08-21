@@ -14,8 +14,9 @@
 #include <sys/stat.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "utils.h"
 #include "context.h"
+#include "messages-codes.h"
+#include "utils.h"
 
 
 /**
@@ -256,7 +257,7 @@ log_verbosity(const char *verbosity) {
         return (int) v;
     }
 
-    return 0;
+    return XKB_LOG_VERBOSITY_DEFAULT;
 }
 
 /**
@@ -274,7 +275,7 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->refcnt = 1;
     ctx->log_fn = default_log_fn;
     ctx->log_level = XKB_LOG_LEVEL_ERROR;
-    ctx->log_verbosity = 0;
+    ctx->log_verbosity = XKB_LOG_VERBOSITY_DEFAULT;
     ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 

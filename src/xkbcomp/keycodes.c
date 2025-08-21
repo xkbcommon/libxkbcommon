@@ -615,7 +615,7 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     darray_foreach(alias, info->aliases) {
         /* Check that ->real is a key. */
         if (!XkbKeyByName(keymap, alias->real, false)) {
-            log_vrb(info->ctx, 5,
+            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
                     XKB_WARNING_UNDEFINED_KEYCODE,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
                     KeyNameText(info->ctx, alias->alias),
@@ -626,7 +626,7 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
         /* Check that ->alias is not a key. */
         if (XkbKeyByName(keymap, alias->alias, false)) {
-            log_vrb(info->ctx, 5,
+            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
                     XKB_WARNING_ILLEGAL_KEYCODE_ALIAS,
                     "Attempt to create alias with the name of a real key; "
                     "Alias \"%s = %s\" ignored\n",
