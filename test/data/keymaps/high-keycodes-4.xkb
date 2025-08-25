@@ -1,0 +1,34 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 4294967294;
+	<a>                  = 15;
+	<b>                  = 4095;
+	<c>                  = 8192;
+	<d>                  = 16384;
+	<e>                  = 4294967294;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <a>                  {	[               a ] };
+	key <b>                  {	[               b ] };
+	key <c>                  {	[               c ] };
+	key <d>                  {	[               d ] };
+	key <e>                  {	[               e ] };
+};
+
+};
