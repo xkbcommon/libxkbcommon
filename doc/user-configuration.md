@@ -7,7 +7,7 @@ parsed by libxkbcommon.
 “@ref xkb-intro ""”.
 
 @warning The below requires libxkbcommon as keymap compiler and
-**does not work in X**.
+**does not work in _X11_** sessions, because X servers have hard-coded paths.
 
 @important An erroneous XKB configuration may make your keyboard unusable.
 Therefore it is advised to try custom configurations safely using `xkbcli` tools;
@@ -61,7 +61,7 @@ the addition should be filed in the upstream [xkeyboard-config] project.
 
 ## RMLVO vs KcCGST
 
-Due to how XKB is configured, there is no such thing as a "layout" in XKB
+Due to how XKB is configured, there is no such thing as a “layout” in XKB
 itself, or, indeed, any of the rules, models, variant, options ([RMLVO]) described
 in `struct xkb_rule_names`. [RMLVO] names are merely lookup keys in the
 rules file provided by [xkeyboard-config] to map to the correct keycode, compat,
@@ -71,10 +71,14 @@ data is the one used by XKB and libxkbcommon to map keys to actual symbols.
 [RMLVO]: @ref RMLVO-intro
 [KcCGST]: @ref KcCGST-intro
 
-For example, a common [RMLVO] configuration is layout "us", variant "dvorak" and
-option "terminate:ctrl_alt_bksp". Using the default rules file and model
+For example, a common [RMLVO] configuration is layout `us`, variant `dvorak` and
+option `terminate:ctrl_alt_bksp`. Using the default rules file and model
 this maps into the following [KcCGST] components:
 
+@figure@figcaption
+Output of the command:
+`xkbcli compile-keymap --kccgst --layout us --variant dvorak --options terminate:ctrl_alt_bksp`
+@endfigcaption
 ```c
 xkb_keymap {
 	xkb_keycodes  { include "evdev+aliases(qwerty)"	};
@@ -84,6 +88,7 @@ xkb_keymap {
 	xkb_geometry  { include "pc(pc105)"	};
 };
 ```
+@endfigure
 
 A detailed explanation of how rules files convert [RMLVO] to [KcCGST] is out of
 scope for this document. See [the rules file](md_doc_rules-format.html) page
@@ -95,13 +100,15 @@ instead.
 Adding a layout requires that the user adds **symbols** in the correct location.
 
 The default rules files (usually `evdev`) have a catch-all to map a layout, say
-"foo", and a variant, say "bar", into the "bar" section in the file
-`$xkb_base_dir/symbols/foo`.
+`foo`, and a variant, say `bar`, into the `bar` section in the file
+`<datadir>/X11/xkb/symbols/foo`.
 This is sufficient to define a new keyboard layout. The example below defines
-the keyboard layout "banana" with an optional variant "orange":
+the keyboard layout `banana` with an optional variant `orange`:
 
-```
-$ cat $XDG_CONFIG_HOME/xkb/symbols/banana
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/symbols/banana`
+@endfigcaption
+```c
 // Like a US layout but swap the top row so numbers are on Shift
 default partial alphanumeric_keys
 xkb_symbols "basic" {
@@ -130,6 +137,7 @@ xkb_symbols "orange" {
     include "eurosign(5)"
 };
 ```
+@endfigure
 
 The `default` section is loaded when no variant is given. The first example
 sections uses ``include`` to populate with a symbols list defined elsewhere
@@ -138,43 +146,46 @@ layout) and overrides parts of these symbols. The effect of this section is to
 swap the numbers and symbols in the top-most row (compared to the US layout) but
 otherwise use the US layout.
 
-The "orange" variant uses the "banana" symbols and includes a different section
+The `orange` variant uses the `banana` symbols and includes a different section
 to define the `eurosign`. It does not specifically override any symbols.
 
 The exact details of how `xkb_symbols` section works is out of scope for this
 document; see: @ref keymap-text-format-v1-v2 "".
 
-@remark This example uses a file name "banana" that should not clash with the
+@remark This example uses a file name `banana` that should not clash with the
 system files in `<datadir>/X11/xkb/symbols`. Using the same file name than
 the system files is possible but may require special handling,
 see: @ref user-config-system-file-names "".
 
-## Adding an option
+## Adding an option {#user-config-option}
 
 For technical reasons, options do **not** have a catch-all to map option names
 to files and sections and must be specifically mapped by the user. This requires
 a custom rules file. As the `evdev` ruleset is hardcoded in many clients, the
 custom rules file must usually be named `evdev`.
 
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/rules/evdev`
+@endfigcaption
 ```
-$ cat $XDG_CONFIG_HOME/xkb/rules/evdev
 // Mandatory to extend the
 ! include %S/evdev
 
-! option = symbols
-  custom:foo    = +custom(bar)
-  custom:baz    = +other(baz)
+! option     = symbols
+  custom:foo = +custom(bar)
+  custom:baz = +other(baz)
 ```
+@endfigure
 
 The `include` statement includes the system-provided `evdev` ruleset. This
 allows users to only override those options they need afterwards.
 
-This rules file maps the [RMLVO] option "custom:foo" to the "bar" section in the
-`symbols/custom` file and the "custom:baz" option to the "baz" section in the
+This rules file maps the [RMLVO] option `custom:foo` to the `bar` section in the
+`symbols/custom` file and the `custom:baz` option to the `baz` section in the
 `symbols/other` file. Note how the [RMLVO] option name may be different to the
 file or section name.
 
-@important The *order* of the options matter! In this example, `custom:foo` will
+@important The *order* of the options matters! In this example, `custom:foo` will
 *always* be applied *before* `custom:baz` and both options will *always* be
 applied *after* the system ones, even if the order is different in the [RMLVO]
 configuration passed to libxkbcommon (e.g. with `xkbcli`). See the
@@ -184,26 +195,35 @@ configuration passed to libxkbcommon (e.g. with `xkbcli`). See the
 
 The files themselves are similar to the layout examples in the previous section:
 
-```
-$ cat $XDG_CONFIG_HOME/xkb/symbols/custom
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/symbols/custom`
+@endfigcaption
+```c
 // map the Tilde key to nothing on the first shift level
 partial alphanumeric_keys
 xkb_symbols "bar" {
     key <TLDE> {        [      VoidSymbol ]       };
 };
+```
+@endfigure
 
-$ cat $XDG_CONFIG_HOME/xkb/symbols/other
+
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/symbols/other`
+@endfigcaption
+```c
 // map first key in bottom row (Z in the US layout) to k/K
 partial alphanumeric_keys
 xkb_symbols "baz" {
     key <AB01> {        [      k, K ]       };
 };
 ```
+@endfigure
 
 With these in place, a user may select any layout/variant together with
-the "custom:foo" and/or "custom:baz" options.
+the `custom:foo` and/or `custom:baz` options.
 
-@remark This example uses file names "custom" and "other" that should not clash
+@remark This example uses file names `custom` and `other` that should not clash
 with the system files in `<datadir>/X11/xkb/symbols`. Using the same file
 name than the system files is possible but may require special handling,
 see: @ref user-config-system-file-names "".
@@ -211,32 +231,70 @@ see: @ref user-config-system-file-names "".
 ## Using system file names {#user-config-system-file-names}
 
 The previous examples use custom keymap files with file name that do not clash
-with the files in the *system* directory, `<datadir>/X11/xkb/`. It is possible
-to add a custom variant using the *same* file name than the system file, e.g.
+with the files in the *system* directory, `<datadir>/X11/xkb/`. It is possible to
+add a custom variant/option using the *same* file name than the system file, e.g.
 `$XDG_CONFIG_HOME/xkb/symbols/us` instead of `$XDG_CONFIG_HOME/xkb/symbols/banana`
 for the example in @ref user-config-layout "".
 
-However, it must then contains an *explicit default* section if the system file
-has one, else it may break the keyboard setup by including a section of the
-custom file instead of the system one. The default section should enforce that
-the system default section is included. If one wanted to define only the "orange"
-layout variant above, then the file would have been:
+### Compatibility
 
-```
-$ cat $XDG_CONFIG_HOME/xkb/symbols/us
-default partial alphanumeric_keys xkb_symbols { include "us(basic)" };
+@attention For **libxkbcommon \< 1.9**, the custom file must contain an
+*explicit default* section if the system file has one, else it may break the
+keyboard setup by including a section of the custom file instead of the system
+one. The custom default section should enforce that the system default section
+is included.<br/>
+The following example defines a `broccoli` layout variant:
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/symbols/us`
+@endfigcaption
+```c
+// Explicit default section with no name required
+default partial alphanumeric_keys
+xkb_symbols { include "us(basic)" };
 
 partial alphanumeric_keys
-xkb_symbols "orange" {
+xkb_symbols "broccoli" {
     include "us(basic)"
-    name[Group1] = "Banana (Eurosign on 5)";
-    include "eurosign(5)"
+    name[Group1] = "Broccoli";
+    key <AD05> { [ b, B, U1F966 ]}; // 🥦
+    include "level3(ralt_switch)"
+};
+```
+@endfigure
+For **libxkbcommon ≥ 1.9** an explicit default section is not required
+anymore: libxkbcommon will look up for the proper default section in the XKB
+paths:
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/symbols/us`
+@endfigcaption
+```c
+// No default section required
+
+partial alphanumeric_keys
+xkb_symbols "broccoli" {
+    include "us(basic)"
+    name[Group1] = "Broccoli";
+    key <AD05> { [ b, B, U1F966 ]}; // 🥦
+    include "level3(ralt_switch)"
 };
 ```
 
-@since 1.9.0 The requirement for an explicit default section is not necessary
-anymore: libxkbcommon will look up for the proper default section in the XKB
-paths.
+### Overriding the system sections
+
+One may override the system sections:
+- Simply use the same section name.
+- For the default section, additionally prepend the flag `default` before
+  `xkb_symbols` in the custom file.
+
+@warning It will affect *all* layouts/variants that depend on the system section.
+@warning Including the *system* section can lead to a circular import.
+
+Therefore is it **highly recommended to *not* override the system sections**
+and prefer creating proper independent variants.
+
+@since 1.11.0: It is possible to include the system section and avoid circular
+include by prepending <code>\%S</code> to the included file.
+See the @ref keymap-include-percent-expansion "corresponding documentation.
 
 ## Discoverable layouts
 
@@ -247,28 +305,85 @@ The above sections apply only to the data files and require that the user knows
 about the existence of the new entries. To make custom entries discoverable by
 the configuration tools (e.g. the GNOME Control Center), the new entries must
 also be added to the XML file that is parsed by `libxkbregistry`. In most cases,
-this is the `evdev.xml` file in the rules directory. The example below shows the
-XML file that would add the custom layout and custom options as outlined above
-to the XKB registry:
+this is the `evdev.xml` file in the rules directory.
 
-```
-$ cat $XDG_CONFIG_HOME/xkb/rules/evdev.xml
+The following tags are required:
+
+<dl>
+<dt>`name`</dt>
+<dd>
+- For *layouts*, this is the name of the corresponding *file*.
+- For *variant*, this is the name of the corresponding *section* in the file.
+- For *options*, this is the unique identifier used in the *rules* file
+  (see @ref user-config-option ""), usually following the pattern
+  `<group>:<option_name>`.
+</dd>
+<dt>`shortDescription`</dt>
+<dd>
+For layout and variants, this is the [ISO 639] language code.
+</dd>
+<dt>`description`</dt>
+<dd>
+This is the text that will be displayed to label the entry. For layouts and
+variants, this should be the same as `name[Group1]`.
+</dd>
+</dl>
+
+See the [xkeyboard-config][xkeyboard-config-contrib] documentation for further
+information.
+
+[ISO 639]: https://en.wikipedia.org/wiki/ISO_639
+[xkeyboard-config-contrib]: https://xkeyboard-config.freedesktop.org/doc/contributing/#layouts-variants
+
+The example below shows the XML file that would add the custom layout and custom
+options as outlined above to the XKB registry:
+
+@figure@figcaption
+Content of `$XDG_CONFIG_HOME/xkb/rules/evdev.xml`
+@endfigcaption
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xkbConfigRegistry SYSTEM "xkb.dtd">
 <xkbConfigRegistry version="1.1">
   <layoutList>
+    <!-- Declare a new layout and its variants -->
     <layout>
+      <!-- Default variant: `default … xkb_symbols "…"` -->
       <configItem>
+        <!-- File name of $XDG_CONFIG_HOME/xkb/symbols/banana -->
         <name>banana</name>
         <shortDescription>ban</shortDescription>
-        <description>Banana</description>
+        <!-- Label: use the value of `name[Group1]` -->
+        <description>Banana (US)</description>
+      </configItem>
+      <!-- Other variants -->
+      <variantList>
+        <variant>
+          <configItem>
+            <!-- Section name in $XDG_CONFIG_HOME/xkb/symbols/banana -->
+            <name>orange</name>
+            <shortDescription>or</shortDescription>
+            <!-- Label: use the value of `name[Group1]` -->
+            <description>Banana (Eurosign on 5)</description>
+          </configItem>
+        </variant>
+      </variantList>
+    </layout>
+    <!-- Update a *system* layout and its variants -->
+    <layout>
+      <configItem>
+        <!-- NOTE: Only minimal data is required here,
+             since it will be merged with the system registry -->
+        <name>us</name>
       </configItem>
       <variantList>
         <variant>
           <configItem>
-            <name>orange</name>
-            <shortDescription>or</shortDescription>
-            <description>Orange (Banana)</description>
+            <!-- Section name in $XDG_CONFIG_HOME/xkb/symbols/us -->
+            <name>broccoli</name>
+            <shortDescription>bro</shortDescription>
+            <!-- Label: use the value of `name[Group1]` -->
+            <description>Broccoli</description>
           </configItem>
         </variant>
       </variantList>
@@ -296,6 +411,7 @@ $ cat $XDG_CONFIG_HOME/xkb/rules/evdev.xml
   </optionList>
 </xkbConfigRegistry>
 ```
+@endfigure
 
 The default behavior of `libxkbregistry` ensures that the new layout and options
 are added to the system-provided layouts and options.
