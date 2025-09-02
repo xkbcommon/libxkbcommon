@@ -1566,7 +1566,7 @@ type "TWO_LEVEL" {
     level_name[Level2] = "Shift";
 };
 ```
-            @endfigcaption
+            @endfigure
             @figure@figcaption
             Mapping test
             @endfigcaption
@@ -1576,7 +1576,7 @@ type "TWO_LEVEL" {
 | `Shift`            | `Shift`              | Yes    | 2           |
 | `Lock`             | (none)               | Yes    | 1           |
 | `Shift + Lock`     | `Shift`              | Yes    | 2           |
-            @endfigcaption
+            @endfigure
         </div>
     </div>
     <div class="example">
@@ -1598,7 +1598,7 @@ type "ALPHABETIC" {
     level_name[Level2] = "Caps";
 };
 ```
-            @endfigcaption
+            @endfigure
             @figure@figcaption
             Mapping test
             @endfigcaption
@@ -1608,7 +1608,7 @@ type "ALPHABETIC" {
 | `Shift`            | `Shift`              | Yes    | 2           |
 | `Lock`             | `Lock`               | Yes    | 2           |
 | `Shift + Lock`     | `Shift + Lock`       | No     | 1           |
-            @endfigcaption
+            @endfigure
         </div>
     </div>
 </div>
@@ -1653,7 +1653,7 @@ type "FOUR_LEVEL" {
 	level_name[Level4] = "Shift AltGr";
 };
 ```
-            @endfigcaption
+            @endfigure
             @figure@figcaption
             Mapping test
             @endfigcaption
@@ -1667,7 +1667,7 @@ type "FOUR_LEVEL" {
 | `LevelThree+Shift`      | `LevelThree+Shift`   | Yes    | 4           |
 | `LevelThree+Lock`       | `LevelThree`         | Yes    | 3           |
 | `LevelThree+Shift+Lock` | `LevelThree+Shift`   | Yes    | 4           |
-            @endfigcaption
+            @endfigure
         </div>
     </div>
     <div class="example">
@@ -1695,7 +1695,7 @@ type "FOUR_LEVEL_SEMIALPHABETIC" {
 	level_name[Level4] = "Shift AltGr";
 };
 ```
-            @endfigcaption
+            @endfigure
             @figure@figcaption
             Mapping test
             @endfigcaption
@@ -1709,7 +1709,7 @@ type "FOUR_LEVEL_SEMIALPHABETIC" {
 | `LevelThree+Shift`      | `LevelThree+Shift`      | Yes    | 4           |
 | `LevelThree+Lock`       | `LevelThree+Lock`       | Yes    | 3           |
 | `LevelThree+Shift+Lock` | `LevelThree+Shift+Lock` | Yes    | 4           |
-            @endfigcaption
+            @endfigure
         </div>
     </div>
     <div class="example">
@@ -1737,7 +1737,7 @@ type "FOUR_LEVEL_ALPHABETIC" {
 	level_name[Level4] = "Shift AltGr";
 };
 ```
-            @endfigcaption
+            @endfigure
             @figure@figcaption
             Mapping test
             @endfigcaption
@@ -1751,7 +1751,7 @@ type "FOUR_LEVEL_ALPHABETIC" {
 | `LevelThree+Shift`      | `LevelThree+Shift`      | Yes    | 4           |
 | `LevelThree+Lock`       | `LevelThree+Lock`       | Yes    | 4           |
 | `LevelThree+Shift+Lock` | `LevelThree+Shift+Lock` | Yes    | 3           |
-            @endfigcaption
+            @endfigure
         </div>
     </div>
 </div>
