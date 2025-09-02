@@ -869,15 +869,17 @@ xkb_context_get_user_data(struct xkb_context *context);
  * include statement is encountered during keymap compilation.
  *
  * The default include paths are, in that lookup order:
- * - The path `$XDG_CONFIG_HOME/xkb`, with the usual `XDG_CONFIG_HOME`
- *   fallback to `$HOME/.config/` if unset.
- * - The path `$HOME/.xkb`, where $HOME is the value of the environment
+ * - The path `$XDG_CONFIG_HOME/xkb`, where `$XDG_CONFIG_HOME` is the value of
+     the environment variable `XDG_CONFIG_HOME`, with the usual fallback to
+     `$HOME/.config/` if unset.
+ * - The path `$HOME/.xkb`, where `$HOME` is the value of the environment
  *   variable `HOME`.
  * - The `XKB_CONFIG_EXTRA_PATH` environment variable, if defined, otherwise the
  *   system configuration directory, defined at library configuration time
  *   (usually `/etc/xkb`).
  * - The `XKB_CONFIG_ROOT` environment variable, if defined, otherwise
- *   the system XKB root, defined at library configuration time.
+ *   the system XKB root, defined at library configuration time
+ *   (usually `/usr/share/X11/xkb`).
  *
  * @{
  */
