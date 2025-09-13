@@ -6578,20 +6578,64 @@
   name: XF86BrightnessAuto
 0x100810f5:
   name: XF86DisplayOff
+0x10081160:
+  name: XF86OK
+0x10081162:
+  name: XF86GoTo
 0x10081166:
   name: XF86Info
+0x10081168:
+  name: XF86VendorLogo
+0x1008116a:
+  name: XF86MediaSelectProgramGuide
+0x1008116e:
+  name: XF86MediaSelectHome
+0x10081170:
+  name: XF86MediaLanguageMenu
+0x10081171:
+  name: XF86MediaTitleMenu
+0x10081175:
+  name: XF86AudioChannelMode
 0x10081177:
   name: XF86AspectRatio
+0x10081178:
+  name: XF86MediaSelectPC
+0x10081179:
+  name: XF86MediaSelectTV
+0x1008117a:
+  name: XF86MediaSelectCable
+0x1008117b:
+  name: XF86MediaSelectVCR
+0x1008117c:
+  name: XF86MediaSelectVCRPlus
+0x1008117d:
+  name: XF86MediaSelectSatellite
+0x10081180:
+  name: XF86MediaSelectTape
+0x10081181:
+  name: XF86MediaSelectRadio
+0x10081182:
+  name: XF86MediaSelectTuner
+0x10081183:
+  name: XF86MediaPlayer
+0x10081184:
+  name: XF86MediaSelectTeletext
 0x10081185:
   name: XF86DVD
+0x10081186:
+  name: XF86MediaSelectAuxiliary
 0x10081188:
   name: XF86Audio
 0x10081192:
   name: XF86ChannelUp
 0x10081193:
   name: XF86ChannelDown
+0x10081199:
+  name: XF86MediaPlaySlow
 0x1008119b:
   name: XF86Break
+0x1008119d:
+  name: XF86NumberEntryMode
 0x100811a0:
   name: XF86VideoPhone
 0x100811a4:
