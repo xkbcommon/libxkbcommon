@@ -2538,6 +2538,7 @@ SOFTWARE.
 #define XKB_KEY_Sinh_ruu2                  0x1000df2  /* U+0DF2 SINHALA VOWEL SIGN DIGA GAETTA-PILLA */
 #define XKB_KEY_Sinh_luu2                  0x1000df3  /* U+0DF3 SINHALA VOWEL SIGN DIGA GAYANUKITTA */
 #define XKB_KEY_Sinh_kunddaliya            0x1000df4  /* U+0DF4 SINHALA PUNCTUATION KUNDDALIYA */
+
 /*
  * XFree86 vendor specific keysyms.
  *
@@ -3102,7 +3103,7 @@ SOFTWARE.
 #define XKB_KEY_XF86KbdLcdMenu3              0x100812ba      /* v5.5    KEY_KBD_LCD_MENU3 */
 #define XKB_KEY_XF86KbdLcdMenu4              0x100812bb      /* v5.5    KEY_KBD_LCD_MENU4 */
 #define XKB_KEY_XF86KbdLcdMenu5              0x100812bc      /* v5.5    KEY_KBD_LCD_MENU5 */
-#undef _EVDEVK
+
 /*
  * Copyright (c) 1991, Oracle and/or its affiliates.
  *
@@ -3209,6 +3210,7 @@ in this Software without prior written authorization from The Open Group.
 #define XKB_KEY_SunVideoLowerBrightness   0x1005ff7b
 #define XKB_KEY_SunVideoRaiseBrightness   0x1005ff7c
 #define XKB_KEY_SunPowerSwitchShift       0x1005ff7d
+
 /***********************************************************
 
 Copyright 1988, 1998  The Open Group
@@ -3274,6 +3276,7 @@ SOFTWARE.
 /* special keysym for LK2** "Remove" key on editing keypad */
 
 #define XKB_KEY_DRemove                   0x1000ff00  /* Remove */
+
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -3428,7 +3431,6 @@ performance, or use of this material.
 #define XKB_KEY_IO                        0x100000ee  /* deprecated alias for hpYdiaeresis */
 #define XKB_KEY_longminus                 0x100000f6  /* deprecated alias for hplongminus */
 #define XKB_KEY_block                     0x100000fc  /* deprecated alias for hpblock */
-
 
 
 #endif

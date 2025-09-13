@@ -143,6 +143,10 @@ for path in HEADERS:
                     pending_guarded_keysym = None
                 continue
 
+            # Ignore C macro #undef
+            elif line.startswith("#undef"):
+                continue
+
             # Remove #define _OSF_Keysyms and such.
             elif line.startswith("#define _"):
                 continue
@@ -169,4 +173,5 @@ for path in HEADERS:
             line = alias_pattern.sub(fix_alias, line)
 
             print(line.rstrip(), end="\n")
-print("\n\n#endif")
+    print()
+print("#endif")
