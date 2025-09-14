@@ -87,6 +87,7 @@ from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, unique
 from functools import cache, reduce
+import importlib.util
 from pathlib import Path
 from typing import (
     Any,
@@ -104,14 +105,18 @@ from typing import (
 )
 import unicodedata
 
-import icu
 import jinja2
 import yaml
 
 assert sys.version_info >= (3, 12)
 
-c = icu.Locale.createFromName("C")
-icu.Locale.setDefault(c)
+try:
+    import icu
+
+    c = icu.Locale.createFromName("C")
+    icu.Locale.setDefault(c)
+except ImportError:
+    icu = None
 
 SCRIPT = Path(__file__)
 CodePoint = NewType("CodePoint", int)
@@ -1980,9 +1985,18 @@ class Strategy(Enum):
             )
 
 
+def import_from_path(module_name: str, file_path: Path):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 ################################################################################
 # Main
 ################################################################################
+
 
 if __name__ == "__main__":
     # Root of the project
@@ -1995,6 +2009,18 @@ if __name__ == "__main__":
         type=Path,
         default=ROOT,
         help="Path to the root of the project (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--ucd",
+        type=Path,
+        help="Path to UCD directory to replace ICU",
+        required=icu is None,
+    )
+    parser.add_argument(
+        "--ucd-version",
+        type=str,
+        help="Version of the UCD",
+        required=icu is None,
     )
     parser.add_argument(
         "--strategy",
@@ -2022,6 +2048,19 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if ucd_path := args.ucd:
+        # Use a local UCD instead of ICU.
+        # Useful when ICU is not available or when it does not support the latest
+        # Unicode version.
+        # Data are available at: https://www.unicode.org/Public/<UNICODE_VERSION>/ucd/
+        icu = import_from_path(
+            module_name="icu", file_path=Path(__file__).with_stem("ucd")
+        )
+        if ucd_version := args.ucd_version:
+            icu.UNICODE_VERSION = ucd_version
+        icu.Char = icu.DB.parse_ucd(ucd_path)
+
     config = Config(
         check_error=not args.no_check,
         verbose=args.verbose,
