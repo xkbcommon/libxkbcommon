@@ -22,6 +22,17 @@
 #include "include.h"
 #include "util-mem.h"
 
+static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 2)) - 1 >=
+              XKB_KEYCODE_MAX_CONTIGUOUS,
+              "Cannot store low keycodes");
+
+/** Keycode store lookup result */
+typedef struct {
+    bool found:1;
+    bool low:1;
+    darray_size_t index:(DARRAY_SIZE_T_WIDTH - 2);
+} KeycodeMatch;
+
 typedef struct {
     xkb_keycode_t keycode;
     xkb_atom_t name;
@@ -40,24 +51,18 @@ typedef struct {
      * keycode > XKB_KEYCODE_MAX_CONTIGUOUS
      */
     darray(HighKeycodeEntry) high;
+    /**
+     * name -> keycode mapping
+     */
+    darray(KeycodeMatch) names;
 } KeycodeStore;
-
-static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 2)) - 1 >=
-              XKB_KEYCODE_MAX_CONTIGUOUS,
-              "Cannot store low keycodes");
-
-/** Keycode store lookup result */
-typedef struct {
-    bool found:1;
-    bool low:1;
-    darray_size_t index:(DARRAY_SIZE_T_WIDTH - 2);
-} KeycodeMatch;
 
 static inline void
 keycode_store_init(KeycodeStore *store)
 {
     darray_init(store->low);
     darray_init(store->high);
+    darray_init(store->names);
     static_assert(XKB_KEYCODE_INVALID > XKB_KEYCODE_MAX,
                   "Hey, you can't be changing stuff like that!");
     store->min = XKB_KEYCODE_INVALID;
@@ -68,6 +73,7 @@ keycode_store_free(KeycodeStore *store)
 {
     darray_free(store->low);
     darray_free(store->high);
+    darray_free(store->names);
 }
 
 static inline void
@@ -82,11 +88,20 @@ keycode_store_update(KeycodeStore *store, KeycodeMatch match, xkb_atom_t name)
         assert(match.index < darray_size(store->high)); /* assume valid index */
         darray_item(store->high, match.index).name = name;
     }
+
+    /* Names lookup */
+    if (name >= darray_size(store->names)) {
+        darray_resize0(store->names, name + 1);
+    }
+    darray_item(store->names, name) = match;
 }
 
 static bool
 keycode_store_insert(KeycodeStore *store, xkb_keycode_t kc, xkb_atom_t name)
 {
+    if (name >= darray_size(store->names)) {
+        darray_resize0(store->names, name + 1);
+    }
     if (kc <= XKB_KEYCODE_MAX_CONTIGUOUS) {
         /* Low keycode */
         if (kc >= (xkb_keycode_t) darray_size(store->low))
@@ -94,6 +109,11 @@ keycode_store_insert(KeycodeStore *store, xkb_keycode_t kc, xkb_atom_t name)
         darray_item(store->low, kc) = name;
         if (kc < store->min)
             store->min = kc;
+        darray_item(store->names, name) = (KeycodeMatch) {
+            .found = true,
+            .low = true,
+            .index = kc
+        };
     } else {
         /* High keycode: insert into a sorted list */
         const darray_size_t idx = darray_size(store->high);
@@ -119,12 +139,29 @@ keycode_store_insert(KeycodeStore *store, xkb_keycode_t kc, xkb_atom_t name)
             }
             assert(lower < idx);
             assert(darray_item(store->high, lower).keycode > kc);
+
+            /* Update references to entries that will be moved */
+            HighKeycodeEntry *entry;
+            darray_foreach_from(entry, store->high, lower) {
+                darray_item(store->names, entry->name).index++;
+            }
+
             darray_insert(store->high, lower,
                           (HighKeycodeEntry){.keycode = kc, .name = name});
+            darray_item(store->names, name) = (KeycodeMatch) {
+                .found = true,
+                .low = false,
+                .index = lower
+            };
         } else {
             /* Fast path: no need to sort */
             darray_append(store->high,
                           (HighKeycodeEntry){.keycode = kc, .name = name});
+            darray_item(store->names, name) = (KeycodeMatch) {
+                .found = true,
+                .low = false,
+                .index = idx
+            };
         }
         if (darray_empty(store->low))
             store->min = darray_item(store->high, 0).keycode;
@@ -139,6 +176,8 @@ keycode_store_delete(KeycodeStore *store, const KeycodeMatch match)
         return;
     } else if (match.low) {
         assert(match.index < darray_size(store->low)); /* assume valid index */
+        darray_item(store->names,
+                    darray_item(store->low, match.index)).found = false;
         if (match.index + 1u == darray_size(store->low)) {
             /* Highest low keycode: shrink */
             if (store->min == match.index) {
@@ -159,6 +198,8 @@ keycode_store_delete(KeycodeStore *store, const KeycodeMatch match)
         }
     } else {
         assert(match.index < darray_size(store->high)); /* assume valid index */
+        darray_item(store->names,
+                    darray_item(store->high, match.index).name).found = false;
         darray_remove(store->high, match.index);
     }
 
@@ -244,33 +285,11 @@ keycode_store_lookup_keycode(const KeycodeStore *store, xkb_keycode_t kc)
 static KeycodeMatch
 keycode_store_lookup_name(const KeycodeStore *store, xkb_atom_t name)
 {
-    /* Low keycodes */
-    for (xkb_keycode_t kc = store->min;
-         kc < (xkb_keycode_t) darray_size(store->low);
-         kc++) {
-        if (darray_item(store->low, kc) == name) {
-            return (KeycodeMatch) {
-                .found = true,
-                .low = true,
-                .index = kc
-            };
-        }
+    if (name >= darray_size(store->names)) {
+        return (KeycodeMatch) { .found = false };
+    } else {
+        return darray_item(store->names, name);
     }
-
-    /* High keycodes */
-    HighKeycodeEntry *entry;
-    darray_size_t idx;
-    darray_enumerate(idx, entry, store->high) {
-        if (entry->name == name) {
-            return (KeycodeMatch) {
-                .found = true,
-                .low = false,
-                .index = idx
-            };
-        }
-    }
-
-    return (KeycodeMatch) { .found = false };
 }
 
 /***====================================================================***/
@@ -461,6 +480,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
                      "Using %s, ignoring %s\n", kc, use, ignore);
         }
         if (clobber) {
+            darray_item(info->keycodes.names, old_name).found = false;
             keycode_store_update(&info->keycodes, match_kc, name);
         }
     } else {
@@ -489,6 +509,7 @@ MergeKeycodeStores(KeyNamesInfo *into, KeyNamesInfo *from,
         into->keycodes = from->keycodes;
         darray_init(from->keycodes.low);
         darray_init(from->keycodes.high);
+        darray_init(from->keycodes.names);
     } else {
         /* Slow path: check for conflicts */
 
