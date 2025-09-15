@@ -873,8 +873,89 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "    <B> = 2;\n"
                 "  };\n"
                 "};",
-            /* NOTE: same as previous */
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-2.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 0x10000;\n"
+                "    <B> = 0x10001;\n"
+                "    <A> = 1;\n"
+                "    <B> = 0x10002;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-3.xkb"
+        },
+
+        /* Aliases */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <B> = 1;\n"
+                "    <A> = 1;\n"
+                "    alias <C> = <B>;\n" /* C target is invalid */
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    alias <C> = <B>;\n" /* C target is invalid */
+                "    <B> = 1;\n"
+                "    <A> = 1;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <B> = 1;\n"
+                "    <A> = 1;\n"
+                "    alias <C> = <B>;\n" /* C target is valid */
+                "    <B> = 2;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    alias <C> = <B>;\n" /* C target is valid */
+                "    <B> = 1;\n"
+                "    <A> = 1;\n"
+                "    <B> = 2;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    alias <A> = <B>;\n" /* Will be overriden by key */
+                "    <A> = 1;\n"
+                "    <B> = 300;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 1;\n"
+                "    alias <A> = <B>;\n" /* Cannot override key */
+                "    <B> = 300;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
         },
     };
 
