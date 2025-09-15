@@ -66,11 +66,10 @@ xkb_keymap_new(struct xkb_context *ctx,
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 {
-    struct xkb_key *key;
-
-    xkb_keys_foreach(key, keymap)
-        if (key->name == name)
-            return key;
+    if (name < keymap->key_atom_max && keymap->key_names[name].found) {
+        assert(name == keymap->keys[keymap->key_names[name].index].name);
+        return &keymap->keys[keymap->key_names[name].index];
+    }
 
     if (use_aliases) {
         xkb_atom_t new_name = XkbResolveKeyAlias(keymap, name);

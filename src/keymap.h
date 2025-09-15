@@ -425,6 +425,17 @@ static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(xkb_atom_t)),
 static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(struct xkb_level)),
               "Max keys levels");
 
+static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 2)) - 1 >=
+              XKB_KEYCODE_MAX_CONTIGUOUS,
+              "Cannot store low keycodes");
+
+/** Keycode store lookup result */
+typedef struct {
+    bool found:1;
+    bool low:1;
+    darray_size_t index:(DARRAY_SIZE_T_WIDTH - 2);
+} KeycodeMatch;
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -450,6 +461,8 @@ struct xkb_keymap {
      */
     xkb_keycode_t num_keys_low;
     struct xkb_key *keys;
+    xkb_atom_t key_atom_max;
+    KeycodeMatch *key_names;
 
     /* aliases in no particular order */
     darray_size_t num_key_aliases;

@@ -22,17 +22,6 @@
 #include "include.h"
 #include "util-mem.h"
 
-static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 2)) - 1 >=
-              XKB_KEYCODE_MAX_CONTIGUOUS,
-              "Cannot store low keycodes");
-
-/** Keycode store lookup result */
-typedef struct {
-    bool found:1;
-    bool low:1;
-    darray_size_t index:(DARRAY_SIZE_T_WIDTH - 2);
-} KeycodeMatch;
-
 typedef struct {
     xkb_keycode_t keycode;
     xkb_atom_t name;
@@ -844,6 +833,20 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     }
 
     keymap->keys = keys;
+
+    /* Names LUT */
+    KeycodeMatch *match;
+    darray_foreach(match, info->keycodes.names) {
+        if (match->found && !match->low) {
+            /* Update to final index in keymap::keys */
+            match->index += keymap->num_keys_low;
+        }
+    }
+    darray_shrink(info->keycodes.names);
+    keymap->key_atom_max = darray_size(info->keycodes.names);
+    darray_steal(info->keycodes.names, &keymap->key_names, NULL);
+    darray_init(info->keycodes.names);
+
     return true;
 }
 
