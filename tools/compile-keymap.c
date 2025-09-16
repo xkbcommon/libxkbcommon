@@ -30,6 +30,7 @@ enum output_format {
     OUTPUT_FORMAT_KEYMAP = 0,
     OUTPUT_FORMAT_RMLVO,
     OUTPUT_FORMAT_KCCGST,
+    OUTPUT_FORMAT_KCCGST_YAML,
     OUTPUT_FORMAT_MODMAPS,
 };
 static bool verbose = false;
@@ -98,8 +99,10 @@ usage(FILE *file, const char *progname)
            "Output options:\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
+           " --kccgst-yaml\n"
+           "    Print the KcCGST component names in YAML format\n"
            " --rmlvo\n"
-           "    Print the full RMLVO with the defaults filled in for missing elements\n"
+           "    Print the full RMLVO with the defaults filled in for missing elements, in YAML format\n"
            " --modmaps\n"
            "    Print real and virtual key modmaps and modifiers encodings in YAML format\n"
            "\n",
@@ -113,7 +116,14 @@ usage(FILE *file, const char *progname)
 static inline bool
 is_incompatible_with_keymap_input(enum output_format format)
 {
-    return format == OUTPUT_FORMAT_KCCGST || format == OUTPUT_FORMAT_RMLVO;
+    switch (format) {
+        case OUTPUT_FORMAT_KCCGST:
+        case OUTPUT_FORMAT_KCCGST_YAML:
+        case OUTPUT_FORMAT_RMLVO:
+            return true;
+        default:
+            return false;
+    }
 }
 
 static bool
@@ -146,6 +156,7 @@ parse_options(int argc, char **argv,
         OPT_OPTION,
         /* Output */
         OPT_KCCGST,
+        OPT_KCCGST_YAML,
         OPT_RMLVO,
         OPT_MODMAPS,
     };
@@ -177,6 +188,7 @@ parse_options(int argc, char **argv,
          * Output
          */
         {"kccgst",           no_argument,            0, OPT_KCCGST},
+        {"kccgst-yaml",      no_argument,            0, OPT_KCCGST_YAML},
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
         {"modmaps",          no_argument,            0, OPT_MODMAPS},
         {0, 0, 0, 0},
@@ -301,6 +313,15 @@ parse_options(int argc, char **argv,
                 goto output_format_error;
             output_format = OUTPUT_FORMAT_KCCGST;
             break;
+        case OPT_KCCGST_YAML:
+            assert(is_incompatible_with_keymap_input(OUTPUT_FORMAT_KCCGST_YAML));
+            if (input_format == INPUT_FORMAT_KEYMAP)
+                goto output_incompatible_with_keymap_input_error;
+            if (output_format != OUTPUT_FORMAT_KEYMAP &&
+                output_format != OUTPUT_FORMAT_KCCGST_YAML)
+                goto output_format_error;
+            output_format = OUTPUT_FORMAT_KCCGST_YAML;
+            break;
         case OPT_RMLVO:
             assert(is_incompatible_with_keymap_input(OUTPUT_FORMAT_RMLVO));
             if (input_format == INPUT_FORMAT_KEYMAP)
@@ -395,7 +416,7 @@ print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 }
 
 static int
-print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
+print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo, bool yaml)
 {
         struct xkb_component_names kccgst = { 0 };
 
@@ -406,18 +427,31 @@ print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
         if (test)
             goto out;
 
-        printf("xkb_keymap {\n"
-               "  xkb_keycodes { include \"%s\" };\n"
-               "  xkb_types { include \"%s\" };\n"
-               "  xkb_compat { include \"%s\" };\n"
-               "  xkb_symbols { include \"%s\" };\n",
-               kccgst.keycodes, kccgst.types, kccgst.compatibility,
-               kccgst.symbols);
-        /* Contrary to the previous components, geometry can be empty */
-        if (!isempty(kccgst.geometry)) {
-            printf("  xkb_geometry { include \"%s\" };\n", kccgst.geometry);
+        if (yaml) {
+            printf("keycodes: \"%s\"\n"
+                   "types: \"%s\"\n"
+                   "compat: \"%s\"\n"
+                   "symbols: \"%s\"\n",
+                   kccgst.keycodes, kccgst.types, kccgst.compatibility,
+                   kccgst.symbols);
+            /* Contrary to the previous components, geometry can be empty */
+            if (!isempty(kccgst.geometry)) {
+                printf("geometry: \"%s\"\n", kccgst.geometry);
+            }
+        } else {
+            printf("xkb_keymap {\n"
+                   "  xkb_keycodes { include \"%s\" };\n"
+                   "  xkb_types { include \"%s\" };\n"
+                   "  xkb_compat { include \"%s\" };\n"
+                   "  xkb_symbols { include \"%s\" };\n",
+                   kccgst.keycodes, kccgst.types, kccgst.compatibility,
+                   kccgst.symbols);
+            /* Contrary to the previous components, geometry can be empty */
+            if (!isempty(kccgst.geometry)) {
+                printf("  xkb_geometry { include \"%s\" };\n", kccgst.geometry);
+            }
+            printf("};\n");
         }
-        printf("};\n");
 out:
         free(kccgst.keycodes);
         free(kccgst.types);
@@ -558,7 +592,11 @@ main(int argc, char **argv)
         break;
     case OUTPUT_FORMAT_KCCGST:
         assert(input_format != INPUT_FORMAT_KEYMAP);
-        rc = print_kccgst(ctx, &names);
+        rc = print_kccgst(ctx, &names, false);
+        break;
+    case OUTPUT_FORMAT_KCCGST_YAML:
+        assert(input_format != INPUT_FORMAT_KEYMAP);
+        rc = print_kccgst(ctx, &names, true);
         break;
     case OUTPUT_FORMAT_MODMAPS:
         rc = print_modmaps(ctx, keymap_input_format,

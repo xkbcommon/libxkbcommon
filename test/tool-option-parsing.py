@@ -138,6 +138,12 @@ class KccgstTarget(Target):
         return ["--kccgst"]
 
 
+class KccgstYamlTarget(Target):
+    @property
+    def args(self) -> list[str]:
+        return ["--kccgst-yaml"]
+
+
 @dataclass
 class KeymapTarget(Target, RMLVO):
     arg: bool = False
@@ -405,6 +411,7 @@ class TestXkbcli(unittest.TestCase):
         for target in (
             RmlvoTarget(),
             KccgstTarget(),
+            KccgstYamlTarget(),
             # Keymap from RMLVO
             KeymapTarget(),
             # Keymap from RMLVO (stdin ignored)
@@ -448,6 +455,7 @@ class TestXkbcli(unittest.TestCase):
         keymap_from_path2 = KeymapTarget(arg=False, path=Path(keymap_path))
         rmlvo = RmlvoTarget()
         kccgst = KccgstTarget()
+        kccgstYaml = KccgstYamlTarget()
         for entry in (
             # --keymap does not use RMLVO options
             ("--rules", "some-rules", keymap_from_stdin),
@@ -470,6 +478,7 @@ class TestXkbcli(unittest.TestCase):
             (rmlvo, keymap_from_stdin),
             (rmlvo, keymap_from_path1),
             (rmlvo, keymap_from_path2),
+            (kccgst, kccgstYaml),
             (kccgst, keymap_from_stdin),
             (kccgst, keymap_from_path1),
             (kccgst, keymap_from_path2),
@@ -477,6 +486,13 @@ class TestXkbcli(unittest.TestCase):
             (kccgst, rmlvo, keymap_from_stdin),
             (kccgst, rmlvo, keymap_from_path1),
             (kccgst, rmlvo, keymap_from_path2),
+            (kccgstYaml, keymap_from_stdin),
+            (kccgstYaml, keymap_from_path1),
+            (kccgstYaml, keymap_from_path2),
+            (kccgstYaml, rmlvo),
+            (kccgstYaml, rmlvo, keymap_from_stdin),
+            (kccgstYaml, rmlvo, keymap_from_path1),
+            (kccgstYaml, rmlvo, keymap_from_path2),
         ):
             with self.subTest(args=entry):
                 args: list[str] = list(
@@ -499,7 +515,12 @@ class TestXkbcli(unittest.TestCase):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = {
                 executor.submit(run, target.args, rmlvo): (target, rmlvo)
-                for target in (RmlvoTarget(), KccgstTarget(), KeymapTarget())
+                for target in (
+                    RmlvoTarget(),
+                    KccgstTarget(),
+                    KccgstYamlTarget(),
+                    KeymapTarget(),
+                )
                 for rmlvo in rmlvos
             }
             for future in concurrent.futures.as_completed(futures, TIMEOUT):
