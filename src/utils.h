@@ -114,6 +114,18 @@ istrneq(const char *s1, const char *s2, size_t len)
 #define istreq_prefix(s1, s2) istrneq(s1, s2, sizeof(s1) - 1)
 
 static inline char *
+strcpy_safe(char *dest, size_t size, const char *src) {
+    if (!dest || !size || !src)
+        return NULL;
+    const char * const limit = dest + size - 1;
+    while (dest < limit && *src) {
+        *dest++ = *src++;
+    }
+    *dest = '\0';
+    return *src ? NULL : dest;
+}
+
+static inline char *
 strdup_safe(const char *s)
 {
     return s ? strdup(s) : NULL;
