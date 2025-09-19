@@ -10,9 +10,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "darray.h"
 #include "utils.h"
 
-typedef uint32_t xkb_atom_t;
+/** Atoms are indexes into a `darray` */
+typedef darray_size_t xkb_atom_t;
 
 #define XKB_ATOM_NONE 0
 

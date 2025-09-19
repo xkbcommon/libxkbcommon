@@ -15,6 +15,7 @@
 #include <limits.h>
 
 typedef unsigned int darray_size_t;
+#define DARRAY_SIZE_T_WIDTH (sizeof(darray_size_t) * CHAR_BIT)
 
 #define darray(type) struct {       \
     /** Array of items */           \
@@ -86,6 +87,17 @@ typedef darray (unsigned long)  darray_ulong;
     (arr).item[(arr).size - 1] = (__VA_ARGS__); \
 } while (0)
 
+#define darray_insert(arr, i, ...) do { \
+    darray_size_t __index = (i); \
+    darray_resize(arr, (arr).size+1); \
+    memmove( \
+        (arr).item + __index + 1, \
+        (arr).item + __index, \
+        ((arr).size - __index - 1) * sizeof(*(arr).item) \
+    ); \
+    (arr).item[__index] = (__VA_ARGS__); \
+} while(0)
+
 /*** Insertion (multiple items) ***/
 
 #define darray_append_items(arr, items, count) do { \
@@ -113,6 +125,18 @@ typedef darray (unsigned long)  darray_ulong;
 
 /* Warning: Do not call darray_remove_last on an empty darray. */
 #define darray_remove_last(arr) (--(arr).size)
+
+/* Warning, slow: Requires copying all elements after removed item. */
+#define darray_remove(arr, i) do { \
+    darray_size_t __index = (i); \
+    if (__index < (arr).size-1) \
+        memmove( \
+            &(arr).item[__index], \
+            &(arr).item[__index + 1], \
+            ((arr).size -1 - __index) * sizeof(*(arr).item) \
+        ); \
+    (arr).size--; \
+} while(0)
 
 /*** String buffer ***/
 
