@@ -939,8 +939,43 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
             .keymap =
                 "xkb_keymap {\n"
                 "  xkb_keycodes {\n"
-                "    alias <A> = <B>;\n" /* Will be overriden by key */
+                "    alias <A> = <B>;\n"
+                "    <A> = 1;\n" /* Override alias */
+                "    <B> = 300;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    alias <C> = <B>;\n"
+                "    augment <C> = 3;\n" /* Do not override alias */
                 "    <A> = 1;\n"
+                "    <B> = 2;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 1;\n"
+                "    <C> = 3;\n"
+                "    alias <C> = <B>;\n" /* Override key */
+                "    <B> = 2;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <A> = 1;\n"
+                "    augment alias <A> = <B>;\n" /* Do not override key */
                 "    <B> = 300;\n"
                 "  };\n"
                 "};",
@@ -951,11 +986,22 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "xkb_keymap {\n"
                 "  xkb_keycodes {\n"
                 "    <A> = 1;\n"
-                "    alias <A> = <B>;\n" /* Cannot override key */
-                "    <B> = 300;\n"
+                "    <B> = 2;\n"
+                "    alias <B> = <C>;\n" /* Override key, even if invalid entry */
                 "  };\n"
                 "};",
-            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-multiple-1.xkb"
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <B> = 1;\n"
+                "    alias <A> = <B>;\n"
+                "    <A> = 1;\n" /* Override both alias and key */
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
         },
     };
 

@@ -73,6 +73,21 @@ See @ref user-configuration "" for further information.
 </td>
 </tr>
 <tr>
+<th>Keycode override with aliases</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Keycodes have always priority over aliases.
+</details>
+</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.12)</summary>
+Keycodes and aliases share the same namespace.
+</details>
+</td>
+</tr>
+<tr>
 <th>Extended keycodes</th>
 <td>
 <details>
