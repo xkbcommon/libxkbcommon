@@ -497,37 +497,68 @@ static bool
 AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
            enum merge_mode merge, bool report)
 {
+#ifdef NDEBUG
+    const
+#endif
     KeycodeMatch match_name = keycode_store_lookup_name(&info->keycodes, name);
-    if (match_name.found && match_name.is_alias) {
-        // TODO: use clobber, since key and alias namespaces are now shared
-        log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
-                XKB_WARNING_ILLEGAL_KEYCODE_ALIAS,
-                "Attempt to create alias with the name of a real key; "
-                "Alias \"%s = %s\" ignored\n",
-                KeyNameText(info->ctx, name),
-                KeyNameText(info->ctx, match_name.alias.real));
-        keycode_store_delete_name(&info->keycodes, name);
-        match_name.found = false;
-    }
-    const xkb_keycode_t old_kc = keycode_store_get_keycode(&info->keycodes, match_name);
-    if (old_kc != XKB_KEYCODE_INVALID && old_kc != kc) {
-        /* There is already a different key with this name. */
-
+    if (match_name.found) {
         const bool clobber = (merge != MERGE_AUGMENT);
-        if (report) {
-            const xkb_keycode_t use    = (clobber) ? kc : old_kc;
-            const xkb_keycode_t ignore = (clobber) ? old_kc : kc;
-            log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
-                     "Key name %s assigned to multiple keys; "
-                     "Using %"PRIu32", ignoring %"PRIu32"\n",
-                     KeyNameText(info->ctx, name), use, ignore);
-        }
 
-        if (clobber) {
-            /* Remove conflicting key name mapping */
-            keycode_store_delete_key(&info->keycodes, match_name);
+        if (match_name.is_alias) {
+            /*
+             * There is already an alias with this name.
+             *
+             * Contrary to Xorg’s xkbcomp, keys and aliases share the same
+             * namespace. So we need to resolve name conflicts as they arise,
+             * while xkbcomp will resolve them just before copying aliases into
+             * the keymap.
+             */
+
+            if (report) {
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
+                         "Key name %s already assigned to an alias; "
+                         "Using %s, ignoring %s\n",
+                         KeyNameText(info->ctx, name),
+                         (clobber ? "key" : "alias"),
+                         (clobber ? "alias" : "key"));
+            }
+
+            if (clobber) {
+                /*
+                 * Override the alias. If there is a conflict with the keycode
+                 * afterwards, the old key entry will be also overriden thanks
+                 * to “clobber”.
+                 */
+                keycode_store_delete_name(&info->keycodes, name);
+#ifndef NDEBUG
+                match_name.found = false;
+#endif
+            } else {
+                return true;
+            }
         } else {
-            return true;
+            const xkb_keycode_t old_kc =
+                keycode_store_get_keycode(&info->keycodes, match_name);
+            assert(old_kc != XKB_KEYCODE_INVALID);
+            if (old_kc != kc) {
+                /* There is already a different key with this name. */
+
+                if (report) {
+                    const xkb_keycode_t use    = (clobber) ? kc : old_kc;
+                    const xkb_keycode_t ignore = (clobber) ? old_kc : kc;
+                    log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
+                            "Key name %s assigned to multiple keys; "
+                            "Using %"PRIu32", ignoring %"PRIu32"\n",
+                            KeyNameText(info->ctx, name), use, ignore);
+                }
+
+                if (clobber) {
+                    /* Remove conflicting key name mapping */
+                    keycode_store_delete_key(&info->keycodes, match_name);
+                } else {
+                    return true;
+                }
+            }
         }
     }
 
@@ -537,7 +568,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
         /* There is already a key with this keycode. */
 
         if (old_name == name) {
-            assert(old_kc == kc);
+            assert(keycode_store_get_keycode(&info->keycodes, match_name) == kc);
             if (report)
                 log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                          "Multiple identical key name definitions; "
@@ -732,6 +763,7 @@ HandleAliasDef(KeyNamesInfo *info, const KeyAliasDef *def, bool report)
     const KeycodeMatch match_name = keycode_store_lookup_name(&info->keycodes,
                                                               def->alias);
     if (match_name.found) {
+        const bool clobber = (def->merge != MERGE_AUGMENT);
         if (match_name.is_alias) {
             if (def->real == match_name.alias.real) {
                 if (report)
@@ -740,9 +772,7 @@ HandleAliasDef(KeyNamesInfo *info, const KeyAliasDef *def, bool report)
                              "First definition ignored\n",
                              KeyNameText(info->ctx, def->alias),
                              KeyNameText(info->ctx, def->real));
-            }
-            else {
-                const bool clobber = (def->merge != MERGE_AUGMENT);
+            } else {
                 const xkb_atom_t use = (clobber)
                     ? def->real
                     : match_name.alias.real;
@@ -760,16 +790,37 @@ HandleAliasDef(KeyNamesInfo *info, const KeyAliasDef *def, bool report)
 
                 keycode_store_update_alias(&info->keycodes, def->alias, use);
             }
+            return true;
         } else {
-            // TODO: use clobber, since key and alias namespaces are now shared
-            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
-                    XKB_WARNING_ILLEGAL_KEYCODE_ALIAS,
-                    "Attempt to create alias with the name of a real key; "
-                    "Alias \"%s = %s\" ignored\n",
-                    KeyNameText(info->ctx, def->alias),
-                    KeyNameText(info->ctx, def->real));
+            /* There is already a real key with this name.
+             *
+             * Contrary to Xorg’s xkbcomp, keys and aliases share the same
+             * namespace. So we need to resolve name conflicts as they arise,
+             * while xkbcomp will resolve them just before copying aliases into
+             * the keymap.
+             *
+             * Also contrary to xkbcomp, we enable aliases to override keys.
+             */
+            if (report) {
+                log_warn(info->ctx, XKB_WARNING_CONFLICTING_KEY_NAME,
+                         "Alias name %s already assigned to a real key; "
+                         "Using %s, ignoring %s\n",
+                         KeyNameText(info->ctx, def->alias),
+                         (clobber ? "alias" : "key"),
+                         (clobber ? "key" : "alias"));
+            }
+
+            if (clobber) {
+                /*
+                 * Note that we override the key even if the alias is proved
+                 * invalid afterwards. This would be a bug in the keycodes
+                 * files or rules, not libxkbcommon.
+                 */
+                keycode_store_delete_key(&info->keycodes, match_name);
+            } else {
+                return true;
+            }
         }
-        return true;
     }
 
     return keycode_store_insert_alias(&info->keycodes, def->alias, def->real);
