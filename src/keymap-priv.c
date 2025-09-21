@@ -63,42 +63,6 @@ xkb_keymap_new(struct xkb_context *ctx,
     return keymap;
 }
 
-struct xkb_key *
-XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
-{
-    if (name < keymap->num_key_names) {
-        const KeycodeMatch match = keymap->key_names[name];
-        if (match.found) {
-            if (!match.is_alias) {
-                assert(name == keymap->keys[match.key.index].name);
-                return &keymap->keys[match.key.index];
-            } else if (use_aliases) {
-                assert(name == keymap->key_aliases[match.alias.real].alias);
-                const xkb_atom_t real_name =
-                    keymap->key_aliases[match.alias.real].real;
-                assert(real_name ==
-                       keymap->keys[keymap->key_names[real_name].key.index].name);
-                return &keymap->keys[keymap->key_names[real_name].key.index];
-            }
-        }
-    }
-
-    return NULL;
-}
-
-xkb_atom_t
-XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name)
-{
-    if (name < keymap->num_key_names) {
-        const KeycodeMatch match = keymap->key_names[name];
-        if (match.found && match.is_alias) {
-            return keymap->key_aliases[match.alias.real].real;
-        }
-    }
-
-    return XKB_ATOM_NONE;
-}
-
 void
 XkbEscapeMapName(char *name)
 {

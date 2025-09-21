@@ -69,7 +69,6 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         }
         free(keymap->keys);
     }
-    free(keymap->key_names);
     if (keymap->types) {
         for (darray_size_t i = 0; i < keymap->num_types; i++) {
             free(keymap->types[i].entries);
@@ -631,9 +630,9 @@ xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name)
 
     atom = xkb_atom_lookup(keymap->ctx, name);
     if (atom) {
-        xkb_atom_t ratom = XkbResolveKeyAlias(keymap, atom);
-        if (ratom)
-            atom = ratom;
+        for (darray_size_t i = 0; i < keymap->num_key_aliases; i++)
+            if (keymap->key_aliases[i].alias == atom)
+                atom = keymap->key_aliases[i].real;
     }
     if (!atom)
         return XKB_KEYCODE_INVALID;

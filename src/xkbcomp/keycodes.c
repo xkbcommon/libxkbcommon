@@ -948,70 +948,39 @@ CopyKeyNamesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 }
 
 static bool
-CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
-{
-    /*
-     * Do some sanity checking on the aliases. We can't do it before
-     * because keys and their aliases may be added out-of-order.
-     */
-    KeycodeMatch *match;
-    xkb_atom_t alias;
-    darray_size_t num_key_aliases = 0;
-    darray_enumerate(alias, match, info->keycodes.names) {
-        if (!match->is_alias || !match->found)
-            continue;
-
-        /* Check that ->real is a key. */
-        const KeycodeMatch match_real =
-            keycode_store_lookup_name(&info->keycodes, match->alias.real);
-        if (!match_real.found) {
-            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
-                    XKB_WARNING_UNDEFINED_KEYCODE,
-                    "Attempt to alias %s to non-existent key %s; Ignored\n",
-                    KeyNameText(info->ctx, alias),
-                    KeyNameText(info->ctx, match->alias.real));
-            match->alias.found = false;
-            continue;
-        }
-        assert(!match_real.is_alias);
-
-        num_key_aliases++;
-    }
-
-    /* Copy key aliases. */
-    struct xkb_key_alias *key_aliases = NULL;
-    if (num_key_aliases > 0) {
-        key_aliases = calloc(num_key_aliases, sizeof(*key_aliases));
-        if (!key_aliases)
-            return false;
-
-        darray_size_t i = 0;
-        darray_enumerate(alias, match, info->keycodes.names) {
-            if (match->is_alias && match->alias.found) {
-                key_aliases[i].alias = alias;
-                key_aliases[i].real = match->alias.real;
-                match->alias.real = i;
-                i++;
-            }
-        }
-    }
-
-    keymap->num_key_aliases = num_key_aliases;
-    keymap->key_aliases = key_aliases;
-    return true;
-}
-
-static bool
 CopyKeycodeNameLUT(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
-    /* Names LUT */
     KeycodeMatch *match;
-    darray_foreach(match, info->keycodes.names) {
-        if (match->found && !match->is_alias && !match->key.low) {
+    xkb_atom_t name;
+    darray_enumerate(name, match, info->keycodes.names) {
+        if (!match->found)
+            continue;
+
+        if (match->is_alias) {
+            /*
+             * Do some sanity checking on the aliases. We can’t do it before
+             * because keys and their aliases may be added out-of-order.
+             */
+
+            /* Check that ->real is a key. */
+            const KeycodeMatch match_real =
+                keycode_store_lookup_name(&info->keycodes, match->alias.real);
+            if (!match_real.found) {
+                log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
+                        XKB_WARNING_UNDEFINED_KEYCODE,
+                        "Attempt to alias %s to non-existent key %s; Ignored\n",
+                        KeyNameText(info->ctx, name),
+                        KeyNameText(info->ctx, match->alias.real));
+                match->found = false;
+                continue;
+            }
+            assert(!match_real.is_alias);
+        } else if (!match->key.low) {
             /* Update to final index in keymap::keys */
             match->key.index += keymap->num_keys_low;
         }
     }
+
     darray_shrink(info->keycodes.names);
     keymap->num_key_names = darray_size(info->keycodes.names);
     darray_steal(info->keycodes.names, &keymap->key_names, NULL);
@@ -1040,7 +1009,6 @@ CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 {
     /* This function trashes keymap on error, but that's OK. */
     if (!CopyKeyNamesToKeymap(keymap, info) ||
-        !CopyKeyAliasesToKeymap(keymap, info) ||
         !CopyKeycodeNameLUT(keymap, info) ||
         !CopyLedNamesToKeymap(keymap, info))
         return false;

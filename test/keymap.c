@@ -662,8 +662,22 @@ test_keynames_atoms(void)
         got = xkb_atom_table_size(context);
         assert_eq("atoms", expected, got, "%u");
 
+        /*
+         * Find size of the temporary key name LUT used during compilation.
+         * It corresponds to: max(key name/alias atom) + 1.
+         */
+        darray_size_t num_key_names = 0;
+        for (xkb_atom_t a = 0; a < xkb_atom_table_size(context); a++) {
+            const char *name = xkb_atom_text(context, a);
+            if (name == NULL)
+                continue;
+            if (xkb_keymap_key_by_name(keymap, name) != XKB_KEYCODE_INVALID) {
+                num_key_names = a + 1;
+            }
+        }
+
         expected = tests[t].num_key_names;
-        got = keymap->num_key_names;
+        got = num_key_names;
         assert_eq("keynames atoms", expected, got, "%u");
 
         /* Count valid key names */
@@ -674,7 +688,7 @@ test_keynames_atoms(void)
          * Check that we do not waste too much memory with non-key name/alias
          * entries in the LUT.
          */
-        const double valid_entries = (double) got / keymap->num_key_names;
+        const double valid_entries = (double) got / num_key_names;
         const double valid_entries_min = 0.92;
         const double valid_entries_max = 1.0;
         assert_printf(valid_entries >= valid_entries_min &&

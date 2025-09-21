@@ -1003,15 +1003,51 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-bounds-single-1.xkb"
         },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                /*
+                 * Multiple aliases *before* names: check that the key name LUT
+                 * overwrite is done properly.
+                 */
+                "    alias <A> = <X>;\n"
+                "    alias <B> = <X>;\n"
+                "    alias <C> = <X>;\n"
+                "    alias <D> = <X>;\n"
+                "    alias <E> = <X>;\n"
+                "    alias <F> = <X>;\n"
+                "    alias <G> = <X>;\n"
+                "    alias <H> = <X>;\n"
+                "    alias <I> = <X>;\n"
+                "    alias <J> = <X>;\n"
+                "    alias <K> = <X>;\n"
+                "    alias <L> = <X>;\n"
+                "    alias <M> = <X>;\n"
+                "    alias <N> = <X>;\n"
+                "    alias <O> = <X>;\n"
+                "    alias <P> = <X>;\n"
+                "    <X> = 1;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-2.xkb"
+        },
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+        /*
+         * We use a new context because we want to check key name LUT is
+         * correctly implemented
+         */
+        struct xkb_context * const ctx2 = test_get_context(CONTEXT_NO_FLAG);
+        assert(ctx2);
+        assert(test_compile_output(ctx2, XKB_KEYMAP_FORMAT_TEXT_V1,
                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                    compile_buffer, NULL, __func__,
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
+        xkb_context_unref(ctx2);
     }
 
     /* Test random high keycodes do not trigger xkbcomp asserts */

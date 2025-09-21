@@ -525,23 +525,50 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
     return true;
 }
 
+static struct xkb_key *
+XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
+{
+    if (name < keymap->num_key_names) {
+        const KeycodeMatch match = keymap->key_names[name];
+        if (match.found) {
+            if (!match.is_alias) {
+                assert(name == keymap->keys[match.key.index].name);
+                return &keymap->keys[match.key.index];
+            } else if (use_aliases) {
+                assert(match.alias.real ==
+                       keymap->keys[keymap->key_names[match.alias.real].key.index].name);
+                return &keymap->keys[keymap->key_names[match.alias.real].key.index];
+            }
+        }
+    }
+    return NULL;
+}
+
+static xkb_atom_t
+XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name)
+{
+    if (name < keymap->num_key_names) {
+        const KeycodeMatch match = keymap->key_names[name];
+        if (match.found && match.is_alias) {
+            return match.alias.real;
+        }
+    }
+    return name;
+}
+
 /* TODO: Make it so this function doesn't need the entire keymap. */
 static bool
 AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi, bool same_file)
 {
-    xkb_atom_t real_name;
-    KeyInfo *iter;
-
     /*
      * Don't keep aliases in the keys array; this guarantees that
      * searching for keys to merge with by straight comparison (see the
      * following loop) is enough, and we won't get multiple KeyInfo's
      * for the same key because of aliases.
      */
-    real_name = XkbResolveKeyAlias(info->keymap, keyi->name);
-    if (real_name != XKB_ATOM_NONE)
-        keyi->name = real_name;
+    keyi->name = XkbResolveKeyAlias(info->keymap, keyi->name);
 
+    KeyInfo *iter;
     darray_foreach(iter, info->keys)
         if (iter->name == keyi->name)
             return MergeKeys(info, iter, keyi, same_file);
