@@ -16,6 +16,7 @@
 
 typedef unsigned int darray_size_t;
 #define DARRAY_SIZE_T_WIDTH (sizeof(darray_size_t) * CHAR_BIT)
+#define DARRAY_SIZE_MAX UINT_MAX
 
 #define darray(type) struct {       \
     /** Array of items */           \

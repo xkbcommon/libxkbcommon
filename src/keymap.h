@@ -489,20 +489,33 @@ struct xkb_keymap {
      */
     xkb_keycode_t num_keys_low;
     struct xkb_key *keys;
-    /*
-     * Keycode name atom -> key index lookup table
-     * Given that:
-     * - the number of atoms is usually < 1k;
-     * - the keycode section usually appears first;
-     * then the first atoms will be mostly the keycodes and their aliases,
-     * so we can achieve O(1) lookup of the key names by using a simple array.
-     */
-    darray_size_t num_key_names;
-    KeycodeMatch *key_names;
 
-    /* aliases in no particular order */
-    darray_size_t num_key_aliases;
-    struct xkb_key_alias *key_aliases;
+    union {
+        /**
+         * Keycode name atom -> key index lookup table
+         *
+         * ⚠️ Used only *during* compilation
+         *
+         * Given that:
+         * - the number of atoms is usually < 1k;
+         * - the keycode section usually appears first;
+         * then the first atoms will be mostly the keycodes and their aliases,
+         * so we can achieve O(1) lookup of the key names by using a simple array.
+         */
+        struct {
+            darray_size_t num_key_names;
+            KeycodeMatch *key_names;
+        };
+        /**
+         * Aliases in no particular order
+         *
+         * ⚠️ Used only *after* compilation
+         */
+        struct {
+            darray_size_t num_key_aliases;
+            struct xkb_key_alias *key_aliases;
+        };
+    };
 
     struct xkb_key_type *types;
     darray_size_t num_types;
@@ -665,12 +678,6 @@ struct xkb_keymap *
 xkb_keymap_new(struct xkb_context *ctx,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags);
-
-struct xkb_key *
-XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases);
-
-xkb_atom_t
-XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name);
 
 void
 XkbEscapeMapName(char *name);

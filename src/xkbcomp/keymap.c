@@ -14,11 +14,12 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "keymap.h"
-#include "darray.h"
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcomp-priv.h"
+#include "darray.h"
+#include "keymap.h"
 #include "text.h"
+#include "utils.h"
+#include "xkbcomp-priv.h"
 
 static bool
 has_unbound_vmods(struct xkb_keymap *keymap, xkb_mod_mask_t mask)
@@ -323,6 +324,22 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
     }
 }
 
+static void
+add_key_aliases(struct xkb_keymap *keymap, darray_size_t min, darray_size_t max,
+                struct xkb_key_alias *aliases)
+{
+    darray_size_t num_key_aliases = 0;
+    for (darray_size_t alias = min; alias <= max; alias++) {
+        const KeycodeMatch entry = keymap->key_names[alias];
+        if (entry.is_alias && entry.found) {
+            aliases[num_key_aliases++] = (struct xkb_key_alias) {
+                .alias = alias,
+                .real = entry.alias.real
+            };
+        }
+    }
+}
+
 /**
  * This collects a bunch of disparate functions which was done in the server
  * at various points that really should've been done within xkbcomp.  Turns out
@@ -332,6 +349,90 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
 static bool
 UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
 {
+    /**
+     * Create the key alias list
+     *
+     * Since we already allocated the key name LUT, we try to overwrite it:
+     * - An alias entry is exactly 2× the size of a LUT entry (on most compilers).
+     * - We ensure that there is a real key for each alias.
+     * - So, if each alias maps to a different keycode, we usually have:
+     *   current alloc(keymap.key_names) ≥ needed alloc(keymap.key_aliases).
+     * - Usual keymaps have enough space in the LUT to enable overwriting real
+     *   key entries without overlap with the alias entries.
+     * - In the unlikely event that this is not the case, we need to realloc.
+     */
+#ifdef _MSC_VER
+    /* MSVC does not pack bit fields as efficiently as GCC and Clang */
+    static_assert(sizeof(struct xkb_key_alias) == sizeof(KeycodeMatch), "");
+#else
+    static_assert(sizeof(struct xkb_key_alias) == 2 * sizeof(KeycodeMatch), "");
+#endif
+    darray_size_t num_key_aliases = 0;
+    darray_size_t min_alias = DARRAY_SIZE_MAX;
+    darray_size_t max_alias = 0;
+    for (xkb_atom_t alias = 0; alias < keymap->num_key_names; alias++) {
+        const KeycodeMatch entry = keymap->key_names[alias];
+        if (entry.is_alias && entry.found) {
+            num_key_aliases++;
+            if (min_alias == DARRAY_SIZE_MAX)
+                min_alias = alias;
+            max_alias = alias;
+        }
+    }
+    if (num_key_aliases) {
+        /*
+         * No fancy algorithm used here: either we can trivially write the whole
+         * range of `xkb_key_aliases` without overlapping with the `KeycodeMatch`
+         * alias entries or we allocate a new array.
+         * In practice no new allocation is is needed and it delivers performs
+         * better than using a buffer to handle overlaps.
+         */
+        const darray_size_t required_space = sizeof(struct xkb_key_alias)
+                                           / sizeof(KeycodeMatch)
+                                           * num_key_aliases;
+        if (min_alias >= required_space) {
+            /* Overwrite before the *first* alias entry */
+            add_key_aliases(keymap, min_alias, max_alias, keymap->key_aliases);
+            /* Shrink */
+            struct xkb_key_alias * const r =
+                realloc(keymap->key_aliases,
+                        num_key_aliases * sizeof(*keymap->key_aliases));
+            if (r == NULL)
+                return false;
+            keymap->key_aliases = r;
+        } else if (keymap->num_key_names - max_alias - 1 > required_space) {
+            /* Overwrite after the *last* alias entry, then move to the start */
+            struct xkb_key_alias * const aliases = (struct xkb_key_alias *) (
+                keymap->key_names - required_space -
+                !is_aligned(keymap->key_names - required_space,
+                            sizeof(struct xkb_key_alias))
+            );
+            add_key_aliases(keymap, min_alias, max_alias, aliases);
+            memcpy(keymap->key_aliases, aliases,
+                   num_key_aliases * sizeof(*aliases));
+            /* Shrink */
+            struct xkb_key_alias * const r =
+                realloc(keymap->key_aliases,
+                        num_key_aliases * sizeof(*keymap->key_aliases));
+            if (r == NULL)
+                return false;
+            keymap->key_aliases = r;
+        } else {
+            /*
+             * No space trivially available: instead of processing the LUT with
+             * a buffer to handle overlaps, we simply allocate a dedicated array
+             */
+            struct xkb_key_alias * const aliases = calloc(num_key_aliases,
+                                                          sizeof(*aliases));
+            if (aliases == NULL)
+                return false;
+            add_key_aliases(keymap, min_alias, max_alias, aliases);
+            free(keymap->key_names);
+            keymap->key_aliases = aliases;
+        }
+    }
+    keymap->num_key_aliases = num_key_aliases;
+
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
     struct xkb_key *key;

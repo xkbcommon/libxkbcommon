@@ -37,6 +37,13 @@ typedef SSIZE_T ssize_t;
 
 #include "darray.h"
 
+static inline bool
+is_aligned(const void *restrict pointer, size_t byte_count)
+{
+    return (uintptr_t) pointer % byte_count == 0;
+}
+
+
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

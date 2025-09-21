@@ -1,0 +1,41 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<X>                  = 1;
+	alias <A>            = <X>;
+	alias <B>            = <X>;
+	alias <C>            = <X>;
+	alias <D>            = <X>;
+	alias <E>            = <X>;
+	alias <F>            = <X>;
+	alias <G>            = <X>;
+	alias <H>            = <X>;
+	alias <I>            = <X>;
+	alias <J>            = <X>;
+	alias <K>            = <X>;
+	alias <L>            = <X>;
+	alias <M>            = <X>;
+	alias <N>            = <X>;
+	alias <O>            = <X>;
+	alias <P>            = <X>;
+};
+
+xkb_types {
+	type "default" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+};
+
+};
