@@ -26,6 +26,9 @@ atom_table_new(void);
 XKB_EXPORT_PRIVATE void
 atom_table_free(struct atom_table *table);
 
+XKB_EXPORT_PRIVATE darray_size_t
+atom_table_size(struct atom_table *table);
+
 XKB_EXPORT_PRIVATE xkb_atom_t
 atom_intern(struct atom_table *table, const char *string, size_t len, bool add);
 

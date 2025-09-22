@@ -23,42 +23,6 @@
 #include "include.h"
 #include "util-mem.h"
 
-static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 3)) - 1 >=
-              XKB_KEYCODE_MAX_CONTIGUOUS,
-              "Cannot store low keycodes");
-
-/** Keycode store lookup result */
-typedef union {
-    struct {
-        /** If true, the index is valid */
-        bool found:1;
-        bool:1;
-        /** Whether the corresponding entry is an alias */
-        bool is_alias:1;
-        darray_size_t:(DARRAY_SIZE_T_WIDTH - 3);
-    };
-    /* Only if is_alias = false, for better semantics */
-    struct {
-        bool found:1;
-        /**
-         * Whether the corresponding entry is stored in the low or high table
-         * of the keycode store
-         */
-        bool low:1;
-        bool is_alias:1;
-        /** Index of the entry in the keycode store */
-        darray_size_t index:(DARRAY_SIZE_T_WIDTH - 3);
-    } key;
-    /* Only if is_alias = true, for better semantics */
-    struct {
-        bool found:1;
-        bool:1;
-        bool is_alias:1;
-        /** Real name of the target key */
-        xkb_atom_t real:(DARRAY_SIZE_T_WIDTH - 3);
-    } alias;
-} KeycodeMatch;
-
 typedef struct {
     xkb_keycode_t keycode;
     xkb_atom_t name;
@@ -994,31 +958,22 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     xkb_atom_t alias;
     darray_size_t num_key_aliases = 0;
     darray_enumerate(alias, match, info->keycodes.names) {
-        if (!match->found || !match->is_alias)
+        if (!match->is_alias || !match->found)
             continue;
 
         /* Check that ->real is a key. */
-        if (!XkbKeyByName(keymap, match->alias.real, false)) {
+        const KeycodeMatch match_real =
+            keycode_store_lookup_name(&info->keycodes, match->alias.real);
+        if (!match_real.found) {
             log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
                     XKB_WARNING_UNDEFINED_KEYCODE,
                     "Attempt to alias %s to non-existent key %s; Ignored\n",
                     KeyNameText(info->ctx, alias),
                     KeyNameText(info->ctx, match->alias.real));
-            match->alias.real = XKB_ATOM_NONE;
+            match->alias.found = false;
             continue;
         }
-
-        /* Check that ->alias is not a key. */
-        if (XkbKeyByName(keymap, alias, false)) {
-            log_vrb(info->ctx, XKB_LOG_VERBOSITY_DETAILED,
-                    XKB_WARNING_ILLEGAL_KEYCODE_ALIAS,
-                    "Attempt to create alias with the name of a real key; "
-                    "Alias \"%s = %s\" ignored\n",
-                    KeyNameText(info->ctx, alias),
-                    KeyNameText(info->ctx, match->alias.real));
-            match->alias.real = XKB_ATOM_NONE;
-            continue;
-        }
+        assert(!match_real.is_alias);
 
         num_key_aliases++;
     }
@@ -1032,11 +987,10 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
         darray_size_t i = 0;
         darray_enumerate(alias, match, info->keycodes.names) {
-            if (!match->found || !match->is_alias)
-                continue;
-            if (match->alias.real != XKB_ATOM_NONE) {
+            if (match->is_alias && match->alias.found) {
                 key_aliases[i].alias = alias;
                 key_aliases[i].real = match->alias.real;
+                match->alias.real = i;
                 i++;
             }
         }
@@ -1044,6 +998,24 @@ CopyKeyAliasesToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 
     keymap->num_key_aliases = num_key_aliases;
     keymap->key_aliases = key_aliases;
+    return true;
+}
+
+static bool
+CopyKeycodeNameLUT(struct xkb_keymap *keymap, KeyNamesInfo *info)
+{
+    /* Names LUT */
+    KeycodeMatch *match;
+    darray_foreach(match, info->keycodes.names) {
+        if (match->found && !match->is_alias && !match->key.low) {
+            /* Update to final index in keymap::keys */
+            match->key.index += keymap->num_keys_low;
+        }
+    }
+    darray_shrink(info->keycodes.names);
+    keymap->num_key_names = darray_size(info->keycodes.names);
+    darray_steal(info->keycodes.names, &keymap->key_names, NULL);
+    darray_init(info->keycodes.names);
     return true;
 }
 
@@ -1069,6 +1041,7 @@ CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
     /* This function trashes keymap on error, but that's OK. */
     if (!CopyKeyNamesToKeymap(keymap, info) ||
         !CopyKeyAliasesToKeymap(keymap, info) ||
+        !CopyKeycodeNameLUT(keymap, info) ||
         !CopyLedNamesToKeymap(keymap, info))
         return false;
 

@@ -74,6 +74,12 @@ atom_table_free(struct atom_table *table)
     free(table);
 }
 
+darray_size_t
+atom_table_size(struct atom_table *table)
+{
+    return darray_size(table->strings);
+}
+
 const char *
 atom_text(struct atom_table *table, xkb_atom_t atom)
 {

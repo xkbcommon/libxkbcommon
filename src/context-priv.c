@@ -13,6 +13,7 @@
 #include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "atom.h"
 #include "darray.h"
 #include "context.h"
 #include "rmlvo.h"
@@ -42,6 +43,12 @@ xkb_context_failed_include_path_get(struct xkb_context *ctx,
         return NULL;
 
     return darray_item(ctx->failed_includes, idx);
+}
+
+darray_size_t
+xkb_atom_table_size(struct xkb_context *ctx)
+{
+    return atom_table_size(ctx->atom_table);
 }
 
 xkb_atom_t

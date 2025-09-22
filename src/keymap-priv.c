@@ -66,16 +66,21 @@ xkb_keymap_new(struct xkb_context *ctx,
 struct xkb_key *
 XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 {
-    struct xkb_key *key;
-
-    xkb_keys_foreach(key, keymap)
-        if (key->name == name)
-            return key;
-
-    if (use_aliases) {
-        xkb_atom_t new_name = XkbResolveKeyAlias(keymap, name);
-        if (new_name != XKB_ATOM_NONE)
-            return XkbKeyByName(keymap, new_name, false);
+    if (name < keymap->num_key_names) {
+        const KeycodeMatch match = keymap->key_names[name];
+        if (match.found) {
+            if (!match.is_alias) {
+                assert(name == keymap->keys[match.key.index].name);
+                return &keymap->keys[match.key.index];
+            } else if (use_aliases) {
+                assert(name == keymap->key_aliases[match.alias.real].alias);
+                const xkb_atom_t real_name =
+                    keymap->key_aliases[match.alias.real].real;
+                assert(real_name ==
+                       keymap->keys[keymap->key_names[real_name].key.index].name);
+                return &keymap->keys[keymap->key_names[real_name].key.index];
+            }
+        }
     }
 
     return NULL;
@@ -84,9 +89,12 @@ XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 xkb_atom_t
 XkbResolveKeyAlias(const struct xkb_keymap *keymap, xkb_atom_t name)
 {
-    for (darray_size_t i = 0; i < keymap->num_key_aliases; i++)
-        if (keymap->key_aliases[i].alias == name)
-            return keymap->key_aliases[i].real;
+    if (name < keymap->num_key_names) {
+        const KeycodeMatch match = keymap->key_names[name];
+        if (match.found && match.is_alias) {
+            return keymap->key_aliases[match.alias.real].real;
+        }
+    }
 
     return XKB_ATOM_NONE;
 }
