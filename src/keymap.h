@@ -425,6 +425,45 @@ static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(xkb_atom_t)),
 static_assert(XKB_LEVEL_MAX_IMPL < darray_max_alloc(sizeof(struct xkb_level)),
               "Max keys levels");
 
+static_assert((1LLU << (DARRAY_SIZE_T_WIDTH - 3)) - 1 >=
+              XKB_KEYCODE_MAX_CONTIGUOUS,
+              "Cannot store low keycodes");
+
+/** Keycode store lookup result */
+typedef union {
+    struct {
+        /** If true, the index is valid */
+        bool found:1;
+        bool:1;
+        /** Whether the corresponding entry is an alias */
+        bool is_alias:1;
+        darray_size_t:(DARRAY_SIZE_T_WIDTH - 3);
+    };
+    /* Only if is_alias = false, for better semantics */
+    struct {
+        bool found:1;
+        /**
+         * Whether the corresponding entry is stored in the low or high table
+         * of the keycode store
+         */
+        bool low:1;
+        bool is_alias:1;
+        /**
+         * - xkb_keycodes: index of the entry in the keycode store
+         * - xkb_symbols: index of the entry in xkb_keymap::keys array
+         */
+        darray_size_t index:(DARRAY_SIZE_T_WIDTH - 3);
+    } key;
+    /* Only if is_alias = true, for better semantics */
+    struct {
+        bool found:1;
+        bool:1;
+        bool is_alias:1;
+        /** Real name of the target key */
+        xkb_atom_t real:(DARRAY_SIZE_T_WIDTH - 3);
+    } alias;
+} KeycodeMatch;
+
 /* Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -450,6 +489,16 @@ struct xkb_keymap {
      */
     xkb_keycode_t num_keys_low;
     struct xkb_key *keys;
+    /*
+     * Keycode name atom -> key index lookup table
+     * Given that:
+     * - the number of atoms is usually < 1k;
+     * - the keycode section usually appears first;
+     * then the first atoms will be mostly the keycodes and their aliases,
+     * so we can achieve O(1) lookup of the key names by using a simple array.
+     */
+    darray_size_t num_key_names;
+    KeycodeMatch *key_names;
 
     /* aliases in no particular order */
     darray_size_t num_key_aliases;

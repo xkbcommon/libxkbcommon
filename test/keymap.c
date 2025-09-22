@@ -15,6 +15,7 @@
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "evdev-scancodes.h"
 #include "test.h"
+#include "context.h"
 #include "keymap.h"
 #include "keymap-formats.h"
 #include "utils.h"
@@ -392,7 +393,7 @@ test_multiple_keysyms_per_level(void)
 static void
 test_multiple_actions_per_level(void)
 {
-    struct xkb_context *context = test_get_context(0);
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     struct xkb_keymap *keymap;
     struct xkb_state *state;
     xkb_keycode_t kc;
@@ -602,6 +603,90 @@ test_multiple_actions_per_level(void)
     xkb_context_unref(context);
 }
 
+static void
+count_keys(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
+{
+    if (!xkb_keymap_key_get_name(keymap, key))
+        return;
+    darray_size_t * const count = data;
+    (*count)++;
+}
+
+static void
+test_keynames_atoms(void)
+{
+    static struct {
+        const char *rules;
+        xkb_keycode_t max_keycode;
+        darray_size_t num_aliases;
+        darray_size_t num_atoms;
+        darray_size_t num_key_names;
+    } tests[] = {
+        {
+            .rules = "base",
+            .max_keycode = 255,
+            .num_aliases = 63,
+            .num_atoms = 484,
+            .num_key_names = 325,
+        },
+        {
+            .rules = "evdev",
+            .max_keycode = 569,
+            .num_aliases = 33,
+            .num_atoms = 501,
+            .num_key_names = 305,
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+
+        struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+        struct xkb_keymap *keymap = test_compile_rules(
+            context, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].rules,
+            "pc104", "us", NULL, NULL
+        );
+        assert(keymap);
+
+        darray_size_t expected, got;
+
+        expected = (darray_size_t) tests[t].max_keycode;
+        got = xkb_keymap_max_keycode(keymap);
+        assert_eq("keynames max keycode", expected, got, "%u");
+
+        expected = tests[t].num_aliases;
+        got = keymap->num_key_aliases;
+        assert_eq("keynames num aliases", expected, got, "%u");
+
+        expected = tests[t].num_atoms;
+        got = xkb_atom_table_size(context);
+        assert_eq("atoms", expected, got, "%u");
+
+        expected = tests[t].num_key_names;
+        got = keymap->num_key_names;
+        assert_eq("keynames atoms", expected, got, "%u");
+
+        /* Count valid key names */
+        got = keymap->num_key_aliases;
+        xkb_keymap_key_for_each(keymap, count_keys, &got);
+
+        /*
+         * Check that we do not waste too much memory with non-key name/alias
+         * entries in the LUT.
+         */
+        const double valid_entries = (double) got / keymap->num_key_names;
+        const double valid_entries_min = 0.92;
+        const double valid_entries_max = 1.0;
+        assert_printf(valid_entries >= valid_entries_min &&
+                      valid_entries < valid_entries_max,
+                      "No enough valid entries; expected: %f <= %f < %f\n",
+                      valid_entries_min, valid_entries, valid_entries_max);
+
+        xkb_keymap_unref(keymap);
+        xkb_context_unref(context);
+    }
+}
+
 int
 main(void)
 {
@@ -614,6 +699,7 @@ main(void)
     test_numeric_keysyms();
     test_multiple_keysyms_per_level();
     test_multiple_actions_per_level();
+    test_keynames_atoms();
 
     return EXIT_SUCCESS;
 }

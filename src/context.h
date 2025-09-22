@@ -61,6 +61,9 @@ xkb_context_include_path_get_extra_path(struct xkb_context *ctx);
 const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx);
 
+XKB_EXPORT_PRIVATE darray_size_t
+xkb_atom_table_size(struct xkb_context *ctx);
+
 /*
  * Returns XKB_ATOM_NONE if @string was not previously interned,
  * otherwise returns the atom.
