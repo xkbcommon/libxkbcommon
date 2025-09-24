@@ -55,6 +55,8 @@ struct keyboard {
 static bool terminate;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+static enum xkb_keymap_serialize_flags serialize_flags =
+    (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 static bool const use_local_state = false;
 static struct xkb_keymap * const custom_keymap = NULL;
 #else
@@ -189,7 +191,8 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 
 #ifdef KEYMAP_DUMP
     /* Dump the keymap */
-    char *dump = xkb_keymap_get_as_string(kbd->keymap, keymap_format);
+    char *dump = xkb_keymap_get_as_string2(kbd->keymap, keymap_format,
+                                           serialize_flags);
     fprintf(stdout, "%s", dump);
     free(dump);
     terminate = true;
@@ -436,7 +439,9 @@ usage(FILE *fp, char *progname)
                 "                         If <FILE> is \"-\" or missing, then load from stdin.\n"
 #endif
                 "    --format <FORMAT>    use keymap format <FORMAT>\n"
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+                "    --no-pretty          do not pretty-print when serializing a keymap\n"
+#else
                 "    -1, --uniline        enable uniline event output\n"
                 "    --multiline          enable multiline event output\n"
 #endif
@@ -472,13 +477,16 @@ main(int argc, char *argv[])
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
         OPT_KEYMAP_FORMAT,
+        OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+        {"no-pretty",            no_argument,            0, OPT_KEYMAP_NO_PRETTY},
+#else
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
@@ -515,7 +523,11 @@ main(int argc, char *argv[])
                 return EXIT_INVALID_USAGE;
             }
             break;
-#ifndef KEYMAP_DUMP
+#ifdef KEYMAP_DUMP
+        case OPT_KEYMAP_NO_PRETTY:
+            serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
+            break;
+#else
         case OPT_COMPOSE:
             with_compose = true;
             break;

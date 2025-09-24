@@ -77,6 +77,8 @@ static bool terminate;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+static enum xkb_keymap_serialize_flags serialize_flags =
+    (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 static bool dump_raw_keymap;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
@@ -435,7 +437,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
 
 #ifdef KEYMAP_DUMP
     /* Dump the reformatted keymap */
-    char *dump = xkb_keymap_get_as_string(seat->keymap, keymap_output_format);
+    char *dump = xkb_keymap_get_as_string2(seat->keymap, keymap_output_format,
+                                           serialize_flags);
     fprintf(stdout, "%s", dump);
     free(dump);
 #else
@@ -820,6 +823,7 @@ usage(FILE *fp, char *progname)
                 "    --input-format <FORMAT>     use input keymap format FORMAT\n"
                 "    --output-format <FORMAT>    use output keymap format FORMAT\n"
                 "    --format <FORMAT>           keymap format to use for both input and output\n"
+                "    --no-pretty                 do not pretty-print when serializing a keymap\n"
                 "    --raw                       dump the raw keymap, without parsing it\n"
 #else
                 "    --format <FORMAT>  use keymap format FORMAT\n"
@@ -861,6 +865,7 @@ main(int argc, char *argv[])
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
+        OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP,
         OPT_RAW,
     };
@@ -871,6 +876,7 @@ main(int argc, char *argv[])
         {"input-format",         required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"output-format",        required_argument,      0, OPT_OUTPUT_KEYMAP_FORMAT},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
+        {"no-pretty",            no_argument,            0, OPT_KEYMAP_NO_PRETTY},
         {"raw",                  no_argument,            0, OPT_RAW},
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
@@ -928,6 +934,9 @@ main(int argc, char *argv[])
                 exit(EXIT_INVALID_USAGE);
             }
             keymap_output_format = keymap_input_format;
+            break;
+        case OPT_KEYMAP_NO_PRETTY:
+            serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
             break;
         case OPT_RAW:
             dump_raw_keymap = true;
