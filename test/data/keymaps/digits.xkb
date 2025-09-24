@@ -1,0 +1,62 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<0>                  = 10;
+	<1>                  = 11;
+	<2>                  = 12;
+	<a>                  = 20;
+	<b>                  = 21;
+	<c>                  = 22;
+};
+
+xkb_types {
+	type "FOUR_LEVEL" {
+		modifiers= Shift+Control;
+		map[Shift]= 2;
+		map[Control]= 3;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret 0+AnyOfOrNone(all) {
+		action= LockGroup(group=2);
+	};
+	interpret 1+AnyOfOrNone(all) {
+		action= LockGroup(group=-1);
+	};
+	interpret 0x00000001+AnyOfOrNone(all) {
+		action= LockGroup(group=1);
+	};
+	interpret 2+AnyOfOrNone(all) {
+		action= LockGroup(group=-2);
+	};
+	interpret 0x00000002+AnyOfOrNone(all) {
+		action= LockGroup(group=2);
+	};
+	interpret 3+AnyOfOrNone(all) {
+		action= LockGroup(group=-3);
+	};
+	interpret 0x00000003+AnyOfOrNone(all) {
+		action= LockGroup(group=3);
+	};
+	interpret Any+AnyOfOrNone(all) {
+		action= LockGroup(group=4);
+	};
+};
+
+xkb_symbols {
+	key <0>                  {	[               0,        NoSymbol,        NoSymbol ] };
+	key <1>                  {	[               1,      0x00000001,      0x00000001 ] };
+	key <2>                  {	[               2,      0x00000002,      0x00000002 ] };
+	key <a>                  {	[               3,        NoSymbol,        NoSymbol ] };
+	key <b>                  {	[      0x00000004,        NoSymbol,        NoSymbol ] };
+	key <c>                  {	[      0x00000005,        NoSymbol,        NoSymbol ] };
+	modifier_map Shift { <0>, <a> };
+	modifier_map Lock { <b> };
+	modifier_map Control { <c> };
+};
+
+};

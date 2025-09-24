@@ -68,7 +68,7 @@ xkb_symbols {
 	key <c>                  {	[          U1F3BA ] };
 	key <CAPS>               {	[       Caps_Lock ] };
 	key <100>                {	[               C ] };
-	modifier_map Lock { <0>, <1>, <2>, <4>, <5>, <6>, <7>, <none>, <a>, <b>, <c>, <CAPS>, <100> };
+	modifier_map Lock { <0>, <1>, <4>, <5>, <6>, <7>, <none>, <a>, <b>, <c>, <CAPS>, <100> };
 };
 
 };

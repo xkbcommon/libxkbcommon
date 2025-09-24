@@ -142,10 +142,11 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         EXCLAM          54 "!"
         INVERT          55 "~"
         STRING          60 "string literal"
-        INTEGER         61 "integer literal"
-        FLOAT           62 "float literal"
-        IDENT           63 "identifier"
-        KEYNAME         64 "key name"
+        DECIMAL_DIGIT   61 "decimal digit"
+        INTEGER         62 "integer literal"
+        FLOAT           63 "float literal"
+        IDENT           64 "identifier"
+        KEYNAME         65 "key name"
         PARTIAL         70 "partial"
         DEFAULT         71 "default"
         HIDDEN          72 "hidden"
@@ -195,7 +196,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         struct { XkbFile *head; XkbFile *last; } fileList;
 }
 
-%type <num>     INTEGER FLOAT
+%type <num>     DECIMAL_DIGIT INTEGER FLOAT
 %type <str>     STRING
 %type <sval>    IDENT
 %type <atom>    KEYNAME
@@ -934,7 +935,16 @@ KeySymLit       :       IDENT
                         }
                         /* Handle keysym that is also a keyword  */
                 |       SECTION { $$ = XKB_KEY_section; }
-                |       Integer
+                |       DECIMAL_DIGIT
+                        {
+                            /*
+                             * Special case for digits 0..9:
+                             * map to XKB_KEY_0 .. XKB_KEY_9, consistent with
+                             * other keysym names: <name> → XKB_KEY_<name>.
+                             */
+                            $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
+                        }
+                |       INTEGER
                         {
                             if ($1 < XKB_KEYSYM_MIN) {
                                 /* Negative value */
@@ -949,11 +959,14 @@ KeySymLit       :       IDENT
                                 );
                                 $$ = XKB_KEY_NoSymbol;
                             }
-                            else if ($1 < 10) {
-                                /* Special case for digits 0..9:
-                                 * map to XKB_KEY_0 .. XKB_KEY_9 */
-                                $$ = XKB_KEY_0 + (xkb_keysym_t) $1;
-                            }
+                            /*
+                             * Integers 0..9 are handled with DECIMAL_DIGIT if
+                             * they were formatted as single characters '0'..'9'.
+                             * Otherwise they are handled here as raw keysyms
+                             * values. E.g. `01` and `0x1` are interpreted as
+                             * the keysym 0x0001, while `1` is interpreted as
+                             * XKB_KEY_1.
+                             */
                             else {
                                 /* Any other numeric value */
                                 if ($1 <= XKB_KEYSYM_MAX) {
@@ -988,17 +1001,20 @@ SignedNumber    :       MINUS Number    { $$ = -$2; }
                 |       Number          { $$ = $1; }
                 ;
 
-Number          :       FLOAT   { $$ = $1; }
-                |       INTEGER { $$ = $1; }
+Number          :       FLOAT         { $$ = $1; }
+                |       DECIMAL_DIGIT { $$ = $1; }
+                |       INTEGER       { $$ = $1; }
                 ;
 
 Float           :       FLOAT   { $$ = 0; }
                 ;
 
-Integer         :       INTEGER { $$ = $1; }
+Integer         :       INTEGER       { $$ = $1; }
+                |       DECIMAL_DIGIT { $$ = $1; }
                 ;
 
-KeyCode         :       INTEGER { $$ = $1; }
+KeyCode         :       INTEGER       { $$ = $1; }
+                |       DECIMAL_DIGIT { $$ = $1; }
                 ;
 
 Ident           :       IDENT   { $$ = xkb_atom_intern(param->ctx, $1.start, $1.len); }

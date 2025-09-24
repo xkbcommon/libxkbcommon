@@ -746,7 +746,53 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "  };\n"
                 "};",
             .expected = NULL
-        }
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <0> = 10;\n"
+                "    <1> = 11;\n"
+                "    <2> = 12;\n"
+                "    <a> = 20;\n"
+                "    <b> = 21;\n"
+                "    <c> = 22;\n"
+                "  };\n"
+                "  xkb_types {\n"
+                "    type \"FOUR_LEVEL\" {\n"
+                "      modifiers = Shift + Control;\n"
+                "      map[None] = 01;\n"
+                "      map[Shift] = 2;\n"
+                "      map[Control] = 3;\n"
+                "    };\n"
+                "  }\n;"
+                "  xkb_compat {\n"
+                "    interpret 0   { action = LockGroup(group=2); };\n"
+                "    interpret 00  { action = LockGroup(group=3); };\n"
+                "    interpret 0x0 { action = LockGroup(group=4); };\n"
+                "    interpret 1   { action = LockGroup(group=-1); };\n"
+                "    interpret 01  { action = LockGroup(group=1); };\n"
+                "    interpret 2   { action = LockGroup(group=-2); };\n"
+                "    interpret 02  { action = LockGroup(group=2); };\n"
+                "    interpret 3   { action = LockGroup(group=-3); };\n"
+                "    interpret 0x3 { action = LockGroup(group=3); };\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                /* Various numeric keysyms forms.
+                 * Single digits have a special interpretation in symbols */
+                "    key <0> { [ 0, 00, 0x0] };\n"
+                "    key <1> { [ 1, 01, 0x1] };\n"
+                "    key <2> { [ 2, 02, 0x2] };\n"
+                "    key <a> { [ 3   ] };\n"
+                "    key <b> { [ 04  ] };\n"
+                "    key <c> { [ 0x5 ] };\n"
+                "    modifier_map Shift   { 0,   3   };\n"
+                "    modifier_map Lock    { 00,  04  };\n"
+                "    modifier_map Control { 0x0, 0x5 };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "digits.xkb"
+        },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
