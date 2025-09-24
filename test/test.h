@@ -112,6 +112,16 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
                     const char *keymap_str, size_t keymap_len,
                     const char *rel_path, bool update_output_files);
 
+bool
+test_compile_output2(struct xkb_context *ctx,
+                     enum xkb_keymap_format input_format,
+                     enum xkb_keymap_format output_format,
+                     enum xkb_keymap_serialize_flags serialize_flags,
+                     test_compile_buffer_t compile_buffer,
+                     void *compile_buffer_private, const char *test_title,
+                     const char *keymap_str, size_t keymap_len,
+                     const char *rel_path, bool update_output_files);
+
 typedef int (*test_third_party_compile_buffer_t)(const char *buf, size_t len,
                                                  void *private,
                                                  char **out, size_t *size_out);

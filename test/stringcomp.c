@@ -32,7 +32,8 @@ test_explicit_actions(struct xkb_context *ctx)
     keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, original);
     free(original);
     assert(keymap);
-    got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    got = xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                    XKB_KEYMAP_SERIALIZE_PRETTY);
     xkb_keymap_unref(keymap);
     assert_streq_not_null("Check output from original", expected, got);
     free(got);
@@ -40,7 +41,8 @@ test_explicit_actions(struct xkb_context *ctx)
     /* Try round-trip */
     keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, expected);
     assert(keymap);
-    got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    got = xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                    XKB_KEYMAP_SERIALIZE_PRETTY);
     xkb_keymap_unref(keymap);
     assert_streq_not_null("Check roundtrip", expected, got);
     free(got);
@@ -87,24 +89,57 @@ main(int argc, char *argv[])
     static const struct {
         const char* path;
         enum xkb_keymap_format format;
+        enum xkb_keymap_serialize_flags serialize_flags;
     } data[] = {
         {
-            .path = "keymaps/stringcomp-v1.data",
-            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+            .path = "keymaps/stringcomp-v1.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
         },
         {
-            .path = "keymaps/stringcomp-v2.data",
-            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+            .path = "keymaps/stringcomp-v1-no-prettyfied.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS
+        },
+        {
+            .path = "keymaps/stringcomp-v2.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
         },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {
         char *original = test_read_file(data[k].path);
         assert(original);
-        assert(test_compile_output(ctx, data[k].format,
-                                XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                                compile_string, NULL, "Round-trip",
-                                original, 0 /* unused */, data[k].path,
-                                update_output_files));
+
+        /* Check round-trip with same serialize flags */
+        assert(test_compile_output2(ctx, data[k].format,
+                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                    data[k].serialize_flags,
+                                    compile_string, NULL,
+                                    "Round-trip with same serialize flags",
+                                    original, 0 /* unused */, data[k].path,
+                                    update_output_files));
+
+        /* Check pretty/no-pretty round-trip */
+        keymap = xkb_keymap_new_from_string(ctx, original, data[k].format,
+                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
+        assert(keymap);
+        free(original);
+        const enum xkb_keymap_serialize_flags serialize_flags =
+            (data[k].serialize_flags & XKB_KEYMAP_SERIALIZE_PRETTY)
+                ? (data[k].serialize_flags & ~XKB_KEYMAP_SERIALIZE_PRETTY)
+                : (data[k].serialize_flags |  XKB_KEYMAP_SERIALIZE_PRETTY);
+        original = xkb_keymap_get_as_string2(keymap, data[k].format,
+                                             serialize_flags);
+        assert(original);
+        xkb_keymap_unref(keymap);
+        assert(test_compile_output2(ctx, data[k].format,
+                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                    data[k].serialize_flags,
+                                    compile_string, NULL,
+                                    "Round-trip with different serialize flags",
+                                    original, 0 /* unused */, data[k].path,
+                                    update_output_files));
         free(original);
     }
 
@@ -112,13 +147,15 @@ main(int argc, char *argv[])
     keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, NULL,
                                 NULL, "ru,ca,de,us", ",multix,neo,intl", NULL);
     assert(keymap);
-    dump = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    dump = xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                     XKB_KEYMAP_SERIALIZE_PRETTY);
     assert(dump);
     xkb_keymap_unref(keymap);
     keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, dump);
     assert(keymap);
     /* Now test that the dump of the dump is equal to the dump! */
-    dump2 = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    dump2 = xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                      XKB_KEYMAP_SERIALIZE_PRETTY);
     assert(dump2);
     assert(streq(dump, dump2));
 
@@ -129,8 +166,10 @@ main(int argc, char *argv[])
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V2+1, 0));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, -1));
     assert(!xkb_keymap_new_from_string(ctx, dump, XKB_KEYMAP_FORMAT_TEXT_V1, 1414));
-    assert(!xkb_keymap_get_as_string(keymap, 0));
-    assert(!xkb_keymap_get_as_string(keymap, 4893));
+    assert(!xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT, -1));
+    assert(!xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT, 3333));
+    assert(!xkb_keymap_get_as_string2(keymap, 0, XKB_KEYMAP_SERIALIZE_PRETTY));
+    assert(!xkb_keymap_get_as_string2(keymap, 4893, XKB_KEYMAP_SERIALIZE_PRETTY));
 
     xkb_keymap_unref(keymap);
     free(dump);

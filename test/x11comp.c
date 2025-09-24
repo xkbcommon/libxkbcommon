@@ -257,6 +257,7 @@ static int
 test_keymap_roundtrip(struct xkb_context *ctx,
                       const char* display, xcb_connection_t *conn,
                       int32_t device_id, bool print_keymap, bool tweak,
+                      enum xkb_keymap_serialize_flags serialize_flags,
                       const char *keymap_path)
 {
     /* Get raw keymap */
@@ -313,7 +314,8 @@ test_keymap_roundtrip(struct xkb_context *ctx,
     }
 
     /* Dump keymap and compare to expected */
-    char *got = xkb_keymap_get_as_string(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT);
+    char *got = xkb_keymap_get_as_string2(keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                          serialize_flags);
     if (!got) {
         ret = EXIT_FAILURE;
         fprintf(stderr, "ERROR: Failed to dump keymap.\n");
@@ -385,12 +387,32 @@ X11_TEST(test_basic)
     struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
-    char *keymap_path = test_get_path("keymaps/host.xkb");
-    assert(keymap_path);
-    ret = test_keymap_roundtrip(ctx, display, conn, device_id,
-                                false, false, keymap_path);
-    free(keymap_path);
-    assert(ret == EXIT_SUCCESS);
+    static const struct {
+        const char *path;
+        enum xkb_keymap_serialize_flags serialize_flags;
+    } keymaps[] = {
+        {
+            .path = "keymaps/host-no-pretty.xkb",
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS
+        },
+        /* This last keymap will be used for the next tests */
+        {
+            .path = "keymaps/host.xkb",
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
+        },
+    };
+    for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, k);
+        char *keymap_path = test_get_path(keymaps[k].path);
+        assert(keymap_path);
+
+        ret = test_keymap_roundtrip(ctx, display, conn, device_id,
+                                    false, false, keymaps[k].serialize_flags,
+                                    keymap_path);
+        assert(ret == EXIT_SUCCESS);
+
+        free(keymap_path);
+    }
 
     struct xkb_keymap *keymap =
         xkb_x11_keymap_new_from_device(ctx, conn, device_id,
@@ -430,6 +452,7 @@ err_xcb:
 struct xkbcomp_roundtrip_data {
     const char *path;
     bool tweak_comments;
+    enum xkb_keymap_serialize_flags serialize_flags;
 };
 
 static int
@@ -451,7 +474,8 @@ xkbcomp_roundtrip(const char *display, void *private) {
     }
 
     ret = test_keymap_roundtrip(ctx, display, conn, device_id, true,
-                                priv->tweak_comments, priv->path);
+                                priv->tweak_comments, priv->serialize_flags,
+                                priv->path);
 
     xkb_context_unref(ctx);
 error_context:
@@ -465,7 +489,7 @@ usage(FILE *fp, char *progname)
 {
     fprintf(fp,
             "Usage: %s [--update] [--update-obtained] "
-            "[--keymap KEYMAP_FILE] [--tweak] [--help]\n",
+            "[--keymap KEYMAP_FILE] [--tweak] [--no-pretty] [--help]\n",
             progname);
 }
 
@@ -478,6 +502,7 @@ main(int argc, char **argv) {
         OPT_UPDATE_GOLDEN_TEST_WITH_INPUT,
         OPT_FILE,
         OPT_TWEAK_COMMENTS,
+        OPT_NO_PRETTY,
     };
     static struct option opts[] = {
         {"help",            no_argument,       0, 'h'},
@@ -485,11 +510,14 @@ main(int argc, char **argv) {
         {"update",          no_argument,       0, OPT_UPDATE_GOLDEN_TEST_WITH_INPUT},
         {"keymap",          required_argument, 0, OPT_FILE},
         {"tweak",           no_argument,       0, OPT_TWEAK_COMMENTS},
+        {"no-pretty",       no_argument,       0, OPT_NO_PRETTY},
         {0, 0, 0, 0},
     };
 
     bool tweak_comments = false;
     const char *path = NULL;
+    enum xkb_keymap_serialize_flags serialize_flags =
+        (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 
     while (1) {
         int opt;
@@ -512,6 +540,9 @@ main(int argc, char **argv) {
         case OPT_TWEAK_COMMENTS:
             tweak_comments = optarg;
             break;
+        case OPT_NO_PRETTY:
+            serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
+            break;
         case 'h':
             usage(stdout, argv[0]);
             return EXIT_SUCCESS;
@@ -533,7 +564,8 @@ main(int argc, char **argv) {
     } else {
         struct xkbcomp_roundtrip_data priv = {
             .path = path,
-            .tweak_comments = tweak_comments
+            .tweak_comments = tweak_comments,
+            .serialize_flags = serialize_flags
         };
         return xvfb_wrapper(xkbcomp_roundtrip, &priv);
     }

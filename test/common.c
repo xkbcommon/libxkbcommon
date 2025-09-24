@@ -668,6 +668,23 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
                     const char *keymap_str, size_t keymap_len,
                     const char *rel_path, bool update_output_files)
 {
+    return test_compile_output2(ctx, input_format, output_format,
+                                XKB_KEYMAP_SERIALIZE_PRETTY,
+                                compile_buffer, compile_buffer_private,
+                                test_title, keymap_str, keymap_len, rel_path,
+                                update_output_files);
+}
+
+bool
+test_compile_output2(struct xkb_context *ctx,
+                     enum xkb_keymap_format input_format,
+                     enum xkb_keymap_format output_format,
+                     enum xkb_keymap_serialize_flags serialize_flags,
+                     test_compile_buffer_t compile_buffer,
+                     void *compile_buffer_private, const char *test_title,
+                     const char *keymap_str, size_t keymap_len,
+                     const char *rel_path, bool update_output_files)
+{
     int success = true;
     fprintf(stderr, "*** %s ***\n", test_title);
 
@@ -678,7 +695,8 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
     if (!rel_path) {
         /* No path given: expect compilation failure */
         if (keymap) {
-            char *got = xkb_keymap_get_as_string(keymap, output_format);
+            char *got = xkb_keymap_get_as_string2(keymap, output_format,
+                                                  serialize_flags);
             xkb_keymap_unref(keymap);
             assert(got);
             fprintf(stderr,
@@ -693,7 +711,8 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
         return false;
     }
 
-    char *got = xkb_keymap_get_as_string(keymap, output_format);
+    char *got = xkb_keymap_get_as_string2(keymap, output_format,
+                                          serialize_flags);
     if (!got) {
         fprintf(stderr, "Unexpected keymap serialization failure\n");
         return false;
@@ -734,7 +753,8 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
                     break;
                 }
                 free(got);
-                got = xkb_keymap_get_as_string(keymap, output_format);
+                got = xkb_keymap_get_as_string2(keymap, output_format,
+                                                serialize_flags);
                 if (!got) {
                     fprintf(stderr,
                             "Unexpected keymap roundtrip serialization failure\n");

@@ -13,7 +13,7 @@
 
 X11_TEST(test_basic)
 {
-    struct xkb_context *ctx = test_get_context(0);
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     xcb_connection_t *conn;
     int ret;
     int32_t device_id;
@@ -23,10 +23,10 @@ X11_TEST(test_basic)
     int exit_code = EXIT_SUCCESS;
 
     /*
-    * The next two steps depend on a running X server with XKB support.
-    * If it fails, it's not necessarily an actual problem with the code.
-    * So we don't want a FAIL here.
-    */
+     * The next two steps depend on a running X server with XKB support.
+     * If it fails, it's not necessarily an actual problem with the code.
+     * So we don't want a FAIL here.
+     */
     conn = xcb_connect(display, NULL);
     if (!conn || xcb_connection_has_error(conn)) {
         exit_code = TEST_SETUP_FAILURE;
