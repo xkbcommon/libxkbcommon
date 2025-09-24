@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "scanner-utils.h"
@@ -30,12 +31,16 @@ number(struct scanner *s, int64_t *out, int *out_tok)
         }
     }
     else {
+        bool is_digit = false;
         switch (scanner_dec_int64(s, out)) {
         case -1:
             *out_tok = ERROR_TOK;
             return true;
         case 0:
             return false;
+        case 1:
+            is_digit = true;
+            break;
         default:
             ;
         }
@@ -56,6 +61,8 @@ number(struct scanner *s, int64_t *out, int *out_tok)
                 return true;
             }
             *out_tok = FLOAT;
+        } else if (is_digit) {
+            *out_tok = DECIMAL_DIGIT;
         } else {
             *out_tok = INTEGER;
         }
