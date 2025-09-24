@@ -2319,14 +2319,22 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
     static const struct {
         const char* path;
         enum xkb_keymap_format format;
+        enum xkb_keymap_serialize_flags serialize_flags;
     } data[] = {
         {
-            .path = "keymaps/stringcomp-v1.data",
-            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+            .path = "keymaps/stringcomp-v1.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
         },
         {
-            .path = "keymaps/stringcomp-v2.data",
-            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+            .path = "keymaps/stringcomp-v1-no-prettyfied.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS
+        },
+        {
+            .path = "keymaps/stringcomp-v2.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
         },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {
@@ -2334,11 +2342,12 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
         assert(original);
         /* Load a prebuild keymap, once without, once with the trailing \0 */
         for (unsigned int i = 0; i <= 1; i++) {
-            assert(test_compile_output(ctx, data[k].format,
-                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                                    compile_buffer, NULL, "Round-trip",
-                                    original, strlen(original) + i, data[k].path,
-                                    update_output_files));
+            assert(test_compile_output2(ctx, data[k].format,
+                                        XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                        data[k].serialize_flags,
+                                        compile_buffer, NULL, "Round-trip",
+                                        original, strlen(original) + i,
+                                        data[k].path, update_output_files));
         }
         free(original);
     }

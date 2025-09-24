@@ -1335,6 +1335,8 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 enum xkb_keymap_serialize_flags {
     /** Do not apply any flags. */
     XKB_KEYMAP_SERIALIZE_NO_FLAGS = 0,
+    /** Enable pretty-printing */
+    XKB_KEYMAP_SERIALIZE_PRETTY = (1 << 0),
 };
 
 /**

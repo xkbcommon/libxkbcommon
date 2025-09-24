@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
 #include "action.h"
@@ -255,7 +256,7 @@ write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
+write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
 {
     const struct xkb_key *key;
     xkb_led_index_t idx;
@@ -278,8 +279,11 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
         if (key->name == XKB_ATOM_NONE)
             continue;
 
-        write_buf(buf, "\t%-20s = %"PRIu32";\n",
-                  KeyNameText(keymap->ctx, key->name), key->keycode);
+        if (pretty)
+            write_buf(buf, "\t%-20s", KeyNameText(keymap->ctx, key->name));
+        else
+            write_buf(buf, "\t%s", KeyNameText(keymap->ctx, key->name));
+        write_buf(buf, " = %"PRIu32";\n", key->keycode);
     }
 
     xkb_leds_enumerate(idx, led, keymap)
@@ -289,11 +293,16 @@ write_keycodes(struct xkb_keymap *keymap, struct buf *buf)
             copy_to_buf(buf, ";\n");
         }
 
-
-    for (darray_size_t i = 0; i < keymap->num_key_aliases; i++)
-        write_buf(buf, "\talias %-14s = %s;\n",
-                  KeyNameText(keymap->ctx, keymap->key_aliases[i].alias),
+    for (darray_size_t i = 0; i < keymap->num_key_aliases; i++) {
+        if (pretty)
+            write_buf(buf, "\talias %-14s",
+                      KeyNameText(keymap->ctx, keymap->key_aliases[i].alias));
+        else
+            write_buf(buf, "\talias %s",
+                      KeyNameText(keymap->ctx, keymap->key_aliases[i].alias));
+        write_buf(buf, " = %s;\n",
                   KeyNameText(keymap->ctx, keymap->key_aliases[i].real));
+    }
 
     copy_to_buf(buf, "};\n\n");
     return true;
@@ -659,7 +668,7 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             xkb_layout_index_t max_groups, struct buf *buf)
+             xkb_layout_index_t max_groups, bool pretty, struct buf *buf)
 {
     const struct xkb_led *led;
 
@@ -687,10 +696,16 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     for (darray_size_t i = 0; i < num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &sym_interprets[i];
 
-        write_buf(buf, "\tinterpret %s+%s(%s) {",
-                  si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
-                  SIMatchText(si->match),
-                  ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, si->mods));
+        if (pretty || !si->sym) {
+            write_buf(buf, "\tinterpret %s+%s(%s) {",
+                      si->sym ? KeysymText(keymap->ctx, si->sym) : "Any",
+                      SIMatchText(si->match),
+                      ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, si->mods));
+        } else {
+            write_buf(buf, "\tinterpret 0x%"PRIx32"+%s(%s) {",
+                      si->sym, SIMatchText(si->match),
+                      ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, si->mods));
+        }
 
         bool has_explicit_properties = false;
 
@@ -763,9 +778,11 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 static bool
 write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group,
-              bool show_actions)
+              bool pretty, bool show_actions)
 {
-    unsigned int padding = show_actions ? ACTION_PADDING : SYMBOL_PADDING;
+    const unsigned int padding = (pretty)
+        ? ((show_actions) ? ACTION_PADDING : SYMBOL_PADDING)
+        : 0;
     for (xkb_level_index_t level = 0; level < XkbKeyNumLevels(key, group);
          level++) {
         const xkb_keysym_t *syms;
@@ -776,23 +793,47 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
         num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
                                                     group, level, &syms);
+
+        const xkb_keysym_t no_symbol = XKB_KEY_NoSymbol;
         if (num_syms == 0) {
-            write_buf(buf, "%*s", padding, "NoSymbol");
+            num_syms = 1;
+            syms = &no_symbol;
         }
-        else if (num_syms == 1) {
-            write_buf(buf, "%*s", padding, KeysymText(keymap->ctx, syms[0]));
-        }
-        else {
-            buf2->size = 0;
-            copy_to_buf(buf2, "{ ");
-            for (int s = 0; s < num_syms; s++) {
-                if (s != 0)
-                    copy_to_buf(buf2, ", ");
-                write_buf(buf2, "%*s", (show_actions ? padding : 0),
-                          KeysymText(keymap->ctx, syms[s]));
+
+        /*
+         * NOTE: Use `NoSymbol` even without pretty output, for compatibility
+         * with xkbcomp and libxkbcommon < 1.12
+         */
+
+        if (num_syms == 1) {
+            if (pretty || syms[0] == XKB_KEY_NoSymbol)
+                write_buf(buf, "%*s", padding, KeysymText(keymap->ctx, syms[0]));
+            else
+                write_buf(buf, "0x%"PRIx32, syms[0]);
+        } else {
+            if (pretty) {
+                buf2->size = 0;
+                copy_to_buf(buf2, "{ ");
+                for (int s = 0; s < num_syms; s++) {
+                    if (s != 0)
+                        copy_to_buf(buf2, ", ");
+                    write_buf(buf2, "%*s", (show_actions ? padding : 0),
+                              KeysymText(keymap->ctx, syms[s]));
+                }
+                copy_to_buf(buf2, " }");
+                write_buf(buf, "%*s", padding, buf2->buf);
+            } else {
+                copy_to_buf(buf, "{");
+                for (int s = 0; s < num_syms; s++) {
+                    if (s != 0)
+                        copy_to_buf(buf, ",");
+                    if (syms[s] == XKB_KEY_NoSymbol)
+                        copy_to_buf(buf, "NoSymbol");
+                    else
+                        write_buf(buf, "0x%"PRIx32, syms[s]);
+                }
+                copy_to_buf(buf, "}");
             }
-            copy_to_buf(buf2, " }");
-            write_buf(buf, "%*s", padding, buf2->buf);
         }
     }
 
@@ -801,13 +842,16 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
 static bool
 write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-          xkb_layout_index_t max_groups,
+          xkb_layout_index_t max_groups, bool pretty,
           struct buf *buf, struct buf *buf2, const struct xkb_key *key)
 {
     bool simple = true;
     const xkb_layout_index_t num_groups = MIN(key->num_groups, max_groups);
 
-    write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
+    if (pretty)
+        write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
+    else
+        write_buf(buf, "\tkey %s {", KeyNameText(keymap->ctx, key->name));
 
     if (key->explicit & EXPLICIT_TYPES) {
         simple = false;
@@ -898,7 +942,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 	        if (!only_symbols)
 	            copy_to_buf(buf, "\n\t");
             copy_to_buf(buf, "\t[ ");
-            if (!write_keysyms(keymap, buf, buf2, key, 0, false))
+            if (!write_keysyms(keymap, buf, buf2, key, 0, pretty, false))
                 return false;
             copy_to_buf(buf, " ]");
         }
@@ -910,7 +954,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             if (group != 0)
                 copy_to_buf(buf, ",");
             write_buf(buf, "\n\t\tsymbols[%"PRIu32"]= [ ", group + 1);
-            if (!write_keysyms(keymap, buf, buf2, key, group, show_actions))
+            if (!write_keysyms(keymap, buf, buf2, key, group, pretty, show_actions))
                 return false;
             copy_to_buf(buf, " ]");
             if (show_actions) {
@@ -929,7 +973,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-              xkb_layout_index_t max_groups, struct buf *buf)
+              xkb_layout_index_t max_groups, bool pretty, struct buf *buf)
 {
 
     if (keymap->symbols_section_name)
@@ -956,7 +1000,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
         if (key->explicit) {
-            if (!write_key(keymap, format, max_groups, buf, &buf2, key)) {
+            if (!write_key(keymap, format, max_groups, pretty, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
             }
@@ -999,11 +1043,13 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                 keymap->num_groups, format, max_groups);
     }
 
+    const bool pretty = !!(flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+
     return (check_write_buf(buf, "xkb_keymap {\n") &&
-            write_keycodes(keymap, buf) &&
+            write_keycodes(keymap, pretty, buf) &&
             write_types(keymap, format, buf) &&
-            write_compat(keymap, format, max_groups, buf) &&
-            write_symbols(keymap, format, max_groups, buf) &&
+            write_compat(keymap, format, max_groups, pretty, buf) &&
+            write_symbols(keymap, format, max_groups, pretty, buf) &&
             check_write_buf(buf, "};\n"));
 }
 

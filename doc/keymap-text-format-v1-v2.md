@@ -671,11 +671,22 @@ Examples:
 
 A keysym can be written directly with its *numeric* value: e.g. `0x61` is `a`.
 
+This syntax is mostly useful in the following use cases:
+- the corresponding keysym has no associated name nor is in the Unicode range;
+- the corresponding keysym has/had a name but it is not supported in all the
+  ecosystem;
+- keymap serialization by tools.
+
 @note Digits `0 .. 9` have a special treatment because they are interpreted as
 names, not values. E.g. `1` is the keysym with name `1` and value `0x31`.
 
-@warning This syntax should be avoided for its poor readability, except if it
-is not possible to write the keysym with the previous syntaxes.
+@note The previous special case does not apply to integers values in range
+`0 .. 9` that are written with *2+* characters: e.g. `01` and `0x1` are both
+interpreted as the *unnamed* keysym with value `0x01`, not the keysym named `1`
+and with value `0x31`.
+
+@warning Do not use this syntax to *manually* write keymap files unless there is
+no other option: it is the least human-friendly syntax.
 </dd>
 </dl>
 
