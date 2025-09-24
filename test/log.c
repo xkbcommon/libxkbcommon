@@ -123,7 +123,7 @@ test_keymaps(void)
     xkb_context_set_log_fn(ctx, log_fn);
 
     xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_WARNING);
-    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_VERBOSE);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_COMPREHENSIVE);
 
     const struct test_data keymaps[] = {
         {

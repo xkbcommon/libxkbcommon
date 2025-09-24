@@ -41,6 +41,9 @@ struct parser_param {
 #define parser_warn(param, warning_id, fmt, ...) \
     scanner_warn((param)->scanner, warning_id, fmt, ##__VA_ARGS__)
 
+#define parser_vrb(param, verbosity, warning_id, fmt, ...) \
+    scanner_vrb((param)->scanner, verbosity, warning_id, fmt, ##__VA_ARGS__)
+
 static void
 _xkbcommon_error(struct parser_param *param, const char *msg)
 {
@@ -988,8 +991,15 @@ KeySymLit       :       IDENT
                                     );
                                     $$ = XKB_KEY_NoSymbol;
                                 }
-                                parser_warn(
-                                    param, XKB_WARNING_NUMERIC_KEYSYM,
+                                parser_vrb(
+                                    /*
+                                     * Require an extra high verbosity, because
+                                     * keysyms are formatted as number unless
+                                     * enabling pretty-pretting for the
+                                     * serialization.
+                                     */
+                                    param, XKB_LOG_VERBOSITY_COMPREHENSIVE,
+                                    XKB_WARNING_NUMERIC_KEYSYM,
                                     "numeric keysym \"%#06"PRIx64"\" (%"PRId64")",
                                     $1, $1
                                 );
