@@ -43,6 +43,8 @@ usage(FILE *fp, char **argv)
            " --output-format <format>\n"
            "    The keymap format to use for serializing (default: %d)\n"
 #endif
+           " --pretty\n"
+           "    Enable pretty-printing in keymap serialization\n"
            " --keymap\n"
            "    Load the corresponding XKB file, ignore RMLVO options.\n"
            " --rules <rules>\n"
@@ -98,6 +100,7 @@ main(int argc, char **argv)
 #ifdef KEYMAP_DUMP
     enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 #endif
+    enum xkb_keymap_serialize_flags serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS;
     bool explicit_iterations = false;
     int ret = 0;
     char *keymap_path = NULL;
@@ -116,6 +119,7 @@ main(int argc, char **argv)
     enum options {
         OPT_KEYMAP_INPUT_FORMAT,
         OPT_KEYMAP_OUTPUT_FORMAT,
+        OPT_KEYMAP_PRETTY,
         OPT_KEYMAP,
         OPT_RULES,
         OPT_MODEL,
@@ -132,6 +136,7 @@ main(int argc, char **argv)
 #ifdef KEYMAP_DUMP
         {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
 #endif
+        {"pretty",           no_argument,            0, OPT_KEYMAP_PRETTY},
         {"keymap",           required_argument,      0, OPT_KEYMAP},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
@@ -172,6 +177,9 @@ main(int argc, char **argv)
             }
             break;
 #endif
+        case OPT_KEYMAP_PRETTY:
+            serialize_flags |= XKB_KEYMAP_SERIALIZE_PRETTY;
+            break;
         case OPT_KEYMAP:
             keymap_path = optarg;
             break;
@@ -269,8 +277,8 @@ main(int argc, char **argv)
          * This has the caveat that the benchmarked input is different from the
          * original KcCGST files.
          */
-        keymap_str = xkb_keymap_get_as_string(
-            keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT
+        keymap_str = xkb_keymap_get_as_string2(
+            keymap, XKB_KEYMAP_USE_ORIGINAL_FORMAT, serialize_flags
         );
         if (!keymap_str) {
             fprintf(stderr, "ERROR: cannot serialize keymap\n");
@@ -307,7 +315,8 @@ main(int argc, char **argv)
         bench_start2(&bench);
         for (unsigned int i = 0; i < max_iterations; i++) {
 #ifdef KEYMAP_DUMP
-            char *s = xkb_keymap_get_as_string(keymap, keymap_output_format);
+            char *s = xkb_keymap_get_as_string2(keymap, keymap_output_format,
+                                                serialize_flags);
             assert(s);
             free(s);
 #else
@@ -328,7 +337,8 @@ main(int argc, char **argv)
         bench_start2(&bench);
 #ifdef KEYMAP_DUMP
         BENCH(stdev, max_iterations, elapsed, est,
-            char *s = xkb_keymap_get_as_string(keymap, keymap_output_format);
+            char *s = xkb_keymap_get_as_string2(keymap, keymap_output_format,
+                                                serialize_flags);
             assert(s);
             free(s);
         );

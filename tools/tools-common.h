@@ -19,6 +19,10 @@
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
+enum {
+    DEFAULT_KEYMAP_SERIALIZE_FLAGS = XKB_KEYMAP_SERIALIZE_PRETTY
+};
+
 /* Fields that are printed in the interactive tools. */
 enum print_state_options {
     PRINT_LAYOUT = (1u << 0),
