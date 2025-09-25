@@ -285,15 +285,8 @@ test_get_path(const char *path_rel)
 }
 
 char *
-test_read_file(const char *path_rel)
+read_file(const char *path, FILE *file)
 {
-    char *path = test_get_path(path_rel);
-    if (!path)
-        return NULL;
-
-    FILE* file = fopen(path, "rb");
-    free(path);
-
     if (!file)
         return NULL;
 
@@ -317,16 +310,37 @@ test_read_file(const char *path_rel)
     const size_t count = fread(ret, sizeof(*ret), size, file);
     if (count != size) {
         if (!feof(file))
-            printf("Error reading file %s: unexpected end of file\n", path_rel);
+            printf("Error reading file %s: unexpected end of file\n", path);
         else if (ferror(file))
             perror("Error reading file");
         fclose(file);
         free(ret);
         return NULL;
     }
-    fclose(file);
     ret[count] = '\0';
 
+    return ret;
+}
+
+char *
+test_read_file(const char *path_rel)
+{
+    char *path = test_get_path(path_rel);
+    if (!path)
+        return NULL;
+
+    FILE* file = fopen(path, "rb");
+    char *ret = NULL;
+
+    if (!file)
+        goto out;
+
+    ret = read_file(path, file);
+
+out:
+    if (file)
+        fclose(file);
+    free(path);
     return ret;
 }
 

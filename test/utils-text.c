@@ -68,7 +68,7 @@ strip_lines(const char *input, size_t input_length, const char *prefix)
     }
 
     darray_append(buf, '\0');
-    return buf.item;
+    return darray_items(buf);
 }
 
 char *
@@ -104,7 +104,7 @@ uncomment(const char *input, size_t input_length, const char *prefix)
     }
 
     darray_append(buf, '\0');
-    return buf.item;
+    return darray_items(buf);
 }
 
 /* Split string into lines */

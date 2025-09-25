@@ -74,6 +74,9 @@ char *
 test_get_path(const char *path_rel);
 
 char *
+read_file(const char *path, FILE *file);
+
+char *
 test_read_file(const char *path_rel);
 
 enum test_context_flags {
