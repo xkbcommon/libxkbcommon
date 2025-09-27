@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
-#include "messages-codes.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "messages-codes.h"
 #include "text.h"
 #include "expr.h"
 #include "keysym.h"
@@ -378,8 +379,15 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
-                 const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+                 xkb_layout_index_t num_groups, const ExprDef *expr,
+                 xkb_layout_index_t *group_rtrn)
 {
+    const LookupEntry groupNames[] = {
+        { "First", 1 },
+        /* This entry is active only if using the RMLVO API */
+        { num_groups ? "Last" : NULL, num_groups /* 1-indexed */ },
+        { NULL, 0 },
+    };
     const struct named_integer_pattern group_name_pattern = {
         /* Prefix is title-cased, because it is also used in error messages */
         .prefix = "Group",
@@ -387,7 +395,7 @@ ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
         .min = 1,
         .max = max_groups,
         .is_mask = false,
-        .entries = NULL,
+        .entries = groupNames,
         .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
     };
     int64_t result = 0;
@@ -702,8 +710,20 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
 
 bool
 ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
-                     const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+                     xkb_layout_index_t num_groups, const ExprDef *expr,
+                     xkb_layout_index_t *group_rtrn)
 {
+    const LookupEntry groupMaskNames[] = {
+        { "none", 0x00 },
+        { "all", XKB_ALL_GROUPS },
+        { "first", 0x01 },
+        /* This entry is active only if using the RMLVO API */
+        {
+            num_groups ? "last" : NULL,
+            num_groups ? (UINT32_C(1) << (num_groups - 1)) : 0
+        },
+        { NULL, 0 }
+    };
     const struct named_integer_pattern group_name_pattern = {
         /* Prefix is title-cased, because it is also used in error messages */
         .prefix = "Group",
