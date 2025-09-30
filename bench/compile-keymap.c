@@ -45,6 +45,8 @@ usage(FILE *fp, char **argv)
 #endif
            " --pretty\n"
            "    Enable pretty-printing in keymap serialization\n"
+           " --keep-unused\n"
+           "    Keep unused bits in keymap serialization\n"
            " --keymap\n"
            "    Load the corresponding XKB file, ignore RMLVO options.\n"
            " --rules <rules>\n"
@@ -120,6 +122,7 @@ main(int argc, char **argv)
         OPT_KEYMAP_INPUT_FORMAT,
         OPT_KEYMAP_OUTPUT_FORMAT,
         OPT_KEYMAP_PRETTY,
+        OPT_KEYMAP_KEEP_UNUSED,
         OPT_KEYMAP,
         OPT_RULES,
         OPT_MODEL,
@@ -137,6 +140,7 @@ main(int argc, char **argv)
         {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
 #endif
         {"pretty",           no_argument,            0, OPT_KEYMAP_PRETTY},
+        {"keep-unused",      no_argument,            0, OPT_KEYMAP_KEEP_UNUSED},
         {"keymap",           required_argument,      0, OPT_KEYMAP},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
@@ -179,6 +183,9 @@ main(int argc, char **argv)
 #endif
         case OPT_KEYMAP_PRETTY:
             serialize_flags |= XKB_KEYMAP_SERIALIZE_PRETTY;
+            break;
+        case OPT_KEYMAP_KEEP_UNUSED:
+            serialize_flags |= XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
         case OPT_KEYMAP:
             keymap_path = optarg;
