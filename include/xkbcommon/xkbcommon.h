@@ -1328,7 +1328,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 #define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
 
 /**
- * Flags for keymap serialization.
+ * Flags to control keymap serialization.
  *
  * @since 1.12.0
  */
@@ -1337,6 +1337,8 @@ enum xkb_keymap_serialize_flags {
     XKB_KEYMAP_SERIALIZE_NO_FLAGS = 0,
     /** Enable pretty-printing */
     XKB_KEYMAP_SERIALIZE_PRETTY = (1 << 0),
+    /** Do not drop unused bits (key types, compatibility entries) */
+    XKB_KEYMAP_SERIALIZE_KEEP_UNUSED = (1 << 1),
 };
 
 /**
@@ -1344,6 +1346,9 @@ enum xkb_keymap_serialize_flags {
  *
  * Same as `xkb_keymap::xkb_keymap_get_as_string2()` using
  * `::XKB_KEYMAP_SERIALIZE_NO_FLAGS`.
+ *
+ * @since 1.12.0: Drop unused types and compatibility entries and do not
+ * pretty-print.
  *
  * @sa `xkb_keymap::xkb_keymap_get_as_string2()`
  * @memberof xkb_keymap
@@ -1360,19 +1365,21 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  * in the special value `::XKB_KEYMAP_USE_ORIGINAL_FORMAT` to use the format
  * from which the keymap was originally created. When used as an *interchange*
  * format such as Wayland <code>[xkb_v1]</code>, the format should be explicit.
- * @param flags  Optional flags for the serialization, or 0.
+ * @param flags  Optional flags to control the serialization, or 0.
  *
  * @returns The keymap as a `NULL`-terminated string, or `NULL` if unsuccessful.
  *
- * The returned string may be fed back into `xkb_keymap_new_from_string()` to
- * get the exact same keymap (possibly in another process, etc.).
+ * The returned string may be fed back into `xkb_keymap_new_from_string()`
+ * to get the exact same keymap (possibly in another process, etc.).
  *
  * The returned string is *dynamically allocated* and should be freed by the
  * caller.
  *
- * @memberof xkb_keymap
- *
  * @since 1.12.0
+ *
+ * @sa `xkb_keymap_get_as_string()`
+ * @sa `xkb_keymap_new_from_string()`
+ * @memberof xkb_keymap
  *
  * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
  */

@@ -1,0 +1,1527 @@
+xkb_keymap {
+xkb_keycodes "evdev_aliases(qwerty)" {
+	minimum = 8;
+	maximum = 255;
+	<ESC> = 9;
+	<AE01> = 10;
+	<AE02> = 11;
+	<AE03> = 12;
+	<AE04> = 13;
+	<AE05> = 14;
+	<AE06> = 15;
+	<AE07> = 16;
+	<AE08> = 17;
+	<AE09> = 18;
+	<AE10> = 19;
+	<AE11> = 20;
+	<AE12> = 21;
+	<BKSP> = 22;
+	<TAB> = 23;
+	<AD01> = 24;
+	<AD02> = 25;
+	<AD03> = 26;
+	<AD04> = 27;
+	<AD05> = 28;
+	<AD06> = 29;
+	<AD07> = 30;
+	<AD08> = 31;
+	<AD09> = 32;
+	<AD10> = 33;
+	<AD11> = 34;
+	<AD12> = 35;
+	<RTRN> = 36;
+	<LCTL> = 37;
+	<AC01> = 38;
+	<AC02> = 39;
+	<AC03> = 40;
+	<AC04> = 41;
+	<AC05> = 42;
+	<AC06> = 43;
+	<AC07> = 44;
+	<AC08> = 45;
+	<AC09> = 46;
+	<AC10> = 47;
+	<AC11> = 48;
+	<TLDE> = 49;
+	<LFSH> = 50;
+	<BKSL> = 51;
+	<AB01> = 52;
+	<AB02> = 53;
+	<AB03> = 54;
+	<AB04> = 55;
+	<AB05> = 56;
+	<AB06> = 57;
+	<AB07> = 58;
+	<AB08> = 59;
+	<AB09> = 60;
+	<AB10> = 61;
+	<RTSH> = 62;
+	<KPMU> = 63;
+	<LALT> = 64;
+	<SPCE> = 65;
+	<CAPS> = 66;
+	<FK01> = 67;
+	<FK02> = 68;
+	<FK03> = 69;
+	<FK04> = 70;
+	<FK05> = 71;
+	<FK06> = 72;
+	<FK07> = 73;
+	<FK08> = 74;
+	<FK09> = 75;
+	<FK10> = 76;
+	<NMLK> = 77;
+	<SCLK> = 78;
+	<KP7> = 79;
+	<KP8> = 80;
+	<KP9> = 81;
+	<KPSU> = 82;
+	<KP4> = 83;
+	<KP5> = 84;
+	<KP6> = 85;
+	<KPAD> = 86;
+	<KP1> = 87;
+	<KP2> = 88;
+	<KP3> = 89;
+	<KP0> = 90;
+	<KPDL> = 91;
+	<LVL3> = 92;
+	<LSGT> = 94;
+	<FK11> = 95;
+	<FK12> = 96;
+	<AB11> = 97;
+	<KATA> = 98;
+	<HIRA> = 99;
+	<HENK> = 100;
+	<HKTG> = 101;
+	<MUHE> = 102;
+	<JPCM> = 103;
+	<KPEN> = 104;
+	<RCTL> = 105;
+	<KPDV> = 106;
+	<PRSC> = 107;
+	<RALT> = 108;
+	<LNFD> = 109;
+	<HOME> = 110;
+	<UP> = 111;
+	<PGUP> = 112;
+	<LEFT> = 113;
+	<RGHT> = 114;
+	<END> = 115;
+	<DOWN> = 116;
+	<PGDN> = 117;
+	<INS> = 118;
+	<DELE> = 119;
+	<I120> = 120;
+	<MUTE> = 121;
+	<VOL-> = 122;
+	<VOL+> = 123;
+	<POWR> = 124;
+	<KPEQ> = 125;
+	<I126> = 126;
+	<PAUS> = 127;
+	<I128> = 128;
+	<I129> = 129;
+	<HNGL> = 130;
+	<HJCV> = 131;
+	<AE13> = 132;
+	<LWIN> = 133;
+	<RWIN> = 134;
+	<COMP> = 135;
+	<STOP> = 136;
+	<AGAI> = 137;
+	<PROP> = 138;
+	<UNDO> = 139;
+	<FRNT> = 140;
+	<COPY> = 141;
+	<OPEN> = 142;
+	<PAST> = 143;
+	<FIND> = 144;
+	<CUT> = 145;
+	<HELP> = 146;
+	<I147> = 147;
+	<I148> = 148;
+	<I149> = 149;
+	<I150> = 150;
+	<I151> = 151;
+	<I152> = 152;
+	<I153> = 153;
+	<I154> = 154;
+	<I155> = 155;
+	<I156> = 156;
+	<I157> = 157;
+	<I158> = 158;
+	<I159> = 159;
+	<I160> = 160;
+	<I161> = 161;
+	<I162> = 162;
+	<I163> = 163;
+	<I164> = 164;
+	<I165> = 165;
+	<I166> = 166;
+	<I167> = 167;
+	<I168> = 168;
+	<I169> = 169;
+	<I170> = 170;
+	<I171> = 171;
+	<I172> = 172;
+	<I173> = 173;
+	<I174> = 174;
+	<I175> = 175;
+	<I176> = 176;
+	<I177> = 177;
+	<I178> = 178;
+	<I179> = 179;
+	<I180> = 180;
+	<I181> = 181;
+	<I182> = 182;
+	<I183> = 183;
+	<I184> = 184;
+	<I185> = 185;
+	<I186> = 186;
+	<I187> = 187;
+	<I188> = 188;
+	<I189> = 189;
+	<I190> = 190;
+	<FK13> = 191;
+	<FK14> = 192;
+	<FK15> = 193;
+	<FK16> = 194;
+	<FK17> = 195;
+	<FK18> = 196;
+	<FK19> = 197;
+	<FK20> = 198;
+	<FK21> = 199;
+	<FK22> = 200;
+	<FK23> = 201;
+	<FK24> = 202;
+	<MDSW> = 203;
+	<ALT> = 204;
+	<META> = 205;
+	<SUPR> = 206;
+	<HYPR> = 207;
+	<I208> = 208;
+	<I209> = 209;
+	<I210> = 210;
+	<I211> = 211;
+	<I212> = 212;
+	<I213> = 213;
+	<I214> = 214;
+	<I215> = 215;
+	<I216> = 216;
+	<I217> = 217;
+	<I218> = 218;
+	<I219> = 219;
+	<I220> = 220;
+	<I221> = 221;
+	<I222> = 222;
+	<I223> = 223;
+	<I224> = 224;
+	<I225> = 225;
+	<I226> = 226;
+	<I227> = 227;
+	<I228> = 228;
+	<I229> = 229;
+	<I230> = 230;
+	<I231> = 231;
+	<I232> = 232;
+	<I233> = 233;
+	<I234> = 234;
+	<I235> = 235;
+	<I236> = 236;
+	<I237> = 237;
+	<I238> = 238;
+	<I239> = 239;
+	<I240> = 240;
+	<I241> = 241;
+	<I242> = 242;
+	<I243> = 243;
+	<I244> = 244;
+	<I245> = 245;
+	<I246> = 246;
+	<I247> = 247;
+	<I248> = 248;
+	<I249> = 249;
+	<I250> = 250;
+	<I251> = 251;
+	<I252> = 252;
+	<I253> = 253;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "Compose";
+	indicator 5 = "Kana";
+	indicator 6 = "Sleep";
+	indicator 7 = "Suspend";
+	indicator 8 = "Mute";
+	indicator 9 = "Misc";
+	indicator 10 = "Mail";
+	indicator 11 = "Charging";
+	indicator 12 = "Shift Lock";
+	indicator 13 = "Group 2";
+	indicator 14 = "Mouse Keys";
+	alias <AC12> = <BKSL>;
+	alias <MENU> = <COMP>;
+	alias <HZTG> = <TLDE>;
+	alias <LMTA> = <LWIN>;
+	alias <RMTA> = <RWIN>;
+	alias <ALGR> = <RALT>;
+	alias <KPPT> = <I129>;
+	alias <LatQ> = <AD01>;
+	alias <LatW> = <AD02>;
+	alias <LatE> = <AD03>;
+	alias <LatR> = <AD04>;
+	alias <LatT> = <AD05>;
+	alias <LatY> = <AD06>;
+	alias <LatU> = <AD07>;
+	alias <LatI> = <AD08>;
+	alias <LatO> = <AD09>;
+	alias <LatP> = <AD10>;
+	alias <LatA> = <AC01>;
+	alias <LatS> = <AC02>;
+	alias <LatD> = <AC03>;
+	alias <LatF> = <AC04>;
+	alias <LatG> = <AC05>;
+	alias <LatH> = <AC06>;
+	alias <LatJ> = <AC07>;
+	alias <LatK> = <AC08>;
+	alias <LatL> = <AC09>;
+	alias <LatZ> = <AB01>;
+	alias <LatX> = <AB02>;
+	alias <LatC> = <AB03>;
+	alias <LatV> = <AB04>;
+	alias <LatB> = <AB05>;
+	alias <LatN> = <AB06>;
+	alias <LatM> = <AB07>;
+};
+
+xkb_types "complete" {
+	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+	type "PC_CONTROL_LEVEL2" {
+		modifiers= Control;
+		map[Control]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Control";
+	};
+	type "PC_ALT_LEVEL2" {
+		modifiers= Alt;
+		map[Alt]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Alt";
+	};
+	type "CTRL+ALT" {
+		modifiers= Shift+Control+Alt+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Control+Alt]= 5;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "Ctrl+Alt";
+	};
+	type "EIGHT_LEVEL" {
+		modifiers= Shift+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "EIGHT_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		map[Lock+LevelFive]= 6;
+		preserve[Lock+LevelFive]= Lock;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		map[Lock+LevelThree+LevelFive]= 7;
+		preserve[Lock+LevelThree+LevelFive]= Lock;
+		map[Shift+Lock+LevelThree+LevelFive]= 8;
+		preserve[Shift+Lock+LevelThree+LevelFive]= Lock;
+		map[Shift+Lock+LevelFive]= 1;
+		preserve[Shift+Lock+LevelFive]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "FOUR_LEVEL" {
+		modifiers= Shift+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+	};
+};
+
+xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_level5(level5_lock)_4" {
+	virtual_modifiers NumLock,Alt,LevelThree,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl,ScrollLock,LevelFive,AltGr,Meta,Super,Hyper;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret 0xff7f+AnyOf(all) {
+		virtualModifier= NumLock;
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret 0xfe03+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret 0xffe9+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffea+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffe7+AnyOf(all) {
+		virtualModifier= Meta;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffe8+AnyOf(all) {
+		virtualModifier= Meta;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffeb+AnyOf(all) {
+		virtualModifier= Super;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffec+AnyOf(all) {
+		virtualModifier= Super;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xffed+AnyOf(all) {
+		virtualModifier= Hyper;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret 0xfe11+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret 0xff7e+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		action= SetGroup(group=+1);
+	};
+	interpret 0xfe03+AnyOfOrNone(all) {
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret 0xffb1+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=+1);
+	};
+	interpret 0xff9c+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=+1);
+	};
+	interpret 0xffb2+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+0,y=+1);
+	};
+	interpret 0xff99+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+0,y=+1);
+	};
+	interpret 0xffb3+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=+1);
+	};
+	interpret 0xff9b+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=+1);
+	};
+	interpret 0xffb4+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=+0);
+	};
+	interpret 0xff96+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=+0);
+	};
+	interpret 0xffb6+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=+0);
+	};
+	interpret 0xff98+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=+0);
+	};
+	interpret 0xffb7+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=-1);
+	};
+	interpret 0xff95+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=-1,y=-1);
+	};
+	interpret 0xffb8+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+0,y=-1);
+	};
+	interpret 0xff97+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+0,y=-1);
+	};
+	interpret 0xffb9+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=-1);
+	};
+	interpret 0xff9a+AnyOfOrNone(all) {
+		repeat= True;
+		action= MovePtr(x=+1,y=-1);
+	};
+	interpret 0xffb5+AnyOfOrNone(all) {
+		repeat= True;
+		action= PtrBtn(button=default);
+	};
+	interpret 0xff9d+AnyOfOrNone(all) {
+		repeat= True;
+		action= PtrBtn(button=default);
+	};
+	interpret 0xffaf+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=1);
+	};
+	interpret 0xffaa+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=2);
+	};
+	interpret 0xffad+AnyOfOrNone(all) {
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=3);
+	};
+	interpret 0xffac+AnyOfOrNone(all) {
+		repeat= True;
+		action= PtrBtn(button=default,count=2);
+	};
+	interpret 0xffab+AnyOfOrNone(all) {
+		repeat= True;
+		action= PtrBtn(button=default,count=2);
+	};
+	interpret 0xffb0+AnyOfOrNone(all) {
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=lock);
+	};
+	interpret 0xff9e+AnyOfOrNone(all) {
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=lock);
+	};
+	interpret 0xffae+AnyOfOrNone(all) {
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=unlock);
+	};
+	interpret 0xff9f+AnyOfOrNone(all) {
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=unlock);
+	};
+	interpret 0xfef9+AnyOfOrNone(all) {
+		action= LockControls(controls=MouseKeys);
+	};
+	interpret 0xffe9+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Alt,clearLocks);
+	};
+	interpret 0xffe1+AnyOfOrNone(all) {
+		action= SetMods(modifiers=Shift);
+	};
+	interpret 0x1008fe01+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=1,!same);
+	};
+	interpret 0x1008fe02+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=2,!same);
+	};
+	interpret 0x1008fe03+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=3,!same);
+	};
+	interpret 0x1008fe04+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=4,!same);
+	};
+	interpret 0x1008fe05+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=5,!same);
+	};
+	interpret 0x1008fe06+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=6,!same);
+	};
+	interpret 0x1008fe07+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=7,!same);
+	};
+	interpret 0x1008fe08+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=8,!same);
+	};
+	interpret 0x1008fe09+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=9,!same);
+	};
+	interpret 0x1008fe0a+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=10,!same);
+	};
+	interpret 0x1008fe0b+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=11,!same);
+	};
+	interpret 0x1008fe0c+AnyOfOrNone(all) {
+		repeat= True;
+		action= SwitchScreen(screen=12,!same);
+	};
+	interpret 0x1008fe22+AnyOfOrNone(all) {
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
+	};
+	interpret 0x1008fe23+AnyOfOrNone(all) {
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
+	};
+	interpret 0xfe11+AnyOfOrNone(all) {
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret 0xfe13+AnyOfOrNone(all) {
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret 0xffe5+AnyOfOrNone(all) {
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+AnyOf(all) {
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Num Lock" {
+		whichModState= locked;
+		modifiers= NumLock;
+	};
+	indicator "Scroll Lock" {
+		whichModState= locked;
+		modifiers= ScrollLock;
+	};
+	indicator "Shift Lock" {
+		whichModState= locked;
+		modifiers= Shift;
+	};
+	indicator "Group 2" {
+		groups= 0xfe;
+	};
+	indicator "Mouse Keys" {
+		controls= MouseKeys;
+	};
+};
+
+xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
+	name[1]="English (US)";
+	name[2]="Russian";
+	name[3]="Canadian Multilingual";
+	name[4]="German (Neo 2)";
+
+	key <ESC> {	[ 0xff1b ] };
+	key <AE01> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x31, 0x21 ],
+		symbols[2]= [ 0x31, 0x21 ],
+		symbols[3]= [ 0x31, 0x21, 0xb1, NoSymbol, 0xb9, 0xa1, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x31, 0xb0, 0xb9, 0x1002081, 0xaa, NoSymbol, 0xac, NoSymbol ]
+	};
+	key <AE02> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x32, 0x40 ],
+		symbols[2]= [ 0x32, 0x22 ],
+		symbols[3]= [ 0x32, 0x40, 0x40, NoSymbol, 0xb2, NoSymbol, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x32, 0xa7, 0xb2, 0x1002082, 0xba, NoSymbol, 0x8df, NoSymbol ]
+	};
+	key <AE03> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x33, 0x23 ],
+		symbols[2]= [ 0x33, 0x6b0 ],
+		symbols[3]= [ 0x33, 0x23, 0xa3, NoSymbol, 0xb3, 0xa3, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x33, 0x1002113, 0xb3, 0x1002083, 0x6b0, NoSymbol, 0x8de, NoSymbol ]
+	};
+	key <AE04> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x34, 0x24 ],
+		symbols[2]= [ 0x34, 0x3b ],
+		symbols[3]= [ 0x34, 0x24, 0xa2, NoSymbol, 0xbc, 0xa4, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x34, 0xbb, 0x100203a, 0xaf8, NoSymbol, NoSymbol, 0x10022a5, NoSymbol ]
+	};
+	key <AE05> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x35, 0x25 ],
+		symbols[2]= [ 0x35, 0x25 ],
+		symbols[3]= [ 0x35, 0x25, 0xa4, NoSymbol, 0xbd, 0xac4, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x35, 0xab, 0x1002039, 0xaf7, 0xb7, NoSymbol, 0x1002221, NoSymbol ]
+	};
+	key <AE06> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ {0x48,0x45,0x4c,0x4c,0x4f}, 0x5e ],
+		symbols[2]= [ 0x36, 0x3a ],
+		symbols[3]= [ 0x36, 0x3f, 0xac, NoSymbol, 0xbe, 0xac5, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x36, 0x24, 0xa2, 0x10026a5, 0xa3, NoSymbol, 0x1002225, NoSymbol ]
+	};
+	key <AE07> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ {0x59,0x45,0x53,0x20,0x54,0x48,0x49,0x53,0x20,0x49,0x53,0x20,0x44,0x4f,0x47}, 0x26 ],
+		symbols[2]= [ 0x37, 0x3f ],
+		symbols[3]= [ 0x37, 0x26, 0x7b, NoSymbol, NoSymbol, 0xac6, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x37, 0x20ac, 0xa5, 0x10003f0, 0xa4, NoSymbol, 0x8fd, NoSymbol ]
+	};
+	key <AE08> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x38, 0x2a ],
+		symbols[2]= [ 0x38, 0x2a ],
+		symbols[3]= [ 0x38, 0x2a, 0x7d, NoSymbol, NoSymbol, 0xac9, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x38, 0xafe, 0xafd, 0x10027e8, 0xff09, 0xfe20, 0x100221e, NoSymbol ]
+	};
+	key <AE09> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x39, 0x28 ],
+		symbols[2]= [ 0x39, 0x28 ],
+		symbols[3]= [ 0x39, 0x28, 0x5b, NoSymbol, NoSymbol, 0xb1, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x39, 0xad2, 0xad0, 0x10027e9, 0xffaf, 0xffaf, 0x8c1, NoSymbol ]
+	};
+	key <AE10> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x30, 0x29 ],
+		symbols[2]= [ 0x30, 0x29 ],
+		symbols[3]= [ 0x30, 0x29, 0x5d, NoSymbol, NoSymbol, NoSymbol, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x30, 0xad3, 0xad1, 0x1002080, 0xffaa, 0xffaa, 0x1002205, NoSymbol ]
+	};
+	key <AE11> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x2d, 0x5f ],
+		symbols[2]= [ 0x2d, 0x5f ],
+		symbols[3]= [ 0x2d, 0x5f, 0xbd, NoSymbol, NoSymbol, 0xbf, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x2d, 0xaa9, NoSymbol, 0x1002011, 0xffad, 0xffad, 0xad, NoSymbol ]
+	};
+	key <AE12> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x3d, 0x2b ],
+		symbols[2]= [ 0x3d, 0x2b ],
+		symbols[3]= [ 0x3d, 0x2b, 0xac, NoSymbol, 0xfe5b, 0xfe5c, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xfe50, 0xfe5b, 0xfe58, 0xfe65, 0xfe57, NoSymbol, 0xfe54, NoSymbol ]
+	};
+	key <BKSP> {	[ 0xff08, 0xff08 ] };
+	key <TAB> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff09, 0xfe20 ],
+		symbols[2]= [ 0xff09, 0xfe20 ],
+		symbols[3]= [ 0xff09, 0xfe20 ],
+		symbols[4]= [ 0xff09, 0xfe20, 0xff20, 0xfe13, NoSymbol, NoSymbol, NoSymbol, 0xfe13 ]
+	};
+	key <AD01> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x71, 0x51 ],
+		symbols[2]= [ 0x6ca, 0x6ea ],
+		symbols[3]= [ 0x71, 0x51, NoSymbol, NoSymbol, NoSymbol, 0x7d9, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x78, 0x58, 0xaae, 0x7ee, 0xff55, 0xff55, 0x7ce, NoSymbol ]
+	};
+	key <AD02> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x77, 0x57 ],
+		symbols[2]= [ 0x6c3, 0x6e3 ],
+		symbols[3]= [ 0x77, 0x57, NoSymbol, NoSymbol, 0x1b3, 0x1a3, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x76, 0x56, 0x5f, NoSymbol, 0xff08, 0xff08, 0x8d6, NoSymbol ]
+	};
+	key <AD03> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x65, 0x45 ],
+		symbols[2]= [ 0x6d5, 0x6f5 ],
+		symbols[3]= [ 0x65, 0x45, NoSymbol, NoSymbol, 0x13bd, 0x13bc, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6c, 0x4c, 0x5b, 0x7eb, 0xff52, 0xff52, 0x7cb, NoSymbol ]
+	};
+	key <AD04> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x72, 0x52 ],
+		symbols[2]= [ 0x6cb, 0x6eb ],
+		symbols[3]= [ 0x72, 0x52, NoSymbol, NoSymbol, 0xb6, 0xae, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x63, 0x43, 0x5d, 0x7f7, 0xffff, 0xffff, 0x1002102, NoSymbol ]
+	};
+	key <AD05> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x74, 0x54 ],
+		symbols[2]= [ 0x6c5, 0x6e5 ],
+		symbols[3]= [ 0x74, 0x54, NoSymbol, NoSymbol, 0x3bc, 0x3ac, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x77, 0x57, 0x5e, 0x7f9, 0xff56, 0xff56, 0x7d9, NoSymbol ]
+	};
+	key <AD06> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x79, 0x59 ],
+		symbols[2]= [ 0x6ce, 0x6ee ],
+		symbols[3]= [ 0x79, 0x59, NoSymbol, NoSymbol, 0x8fb, 0xa5, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6b, 0x4b, 0x21, 0x7ea, 0xa1, NoSymbol, 0xd7, NoSymbol ]
+	};
+	key <AD07> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x75, 0x55 ],
+		symbols[2]= [ 0x6c7, 0x6e7 ],
+		symbols[3]= [ 0x75, 0x55, NoSymbol, NoSymbol, 0x8fe, 0x8fc, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x68, 0x48, 0x3c, 0x7f8, 0xffb7, 0xffb7, 0x7d8, NoSymbol ]
+	};
+	key <AD08> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x69, 0x49 ],
+		symbols[2]= [ 0x6db, 0x6fb ],
+		symbols[3]= [ 0x69, 0x49, NoSymbol, NoSymbol, 0x8fd, 0x2b9, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x67, 0x47, 0x3e, 0x7e3, 0xffb8, 0xffb8, 0x7c3, NoSymbol ]
+	};
+	key <AD09> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6f, 0x4f ],
+		symbols[2]= [ 0x6dd, 0x6fd ],
+		symbols[3]= [ 0x6f, 0x4f, 0xa7, NoSymbol, 0xf8, 0xd8, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x66, 0x46, 0x3d, 0x7f6, 0xffb9, 0xffb9, 0x7d6, NoSymbol ]
+	};
+	key <AD10> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x70, 0x50 ],
+		symbols[2]= [ 0x6da, 0x6fa ],
+		symbols[3]= [ 0x70, 0x50, 0xb6, NoSymbol, 0xfe, 0xde, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x71, 0x51, 0x26, 0x10003d5, 0xffab, 0xffab, 0x100211a, NoSymbol ]
+	};
+	key <AD11> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x5b, 0x7b ],
+		symbols[2]= [ 0x6c8, 0x6e8 ],
+		symbols[3]= [ 0xfe52, 0xfe57, 0xfe50, NoSymbol, NoSymbol, 0xfe58, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xdf, 0x1001e9e, 0x100017f, 0x7f3, 0x1002212, NoSymbol, 0xbca, NoSymbol ]
+	};
+	key <AD12> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x5d, 0x7d ],
+		symbols[2]= [ 0x6df, 0x6ff ],
+		symbols[3]= [ 0xe7, 0xc7, 0x7e, NoSymbol, 0xfe53, 0xfe54, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xfe51, 0xfe53, 0xfe63, 0xfe64, 0xfe59, NoSymbol, 0xfe55, NoSymbol ]
+	};
+	key <RTRN> {	[ 0xff0d ] };
+	key <LCTL> {	[ 0xffe3 ] };
+	key <AC01> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x61, 0x41 ],
+		symbols[2]= [ 0x6c6, 0x6e6 ],
+		symbols[3]= [ 0x61, 0x41, NoSymbol, NoSymbol, 0xe6, 0xc6, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x75, 0x55, 0x5c, NoSymbol, 0xff50, 0xff50, 0x8da, NoSymbol ]
+	};
+	key <AC02> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x73, 0x53 ],
+		symbols[2]= [ 0x6d9, 0x6f9 ],
+		symbols[3]= [ 0x73, 0x53, NoSymbol, NoSymbol, 0xdf, 0xa7, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x69, 0x49, 0x2f, 0x7e9, 0xff51, 0xff51, 0x8bf, NoSymbol ]
+	};
+	key <AC03> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x64, 0x44 ],
+		symbols[2]= [ 0x6d7, 0x6f7 ],
+		symbols[3]= [ 0x64, 0x44, NoSymbol, NoSymbol, 0xf0, 0xd0, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x61, 0x41, 0x7b, 0x7e1, 0xff54, 0xff54, 0x1002200, NoSymbol ]
+	};
+	key <AC04> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x66, 0x46 ],
+		symbols[2]= [ 0x6c1, 0x6e1 ],
+		symbols[3]= [ 0x66, 0x46, NoSymbol, NoSymbol, NoSymbol, 0xaa, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x65, 0x45, 0x7d, 0x7e5, 0xff53, 0xff53, 0x1002203, NoSymbol ]
+	};
+	key <AC05> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x67, 0x47 ],
+		symbols[2]= [ 0x6d0, 0x6f0 ],
+		symbols[3]= [ 0x67, 0x47, NoSymbol, NoSymbol, 0x3bf, 0x3bd, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6f, 0x4f, 0x2a, 0x7ef, 0xff57, 0xff57, 0x1002208, NoSymbol ]
+	};
+	key <AC06> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x68, 0x48 ],
+		symbols[2]= [ 0x6d2, 0x6f2 ],
+		symbols[3]= [ 0x68, 0x48, NoSymbol, NoSymbol, 0x2b1, 0x2a1, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x73, 0x53, 0x3f, 0x7f2, 0xbf, NoSymbol, 0x7d2, NoSymbol ]
+	};
+	key <AC07> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6a, 0x4a ],
+		symbols[2]= [ 0x6cf, 0x6ef ],
+		symbols[3]= [ 0x6a, 0x4a, NoSymbol, NoSymbol, 0x1000133, 0x1000132, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6e, 0x4e, 0x28, 0x7ed, 0xffb4, 0xffb4, 0x1002115, NoSymbol ]
+	};
+	key <AC08> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6b, 0x4b ],
+		symbols[2]= [ 0x6cc, 0x6ec ],
+		symbols[3]= [ 0x6b, 0x4b, NoSymbol, NoSymbol, 0x3a2, NoSymbol, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x72, 0x52, 0x29, 0x7f1, 0xffb5, 0xffb5, 0x100211d, NoSymbol ]
+	};
+	key <AC09> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6c, 0x4c ],
+		symbols[2]= [ 0x6c4, 0x6e4 ],
+		symbols[3]= [ 0x6c, 0x4c, NoSymbol, NoSymbol, 0x1000140, 0x100013f, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x74, 0x54, 0x2d, 0x7f4, 0xffb6, 0xffb6, 0x8ef, NoSymbol ]
+	};
+	key <AC10> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x3b, 0x3a ],
+		symbols[2]= [ 0x6d6, 0x6f6 ],
+		symbols[3]= [ 0x3b, 0x3a, 0xb0, NoSymbol, 0xfe51, 0xfe59, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x64, 0x44, 0x3a, 0x7e4, 0xffac, 0x2c, 0x7c4, NoSymbol ]
+	};
+	key <AC11> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x27, 0x22 ],
+		symbols[2]= [ 0x6dc, 0x6fc ],
+		symbols[3]= [ 0xe8, 0xc8, 0x7b, NoSymbol, NoSymbol, 0xfe5a, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x79, 0x59, 0x40, 0x7f5, 0x2e, 0xffae, 0x8c5, NoSymbol ]
+	};
+	key <TLDE> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x60, 0x7e ],
+		symbols[2]= [ 0x6a3, 0x6b3 ],
+		symbols[3]= [ 0x2f, 0x5c, 0x7c, NoSymbol, NoSymbol, 0xad, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xfe52, 0xfe5a, 0x10021bb, 0x10002de, 0xfe56, 0xfef9, 0xfe60, NoSymbol ]
+	};
+	key <LFSH> {
+		type[4]= "TWO_LEVEL",
+		symbols[1]= [ 0xffe1 ],
+		symbols[2]= [ 0xffe1 ],
+		symbols[3]= [ 0xffe1 ],
+		symbols[4]= [ 0xffe1, 0xffe5 ]
+	};
+	key <BKSL> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [ 0x5c, 0x7c ],
+		symbols[2]= [ 0x5c, 0x2f ],
+		symbols[3]= [ 0xe0, 0xc0, 0x7d, NoSymbol, NoSymbol, 0xfe55, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xfe03 ]
+	};
+	key <AB01> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x7a, 0x5a ],
+		symbols[2]= [ 0x6d1, 0x6f1 ],
+		symbols[3]= [ 0x7a, 0x5a, 0xab, NoSymbol ],
+		symbols[4]= [ 0xfc, 0xdc, 0x23, NoSymbol, 0xff1b, 0xff1b, 0x8dd, NoSymbol ]
+	};
+	key <AB02> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x78, 0x58 ],
+		symbols[2]= [ 0x6de, 0x6fe ],
+		symbols[3]= [ 0x78, 0x58, 0xbb, NoSymbol ],
+		symbols[4]= [ 0xf6, 0xd6, 0x24, 0x10003f5, 0xff09, 0xff09, 0x8dc, NoSymbol ]
+	};
+	key <AB03> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x63, 0x43 ],
+		symbols[2]= [ 0x6d3, 0x6f3 ],
+		symbols[3]= [ 0x63, 0x43, NoSymbol, NoSymbol, 0xa2, 0xa9, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xe4, 0xc4, 0x7c, 0x7e7, 0xff63, 0xff63, 0x1002135, NoSymbol ]
+	};
+	key <AB04> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x76, 0x56 ],
+		symbols[2]= [ 0x6cd, 0x6ed ],
+		symbols[3]= [ 0x76, 0x56, NoSymbol, NoSymbol, 0xad2, 0xad0, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x70, 0x50, 0x7e, 0x7f0, 0xff0d, 0xff0d, 0x7d0, NoSymbol ]
+	};
+	key <AB05> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x62, 0x42 ],
+		symbols[2]= [ 0x6c9, 0x6e9 ],
+		symbols[3]= [ 0x62, 0x42, NoSymbol, NoSymbol, 0xad3, 0xad1, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x7a, 0x5a, 0x60, 0x7e6, 0xff65, 0xff65, 0x1002124, NoSymbol ]
+	};
+	key <AB06> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6e, 0x4e ],
+		symbols[2]= [ 0x6d4, 0x6f4 ],
+		symbols[3]= [ 0x6e, 0x4e, NoSymbol, NoSymbol, 0x1000149, 0x100266a, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x62, 0x42, 0x2b, 0x7e2, 0x3a, NoSymbol, 0x10021d0, NoSymbol ]
+	};
+	key <AB07> {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x6d, 0x4d ],
+		symbols[2]= [ 0x6d8, 0x6f8 ],
+		symbols[3]= [ 0x6d, 0x4d, 0xb5, NoSymbol, 0xb5, 0xba, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6d, 0x4d, 0x25, 0x7ec, 0xffb1, 0xffb1, 0x8cd, NoSymbol ]
+	};
+	key <AB08> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x2c, 0x3c ],
+		symbols[2]= [ 0x6c2, 0x6e2 ],
+		symbols[3]= [ 0x2c, 0x27, 0x3c, NoSymbol, 0x7af, 0xd7, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x2c, 0xaaa, 0x22, 0x10003f1, 0xffb2, 0xffb2, 0x10021d2, NoSymbol ]
+	};
+	key <AB09> {
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x2e, 0x3e ],
+		symbols[2]= [ 0x6c0, 0x6e0 ],
+		symbols[3]= [ 0x2e, 0x22, 0x3e, NoSymbol, 0xb7, 0xf7, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x2e, 0xae6, 0x27, 0x10003d1, 0xffb3, 0xffb3, 0x10021a6, NoSymbol ]
+	};
+	key <AB10> {
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		symbols[1]= [ 0x2f, 0x3f ],
+		symbols[2]= [ 0x2e, 0x2c ],
+		symbols[3]= [ 0xe9, 0xc9, 0xfe51, NoSymbol, NoSymbol, 0xfe56, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0x6a, 0x4a, 0x3b, 0x7e8, 0x3b, NoSymbol, 0x7c8, NoSymbol ]
+	};
+	key <RTSH> {
+		type[4]= "TWO_LEVEL",
+		symbols[1]= [ 0xffe2 ],
+		symbols[2]= [ 0xffe2 ],
+		symbols[3]= [ 0xffe2 ],
+		symbols[4]= [ 0xffe2, 0xffe5 ]
+	};
+	key <KPMU> {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xffaa, 0xffaa, 0xffaa, 0xffaa, 0x1008fe21 ],
+		symbols[2]= [ 0xffaa, 0xffaa, 0xffaa, 0xffaa, 0x1008fe21 ],
+		symbols[3]= [ 0xffaa, 0xffaa, 0xffaa, 0xffaa, 0x1008fe21 ],
+		symbols[4]= [ 0xffaa, 0xffaa, 0x1002219, 0x1002299, 0xd7, NoSymbol, 0x1002297, NoSymbol ]
+	};
+	key <LALT> {	[ 0xffe9, 0xffe7 ] };
+	key <SPCE> {
+		type[3]= "FOUR_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0x20 ],
+		symbols[2]= [ 0x20 ],
+		symbols[3]= [ 0x20, 0x20, 0xa0, NoSymbol ],
+		symbols[4]= [ 0x20, 0x20, 0x20, 0xa0, 0xffb0, 0xffb0, 0x100202f, NoSymbol ]
+	};
+	key <CAPS> {
+		type= "ONE_LEVEL",
+		symbols[1]= [ 0xffe5 ],
+		symbols[2]= [ 0xffe5 ],
+		symbols[3]= [ 0xffe5 ],
+		symbols[4]= [ 0xfe03 ]
+	};
+	key <FK01> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffbe, 0xffbe, 0xffbe, 0xffbe, 0x1008fe01 ]
+	};
+	key <FK02> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffbf, 0xffbf, 0xffbf, 0xffbf, 0x1008fe02 ]
+	};
+	key <FK03> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc0, 0xffc0, 0xffc0, 0xffc0, 0x1008fe03 ]
+	};
+	key <FK04> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc1, 0xffc1, 0xffc1, 0xffc1, 0x1008fe04 ]
+	};
+	key <FK05> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc2, 0xffc2, 0xffc2, 0xffc2, 0x1008fe05 ]
+	};
+	key <FK06> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc3, 0xffc3, 0xffc3, 0xffc3, 0x1008fe06 ]
+	};
+	key <FK07> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc4, 0xffc4, 0xffc4, 0xffc4, 0x1008fe07 ]
+	};
+	key <FK08> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc5, 0xffc5, 0xffc5, 0xffc5, 0x1008fe08 ]
+	};
+	key <FK09> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc6, 0xffc6, 0xffc6, 0xffc6, 0x1008fe09 ]
+	};
+	key <FK10> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc7, 0xffc7, 0xffc7, 0xffc7, 0x1008fe0a ]
+	};
+	key <NMLK> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff7f ],
+		symbols[2]= [ 0xff7f ],
+		symbols[3]= [ 0xff7f ],
+		symbols[4]= [ 0xff09, 0xfe20, 0x3d, 0x1002248, 0x8bd, 0xfef9, 0x8cf, NoSymbol ]
+	};
+	key <SCLK> {	[ 0xff14 ] };
+	key <KP7> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff95, 0xffb7 ],
+		symbols[2]= [ 0xff95, 0xffb7 ],
+		symbols[3]= [ 0xff95, 0xffb7 ],
+		symbols[4]= [ 0xffb7, 0x1002714, 0x1002195, 0x100226a, 0xff95, 0xff95, 0xbd3, NoSymbol ]
+	};
+	key <KP8> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff97, 0xffb8 ],
+		symbols[2]= [ 0xff97, 0xffb8 ],
+		symbols[3]= [ 0xff97, 0xffb8 ],
+		symbols[4]= [ 0xffb8, 0x1002718, 0x8fc, 0x8dc, 0xff97, 0xff97, 0x10022c2, NoSymbol ]
+	};
+	key <KP9> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9a, 0xffb9 ],
+		symbols[2]= [ 0xff9a, 0xffb9 ],
+		symbols[3]= [ 0xff9a, 0xffb9 ],
+		symbols[4]= [ 0xffb9, 0xaf1, 0x10020d7, 0x100226b, 0xff9a, 0xff9a, 0x1002309, NoSymbol ]
+	};
+	key <KPSU> {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xffad, 0xffad, 0xffad, 0xffad, 0x1008fe23 ],
+		symbols[2]= [ 0xffad, 0xffad, 0xffad, 0xffad, 0x1008fe23 ],
+		symbols[3]= [ 0xffad, 0xffad, 0xffad, 0xffad, 0x1008fe23 ],
+		symbols[4]= [ 0xffad, 0xffad, 0x1002212, 0x1002296, 0x1002216, NoSymbol, 0x1002238, NoSymbol ]
+	};
+	key <KP4> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff96, 0xffb4 ],
+		symbols[2]= [ 0xff96, 0xffb4 ],
+		symbols[3]= [ 0xff96, 0xffb4 ],
+		symbols[4]= [ 0xffb4, 0xaec, 0x8fb, 0x8da, 0xff96, 0xff96, 0x1002286, NoSymbol ]
+	};
+	key <KP5> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9d, 0xffb5 ],
+		symbols[2]= [ 0xff9d, 0xffb5 ],
+		symbols[3]= [ 0xff9d, 0xffb5 ],
+		symbols[4]= [ 0xffb5, 0x20ac, 0x3a, 0x10022b6, 0xff9d, 0xff9d, 0x10022b7, NoSymbol ]
+	};
+	key <KP6> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff98, 0xffb6 ],
+		symbols[2]= [ 0xff98, 0xffb6 ],
+		symbols[3]= [ 0xff98, 0xffb6 ],
+		symbols[4]= [ 0xffb6, 0x1002023, 0x8fd, 0x8db, 0xff98, 0xff98, 0x1002287, NoSymbol ]
+	};
+	key <KPAD> {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xffab, 0xffab, 0xffab, 0xffab, 0x1008fe22 ],
+		symbols[2]= [ 0xffab, 0xffab, 0xffab, 0xffab, 0x1008fe22 ],
+		symbols[3]= [ 0xffab, 0xffab, 0xffab, 0xffab, 0x1008fe22 ],
+		symbols[4]= [ 0xffab, 0xffab, 0xb1, 0x1002295, 0x1002213, NoSymbol, 0x1002214, NoSymbol ]
+	};
+	key <KP1> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9c, 0xffb1 ],
+		symbols[2]= [ 0xff9c, 0xffb1 ],
+		symbols[3]= [ 0xff9c, 0xffb1 ],
+		symbols[4]= [ 0xffb1, 0xaed, 0x1002194, 0x8bc, 0xff9c, 0xff9c, 0xbc4, NoSymbol ]
+	};
+	key <KP2> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff99, 0xffb2 ],
+		symbols[2]= [ 0xff99, 0xffb2 ],
+		symbols[3]= [ 0xff99, 0xffb2 ],
+		symbols[4]= [ 0xffb2, 0xaee, 0x8fe, 0x8dd, 0xff99, 0xff99, 0x10022c3, NoSymbol ]
+	};
+	key <KP3> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9b, 0xffb3 ],
+		symbols[2]= [ 0xff9b, 0xffb3 ],
+		symbols[3]= [ 0xff9b, 0xffb3 ],
+		symbols[4]= [ 0xffb3, 0x1002660, 0x10021cc, 0x8be, 0xff9b, 0xff9b, 0x100230b, NoSymbol ]
+	};
+	key <KP0> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9e, 0xffb0 ],
+		symbols[2]= [ 0xff9e, 0xffb0 ],
+		symbols[3]= [ 0xff9e, 0xffb0 ],
+		symbols[4]= [ 0xffb0, 0x1002423, 0x25, 0x1002030, 0xff9e, 0xff9e, 0x10025a1, NoSymbol ]
+	};
+	key <KPDL> {
+		type[2]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff9f, 0xffae ],
+		symbols[2]= [ 0xff9f, 0xffac ],
+		symbols[3]= [ 0xff9f, 0xffae ],
+		symbols[4]= [ 0xffac, 0x2e, 0x2c, 0xad6, 0xff9f, 0xff9f, 0xad7, NoSymbol ]
+	};
+	key <LVL3> {	[ 0xfe03 ] };
+	key <LSGT> {
+		type[1]= "FOUR_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [ 0x3c, 0x3e, 0x7c, 0xa6 ],
+		symbols[2]= [ 0x2f, 0x7c ],
+		symbols[3]= [ 0xf9, 0xd9, 0xb0, NoSymbol, NoSymbol, 0xa6, NoSymbol, NoSymbol ],
+		symbols[4]= [ 0xfe11 ]
+	};
+	key <FK11> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc8, 0xffc8, 0xffc8, 0xffc8, 0x1008fe0b ]
+	};
+	key <FK12> {
+		type= "CTRL+ALT",
+		symbols[1]= [ 0xffc9, 0xffc9, 0xffc9, 0xffc9, 0x1008fe0c ]
+	};
+	key <KATA> {	[ 0xff26 ] };
+	key <HIRA> {	[ 0xff25 ] };
+	key <HENK> {	[ 0xff23 ] };
+	key <HKTG> {	[ 0xff27 ] };
+	key <MUHE> {	[ 0xff22 ] };
+	key <KPEN> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xff8d ],
+		symbols[2]= [ 0xff8d ],
+		symbols[3]= [ 0xff8d ],
+		symbols[4]= [ 0xff8d, 0xff8d, 0xff8d, 0xff8d, 0xff8d, 0xff8d, 0xff8d, NoSymbol ]
+	};
+	key <RCTL> {
+		type= "ONE_LEVEL",
+		symbols[1]= [ 0xffe4 ],
+		symbols[2]= [ 0xffe4 ],
+		symbols[3]= [ 0xfe11 ]
+	};
+	key <KPDV> {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xffaf, 0xffaf, 0xffaf, 0xffaf, 0x1008fe20 ],
+		symbols[2]= [ 0xffaf, 0xffaf, 0xffaf, 0xffaf, 0x1008fe20 ],
+		symbols[3]= [ 0xffaf, 0xffaf, 0xffaf, 0xffaf, 0x1008fe20 ],
+		symbols[4]= [ 0xffaf, 0xffaf, 0xf7, 0x1002300, 0x1002215, NoSymbol, 0x1002223, NoSymbol ]
+	};
+	key <PRSC> {
+		type= "PC_ALT_LEVEL2",
+		symbols[1]= [ 0xff61, 0xff15 ]
+	};
+	key <RALT> {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		symbols[1]= [ 0xffea, 0xffe8 ],
+		symbols[2]= [ 0xffea, 0xffe8 ],
+		symbols[3]= [ 0xfe03 ],
+		symbols[4]= [ 0xfe11 ]
+	};
+	key <LNFD> {	[ 0xff0a ] };
+	key <HOME> {	[ 0xff50 ] };
+	key <UP> {	[ 0xff52 ] };
+	key <PGUP> {	[ 0xff55 ] };
+	key <LEFT> {	[ 0xff51 ] };
+	key <RGHT> {	[ 0xff53 ] };
+	key <END> {	[ 0xff57 ] };
+	key <DOWN> {	[ 0xff54 ] };
+	key <PGDN> {	[ 0xff56 ] };
+	key <INS> {	[ 0xff63 ] };
+	key <DELE> {	[ 0xffff ] };
+	key <MUTE> {	[ 0x1008ff12 ] };
+	key <VOL-> {	[ 0x1008ff11 ] };
+	key <VOL+> {	[ 0x1008ff13 ] };
+	key <POWR> {	[ 0x1008ff2a ] };
+	key <KPEQ> {
+		type[4]= "EIGHT_LEVEL",
+		symbols[1]= [ 0xffbd ],
+		symbols[2]= [ 0xffbd ],
+		symbols[3]= [ 0xffbd ],
+		symbols[4]= [ 0xffbd, NoSymbol, NoSymbol, NoSymbol, NoSymbol, NoSymbol, NoSymbol, NoSymbol ]
+	};
+	key <I126> {	[ 0xb1 ] };
+	key <PAUS> {
+		type= "PC_CONTROL_LEVEL2",
+		symbols[1]= [ 0xff13, 0xff6b ]
+	};
+	key <I128> {	[ 0x1008ff4a ] };
+	key <I129> {	[ 0xffae, 0xffae ] };
+	key <HNGL> {	[ 0xff31 ] };
+	key <HJCV> {	[ 0xff34 ] };
+	key <LWIN> {	[ 0xffeb ] };
+	key <RWIN> {	[ 0xffec ] };
+	key <COMP> {	[ 0xff67 ] };
+	key <STOP> {	[ 0xff69 ] };
+	key <AGAI> {	[ 0xff66 ] };
+	key <PROP> {	[ 0x1005ff70 ] };
+	key <UNDO> {	[ 0xff65 ] };
+	key <FRNT> {	[ 0x1005ff71 ] };
+	key <COPY> {	[ 0x1008ff57 ] };
+	key <OPEN> {	[ 0x1005ff73 ] };
+	key <PAST> {	[ 0x1008ff6d ] };
+	key <FIND> {	[ 0xff68 ] };
+	key <CUT> {	[ 0x1008ff58 ] };
+	key <HELP> {	[ 0xff6a ] };
+	key <I147> {	[ 0x1008ff65 ] };
+	key <I148> {	[ 0x1008ff1d ] };
+	key <I150> {	[ 0x1008ff2f ] };
+	key <I151> {	[ 0x1008ff2b ] };
+	key <I152> {	[ 0x1008ff5d ] };
+	key <I153> {	[ 0x1008ff7b ] };
+	key <I155> {	[ 0x1008ff8a ] };
+	key <I156> {	[ 0x1008ff41 ] };
+	key <I157> {	[ 0x1008ff42 ] };
+	key <I158> {	[ 0x1008ff2e ] };
+	key <I159> {	[ 0x1008ff5a ] };
+	key <I160> {	[ 0x1008ff2d ] };
+	key <I162> {	[ 0x1008ff74 ] };
+	key <I163> {	[ 0x1008ff19 ] };
+	key <I164> {	[ 0x1008ff30 ] };
+	key <I165> {	[ 0x1008ff33 ] };
+	key <I166> {	[ 0x1008ff26 ] };
+	key <I167> {	[ 0x1008ff27 ] };
+	key <I169> {	[ 0x1008ff2c ] };
+	key <I170> {	[ 0x1008ff2c, 0x1008ff2c ] };
+	key <I171> {	[ 0x1008ff17 ] };
+	key <I172> {	[ 0x1008ff14, 0x1008ff31 ] };
+	key <I173> {	[ 0x1008ff16 ] };
+	key <I174> {	[ 0x1008ff15, 0x1008ff2c ] };
+	key <I175> {	[ 0x1008ff1c ] };
+	key <I176> {	[ 0x1008ff3e ] };
+	key <I177> {	[ 0x1008ff6e ] };
+	key <I179> {	[ 0x1008ff81 ] };
+	key <I180> {	[ 0x1008ff18 ] };
+	key <I181> {	[ 0x1008ff73 ] };
+	key <I182> {	[ 0x1008ff56 ] };
+	key <I185> {	[ 0x1008ff78 ] };
+	key <I186> {	[ 0x1008ff79 ] };
+	key <I187> {	[ 0x28 ] };
+	key <I188> {	[ 0x29 ] };
+	key <I189> {	[ 0x1008ff68 ] };
+	key <I190> {	[ 0xff66 ] };
+	key <FK13> {	[ 0x1008ff81 ] };
+	key <FK14> {	[ 0x1008ff45 ] };
+	key <FK15> {	[ 0x1008ff46 ] };
+	key <FK16> {	[ 0x1008ff47 ] };
+	key <FK17> {	[ 0x1008ff48 ] };
+	key <FK18> {	[ 0x1008ff49 ] };
+	key <FK21> {	[ 0x1008ffa9 ] };
+	key <FK22> {	[ 0x1008ffb0 ] };
+	key <FK23> {	[ 0x1008ffb1 ] };
+	key <MDSW> {	[ 0xff7e ] };
+	key <ALT> {	[ NoSymbol, 0xffe9 ] };
+	key <META> {	[ NoSymbol, 0xffe7 ] };
+	key <SUPR> {	[ NoSymbol, 0xffeb ] };
+	key <HYPR> {	[ NoSymbol, 0xffed ] };
+	key <I208> {	[ 0x1008ff14 ] };
+	key <I209> {	[ 0x1008ff31 ] };
+	key <I210> {	[ 0x1008ff43 ] };
+	key <I211> {	[ 0x1008ff44 ] };
+	key <I212> {	[ 0x1008ff4b ] };
+	key <I213> {	[ 0x1008ffa7 ] };
+	key <I214> {	[ 0x1008ff56 ] };
+	key <I215> {	[ 0x1008ff14 ] };
+	key <I216> {	[ 0x1008ff97 ] };
+	key <I218> {	[ 0xff61 ] };
+	key <I220> {	[ 0x1008ff8f ] };
+	key <I223> {	[ 0x1008ff19 ] };
+	key <I224> {	[ 0x1008ff8e ] };
+	key <I225> {	[ 0x1008ff1b ] };
+	key <I226> {	[ 0x1008ff5f ] };
+	key <I227> {	[ 0x1008ff3c ] };
+	key <I228> {	[ 0x1008ff5e ] };
+	key <I229> {	[ 0x1008ff36 ] };
+	key <I231> {	[ 0xff69 ] };
+	key <I232> {	[ 0x1008ff03 ] };
+	key <I233> {	[ 0x1008ff02 ] };
+	key <I234> {	[ 0x1008ff32 ] };
+	key <I235> {	[ 0x1008ff59 ] };
+	key <I236> {	[ 0x1008ff04 ] };
+	key <I237> {	[ 0x1008ff06 ] };
+	key <I238> {	[ 0x1008ff05 ] };
+	key <I239> {	[ 0x1008ff7b ] };
+	key <I240> {	[ 0x1008ff72 ] };
+	key <I241> {	[ 0x1008ff90 ] };
+	key <I242> {	[ 0x1008ff77 ] };
+	key <I243> {	[ 0x1008ff5b ] };
+	key <I244> {	[ 0x1008ff93 ] };
+	key <I245> {	[ 0x1008ff94 ] };
+	key <I246> {	[ 0x1008ff95 ] };
+	modifier_map Shift { <LFSH>, <RTSH> };
+	modifier_map Lock { <CAPS> };
+	modifier_map Control { <LCTL> };
+	modifier_map Mod1 { <LALT>, <RALT>, <META> };
+	modifier_map Mod2 { <NMLK> };
+	modifier_map Mod3 { <RCTL> };
+	modifier_map Mod4 { <LWIN>, <RWIN>, <SUPR>, <HYPR> };
+	modifier_map Mod5 { <LVL3>, <MDSW> };
+};
+
+};

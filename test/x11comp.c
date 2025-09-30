@@ -393,12 +393,13 @@ X11_TEST(test_basic)
     } keymaps[] = {
         {
             .path = "keymaps/host-no-pretty.xkb",
-            .serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
+                             & ~XKB_KEYMAP_SERIALIZE_PRETTY
         },
         /* This last keymap will be used for the next tests */
         {
             .path = "keymaps/host.xkb",
-            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
         },
     };
     for (size_t k = 0; k < ARRAY_SIZE(keymaps); k++) {
@@ -517,7 +518,7 @@ main(int argc, char **argv) {
     bool tweak_comments = false;
     const char *path = NULL;
     enum xkb_keymap_serialize_flags serialize_flags =
-        (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
+        (enum xkb_keymap_serialize_flags) TEST_KEYMAP_SERIALIZE_FLAGS;
 
     while (1) {
         int opt;

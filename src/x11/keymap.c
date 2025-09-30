@@ -399,6 +399,9 @@ get_types(struct xkb_keymap *keymap, xcb_connection_t *conn,
             }
         }
 
+        /* Checked only when compiling a keymap from text */
+        type->required = true;
+
         xcb_xkb_key_type_next(&types_iter);
     }
 
@@ -857,6 +860,9 @@ get_sym_interprets(struct xkb_keymap *keymap, xcb_connection_t *conn,
                          (xcb_xkb_action_t *) &wire->action);
         sym_interpret->num_actions =
             (sym_interpret->a.action.type != ACTION_TYPE_NONE);
+
+        /* Checked only when compiling a keymap from text */
+        sym_interpret->required = true;
 
         xcb_xkb_sym_interpret_next(&iter);
     }

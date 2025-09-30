@@ -669,7 +669,7 @@ test_compile_output(struct xkb_context *ctx, enum xkb_keymap_format input_format
                     const char *rel_path, bool update_output_files)
 {
     return test_compile_output2(ctx, input_format, output_format,
-                                XKB_KEYMAP_SERIALIZE_PRETTY,
+                                TEST_KEYMAP_SERIALIZE_FLAGS,
                                 compile_buffer, compile_buffer_private,
                                 test_title, keymap_str, keymap_len, rel_path,
                                 update_output_files);

@@ -744,6 +744,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->name = xkb_atom_intern_literal(keymap->ctx, "default");
         type->level_names = NULL;
         type->num_level_names = 0;
+        type->required = false;
     }
     else {
         for (darray_size_t i = 0; i < num_types; i++) {
@@ -757,6 +758,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
                 (xkb_level_index_t) darray_size(def->level_names);
             darray_steal(def->level_names, &type->level_names, NULL);
             darray_steal(def->entries, &type->entries, &type->num_entries);
+            type->required = false;
         }
     }
 

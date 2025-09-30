@@ -287,7 +287,9 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
                           enum xkb_keymap_format format,
                           enum xkb_keymap_serialize_flags flags)
 {
-    if (flags & ~(XKB_KEYMAP_SERIALIZE_PRETTY)) {
+    const enum xkb_keymap_serialize_flags valid_flags =
+        XKB_KEYMAP_SERIALIZE_PRETTY | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
+    if (flags & ~valid_flags) {
         log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized serialization flags: %#x\n", flags);
         return NULL;
