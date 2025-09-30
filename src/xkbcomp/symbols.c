@@ -16,21 +16,20 @@
 
 #include <limits.h>
 
-#include "messages-codes.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 
-#include "darray.h"
-#include "keymap.h"
-#include "xkbcomp-priv.h"
-#include "darray.h"
-#include "text.h"
-#include "expr.h"
 #include "action.h"
-#include "vmod.h"
+#include "expr.h"
+#include "darray.h"
 #include "include.h"
+#include "keymap.h"
 #include "keysym.h"
+#include "messages-codes.h"
+#include "text.h"
 #include "util-mem.h"
+#include "vmod.h"
+#include "xkbcomp-priv.h"
 #include "xkbcomp/ast.h"
 
 
@@ -1687,6 +1686,7 @@ FindTypeForGroup(struct xkb_keymap *keymap, KeyInfo *keyi,
         goto use_default;
     }
 
+    keymap->types[i].required = true;
     return &keymap->types[i];
 
 use_default:
@@ -1694,6 +1694,7 @@ use_default:
      * Index 0 is guaranteed to contain something, usually
      * ONE_LEVEL or at least some default one-level type.
      */
+    keymap->types[0].required = true;
     return &keymap->types[0];
 }
 
@@ -1759,10 +1760,9 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     /* Find and assign the groups' types in the keymap. */
     darray_enumerate(i, groupi, keyi->groups) {
-        const struct xkb_key_type *type;
-        bool explicit_type;
-
-        type = FindTypeForGroup(keymap, keyi, i, &explicit_type);
+        bool explicit_type = false;
+        const struct xkb_key_type * const type =
+            FindTypeForGroup(keymap, keyi, i, &explicit_type);
 
         /* Always have as many levels as the type specifies. */
         if (type->num_levels < darray_size(groupi->levels)) {

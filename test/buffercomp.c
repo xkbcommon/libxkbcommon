@@ -2324,17 +2324,18 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
         {
             .path = "keymaps/stringcomp-v1.xkb",
             .format = XKB_KEYMAP_FORMAT_TEXT_V1,
-            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
         },
         {
             .path = "keymaps/stringcomp-v1-no-prettyfied.xkb",
             .format = XKB_KEYMAP_FORMAT_TEXT_V1,
-            .serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
+                             & ~XKB_KEYMAP_SERIALIZE_PRETTY
         },
         {
             .path = "keymaps/stringcomp-v2.xkb",
             .format = XKB_KEYMAP_FORMAT_TEXT_V2,
-            .serialize_flags = XKB_KEYMAP_SERIALIZE_PRETTY
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
         },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {

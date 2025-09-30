@@ -39,6 +39,9 @@
                   test_name ". Expected " format ", got: " format "\n", \
                   ##__VA_ARGS__, expected, got)
 
+#define TEST_KEYMAP_SERIALIZE_FLAGS \
+    (XKB_KEYMAP_SERIALIZE_PRETTY | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED)
+
 void
 test_init(void);
 

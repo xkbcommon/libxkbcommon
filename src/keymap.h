@@ -22,14 +22,16 @@
 
 #include "config.h"
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "xkbcommon/xkbcommon.h"
 
+#include "darray.h"
 #include "rmlvo.h"
-#include "utils.h"
 #include "context.h"
+#include "utils.h"
 
 /* Note: imposed by the size of the xkb_layout_mask_t type (32).
  * This is more than enough though. */
@@ -236,6 +238,7 @@ struct xkb_key_type_entry {
 struct xkb_key_type {
     xkb_atom_t name;
     struct xkb_mods mods;
+    bool required;
     xkb_level_index_t num_levels;
     xkb_level_index_t num_level_names;
     xkb_atom_t *level_names;
@@ -252,7 +255,8 @@ struct xkb_sym_interpret {
     xkb_mod_mask_t mods;
     xkb_mod_index_t virtual_mod;
     bool level_one_only;
-    bool repeat;
+    bool repeat:1;
+    bool required:1;
     xkb_action_count_t num_actions;
     union {
         /* num_actions <= 1 */

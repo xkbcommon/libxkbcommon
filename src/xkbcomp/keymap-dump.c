@@ -310,7 +310,7 @@ write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
 
 static bool
 write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-            struct buf *buf)
+            bool drop_unused, struct buf *buf)
 {
     if (keymap->types_section_name)
         write_buf(buf, "xkb_types \"%s\" {\n",
@@ -322,7 +322,9 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         return false;
 
     for (darray_size_t i = 0; i < keymap->num_types; i++) {
-        const struct xkb_key_type *type = &keymap->types[i];
+        const struct xkb_key_type * const type = &keymap->types[i];
+        if (!type->required && drop_unused)
+            continue;
 
         copy_to_buf(buf, "\ttype ");
         write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, type->name));
@@ -668,7 +670,8 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             xkb_layout_index_t max_groups, bool pretty, struct buf *buf)
+             xkb_layout_index_t max_groups, bool drop_unused, bool pretty,
+             struct buf *buf)
 {
     const struct xkb_led *led;
 
@@ -695,6 +698,8 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     for (darray_size_t i = 0; i < num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &sym_interprets[i];
+        if (!si->required && drop_unused)
+            continue;
 
         if (pretty || !si->sym) {
             write_buf(buf, "\tinterpret %s+%s(%s) {",
@@ -1044,11 +1049,12 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
 
     const bool pretty = !!(flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+    const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
 
     return (check_write_buf(buf, "xkb_keymap {\n") &&
             write_keycodes(keymap, pretty, buf) &&
-            write_types(keymap, format, buf) &&
-            write_compat(keymap, format, max_groups, pretty, buf) &&
+            write_types(keymap, format, drop_unused, buf) &&
+            write_compat(keymap, format, max_groups, drop_unused, pretty, buf) &&
             write_symbols(keymap, format, max_groups, pretty, buf) &&
             check_write_buf(buf, "};\n"));
 }
