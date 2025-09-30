@@ -812,7 +812,8 @@ usage(FILE *fp, char *progname)
         fprintf(fp,
                 "Usage: %s [--help] [--verbose]"
 #ifdef KEYMAP_DUMP
-                " [--raw] [--input-format] [--output-format] [--format]"
+                " [--no-pretty] [--drop-unused] [--raw] [--input-format]"
+                " [--output-format] [--format]"
 #else
                 " [--format] [--local-state] [--keymap FILE] [--enable-compose]"
 #endif
@@ -824,6 +825,7 @@ usage(FILE *fp, char *progname)
                 "    --output-format <FORMAT>    use output keymap format FORMAT\n"
                 "    --format <FORMAT>           keymap format to use for both input and output\n"
                 "    --no-pretty                 do not pretty-print when serializing a keymap\n"
+                "    --drop-unused               disable unused bits serialization\n"
                 "    --raw                       dump the raw keymap, without parsing it\n"
 #else
                 "    --format <FORMAT>  use keymap format FORMAT\n"
@@ -866,6 +868,7 @@ main(int argc, char *argv[])
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
+        OPT_KEYMAP_DROP_UNUSED,
         OPT_KEYMAP,
         OPT_RAW,
     };
@@ -877,6 +880,7 @@ main(int argc, char *argv[])
         {"output-format",        required_argument,      0, OPT_OUTPUT_KEYMAP_FORMAT},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
         {"no-pretty",            no_argument,            0, OPT_KEYMAP_NO_PRETTY},
+        {"drop-unused",          no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
         {"raw",                  no_argument,            0, OPT_RAW},
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
@@ -937,6 +941,9 @@ main(int argc, char *argv[])
             break;
         case OPT_KEYMAP_NO_PRETTY:
             serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
+            break;
+        case OPT_KEYMAP_DROP_UNUSED:
+            serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
         case OPT_RAW:
             dump_raw_keymap = true;
