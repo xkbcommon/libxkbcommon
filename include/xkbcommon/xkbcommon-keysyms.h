@@ -2835,10 +2835,68 @@ SOFTWARE.
  *
  */
 /* Use: XKB_KEY_XF86Eject                    _EVDEVK(0x0a2)             KEY_EJECTCLOSECD */
+/* TODO: Use XKB_KEY_XF86AudioNext?          _EVDEVK(0x0a3)             KEY_NEXTSONG */
+/* TODO: XKB_KEY_XF86MediaPlayPause?         _EVDEVK(0x0a4)             KEY_PLAYPAUSE */
+/* TODO: Use XKB_KEY_XF86AudioPrev?          _EVDEVK(0x0a5)             KEY_PREVIOUSSONG */
+/* TODO: Use XKB_KEY_XF86AudioStop?          _EVDEVK(0x0a6)             KEY_STOPCD */
+/* TODO: Use XKB_KEY_XF86AudioRecord?        _EVDEVK(0x0a7)             KEY_RECORD */
+/* TODO: Use XKB_KEY_XF86AudioRewind?        _EVDEVK(0x0a8)             KEY_REWIND */
+/* Use: XKB_KEY_XF86Phone                    _EVDEVK(0x0a9)             KEY_PHONE */
+/* TODO: unclear function                    _EVDEVK(0x0aa)             KEY_ISO */
+/* TODO: unclear function                    _EVDEVK(0x0ab)             KEY_CONFIG */
+/* Use: XKB_KEY_XF86HomePage                 _EVDEVK(0x0ac)             KEY_HOMEPAGE */
+/* Use: XKB_KEY_XF86Refresh                  _EVDEVK(0x0ad)             KEY_REFRESH */
+/* TODO: unclear function                    _EVDEVK(0x0ae)             KEY_EXIT */
+/* TODO: unclear function                    _EVDEVK(0x0af)             KEY_MOVE */
+/* TODO: unclear function                    _EVDEVK(0x0b0)             KEY_EDIT */
+/* Use: XKB_KEY_XF86ScrollUp                 _EVDEVK(0x0b1)             KEY_SCROLLUP */
+/* Use: XKB_KEY_XF86ScrollDown               _EVDEVK(0x0b2)             KEY_SCROLLDOWN */
+/* NOTE: Unless there are special actions bound to the keys KEY_KPLEFTPAREN and
+ * KEY_KPRIGHTPAREN, there is no reason to introduce keypad-specific keysyms */
+/* Use: XKB_KEY_parenleft                    _EVDEVK(0x0b3)             KEY_KPLEFTPAREN */
+/* Use: XKB_KEY_parenright                   _EVDEVK(0x0b4)             KEY_KPRIGHTPAREN */
 /* Use: XKB_KEY_XF86New                      _EVDEVK(0x0b5)     v2.6.14 KEY_NEW */
 /* Use: XKB_KEY_Redo                         _EVDEVK(0x0b6)     v2.6.14 KEY_REDO */
-/* KEY_DASHBOARD has been mapped to LaunchB in xkeyboard-config since 2011 */
+/* Use: XKB_KEY_F13                          _EVDEVK(0x0b7)             KEY_F13 */
+/* Use: XKB_KEY_F14                          _EVDEVK(0x0b8)             KEY_F14 */
+/* Use: XKB_KEY_F15                          _EVDEVK(0x0b9)             KEY_F15 */
+/* Use: XKB_KEY_F16                          _EVDEVK(0x0ba)             KEY_F16 */
+/* Use: XKB_KEY_F17                          _EVDEVK(0x0bb)             KEY_F17 */
+/* Use: XKB_KEY_F18                          _EVDEVK(0x0bc)             KEY_F18 */
+/* Use: XKB_KEY_F19                          _EVDEVK(0x0bd)             KEY_F19 */
+/* Use: XKB_KEY_F20                          _EVDEVK(0x0be)             KEY_F20 */
+/* Use: XKB_KEY_F21                          _EVDEVK(0x0bf)             KEY_F21 */
+/* Use: XKB_KEY_F22                          _EVDEVK(0x0c0)             KEY_F22 */
+/* Use: XKB_KEY_F23                          _EVDEVK(0x0c1)             KEY_F23 */
+/* Use: XKB_KEY_F24                          _EVDEVK(0x0c2)             KEY_F24 */
+/* TODO: Use XKB_KEY_XF86AudioPlay?          _EVDEVK(0x0c8)             KEY_PLAYCD */
+/* TODO: Use XKB_KEY_XF86AudioPause?         _EVDEVK(0x0c9)             KEY_PAUSECD */
+/* Use: XKB_KEY_XF86Launch3                  _EVDEVK(0x0ca)             KEY_PROG3 */
+/* Use: XKB_KEY_XF86Launch4                  _EVDEVK(0x0cb)             KEY_PROG4 */
+/* NOTE: KEY_DASHBOARD has been mapped to LaunchB in xkeyboard-config since 2011 */
 /* Use: XKB_KEY_XF86LaunchB                  _EVDEVK(0x0cc)     v2.6.28 KEY_DASHBOARD */
+/* Use: XKB_KEY_XF86Suspend                  _EVDEVK(0x0cd)             KEY_SUSPEND */
+/* Use: XKB_KEY_XF86Close                    _EVDEVK(0x0ce)             KEY_CLOSE */
+/* TODO: Use XKB_KEY_XF86AudioPlay?          _EVDEVK(0x0cf)             KEY_PLAY */
+/* TODO: Use XKB_KEY_XF86AudioForward?       _EVDEVK(0x0d0)             KEY_FASTFORWARD */
+/* TODO: XKB_KEY_XF86AudioBassBoost?         _EVDEVK(0x0d1)             KEY_BASSBOOST */
+/* Use: XKB_KEY_Print                        _EVDEVK(0x0d2)             KEY_PRINT */
+/* TODO: headphone or vendor key?            _EVDEVK(0x0d3)             KEY_HP */
+/* Use: XKB_KEY_XF86WebCam                   _EVDEVK(0x0d4)             KEY_CAMERA */
+/* TODO: unclear function                    _EVDEVK(0x0d5)             KEY_SOUND */
+/* TODO: unclear function                    _EVDEVK(0x0d6)             KEY_QUESTION */
+/* Use: XKB_KEY_XF86Mail                     _EVDEVK(0x0d7)             KEY_EMAIL */
+/* Use: XKB_KEY_XF86Messenger                _EVDEVK(0x0d8)             KEY_CHAT */
+/* Use: XKB_KEY_XF86Search                   _EVDEVK(0x0d9)             KEY_SEARCH */
+/* TODO: unclear function                    _EVDEVK(0x0da)             KEY_CONNECT */
+/* Use: XKB_KEY_XF86Finance                  _EVDEVK(0x0db)             KEY_FINANCE */
+#define XKB_KEY_XF86Sport                    0x100810dc      /*         KEY_SPORT */
+/* Use: XKB_KEY_XF86Shop                     _EVDEVK(0x0dd)             KEY_SHOP */
+/* TODO: unclear function                    _EVDEVK(0x0de)             KEY_ALTERASE */
+/* Use: XKB_KEY_Cancel                       _EVDEVK(0x0df)             KEY_CANCEL */
+/* Use: XKB_KEY_XF86MonBrightnessDown        _EVDEVK(0x0e0)             KEY_BRIGHTNESSDOWN */
+/* Use: XKB_KEY_XF86MonBrightnessUp          _EVDEVK(0x0e1)             KEY_BRIGHTNESSUP */
+/* Use: XKB_KEY_XF86AudioMedia               _EVDEVK(0x0e2)             KEY_MEDIA */
 /* Use: XKB_KEY_XF86Display                  _EVDEVK(0x0e3)     v2.6.12 KEY_SWITCHVIDEOMODE */
 /* Use: XKB_KEY_XF86KbdLightOnOff            _EVDEVK(0x0e4)     v2.6.12 KEY_KBDILLUMTOGGLE */
 /* Use: XKB_KEY_XF86KbdBrightnessDown        _EVDEVK(0x0e5)     v2.6.12 KEY_KBDILLUMDOWN */
@@ -2852,10 +2910,12 @@ SOFTWARE.
 /* Use: XKB_KEY_XF86Bluetooth                _EVDEVK(0x0ed)     v2.6.19 KEY_BLUETOOTH */
 /* Use: XKB_KEY_XF86WLAN                     _EVDEVK(0x0ee)     v2.6.19 KEY_WLAN */
 /* Use: XKB_KEY_XF86UWB                      _EVDEVK(0x0ef)     v2.6.24 KEY_UWB */
+/* Use: NoSymbol                             _EVDEVK(0x0f0)             KEY_UNKNOWN */
 /* Use: XKB_KEY_XF86Next_VMode               _EVDEVK(0x0f1)     v2.6.23 KEY_VIDEO_NEXT */
 /* Use: XKB_KEY_XF86Prev_VMode               _EVDEVK(0x0f2)     v2.6.23 KEY_VIDEO_PREV */
 /* Use: XKB_KEY_XF86MonBrightnessCycle       _EVDEVK(0x0f3)     v2.6.23 KEY_BRIGHTNESS_CYCLE */
-#define XKB_KEY_XF86BrightnessAuto           0x100810f4      /* v3.16   KEY_BRIGHTNESS_AUTO */
+#define XKB_KEY_XF86BrightnessAuto           0x100810f4      /* Deprecated alias for XF86MonBrightnessAuto */
+#define XKB_KEY_XF86MonBrightnessAuto        0x100810f4      /* v3.16   KEY_BRIGHTNESS_AUTO */
 #define XKB_KEY_XF86DisplayOff               0x100810f5      /* v2.6.23 KEY_DISPLAY_OFF */
 /* Use: XKB_KEY_XF86WWAN                     _EVDEVK(0x0f6)     v3.13   KEY_WWAN */
 /* Use: XKB_KEY_XF86RFKill                   _EVDEVK(0x0f7)     v2.6.33 KEY_RFKILL */
@@ -2955,8 +3015,32 @@ SOFTWARE.
 #define XKB_KEY_XF86NotificationCenter       0x100811bc      /* v5.10   KEY_NOTIFICATION_CENTER */
 #define XKB_KEY_XF86PickupPhone              0x100811bd      /* v5.10   KEY_PICKUP_PHONE */
 #define XKB_KEY_XF86HangupPhone              0x100811be      /* v5.10   KEY_HANGUP_PHONE */
+#define XKB_KEY_XF86LinkPhone                0x100811bf      /* v6.14   KEY_LINK_PHONE */
+/* TODO: XKB_KEY_XF86DeleteToEndOfLine?      _EVDEVK(0x1c0)             KEY_DEL_EOL */
+/* TODO: XKB_KEY_XF86DeleteToEndOfScreen?    _EVDEVK(0x1c1)             KEY_DEL_EOS */
+/* TODO: XKB_KEY_XF86InsertLine?             _EVDEVK(0x1c2)             KEY_INS_LINE */
+/* TODO: XKB_KEY_XF86DeleteLine?             _EVDEVK(0x1c3)             KEY_DEL_LINE */
 #define XKB_KEY_XF86Fn                       0x100811d0      /*         KEY_FN */
 #define XKB_KEY_XF86Fn_Esc                   0x100811d1      /*         KEY_FN_ESC */
+#define XKB_KEY_XF86Fn_F1                    0x100811d2      /*         KEY_FN_F1 */
+#define XKB_KEY_XF86Fn_F2                    0x100811d3      /*         KEY_FN_F2 */
+#define XKB_KEY_XF86Fn_F3                    0x100811d4      /*         KEY_FN_F3 */
+#define XKB_KEY_XF86Fn_F4                    0x100811d5      /*         KEY_FN_F4 */
+#define XKB_KEY_XF86Fn_F5                    0x100811d6      /*         KEY_FN_F5 */
+#define XKB_KEY_XF86Fn_F6                    0x100811d7      /*         KEY_FN_F6 */
+#define XKB_KEY_XF86Fn_F7                    0x100811d8      /*         KEY_FN_F7 */
+#define XKB_KEY_XF86Fn_F8                    0x100811d9      /*         KEY_FN_F8 */
+#define XKB_KEY_XF86Fn_F9                    0x100811da      /*         KEY_FN_F9 */
+#define XKB_KEY_XF86Fn_F10                   0x100811db      /*         KEY_FN_F10 */
+#define XKB_KEY_XF86Fn_F11                   0x100811dc      /*         KEY_FN_F11 */
+#define XKB_KEY_XF86Fn_F12                   0x100811dd      /*         KEY_FN_F12 */
+#define XKB_KEY_XF86Fn_1                     0x100811de      /*         KEY_FN_1 */
+#define XKB_KEY_XF86Fn_2                     0x100811df      /*         KEY_FN_2 */
+#define XKB_KEY_XF86Fn_D                     0x100811e0      /*         KEY_FN_D */
+#define XKB_KEY_XF86Fn_E                     0x100811e1      /*         KEY_FN_E */
+#define XKB_KEY_XF86Fn_F                     0x100811e2      /*         KEY_FN_F */
+#define XKB_KEY_XF86Fn_S                     0x100811e3      /*         KEY_FN_S */
+#define XKB_KEY_XF86Fn_B                     0x100811e4      /*         KEY_FN_B */
 #define XKB_KEY_XF86FnRightShift             0x100811e5      /* v5.10   KEY_FN_RIGHT_SHIFT */
 /* Use: XKB_KEY_braille_dot_1                _EVDEVK(0x1f1)     v2.6.17 KEY_BRL_DOT1 */
 /* Use: XKB_KEY_braille_dot_2                _EVDEVK(0x1f2)     v2.6.17 KEY_BRL_DOT2 */
@@ -3103,6 +3187,7 @@ SOFTWARE.
 #define XKB_KEY_XF86KbdLcdMenu3              0x100812ba      /* v5.5    KEY_KBD_LCD_MENU3 */
 #define XKB_KEY_XF86KbdLcdMenu4              0x100812bb      /* v5.5    KEY_KBD_LCD_MENU4 */
 #define XKB_KEY_XF86KbdLcdMenu5              0x100812bc      /* v5.5    KEY_KBD_LCD_MENU5 */
+#define XKB_KEY_XF86PerformanceMode          0x100812bd      /* v6.17   KEY_PERFORMANCE */
 
 /*
  * Copyright (c) 1991, Oracle and/or its affiliates.

@@ -39,7 +39,7 @@ KEYSYM_ENTRY_PATTERN = re.compile(
     (?P<value>0x[0-9a-fA-F]+)\s*
     (?:/\*\s*
         (?:
-            (?P<deprecated>deprecated)|
+            (?P<deprecated>(?:D|d)eprecated)|
             \(<U\+(?P<unicode_alt_semantics>[0-9a-fA-F]{4,}>)\)|
             \(U\+(?P<deprecated_unicode>[0-9a-fA-F]{4,})\s(?:\s|\w|-)+\)|
             .*
