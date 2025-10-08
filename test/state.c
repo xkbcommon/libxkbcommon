@@ -3075,6 +3075,35 @@ test_extended_layout_indices(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_layout_index_named_bounds(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_rules(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V2, "evdev-modern", "pc104",
+        "us,in,ch,cz,de", NULL, "grp:shift_caps_switch,grp:group_bounds"
+    );
+    assert(keymap);
+    struct xkb_state * const state = xkb_state_new(keymap);
+    assert(state);
+
+    /* Last layout */
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 4);
+
+    xkb_state_update_latched_locked(state, 0, 0, false, 0, 0, 0, true, 2);
+
+    /* First layout */
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0);
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -3124,6 +3153,7 @@ main(void)
     test_multiple_actions(context);
     test_void_action(context);
     test_extended_layout_indices(context);
+    test_layout_index_named_bounds(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;
