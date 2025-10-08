@@ -38,7 +38,7 @@
 /** Maximum keysym value with explicit name */
 #define XKB_KEYSYM_MAX_EXPLICIT   0x1008ffb8
 /** Count of keysym value with explicit name */
-#define XKB_KEYSYM_COUNT_EXPLICIT 2471
+#define XKB_KEYSYM_COUNT_EXPLICIT 2493
 /** Offset to use when converting a Unicode code point to a keysym */
 #define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
 /** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */

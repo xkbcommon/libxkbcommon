@@ -26,7 +26,7 @@ keysym_entry_pattern = re.compile(
     (?:(?P<define>\#define)\s+|(?P<use>/\*\s+Use:)\s+|(?P<todo>/\*\s+TODO:))
     (?(todo)
         (?P<todo_comment>(?:\s+(?!{EVDEV_MACRO}|0x)\S+)+) |
-        (?P<prefix>\w*){XORG_KEY_PREFIX}(?P<name>\w+)
+        (?:(?P<prefix>\w*){XORG_KEY_PREFIX}|(?=NoSymbol))(?P<name>\w+)
     )
     (?P<spacing>\s+)
     (?P<evdev>{EVDEV_MACRO}\()?(?P<value>0x[0-9A-Fa-f]+)(?(evdev)\))
@@ -76,13 +76,27 @@ def make_keysym_entry(m: re.Match[str]) -> str:
     spacing = m.group("spacing")
     if todo := m.group("todo"):
         todo_comment = m.group("todo_comment")
-        spacing += EXTRA_SPACES
+        todo_commentʹ = xorgproto_keysym_prefix_pattern.sub(
+            rf"{KEY_PREFIX}\1", todo_comment
+        )
+        if todo_commentʹ != todo_comment:
+            diff = len(todo_commentʹ) - len(todo_comment)
+            if diff != len(EXTRA_SPACES):
+                raise ValueError()
+            todo_comment = todo_commentʹ
+        else:
+            spacing += EXTRA_SPACES
         return f"""{todo}{todo_comment}{spacing}{value_str}"""
     else:
         prefix = m.group("prefix") or ""
         name = m.group("name")
         define = m.group("define") or m.group("use")
-        return f"""{define} {KEY_PREFIX}{prefix}{name}{spacing}{value_str}"""
+        if m.group("use") and name == "NoSymbol":
+            spacing += EXTRA_SPACES
+            key_prefix = ""
+        else:
+            key_prefix = KEY_PREFIX
+        return f"""{define} {key_prefix}{prefix}{name}{spacing}{value_str}"""
 
 
 def fix_alias(m: re.Match[str]) -> str:
