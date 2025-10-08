@@ -329,24 +329,11 @@ class TestXkbcli(unittest.TestCase):
             "interactive-wayland",
             skipIf=no_interactive_wayland,
         )
+        # NOTE: `interactive` cannot be tested, because it hardcodes the paths
+        #        of the `xkbcli-interactive-{wayland,x11}` tools it calls to the
+        #        *install* directory, while we need to use those of the *build*
+        #        directory.
 
-        def has_no_backend(*skipped_backends):
-            return all(
-                reduce(lambda acc, cond: acc or cond[0], skipped_backend, False)
-                for skipped_backend in skipped_backends
-            )
-
-        cls.xkbcli_interactive = XkbcliTool(
-            "interactive",
-            skipIf=(
-                (
-                    has_no_backend(
-                        no_interactive_wayland, no_interactive_x11, no_interactive_evdev
-                    ),
-                    "no available backend",
-                ),
-            ),
-        )
         cls.xkbcli_dump_keymap_x11 = XkbcliTool(
             "dump-keymap-x11",
             skipIf=no_interactive_x11,
@@ -355,15 +342,11 @@ class TestXkbcli(unittest.TestCase):
             "dump-keymap-wayland",
             skipIf=no_interactive_wayland,
         )
-        cls.xkbcli_dump_keymap = XkbcliTool(
-            "dump-keymap",
-            skipIf=(
-                (
-                    has_no_backend(no_interactive_wayland, no_interactive_x11),
-                    "no available backend",
-                ),
-            ),
-        )
+        # NOTE: `dump-keymap` cannot be tested, because it hardcodes the paths
+        #        of the `xkbcli-dump-keymap-{wayland,x11}` tools it calls to the
+        #        *install* directory, while we need to use those of the *build*
+        #        directory.
+
         cls.all_tools = [
             cls.xkbcli,
             cls.xkbcli_list,
@@ -373,10 +356,8 @@ class TestXkbcli(unittest.TestCase):
             cls.xkbcli_interactive_evdev,
             cls.xkbcli_interactive_x11,
             cls.xkbcli_interactive_wayland,
-            cls.xkbcli_interactive,
             cls.xkbcli_dump_keymap_x11,
             cls.xkbcli_dump_keymap_wayland,
-            cls.xkbcli_dump_keymap,
         ]
 
     def test_help(self):
