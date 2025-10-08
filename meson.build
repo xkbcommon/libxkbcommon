@@ -56,12 +56,27 @@ add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 # The XKB config root.
 XKBCONFIGROOT = get_option('xkb-config-root')
 if XKBCONFIGROOT == ''
-    xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
-    if xkeyboard_config_dep.found()
-        XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
-    else
-        XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
-  endif
+    # Try to set from the xkeyboard-config package, from the most recent to the
+    # oldest major version. The hard-coded major versions list should cover at
+    # least a decade (and probably much more!), given the expected pace of
+    # xkeyboard-config format changes.
+    foreach v: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
+        xkeyboard_config_dep = dependency(f'xkeyboard-config-@v@', required: false)
+        if xkeyboard_config_dep.found()
+            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_root')
+            break
+        endif
+    endforeach
+    if XKBCONFIGROOT == ''
+        # Try old unversioned pkg-config (xkeyboard-config < 2.45)
+        xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
+        if xkeyboard_config_dep.found()
+            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
+        else
+            # Fallback to the legacy X11 directory
+            XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
+        endif
+    endif
 endif
 
 XKBCONFIGEXTRAPATH = get_option('xkb-config-extra-path')
