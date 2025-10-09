@@ -346,6 +346,7 @@ xkb_action_breaks_latch(const union xkb_action *action,
         return (action->internal.flags & flag) &&
                ((action->internal.clear_latched_mods & mask) == mask);
     default:
+        {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
         static_assert(ACTION_TYPE_INTERNAL == 18 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,

@@ -14,6 +14,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "xkbcommon/xkbcommon.h"
 #include "context.h"
 #include "keymap.h"
