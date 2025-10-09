@@ -251,6 +251,8 @@ libxkbcommon_sources = [
     'src/ks_tables.h',
     'src/keymap.c',
     'src/keymap.h',
+    'src/keymap-compare.c',
+    'src/keymap-compare.h',
     'src/keymap-priv.c',
     'src/messages-codes.h',
     'src/rmlvo.c',

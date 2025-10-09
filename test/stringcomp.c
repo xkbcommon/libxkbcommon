@@ -13,6 +13,86 @@
 #include "test.h"
 #include "test/utils-text.h"
 #include "utils.h"
+#include "keymap-compare.h"
+
+static void
+test_keymap_comparison(struct xkb_context *ctx)
+{
+    static const struct {
+        const char* keymap1;
+        const char* keymap2;
+        enum xkb_keymap_compare_property properties;
+        bool same;
+    } tests[] = {
+        {
+            .keymap1 = "xkb_keymap {};",
+            .keymap2 = "xkb_keymap {};",
+            .properties = XKB_KEYMAP_CMP_ALL,
+            .same = true
+        },
+        {
+            .keymap1 =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "};",
+            .keymap2 = "xkb_keymap {};",
+            .properties = XKB_KEYMAP_CMP_ALL,
+            .same = false
+        },
+        {
+            .keymap1 =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <a> = 1;\n"
+                "    <b> = 2;\n"
+                "  };\n"
+                "  xkb_compat { include \"caps\" };\n"
+                "  xkb_types { include \"basic+iso9995\" };\n"
+                "  xkb_symbols {\n"
+                "    key <a> { [a, A] };\n"
+                "    key <b> { [Caps_Lock] };\n" /* implicit action */
+                "  };\n"
+                "};",
+            .keymap2 =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <a> = 1;\n"
+                "    <b> = 2;\n"
+                "  };\n"
+                "  xkb_compat {};\n" /* empty */
+                "  xkb_types { include \"basic\" };\n" /* less types */
+                "  xkb_symbols {\n"
+                /* Change key order + explicit actions and types */
+                "    key <b> {\n"
+                "      [Caps_Lock],\n"
+                "      [LockMods(modifiers = Lock)],\n"
+                "      type=\"ONE_LEVEL\"\n"
+                "    };\n"
+                "    key <a> { [a, A], type=\"ALPHABETIC\" };\n"
+                /* Definition in different section */
+                "    virtual_modifiers LevelThree;\n"
+                "  };\n"
+                "};",
+            .properties = (XKB_KEYMAP_CMP_ALL & ~(XKB_KEYMAP_CMP_POSSIBLY_DROPPED)),
+            .same = true
+        },
+    };
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n%s: #%zu\n", __func__, t);
+        struct xkb_keymap * const keymap1 = test_compile_string(
+            ctx, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].keymap1
+        );
+        assert(keymap1);
+        struct xkb_keymap * const keymap2 = test_compile_string(
+            ctx, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].keymap2
+        );
+        assert(keymap2);
+        assert(xkb_keymap_compare(ctx, keymap1, keymap2, tests[t].properties) ==
+               tests[t].same);
+        xkb_keymap_unref(keymap1);
+        xkb_keymap_unref(keymap2);
+    }
+}
 
 static void
 test_explicit_actions(struct xkb_context *ctx)
@@ -127,11 +207,41 @@ main(int argc, char *argv[])
                                     original, 0 /* unused */, data[k].path,
                                     update_output_files));
 
-        /* Check pretty/no-pretty round-trip */
+        /*
+         * Check round-trip by dropping/keeping unused keymap items
+         * We obviously cannot compare the serializations, so only keymap
+         * objects are compared.
+         */
+
         keymap = xkb_keymap_new_from_string(ctx, original, data[k].format,
                                             XKB_KEYMAP_COMPILE_NO_FLAGS);
         assert(keymap);
         free(original);
+        const enum xkb_keymap_serialize_flags test_serialize_flags[] = {
+            (data[k].serialize_flags & ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED),
+            (data[k].serialize_flags |  XKB_KEYMAP_SERIALIZE_KEEP_UNUSED)
+        };
+        for (size_t f = 0; f < ARRAY_SIZE(test_serialize_flags); f++) {
+            original = xkb_keymap_get_as_string2(keymap, data[k].format,
+                                                 test_serialize_flags[f]);
+            assert(original);
+            struct xkb_keymap *keymap2 = xkb_keymap_new_from_string(
+                ctx, original, data[k].format, XKB_KEYMAP_COMPILE_NO_FLAGS
+            );
+            assert(keymap2);
+            free(original);
+            assert(xkb_keymap_compare(ctx, keymap, keymap2,
+                                      (XKB_KEYMAP_CMP_ALL &
+                                       ~(XKB_KEYMAP_CMP_POSSIBLY_DROPPED))));
+            xkb_keymap_unref(keymap2);
+        }
+
+        /*
+         * Check pretty/no-pretty round-trip, i.e. check that changing the
+         * pretty-print flags results in the same keymap, for both keymap
+         * objects and serializations.
+         */
+
         const enum xkb_keymap_serialize_flags serialize_flags =
             (data[k].serialize_flags & XKB_KEYMAP_SERIALIZE_PRETTY)
                 ? (data[k].serialize_flags & ~XKB_KEYMAP_SERIALIZE_PRETTY)
@@ -139,7 +249,14 @@ main(int argc, char *argv[])
         original = xkb_keymap_get_as_string2(keymap, data[k].format,
                                              serialize_flags);
         assert(original);
-        xkb_keymap_unref(keymap);
+
+        struct xkb_keymap *keymap2 = xkb_keymap_new_from_string(
+            ctx, original, data[k].format, XKB_KEYMAP_COMPILE_NO_FLAGS
+        );
+        assert(keymap2);
+        assert(xkb_keymap_compare(ctx, keymap, keymap2, XKB_KEYMAP_CMP_ALL));
+        xkb_keymap_unref(keymap2);
+
         assert(test_compile_output2(ctx, data[k].format,
                                     XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                     data[k].serialize_flags,
@@ -148,6 +265,7 @@ main(int argc, char *argv[])
                                     original, 0 /* unused */, data[k].path,
                                     update_output_files));
         free(original);
+        xkb_keymap_unref(keymap);
     }
 
     /* Make sure we can recompile our output for a normal keymap from rules. */
@@ -182,6 +300,7 @@ main(int argc, char *argv[])
     free(dump);
     free(dump2);
 
+    test_keymap_comparison(ctx);
     test_explicit_actions(ctx);
 
     xkb_context_unref(ctx);
