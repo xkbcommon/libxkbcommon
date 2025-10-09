@@ -10,6 +10,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "xkbcommon/xkbcommon-names.h"
 #include "keymap.h"
@@ -161,14 +162,17 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
                 a->ctrls.ctrls == b->ctrls.ctrls);
     case ACTION_TYPE_UNSUPPORTED_LEGACY:
         return true;
-    case ACTION_TYPE_PRIVATE:
-        return (a->priv.data == b->priv.data);
+    /* ACTION_TYPE_PRIVATE processed in the default case */
     case ACTION_TYPE_INTERNAL:
         return (a->internal.flags == b->internal.flags) &&
                (a->internal.clear_latched_mods == b->internal.clear_latched_mods);
     default:
-        assert(!"Unsupported action");
-        return false;
+        /* Ensure to not miss `xkb_action_type` updates */
+        static_assert(ACTION_TYPE_INTERNAL == 18 &&
+                      ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
+                      "Missing action type");
+        /* Private/custom action */
+        return memcmp(a->priv.data, b->priv.data, sizeof(a->priv.data)) == 0;
     }
 }
 
