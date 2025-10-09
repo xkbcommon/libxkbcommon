@@ -581,6 +581,10 @@ void_action:
         break;
 
     default:
+        /* Ensure to not miss `xkb_action_type` updates */
+        static_assert(ACTION_TYPE_INTERNAL == 18 &&
+                      ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
+                      "Missing action type");
         /* Unsupported legacy actions should have degraded to NoAction */
         assert(action->type != ACTION_TYPE_UNSUPPORTED_LEGACY);
         write_buf(buf,

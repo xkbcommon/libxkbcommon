@@ -814,6 +814,11 @@ static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_PRIVATE] = HandlePrivate,
 };
 
+/* Ensure to not miss `xkb_action_type` updates */
+static_assert(ACTION_TYPE_INTERNAL == 18 &&
+              ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
+              "Missing action type");
+
 /***====================================================================***/
 
 bool
