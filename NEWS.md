@@ -1,3 +1,102 @@
+libxkbcommon [1.12.0] – 2025-10-10
+==================================
+
+The highlight of this release is the performance improvements for keymap handling:
+- about 1.6× speedup at *serializing* with default options;
+- about 1.7× speedup at *parsing* keymaps serialized by libxkbcommon, otherwise
+  at least 1.1×.
+
+[1.12.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.0
+
+
+## API
+
+### Breaking changes
+
+- `xkb_keymap::xkb_keymap_get_as_string()` does not pretty-print the keymap anymore.
+  Use `xkb_keymap::xkb_keymap_get_as_string2()` with `::XKB_KEYMAP_SERIALIZE_PRETTY`
+  to get the previous behavior.
+  ([#640](https://github.com/xkbcommon/libxkbcommon/issues/640))
+- `xkb_keymap::xkb_keymap_get_as_string()` does not serialize *unused* types and
+  compatibility entries anymore. Use `xkb_keymap::xkb_keymap_get_as_string2()`
+  with `::XKB_KEYMAP_SERIALIZE_KEEP_UNUSED` to get the previous behavior.
+  ([#769](https://github.com/xkbcommon/libxkbcommon/issues/769))
+- Updated keysyms case mappings to cover full <strong>[Unicode 17.0]</strong>.
+
+[Unicode 17.0]: https://www.unicode.org/versions/Unicode17.0.0/
+
+### Deprecated
+
+- Deprecated keysyms from latest [xorgproto]
+    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorproto-103]):
+
+  - `XKB_KEY_XF86BrightnessAuto` (use `XKB_KEY_XF86MonBrightnessAuto` instead)
+
+[xorproto-103]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/103
+
+### New
+
+- Added `xkb_keymap::xkb_keymap_get_as_string2()`, which enables to configure
+  the serialization.
+- Added keysyms from latest [xorgproto]
+    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorproto-103]):
+
+  - `XKB_KEY_XF86Sport`
+  - `XKB_KEY_XF86MonBrightnessAuto` (alias for `XKB_KEY_XF86BrightnessAuto`)
+  - `XKB_KEY_XF86LinkPhone`
+  - `XKB_KEY_XF86Fn_F1`
+  - `XKB_KEY_XF86Fn_F2`
+  - `XKB_KEY_XF86Fn_F3`
+  - `XKB_KEY_XF86Fn_F4`
+  - `XKB_KEY_XF86Fn_F5`
+  - `XKB_KEY_XF86Fn_F6`
+  - `XKB_KEY_XF86Fn_F7`
+  - `XKB_KEY_XF86Fn_F8`
+  - `XKB_KEY_XF86Fn_F9`
+  - `XKB_KEY_XF86Fn_F10`
+  - `XKB_KEY_XF86Fn_F11`
+  - `XKB_KEY_XF86Fn_F12`
+  - `XKB_KEY_XF86Fn_1`
+  - `XKB_KEY_XF86Fn_2`
+  - `XKB_KEY_XF86Fn_D`
+  - `XKB_KEY_XF86Fn_E`
+  - `XKB_KEY_XF86Fn_F`
+  - `XKB_KEY_XF86Fn_S`
+  - `XKB_KEY_XF86Fn_B`
+  - `XKB_KEY_XF86PerformanceMode`
+- Enable to parse the full range of keycodes `0 .. 0xfffffffe`, which was
+  previously limited to `0 .. 0xfff`.
+  ([#849](https://github.com/xkbcommon/libxkbcommon/issues/849))
+- Compose: Custom locales now fallback to `en_US.UTF-8`. Custom locales requiring
+  a dedicated Compose file are not yet supported. The workaround is to use the
+  various ways to [specify a user Compose file].
+
+  [specify a user Compose file]: @ref xkb_compose_table::xkb_compose_table_new_from_locale()
+
+
+## Tools
+
+### New
+
+- `xkbcli {compile-keymap,dump-keymap*}`: Added `--no-pretty` to disable pretty-printing in
+  keymap serialization. ([#640](https://github.com/xkbcommon/libxkbcommon/issues/640))
+- `xkbcli {compile-keymap,dump-keymap*}`: Added `--keep-unused` to not discard
+  unused bit for keymap serialization. ([#769](https://github.com/xkbcommon/libxkbcommon/issues/769))
+- `xkbcli-compile-keymap`: Added `--kccgst-yaml` to output KcCGST components in
+  YAML format.
+
+
+## Build system
+
+### Breaking changes
+
+- The *default* XKB root directory is now set from the *most recent*
+  [xkeyboard-config](https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config)
+  installed package, in case [multiple versions](https://xkeyboard-config.freedesktop.org/doc/versioning/)
+  are installed in parallel.
+  If no such package is found, it fallbacks to the historical X11 directory, as previously.
+
+
 libxkbcommon [1.11.0] – 2025-08-08
 ==================================
 
