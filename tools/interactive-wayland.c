@@ -238,7 +238,10 @@ os_create_anonymous_file(off_t size)
 static void
 buffer_release(void *data, struct wl_buffer *buffer)
 {
+    struct interactive_dpy *inter = data;
+
     wl_buffer_destroy(buffer);
+    inter->buf = NULL;
 }
 
 static const struct wl_buffer_listener buffer_listener = {
