@@ -7,8 +7,9 @@
 
 #include <assert.h>
 
-#include "x11-priv.h"
 #include "xkbcommon/xkbcommon.h"
+#include "atom.h"
+#include "x11-priv.h"
 
 /*
  * References for the lonesome traveler:
@@ -917,9 +918,10 @@ get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
         uint8_t wire_num_levels = *n_levels_per_type_iter;
         struct xkb_key_type *type = &keymap->types[i];
 
-        /* Levels must have names. */
-        FAIL_UNLESS(type->num_levels == wire_num_levels);
+        /* Levels names are optional, but the maximum is the level count */
+        FAIL_UNLESS(type->num_levels >= wire_num_levels);
 
+        /* Allocate names for all levels, even if some names are missing */
         ALLOC_OR_FAIL(type->level_names, type->num_levels);
 
         x11_atom_interner_adopt_atom(interner, wire_type_name, &type->name);
@@ -927,6 +929,10 @@ get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
             x11_atom_interner_adopt_atom(interner, kt_level_names_iter[j],
                                          &type->level_names[j]);
         }
+        /* We may have received less names than there are levels: ensure
+         * missing names have a fallback. */
+        for (size_t j = wire_num_levels; j < type->num_levels; j++)
+            type->level_names[j] = XKB_ATOM_NONE;
 
         type->num_level_names = type->num_levels;
         kt_level_names_iter += wire_num_levels;
