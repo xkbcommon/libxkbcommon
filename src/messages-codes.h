@@ -206,7 +206,9 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_RULES_SYNTAX = 967,
     /** Some modifiers used in a key type “map” or “preserve” entry are not declared */
     XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE = 971,
-    _XKB_LOG_MESSAGE_MAX_CODE = 971
+    /** Canonical key types have mandatory properties defined in the XKB protocol */
+    XKB_ERROR_INVALID_CANONICAL_KEY_TYPE = 984,
+    _XKB_LOG_MESSAGE_MAX_CODE = 984
 };
 
 typedef uint32_t xkb_message_code_t;

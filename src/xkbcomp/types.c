@@ -6,8 +6,13 @@
 #include "config.h"
 
 #include <limits.h>
+#include <stdint.h>
 
+#include "xkbcommon/xkbcommon-names.h"
 #include "xkbcommon/xkbcommon.h"
+#include "darray.h"
+#include "keymap.h"
+#include "utils.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "vmod.h"
@@ -723,51 +728,229 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
 static bool
 CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 {
-    const darray_size_t num_types = darray_empty(info->types)
-                                  ? 1
-                                  : darray_size(info->types);
-    struct xkb_key_type *types = calloc(num_types, sizeof(*types));
+    /*
+     * The following types are called “Canonical Key Types” and the XKB protocol
+     * specifies them as mandatory in any keymap:
+     *
+     * - ONE_LEVEL
+     * - TWO_LEVEL
+     * - ALPHABETIC
+     * - KEYPAD
+     *
+     * They must have specific properties defined in the appendix B of
+     * “The X Keyboard Extension: Protocol Specification”:
+     * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#canonical_key_types
+     *
+     * In the Xorg ecosystem, any missing canonical type fallbacks to a default
+     * type supplied by libX11’s `XkbInitCanonicalKeyTypes()`, e.g. in xkbcomp.
+     *
+     * libxkbcommon does not require these types per se: it only requires that
+     * all *used* types — explicit (`type="…"`) or implicit (automatic types) —
+     * are defined, with the exception that if no key type at all is defined,
+     * then a default one-level type is provided.
+     *
+     * libxkbcommon also does not require any particular order of these key
+     * types, because they are retrieved using their name instead of their index.
+     *
+     * libxkbcommon does require that if these key types exist, they must follow
+     * the specification of the XKB protocol, because they are used in the
+     * automatic key type assignment.
+     *
+     * Since 1.12, libxkbcommon drops any unused key type at serialization by
+     * default. Some layouts with 4+ levels may not require e.g. the `TWO_LEVEL`
+     * nor the `ALPHABETIC` types.
+     *
+     * In theory, libxkbcommon would not care of the presence of the canonical
+     * key types and could delegate the fallback and ordering work to xkbcomp,
+     * as it is the case in Xorg’s Xwayland. However the implementation is buggy:
+     *
+     * - https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/292
+     * - https://gitlab.freedesktop.org/xorg/xserver/-/merge_requests/2082
+     *
+     * So until there is a release of libX11 and xserver with the patches, the
+     * following code ensures the presence of the canonical key types.
+     */
+
+    enum canonical_type_flag {
+        ONE_LEVEL = (1 << 0),
+        TWO_LEVEL = (1 << 1),
+        ALPHABETIC = (1 << 2),
+        KEYPAD = (1 << 3),
+        ALL_CANONICAL_TYPES = ONE_LEVEL | TWO_LEVEL | ALPHABETIC | KEYPAD
+    };
+
+    keymap->mods = info->mods;
+    static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
+    static const xkb_mod_mask_t caps = UINT32_C(1) << XKB_MOD_INDEX_CAPS;
+    const xkb_mod_index_t num_lock_idx =
+        xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_NUM);
+    const xkb_mod_mask_t num_lock = (num_lock_idx == XKB_MOD_INVALID)
+        ? 0
+        : UINT32_C(1) << num_lock_idx;
+
+    struct type_entry {
+        xkb_level_index_t level;
+        xkb_mod_mask_t mods;
+    };
+
+    static const struct type_entry two_level_entries[] = { { 1, shift } };
+    static const struct type_entry alphabetic_entries[] = {
+        { 1, shift },
+        { 1, caps },
+        { 0, caps | shift }
+    };
+    const struct type_entry keypad_entries[] = {
+        { 1, shift },
+        /* Next entries will be skipped if NumLock is not bound */
+        { 1, num_lock },
+        { 0, num_lock | shift }
+    };
+
+    const struct {
+        xkb_atom_t name;
+        enum canonical_type_flag flag;
+        xkb_level_index_t num_levels;
+        xkb_mod_mask_t mods;
+        uint8_t num_entries;
+        const struct type_entry *entries;
+    } canonical_types[] = {
+        {
+            .name = xkb_atom_intern_literal(keymap->ctx, "ONE_LEVEL"),
+            .flag = ONE_LEVEL,
+            .num_levels = 1,
+            .mods = 0,
+            .num_entries = 0,
+            .entries = NULL
+        },
+        {
+            .name = xkb_atom_intern_literal(keymap->ctx, "TWO_LEVEL"),
+            .flag = TWO_LEVEL,
+            .num_levels = 2,
+            .mods = shift,
+            .num_entries = ARRAY_SIZE(two_level_entries),
+            .entries = two_level_entries,
+        },
+        {
+            .name = xkb_atom_intern_literal(keymap->ctx, "ALPHABETIC"),
+            .flag = ALPHABETIC,
+            .num_levels = 2,
+            .mods = shift | caps,
+            .num_entries = ARRAY_SIZE(alphabetic_entries),
+            .entries = alphabetic_entries,
+        },
+        {
+            .name = xkb_atom_intern_literal(keymap->ctx, "KEYPAD"),
+            .flag = KEYPAD,
+            .num_levels = 2,
+            .mods = shift | num_lock,
+            /* Add num_lock entries only if NumLock is bound */
+            .num_entries = (num_lock) ? 1 : ARRAY_SIZE(keypad_entries),
+            .entries = keypad_entries,
+        },
+    };
+
+    /* Check missing canonical types */
+    enum canonical_type_flag missing = ALL_CANONICAL_TYPES;
+    uint8_t missing_count = 0;
+    KeyTypeInfo *def;
+    darray_foreach(def, info->types) {
+        if (def->num_levels <= 2) {
+            for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(canonical_types); t++) {
+                if (def->name != canonical_types[t].name)
+                    continue;
+                missing &= ~canonical_types[t].flag;
+                missing_count++;
+            }
+            if (!missing)
+                break;
+        }
+    }
+
+    const darray_size_t num_types = darray_size(info->types);
+    struct xkb_key_type *types = calloc(num_types + missing_count,
+                                        sizeof(*types));
     if (!types)
         return false;
 
-    /*
-     * If no types were specified, a default unnamed one-level type is
-     * used for all keys.
-     */
-    if (darray_empty(info->types)) {
-        struct xkb_key_type *type = &types[0];
+    bool ok = true;
+    for (darray_size_t i = 0; i < num_types; i++) {
+        def = &darray_item(info->types, i);
+        struct xkb_key_type *type = &types[i];
 
-        type->mods.mods = 0;
-        type->num_levels = 1;
-        type->entries = NULL;
-        type->num_entries = 0;
-        type->name = xkb_atom_intern_literal(keymap->ctx, "default");
-        type->level_names = NULL;
-        type->num_level_names = 0;
+        type->name = def->name;
+        type->mods.mods = def->mods;
+        type->num_levels = def->num_levels;
+        type->num_level_names =
+            (xkb_level_index_t) darray_size(def->level_names);
+        darray_steal(def->level_names, &type->level_names, NULL);
+        darray_steal(def->entries, &type->entries, &type->num_entries);
         type->required = false;
-    }
-    else {
-        for (darray_size_t i = 0; i < num_types; i++) {
-            KeyTypeInfo *def = &darray_item(info->types, i);
-            struct xkb_key_type *type = &types[i];
 
-            type->name = def->name;
-            type->mods.mods = def->mods;
-            type->num_levels = def->num_levels;
-            type->num_level_names =
-                (xkb_level_index_t) darray_size(def->level_names);
-            darray_steal(def->level_names, &type->level_names, NULL);
-            darray_steal(def->entries, &type->entries, &type->num_entries);
-            type->required = false;
+        /* Check canonical types */
+        if (type->num_levels <= 2) {
+            for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(canonical_types); t++) {
+                if (type->name != canonical_types[t].name)
+                    continue;
+
+                type->required = true; /* do not discard, even if unused */
+                missing &= ~canonical_types[t].flag;
+
+                /* Ensure that the level count is correct */
+                if (type->num_levels != canonical_types[t].num_levels) {
+                    log_err(keymap->ctx, XKB_ERROR_INVALID_CANONICAL_KEY_TYPE,
+                            "Invalid canonical key type \"%s\": "
+                            "expected %"PRIu32" levels, but got: %"PRIu32"\n",
+                            xkb_atom_text(keymap->ctx, type->name),
+                            canonical_types[t].num_levels, type->num_levels);
+                    ok = false;
+                }
+                break;
+            }
         }
+    }
+
+    /* Append fallback for missing canonical key types */
+    struct xkb_key_type *type = &types[num_types - 1];
+    for (uint8_t t = 0;
+         missing && t < (uint8_t) ARRAY_SIZE(canonical_types);
+         t++) {
+            if (!(canonical_types[t].flag & missing))
+                continue;
+            missing &= ~canonical_types[t].flag;
+
+            type++;
+            type->name = canonical_types[t].name;
+            type->num_levels = canonical_types[t].num_levels;
+            type->required = true;
+            type->mods.mods = canonical_types[t].mods;
+
+            /* Map entries */
+            type->num_entries = canonical_types[t].num_entries;
+            if (type->num_entries > 0) {
+                type->entries = calloc(type->num_entries, sizeof(*type->entries));
+                if (type->entries == NULL) {
+                    ok = false;
+                    break;
+                }
+                for (darray_size_t e = 0; e < type->num_entries; e++) {
+                    struct xkb_key_type_entry * const entry = &type->entries[e];
+                    entry->level = canonical_types[t].entries[e].level;
+                    entry->mods.mods = canonical_types[t].entries[e].mods;
+                }
+            } else {
+                type->entries = NULL;
+            }
+
+            /* No default names provided */
+            type->level_names = NULL;
+            type->num_level_names = 0;
     }
 
     keymap->types_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->types_section_name);
-    keymap->num_types = num_types;
+    keymap->num_types = num_types + missing_count;
     keymap->types = types;
-    keymap->mods = info->mods;
-    return true;
+    return ok;
 }
 
 /***====================================================================***/
