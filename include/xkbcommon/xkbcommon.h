@@ -776,7 +776,8 @@ xkb_keysym_to_lower(xkb_keysym_t ks);
  *
  * The user may set some environment variables which affect the library:
  *
- * - `XKB_CONFIG_ROOT`, `XKB_CONFIG_EXTRA_PATH`, `XDG_CONFIG_DIR`, `HOME` - see @ref include-path.
+ * - `XKB_CONFIG_ROOT`, `XKB_CONFIG_EXTENSIONS_PATH` `XKB_CONFIG_EXTRA_PATH`,
+ *   `XDG_CONFIG_DIR`, `HOME` - see @ref include-path.
  * - `XKB_LOG_LEVEL` - see `xkb_context::xkb_context_set_log_level()`.
  * - `XKB_LOG_VERBOSITY` - see `xkb_context::xkb_context_set_log_verbosity()`.
  * - `XKB_DEFAULT_RULES`, `XKB_DEFAULT_MODEL`, `XKB_DEFAULT_LAYOUT`,
@@ -887,9 +888,14 @@ xkb_context_get_user_data(struct xkb_context *context);
  * - The `XKB_CONFIG_EXTRA_PATH` environment variable, if defined, otherwise the
  *   system configuration directory, defined at library configuration time
  *   (usually `/etc/xkb`).
+ * - Each subdirectory of the XKB extensions directory, listed in lexicographic
+ *   order. The extensions directory is defined by the environment variable
+ *   `XKB_CONFIG_EXTENSIONS_PATH` or defaults to the system XKB extension
+ *   directory, defined at library configuration time
+ *   (usually `/usr/share/xkeyboard-config-<VERSION>.d`).
  * - The `XKB_CONFIG_ROOT` environment variable, if defined, otherwise
  *   the system XKB root, defined at library configuration time
- *   (usually `/usr/share/X11/xkb`).
+ *   (usually `/usr/share/xkeyboard-config-<VERSION>` or `/usr/share/X11/xkb`).
  *
  * @{
  */

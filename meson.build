@@ -52,31 +52,40 @@ cflags = [
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
+XKEYBOARD_CONFIG_ROOT = ''
+# Try to set from the xkeyboard-config package, from the most recent to the
+# oldest major version. The hard-coded major versions list should cover at
+# least a decade (and probably much more!), given the expected pace of
+# xkeyboard-config format changes.
+foreach v: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
+    xkeyboard_config_dep = dependency(f'xkeyboard-config-@v@', required: false)
+    if xkeyboard_config_dep.found()
+        XKEYBOARD_CONFIG_ROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_root')
+        break
+    endif
+endforeach
+if XKEYBOARD_CONFIG_ROOT == ''
+    # Try old unversioned pkg-config (xkeyboard-config < 2.45)
+    xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
+    if xkeyboard_config_dep.found()
+        XKEYBOARD_CONFIG_ROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
+    endif
+endif
 
 # The XKB config root.
 XKBCONFIGROOT = get_option('xkb-config-root')
 if XKBCONFIGROOT == ''
-    # Try to set from the xkeyboard-config package, from the most recent to the
-    # oldest major version. The hard-coded major versions list should cover at
-    # least a decade (and probably much more!), given the expected pace of
-    # xkeyboard-config format changes.
-    foreach v: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
-        xkeyboard_config_dep = dependency(f'xkeyboard-config-@v@', required: false)
-        if xkeyboard_config_dep.found()
-            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_root')
-            break
-        endif
-    endforeach
-    if XKBCONFIGROOT == ''
-        # Try old unversioned pkg-config (xkeyboard-config < 2.45)
-        xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
-        if xkeyboard_config_dep.found()
-            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
-        else
-            # Fallback to the legacy X11 directory
-            XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
-        endif
+    if XKEYBOARD_CONFIG_ROOT != ''
+        XKBCONFIGROOT = XKEYBOARD_CONFIG_ROOT
+    else
+        # Fallback to the legacy X11 directory
+        XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
     endif
+endif
+
+XKBCONFIGEXTENSIONSPATH = get_option('xkb-config-extensions-path')
+if XKBCONFIGEXTENSIONSPATH == '' and XKEYBOARD_CONFIG_ROOT != ''
+    XKBCONFIGEXTENSIONSPATH = f'@XKEYBOARD_CONFIG_ROOT@.d'
 endif
 
 XKBCONFIGEXTRAPATH = get_option('xkb-config-extra-path')
@@ -106,6 +115,9 @@ endif
 configh_data.set(system_extensions, 1)
 system_ext_define = '#define ' + system_extensions
 configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKBCONFIGROOT)
+if XKBCONFIGEXTENSIONSPATH != ''
+    configh_data.set_quoted('DFLT_XKB_CONFIG_EXTENSIONS', XKBCONFIGEXTENSIONSPATH)
+endif
 configh_data.set_quoted('DFLT_XKB_CONFIG_EXTRA_PATH', XKBCONFIGEXTRAPATH)
 configh_data.set_quoted('XLOCALEDIR', XLOCALEDIR)
 configh_data.set_quoted('DEFAULT_XKB_RULES', get_option('default-rules'))
@@ -123,6 +135,9 @@ else
 endif
 if cc.has_header('unistd.h')
     configh_data.set('HAVE_UNISTD_H', 1)
+endif
+if cc.has_header('dirent.h')
+    configh_data.set('HAVE_DIRENT_H', 1)
 endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
@@ -319,6 +334,10 @@ pkgconfig.generate(
     filebase: 'xkbcommon',
     version: meson.project_version(),
     description: 'XKB API common to servers and clients',
+    variables: [
+        f'xkb_root=@XKBCONFIGROOT@',
+        f'xkb_extensions_path=@XKBCONFIGEXTENSIONSPATH@'
+    ]
 )
 
 
@@ -1330,6 +1349,7 @@ if meson.version().version_compare('>=0.62.0')
       'libdir': get_option('libdir'),
       'datadir': get_option('datadir'),
       'xkb-config-root': XKBCONFIGROOT,
+      'xkb-config-extensions-path': XKBCONFIGEXTENSIONSPATH,
       'xkb-config-extra-path': XKBCONFIGEXTRAPATH,
       'xlocaledir': XLOCALEDIR,
     }, section: 'Directories')
