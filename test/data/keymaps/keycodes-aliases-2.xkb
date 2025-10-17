@@ -22,7 +22,7 @@ xkb_keycodes {
 };
 
 xkb_types {
-	type "default" {
+	type "ONE_LEVEL" {
 		modifiers= none;
 	};
 };

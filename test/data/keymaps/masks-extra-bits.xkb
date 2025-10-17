@@ -8,7 +8,7 @@ xkb_keycodes {
 xkb_types {
 	virtual_modifiers X=0xf0000000;
 
-	type "default" {
+	type "ONE_LEVEL" {
 		modifiers= none;
 	};
 };

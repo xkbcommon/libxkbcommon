@@ -7,7 +7,7 @@ xkb_keycodes "high" {
 };
 
 xkb_types {
-	type "default" {
+	type "ONE_LEVEL" {
 		modifiers= none;
 	};
 };
