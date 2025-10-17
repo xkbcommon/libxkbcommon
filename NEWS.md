@@ -1,3 +1,26 @@
+libxkbcommon [1.12.1] – 2025-10-17
+==================================
+
+[1.12.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.1
+
+## API
+
+### Fixes
+
+- X11: Added a fix to circumvent libX11 and xserver improperly handling missing
+  XKB canonical key types. The fix prevents triggering an error when retrieving
+  such keymap using libxkbcommon-x11.
+
+
+## Tools
+
+### Fixes
+
+- `xkbcli interactive-wayland`: memory error triggering in some setups.
+
+  Contributed by Jan Alexander Steffens
+
+
 libxkbcommon [1.12.0] – 2025-10-10
 ==================================
 
