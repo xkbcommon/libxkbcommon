@@ -13,6 +13,7 @@
 #include "vmod.h"
 #include "expr.h"
 #include "include.h"
+#include "utils.h"
 #include "util-mem.h"
 
 enum type_field {
@@ -731,7 +732,50 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         return false;
 
     /*
-     * If no types were specified, a default unnamed one-level type is
+     * The following types are called “Canonical Key Types” and the XKB protocol
+     * specifies them as mandatory in any keymap:
+     *
+     * - ONE_LEVEL
+     * - TWO_LEVEL
+     * - ALPHABETIC
+     * - KEYPAD
+     *
+     * They must have specific properties defined in the appendix B of
+     * “The X Keyboard Extension: Protocol Specification”:
+     * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#canonical_key_types
+     *
+     * In the Xorg ecosystem, any missing canonical type fallbacks to a default
+     * type supplied by libX11’s `XkbInitCanonicalKeyTypes()`, e.g. in xkbcomp.
+     *
+     * libxkbcommon does not require these types per se: it only requires that
+     * all *used* types — explicit (`type="…"`) or implicit (automatic types) —
+     * are defined, with the exception that if no key type at all is defined,
+     * then a default `ONE_LEVEL` type is provided.
+     *
+     * libxkbcommon also does not require any particular order of these key
+     * types, because they are retrieved using their name instead of their index.
+     *
+     * Since 1.12 (31900860c65b88e4d10ad7dd00377e2815cca0f6), libxkbcommon drops
+     * any *unused* key type at serialization by default. Some layouts with 4+
+     * levels may not require e.g. the `TWO_LEVEL` nor the `ALPHABETIC` types.
+     *
+     * In theory, libxkbcommon would not care of the presence of the canonical
+     * key types and could delegate the property check, fallback and ordering
+     * work to xkbcomp, as it is the case in Xorg’s Xwayland. However the
+     * fallback implementation is buggy:
+     *
+     * - https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/292
+     * - https://gitlab.freedesktop.org/xorg/xserver/-/merge_requests/2082
+     *
+     * The canonical key types are always present in the keymap generated from
+     * xkeyboard-config and custom keymaps usually include these types too. So
+     * to circumvent the issues of Xorg, it should suffice that libxkbcommon
+     * ensures to never discard the canonical key types, if present, and continue
+     * to delegate the (unlikely) type fallbacks to xkbcomp.
+     */
+
+    /*
+     * If no types were specified, a default ONE_LEVEL type is
      * used for all keys.
      */
     if (darray_empty(info->types)) {
@@ -744,9 +788,17 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
         type->name = xkb_atom_intern_literal(keymap->ctx, "ONE_LEVEL");
         type->level_names = NULL;
         type->num_level_names = 0;
-        type->required = false;
+        type->required = true;
     }
     else {
+        /* HACK to circumvent Xorg bugs (see comment above) */
+        const xkb_atom_t canonical_types[] = {
+            xkb_atom_intern_literal(keymap->ctx, "ONE_LEVEL"),
+            xkb_atom_intern_literal(keymap->ctx, "TWO_LEVEL"),
+            xkb_atom_intern_literal(keymap->ctx, "ALPHABETIC"),
+            xkb_atom_intern_literal(keymap->ctx, "KEYPAD"),
+        };
+
         for (darray_size_t i = 0; i < num_types; i++) {
             KeyTypeInfo *def = &darray_item(info->types, i);
             struct xkb_key_type *type = &types[i];
@@ -759,6 +811,18 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
             darray_steal(def->level_names, &type->level_names, NULL);
             darray_steal(def->entries, &type->entries, &type->num_entries);
             type->required = false;
+
+            /* HACK: Never drop canonical XKB key types (see comment above) */
+            if (type->num_levels <= 2) {
+                for (uint8_t t = 0;
+                     t < (uint8_t) ARRAY_SIZE(canonical_types);
+                     t++) {
+                        if (type->name == canonical_types[t]) {
+                            type->required = true;
+                            break;
+                        }
+                }
+            }
         }
     }
 
