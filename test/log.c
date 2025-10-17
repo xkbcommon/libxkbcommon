@@ -197,7 +197,7 @@ test_keymaps(void)
                 "warning: [XKB-433] No map in include statement, but \"(input string)\" contains several; Using first defined map, \"(unnamed map)\"\n"
                 "warning: [XKB-523] Alias of <1> for <> declared more than once; First definition ignored\n"
                 "warning: [XKB-286] The type \"TWO_LEVEL\" for key '<>' group 1 was not previously defined; Using the default type\n"
-                "warning: [XKB-516] Type \"default\" has 1 levels, but <> has 2 levels; Ignoring extra symbols\n",
+                "warning: [XKB-516] Type \"ONE_LEVEL\" has 1 levels, but <> has 2 levels; Ignoring extra symbols\n",
             .error = false
         },
         /* Invalid action fields */

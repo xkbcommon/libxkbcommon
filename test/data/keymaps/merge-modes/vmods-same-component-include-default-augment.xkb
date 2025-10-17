@@ -7,7 +7,7 @@ xkb_keycodes {
 xkb_types "" {
 	virtual_modifiers U1=0x100,U2=none,U3=0x300000,U4=0x800,U5=none,U6=0x600000,Z1=none,Z2=none,Z3=none,Z4=none,Z5=none,Z6=none,M1=0x1000,M2=0x2000,M3=0x3000,M4=0x4000,M5=0x5000,M6=0x6000,U7=0x4000000,Z7=none,M7=0x70000;
 
-	type "default" {
+	type "ONE_LEVEL" {
 		modifiers= none;
 	};
 };
