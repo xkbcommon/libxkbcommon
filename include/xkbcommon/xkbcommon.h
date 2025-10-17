@@ -787,7 +787,15 @@ xkb_keysym_to_lower(xkb_keysym_t ks);
 enum xkb_context_flags {
     /** Do not apply any context flags. */
     XKB_CONTEXT_NO_FLAGS = 0,
-    /** Create this context with an empty include path. */
+    /**
+     * Create this context with an empty include path.
+     *
+     * This may be useful e.g.:
+     * - to have full control over the included paths;
+     * - for clients that do not need to access the XKB directories, e.g.
+     *   if only retrieving keymap from the Wayland or X server. It avoids
+     *   potential issues with directory access permissions.
+     */
     XKB_CONTEXT_NO_DEFAULT_INCLUDES = (1 << 0),
     /**
      * Don’t take RMLVO names from the environment.
