@@ -93,7 +93,8 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_INVALID_IDENTIFIER, "Invalid identifier"},
     {XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL, "Unresolved keymap symbol"},
     {XKB_ERROR_INVALID_RULES_SYNTAX, "Invalid rules syntax"},
-    {XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE, "Undeclared modifiers in key type"}
+    {XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE, "Undeclared modifiers in key type"},
+    {XKB_ERROR_INVALID_CANONICAL_KEY_TYPE, "Invalid canonical key type"}
 };
 
 int

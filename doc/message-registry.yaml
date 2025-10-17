@@ -558,5 +558,14 @@
   details: |
     The modifiers used in `map` or `preserve` entries should be declared using the entry
     `modifiers` in the key type.
+- id: "invalid-canonical-key-type"
+  code: 984
+  added: 1.13.0
+  type: error
+  description: "Canonical key types have mandatory properties defined in the XKB protocol"
+  details: |
+    See the [canonical key types specification] in the XKP protocol.
+
+    [canonical key types specification]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#canonical_key_types
 
 # TODO: unicode keysym when named and recommended keysym exists
