@@ -10,7 +10,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
@@ -29,10 +28,36 @@ xkb_context_getenv(struct xkb_context *ctx, const char *name)
     }
 }
 
+bool
+xkb_context_init_includes(struct xkb_context *ctx)
+{
+    if (ctx->pending_default_includes) {
+        if (darray_empty(ctx->failed_includes)) {
+            if (!xkb_context_include_path_append_default(ctx)) {
+                log_err(ctx, XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH,
+                        "Failed to add any default include path "
+                        "(system path: %s)\n",
+                        xkb_context_include_path_get_system_path(ctx));
+                return false;
+            }
+            ctx->pending_default_includes = false;
+        } else {
+            /*
+             * If there are failed includes then we already tried to load
+             * default include paths, so avoid further attempts.
+             */
+            return false;
+        }
+    }
+    return true;
+}
+
 darray_size_t
 xkb_context_num_failed_include_paths(struct xkb_context *ctx)
 {
-    return darray_size(ctx->failed_includes);
+    return (xkb_context_init_includes(ctx))
+        ? darray_size(ctx->failed_includes)
+        : 0;
 }
 
 const char *

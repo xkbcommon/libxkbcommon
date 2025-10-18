@@ -579,7 +579,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
     }
 
     darray_append(ctx->includes, tmp);
-    /* Use “info” log level to facilate bug reporting. */
+    /* Use “info” log level to facilitate bug reporting. */
     log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "Include path added: %s\n", tmp);
 
     return true;
@@ -587,7 +587,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
 error:
     /*
      * This error is not fatal because some valid paths may still be defined.
-     * Use “info” log level to facilate bug reporting.
+     * Use “info” log level to facilitate bug reporting.
      */
     log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
              "Include path failed: \"%s\" (%s)\n", path, strerror(err));
