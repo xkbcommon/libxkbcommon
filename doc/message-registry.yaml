@@ -378,6 +378,14 @@
   added: ALWAYS
   type: error
   description: "Invalid _real_ modifier"
+- id: "no-valid-default-include-path"
+  code: 632
+  added: 1.13.0
+  type: error
+  description: "Unable to add any default include path"
+  details: |
+    xkbcommon requires to define at least one include path in order to look up
+    XKB files. See @ref include-path "" for further details.
 - id: "unknown-default-field"
   code: 639
   added: 1.10.0
