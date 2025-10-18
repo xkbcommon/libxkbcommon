@@ -67,6 +67,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_CANNOT_RESOLVE_RMLVO, "Cannot resolve rmlvo"},
     {XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE, "Invalid unicode escape sequence"},
     {XKB_ERROR_INVALID_REAL_MODIFIER, "Invalid real modifier"},
+    {XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH, "No valid default include path"},
     {XKB_ERROR_UNKNOWN_DEFAULT_FIELD, "Unknown default field"},
     {XKB_WARNING_UNKNOWN_CHAR_ESCAPE_SEQUENCE, "Unknown char escape sequence"},
     {XKB_ERROR_INVALID_INCLUDED_FILE, "Invalid included file"},

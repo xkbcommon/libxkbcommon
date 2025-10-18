@@ -15,6 +15,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "context.h"
+#include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
 
@@ -22,17 +23,16 @@
 /**
  * Append one directory to the context's include path.
  */
-int
-xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
+static int
+context_include_path_append(struct xkb_context *ctx, const char *path)
 {
-    struct stat stat_buf;
     int err = ENOMEM;
-    char *tmp;
 
-    tmp = strdup(path);
+    char *tmp = strdup(path);
     if (!tmp)
         goto err;
 
+    struct stat stat_buf;
     err = stat(path, &stat_buf);
     if (err != 0) {
         err = errno;
@@ -49,15 +49,26 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
     }
 
     darray_append(ctx->includes, tmp);
-    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID, "Include path added: %s\n", tmp);
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "Include path added: %s\n", tmp);
 
     return 1;
 
 err:
     darray_append(ctx->failed_includes, tmp);
-    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
-            "Include path failed: %s (%s)\n", tmp, strerror(err));
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
+             "Include path failed: %s (%s)\n", tmp, strerror(err));
     return 0;
+}
+
+/**
+ * Append one directory to the context's include path.
+ */
+int
+xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
+{
+    return (xkb_context_init_includes(ctx))
+        ? context_include_path_append(ctx, path)
+        : 0;
 }
 
 const char *
@@ -80,6 +91,11 @@ xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
+    /*
+     * We do not call `xkb_context_init_includes()` here, because either we
+     * we already initialized the includes paths or we are doing it now.
+     */
+
     const char *home, *xdg, *root, *extra;
     char *user_path;
     int ret = 0;
@@ -90,14 +106,14 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
-            ret |= xkb_context_include_path_append(ctx, user_path);
+            ret |= context_include_path_append(ctx, user_path);
             free(user_path);
         }
     } else if (home != NULL) {
         /* XDG_CONFIG_HOME fallback is $HOME/.config/ */
         user_path = asprintf_safe("%s/.config/xkb", home);
         if (user_path) {
-            ret |= xkb_context_include_path_append(ctx, user_path);
+            ret |= context_include_path_append(ctx, user_path);
             free(user_path);
         }
     }
@@ -105,15 +121,15 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     if (home != NULL) {
         user_path = asprintf_safe("%s/.xkb", home);
         if (user_path) {
-            ret |= xkb_context_include_path_append(ctx, user_path);
+            ret |= context_include_path_append(ctx, user_path);
             free(user_path);
         }
     }
 
     extra = xkb_context_include_path_get_extra_path(ctx);
-    ret |= xkb_context_include_path_append(ctx, extra);
+    ret |= context_include_path_append(ctx, extra);
     root = xkb_context_include_path_get_system_path(ctx);
-    ret |= xkb_context_include_path_append(ctx, root);
+    ret |= context_include_path_append(ctx, root);
 
     return ret;
 }
@@ -133,6 +149,9 @@ xkb_context_include_path_clear(struct xkb_context *ctx)
     darray_foreach(path, ctx->failed_includes)
         free(*path);
     darray_free(ctx->failed_includes);
+
+    /* It does not make sense to keep the pending defaults */
+    ctx->pending_default_includes = false;
 }
 
 /**
@@ -151,7 +170,9 @@ xkb_context_include_path_reset_defaults(struct xkb_context *ctx)
 unsigned int
 xkb_context_num_include_paths(struct xkb_context *ctx)
 {
-    return darray_size(ctx->includes);
+    return (xkb_context_init_includes(ctx))
+        ? darray_size(ctx->includes)
+        : 0;
 }
 
 /**
@@ -162,7 +183,7 @@ const char *
 xkb_context_include_path_get(struct xkb_context *ctx, unsigned int idx)
 {
     if (idx >= xkb_context_num_include_paths(ctx))
-        return NULL;
+            return NULL;
 
     return darray_item(ctx->includes, idx);
 }
@@ -279,6 +300,25 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 
+    /*
+     * Default includes paths are delayed and added only if necessary.
+     *
+     * It is more efficient for most clients, which only get the keymap from the
+     * server: it avoids unnecessary allocations and file system queries.
+     *
+     * It also avoid the corner case where a containerized app does not have
+     * access to the XKB directories.
+     *
+     * There might be an issue in case the environment variables relevant to the
+     * include paths change between the context initialization and the call to
+     * `xkb_context_include_path_append_default()`. However this seems very
+     * unlikely and would have already triggered issues when the `%`-expansion
+     * is used.
+     */
+    ctx->pending_default_includes = !(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES);
+    darray_init(ctx->includes);
+    darray_init(ctx->failed_includes);
+
     /* Environment overwrites defaults. */
     env = xkb_context_getenv(ctx, "XKB_LOG_LEVEL");
     if (env)
@@ -287,15 +327,6 @@ xkb_context_new(enum xkb_context_flags flags)
     env = xkb_context_getenv(ctx, "XKB_LOG_VERBOSITY");
     if (env)
         xkb_context_set_log_verbosity(ctx, log_verbosity(env));
-
-    if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
-        !xkb_context_include_path_append_default(ctx)) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "failed to add default include path %s\n",
-                DFLT_XKB_CONFIG_ROOT);
-        xkb_context_unref(ctx);
-        return NULL;
-    }
 
     ctx->atom_table = atom_table_new();
     if (!ctx->atom_table) {
