@@ -908,7 +908,7 @@ xkb_context_include_path_append(struct xkb_context *context, const char *path);
 /**
  * Append the default include paths to the context’s include path.
  *
- * @returns 1 on success, or 0 if the primary include path could not be added.
+ * @returns 1 on success, or 0 if no default include path could be added.
  *
  * @memberof xkb_context
  */

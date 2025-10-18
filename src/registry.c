@@ -510,6 +510,10 @@ rxkb_context_new(enum rxkb_context_flags flags)
 
     if (!(flags & RXKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !rxkb_context_include_path_append_default(ctx)) {
+        log_err(ctx, XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH,
+                "Failed to add any default include path "
+                "(default system path: %s)\n",
+                DFLT_XKB_CONFIG_ROOT);
         rxkb_context_unref(ctx);
         return NULL;
     }
