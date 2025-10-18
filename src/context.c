@@ -323,9 +323,10 @@ xkb_context_new(enum xkb_context_flags flags)
 
     if (!(flags & XKB_CONTEXT_NO_DEFAULT_INCLUDES) &&
         !xkb_context_include_path_append_default(ctx)) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "failed to add default include path %s\n",
-                DFLT_XKB_CONFIG_ROOT);
+        log_err(ctx, XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH,
+                "Failed to add any default include path "
+                "(system path: %s)\n",
+                xkb_context_include_path_get_system_path(ctx));
         xkb_context_unref(ctx);
         return NULL;
     }
