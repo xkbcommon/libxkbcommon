@@ -8,6 +8,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -41,8 +42,9 @@ struct xkb_context {
     char text_buffer[2048];
     size_t text_next;
 
-    unsigned int use_environment_names : 1;
-    unsigned int use_secure_getenv : 1;
+    bool use_environment_names : 1;
+    bool use_secure_getenv : 1;
+    bool pending_default_includes : 1;
 };
 
 char *
@@ -50,6 +52,9 @@ xkb_context_getenv(struct xkb_context *ctx, const char *name);
 
 darray_size_t
 xkb_context_num_failed_include_paths(struct xkb_context *ctx);
+
+bool
+xkb_context_init_includes(struct xkb_context *ctx);
 
 const char *
 xkb_context_failed_include_path_get(struct xkb_context *ctx,
