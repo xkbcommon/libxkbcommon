@@ -142,8 +142,8 @@ rxkb_log(struct rxkb_context *ctx, enum rxkb_log_level level,
     rxkb_log(ctx, level, PREPEND_MESSAGE_ID(msg_id, fmt), ##__VA_ARGS__)
 #define log_dbg(ctx, ...) \
     rxkb_log((ctx), RXKB_LOG_LEVEL_DEBUG, __VA_ARGS__)
-#define log_info(ctx, ...) \
-    rxkb_log((ctx), RXKB_LOG_LEVEL_INFO, __VA_ARGS__)
+#define log_info(ctx, id, ...) \
+    rxkb_log_with_code((ctx), RXKB_LOG_LEVEL_INFO, id, __VA_ARGS__)
 #define log_warn(ctx, id, ...) \
     rxkb_log_with_code((ctx), RXKB_LOG_LEVEL_WARNING, id, __VA_ARGS__)
 #define log_err(ctx, id, ...) \
@@ -534,18 +534,24 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
     if (ctx->context_state != CONTEXT_NEW) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "include paths can only be appended to a new context\n");
-        return false;
+        goto error;
     }
 
     struct stat stat_buf;
     err = stat(path, &stat_buf);
-    if (err != 0)
-        return false;
-    if (!S_ISDIR(stat_buf.st_mode))
-        return false;
+    if (err != 0) {
+        err = errno;
+        goto error;
+    }
+    if (!S_ISDIR(stat_buf.st_mode)) {
+        err = ENOTDIR;
+        goto error;
+    }
 
-    if (!check_eaccess(path, R_OK | X_OK))
-        return false;
+    if (!check_eaccess(path, R_OK | X_OK)) {
+        err = EACCES;
+        goto error;
+    }
 
     /*
      * Pre-filter for the 99.9% case - if we can’t assemble the default ruleset
@@ -559,16 +565,29 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
                 "Path is too long: expected max length of %zu, "
                 "got: %s/rules/%s.xml\n",
                 sizeof(rules), path, DEFAULT_XKB_RULES);
-        return false;
+        goto error;
     }
 
     char * const tmp = strdup(path);
-    if (!tmp)
-        return false;
+    if (!tmp) {
+        err = ENOMEM;
+        goto error;
+    }
 
     darray_append(ctx->includes, tmp);
+    /* Use “info” log level to facilate bug reporting. */
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID, "Include path added: %s\n", tmp);
 
     return true;
+
+error:
+    /*
+     * This error is not fatal because some valid paths may still be defined.
+     * Use “info” log level to facilate bug reporting.
+     */
+    log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
+             "Include path failed: %s (%s)\n", path, strerror(err));
+    return false;
 }
 
 bool
