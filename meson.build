@@ -186,7 +186,20 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
     endif
 endif
 if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
-    configh_data.set('HAVE_NEWLOCALE', 1)
+    # Use newlocale only if it fails on missing locales
+    r = cc.run(
+        '''
+        #define _GNU_SOURCE
+        #include <locale.h>
+        int main(void){
+            locale_t loc = newlocale(LC_ALL_MASK, "¡NONSENSE!", (locale_t) 0);
+            return (loc != (locale_t) 0);
+        }''',
+        name: 'newlocale fails on invalid locales',
+    )
+    if r.compiled() and r.returncode() == 0
+        configh_data.set('HAVE_NEWLOCALE', 1)
+    endif
 endif
 
 # Silence some security & deprecation warnings on MSVC
