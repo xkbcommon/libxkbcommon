@@ -25,14 +25,13 @@
 int
 xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
 {
-    struct stat stat_buf;
     int err = ENOMEM;
-    char *tmp;
 
-    tmp = strdup(path);
+    char *tmp = strdup(path);
     if (!tmp)
         goto err;
 
+    struct stat stat_buf;
     err = stat(path, &stat_buf);
     if (err != 0) {
         err = errno;
@@ -64,14 +63,14 @@ err:
 const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
 {
-    const char *extra = xkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
+    const char * const extra = xkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
 const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
-    const char *root = xkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
+    const char * const root = xkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
     return root ? root : DFLT_XKB_CONFIG_ROOT;
 }
 
@@ -81,13 +80,11 @@ xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 int
 xkb_context_include_path_append_default(struct xkb_context *ctx)
 {
-    const char *home, *xdg, *root, *extra;
     char *user_path;
     int ret = 0;
 
-    home = xkb_context_getenv(ctx, "HOME");
-
-    xdg = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
+    const char * const home = xkb_context_getenv(ctx, "HOME");
+    const char * const xdg = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
@@ -111,9 +108,9 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
         }
     }
 
-    extra = xkb_context_include_path_get_extra_path(ctx);
+    const char * const extra = xkb_context_include_path_get_extra_path(ctx);
     ret |= xkb_context_include_path_append(ctx, extra);
-    root = xkb_context_include_path_get_system_path(ctx);
+    const char * const root = xkb_context_include_path_get_system_path(ctx);
     ret |= xkb_context_include_path_append(ctx, root);
 
     return ret;
