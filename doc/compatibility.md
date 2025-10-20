@@ -642,7 +642,7 @@ Before 1.11, only `Level1`..`Level8` were supported.
 <summary>✅ Full support (since 1.11)</summary>
 Enable *absolute* paths and *`%`-expansion*.
 
-See @ref keymap-include-percent-expansion for further details.
+See @ref keymap-include-percent-expansion "" for further details.
 </details>
 </td>
 </tr>

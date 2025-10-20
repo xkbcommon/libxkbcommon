@@ -294,7 +294,7 @@ and prefer creating proper independent variants.
 
 @since 1.11.0: It is possible to include the system section and avoid circular
 include by prepending <code>\%S</code> to the included file.
-See the @ref keymap-include-percent-expansion "corresponding documentation.
+See the @ref keymap-include-percent-expansion "corresponding documentation".
 
 ## Discoverable layouts
 
