@@ -1,3 +1,24 @@
+libxkbcommon [1.12.2] – 2025-10-20
+==================================
+
+[1.12.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.2
+
+## API
+
+### Fixes
+
+- Context: Added fallback to the legacy X11 path for misconfigured setups where
+  the canonical XKB root is not available.
+
+  Some setups use the assumption that the canonical XKB root is always the
+  legacy X11 one, but this is no longer true since [xkeyboard-config 2.45],
+  where the X11 path is now a mere symlink to a dedicated xkeyboard-config
+  data directory (usually `/usr/share/xkeyboard-config-2`).
+- Compose: Fixed some C standard libraries such as musl not detecting missing locales.
+  ([#879](https://github.com/xkbcommon/libxkbcommon/issues/879))
+
+[xkeyboard-config 2.45]: https://xkeyboard-config.freedesktop.org/blog/2-45-release/#build-system
+
 libxkbcommon [1.12.1] – 2025-10-17
 ==================================
 
