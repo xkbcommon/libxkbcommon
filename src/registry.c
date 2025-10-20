@@ -604,6 +604,7 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 
     const char * const home = rxkb_context_getenv(ctx, "HOME");
     const char * const xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
+    /* Accept empty string, which may be unintentional and should be reported */
     if (xdg != NULL) {
         if (snprintf_safe(user_path, sizeof(user_path), "%s/xkb", xdg))
             ret |= rxkb_context_include_path_append(ctx, user_path);
@@ -619,11 +620,19 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
     }
 
     const char * const extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
+    /*
+     * Only use default if path is undefined, but accept empty string, which may
+     * be unintentional and should be reported.
+     */
     ret |= (extra != NULL)
         ? rxkb_context_include_path_append(ctx, extra)
         : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
     const char * const root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
+    /*
+     * Only use default if path is undefined, but accept empty string, which may
+     * be unintentional and should be reported.
+     */
     ret |= (root != NULL)
         ? rxkb_context_include_path_append(ctx, root)
         : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
