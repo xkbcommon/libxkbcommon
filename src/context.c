@@ -69,6 +69,10 @@ const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
 {
     const char * const extra = xkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
+    /*
+     * Only use default if path is undefined, but accept empty string, which may
+     * be unintentional and should be reported.
+     */
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
@@ -76,6 +80,10 @@ const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
     const char * const root = xkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
+    /*
+     * Only use default if path is undefined, but accept empty string, which may
+     * be unintentional and should be reported.
+     */
     return root ? root : DFLT_XKB_CONFIG_ROOT;
 }
 
@@ -90,6 +98,7 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 
     const char * const home = xkb_context_getenv(ctx, "HOME");
     const char * const xdg = xkb_context_getenv(ctx, "XDG_CONFIG_HOME");
+    /* Accept empty string, which may be unintentional and should be reported */
     if (xdg != NULL) {
         user_path = asprintf_safe("%s/xkb", xdg);
         if (user_path) {
