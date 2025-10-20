@@ -52,6 +52,25 @@ cflags = [
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
+# The legacy X11 config root. Only xkeyboard-config 2.* provides it.
+# This is intented when using old xkeyboard-config and as a last resort for
+# misconfigured setups.
+# Try both un- and versioned pkg-config (xkeyboard-config < 2.45).
+XKBLEGACYROOT = ''
+foreach v: ['-2', '']
+    xkeyboard_config_dep = dependency(f'xkeyboard-config@v@', required: false)
+    if xkeyboard_config_dep.found()
+        XKBLEGACYROOT = xkeyboard_config_dep.get_variable(
+            pkgconfig: 'xkb_base',
+            default_value: ''
+        )
+        break
+    endif
+endforeach
+if XKBLEGACYROOT == ''
+    # Fallback to the legacy X11 directory
+    XKBLEGACYROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
+endif
 
 # The XKB config root.
 XKBCONFIGROOT = get_option('xkb-config-root')
@@ -68,14 +87,8 @@ if XKBCONFIGROOT == ''
         endif
     endforeach
     if XKBCONFIGROOT == ''
-        # Try old unversioned pkg-config (xkeyboard-config < 2.45)
-        xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
-        if xkeyboard_config_dep.found()
-            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
-        else
-            # Fallback to the legacy X11 directory
-            XKBCONFIGROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
-        endif
+        # No xkeyboard-config or too old: use legacy X11 path fallback
+        XKBCONFIGROOT = XKBLEGACYROOT
     endif
 endif
 
@@ -105,6 +118,7 @@ else
 endif
 configh_data.set(system_extensions, 1)
 system_ext_define = '#define ' + system_extensions
+configh_data.set_quoted('DFLT_XKB_LEGACY_ROOT', XKBLEGACYROOT)
 configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKBCONFIGROOT)
 configh_data.set_quoted('DFLT_XKB_CONFIG_EXTRA_PATH', XKBCONFIGEXTRAPATH)
 configh_data.set_quoted('XLOCALEDIR', XLOCALEDIR)
