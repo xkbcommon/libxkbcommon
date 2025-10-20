@@ -197,7 +197,8 @@ enum xkb_compose_format {
  *    preconfigured directory.
  *
  * Since 1.12, system locales not registered in `$XLOCALEDIR` will fallback
- * to `en_US.UTF-8`.
+ * to `en_US.UTF-8`, if missing locale detection is supported by the C standard
+ * library in use.
  *
  * @param context
  *     The library context in which to create the compose table.
