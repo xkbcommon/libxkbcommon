@@ -97,7 +97,7 @@ test_config_root_include_path(void)
     unsetenv("HOME");
     unsetenv("XDG_CONFIG_HOME");
 
-    /* built-in path is last */
+    /* Valid built-in path is last */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     const unsigned int nincludes = xkb_context_num_include_paths(ctx);
     assert(nincludes >= 1);
@@ -134,13 +134,40 @@ test_config_root_include_path_fallback(void)
     unsetenv("HOME");
     unsetenv("XDG_CONFIG_HOME");
 
-    /* built-in path is last */
+    /* Valid built-in path is last */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    const unsigned int nincludes = xkb_context_num_include_paths(ctx);
+    unsigned int nincludes = xkb_context_num_include_paths(ctx);
     assert(nincludes >= 1);
     context_path = xkb_context_include_path_get(ctx, nincludes - 1);
     assert(strcmp(context_path, xkbdir) == 0);
     xkb_context_unref(ctx);
+
+    /* Invalid built-in path is replaced with legacy X11 path */
+    setenv("XKB_CONFIG_ROOT", "¡NONSENSE!", 1);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    nincludes = xkb_context_num_include_paths(ctx);
+    assert(nincludes >= 1);
+    context_path = xkb_context_include_path_get(ctx, nincludes - 1);
+    assert(strcmp(context_path, DFLT_XKB_LEGACY_ROOT) == 0);
+    xkb_context_unref(ctx);
+
+    /* Ensure some path is available */
+    const char *tmpdir = maketmpdir();
+    setenv("XKB_CONFIG_EXTRA_PATH", tmpdir, 1);
+
+    /* Invalid built-in path and deliberately skipped legacy X11 path */
+    setenv("XKB_CONFIG_ROOT", "", 1);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    nincludes = xkb_context_num_include_paths(ctx);
+    assert(nincludes >= 1);
+    context_path = xkb_context_include_path_get(ctx, nincludes - 1);
+    assert(strcmp(context_path, tmpdir) == 0);
+    xkb_context_unref(ctx);
+
+    /* No valid path */
+    setenv("XKB_CONFIG_EXTRA_PATH", "", 1);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    assert(!ctx);
 
     unmakedirs();
     restore_env();

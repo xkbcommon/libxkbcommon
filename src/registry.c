@@ -586,7 +586,7 @@ error:
      * Use “info” log level to facilate bug reporting.
      */
     log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
-             "Include path failed: %s (%s)\n", path, strerror(err));
+             "Include path failed: \"%s\" (%s)\n", path, strerror(err));
     return false;
 }
 
@@ -624,18 +624,39 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
      * Only use default if path is undefined, but accept empty string, which may
      * be unintentional and should be reported.
      */
-    ret |= (extra != NULL)
-        ? rxkb_context_include_path_append(ctx, extra)
-        : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
+    ret |= rxkb_context_include_path_append(
+        ctx, ((extra != NULL) ? extra : DFLT_XKB_CONFIG_EXTRA_PATH)
+    );
 
+    /* Canonical XKB root */
     const char * const root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
     /*
      * Only use default if path is undefined, but accept empty string, which may
      * be unintentional and should be reported.
      */
-    ret |= (root != NULL)
-        ? rxkb_context_include_path_append(ctx, root)
-        : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
+    const bool has_root = rxkb_context_include_path_append(
+        ctx, ((root != NULL) ? root: DFLT_XKB_CONFIG_ROOT)
+    );
+    ret |= has_root;
+
+    /*
+     * Fallback for misconfigured setups.
+     * Some setups use the assumption that the canonical XKB root is always the
+     * legacy X11 one, but this is no longer true since xkeyboard-config 2.45,
+     * where the X11 path is now a mere symlink to a dedicated xkeyboard-config
+     * data directory.
+     * This fallback can still be skipped if deliberately using an empty string
+     * for the canonical XKB root hereinabove.
+     */
+    if (!has_root && (root == NULL || root[0] != '\0')) {
+        log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
+                 "Root include path failed; fallback to \"%s\". "
+                 "The setup is probably misconfigured. "
+                 "Please ensure that \"%s\" is available in the environment.\n",
+                 DFLT_XKB_LEGACY_ROOT,
+                 ((root == NULL) ? DFLT_XKB_CONFIG_ROOT : root));
+        ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_LEGACY_ROOT);
+    }
 
     return ret;
 }

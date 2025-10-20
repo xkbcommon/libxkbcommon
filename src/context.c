@@ -61,7 +61,7 @@ err:
      * Use “info” log level to facilate bug reporting.
      */
     log_info(ctx, XKB_LOG_MESSAGE_NO_ID,
-             "Include path failed: %s (%s)\n", path, strerror(err));
+             "Include path failed: \"%s\" (%s)\n", path, strerror(err));
     return 0;
 }
 
@@ -124,8 +124,29 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 
     const char * const extra = xkb_context_include_path_get_extra_path(ctx);
     ret |= xkb_context_include_path_append(ctx, extra);
+
+    /* Canonical XKB root */
     const char * const root = xkb_context_include_path_get_system_path(ctx);
-    ret |= xkb_context_include_path_append(ctx, root);
+    const bool has_root = xkb_context_include_path_append(ctx, root);
+    ret |= has_root;
+
+    /*
+     * Fallback for misconfigured setups.
+     * Some setups use the assumption that the canonical XKB root is always the
+     * legacy X11 one, but this is no longer true since xkeyboard-config 2.45,
+     * where the X11 path is now a mere symlink to a dedicated xkeyboard-config
+     * data directory.
+     * This fallback can still be skipped if deliberately using an empty string
+     * for the canonical XKB root hereinabove.
+     */
+    if (!has_root && root[0] != '\0') {
+        log_warn(ctx, XKB_LOG_MESSAGE_NO_ID,
+                 "Root include path failed; fallback to \"%s\". "
+                 "The setup is probably misconfigured. "
+                 "Please ensure that \"%s\" is available in the environment.\n",
+                 DFLT_XKB_LEGACY_ROOT, root);
+        ret |= xkb_context_include_path_append(ctx, DFLT_XKB_LEGACY_ROOT);
+    }
 
     return ret;
 }
