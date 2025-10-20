@@ -54,9 +54,10 @@ xkb_context_include_path_append(struct xkb_context *ctx, const char *path)
     return 1;
 
 err:
-    darray_append(ctx->failed_includes, tmp);
+    if (tmp)
+        darray_append(ctx->failed_includes, tmp);
     log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
-            "Include path failed: %s (%s)\n", tmp, strerror(err));
+            "Include path failed: %s (%s)\n", path, strerror(err));
     return 0;
 }
 
