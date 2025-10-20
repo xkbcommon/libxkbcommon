@@ -529,10 +529,7 @@ rxkb_context_set_log_fn(struct rxkb_context *ctx,
 bool
 rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
 {
-    struct stat stat_buf;
-    int err;
-    char *tmp = NULL;
-    char rules[PATH_MAX];
+    int err = 0;
 
     if (ctx->context_state != CONTEXT_NEW) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -540,6 +537,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
         return false;
     }
 
+    struct stat stat_buf;
     err = stat(path, &stat_buf);
     if (err != 0)
         return false;
@@ -549,10 +547,12 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
     if (!check_eaccess(path, R_OK | X_OK))
         return false;
 
-    /* Pre-filter for the 99.9% case - if we can't assemble the default ruleset
+    /*
+     * Pre-filter for the 99.9% case - if we can’t assemble the default ruleset
      * path, complain here instead of during parsing later. The niche cases
-     * where this is the wrong behaviour aren't worth worrying about.
+     * where this is the wrong behaviour aren’t worth worrying about.
      */
+    char rules[PATH_MAX];
     if (!snprintf_safe(rules, sizeof(rules), "%s/rules/%s.xml",
                        path, DEFAULT_XKB_RULES)) {
         log_err(ctx, XKB_ERROR_INVALID_PATH,
@@ -562,7 +562,7 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
         return false;
     }
 
-    tmp = strdup(path);
+    char * const tmp = strdup(path);
     if (!tmp)
         return false;
 
@@ -574,7 +574,6 @@ rxkb_context_include_path_append(struct rxkb_context *ctx, const char *path)
 bool
 rxkb_context_include_path_append_default(struct rxkb_context *ctx)
 {
-    const char *home, *xdg, *root, *extra;
     char user_path[PATH_MAX];
     bool ret = false;
 
@@ -584,9 +583,8 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         return false;
     }
 
-    home = rxkb_context_getenv(ctx, "HOME");
-
-    xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
+    const char * const home = rxkb_context_getenv(ctx, "HOME");
+    const char * const xdg = rxkb_context_getenv(ctx, "XDG_CONFIG_HOME");
     if (xdg != NULL) {
         if (snprintf_safe(user_path, sizeof(user_path), "%s/xkb", xdg))
             ret |= rxkb_context_include_path_append(ctx, user_path);
@@ -601,17 +599,15 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
             ret |= rxkb_context_include_path_append(ctx, user_path);
     }
 
-    extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
-    if (extra != NULL)
-        ret |= rxkb_context_include_path_append(ctx, extra);
-    else
-        ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
+    const char * const extra = rxkb_context_getenv(ctx, "XKB_CONFIG_EXTRA_PATH");
+    ret |= (extra != NULL)
+        ? rxkb_context_include_path_append(ctx, extra)
+        : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_EXTRA_PATH);
 
-    root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
-    if (root != NULL)
-        ret |= rxkb_context_include_path_append(ctx, root);
-    else
-        ret |= rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
+    const char * const root = rxkb_context_getenv(ctx, "XKB_CONFIG_ROOT");
+    ret |= (root != NULL)
+        ? rxkb_context_include_path_append(ctx, root)
+        : rxkb_context_include_path_append(ctx, DFLT_XKB_CONFIG_ROOT);
 
     return ret;
 }
