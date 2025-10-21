@@ -185,19 +185,34 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
         configh_data.set('PATH_MAX', 4096)
     endif
 endif
+has_glibc = cc.has_function(
+    'gnu_get_libc_version',
+    prefix: '#include <gnu/libc-version.h>'
+)
+has_compose_locale_fallback = false
 if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
     # Use newlocale only if it fails on missing locales
-    r = cc.run(
-        '''
-        #define _GNU_SOURCE
-        #include <locale.h>
-        int main(void){
-            locale_t loc = newlocale(LC_ALL_MASK, "¡NONSENSE!", (locale_t) 0);
-            return (loc != (locale_t) 0);
-        }''',
-        name: 'newlocale fails on invalid locales',
-    )
-    if r.compiled() and r.returncode() == 0
+    if meson.can_run_host_binaries()
+        # Check newlocale implementation
+        r = cc.run(
+            '''
+            #define _GNU_SOURCE
+            #include <locale.h>
+            int main(void){
+                locale_t loc = newlocale(LC_ALL_MASK, "¡NONSENSE!", (locale_t) 0);
+                return (loc != (locale_t) 0);
+            }''',
+            name: 'newlocale fails on invalid locales',
+        )
+        if r.compiled() and r.returncode() == 0
+            has_compose_locale_fallback = true
+        endif
+    elif has_glibc
+        # Cannot check implementation, so enable only for implementations
+        # known to failed on missing locales.
+        has_compose_locale_fallback = true
+    endif
+    if has_compose_locale_fallback
         configh_data.set('HAVE_NEWLOCALE', 1)
     endif
 endif
@@ -1350,6 +1365,7 @@ if meson.version().version_compare('>=0.62.0')
       'c_args': get_option('c_args'),
       'c_link_args': get_option('c_link_args'),
       'yacc': yacc.full_path() + ' ' + yacc.version(),
+      'glibc': has_glibc,
     }, section: 'Compiler')
     summary({
       'prefix': get_option('prefix'),
@@ -1365,6 +1381,7 @@ if meson.version().version_compare('>=0.62.0')
       'tools': get_option('enable-tools'),
       'wayland': get_option('enable-wayland'),
       'x11': get_option('enable-x11'),
+      'compose locale fallback': has_compose_locale_fallback,
     }, section: 'Features')
     summary({
       'layout': get_option('default-layout'),
