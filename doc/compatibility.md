@@ -110,10 +110,17 @@ Support all Linux keycodes using **32**-bit keycodes.
 Limited to **4**-character names.
 </details>
 </td>
-<td colspan="2">
+<td>
+<details>
+<summary>⚠️ Serializing requires renaming</summary>
+- *Parse* keys and aliases names of any length.
+- *Serialize* names > 4 char by renaming them (since 1.13)
+</details>
+</td>
+<td>
 <details>
 <summary>✅ Full support</summary>
-Support any key names of any length.
+Support any key and aliases names of any length.
 </details>
 </td>
 </tr>
