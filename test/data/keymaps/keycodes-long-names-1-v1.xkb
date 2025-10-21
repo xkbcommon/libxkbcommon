@@ -1,0 +1,39 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 65535;
+	<0008>               = 8;
+	<!09>                = 9;
+	<!00a>               = 10;
+	<!fff>               = 4095;
+	<#001>               = 65535;
+	alias <#002>         = <!00a>;
+	alias <#003>         = <!fff>;
+	alias <#004>         = <#001>;
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <0008>               {	[      0x00000008 ] };
+	key <!09>                {	[      0x00000009 ] };
+	key <!00a>               {	[      0x0000000a ] };
+	key <!fff>               {	[      0x00000fff ] };
+	key <#001>               {	[          Delete ] };
+	modifier_map Shift { <0008>, <!09> };
+	modifier_map Lock { <!00a>, <!fff>, <#001> };
+};
+
+};
