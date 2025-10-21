@@ -13,15 +13,18 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
-#include "keymap.h"
+#include "atom.h"
 #include "action.h"
+#include "darray.h"
+#include "keymap.h"
 #include "messages-codes.h"
-#include "xkbcomp-priv.h"
 #include "text.h"
+#include "xkbcomp-priv.h"
 
 #define BUF_CHUNK_SIZE 4096
 
@@ -202,6 +205,222 @@ check_write_string_literal(struct buf *buf, const char* string)
         return false; \
 } while (0)
 
+/** Entry for a name substituion LUT */
+struct key_name_substitution {
+    xkb_atom_t source;
+    xkb_atom_t target;
+    /** Used for intuitive renaming */
+    xkb_keycode_t keycode;
+};
+
+/** Compare 2 key name substitution entries by they original name (atom) */
+static int
+cmp_key_name_substitution(const void *a, const void *b)
+{
+    const xkb_atom_t s1 = ((struct key_name_substitution *) a)->source;
+    const xkb_atom_t s2 = ((struct key_name_substitution *) b)->source;
+    return (s1 < s2) ? -1 : ((s1 > s2) ? 1 : 0);
+}
+
+typedef darray(struct key_name_substitution) key_name_substitutions;
+
+/**
+ * Rename keys that are not compatible with the original XKB protocol,
+ * i.e. more that 4 bytes. The new name will be formed as prefix + 3-digit
+ * hexadecimal number.
+ */
+static bool
+rename_long_keys(struct xkb_keymap *keymap,
+                 key_name_substitutions *substitutions)
+{
+    /*
+     * Prefixes we want to use for the new names: ASCII range `!`..`0`.
+     * They are really unlikely to be used in usual keymaps.
+     * NULL denotes an unavailable prefix.
+     */
+    enum {
+        first = '!',
+        last = '0',
+        invalid = '\0'
+    };
+    char prefixes[] = {
+        first, invalid /* skip ‘"’, which would look buggy otherwise */,
+        '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', last
+    };
+    static_assert(sizeof(prefixes) == last - first + 1, "invalid range");
+
+    /*
+     * Traverse all the keys and aliases:
+     * - Collect items with incompatible names.
+     * - Remove prefixes that are already used in valid 4-char names.
+     *   This ensures no name conflict will occur with the new names, without
+     *   requiring an extensive check.
+     */
+
+    /* Check key names */
+    const struct xkb_key *key;
+    xkb_keys_foreach(key, keymap) {
+        if (key->name == XKB_ATOM_NONE)
+            continue;
+
+        const char * const name = xkb_atom_text(keymap->ctx, key->name);
+        const size_t len = strlen_safe(name);
+        if (len > 4) {
+            /* Key name too long: append key, pending for renaming */
+            darray_append(*substitutions, (struct key_name_substitution) {
+                .source = key->name,
+                .keycode = key->keycode,
+                .target = key->name
+            });
+        } else if (len == 4 && name[0] >= first && name[0] <= last) {
+            /* Potential name conflict: deactivate this prefix */
+            prefixes[name[0] - first] = invalid;
+        }
+    }
+
+    /* Check aliases */
+    for (darray_size_t a = 0; a < keymap->num_key_aliases; a++) {
+        const struct xkb_key_alias * const alias = &keymap->key_aliases[a];
+        const char * const name = xkb_atom_text(keymap->ctx, alias->alias);
+        const size_t len = strlen_safe(name);
+        if (len > 4) {
+            /* Alias name too long: append alias, pending for renaming */
+            darray_append(*substitutions, (struct key_name_substitution) {
+                .source = alias->alias,
+                .keycode = XKB_KEYCODE_INVALID, /* Too expensive to lookup */
+                .target = alias->alias
+            });
+        } else if (len == 4 && name[0] >= first && name[0] <= last) {
+            /* Potential conflict with names substitutes: deactivate prefix */
+            prefixes[name[0] - first] = invalid;
+        }
+    }
+
+    if darray_empty(*substitutions) {
+        /* Nothing to do */
+        return true;
+    }
+
+    /*
+     * Create non-conflicting X11-compatible new names
+     *
+     * It’s one of the following 2 forms:
+     * - If key name and keycode ≤ 0xfff: prefix character + hexadecimal keycode
+     * - If alias or keycode > 0xfff: prefix character + hexadecimal incrementing
+     *   counter.
+     * Prefixes are distinct to avoid any name conflict.
+     */
+
+    /* Get first available prefix */
+    char *prefix = prefixes;
+    const char *prefix_max = prefixes + sizeof(prefixes) - 1;
+    while (*prefix == invalid && prefix < prefix_max)
+        prefix++;
+
+    /* Keycode prefix: prefer ‘0’ if available */
+    char keycode_prefix;
+    if (prefixes[last - first] == '0') {
+        /* ‘0’ is available: use it then mark it unavailable for further use */
+        keycode_prefix = last;
+        prefixes[last - first] = invalid;
+    } else {
+        /* ‘0’ is unavailable: use first available prefix */
+        keycode_prefix = *prefix;
+        if (unlikely(keycode_prefix == invalid)) {
+            /*
+             * Abort: no prefix available (very unlikely).
+             * Do not error though: Wayland clients can still parse the keymap.
+             */
+            darray_free(*substitutions);
+            return true;
+        }
+        /* Update current prefix */
+        *prefix = invalid;
+        while (*prefix == invalid && prefix < prefix_max)
+            prefix++;
+    }
+
+    /* Proceed renaming */
+    uint16_t next_id = 1;
+    struct key_name_substitution *sub;
+    char buf[6] = {0}; /* 5 would suffice, but generates a compiler warning */
+    darray_foreach(sub, *substitutions) {
+        static_assert(XKB_KEYCODE_INVALID > 0xfff, "Invalid keys filtered out");
+        if (sub->keycode <= 0xfff) {
+            /*
+             * Try nice formatting with the hexadecimal keycode.
+             * We use lower case to reduce possible conflict because the
+             * traditional key names are upper-cased.
+             */
+            snprintf(buf, sizeof(buf), "%c%03"PRIx32,
+                     keycode_prefix, sub->keycode);
+            const xkb_atom_t target = xkb_atom_intern(keymap->ctx,
+                                                      buf, sizeof(buf) - 2);
+            if (target == XKB_ATOM_NONE)
+                goto error;
+            sub->target = target;
+        } else if (*prefix != invalid) {
+            /* Cannot use keycode for formatting: generate next arbitrary ID */
+            snprintf(buf, sizeof(buf), "%c%03"PRIx16, *prefix, next_id);
+            const xkb_atom_t target = xkb_atom_intern(keymap->ctx,
+                                                      buf, sizeof(buf) - 2);
+            if (target == XKB_ATOM_NONE)
+                goto error;
+            sub->target = target;
+            if (++next_id > 0xfff) {
+                *prefix = invalid;
+                /* Get next available prefix */
+                while (*prefix == invalid && prefix < prefix_max)
+                    prefix++;
+                /* Reset counter */
+                next_id = 1;
+            }
+        } else {
+            /*
+             * No prefix available: skip substitution (very unlikely).
+             * Do not error though: Wayland clients can still parse the keymap.
+             */
+            sub->target = sub->source;
+        }
+    }
+
+    /* Now sort by the source names so we can do a binary search */
+    qsort(darray_items(*substitutions), darray_size(*substitutions),
+          sizeof(*darray_items(*substitutions)), &cmp_key_name_substitution);
+
+    return true;
+
+error:
+    darray_free(*substitutions);
+    /* There was a memory error */
+    log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+            "Cannot allocate key name substitution\n");
+    return false;
+}
+
+/** Substitute a key name with a valid X11 key name */
+static xkb_atom_t
+substitute_name(const key_name_substitutions *substitutions, xkb_atom_t name)
+{
+    /* Binary search */
+    darray_size_t first = 0;
+    darray_size_t last = darray_size(*substitutions);
+
+    while (last > first) {
+        darray_size_t mid = first + (last - 1 - first) / 2;
+        const xkb_atom_t source = darray_item(*substitutions, mid).source;
+        if (source < name)
+            first = mid + 1;
+        else if (source > name)
+            last = mid;
+        else /* found it */
+            return darray_item(*substitutions, mid).target;
+    }
+
+    /* No name substitution: return original name */
+    return name;
+}
+
 static bool
 write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             struct buf *buf)
@@ -256,7 +475,9 @@ write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
+write_keycodes(struct xkb_keymap *keymap,
+               const key_name_substitutions *substitutions, bool pretty,
+               struct buf *buf)
 {
     const struct xkb_key *key;
     xkb_led_index_t idx;
@@ -279,10 +500,13 @@ write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
         if (key->name == XKB_ATOM_NONE)
             continue;
 
+        const xkb_atom_t name = (substitutions == NULL)
+            ? key->name
+            : substitute_name(substitutions, key->name);
         if (pretty)
-            write_buf(buf, "\t%-20s", KeyNameText(keymap->ctx, key->name));
+            write_buf(buf, "\t%-20s", KeyNameText(keymap->ctx, name));
         else
-            write_buf(buf, "\t%s", KeyNameText(keymap->ctx, key->name));
+            write_buf(buf, "\t%s", KeyNameText(keymap->ctx, name));
         write_buf(buf, " = %"PRIu32";\n", key->keycode);
     }
 
@@ -294,14 +518,21 @@ write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
         }
 
     for (darray_size_t i = 0; i < keymap->num_key_aliases; i++) {
+        const xkb_atom_t alias = (substitutions == NULL)
+            ? keymap->key_aliases[i].alias
+            : substitute_name(substitutions, keymap->key_aliases[i].alias);
+        const xkb_atom_t real = (substitutions == NULL)
+            ? keymap->key_aliases[i].real
+            : substitute_name(substitutions, keymap->key_aliases[i].real);
+
         if (pretty)
             write_buf(buf, "\talias %-14s",
-                      KeyNameText(keymap->ctx, keymap->key_aliases[i].alias));
+                      KeyNameText(keymap->ctx, alias));
         else
             write_buf(buf, "\talias %s",
-                      KeyNameText(keymap->ctx, keymap->key_aliases[i].alias));
+                      KeyNameText(keymap->ctx, alias));
         write_buf(buf, " = %s;\n",
-                  KeyNameText(keymap->ctx, keymap->key_aliases[i].real));
+                  KeyNameText(keymap->ctx, real));
     }
 
     copy_to_buf(buf, "};\n\n");
@@ -852,16 +1083,21 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 
 static bool
 write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+          const key_name_substitutions *substitutions,
           xkb_layout_index_t max_groups, bool pretty,
           struct buf *buf, struct buf *buf2, const struct xkb_key *key)
 {
     bool simple = true;
     const xkb_layout_index_t num_groups = MIN(key->num_groups, max_groups);
 
+    const xkb_atom_t name = (substitutions == NULL)
+        ? key->name
+        : substitute_name(substitutions, key->name);
+
     if (pretty)
-        write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, key->name));
+        write_buf(buf, "\tkey %-20s {", KeyNameText(keymap->ctx, name));
     else
-        write_buf(buf, "\tkey %s {", KeyNameText(keymap->ctx, key->name));
+        write_buf(buf, "\tkey %s {", KeyNameText(keymap->ctx, name));
 
     if (key->explicit & EXPLICIT_TYPES) {
         simple = false;
@@ -983,6 +1219,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              const key_name_substitutions *substitutions,
               xkb_layout_index_t max_groups, bool pretty, struct buf *buf)
 {
 
@@ -1010,7 +1247,8 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
         if (key->explicit) {
-            if (!write_key(keymap, format, max_groups, pretty, buf, &buf2, key)) {
+            if (!write_key(keymap, format, substitutions, max_groups, pretty,
+                           buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
             }
@@ -1027,9 +1265,12 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                 if (!had_any)
                     write_buf(buf, "\tmodifier_map %s { ",
                               xkb_atom_text(keymap->ctx, mod->name));
+                const xkb_atom_t name = (substitutions == NULL)
+                    ? key->name
+                    : substitute_name(substitutions, key->name);
                 write_buf(buf, "%s%s",
                           had_any ? ", " : "",
-                          KeyNameText(keymap->ctx, key->name));
+                          KeyNameText(keymap->ctx, name));
                 had_any = true;
             }
         }
@@ -1056,12 +1297,25 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     const bool pretty = !!(flags & XKB_KEYMAP_SERIALIZE_PRETTY);
     const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
 
-    return (check_write_buf(buf, "xkb_keymap {\n") &&
-            write_keycodes(keymap, pretty, buf) &&
-            write_types(keymap, format, drop_unused, buf) &&
-            write_compat(keymap, format, max_groups, drop_unused, pretty, buf) &&
-            write_symbols(keymap, format, max_groups, pretty, buf) &&
-            check_write_buf(buf, "};\n"));
+    key_name_substitutions substitutions = darray_new();
+    if (format == XKB_KEYMAP_FORMAT_TEXT_V1) {
+        if (!rename_long_keys(keymap, &substitutions))
+            return false;
+    }
+    const key_name_substitutions * const substitutions_ptr =
+        (darray_empty(substitutions)) ? NULL : &substitutions;
+
+    const bool ok = (
+        check_write_buf(buf, "xkb_keymap {\n") &&
+        write_keycodes(keymap, substitutions_ptr, pretty, buf) &&
+        write_types(keymap, format, drop_unused, buf) &&
+        write_compat(keymap, format, max_groups, drop_unused, pretty, buf) &&
+        write_symbols(keymap, format, substitutions_ptr, max_groups, pretty, buf) &&
+        check_write_buf(buf, "};\n")
+    );
+
+    darray_free(substitutions);
+    return ok;
 }
 
 char *

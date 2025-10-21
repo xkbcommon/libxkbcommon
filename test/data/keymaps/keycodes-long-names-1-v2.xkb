@@ -1,0 +1,39 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 65535;
+	<0008>               = 8;
+	<!09>                = 9;
+	<long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 10;
+	<long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 4095;
+	<long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 65535;
+	alias <long-alias-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;
+	alias <long-alias-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;
+	alias <long-alias-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <0008>               {	[      0x00000008 ] };
+	key <!09>                {	[      0x00000009 ] };
+	key <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {	[      0x0000000a ] };
+	key <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {	[      0x00000fff ] };
+	key <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {	[          Delete ] };
+	modifier_map Shift { <0008>, <!09> };
+	modifier_map Lock { <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>, <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>, <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> };
+};
+
+};

@@ -1111,7 +1111,7 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
-        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
+        fprintf(stderr, "------\n*** %s: key bounds #%u ***\n", __func__, k);
         /*
          * We use a new context because we want to check key name LUT is
          * correctly implemented: it requires an empty atom table.
@@ -1208,6 +1208,100 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                           kc, *ks, expected);
         }
         xkb_keymap_unref(keymap);
+    }
+
+    /* Ensure long key names have a fallback in V1 format */
+    static const char long_names_1[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <0008> = 8;\n" /* name conflict (count = 4): prefix ‘0’ skipped */
+        "    <!09>  = 9;\n" /* no name conflict (count = 3): prefix ‘!’ available */
+        "    <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 0x000a;\n"
+        "    <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 0x0fff;\n"
+        "    <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 0xffff;\n"
+        "    alias <long-alias-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = "
+        "          <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;\n"
+        "    alias <long-alias-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = "
+        "          <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;\n"
+        "    alias <long-alias-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = "
+        "          <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    key <0008> { [0x8] };\n"
+        "    key <!09>  { [0x9] };\n"
+        "    key <long-name-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {[0x000a]};\n"
+        "    key <long-name-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {[0x0fff]};\n"
+        "    key <long-name-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> {[0xffff]};\n"
+        "    modmap Shift { <0008>, <!09> };\n"
+        "    modmap Lock {\n"
+        "      <long-alias-000axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>,\n"
+        "      <long-alias-0fffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>,\n"
+        "      <long-alias-ffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>\n"
+        "    };\n"
+        "  };\n"
+        "};";
+
+    static const char long_names_2[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <!008> = 8;\n"
+        "    <#009> = 9;\n"
+        "    <$010> = 10;\n"
+        "    <%011> = 11;\n"
+        "    <&012> = 12;\n"
+        "    <'013> = 13;\n"
+        "    <(014> = 14;\n"
+        "    <)015> = 15;\n"
+        "    <*016> = 16;\n"
+        "    <+017> = 17;\n"
+        "    <,018> = 18;\n"
+        "    <-019> = 19;\n"
+        "    <.020> = 20;\n"
+        "    </021> = 21;\n"
+        "    <0022> = 22;\n"
+        /* No prefix available: the following keys names will stay unchanged */
+        "    <long-name-0100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 100;\n"
+        "    <long-name-0101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = 101;\n"
+        "    alias <long-alias-0100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = "
+        "          <long-name-0100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;\n"
+        "    alias <long-alias-0101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> = "
+        "          <long-name-0101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>;\n"
+        "  };\n"
+        "};";
+    static const struct {
+        const char* keymap;
+        const char* path;
+        enum xkb_keymap_format format;
+    } tests[] = {
+        {
+            .keymap = long_names_1,
+            .path = GOLDEN_TESTS_OUTPUTS "keycodes-long-names-1-v1.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+        },
+        {
+            .keymap = long_names_1,
+            .path = GOLDEN_TESTS_OUTPUTS "keycodes-long-names-1-v2.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+        },
+        {
+            .keymap = long_names_2,
+            .path = GOLDEN_TESTS_OUTPUTS "keycodes-long-names-2.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V1
+        },
+        {
+            .keymap = long_names_2,
+            .path = GOLDEN_TESTS_OUTPUTS "keycodes-long-names-2.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2
+        },
+    };
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: long key names #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   tests[t].format,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].path,
+                                   update_output_files));
     }
 }
 
