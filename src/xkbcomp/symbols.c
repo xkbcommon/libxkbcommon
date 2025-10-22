@@ -179,7 +179,7 @@ typedef struct {
 
     xkb_layout_index_t max_groups;
     struct xkb_context *ctx;
-    /* Needed for AddKeySymbols. */
+    /* Needed for AddKeySymbols and parsing actions */
     const struct xkb_keymap *keymap;
 } SymbolsInfo;
 
@@ -958,9 +958,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->keymap->format,
-                                 &info->default_actions, &info->mods,
-                                 act, &toAct)) {
+            if (!HandleActionDef(info->keymap, &info->default_actions,
+                                 &info->mods, act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %"PRIu32"/level %"PRIu32" ignored\n",
@@ -1309,8 +1308,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->ctx, info->keymap->format,
-                                    &info->default_actions,
+        ret = SetDefaultActionField(info->keymap, &info->default_actions,
                                     &info->mods, elem, field, arrayNdx,
                                     stmt->value, stmt->merge);
     } else {
