@@ -9,6 +9,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
+#include "keymap.h"
 #include "x11-priv.h"
 
 /*
@@ -564,7 +565,9 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
     keymap->mods.num_mods =
         NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
+    FAIL_UNLESS(keymap->mods.num_mods <= XKB_MAX_MODS);
 
+    static_assert(NUM_REAL_MODS + NUM_VMODS <= XKB_MAX_MODS, "");
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             uint8_t wire = *iter;
@@ -578,6 +581,9 @@ get_vmods(struct xkb_keymap *keymap, xcb_connection_t *conn,
     }
 
     return true;
+
+fail:
+    return false;
 }
 
 static bool
@@ -742,7 +748,9 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
         xcb_xkb_get_indicator_map_maps_iterator(reply);
 
     keymap->num_leds = msb_pos(reply->which);
+    FAIL_UNLESS(keymap->num_leds <= XKB_MAX_LEDS);
 
+    static_assert(XKB_MAX_LEDS == NUM_INDICATORS, "");
     for (unsigned i = 0; i < NUM_INDICATORS; i++) {
         if (reply->which & (UINT32_C(1) << i)) {
             xcb_xkb_indicator_map_t *wire = iter.data;
@@ -782,6 +790,9 @@ get_indicators(struct xkb_keymap *keymap, xcb_connection_t *conn,
     }
 
     return true;
+
+fail:
+    return false;
 }
 
 static bool
@@ -987,7 +998,9 @@ get_vmod_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
      */
     keymap->mods.num_mods =
         NUM_REAL_MODS + MIN(msb_pos(reply->virtualMods), NUM_VMODS);
+    FAIL_UNLESS(keymap->mods.num_mods <= XKB_MAX_MODS);
 
+    static_assert(NUM_REAL_MODS + NUM_VMODS <= XKB_MAX_MODS, "");
     for (unsigned i = 0; i < NUM_VMODS; i++) {
         if (reply->virtualMods & (1u << i)) {
             xcb_atom_t wire = *iter;
@@ -1000,6 +1013,9 @@ get_vmod_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
     }
 
     return true;
+
+fail:
+    return false;
 }
 
 static bool
