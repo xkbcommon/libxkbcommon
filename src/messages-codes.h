@@ -152,6 +152,8 @@ enum xkb_message_code {
     XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE = 607,
     /** Invalid _real_ modifier */
     XKB_ERROR_INVALID_REAL_MODIFIER = 623,
+    /** Unable to add any default include path */
+    XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH = 632,
     /** Cannot set default value to a an unknown field */
     XKB_ERROR_UNKNOWN_DEFAULT_FIELD = 639,
     /** Warn on unknown escape sequence in string literal */

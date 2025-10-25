@@ -7,11 +7,13 @@
 
 #include "config.h"
 
-#include "test.h"
-#include "context.h"
-
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "test.h"
+#include "xkbcommon/xkbcommon.h"
+#include "context.h"
 
 /* keeps a cache of all makedir/maketmpdir directories so we can free and
  * rmdir them in one go, see unmakedirs() */
@@ -26,7 +28,8 @@ struct env {
 } environment[64];
 int nenviron;
 
-static void buffer_env(const char *key)
+static void
+buffer_env(const char *key)
 {
     char *v = getenv(key);
 
@@ -35,7 +38,8 @@ static void buffer_env(const char *key)
     nenviron++;
 }
 
-static void restore_env(void)
+static void
+restore_env(void)
 {
     for (int i = 0; i < nenviron; i++) {
         char *key = environment[i].key,
@@ -53,7 +57,8 @@ static void restore_env(void)
     memset(environment, 0, sizeof(environment));
 }
 
-static const char *makedir(const char *parent, const char *path)
+static const char *
+makedir(const char *parent, const char *path)
 {
     char *dirname = test_makedir(parent, path);
     dirnames[ndirs++] = dirname;
@@ -67,7 +72,8 @@ static const char *maketmpdir(void)
     return tmpdir;
 }
 
-static void unmakedirs(void)
+static void
+unmakedirs(void)
 {
     /* backwards order for rmdir to work */
     for (int i = ndirs - 1; i >= 0; i--) {
@@ -167,7 +173,9 @@ test_config_root_include_path_fallback(void)
     /* No valid path */
     setenv("XKB_CONFIG_EXTRA_PATH", "", 1);
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    assert(!ctx);
+    nincludes = xkb_context_num_include_paths(ctx);
+    assert(nincludes == 0);
+    xkb_context_unref(ctx);
 
     unmakedirs();
     restore_env();
@@ -294,6 +302,55 @@ test_include_order(void)
     restore_env();
 }
 
+static void
+test_delayed_includes(void)
+{
+    buffer_env("XKB_CONFIG_ROOT");
+    buffer_env("XKB_CONFIG_EXTRA_PATH");
+    buffer_env("XDG_CONFIG_HOME");
+    buffer_env("HOME");
+
+    const char * const xkb_root_path = maketmpdir();
+
+    /* Empty paths, so that currently a call to
+     * xkb_context_include_path_append_default() would fail */
+    setenv("XKB_CONFIG_ROOT", "", 1);
+    setenv("XKB_CONFIG_EXTRA_PATH", "", 1);
+    unsetenv("XDG_CONFIG_HOME");
+    unsetenv("HOME");
+
+    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    /* Context should initialize correctly, despite no include path is
+     * currently available */
+    assert(ctx);
+    assert(xkb_context_num_include_paths(ctx) == 0);
+    /* Setting XKB_CONFIG_ROOT correctly is too late, because we used API that
+     * requires to initialize the include paths */
+    setenv("XKB_CONFIG_ROOT", xkb_root_path, 1);
+    assert(xkb_context_num_include_paths(ctx) == 0);
+    /* We cannot add further paths, since the default paths failed */
+    assert(!xkb_context_include_path_append(ctx, xkb_root_path));
+    xkb_context_unref(ctx);
+
+    setenv("XKB_CONFIG_ROOT", "", 1);
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    /* Context should initialize correctly, despite no include path is
+     * currently available */
+    assert(ctx);
+    /* Set XKB_CONFIG_ROOT correctly before using any API that requires the
+     * to initialize the include paths */
+    setenv("XKB_CONFIG_ROOT", xkb_root_path, 1);
+    assert(xkb_context_num_include_paths(ctx) == 1);
+    const char * const context_path = xkb_context_include_path_get(ctx, 0);
+    assert(strcmp(context_path, xkb_root_path) == 0);
+    assert(xkb_context_include_path_append(ctx, xkb_root_path) == 1);
+    assert(xkb_context_num_include_paths(ctx) == 2);
+    xkb_context_unref(ctx);
+
+    unmakedirs();
+    restore_env();
+}
+
 int
 main(void)
 {
@@ -324,6 +381,7 @@ main(void)
     test_xdg_include_path();
     test_xdg_include_path_fallback();
     test_include_order();
+    test_delayed_includes();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

@@ -378,12 +378,15 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/x11/state.c',
         'src/x11/util.c',
         'src/x11/x11-priv.h',
+        'src/context.c',
         'src/context.h',
         'src/context-priv.c',
         'src/keymap.h',
         'src/keymap-priv.c',
         'src/atom.h',
         'src/atom.c',
+        'src/utils.c',
+        'src/utils.h',
     ]
     libxkbcommon_x11_link_args = []
     libxkbcommon_x11_link_deps = []
