@@ -781,10 +781,14 @@ dpy_disconnect(struct interactive_dpy *inter)
     wl_list_for_each_safe(seat, tmp, &inter->seats, link)
         seat_destroy(seat);
 
-    if (inter->xdg_surf)
-        xdg_surface_destroy(inter->xdg_surf);
+    if (inter->decoration)
+        zxdg_toplevel_decoration_v1_destroy(inter->decoration);
+    if (inter->decoration_manager)
+        zxdg_decoration_manager_v1_destroy(inter->decoration_manager);
     if (inter->xdg_top)
         xdg_toplevel_destroy(inter->xdg_top);
+    if (inter->xdg_surf)
+        xdg_surface_destroy(inter->xdg_surf);
     if (inter->wl_surf)
         wl_surface_destroy(inter->wl_surf);
     if (inter->shell)
@@ -795,10 +799,6 @@ dpy_disconnect(struct interactive_dpy *inter)
         wl_shm_destroy(inter->shm);
     if (inter->buf)
         wl_buffer_destroy(inter->buf);
-    if (inter->decoration)
-        zxdg_toplevel_decoration_v1_destroy(inter->decoration);
-    if (inter->decoration_manager)
-        zxdg_decoration_manager_v1_destroy(inter->decoration_manager);
 
     /* Do one last roundtrip to try to destroy our wl_buffer. */
     wl_display_roundtrip(inter->dpy);
