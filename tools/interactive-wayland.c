@@ -86,6 +86,7 @@ static bool use_local_state = false;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
+#ifndef KEYMAP_DUMP
 static void
 surface_configure(void *data, struct xdg_surface *surface,
                   uint32_t serial)
@@ -100,7 +101,6 @@ static const struct xdg_surface_listener surface_listener = {
     surface_configure,
 };
 
-#ifndef KEYMAP_DUMP
 #ifdef HAVE_MKOSTEMP
 static int
 create_tmpfile_cloexec(char *tmpname)
@@ -353,7 +353,6 @@ static const struct xdg_toplevel_listener toplevel_listener = {
     toplevel_configure,
     toplevel_close
 };
-#endif
 
 static void surface_create(struct interactive_dpy *inter)
 {
@@ -361,7 +360,6 @@ static void surface_create(struct interactive_dpy *inter)
     inter->xdg_surf = xdg_wm_base_get_xdg_surface(inter->shell, inter->wl_surf);
     xdg_surface_add_listener(inter->xdg_surf, &surface_listener, inter);
 
-#ifndef KEYMAP_DUMP
     /* Create a window only for the interactive tool */
     inter->xdg_top = xdg_surface_get_toplevel(inter->xdg_surf);
     xdg_toplevel_add_listener(inter->xdg_top, &toplevel_listener, inter);
@@ -377,10 +375,10 @@ static void surface_create(struct interactive_dpy *inter)
                 inter->decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE
             );
     }
-#endif
 
     wl_surface_commit(inter->wl_surf);
 }
+#endif
 
 static void
 shell_ping(void *data, struct xdg_wm_base *shell, uint32_t serial)
@@ -1096,7 +1094,9 @@ too_much_arguments:
         goto err_conn;
     }
 
+#ifndef KEYMAP_DUMP
     surface_create(&inter);
+#endif
 
     tools_disable_stdin_echo();
     do {
