@@ -14,6 +14,11 @@ jobs:
     runs-on: windows-2022
     permissions:
       contents: read
+    strategy:
+      matrix:
+        cc: ['cl', 'clang-cl']
+    env:
+      CC: ${{matrix.cc}}
     steps:
       - uses: actions/checkout@v5
         with:
