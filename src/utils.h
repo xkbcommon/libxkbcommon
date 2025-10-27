@@ -32,7 +32,9 @@
 # ifndef S_ISREG
 #  define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 # endif
+#ifdef _MSC_VER
 typedef SSIZE_T ssize_t;
+#endif
 #endif
 
 #include "darray.h"
