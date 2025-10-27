@@ -40,7 +40,7 @@
 #include "src/keymap.h"
 #include "src/messages-codes.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(S_ISFIFO)
 #define S_ISFIFO(mode) 0
 #endif
 
