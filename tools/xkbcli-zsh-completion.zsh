@@ -87,11 +87,11 @@ _xkbcli_commands() {
 }
 
 local -a rmlvo_opts_common=(
-	'--rules=[the XKB ruleset]:rules:()'
-	'--model=[the XKB model]:model:()'
-	'--layout=[the XKB layout]:layout:()'
-	'--variant=[the XKB variant]:variant:()'
-	'--options=[the XKB options]:options:()'
+	'--rules=[the XKB ruleset]:rules:(base evdev)'
+	'--model=[the XKB model]:model:_xkb_model'
+	'--layout=[the XKB layout]:layout:_xkb_layout'
+	'--variant=[the XKB variant]:variant:_xkb_variant'
+	'--options=[the XKB options]:options:_xkb_options'
 	'--enable-environment-names[set the default RMLVO values from the environment]'
 )
 
