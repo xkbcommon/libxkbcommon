@@ -12,3 +12,6 @@ max_line_length = 80
 [*.yml,*.md]
 indent_style = space
 indent_size = 2
+
+[*.zsh]
+indent_style = tab

@@ -668,6 +668,16 @@ if build_tools
                      install_dir: bash_completion_path)
     endif
 
+    if get_option('enable-zsh-completion')
+        zsh_completion_path = get_option('zsh-completion-path')
+        if zsh_completion_path == ''
+            zsh_completion_path = get_option('datadir') / 'zsh/site-functions'
+        endif
+        install_data('tools/xkbcli-zsh-completion.zsh',
+                     rename: '_xkbcli',
+                     install_dir: zsh_completion_path)
+    endif
+
     # Tool: info
     xkbcli_info = executable(
         'xkbcli-info',
