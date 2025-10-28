@@ -282,6 +282,7 @@ libxkbcommon_sources = [
     'src/xkbcomp/xkbcomp-priv.h',
     'src/atom.c',
     'src/atom.h',
+    'src/atom-priv.h',
     'src/context.c',
     'src/context.h',
     'src/context-priv.c',
@@ -1394,3 +1395,5 @@ if meson.version().version_compare('>=0.62.0')
       'merge-modes': has_merge_modes_tests,
     }, section: 'Tests')
 endif
+
+subdir('fuzz')
