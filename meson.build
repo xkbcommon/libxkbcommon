@@ -433,12 +433,23 @@ dep_libxkbcommon = declare_dependency(
     include_directories: include_directories('include'),
 )
 meson.override_dependency('xkbcommon', dep_libxkbcommon)
+pkgconfig_variables = [
+    f'xkb_root=@XKB_CONFIG_ROOT@',
+    f'xkb_extra_path=@XKB_CONFIG_EXTRA_PATH@',
+]
+if has_extensions_directories
+    pkgconfig_variables += [
+        f'xkb_unversioned_extensions_path=@XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH@',
+        f'xkb_versioned_extensions_path=@XKB_CONFIG_VERSIONED_EXTENSIONS_PATH@',
+    ]
+endif
 pkgconfig.generate(
     libxkbcommon,
     name: 'xkbcommon',
     filebase: 'xkbcommon',
     version: meson.project_version(),
     description: 'XKB API common to servers and clients',
+    variables: pkgconfig_variables,
 )
 
 
