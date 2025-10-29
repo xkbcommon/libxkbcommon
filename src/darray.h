@@ -66,6 +66,8 @@ typedef darray (char)           darray_char;
 typedef darray (signed char)    darray_schar;
 typedef darray (unsigned char)  darray_uchar;
 
+typedef darray (char *)         darray_string;
+
 typedef darray (short)          darray_short;
 typedef darray (int)            darray_int;
 typedef darray (long)           darray_long;

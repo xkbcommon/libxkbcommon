@@ -1,0 +1,3 @@
+default xkb_symbols {
+	key <AC01> { [Greek_alpha, Greek_ALPHA]};
+};

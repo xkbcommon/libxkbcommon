@@ -1,10 +1,12 @@
 # User-configuration {#user-configuration}
 
-This page describes how to add a *custom* layout or option so that it will be
-parsed by libxkbcommon.
+This page describes how to add a *custom* keyboard layout or option so that it
+will be parsed by libxkbcommon.
 
 @note For an introduction to XKB and keymap components, please see
 “@ref xkb-intro ""”.
+
+@note For *distributing* keyboard layouts, see @ref packaging-keyboard-layouts "".
 
 @warning The below requires libxkbcommon as keymap compiler and
 **does not work in _X11_** sessions, because X servers have hard-coded paths.
@@ -296,7 +298,7 @@ and prefer creating proper independent variants.
 include by prepending <code>\%S</code> to the included file.
 See the @ref keymap-include-percent-expansion "corresponding documentation".
 
-## Discoverable layouts
+## Discoverable layouts {#discoverable-layouts}
 
 @warning The below requires `libxkbregistry` as XKB lookup tool and
 **does not work where clients parse the XML file directly**.

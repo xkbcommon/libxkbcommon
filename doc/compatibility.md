@@ -59,16 +59,36 @@ libxkbcommon is the *reference* implementation of the keyboard keymap handling
 <summary>❌️ No support</summary>
 Layout database path is *hard-coded* in xserver.
 
-`xkbcomp` enable path configuration, but `setxkbmap` support is incomplete.
+`xkbcomp` enables path configuration, but `setxkbmap` support is incomplete.
 </details>
 </td>
 <td colspan="2">
 <details>
 <summary>✅ Full support</summary>
-Multiple layout database path can be used simultaneously, enabling user-space
+Multiple layout database paths can be used simultaneously, enabling user-space
 configuration.
 
 See @ref user-configuration "" for further information.
+</details>
+</td>
+</tr>
+<tr>
+<th>Configuration via third-party packages</th>
+<td>
+<details>
+<summary>❌️ No support</summary>
+Layout database path is *hard-coded* in xserver.
+
+`xkbcomp` enables path configuration, but `setxkbmap` support is incomplete.
+</details>
+</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.13)</summary>
+Multiple layout database paths can be used simultaneously, enabling third-party
+packages to extend the base configuration without hacking its files.
+
+See @ref packaging-keyboard-layouts "" for further information.
 </details>
 </td>
 </tr>
