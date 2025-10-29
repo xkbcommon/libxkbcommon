@@ -1,3 +1,40 @@
+libxkbcommon [1.12.3] – 2025-10-29
+==================================
+
+[1.12.3]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.3
+
+## API
+
+### Fixes
+
+- X11: Hardened against some malformed XKB responses with erroneous modifiers
+  or LEDs counts.
+
+## Tools
+
+### Fixes
+
+- Fixed support for Windows compilers other than MSVC
+  ([#897](https://github.com/xkbcommon/libxkbcommon/pull/897),
+  [#898](https://github.com/xkbcommon/libxkbcommon/pull/898),
+  [#899](https://github.com/xkbcommon/libxkbcommon/pull/899)).
+
+  Contributed by Rosen Penev
+
+- Fixed errors in Wayland tools
+  ([#900](https://github.com/xkbcommon/libxkbcommon/pull/900)).
+
+  Contributed by Ronan Pigott
+
+## Build system
+
+### Fixes
+
+- Fixed build setup failing in cross-compiling setups where the build
+  machine cannot run the host binaries
+  ([#885](https://github.com/xkbcommon/libxkbcommon/issues/885)).
+
+
 libxkbcommon [1.12.2] – 2025-10-20
 ==================================
 
