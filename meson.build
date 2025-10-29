@@ -53,48 +53,105 @@ cflags = [
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
 # The legacy X11 config root. Only xkeyboard-config 2.* provides it.
-# This is intented when using old xkeyboard-config and as a last resort for
+# This is intended when using old xkeyboard-config and as a last resort for
 # misconfigured setups.
 # Try both un- and versioned pkg-config (xkeyboard-config < 2.45).
-XKBLEGACYROOT = ''
+XKB_LEGACY_ROOT = ''
 foreach v: ['-2', '']
     xkeyboard_config_dep = dependency(f'xkeyboard-config@v@', required: false)
     if xkeyboard_config_dep.found()
-        XKBLEGACYROOT = xkeyboard_config_dep.get_variable(
+        XKB_LEGACY_ROOT = xkeyboard_config_dep.get_variable(
             pkgconfig: 'xkb_base',
             default_value: ''
         )
         break
     endif
 endforeach
-if XKBLEGACYROOT == ''
+if XKB_LEGACY_ROOT == ''
     # Fallback to the legacy X11 directory
-    XKBLEGACYROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
+    XKB_LEGACY_ROOT = get_option('prefix')/get_option('datadir')/'X11'/'xkb'
 endif
 
-# The XKB config root.
-XKBCONFIGROOT = get_option('xkb-config-root')
-if XKBCONFIGROOT == ''
-    # Try to set from the xkeyboard-config package, from the most recent to the
-    # oldest major version. The hard-coded major versions list should cover at
-    # least a decade (and probably much more!), given the expected pace of
-    # xkeyboard-config format changes.
-    foreach v: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
-        xkeyboard_config_dep = dependency(f'xkeyboard-config-@v@', required: false)
-        if xkeyboard_config_dep.found()
-            XKBCONFIGROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_root')
-            break
-        endif
-    endforeach
-    if XKBCONFIGROOT == ''
-        # No xkeyboard-config or too old: use legacy X11 path fallback
-        XKBCONFIGROOT = XKBLEGACYROOT
+# The xkeyboard-config root
+# Try to set it from the xkeyboard-config package, from the most recent to the
+# oldest major version. The hard-coded major versions list should cover a few
+# decades, given the expected pace of xkeyboard-config format changes.
+XKEYBOARD_CONFIG_ROOT = ''
+XKEYBOARD_CONFIG_VERSION_MAJOR = ''
+XKEYBOARD_CONFIG_VERSIONED_EXTENSIONS_PATH = ''
+XKEYBOARD_CONFIG_UNVERSIONED_EXTENSIONS_PATH = ''
+foreach v: [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
+    xkeyboard_config_dep = dependency(f'xkeyboard-config-@v@', required: false)
+    if xkeyboard_config_dep.found()
+        XKEYBOARD_CONFIG_ROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_root')
+        XKEYBOARD_CONFIG_VERSION_MAJOR = xkeyboard_config_dep.version().split('.')[0]
+        # The following variables may not be defined
+        XKEYBOARD_CONFIG_VERSIONED_EXTENSIONS_PATH = \
+            xkeyboard_config_dep.get_variable(
+                pkgconfig: 'xkb_versioned_extensions_path',
+                default_value: '',
+            )
+        XKEYBOARD_CONFIG_UNVERSIONED_EXTENSIONS_PATH = \
+            xkeyboard_config_dep.get_variable(
+                pkgconfig: 'xkb_unversioned_extensions_path',
+                default_value: '',
+            )
+        break
+    endif
+endforeach
+if XKEYBOARD_CONFIG_ROOT == ''
+    # Try old unversioned pkg-config (xkeyboard-config < 2.45)
+    xkeyboard_config_dep = dependency('xkeyboard-config', required: false)
+    if xkeyboard_config_dep.found()
+        XKEYBOARD_CONFIG_ROOT = xkeyboard_config_dep.get_variable(pkgconfig: 'xkb_base')
+        XKEYBOARD_CONFIG_VERSION_MAJOR = xkeyboard_config_dep.version().split('.')[0]
+        # No extension path defined
     endif
 endif
 
-XKBCONFIGEXTRAPATH = get_option('xkb-config-extra-path')
-if XKBCONFIGEXTRAPATH == ''
-    XKBCONFIGEXTRAPATH = get_option('prefix')/get_option('sysconfdir')/'xkb'
+# The XKB config root for libxkbcommon
+XKB_CONFIG_ROOT = get_option('xkb-config-root')
+if XKB_CONFIG_ROOT == ''
+    if XKEYBOARD_CONFIG_ROOT != ''
+        XKB_CONFIG_ROOT = XKEYBOARD_CONFIG_ROOT
+    else
+        # No xkeyboard-config or too old: use legacy X11 path fallback
+        XKB_CONFIG_ROOT = XKB_LEGACY_ROOT
+    endif
+endif
+
+# The XKB extensions directories
+XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH = get_option('xkb-config-unversioned-extensions-path')
+if XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH == '' and XKEYBOARD_CONFIG_ROOT != ''
+    if XKEYBOARD_CONFIG_UNVERSIONED_EXTENSIONS_PATH != ''
+        XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH = XKEYBOARD_CONFIG_UNVERSIONED_EXTENSIONS_PATH
+    elif XKEYBOARD_CONFIG_ROOT.endswith(f'-@XKEYBOARD_CONFIG_VERSION_MAJOR@')
+        # The xkeyboard-config root is versioned: remove the version suffix
+        # Meson does not have a length() function… Compute the length manually
+        s = XKEYBOARD_CONFIG_VERSION_MAJOR
+        foreach len: range(3)
+            if s == ''
+                break
+            endif
+            s = s.substring(1)
+        endforeach
+        XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH = XKEYBOARD_CONFIG_ROOT.substring(0, -len - 1) + '.d'
+    else
+        XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH = get_option('prefix')/get_option('datadir')/'xkeyboard-config.d'
+    endif
+endif
+XKB_CONFIG_VERSIONED_EXTENSIONS_PATH = get_option('xkb-config-versioned-extensions-path')
+if XKB_CONFIG_VERSIONED_EXTENSIONS_PATH == '' and XKEYBOARD_CONFIG_ROOT != ''
+    if XKEYBOARD_CONFIG_VERSIONED_EXTENSIONS_PATH != ''
+        XKB_CONFIG_VERSIONED_EXTENSIONS_PATH = XKEYBOARD_CONFIG_VERSIONED_EXTENSIONS_PATH
+    else
+        XKB_CONFIG_VERSIONED_EXTENSIONS_PATH = f'@XKEYBOARD_CONFIG_ROOT@.d'
+    endif
+endif
+
+XKB_CONFIG_EXTRA_PATH = get_option('xkb-config-extra-path')
+if XKB_CONFIG_EXTRA_PATH == ''
+    XKB_CONFIG_EXTRA_PATH = get_option('prefix')/get_option('sysconfdir')/'xkb'
 endif
 
 # The X locale directory for compose.
@@ -118,9 +175,21 @@ else
 endif
 configh_data.set(system_extensions, 1)
 system_ext_define = '#define ' + system_extensions
-configh_data.set_quoted('DFLT_XKB_LEGACY_ROOT', XKBLEGACYROOT)
-configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKBCONFIGROOT)
-configh_data.set_quoted('DFLT_XKB_CONFIG_EXTRA_PATH', XKBCONFIGEXTRAPATH)
+configh_data.set_quoted('DFLT_XKB_LEGACY_ROOT', XKB_LEGACY_ROOT)
+configh_data.set_quoted('DFLT_XKB_CONFIG_ROOT', XKB_CONFIG_ROOT)
+if XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH != ''
+    configh_data.set_quoted(
+        'DFLT_XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH',
+        XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH
+    )
+endif
+if XKB_CONFIG_VERSIONED_EXTENSIONS_PATH != ''
+    configh_data.set_quoted(
+        'DFLT_XKB_CONFIG_VERSIONED_EXTENSIONS_PATH',
+        XKB_CONFIG_VERSIONED_EXTENSIONS_PATH
+    )
+endif
+configh_data.set_quoted('DFLT_XKB_CONFIG_EXTRA_PATH', XKB_CONFIG_EXTRA_PATH)
 configh_data.set_quoted('XLOCALEDIR', XLOCALEDIR)
 configh_data.set_quoted('DEFAULT_XKB_RULES', get_option('default-rules'))
 configh_data.set_quoted('DEFAULT_XKB_MODEL', get_option('default-model'))
@@ -136,7 +205,16 @@ else
     configh_data.set('DEFAULT_XKB_OPTIONS', 'NULL')
 endif
 if cc.has_header('unistd.h')
-    configh_data.set('HAVE_UNISTD_H', 1)
+    configh_data.set10('HAVE_UNISTD_H', true)
+endif
+if cc.has_header('dirent.h')
+    configh_data.set10('HAVE_DIRENT_H', true)
+endif
+if configh_data.get('HAVE_UNISTD_H', 0) == 1 and configh_data.get('HAVE_DIRENT_H', 0) == 1
+    configh_data.set10('HAVE_XKB_EXTENSIONS_DIRECTORIES', true)
+    has_extensions_directories = true
+else
+    has_extensions_directories = false
 endif
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
@@ -758,7 +836,7 @@ endif
 # xkeyboard-config "verifier"
 xkct_config = configuration_data()
 xkct_config.set('MESON_BUILD_ROOT', meson.current_build_dir())
-xkct_config.set('XKB_CONFIG_ROOT', XKBCONFIGROOT)
+xkct_config.set('XKB_CONFIG_ROOT', XKB_CONFIG_ROOT)
 configure_file(input: 'test/xkeyboard-config-test.py.in',
                output: 'xkeyboard-config-test',
                configuration: xkct_config)
@@ -934,6 +1012,17 @@ test(
     executable('test-buffercomp', 'test/buffercomp.c', dependencies: test_dep),
     env: test_env,
 )
+if has_extensions_directories
+    test(
+        'extensions-directories',
+        executable(
+            'extensions-directories',
+            'test/extensions-directories.c',
+            dependencies: test_dep
+        ),
+        env: test_env,
+    )
+endif
 test(
     'introspection',
     executable(
@@ -1290,6 +1379,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/introduction-to-xkb.md',
         'doc/quick-guide.md',
         'doc/compatibility.md',
+        'doc/packaging-keyboard-layouts.md',
         'doc/user-configuration.md',
         'doc/rules-format.md',
         'doc/keymap-text-format-v1-v2.md',
@@ -1375,8 +1465,11 @@ if meson.version().version_compare('>=0.62.0')
       'bindir': get_option('bindir'),
       'libdir': get_option('libdir'),
       'datadir': get_option('datadir'),
-      'xkb-config-root': XKBCONFIGROOT,
-      'xkb-config-extra-path': XKBCONFIGEXTRAPATH,
+      'xkb-config-root': XKB_CONFIG_ROOT,
+      'xkb-legacy-root': XKB_LEGACY_ROOT,
+      'xkb-config-unversioned-extensions-path': XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH,
+      'xkb-config-versioned-extensions-path': XKB_CONFIG_VERSIONED_EXTENSIONS_PATH,
+      'xkb-config-extra-path': XKB_CONFIG_EXTRA_PATH,
       'xlocaledir': XLOCALEDIR,
     }, section: 'Directories')
     summary({
@@ -1385,6 +1478,7 @@ if meson.version().version_compare('>=0.62.0')
       'wayland': get_option('enable-wayland'),
       'x11': get_option('enable-x11'),
       'compose locale fallback': has_compose_locale_fallback,
+      'XKB extensions directories': has_extensions_directories,
     }, section: 'Features')
     summary({
       'layout': get_option('default-layout'),

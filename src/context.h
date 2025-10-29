@@ -64,6 +64,12 @@ const char *
 xkb_context_include_path_get_extra_path(struct xkb_context *ctx);
 
 const char *
+xkb_context_include_path_get_unversioned_extensions_path(struct xkb_context *ctx);
+
+const char *
+xkb_context_include_path_get_versioned_extensions_path(struct xkb_context *ctx);
+
+const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx);
 
 XKB_EXPORT_PRIVATE darray_size_t

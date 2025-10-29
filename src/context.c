@@ -10,8 +10,17 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if HAVE_XKB_EXTENSIONS_DIRECTORIES
+    #include <limits.h>
+    #if HAVE_UNISTD_H && HAVE_DIRENT_H
+        #include <dirent.h>
+        #include <unistd.h>
+    #endif
+#endif
 
 #include "xkbcommon/xkbcommon.h"
 #include "context.h"
@@ -88,6 +97,134 @@ xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
+#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+const char *
+xkb_context_include_path_get_unversioned_extensions_path(struct xkb_context *ctx)
+{
+    const char *ext =
+        xkb_context_getenv(ctx, "XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH");
+    return ext
+        ? ext
+#ifdef DFLT_XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH
+        : DFLT_XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH;
+#else
+        : NULL;
+#endif
+}
+
+const char *
+xkb_context_include_path_get_versioned_extensions_path(struct xkb_context *ctx)
+{
+    const char *ext =
+        xkb_context_getenv(ctx, "XKB_CONFIG_VERSIONED_EXTENSIONS_PATH");
+    return ext
+        ? ext
+#ifdef DFLT_XKB_CONFIG_VERSIONED_EXTENSIONS_PATH
+        : DFLT_XKB_CONFIG_VERSIONED_EXTENSIONS_PATH;
+#else
+        : NULL;
+#endif
+}
+
+static int
+compare_str(const void *a, const void *b)
+{
+    return strcmp(*(char **)a, *(char **) b);
+}
+
+static int
+add_direct_subdirectories(struct xkb_context *ctx, const char *path,
+                          darray_string *extensions,
+                          darray_size_t versioned_count,
+                          size_t versioned_path_length)
+{
+    int ret = 0;
+    int err = ENOMEM;
+    DIR *dir = NULL;
+
+    /* Check extensions parent directory */
+    struct stat stat_buf;
+    err = stat(path, &stat_buf);
+    if (err != 0) {
+        err = errno;
+        goto err;
+    }
+    if (!S_ISDIR(stat_buf.st_mode)) {
+        err = ENOTDIR;
+        goto err;
+    }
+    if (!check_eaccess(path, R_OK | X_OK)) {
+        err = EACCES;
+        goto err;
+    }
+
+    dir = opendir(path);
+    if (dir == NULL) {
+        err = EACCES;
+        goto err;
+    }
+
+    struct dirent *entry;
+    char path_buf[PATH_MAX] = "";
+    versioned_path_length++; /* Additional final ‘/’ */
+    while ((entry = readdir(dir)) != NULL) {
+        const char *name = entry->d_name;
+
+        /* Skip special entries */
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+            continue;
+
+        if (!snprintf_safe(path_buf, sizeof(path_buf), "%s/%s", path, name)) {
+            err = ENOMEM;
+            goto err;
+        }
+        if (stat(path_buf, &stat_buf) != 0 || !S_ISDIR(stat_buf.st_mode))
+            continue;
+
+        /* Skip if the corresponding versioned directory is already included */
+        for (darray_size_t i = 0; i < versioned_count; i++) {
+            const char * const prev_name = darray_item(*extensions, i)
+                                         + versioned_path_length;
+            if (strcmp(name, prev_name) == 0)
+                goto next;
+        }
+
+        char *ext_path = strdup_safe(path_buf);
+        if (!ext_path) {
+            err = ENOMEM;
+            goto err;
+        }
+
+        darray_append(*extensions, ext_path);
+next:
+    {} /* Label at end of compound statement is a C23 extension */
+    }
+
+    closedir(dir);
+
+    if (darray_size(*extensions) > versioned_count) {
+        /* Sort the entries, so that they are appended in lexicographic order */
+        qsort(darray_items(*extensions) + versioned_count,
+              darray_size(*extensions) - versioned_count,
+              sizeof(*darray_items(*extensions)), &compare_str);
+        char **ext_path;
+        darray_foreach_from(ext_path, *extensions, versioned_count) {
+            ret |= context_include_path_append(ctx, *ext_path);
+        }
+    }
+
+    return ret;
+
+err:
+    log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
+            "Include extensions path failed: %s (%s)\n", path, strerror(err));
+    if (dir)
+        closedir(dir);
+
+    return ret;
+}
+#endif
+
 const char *
 xkb_context_include_path_get_system_path(struct xkb_context *ctx)
 {
@@ -141,6 +278,40 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
 
     const char * const extra = xkb_context_include_path_get_extra_path(ctx);
     ret |= context_include_path_append(ctx, extra);
+
+#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+    darray_string extensions = darray_new();
+
+    /* Versioned extensions directory */
+    const char *extensions_path =
+        xkb_context_include_path_get_versioned_extensions_path(ctx);
+    size_t versioned_path_length = 0;
+    if (extensions_path) {
+        /* Add direct subdirectories */
+        ret |= add_direct_subdirectories(ctx, extensions_path,
+                                         &extensions, 0, 0);
+        versioned_path_length = strlen(extensions_path);
+    }
+
+    /* Unversioned extensions directory */
+    extensions_path =
+        xkb_context_include_path_get_unversioned_extensions_path(ctx);
+    if (extensions_path) {
+        /*
+         * Add direct subdirectories, except those already added from the
+         * *versioned* extensions path hereinabove.
+         */
+        ret |= add_direct_subdirectories(ctx, extensions_path, &extensions,
+                                         darray_size(extensions),
+                                         versioned_path_length);
+    }
+
+    char **ext_path;
+    darray_foreach(ext_path, extensions) {
+        free(*ext_path);
+    }
+    darray_free(extensions);
+#endif
 
     /* Canonical XKB root */
     const char * const root = xkb_context_include_path_get_system_path(ctx);

@@ -347,11 +347,7 @@ out:
 struct xkb_context *
 test_get_context(enum test_context_flags test_flags)
 {
-    enum xkb_context_flags ctx_flags;
-    struct xkb_context *ctx;
-    char *path;
-
-    ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
+    enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
     if (test_flags & CONTEXT_ALLOW_ENVIRONMENT_NAMES) {
         unsetenv("XKB_DEFAULT_RULES");
         unsetenv("XKB_DEFAULT_MODEL");
@@ -363,11 +359,11 @@ test_get_context(enum test_context_flags test_flags)
         ctx_flags |= XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
     }
 
-    ctx = xkb_context_new(ctx_flags);
+    struct xkb_context * const ctx = xkb_context_new(ctx_flags);
     if (!ctx)
         return NULL;
 
-    path = test_get_path("");
+    char * const path = test_get_path("");
     if (!path) {
         xkb_context_unref(ctx);
         return NULL;
@@ -494,7 +490,6 @@ xkb_rules_names_to_rmlvo_builder(struct xkb_context *context,
 
     /* First parse options, and gather the layout-specific ones and
      * append the others to the builder */
-    typedef darray(char *) darray_string;
     darray(darray_string) loptions = darray_new();
     if (!isempty(names->options)) {
         const char *o = names->options;
