@@ -767,6 +767,16 @@ Obsolete legacy file format tied to X11 ecosystem.
 <tbody>
 <!-- Additions -->
 <tr>
+<th>Partial `*.pre` and `*.post` rules files</th>
+<td>❌️ No support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.13)</summary>
+See @ref rmlvo-resolution "" for further details.
+</details>
+</td>
+</tr>
+<tr>
 <th>`! include` statement</th>
 <td>❌️ No support</td>
 <td colspan="2">

@@ -375,12 +375,51 @@ or %%H seems to do the job though.
 
 ## Process
 
-First of all, the rules *file* is extracted from the provided
-[<em>R</em>MLVO][RMLVO] configuration (usually `evdev`). Then its path
-is resolved and the file is parsed to get the [rule sets].
+First of all, the main rules *file* `<ruleset>` is extracted from the provided
+[<em>R</em>MLVO][RMLVO] configuration (usually `evdev`). Then the following
+files are parsed and their results are collected sequentially to form the final
+[rule sets][]:
+
+<dl>
+<dt>Partial `<ruleset>.pre` files</dt>
+<dd>
+*Optional:* for each include path `<ipath>`, parse and append the [rule sets]
+of the file `<ipath>/rules/<ruleset>.pre`, if it exists. Multiple such files may
+be parsed enabling lightweight composition fo rules files.
+
+@since 1.13.0
+</dd>
+<dt>Main `<ruleset>` file</dt>
+<dd>
+Parse and append the [rule sets] of the *canonical* `<ruleset>` file, e.g. the
+*first* file in the included paths matching `rules/<ruleset>`.
+</dd>
+<dt>Partial `<ruleset>.post` files</dt>
+<dd>
+*Optional:* for each include path `<ipath>`, parse and append the [rule sets]
+of the file `<ipath>/rules/<ruleset>.post`, if it exists. Multiple such files
+may be parsed enabling lightweight composition fo rules files.
+
+@since 1.13.0
+</dd>
+</dl>
+
+The resulting rule sets are equivalent to:
+
+```
+! include <include path 1>/rules/<ruleset>.pre  // only if defined
+…
+! include <include path n>/rules/<ruleset>.pre  // only if defined
+
+! include <ruleset>                             // main rules file
+
+! include <include path 1>/rules/<ruleset>.post // only if defined
+…
+! include <include path n>/rules/<ruleset>.post // only if defined
+```
 
 Then *each rule set* is checked against the provided [MLVO] configuration,
-following their *order* in the rules file.
+following their *order* in the rules files.
 
 @important @anchor irrelevant-options-order Contrary to layouts and variants,
 the *options order* in a [MLVO] configuration (e.g. via `xkbcli`) is irrelevant

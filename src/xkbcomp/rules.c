@@ -1928,6 +1928,49 @@ read_rules_file(struct xkb_context *ctx,
     return ret;
 }
 
+/**
+ * XKB extension: append all *.pre or *.post optional partial rules files.
+ * This is a lightweight extension mechanism to enable *simple* rules files
+ * composition: rules files are just processed sequentially using the matcher
+ * resulting from the previous file.
+ */
+static bool
+xkb_resolve_partial_rules(struct xkb_context *ctx, char *path, size_t path_size,
+                          const char* rules, const char* suffix,
+                          struct matcher *matcher)
+{
+    /* Set partial rules filename: canonical rules filename + suffix */
+    char partial_rules[60]; /* Arbitrary, but we do not expect long names */
+    if (unlikely(!snprintf_safe(partial_rules, sizeof(partial_rules),
+                                "%s%s", rules, suffix))) {
+        log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
+                "Cannot load XKB rules \"%s%s\"\n", rules, suffix);
+        return false;
+    }
+
+    /*
+     * Traverse all include paths and resolve all corresponding partial rules.
+     * These files are optional, but required to be valid if present.
+     */
+    unsigned int offset = 0;
+    FILE *file = NULL;
+    const size_t len = strlen(partial_rules);
+    while ((file = FindFileInXkbPath(ctx, "(unknown)",
+                                     partial_rules, len, FILE_TYPE_RULES,
+                                     path, path_size, &offset)) != NULL) {
+        const bool ok = read_rules_file(ctx, matcher, 0, file, path);
+        fclose(file);
+        if (!ok) {
+            log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
+                    "Error while parsing XKB rules \"%s\"\n", path);
+            return false;
+        }
+        offset++;
+    }
+
+    return true;
+}
+
 static bool
 xkb_resolve_rules(struct xkb_context *ctx,
                   const char* rules, struct matcher *matcher,
@@ -1935,29 +1978,59 @@ xkb_resolve_rules(struct xkb_context *ctx,
                   xkb_layout_index_t *explicit_layouts)
 {
     bool ret = false;
-    FILE *file;
-    struct matched_sval *mval;
+
+    /* First check if the main rules file exists or error early */
     unsigned int offset = 0;
     char path[PATH_MAX];
-
-    file = FindFileInXkbPath(ctx, "(unknown)",
-                             rules, strlen(rules), FILE_TYPE_RULES,
-                             path, sizeof(path), &offset);
+    FILE * const file = FindFileInXkbPath(ctx, "(unknown)",
+                                          rules, strlen(rules), FILE_TYPE_RULES,
+                                          path, sizeof(path), &offset);
     if (!file) {
         log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Cannot load XKB rules \"%s\"\n", rules);
         goto err_out;
     }
 
+    /*
+     * Final rule set is equivalent to:
+     *
+     * ! include <include path 1>/rules/<rules>.pre  // only if defined
+     * …
+     * ! include <include path n>/rules/<rules>.pre  // only if defined
+     * ! include <rules>                             // main rules file
+     * ! include <include path 1>/rules/<rules>.post // only if defined
+     * …
+     * ! include <include path n>/rules/<rules>.post // only if defined
+     */
+
+    /* XKB extension: resolve optional <rules>.pre files */
+    ret = xkb_resolve_partial_rules(ctx, path, sizeof(path),
+                                    rules, ".pre", matcher);
+    if (!ret)
+        goto err_out;
+
+    /* Resolve main <rules> file */
     ret = read_rules_file(ctx, matcher, 0, file, path);
-    if (!ret ||
-        darray_empty(matcher->kccgst[KCCGST_KEYCODES]) ||
+    if (!ret) {
+        log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
+                "Error while parsing XKB rules \"%s\"\n", path);
+        goto err_out;
+    }
+
+    /* XKB extension: resolve optional <rules>.post files */
+    ret = xkb_resolve_partial_rules(ctx, path, sizeof(path),
+                                    rules, ".post", matcher);
+    if (!ret)
+        goto err_out;
+
+    /* Check we got required components */
+    if (darray_empty(matcher->kccgst[KCCGST_KEYCODES]) ||
         darray_empty(matcher->kccgst[KCCGST_TYPES]) ||
         darray_empty(matcher->kccgst[KCCGST_COMPAT]) ||
         /* darray_empty(matcher->kccgst[KCCGST_GEOMETRY]) || */
         darray_empty(matcher->kccgst[KCCGST_SYMBOLS])) {
         log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                "No components returned from XKB rules \"%s\"\n", path);
+                "No components returned from XKB rules \"%s\"\n", rules);
         ret = false;
         goto err_out;
     }
@@ -1968,7 +2041,7 @@ xkb_resolve_rules(struct xkb_context *ctx,
     darray_steal(matcher->kccgst[KCCGST_SYMBOLS], &out->symbols, NULL);
     darray_steal(matcher->kccgst[KCCGST_GEOMETRY], &out->geometry, NULL);
 
-    mval = &matcher->rmlvo.model;
+    struct matched_sval *mval = &matcher->rmlvo.model;
     if (!mval->matched && mval->sval.len > 0)
         log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Unrecognized RMLVO model \"%.*s\" was ignored\n",

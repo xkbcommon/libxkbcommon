@@ -1,0 +1,16 @@
+// To be completed with partial rules *.pre and *.post
+
+! model	= keycodes
+  *	= evdev
+
+! model	= symbols
+  *	= pc
+
+! layout[any]	= symbols
+  *		= +%l[%i]%(v[%i]):%i
+
+! model	= types
+  *	= complete
+
+! model	= compat
+  *	= complete
