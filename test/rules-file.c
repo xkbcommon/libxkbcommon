@@ -732,6 +732,113 @@ test_layout_specific_options(struct xkb_context *ctx)
     }
 }
 
+static void
+test_partial_rules(struct xkb_context *ctx)
+{
+    /*
+     * 1 include path
+     */
+
+    const struct test_data tests_1[] = {
+        /* Does not trigger partial rules */
+        {
+            .rules = "partial",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = NULL,
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1",
+            .explicit_layouts = 1
+        },
+        /* Does trigger pre-partial rules */
+        {
+            .rules = "partial",
+            .model = "m1", .layout = "l1", .variant = NULL,
+            .options = NULL,
+            .keycodes = "m1", .compat = "complete", .types = "complete",
+            .symbols = "m1+l1:1",
+            .explicit_layouts = 1
+        },
+        /* Does trigger post-partial rules */
+        {
+            .rules = "partial",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt:a!1",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+extra:2+a:1",
+            .explicit_layouts = 2
+        },
+        /* Does trigger both pre- and post-partial rules */
+        {
+            .rules = "partial",
+            .model = "m1", .layout = "l1,l2", .variant = NULL,
+            .options = "opt:a!1",
+            .keycodes = "m1", .compat = "complete", .types = "complete",
+            .symbols = "m1+l1:1+l2:2+extra:2+a:1",
+            .explicit_layouts = 2
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests_1); k++) {
+        fprintf(stderr, "------\n*** %s: #%u (1 include path) ***\n", __func__, k);
+        assert(test_rules(ctx, &tests_1[k]));
+    }
+
+
+    /*
+     * 2 include paths
+     */
+
+    ctx = test_get_context(CONTEXT_NO_FLAG);
+    assert(ctx);
+    char *extra = test_get_path("extra");
+    assert(extra);
+    xkb_context_include_path_append(ctx, extra);
+    free(extra);
+
+    const struct test_data tests_2[] = {
+        /* Does not trigger partial rules */
+        {
+            .rules = "partial",
+            .model = "pc104", .layout = "l1", .variant = NULL,
+            .options = NULL,
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1",
+            .explicit_layouts = 1
+        },
+        /* Does trigger pre-partial rules */
+        {
+            .rules = "partial",
+            .model = "m1", .layout = "l1", .variant = NULL,
+            .options = NULL,
+            .keycodes = "m1+m1-ter", .compat = "complete", .types = "complete",
+            .symbols = "m1+l1:1",
+            .explicit_layouts = 1
+        },
+        /* Does trigger post-partial rules */
+        {
+            .rules = "partial",
+            .model = "pc104", .layout = "l1,l2", .variant = NULL,
+            .options = "opt:a!1",
+            .keycodes = "evdev", .compat = "complete", .types = "complete",
+            .symbols = "pc+l1:1+l2:2+extra:2+a:1+extra-bis:2+a-bis:1",
+            .explicit_layouts = 2
+        },
+        /* Does trigger both pre- and post-partial rules */
+        {
+            .rules = "partial",
+            .model = "m1", .layout = "l1,l2", .variant = NULL,
+            .options = "opt:a!1",
+            .keycodes = "m1+m1-ter", .compat = "complete", .types = "complete",
+            .symbols = "m1+l1:1+l2:2+extra:2+a:1+extra-bis:2+a-bis:1",
+            .explicit_layouts = 2
+        },
+    };
+    for (unsigned int k = 0; k < ARRAY_SIZE(tests_2); k++) {
+        fprintf(stderr, "------\n*** %s: #%u (2 include paths) ***\n", __func__, k);
+        assert(test_rules(ctx, &tests_2[k]));
+    }
+    xkb_context_unref(ctx);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -768,6 +875,7 @@ main(int argc, char *argv[])
     test_extended_layout_indices(ctx);
     test_all_qualifier(ctx, too_much_layouts, too_much_symbols);
     test_layout_specific_options(ctx);
+    test_partial_rules(ctx);
 
     xkb_context_unref(ctx);
     return EXIT_SUCCESS;

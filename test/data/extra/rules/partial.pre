@@ -1,0 +1,11 @@
+! model	=	keycodes
+  m1	=	m1-bis
+
+! model	=	keycodes
+  m1	=	+m1-ter
+
+! model	=	symbols
+  m2	=	m2
+
+! model	=	symbols
+  m2	=	+m2-bis
