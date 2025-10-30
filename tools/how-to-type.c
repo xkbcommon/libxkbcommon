@@ -358,10 +358,18 @@ lookup_compose_sequences(struct xkb_compose_table *table,
         return false;
     }
 
+    char utf8[5] = "";
+    const bool has_utf8 = xkb_keysym_to_utf8(keysym, utf8, sizeof(utf8)) > 0;
+
     struct xkb_compose_table_entry *entry;
     while ((entry = xkb_compose_table_iterator_next(iter))) {
-        if (keysym != xkb_compose_table_entry_keysym(entry))
-            continue;
+        if (keysym != xkb_compose_table_entry_keysym(entry)) {
+            /* Keysyms do not match, but maybe the UTF-8 strings do */
+            if (!has_utf8 ||
+                strcmp(utf8, xkb_compose_table_entry_utf8(entry)) != 0) {
+                    continue;
+            }
+        }
         size_t count = 0;
         const xkb_keysym_t * const seq =
             xkb_compose_table_entry_sequence(entry, &count);
