@@ -17,6 +17,30 @@
 #include "keymap.h"
 #include "utils.h"
 
+#ifdef HAS_XKBREGISTRY
+#include "xkbcommon/xkbregistry.h"
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+#endif
+
+#ifdef HAS_XKBREGISTRY
+static struct rxkb_layout *
+fetch_layout(struct rxkb_context *ctx, const char *layout, const char *variant)
+{
+    struct rxkb_layout *l = rxkb_layout_first(ctx);
+    while (l) {
+        const char *v = rxkb_layout_get_variant(l);
+
+        if (streq(rxkb_layout_get_name(l), layout) &&
+            ((v == NULL && variant == NULL) ||
+             (v != NULL && variant != NULL && streq(v, variant))))
+            return rxkb_layout_ref(l);
+        l = rxkb_layout_next(l);
+    }
+    return NULL;
+}
+#endif
+
 static void
 test_layouts(const char* xkb_root, bool update_output_files)
 {
@@ -65,7 +89,73 @@ test_layouts(const char* xkb_root, bool update_output_files)
     xkb_keymap_unref(keymap);
 
     xkb_context_unref(ctx);
+
+#ifdef HAS_XKBREGISTRY
+    struct rxkb_context *rctx = rxkb_context_new(RXKB_CONTEXT_LOAD_EXOTIC_RULES);
+    assert(rctx);
+    assert(rxkb_context_parse(rctx, "evdev"));
+    struct {
+        const char *layout;
+        const char *variant;
+        const char *description;
+        enum rxkb_popularity popularity;
+    } registry_tests[] = {
+        {
+            .layout = "a",
+            .variant = NULL,
+            .description = "A",
+            .popularity = RXKB_POPULARITY_STANDARD,
+        },
+        {
+            .layout = "b",
+            .variant = NULL,
+            .description = "B",
+            .popularity = RXKB_POPULARITY_EXOTIC,
+        },
+        {
+            .layout = "c",
+            .variant = NULL,
+            .description = "C",
+            .popularity = RXKB_POPULARITY_STANDARD,
+        },
+    };
+
+    for (unsigned int t = 0; t < ARRAY_SIZE(registry_tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        struct rxkb_layout * const l = fetch_layout(
+            rctx, registry_tests[t].layout, registry_tests[t].variant
+        );
+        assert(l);
+        assert(streq_null(rxkb_layout_get_description(l),
+                          registry_tests[t].description));
+        assert(rxkb_layout_get_popularity(l) == registry_tests[t].popularity);
+        rxkb_layout_unref(l);
+    }
+
+    rxkb_context_unref(rctx);
+#endif
 }
+
+#ifdef HAS_XKBREGISTRY
+static struct rxkb_option *
+fetch_option(struct rxkb_context *ctx, const char *grp, const char *opt)
+{
+    struct rxkb_option_group *g = rxkb_option_group_first(ctx);
+    while (g) {
+        if (streq(grp, rxkb_option_group_get_name(g))) {
+            struct rxkb_option *o = rxkb_option_first(g);
+
+            while (o) {
+                if (streq(opt, rxkb_option_get_name(o)))
+                    return rxkb_option_ref(o);
+                o = rxkb_option_next(o);
+            }
+        }
+        g = rxkb_option_group_next(g);
+    }
+    return NULL;
+}
+#endif
 
 static void
 test_options(const char *xkb_root, bool update_output_files)
@@ -125,6 +215,52 @@ test_options(const char *xkb_root, bool update_output_files)
     xkb_keymap_unref(keymap);
 
     xkb_context_unref(ctx);
+
+#ifdef HAS_XKBREGISTRY
+
+    struct rxkb_context *rctx = rxkb_context_new(RXKB_CONTEXT_LOAD_EXOTIC_RULES);
+    assert(rctx);
+    assert(rxkb_context_parse(rctx, "evdev"));
+    struct {
+        const char *group;
+        const char *option;
+        const char *description;
+        enum rxkb_popularity popularity;
+    } registry_tests[] = {
+        {
+            .group = "opt",
+            .option = "opt:1",
+            .description = "1",
+            .popularity = RXKB_POPULARITY_STANDARD,
+        },
+        {
+            .group = "opt",
+            .option = "opt:2",
+            .description = "2",
+            .popularity = RXKB_POPULARITY_EXOTIC,
+        },
+        {
+            .group = "opt",
+            .option = "opt:3",
+            .description = "3",
+            .popularity = RXKB_POPULARITY_STANDARD,
+        },
+    };
+
+    for (unsigned int t = 0; t < ARRAY_SIZE(registry_tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        struct rxkb_option *const opt = fetch_option(
+            rctx, registry_tests[t].group, registry_tests[t].option
+        );
+        assert(opt);
+        assert(streq_null(rxkb_option_get_description(opt),
+                          registry_tests[t].description));
+        assert(rxkb_option_get_popularity(opt) == registry_tests[t].popularity);
+        rxkb_option_unref(opt);
+    }
+
+    rxkb_context_unref(rctx);
+#endif
 }
 
 int

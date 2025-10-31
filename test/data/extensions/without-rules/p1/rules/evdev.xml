@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xkbConfigRegistry SYSTEM "xkb.dtd">
+<xkbConfigRegistry version="1.1">
+  <layoutList>
+    <layout>
+      <configItem>
+        <name>a</name>
+	<!-- not used, since versioned file has priority -->
+        <description>🍍🍍🍍</description>
+      </configItem>
+    </layout>
+  </layoutList>
+</xkbConfigRegistry>

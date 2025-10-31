@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xkbConfigRegistry SYSTEM "xkb.dtd">
+<xkbConfigRegistry version="1.1">
+  <optionList>
+    <group allowMultipleSelection="true">
+      <configItem>
+        <name>opt</name>
+        <description>???</description>
+      </configItem>
+      <option>
+        <configItem>
+          <name>opt:1</name>
+          <!-- not used, since versioned file has priority -->
+          <description>🦆🦆🦆</description>
+        </configItem>
+      </option>
+    </group>
+  </optionList>
+</xkbConfigRegistry>
