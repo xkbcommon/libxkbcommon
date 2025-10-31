@@ -1013,12 +1013,19 @@ test(
     env: test_env,
 )
 if has_extensions_directories
+    extensions_test_deps = [test_dep]
+    extensions_test_c_args = []
+    if get_option('enable-xkbregistry')
+        extensions_test_deps += [dep_libxkbregistry, dep_libxml]
+        extensions_test_c_args += ['-DHAS_XKBREGISTRY']
+    endif
     test(
         'extensions-directories',
         executable(
             'extensions-directories',
             'test/extensions-directories.c',
-            dependencies: test_dep
+            dependencies: extensions_test_deps,
+            c_args: extensions_test_c_args,
         ),
         env: test_env,
     )
