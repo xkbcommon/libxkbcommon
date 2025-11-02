@@ -12,12 +12,32 @@ See: [Introduction to XKB](./introduction-to-xkb.md).
 
 See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 
-## Keyboard layout
+### What are the differences with the Xorg/X11 implementation?
 
-### Where are the keyboard layouts defined?
+<dl>
+<dt>Features</dt>
+<dd>See @ref xkbcommon-compatibility "".</dd>
+<dt>Tools</dt>
+<dd>See @ref legacy-x-tools-replacement "".</dd>
+</dl>
+
+## Keyboard layouts
+
+### Where are the standard keyboard layouts designed?<br/>How to report an issue or propose a patch?
 
 The xkbcommon project does not provide keyboard layouts.
-See the [xkeyboard-config] project for further information.
+Standard keyboard layouts are provided by the [xkeyboard-config] project.
+See [contributing to xkeyboard-config] for further information.
+
+[contributing to xkeyboard-config]: https://xkeyboard-config.freedesktop.org/doc/contributing/
+
+### Where are the system keyboard layouts located?
+
+They are usually located at `/usr/share/xkeyboard-config-2`, or
+`/usr/share/X11/xkb` on older setups.
+
+@note Do not modify system files! See @ref how-do-i-customize-my-layout "" for
+further instructions.
 
 ### Why do my keyboard shortcuts not work properly?
 
@@ -29,7 +49,7 @@ See the [xkeyboard-config] project for further information.
 
 ### Why does my key combination to switch between layouts not work?
 
-See [this issue][#420].
+There are currently some issue with modifier-only shortcuts. See [this issue][#420].
 
 ### Why does my keyboard layout not work as expected?
 
@@ -81,7 +101,8 @@ This project does not provide any keyboard layout database:
   it *locally* (see our [debugging tools]) and then file an issue or a merge
   request at the [xkeyboard-config] project.
 
-See also the [keymap text format][text format] documentation for the syntax.
+See also the [keymap text format][text format] documentation for the syntax and
+the [compatibility](./compatibility.md) page for the supported features.
 
 [text format]: ./keymap-text-format-v1-v2.md
 
