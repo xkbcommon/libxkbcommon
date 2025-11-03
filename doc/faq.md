@@ -73,6 +73,8 @@ If you customized it, do not forget to restart your session before trying it.
 Please use our [debugging tools] with the option `--enable-compose` to get
 further information.
 </dd>
+<dt>Multiple groups per key do not work</dt>
+<dd>See @ref how-do-i-define-multiple-groups-per-key "".</dd>
 <dt>The application you use does not handle the keyboard properly</dt>
 <dd>
 Please use our [debugging tools] to ensure that it is specific to the
@@ -113,6 +115,141 @@ Use our [debugging tools].
 ### How do I swap some keys?
 
 🚧 TODO
+
+### How do I define multiple groups per key?
+
+Since version 1.8 the [RMLVO] API does not support parsing multiple groups per
+key anymore, because it may break the expectation of most desktop environments and
+tools that <em>the number of groups should be equal to the number of configured
+layouts</em>. See [#262] and [#518] for further details.
+
+The following explain how to migrate for some common use cases:
+
+<dl>
+<dt>Multiple layouts</dt>
+<dd>
+If you define multiple layouts in a single `xkb_symbols` section, you should
+instead split them into individual sections and update your keyboard settings to
+use each such layout.
+
+E.g. if you have a single layout `variant1_variant2` defined as:
+
+```c
+xkb_symbols "variant1_variant2" {
+    key <AD01> {
+        symbols[Group1] = [U13AA, U13C6],
+        symbols[Group2] = [    q,     Q],
+    };
+    // …
+};
+```
+
+then you should split it into:
+
+```c
+xkb_symbols "variant1" {
+    key <AD01> { [U13AA, U13C6] };
+    // …
+};
+
+xkb_symbols "variant2" {
+    key <AD01> { [    q,     Q] };
+    // …
+};
+```
+
+See also @ref user-configuration "" to make the layouts discoverable for easy
+configuration in your keyboard settings app.
+</dd>
+<dt>Option for multiple layouts</dt>
+<dd>
+If you define an option that affect multiple groups at once in a single
+`xkb_symbols` section, you should split that section and update the corresponding
+rules for each layout index.
+
+E.g. if one has the following group switcher on CapsLock key:
+
+```c
+// File: ~/.config/xkb/symbols/group
+partial xkb_symbols "caps_pairs" {
+    replace key <CAPS> {
+        repeat=No,
+        symbols[Group1] = [ISO_Group_Lock, ISO_Group_Lock],
+        symbols[Group2] = [ISO_Group_Lock, ISO_Group_Lock],
+        symbols[Group3] = [ISO_Group_Lock, ISO_Group_Lock],
+        symbols[Group4] = [ISO_Group_Lock, ISO_Group_Lock],
+        actions[Group1] = [LockGroup(group=2), LockGroup(group=3) ],
+        actions[Group2] = [LockGroup(group=1), LockGroup(group=4) ],
+        actions[Group3] = [LockGroup(group=4), LockGroup(group=1) ],
+        actions[Group4] = [LockGroup(group=3), LockGroup(group=2) ]
+    };
+};
+```
+
+and the corresponding custom rules:
+
+```
+// File: ~/.config/xkb/rules/evdev
+include %S/evdev
+
+! option         = symbols
+  grp:caps_pairs = +group(caps_pairs)
+```
+
+then it should be migrated to:
+
+```c
+// File: ~/.config/xkb/symbols/group
+partial xkb_symbols "caps_pairs_1" {
+    replace key <CAPS> {
+        repeat=No,
+        symbols[Group1] = [ISO_Group_Lock, ISO_Group_Lock],
+        actions[Group1] = [LockGroup(group=2), LockGroup(group=3) ]
+    };
+};
+partial xkb_symbols "caps_pairs_2" {
+    replace key <CAPS> {
+        symbols[Group1] = [ISO_Group_Lock, ISO_Group_Lock],
+        actions[Group1] = [LockGroup(group=1), LockGroup(group=4) ]
+    };
+};
+partial xkb_symbols "caps_pairs_3" {
+    replace key <CAPS> {
+        symbols[Group1] = [ISO_Group_Lock, ISO_Group_Lock],
+        actions[Group1] = [LockGroup(group=4), LockGroup(group=1) ]
+    };
+};
+partial xkb_symbols "caps_pairs_4" {
+    replace key <CAPS> {
+        symbols[Group1] = [ISO_Group_Lock, ISO_Group_Lock],
+        actions[Group1] = [LockGroup(group=3), LockGroup(group=2) ]
+    };
+};
+```
+
+with the corresponding custom rules:
+
+```
+// File: ~/.config/xkb/rules/evdev
+include %S/evdev
+
+! layout[1]   option         = symbols
+  *           grp:caps_pairs = +group(caps_pairs_1):1
+
+! layout[2]   option         = symbols
+  *           grp:caps_pairs = +group(caps_pairs_2):2
+
+! layout[3]   option         = symbols
+  *           grp:caps_pairs = +group(caps_pairs_3):3
+
+! layout[4]   option         = symbols
+  *           grp:caps_pairs = +group(caps_pairs_4):4
+```
+</dd>
+</dl>
+
+[#262]: https://github.com/xkbcommon/libxkbcommon/issues/262
+[#518]: https://github.com/xkbcommon/libxkbcommon/pull/518
 
 ### How do I break a latch before triggering another latch or lock?
 

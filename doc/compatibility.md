@@ -198,6 +198,26 @@ their <em>[canonical mapping](@ref canonical-modifier-def)</em>.
 </td>
 </tr>
 <tr>
+<th>Multiple groups per key</th>
+<td>
+<details>
+<summary>✅ Full support</summary>
+Contiguous identical groups are merged together.
+</details>
+</td>
+<td colspan="2">
+<details>
+<summary>⚠️ Not supported in the [RMLVO] API</summary>
+Since version 1.8 the [RMLVO] API does not support parsing multiple groups per
+key anymore, because it may break the expectation of most desktop environments and
+tools that <em>the number of groups should be equal to the number of configured
+layouts</em>.
+
+See @ref how-do-i-define-multiple-groups-per-key "" for migration instructions.
+</details>
+</td>
+</tr>
+<tr>
 <th>Multiple keysyms per level</th>
 <td>
 <details>
