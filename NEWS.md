@@ -1,3 +1,91 @@
+libxkbcommon [1.13.0] – 2025-11-05
+==================================
+
+The highlight of this release is the introduction of the XKB **extensions directories**,
+a new mechanism to facilitate keyboard layout packaging and distribution.
+See @ref packaging-keyboard-layouts "" for further details.
+
+[1.13.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.0
+
+## API
+
+### Breaking changes
+
+- context: The default include paths initialization is *delayed* until required.
+
+  This is more efficient for clients that only get the keymap from the server and
+  thus do not need to look up any XKB files.
+
+  It also fixes the issue of containerized apps that lack access to XKB directories.
+
+  This is marked as a breaking change, because changing environment variables
+  relevant to include paths between the call to `xkb_context_new()` and any
+  function requiring the default path initialization — e.g.
+  `xkb_keymap_new_from_names()` — will have a different behavior than previous
+  xkbcommon versions. However this situation is deemed unlikely.
+
+### New
+
+- Added keysyms from latest [xorgproto]
+      \(commit: `f973f7db89571f61e96cb0a55f416d3e67a75663`, [xorproto-102]):
+
+  - `XKB_KEY_XF86MediaPlayPause`
+  - `XKB_KEY_XF86Exit`
+  - `XKB_KEY_XF86AudioBassBoost`
+
+  [xorproto-102]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/102
+- Added the XKB **extensions directories**, a new mechanism to facilitate
+  keyboard layout packaging and distribution.
+
+  See @ref packaging-keyboard-layouts "" for further details.
+- rules: Added lightweight composition of rules files: for a given ruleset `<ruleset>`,
+  the *optional* files `<ruleset>.pre` and `<ruleset>.post` of each include
+  path are respectively *prepended* and *appended* to the main rules file.
+
+  The resulting rule set is equivalent to:
+
+  ```
+  ! include <include path 1>/rules/<ruleset>.pre // only if defined
+  …
+  ! include <include path n>/rules/<ruleset>.pre // only if defined
+
+  ! include <ruleset> // main rules file
+
+  ! include <include path 1>/rules/<ruleset>.post // only if defined
+  …
+  ! include <include path n>/rules/<ruleset>.post // only if defined
+  ```
+
+  See @ref rmlvo-resolution "" for further details.
+
+
+## Tools
+
+### Fixes
+
+- `xkbcli how-to-type`: Fixed Compose lookup when the entry keysym is not canonical.
+  ([#904](https://github.com/xkbcommon/libxkbcommon/issues/904))
+
+
+## Build system
+
+### New
+
+- Added the following *meson options:*
+  - `xkb-config-unversioned-extensions-path`
+  - `xkb-config-versioned-extensions-path`
+
+  See @ref packaging-keyboard-layouts "" for further details.
+- Added the following variables to the *pkg-config file*, in order to expose the
+  default XKB system directories:
+  - `xkb_root`
+  - `xkb_unversioned_extensions_path`
+  - `xkb_versioned_extensions_path`
+  - `xkb_extra_path`
+
+  See @ref packaging-keyboard-layouts "" for further details.
+
+
 libxkbcommon [1.12.3] – 2025-10-29
 ==================================
 

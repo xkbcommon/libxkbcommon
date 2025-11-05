@@ -1,7 +1,7 @@
 project(
     'libxkbcommon',
     'c',
-    version: '1.12.3',
+    version: '1.13.0',
     default_options: [
         'c_std=c11',
         'warning_level=3',
