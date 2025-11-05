@@ -690,5 +690,7 @@ if __name__ == "__main__":
         del os.environ["HOME"]
         # This needs to be separated if we do specific extra path testing
         os.environ["XKB_CONFIG_EXTRA_PATH"] = tmpdir
+        os.environ["XKB_CONFIG_VERSIONED_EXTENSIONS_PATH"] = tmpdir
+        os.environ["XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH"] = tmpdir
 
         unittest.main()
