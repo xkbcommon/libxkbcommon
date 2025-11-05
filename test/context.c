@@ -133,6 +133,9 @@ test_config_root_include_path_fallback(void)
         return;
 
     buffer_env("XKB_CONFIG_ROOT");
+    buffer_env("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH");
+    buffer_env("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH");
+    buffer_env("XKB_CONFIG_EXTRA_PATH");
     buffer_env("HOME");
     buffer_env("XDG_CONFIG_HOME");
 
@@ -156,6 +159,9 @@ test_config_root_include_path_fallback(void)
     context_path = xkb_context_include_path_get(ctx, nincludes - 1);
     assert(strcmp(context_path, DFLT_XKB_LEGACY_ROOT) == 0);
     xkb_context_unref(ctx);
+
+    setenv("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH", "", 1);
+    setenv("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH", "", 1);
 
     /* Ensure some path is available */
     const char *tmpdir = maketmpdir();
@@ -273,6 +279,8 @@ test_include_order(void)
     const char *context_path;
 
     buffer_env("XKB_CONFIG_ROOT");
+    buffer_env("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH");
+    buffer_env("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH");
     buffer_env("XDG_CONFIG_HOME");
     buffer_env("HOME");
 
@@ -283,6 +291,8 @@ test_include_order(void)
     setenv("HOME", tmpdir, 1);
     setenv("XDG_CONFIG_HOME", tmpdir, 1);
     setenv("XKB_CONFIG_ROOT", xkb_root_path, 1);
+    setenv("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH", "", 1);
+    setenv("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH", "", 1);
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     assert(xkb_context_num_include_paths(ctx) >= 3);
@@ -306,6 +316,8 @@ static void
 test_delayed_includes(void)
 {
     buffer_env("XKB_CONFIG_ROOT");
+    buffer_env("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH");
+    buffer_env("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH");
     buffer_env("XKB_CONFIG_EXTRA_PATH");
     buffer_env("XDG_CONFIG_HOME");
     buffer_env("HOME");
@@ -315,6 +327,8 @@ test_delayed_includes(void)
     /* Empty paths, so that currently a call to
      * xkb_context_include_path_append_default() would fail */
     setenv("XKB_CONFIG_ROOT", "", 1);
+    setenv("XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH", "", 1);
+    setenv("XKB_CONFIG_VERSIONED_EXTENSIONS_PATH", "", 1);
     setenv("XKB_CONFIG_EXTRA_PATH", "", 1);
     unsetenv("XDG_CONFIG_HOME");
     unsetenv("HOME");
