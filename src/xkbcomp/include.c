@@ -320,7 +320,8 @@ expand:
 FILE *
 FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
                   const char *name, size_t name_len, enum xkb_file_type type,
-                  char *buf, size_t buf_size, unsigned int *offset)
+                  char *buf, size_t buf_size, unsigned int *offset,
+                  bool required)
 {
     /* We do not handle absolute paths here */
     assert(!is_absolute_path(name));
@@ -349,7 +350,7 @@ FindFileInXkbPath(struct xkb_context *ctx, const char* parent_file_name,
     }
 
     /* We only print warnings if we can’t find the file on the first lookup */
-    if (*offset == 0) {
+    if (required && *offset == 0) {
         log_err(ctx, XKB_ERROR_INCLUDED_FILE_NOT_FOUND,
                 "Couldn't find file \"%s/%.*s\" in include paths\n",
                 typeDir, (unsigned int) name_len, name);
@@ -434,7 +435,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
             // FIXME: use parent file name instead of “(unknow)”.
             file = FindFileInXkbPath(ctx, "(unknown)",
                                      stmt_file, stmt_file_len, file_type,
-                                     path, path_size, &offset);
+                                     path, path_size, &offset, true);
         }
     }
 
@@ -483,7 +484,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
         offset++;
         file = FindFileInXkbPath(ctx, "(unknown)",
                                  stmt_file, stmt_file_len, file_type,
-                                 path, path_size, &offset);
+                                 path, path_size, &offset, true);
     }
 
     if (!xkb_file) {

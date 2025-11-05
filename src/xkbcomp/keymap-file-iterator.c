@@ -100,7 +100,8 @@ xkb_resolve_file(struct xkb_context *ctx,
     } else {
         /* Relative path: lookup the first XKB path */
         file = FindFileInXkbPath(ctx, "(unknown)", path, path_len, file_type,
-                                 resolved_path, resolved_path_size, &offset);
+                                 resolved_path, resolved_path_size, &offset,
+                                 true);
     }
 
     while (file) {
@@ -160,7 +161,8 @@ invalid_file:
         offset++;
         file = FindFileInXkbPath(ctx, "(unknown)",
                                  path, path_len, file_type,
-                                 resolved_path, resolved_path_size, &offset);
+                                 resolved_path, resolved_path_size,
+                                 &offset, true);
     }
 
     if (!file) {

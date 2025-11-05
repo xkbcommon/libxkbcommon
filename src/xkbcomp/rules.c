@@ -653,7 +653,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         } else {
             file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
                                      stmt_file, stmt_file_len, FILE_TYPE_RULES,
-                                     buf, sizeof(buf), &offset);
+                                     buf, sizeof(buf), &offset, true);
         }
     }
 
@@ -677,7 +677,7 @@ matcher_include(struct matcher *m, struct scanner *parent_scanner,
         offset++;
         file = FindFileInXkbPath(m->ctx, parent_scanner->file_name,
                                  stmt_file, stmt_file_len, FILE_TYPE_RULES,
-                                 buf, sizeof(buf), &offset);
+                                 buf, sizeof(buf), &offset, true);
     }
 
     log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -1957,7 +1957,7 @@ xkb_resolve_partial_rules(struct xkb_context *ctx, char *path, size_t path_size,
     const size_t len = strlen(partial_rules);
     while ((file = FindFileInXkbPath(ctx, "(unknown)",
                                      partial_rules, len, FILE_TYPE_RULES,
-                                     path, path_size, &offset)) != NULL) {
+                                     path, path_size, &offset, false)) != NULL) {
         const bool ok = read_rules_file(ctx, matcher, 0, file, path);
         fclose(file);
         if (!ok) {
@@ -1984,7 +1984,7 @@ xkb_resolve_rules(struct xkb_context *ctx,
     char path[PATH_MAX];
     FILE * const file = FindFileInXkbPath(ctx, "(unknown)",
                                           rules, strlen(rules), FILE_TYPE_RULES,
-                                          path, sizeof(path), &offset);
+                                          path, sizeof(path), &offset, true);
     if (!file) {
         log_err(ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
                 "Cannot load XKB rules \"%s\"\n", rules);
