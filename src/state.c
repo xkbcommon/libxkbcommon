@@ -78,6 +78,8 @@ struct xkb_state {
      */
     int16_t mod_key_count[XKB_MAX_MODS];
 
+    /* NOTE: if we ever add other flags types, we could merge them internally */
+    enum xkb_state_accessibility_flags flags;
     int refcnt;
     darray(struct xkb_filter) filters;
     struct xkb_keymap *keymap;
@@ -873,7 +875,13 @@ xkb_filter_apply_all(struct xkb_state *state,
 }
 
 struct xkb_state_options {
+    enum xkb_state_accessibility_flags flags;
     struct xkb_context *ctx;
+};
+
+enum {
+    /** Mask to filter out invalid flags */
+    XKB_STATE_FLAG_ALL = XKB_STATE_A11Y_NO_FLAGS,
 };
 
 struct xkb_state_options *
@@ -883,6 +891,7 @@ xkb_state_options_new(struct xkb_context *context)
     if (!opt)
         return NULL;
 
+    opt->flags = XKB_STATE_A11Y_NO_FLAGS;
     opt->ctx = xkb_context_ref(context);
 
     return opt;
@@ -897,6 +906,23 @@ xkb_state_options_destroy(struct xkb_state_options *options)
     free(options);
 }
 
+int
+xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
+                                    enum xkb_state_accessibility_flags affect,
+                                    enum xkb_state_accessibility_flags flags)
+{
+    if (affect & ~(enum xkb_state_accessibility_flags) XKB_STATE_FLAG_ALL) {
+        log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized state flags: %#x\n", flags);
+        return 1;
+    }
+
+    options->flags &= ~affect;
+    options->flags |= (flags & affect);
+
+    return 0;
+}
+
 struct xkb_state *
 xkb_state_new2(struct xkb_keymap *keymap,
                const struct xkb_state_options *options)
@@ -904,6 +930,8 @@ xkb_state_new2(struct xkb_keymap *keymap,
     struct xkb_state* restrict const state = calloc(1, sizeof(*state));
     if (!state)
         return NULL;
+
+    state->flags = options->flags;
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
@@ -916,6 +944,7 @@ xkb_state_new(struct xkb_keymap *keymap)
 {
     /* Default state options */
     static const struct xkb_state_options options = {
+        .flags = XKB_STATE_A11Y_NO_FLAGS,
         .ctx = NULL /* unused */
     };
 
