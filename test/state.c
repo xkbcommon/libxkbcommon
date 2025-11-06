@@ -45,6 +45,14 @@ test_state_options(struct xkb_context *ctx)
     struct xkb_state_options *options = xkb_state_options_new(ctx);
     assert(options);
 
+    /* Invalid flags */
+    assert(xkb_state_options_update_a11y_flags(options, -1000, 0) == 1);
+    assert(xkb_state_options_update_a11y_flags(options, 1000, 0) == 1);
+
+    /* Valid flags */
+    static_assert(XKB_STATE_A11Y_NO_FLAGS == 0, "default flags");
+    assert(xkb_state_options_update_a11y_flags(options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
+
     struct xkb_keymap *keymap =
         xkb_keymap_new_from_names(ctx, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
     assert(keymap);

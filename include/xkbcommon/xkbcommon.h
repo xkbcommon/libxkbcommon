@@ -1810,6 +1810,39 @@ XKB_EXPORT void
 xkb_state_options_destroy(struct xkb_state_options *options);
 
 /**
+ * Flags for `xkb_state_options_update_a11y_flags()`.
+ *
+ * @since 1.14.0
+ */
+enum xkb_state_accessibility_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_STATE_A11Y_NO_FLAGS = 0,
+};
+
+/**
+ * Update the accessibility flags of a state options object.
+ *
+ * @param options The state options object to modify.
+ * @param affect  Accessibility flags to modify.
+ * @param flags   Accessibility flags to set or unset. Only the flags in
+ * @p affect are considered.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT int
+xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
+                                    enum xkb_state_accessibility_flags affect,
+                                    enum xkb_state_accessibility_flags flags);
+
+/**
  * Create a new keyboard state object.
  *
  * This entry point is intended for both server and client applications.
