@@ -3796,7 +3796,13 @@ enumeration:
 - `neither`
 </td>
 <td>`both`</td>
-<td><span class="todo">TODO</span></td>
+<td>
+- `lock`: the action only locks the controls, but cannot unlock them.
+- `unlock`: the action only unlocks controls, but cannot lock them.
+- `both`: the first key press locks the controls and the second key
+  press releases the controls.
+- `neither`: do not lock nor unlock, i.e. do nothing.
+</td>
 </tr>
 </tbody>
 </table>
@@ -3827,6 +3833,18 @@ enabled at the time of the key press.
 </td>
 <td>
 Disable any controls that were enabled by the corresponding key press.
+</td>
+</tr>
+<tr>
+<th>`LockControls` @anchor lock-controls-action-effects</th>
+<td>
+If `noLock` is false, locks and enables any boolean controls that are specified
+in `controls` and not already locked at the time of the key press.
+</td>
+<td>
+If `noUnlock` is False, key release unlocks and disables any controls that are
+specified in `controls` and *were* enabled at the time of the corresponding key
+press.
 </td>
 </tr>
 </tbody>

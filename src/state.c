@@ -799,21 +799,31 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 }
 
 static void
-xkb_filter_ctrls_set_new(struct xkb_state *state, struct xkb_filter *filter)
+xkb_filter_ctrls_new(struct xkb_state *state, struct xkb_filter *filter)
 {
-    /* Save the specified controls that are not already enabled */
-    filter->priv =
-        (uint32_t) ((~state->components.controls) & filter->action.ctrls.ctrls);
+    if (filter->action.type == ACTION_TYPE_CTRL_SET) {
+        /* Set: save the specified controls that are *not* already enabled */
+        filter->priv = (uint32_t) (
+            (~state->components.controls) & filter->action.ctrls.ctrls
+        );
+    } else {
+        /* Lock: save the specified controls that *are* already enabled */
+        filter->priv = (uint32_t) (
+            state->components.controls & filter->action.ctrls.ctrls
+        );
+    }
 
-    /* Enable the specified controls that are not already enabled */
-    state->components.controls |= filter->action.ctrls.ctrls;
+    if (filter->action.type == ACTION_TYPE_CTRL_SET ||
+        !(filter->action.ctrls.flags & ACTION_LOCK_NO_LOCK)) {
+        /* Enable the specified controls that are not already enabled */
+        state->components.controls |= filter->action.ctrls.ctrls;
+    }
 }
 
 static bool
-xkb_filter_ctrls_set_func(struct xkb_state *state,
-                           struct xkb_filter *filter,
-                           const struct xkb_key *key,
-                           enum xkb_key_direction direction)
+xkb_filter_ctrls_func(struct xkb_state *state, struct xkb_filter *filter,
+                      const struct xkb_key *key,
+                      enum xkb_key_direction direction)
 {
     if (key != filter->key)
         return XKB_FILTER_CONTINUE;
@@ -825,8 +835,14 @@ xkb_filter_ctrls_set_func(struct xkb_state *state,
     if (--filter->refcnt > 0)
         return XKB_FILTER_CONSUME;
 
-    /* Disable specified controls that were not enabled at key press */
-    state->components.controls &= ~(enum xkb_action_controls) filter->priv;
+    if (filter->action.type == ACTION_TYPE_CTRL_SET ||
+        !(filter->action.ctrls.flags & ACTION_LOCK_NO_UNLOCK)) {
+        /*
+         * Set: Disable specified controls that were *not* enabled at key press.
+         * Lock: Disable specified controls that *were* enabled at key press.
+         */
+        state->components.controls &= ~(enum xkb_action_controls) filter->priv;
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -849,8 +865,10 @@ static const struct {
                                   xkb_filter_group_latch_func },
     [ACTION_TYPE_GROUP_LOCK]  = { xkb_filter_group_lock_new,
                                   xkb_filter_group_lock_func },
-    [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_set_new,
-                                  xkb_filter_ctrls_set_func },
+    [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
+                                  xkb_filter_ctrls_func },
+    [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
+                                  xkb_filter_ctrls_func },
 };
 
 /**
