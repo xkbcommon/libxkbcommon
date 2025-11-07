@@ -528,7 +528,14 @@ Unused in [xkeyboard-config] layouts.
 <tr>
 <th>`LockControls()`</th>
 <td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
+<td colspan="2">
+<details>
+<summary>⚠️ Partial support</summary>
+- libxkbcommon \< 1.14: Parsing and serializing only, no API support
+- libxkbcommon ≥ 1.14: API support for a limited number of controls:
+  see `xkb_keyboard_controls`.
+</details>
+</td>
 </tr>
 <tr>
 <th>`TerminateServer()`</th>
