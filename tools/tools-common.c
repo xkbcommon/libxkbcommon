@@ -312,6 +312,54 @@ print_leds(struct xkb_state *state, bool verbose) {
 }
 
 static void
+print_controls(struct xkb_state *state, bool verbose) {
+    static const struct {
+        enum xkb_action_controls control;
+        const char *name;
+    } controls[] = {
+        { CONTROL_REPEAT, "repeat" },
+        { CONTROL_SLOW, "slow" },
+        { CONTROL_DEBOUNCE, "debounce" },
+        { CONTROL_STICKY_KEYS, "sticky-keys" },
+        { CONTROL_MOUSE_KEYS, "mouse-keys" },
+        { CONTROL_MOUSE_KEYS_ACCEL, "mouse-keys-accel" },
+        { CONTROL_AX, "ax" },
+        { CONTROL_AX_TIMEOUT, "ax-timeout" },
+        { CONTROL_AX_FEEDBACK, "ax-feedback" },
+        { CONTROL_BELL, "bell" },
+        { CONTROL_IGNORE_GROUP_LOCK, "ignore-group-lock" },
+    };
+    static_assert(
+        CONTROL_ALL ==
+        (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
+         CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
+         CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
+         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
+        "missing controls names"
+    );
+
+    const enum xkb_keyboard_controls ctrls =
+        xkb_state_serialize_controls(state, XKB_STATE_CONTROLS);
+
+    printf("0x%08"PRIx32" ", ctrls);
+
+    if (!ctrls) {
+        printf("(none)");
+        return;
+    }
+
+    unsigned int count = 0;
+    for (uint8_t c = 0; c < (uint8_t) ARRAY_SIZE(controls); c++) {
+        if (!(controls[c].control & ctrls))
+            continue;
+        if (count > 0)
+            printf(", ");
+        printf("%s", controls[c].name);
+        count++;
+    }
+}
+
+static void
 tools_print_detailed_keycode_state(const char *prefix,
                                    struct xkb_state *state,
                                    struct xkb_compose_state *compose_state,
@@ -582,6 +630,8 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
                         XKB_CONSUMED_MODE_XKB /* unused*/, false);
         if (changed & XKB_STATE_LEDS)
             printf("leds ");
+        if (changed & XKB_STATE_CONTROLS)
+            printf("controls ");
         printf("]\n");
     } else {
         printf("state changes:\n");
@@ -604,6 +654,12 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
         if (changed & XKB_STATE_LEDS) {
             printf(INDENT "LEDs: ");
             print_leds(state, true);
+            printf("\n");
+        }
+
+        if (changed & XKB_STATE_CONTROLS) {
+            printf(INDENT "Controls: ");
+            print_controls(state, true);
             printf("\n");
         }
     }
