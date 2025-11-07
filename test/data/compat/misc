@@ -116,6 +116,7 @@ partial xkb_compatibility "assign_shift_left_action" {
     // <LFSH> is getting bound to the Lock modifier when using
     // symbols/shift(both_capslock), creating unwanted behaviour.
     // This is a quirk, to circumvent the problem.
+    setMods.clearLocks= True;
     interpret Shift_L {
 	action = SetMods(modifiers = Shift);
     };
