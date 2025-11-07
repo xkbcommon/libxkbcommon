@@ -120,6 +120,12 @@ enum xkb_action_flags {
     ACTION_LATCH_ON_PRESS = (1 << 12),
 };
 
+/**
+ * This is the general version of the *public* `xkb_keyboard_controls` enum.
+ * We do not expose the following enum, as it does not make sense to expose
+ * controls whose effects we do not support.
+ * However, we should enforce both enum to share the same values.
+ */
 enum xkb_action_controls {
     CONTROL_REPEAT = (1 << 0),
     CONTROL_SLOW = (1 << 1),
@@ -132,6 +138,10 @@ enum xkb_action_controls {
     CONTROL_AX_FEEDBACK = (1 << 8),
     CONTROL_BELL = (1 << 9),
     CONTROL_IGNORE_GROUP_LOCK = (1 << 10),
+    /**
+     * All the XKB Controls. If we ever introduce *internal* controls, this mask
+     * should not include them.
+     */
     CONTROL_ALL = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | CONTROL_STICKY | \
          CONTROL_MOUSEKEYS | CONTROL_MOUSEKEYS_ACCEL | CONTROL_AX | \

@@ -1982,8 +1982,47 @@ enum xkb_state_component {
      *  Use this unless you explicitly care how the state came about. */
     XKB_STATE_LAYOUT_EFFECTIVE = (1 << 7),
     /** LEDs (derived from the other state components). */
-    XKB_STATE_LEDS = (1 << 8)
+    XKB_STATE_LEDS = (1 << 8),
+    /** Effective keyboard controls */
+    XKB_STATE_CONTROLS = (1 << 9)
 };
+
+/**
+ * **Global keyboard controls**, which affect the way libxkbcommon handles the
+ * keyboard as a whole.
+ *
+ * This enumeration is bit-maskable.
+ *
+ * @since 1.14.0
+ */
+enum xkb_keyboard_controls {
+    /**
+     * Do not apply any control.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_NONE = 0,
+};
+
+/**
+ * Update the keyboard state to change the [global keyboard controls].
+ *
+ * @param state The keyboard state object.
+ * @param affect
+ * @param controls
+ *     Global keyboard controls to lock or unlock. Only modifiers in @p affect
+ *     are considered.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ *
+ * [global keyboard controls]: @ref xkb_keyboard_controls
+ */
+XKB_EXPORT enum xkb_state_component
+xkb_state_update_controls(struct xkb_state *state,
+                          enum xkb_keyboard_controls affect,
+                          enum xkb_keyboard_controls controls);
 
 /**
  * Update the keyboard state to reflect a given key being pressed or
@@ -2258,6 +2297,20 @@ enum xkb_state_match {
      *  modifier not specified in the arguments is active. */
     XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16)
 };
+
+/**
+ * Serialization of the [global keyboard controls], to be used on the server
+ * side of serialization.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ *
+ * [global keyboard controls]: @ref xkb_keyboard_controls
+ */
+XKB_EXPORT enum xkb_keyboard_controls
+xkb_state_serialize_controls(struct xkb_state *state,
+                             enum xkb_state_component components);
 
 /**
  * The counterpart to `xkb_state::xkb_state_update_mask()` for modifiers, to be
