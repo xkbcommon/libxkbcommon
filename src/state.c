@@ -54,6 +54,8 @@ struct state_components {
     xkb_mod_mask_t mods; /**< effective */
 
     xkb_led_mask_t leds;
+
+    enum xkb_action_controls controls;
 };
 
 struct xkb_state {
@@ -935,6 +937,7 @@ xkb_state_new2(struct xkb_keymap *keymap,
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
+    state->components.controls = keymap->enabled_ctrls;
 
     return state;
 }
@@ -1043,7 +1046,7 @@ xkb_state_led_update_all(struct xkb_state *state)
             }
         }
 
-        if (led->ctrls & state->keymap->enabled_ctrls) {
+        if (led->ctrls & state->components.controls) {
             state->components.leds |= (UINT32_C(1) << idx);
             continue;
         }
@@ -1109,6 +1112,8 @@ get_state_component_changes(const struct state_components *a,
         mask |= XKB_STATE_MODS_LOCKED;
     if (a->leds != b->leds)
         mask |= XKB_STATE_LEDS;
+    if (a->controls != b->controls)
+        mask |= XKB_STATE_CONTROLS;
 
     return mask;
 }
@@ -1325,6 +1330,26 @@ xkb_state_update_latched_locked(struct xkb_state *state,
 
     xkb_state_update_derived(state);
     return get_state_component_changes(&prev_components, &state->components);
+}
+
+enum xkb_state_component
+xkb_state_update_controls(struct xkb_state *state,
+                          enum xkb_keyboard_controls affect,
+                          enum xkb_keyboard_controls controls)
+{
+    const enum xkb_action_controls previous = state->components.controls;
+    /*
+     * Enable to use the public API with the all the Control values, except
+     * the internal ones, if any.
+     */
+    const enum xkb_action_controls affect_ = (enum xkb_action_controls) affect
+                                           & CONTROL_ALL;
+    state->components.controls &= ~affect_;
+    state->components.controls |= (enum xkb_action_controls) controls & affect_;
+
+    return (previous == state->components.controls)
+        ? 0
+        : XKB_STATE_CONTROLS;
 }
 
 /**
@@ -1669,6 +1694,19 @@ xkb_state_serialize_layout(struct xkb_state *state,
         ret += state->components.locked_group;
 
     return ret;
+}
+
+enum xkb_keyboard_controls
+xkb_state_serialize_controls(struct xkb_state *state,
+                             enum xkb_state_component components)
+{
+    return (components & XKB_STATE_CONTROLS)
+        /*
+         * Enable to use the public API with the all the Controls values, except
+         * the internal ones, if any.
+         */
+        ? (enum xkb_keyboard_controls) (state->components.controls & CONTROL_ALL)
+        : 0;
 }
 
 /**

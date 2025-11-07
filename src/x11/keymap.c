@@ -115,7 +115,7 @@ translate_mods(uint8_t rmods, uint16_t vmods_low, uint16_t vmods_high)
         ((xkb_mod_mask_t) vmods_high << 16);
 }
 
-static enum xkb_action_controls
+enum xkb_action_controls
 translate_controls_mask(uint32_t wire)
 {
     enum xkb_action_controls ret = 0;

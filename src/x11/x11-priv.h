@@ -58,3 +58,6 @@ x11_atom_interner_adopt_atom(struct x11_atom_interner *interner,
 void
 x11_atom_interner_get_escaped_atom_name(struct x11_atom_interner *interner,
                                         xcb_atom_t atom, char **out);
+
+enum xkb_action_controls
+translate_controls_mask(uint32_t wire);
