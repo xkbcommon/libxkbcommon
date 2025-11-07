@@ -1,0 +1,14 @@
+default xkb_symbols {
+	key <FK01> {
+		repeats = no,
+		[StickyKeys_Enable],
+		[SetControls(controls=StickyKeys)],
+		type = "ONE_LEVEL"
+	};
+	key <FK02> {
+		repeats = no,
+		[StickyKeys_Enable],
+		[LockControls(controls=StickyKeys)],
+		type = "ONE_LEVEL"
+	};
+};
