@@ -147,3 +147,10 @@ V_1.12.0 {
 global:
     xkb_keymap_get_as_string2;
 } V_1.11.0;
+
+V_1.14.0 {
+global:
+    xkb_state_options_new;
+    xkb_state_options_destroy;
+    xkb_state_new2;
+} V_1.12.0;

@@ -313,7 +313,17 @@ typedef uint32_t xkb_led_mask_t;
  */
 struct xkb_rmlvo_builder;
 
+/**
+ * Flags for `xkb_rmlvo_builder_new()`.
+ *
+ * @since 1.11.0
+ */
 enum xkb_rmlvo_builder_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.11.0
+     */
     XKB_RMLVO_BUILDER_NO_FLAGS = 0
 };
 
@@ -1767,16 +1777,76 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
+ * Opaque options object to configure a keyboard state.
+ *
+ * @since 1.14.0
+ */
+struct xkb_state_options;
+
+/**
+ * Create a new keyboard state object options.
+ *
+ * @param context The context in which to create the options.
+ *
+ * @returns A new keyboard state options object, or `NULL` on failure.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_state_options *
+xkb_state_options_new(struct xkb_context *context);
+
+/**
+ * Free a keyboard state options object.
+ *
+ * @param options The state options. If it is `NULL`, this function does nothing.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT void
+xkb_state_options_destroy(struct xkb_state_options *options);
+
+/**
  * Create a new keyboard state object.
+ *
+ * This entry point is intended for both server and client applications.
+ * However, *server* applications may prefer to use `xkb_state_new2()` to get
+ * more control over the state configuration.
  *
  * @param keymap The keymap which the state will use.
  *
  * @returns A new keyboard state object, or `NULL` on failure.
  *
+ * @sa `xkb_state_new2()`
+ *
  * @memberof xkb_state
  */
 XKB_EXPORT struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap);
+
+/**
+ * Create a new keyboard state object with explicit options.
+ *
+ * This entry point is intended for *server* applications; *client* applications
+ * should use `xkb_state_new()` instead.
+ *
+ * @param keymap  The keymap which the state will use.
+ * @param options The options to configure the state.
+ *
+ * @returns A new keyboard state object, or `NULL` on failure.
+ *
+ * @sa `xkb_state_new()`
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_state *
+xkb_state_new2(struct xkb_keymap *keymap,
+               const struct xkb_state_options *options);
 
 /**
  * Take a new reference on a keyboard state object.
