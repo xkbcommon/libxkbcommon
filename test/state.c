@@ -39,6 +39,25 @@ static const enum xkb_keymap_format keymap_formats[] = {
 #define XKB_KEY_Ssharp (XKB_KEYSYM_UNICODE_OFFSET + 0x1E9E)
 #endif
 
+static void
+test_state_options(struct xkb_context *ctx)
+{
+    struct xkb_state_options *options = xkb_state_options_new(ctx);
+    assert(options);
+
+    struct xkb_keymap *keymap =
+        xkb_keymap_new_from_names(ctx, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    assert(keymap);
+
+    struct xkb_state *state = xkb_state_new2(keymap, options);
+    assert(state);
+    xkb_state_unref(state);
+
+    xkb_keymap_unref(keymap);
+
+    xkb_state_options_destroy(options);
+}
+
 /* Reference implementation from XkbAdjustGroup in Xorg xserver */
 static int32_t
 group_wrap_ref(int32_t g, int32_t num_groups)
@@ -3090,6 +3109,7 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
 
+    test_state_options(context);
     test_group_wrap(context);
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};

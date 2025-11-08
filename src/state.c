@@ -872,8 +872,34 @@ xkb_filter_apply_all(struct xkb_state *state,
     }
 }
 
+struct xkb_state_options {
+    struct xkb_context *ctx;
+};
+
+struct xkb_state_options *
+xkb_state_options_new(struct xkb_context *context)
+{
+    struct xkb_state_options* restrict const opt = calloc(1, sizeof(*opt));
+    if (!opt)
+        return NULL;
+
+    opt->ctx = xkb_context_ref(context);
+
+    return opt;
+}
+
+void
+xkb_state_options_destroy(struct xkb_state_options *options)
+{
+    if (options == NULL)
+        return;
+    xkb_context_unref(options->ctx);
+    free(options);
+}
+
 struct xkb_state *
-xkb_state_new(struct xkb_keymap *keymap)
+xkb_state_new2(struct xkb_keymap *keymap,
+               const struct xkb_state_options *options)
 {
     struct xkb_state* restrict const state = calloc(1, sizeof(*state));
     if (!state)
@@ -883,6 +909,17 @@ xkb_state_new(struct xkb_keymap *keymap)
     state->keymap = xkb_keymap_ref(keymap);
 
     return state;
+}
+
+struct xkb_state *
+xkb_state_new(struct xkb_keymap *keymap)
+{
+    /* Default state options */
+    static const struct xkb_state_options options = {
+        .ctx = NULL /* unused */
+    };
+
+    return xkb_state_new2(keymap, &options);
 }
 
 struct xkb_state *
