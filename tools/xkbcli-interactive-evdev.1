@@ -98,8 +98,14 @@ Enable or disable controls.
 .Ar controls
 is a comma-separated-list of the following entries:
 .Bl -tag -compact -hang
+.It Ar sticky-keys
+Enable sticky-keys accessibility feature
+.It Ar latch-to-lock
+Enable latch-to-lock option for sticky-keys
+.It Ar latch-simultaneous
+Relax the strict tapping sequence requirement operating key latches.
 .El
-Each entry may be preceeded by
+Each entry may be preceded by
 .Ar \-
 or
 .Ar \+

@@ -378,7 +378,7 @@ usage(FILE *fp, char *progname)
                         "          --multiline (enable uniline event output)\n"
                         "          --short (shorter event output)\n"
                         "          --report-state-changes (report changes to the state)\n"
-                        "          --controls\n"
+                        "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
                         "          --without-x11-offset (don't add X11 keycode offset)\n"
