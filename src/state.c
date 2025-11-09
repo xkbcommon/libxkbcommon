@@ -418,22 +418,20 @@ xkb_filter_group_latch_func(struct xkb_state *state,
              * Another key was pressed while we’ve still got the latching key
              * held down.
              *
-             * The exact behavior depends on the keymap format version.
+             * The exact behavior depends on the accessibility flag:
+             * XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS.
+             *
              * It results in either:
              * • No change.
              * • Prevent the latch to trigger and keep the base group set by
              *   xkb_filter_group_latch_new(), until the latch key is
              *   released.
              */
-            if (state->keymap->format == XKB_KEYMAP_FORMAT_TEXT_V1) {
-                /* Keymap v1: unconditionally prevent the latch to trigger. */
-                latch = NO_LATCH;
-            }
-            else {
+            if (state->flags & XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS) {
                 /*
-                 * Keymap v2+: prevent the latch to trigger only if some of the
-                 * pressed key’s actions breaks latches, mirroring the behavior
-                 * in the LATCH_PENDING state.
+                 * Prevent the latch to trigger only if some of the pressed
+                 * key’s actions breaks latches, mirroring the behavior in the
+                 * LATCH_PENDING state.
                  *
                  * This is an extension to the X11 XKB protocol.
                  */
@@ -445,6 +443,9 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                         break;
                     }
                 }
+            } else {
+                /* Unconditionally prevent the latch to trigger. */
+                latch = NO_LATCH;
             }
         }
         else if (latch == LATCH_PENDING) {
@@ -684,21 +685,19 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
              * Another key was pressed while we’ve still got the latching key
              * held down.
              *
-             * The exact behavior depends on the keymap format version.
+             * The exact behavior depends on the accessibility flag:
+             * XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS.
+             *
              * It results in either:
              * • No change.
              * • Prevent the latch to trigger and keep the base modifiers set
              *   by xkb_filter_mod_latch_new(), until the latch key is released.
              */
-            if (state->keymap->format == XKB_KEYMAP_FORMAT_TEXT_V1) {
-                /* Keymap v1: unconditionally prevent the latch to trigger. */
-                latch = NO_LATCH;
-            }
-            else {
+            if (state->flags & XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS) {
                 /*
-                 * Keymap v2+: prevent the latch to trigger only if some of the
-                 * pressed key’s actions breaks latches, mirroring the behavior
-                 * in the LATCH_PENDING state.
+                 * Prevent the latch to trigger only if some of the pressed
+                 * key’s actions breaks latches, mirroring the behavior in the
+                 * LATCH_PENDING state.
                  *
                  * This is an extension to the X11 XKB protocol.
                  */
@@ -710,6 +709,9 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                         break;
                     }
                 }
+            } else {
+                /* Unconditionally prevent the latch to trigger. */
+                latch = NO_LATCH;
             }
         }
         else if (latch == LATCH_PENDING) {
@@ -971,14 +973,22 @@ xkb_filter_apply_all(struct xkb_state *state,
 }
 
 struct xkb_state_options {
-    enum xkb_state_accessibility_flags flags;
+    enum xkb_state_accessibility_flags a11y_affect;
+    enum xkb_state_accessibility_flags a11y_flags;
     struct xkb_context *ctx;
 };
 
 enum {
     /** Mask to filter out invalid flags */
-    XKB_STATE_FLAG_ALL = (XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK),
+    XKB_STATE_FLAG_ALL = (XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK |
+                          XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS),
 };
+
+#define state_options_new(context) {        \
+    .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
+    .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
+    .ctx = (context)                        \
+}
 
 struct xkb_state_options *
 xkb_state_options_new(struct xkb_context *context)
@@ -987,8 +997,8 @@ xkb_state_options_new(struct xkb_context *context)
     if (!opt)
         return NULL;
 
-    opt->flags = XKB_STATE_A11Y_NO_FLAGS;
-    opt->ctx = xkb_context_ref(context);
+    *opt = (struct xkb_state_options)
+           state_options_new(xkb_context_ref(context));
 
     return opt;
 }
@@ -1013,8 +1023,9 @@ xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
         return 1;
     }
 
-    options->flags &= ~affect;
-    options->flags |= (flags & affect);
+    options->a11y_affect |= affect;
+    options->a11y_flags &= ~affect;
+    options->a11y_flags |= (flags & affect);
 
     return 0;
 }
@@ -1027,7 +1038,12 @@ xkb_state_new2(struct xkb_keymap *keymap,
     if (!state)
         return NULL;
 
-    state->flags = options->flags;
+    state->flags = options->a11y_flags;
+    if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
+        !(options->a11y_affect & XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS)) {
+            /* Keymap v2+: enable extension to XKB if not manually disabled */
+            state->flags |= XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS;
+    }
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
@@ -1039,12 +1055,8 @@ xkb_state_new2(struct xkb_keymap *keymap,
 struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap)
 {
-    /* Default state options */
-    static const struct xkb_state_options options = {
-        .flags = XKB_STATE_A11Y_NO_FLAGS,
-        .ctx = NULL /* unused */
-    };
-
+    /* Default state options (context arg is unused) */
+    static const struct xkb_state_options options = state_options_new(NULL);
     return xkb_state_new2(keymap, &options);
 }
 

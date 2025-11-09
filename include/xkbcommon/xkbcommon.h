@@ -1835,6 +1835,40 @@ enum xkb_state_accessibility_flags {
      * [lock]:  @ref locked-mod-def
      */
     XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK = (1 << 0),
+    /**
+     * Without this option, the [latch] keys are only triggers if keys are
+     * strictly *sequentially tapped*, e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level2_Latch` ↑
+     * 3. `A` ↓
+     * 4. `A` ↑
+     *
+     * If one wants *multiple* active latches, they must be tapped in sequence:
+     * e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level2_Latch` ↑
+     * 3. `ISO_Level3_Latch` ↓
+     * 4. `ISO_Level3_Latch` ↑
+     * 5. `A` ↓
+     * 6. `A` ↑
+     *
+     * This option relaxes the strict sequence requirement and enable to operate
+     * keys that do not break latches *simultaneously* with a [latch] key, e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level3_Latch` ↓
+     * 3. `ISO_Level2_Latch` ↑
+     * 4. `ISO_Level3_Latch` ↑
+     * 5. `A` ↓
+     * 6. `A` ↑
+     *
+     * This is an extension to the X11 XKB protocol and is enabled by default
+     * when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+     *
+     * @since 1.14.0
+     *
+     * [latch]: @ref latched-mod-def
+     */
+    XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
 };
 
 /**
