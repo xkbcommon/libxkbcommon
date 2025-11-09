@@ -1,2 +1,2 @@
-`xkbcli interactive-evdev`: Added `--controls` argument to configure the
+`xkbcli interactive-{evdev,wayland}`: Added `--controls` argument to configure the
 keyboard controls.

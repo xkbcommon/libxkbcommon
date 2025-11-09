@@ -83,6 +83,9 @@ static bool dump_raw_keymap;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool use_local_state = false;
+static struct xkb_state_options *state_options = NULL;
+static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
@@ -446,9 +449,17 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     /* Reset the state, except if unset or using a local state */
     if (!seat->state || !use_local_state) {
         xkb_state_unref(seat->state);
-        seat->state = xkb_state_new(seat->keymap);
-        if (!seat->state)
+        if (use_local_state) {
+            seat->state = xkb_state_new2(seat->keymap, state_options);
+        } else {
+            seat->state = xkb_state_new(seat->keymap);
+        }
+        if (!seat->state) {
             fprintf(stderr, "ERROR: Failed to create XKB state!\n");
+        } else if (use_local_state) {
+            xkb_state_update_controls(seat->state,
+                                      kbd_controls_affect, kbd_controls_values);
+        }
     }
 #endif
 }
@@ -833,6 +844,9 @@ usage(FILE *fp, char *progname)
                 "    --enable-compose   enable Compose\n"
                 "    --local-state      enable local state handling and ignore modifiers/layouts\n"
                 "                       state updates from the compositor\n"
+                "    --controls [<CONTROLS>]\n"
+                "                       use the given keyboard controls.\n"
+                "                       It implies --local-state.\n"
                 "    --keymap [<FILE>]  use the given keymap instead of the keymap from the\n"
                 "                       compositor. It implies --local-state.\n"
                 "                       If <FILE> is \"-\" or missing, then load from stdin.\n"
@@ -855,6 +869,23 @@ main(int argc, char *argv[])
 #ifndef KEYMAP_DUMP
     bool with_keymap_file = false;
     const char *keymap_path = NULL;
+
+    /* Only used for state options */
+    inter.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!inter.ctx) {
+        ret = -1;
+        fprintf(stderr, "Couldn't create xkb context\n");
+        goto err_out;
+    }
+    state_options = xkb_state_options_new(inter.ctx);
+    xkb_context_unref(inter.ctx);
+    inter.ctx = NULL;
+    if (!state_options) {
+        ret = -1;
+        fprintf(stderr, "Couldn't create xkb state options\n");
+        goto err_out;
+    }
+
     bool with_compose = false;
     struct xkb_compose_table *compose_table = NULL;
 #endif
@@ -865,6 +896,7 @@ main(int argc, char *argv[])
         OPT_MULTILINE,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
+        OPT_CONTROLS,
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
@@ -889,6 +921,7 @@ main(int argc, char *argv[])
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
+        {"controls",             required_argument,      0, OPT_CONTROLS},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
 #endif
         {0, 0, 0, 0},
@@ -918,8 +951,7 @@ main(int argc, char *argv[])
                         "--format",
 #endif
                         optarg);
-                usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                goto invalid_usage;
             }
             break;
 #ifdef KEYMAP_DUMP
@@ -927,16 +959,14 @@ main(int argc, char *argv[])
             keymap_output_format = xkb_keymap_parse_format(optarg);
             if (!keymap_output_format) {
                 fprintf(stderr, "ERROR: invalid --output-format \"%s\"\n", optarg);
-                usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                goto invalid_usage;
             }
             break;
         case OPT_KEYMAP_FORMAT:
             keymap_input_format = xkb_keymap_parse_format(optarg);
             if (!keymap_input_format) {
                 fprintf(stderr, "ERROR: invalid --format: \"%s\"\n", optarg);
-                usage(stderr, argv[0]);
-                exit(EXIT_INVALID_USAGE);
+                goto invalid_usage;
             }
             keymap_output_format = keymap_input_format;
             break;
@@ -970,6 +1000,14 @@ main(int argc, char *argv[])
 local_state:
             use_local_state = true;
             break;
+        case OPT_CONTROLS:
+            if (!tools_parse_controls(optarg, state_options,
+                                      &kbd_controls_affect,
+                                      &kbd_controls_values)) {
+                goto invalid_usage;
+            }
+            /* --local-state is implied */
+            goto local_state;
         case '1':
         case OPT_UNILINE:
             print_options |= PRINT_UNILINE;
@@ -981,13 +1019,13 @@ local_state:
 #endif
         case 'h':
             usage(stdout, argv[0]);
-            return EXIT_SUCCESS;
+            ret = EXIT_SUCCESS;
+            goto error_parse_args;
         default:
-#ifndef KEYMAP_DUMP
 invalid_usage:
-#endif
             usage(stderr, argv[0]);
-            return EXIT_INVALID_USAGE;
+            ret = EXIT_INVALID_USAGE;
+            goto error_parse_args;
         }
     }
 
@@ -1115,5 +1153,10 @@ err_out:
 #ifndef KEYMAP_DUMP
     xkb_keymap_unref(custom_keymap);
 #endif
-    exit(ret >= 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+error_parse_args:
+#ifndef KEYMAP_DUMP
+    xkb_state_options_destroy(state_options);
+#endif
+    exit(ret);
 }
