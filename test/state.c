@@ -3761,6 +3761,177 @@ test_layout_index_named_bounds(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_redirect_key(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_file(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/redirect-key-1.xkb"
+    );
+    assert(keymap);
+
+    struct xkb_state_machine *sm = xkb_state_machine_new(keymap, NULL);
+    assert(sm);
+
+    static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
+    static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
+
+    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    assert(events);
+
+    xkb_state_machine_update_latched_locked(sm, events, 0, 0, false, 0,
+                                            ctrl, ctrl, false, 0);
+
+    const struct {
+        xkb_keycode_t keycode;
+        struct test_events {
+            struct xkb_event events[3];
+            unsigned int events_count;
+        } down;
+        struct test_events up;
+    } tests[] = {
+        {
+            .keycode = EVDEV_OFFSET + KEY_A,
+            .down = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_A
+                    }
+                },
+                .events_count = 1
+            },
+            .up = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_A
+                    }
+                },
+                .events_count = 1
+            }
+        },
+        {
+            .keycode = EVDEV_OFFSET + KEY_S,
+            .down = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_A
+                    }
+                },
+                .events_count = 1
+            },
+            .up = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_A
+                    }
+                },
+                .events_count = 1
+            }
+        },
+        {
+            .keycode = EVDEV_OFFSET + KEY_D,
+            .down = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .components = {
+                                .base_mods = shift,
+                                .latched_mods = shift,
+                                .locked_mods = shift,
+                                .mods = shift,
+                            },
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_LOCKED
+                                     | XKB_STATE_MODS_EFFECTIVE
+                        }
+                    },
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_S
+                    },
+                    {
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .components = {
+                                .base_mods = 0,
+                                .latched_mods = 0,
+                                .locked_mods = ctrl,
+                                .mods = ctrl,
+                            },
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_LOCKED
+                                     | XKB_STATE_MODS_EFFECTIVE
+                        }
+                    },
+                },
+                .events_count = 3
+            },
+            .up = {
+                .events = {
+                    {
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .components = {
+                                .base_mods = shift,
+                                .latched_mods = shift,
+                                .locked_mods = shift,
+                                .mods = shift,
+                            },
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_LOCKED
+                                     | XKB_STATE_MODS_EFFECTIVE
+                        }
+                    },
+                    {
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_S
+                    },
+                    {
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .components = {
+                                .base_mods = 0,
+                                .latched_mods = 0,
+                                .locked_mods = ctrl,
+                                .mods = ctrl,
+                            },
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_LOCKED
+                                     | XKB_STATE_MODS_EFFECTIVE
+                        }
+                    },
+                },
+                .events_count = 3
+            }
+        },
+    };
+
+    for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u, keycode: %"PRIu32" ***\n",
+                __func__, t, tests[t].keycode);
+        assert(0 == xkb_state_machine_update_key(sm, events, tests[t].keycode,
+                                                 XKB_KEY_DOWN));
+        assert(check_events(events, tests[t].down.events,
+                            tests[t].down.events_count));
+        assert(0 == xkb_state_machine_update_key(sm, events, tests[t].keycode,
+                                                 XKB_KEY_UP));
+        assert(check_events(events, tests[t].up.events,
+                            tests[t].up.events_count));
+    }
+
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(sm);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -3814,6 +3985,7 @@ main(void)
     test_extended_layout_indices(context);
     test_sticky_keys(context);
     test_layout_index_named_bounds(context);
+    test_redirect_key(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;
