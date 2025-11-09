@@ -833,7 +833,9 @@ tools_parse_controls(const char *raw, struct xkb_state_options *options,
         return true;
 
     enum control_field {
-        DUMMY = 0, /* TODO: removed when real controls are implemented */
+        CONTROL_FIELD_STICKY_KEYS = 0,
+        CONTROL_FIELD_LATCH_TO_LOCK,
+        CONTROL_FIELD_LATCH_SIMULTANEOUS,
         _NUM_CONTROL_FIELDS,
     };
 
@@ -841,7 +843,9 @@ tools_parse_controls(const char *raw, struct xkb_state_options *options,
         const char *name;
         enum control_field type;
     } fields[] = {
-        { "", DUMMY }, /* TODO: removed when real controls are implemented */
+        { "sticky-keys",        CONTROL_FIELD_STICKY_KEYS },
+        { "latch-to-lock",      CONTROL_FIELD_LATCH_TO_LOCK },
+        { "latch-simultaneous", CONTROL_FIELD_LATCH_SIMULTANEOUS },
     };
 
     const char *start = raw;
@@ -881,11 +885,32 @@ tools_parse_controls(const char *raw, struct xkb_state_options *options,
             ok = true;
 
             switch (fields[f].type) {
+            case CONTROL_FIELD_STICKY_KEYS:
+                if (disable)
+                    *controls_values &= ~XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
+                else
+                    *controls_values |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
+                *controls_affect |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
+                break;
+            case CONTROL_FIELD_LATCH_TO_LOCK:
+                ok = xkb_state_options_update_a11y_flags(
+                    options,
+                    XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK,
+                    (disable ? 0 : XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK)
+                ) == 0;
+                break;
+            case CONTROL_FIELD_LATCH_SIMULTANEOUS:
+                ok = xkb_state_options_update_a11y_flags(
+                    options,
+                    XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS,
+                    (disable ? 0 : XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS)
+                ) == 0;
+                break;
             default:
                 {} /* Label followed by declaration requires C23 */
                 static_assert(
-                    DUMMY == 0 &&
-                    DUMMY + 1 == _NUM_CONTROL_FIELDS,
+                    CONTROL_FIELD_LATCH_SIMULTANEOUS == 2 &&
+                    CONTROL_FIELD_LATCH_SIMULTANEOUS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );
             }
