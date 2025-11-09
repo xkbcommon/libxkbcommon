@@ -34,11 +34,11 @@
 #include "xkbcommon/xkbcommon-compose.h"
 #include "tools-common.h"
 #include "src/compose/constants.h"
-#include "src/utils.h"
-#include "src/utf8-decoding.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
 #include "src/messages-codes.h"
+#include "src/utils.h"
+#include "src/utf8-decoding.h"
 
 #if defined(_WIN32) && !defined(S_ISFIFO)
 #define S_ISFIFO(mode) 0
@@ -822,4 +822,88 @@ tools_read_stdin(void)
 err:
     fclose(file);
     return NULL;
+}
+
+bool
+tools_parse_controls(const char *raw, struct xkb_state_options *options,
+                     enum xkb_keyboard_controls *controls_affect,
+                     enum xkb_keyboard_controls *controls_values)
+{
+    if (isempty(raw))
+        return true;
+
+    enum control_field {
+        DUMMY = 0, /* TODO: removed when real controls are implemented */
+        _NUM_CONTROL_FIELDS,
+    };
+
+    static const struct {
+        const char *name;
+        enum control_field type;
+    } fields[] = {
+        { "", DUMMY }, /* TODO: removed when real controls are implemented */
+    };
+
+    const char *start = raw;
+    const char *s = start;
+
+    bool ok = true;
+
+    /* Parse comma-separated list of options */
+    while (true) {
+        /* Consume until reaching next item or end of string */
+        while (*s != '\0' && *s != ',') { s++; }
+
+        /*
+         * Handle +/- prefix, to respectively enable or disable the
+         * corresponding option. This enable to explicitly override defaults.
+         */
+        const bool disable = (start[0] == '-');
+        if (disable || start[0] == '+')
+            start++;
+
+        const size_t len = s - start;
+        if (!len) {
+            if (s[0] == ',') {
+                /* Accept empty entry */
+                goto next;
+            } else {
+                break;
+            }
+        }
+
+        ok = false;
+        for (uint8_t f = 0; f < (uint8_t) ARRAY_SIZE(fields); f++) {
+            if (strncmp(start, fields[f].name, len) != 0 ||
+                fields[f].name[len] != '\0')
+                continue;
+
+            ok = true;
+
+            switch (fields[f].type) {
+            default:
+                {} /* Label followed by declaration requires C23 */
+                static_assert(
+                    DUMMY == 0 &&
+                    DUMMY + 1 == _NUM_CONTROL_FIELDS,
+                    "missing case"
+                );
+            }
+        }
+
+        if (!ok) {
+            fprintf(stderr, "ERROR: cannot parse control entry: \"%.*s\"\n",
+                    (unsigned int) len, start);
+            break;
+        }
+
+next:
+        if (s[0] == '\0')
+            break;
+
+        s++;
+        start = s;
+    }
+
+    return ok;
 }

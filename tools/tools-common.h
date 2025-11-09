@@ -80,6 +80,11 @@ is_pipe_or_regular_file(int fd);
 FILE*
 tools_read_stdin(void);
 
+bool
+tools_parse_controls(const char *s, struct xkb_state_options *options,
+                     enum xkb_keyboard_controls *controls_affect,
+                     enum xkb_keyboard_controls *controls_values);
+
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
 #define unsetenv(varname) _putenv_s(varname, "")
