@@ -85,6 +85,9 @@ is_keyboard(int fd)
 
 static int
 keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
+             struct xkb_state_options *state_options,
+             enum xkb_keyboard_controls kbd_controls_affect,
+             enum xkb_keyboard_controls kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
 {
     int ret;
@@ -110,12 +113,14 @@ keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
         goto err_fd;
     }
 
-    state = xkb_state_new(keymap);
+    state = xkb_state_new2(keymap, state_options);
     if (!state) {
         fprintf(stderr, "Couldn't create xkb state for %s\n", path);
         ret = -EFAULT;
         goto err_fd;
     }
+
+    xkb_state_update_controls(state, kbd_controls_affect, kbd_controls_values);
 
     if (with_compose) {
         compose_state = xkb_compose_state_new(compose_table,
@@ -172,6 +177,9 @@ filter_device_name(const struct dirent *ent)
 
 static struct keyboard *
 get_keyboards(struct xkb_keymap *keymap,
+              struct xkb_state_options *state_options,
+              enum xkb_keyboard_controls kbd_controls_affect,
+              enum xkb_keyboard_controls kbd_controls_values,
               struct xkb_compose_table *compose_table)
 {
     int ret, i, nents;
@@ -185,7 +193,8 @@ get_keyboards(struct xkb_keymap *keymap,
     }
 
     for (i = 0; i < nents; i++) {
-        ret = keyboard_new(ents[i], keymap, compose_table, &kbd);
+        ret = keyboard_new(ents[i], keymap, state_options, kbd_controls_values,
+                           kbd_controls_affect, compose_table, &kbd);
         if (ret) {
             if (ret == -EACCES) {
                 fprintf(stderr, "Couldn't open /dev/input/%s: %s. "
@@ -369,6 +378,7 @@ usage(FILE *fp, char *progname)
                         "          --multiline (enable uniline event output)\n"
                         "          --short (shorter event output)\n"
                         "          --report-state-changes (report changes to the state)\n"
+                        "          --controls\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
                         "          --without-x11-offset (don't add X11 keycode offset)\n"
@@ -412,6 +422,7 @@ main(int argc, char *argv[])
         OPT_OPTION,
         OPT_KEYMAP,
         OPT_WITHOUT_X11_OFFSET,
+        OPT_CONTROLS,
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
         OPT_SHORT,
@@ -432,6 +443,7 @@ main(int argc, char *argv[])
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTION},
         {"keymap",               required_argument,      0, OPT_KEYMAP},
+        {"controls",             required_argument,      0, OPT_CONTROLS},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"short",                no_argument,            0, OPT_SHORT},
@@ -443,6 +455,17 @@ main(int argc, char *argv[])
     setlocale(LC_ALL, "");
 
     bool has_rmlvo_options = false;
+
+    /* Initialize state options */
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
+    struct xkb_state_options *state_options = xkb_state_options_new(ctx);
+    if (state_options == NULL)
+        goto error_state_options;
+    xkb_context_unref(ctx);
+    ctx = NULL;
+    enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+    enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+
     while (1) {
         int option_index = 0;
         int opt = getopt_long(argc, argv, "*1h", opts, &option_index);
@@ -479,7 +502,8 @@ main(int argc, char *argv[])
             if (!keymap_format) {
                 fprintf(stderr, "ERROR: invalid --format \"%s\"\n", optarg);
                 usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
             }
             break;
         case OPT_RULES:
@@ -537,7 +561,8 @@ main(int argc, char *argv[])
             } else {
                 fprintf(stderr, "ERROR: invalid --consumed-mode \"%s\"\n", optarg);
                 usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
             }
             break;
 #ifdef ENABLE_PRIVATE_APIS
@@ -545,12 +570,23 @@ main(int argc, char *argv[])
             print_modmaps = true;
             break;
 #endif
+        case OPT_CONTROLS:
+            if (!tools_parse_controls(optarg, state_options,
+                                      &kbd_controls_affect,
+                                      &kbd_controls_values)) {
+                usage(stderr, argv[0]);
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
+            }
+            break;
         case 'h':
             usage(stdout, argv[0]);
-            return EXIT_SUCCESS;
+            ret = EXIT_SUCCESS;
+            goto error_parse_args;
         default:
             usage(stderr, argv[0]);
-            return EXIT_INVALID_USAGE;
+            ret = EXIT_INVALID_USAGE;
+            goto error_parse_args;
         }
     }
 
@@ -563,7 +599,8 @@ main(int argc, char *argv[])
 too_much_arguments:
             fprintf(stderr, "ERROR: Too much positional arguments\n");
             usage(stderr, argv[0]);
-            exit(EXIT_INVALID_USAGE);
+            ret = EXIT_INVALID_USAGE;
+            goto error_parse_args;
         }
     }
 
@@ -647,10 +684,13 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(keymap, compose_table);
+    kbds = get_keyboards(keymap, state_options, kbd_controls_affect,
+                         kbd_controls_values, compose_table);
     if (!kbds) {
         goto out;
     }
+    xkb_state_options_destroy(state_options);
+    state_options = NULL;
 
 #ifdef ENABLE_PRIVATE_APIS
     if (print_modmaps) {
@@ -675,6 +715,9 @@ too_much_arguments:
 out:
     xkb_compose_table_unref(compose_table);
     xkb_keymap_unref(keymap);
+error_parse_args:
+    xkb_state_options_destroy(state_options);
+error_state_options:
     xkb_context_unref(ctx);
 
     return ret;
@@ -682,10 +725,12 @@ out:
 too_many_includes:
     fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
             ARRAY_SIZE(includes));
+    xkb_state_options_destroy(state_options);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     usage(stderr, argv[0]);
+    xkb_state_options_destroy(state_options);
     exit(EXIT_INVALID_USAGE);
 }
