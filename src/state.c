@@ -271,6 +271,36 @@ xkb_filter_group_set_func(struct xkb_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+static enum xkb_state_component
+get_state_component_changes(const struct state_components *a,
+                            const struct state_components *b)
+{
+    enum xkb_state_component mask = 0;
+
+    if (a->group != b->group)
+        mask |= XKB_STATE_LAYOUT_EFFECTIVE;
+    if (a->base_group != b->base_group)
+        mask |= XKB_STATE_LAYOUT_DEPRESSED;
+    if (a->latched_group != b->latched_group)
+        mask |= XKB_STATE_LAYOUT_LATCHED;
+    if (a->locked_group != b->locked_group)
+        mask |= XKB_STATE_LAYOUT_LOCKED;
+    if (a->mods != b->mods)
+        mask |= XKB_STATE_MODS_EFFECTIVE;
+    if (a->base_mods != b->base_mods)
+        mask |= XKB_STATE_MODS_DEPRESSED;
+    if (a->latched_mods != b->latched_mods)
+        mask |= XKB_STATE_MODS_LATCHED;
+    if (a->locked_mods != b->locked_mods)
+        mask |= XKB_STATE_MODS_LOCKED;
+    if (a->leds != b->leds)
+        mask |= XKB_STATE_LEDS;
+    if (a->controls != b->controls)
+        mask |= XKB_STATE_CONTROLS;
+
+    return mask;
+}
+
 static void
 xkb_filter_group_lock_new(struct xkb_state *state,
                           struct xkb_event_iterator *events,
@@ -888,6 +918,106 @@ xkb_filter_ctrls_func(struct xkb_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+static bool
+append_redirect_key_events(struct xkb_state *state,
+                           struct xkb_event_iterator *events,
+                           const struct xkb_redirect_key_action *redirect,
+                           enum xkb_key_direction direction)
+{
+    enum xkb_state_component changed = 0;
+    const xkb_mod_mask_t mask = redirect->affect;
+    if (mask) {
+        struct state_components new = state->components;
+        new.base_mods = (new.base_mods & ~mask) | redirect->mods;
+        new.latched_mods = (new.latched_mods & ~mask) | redirect->mods;
+        new.locked_mods = (new.locked_mods & ~mask) | redirect->mods;
+        new.mods = (new.mods & ~mask) | redirect->mods;
+
+        changed = get_state_component_changes(&state->components, &new);
+        if (changed) {
+            darray_append(events->queue, (struct xkb_event) {
+                .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                .components = {
+                    .components = new,
+                    .changed = changed
+                }
+            });
+        }
+    }
+
+    darray_append(events->queue, (struct xkb_event) {
+        .type = (direction == XKB_KEY_DOWN)
+              ? XKB_EVENT_TYPE_KEY_DOWN
+              : XKB_EVENT_TYPE_KEY_UP,
+        .keycode = redirect->keycode
+    });
+
+    if (mask && changed) {
+        /* Restore state */
+        darray_append(events->queue, (struct xkb_event) {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .components = state->components,
+                .changed = changed
+            }
+        });
+    }
+
+    return true;
+}
+
+static void
+xkb_filter_redirect_key_new(struct xkb_state *state,
+                            struct xkb_event_iterator *events,
+                            struct xkb_filter *filter)
+{
+    if (events == NULL) {
+        /* Action effectual only if using the state event API */
+        filter->func = NULL;
+        return;
+    }
+    append_redirect_key_events(state, events, &filter->action.redirect,
+                               XKB_KEY_DOWN);
+}
+
+static bool
+xkb_filter_redirect_key_func(struct xkb_state *state,
+                             struct xkb_event_iterator *events,
+                             struct xkb_filter *filter,
+                             const struct xkb_key *key,
+                             enum xkb_key_direction direction)
+{
+    if (key != filter->key)
+        return XKB_FILTER_CONTINUE;
+
+    if (direction == XKB_KEY_UP) {
+        append_redirect_key_events(state, events, &filter->action.redirect,
+                                   XKB_KEY_UP);
+        filter->func = NULL;
+        return XKB_FILTER_CONSUME;
+     } else {
+        const union xkb_action *actions = NULL;
+        const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
+
+        for (xkb_action_count_t a = 0; a < count; a++) {
+            if (actions[a].type == ACTION_TYPE_REDIRECT_KEY &&
+                actions[a].redirect.keycode != filter->action.redirect.keycode) {
+                    /* One action redirects to a different key: release first */
+                    append_redirect_key_events(state, events,
+                                               &filter->action.redirect,
+                                               XKB_KEY_UP);
+                filter->func = NULL;
+                return XKB_FILTER_CONTINUE;
+            }
+        }
+
+        /* Repeat */
+        append_redirect_key_events(state, events, &filter->action.redirect,
+                                   XKB_KEY_DOWN);
+        return XKB_FILTER_CONSUME;
+    }
+}
+
 static const struct {
     void (*new)(struct xkb_state *state,
                 struct xkb_event_iterator *events,
@@ -913,6 +1043,8 @@ static const struct {
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
+    [ACTION_TYPE_REDIRECT_KEY] = { xkb_filter_redirect_key_new,
+                                   xkb_filter_redirect_key_func },
 };
 
 /**
@@ -984,6 +1116,15 @@ xkb_filter_apply_all(struct xkb_state *state,
                     filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
                 }
             }
+        }
+        if (filter->action.type == ACTION_TYPE_REDIRECT_KEY) {
+            // FIXME: this is not efficient to resolve mods here each time
+            filter->action.redirect.affect = mod_mask_get_effective(
+                state->keymap, filter->action.redirect.affect
+            );
+            filter->action.redirect.mods = mod_mask_get_effective(
+                state->keymap, filter->action.redirect.mods
+            );
         }
         filter->func = filter_action_funcs[filter->action.type].func;
         filter_action_funcs[filter->action.type].new(state, events, filter);
@@ -1162,36 +1303,6 @@ xkb_state_update_derived(struct xkb_state *state)
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
     xkb_state_led_update_all(state);
-}
-
-static enum xkb_state_component
-get_state_component_changes(const struct state_components *a,
-                            const struct state_components *b)
-{
-    xkb_mod_mask_t mask = 0;
-
-    if (a->group != b->group)
-        mask |= XKB_STATE_LAYOUT_EFFECTIVE;
-    if (a->base_group != b->base_group)
-        mask |= XKB_STATE_LAYOUT_DEPRESSED;
-    if (a->latched_group != b->latched_group)
-        mask |= XKB_STATE_LAYOUT_LATCHED;
-    if (a->locked_group != b->locked_group)
-        mask |= XKB_STATE_LAYOUT_LOCKED;
-    if (a->mods != b->mods)
-        mask |= XKB_STATE_MODS_EFFECTIVE;
-    if (a->base_mods != b->base_mods)
-        mask |= XKB_STATE_MODS_DEPRESSED;
-    if (a->latched_mods != b->latched_mods)
-        mask |= XKB_STATE_MODS_LATCHED;
-    if (a->locked_mods != b->locked_mods)
-        mask |= XKB_STATE_MODS_LOCKED;
-    if (a->leds != b->leds)
-        mask |= XKB_STATE_LEDS;
-    if (a->controls != b->controls)
-        mask |= XKB_STATE_CONTROLS;
-
-    return mask;
 }
 
 /**
