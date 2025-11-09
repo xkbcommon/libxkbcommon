@@ -62,6 +62,9 @@ static struct xkb_keymap * const custom_keymap = NULL;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool use_local_state = false;
+static struct xkb_state_options *state_options = NULL;
+static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
@@ -133,7 +136,11 @@ update_keymap(struct keyboard *kbd)
         /* Do not reset state if already defined */
         if (!kbd->state) {
             /* Ignore state from the server */
+#ifdef KEYMAP_DUMP
             kbd->state = xkb_state_new(new_keymap);
+#else
+            kbd->state = xkb_state_new2(new_keymap, state_options);
+#endif
             if (!kbd->state)
                 goto err_state;
         }
@@ -147,7 +154,11 @@ update_keymap(struct keyboard *kbd)
         /* Reset state on keymap reset.
          * Ignore state from server if using local state. */
         struct xkb_state * const new_state = (use_local_state)
+#ifdef KEYMAP_DUMP
             ? xkb_state_new(new_keymap)
+#else
+            ? xkb_state_new2(new_keymap, state_options)
+#endif
             : xkb_x11_state_new_from_device(new_keymap, kbd->conn,
                                             kbd->device_id);
         if (!new_state)
@@ -434,6 +445,9 @@ usage(FILE *fp, char *progname)
                 "    --enable-compose     enable Compose\n"
                 "    --local-state        enable local state handling and ignore modifiers/layouts\n"
                 "                         state updates from the X11 server\n"
+                "    --controls [<CONTROLS>]\n"
+                "                         use the given keyboard controls.\n"
+                "                         It implies --local-state.\n"
                 "    --keymap [<FILE>]    use the given keymap instead of the keymap from the\n"
                 "                         compositor. It implies --local-state.\n"
                 "                         If <FILE> is \"-\" or missing, then load from stdin.\n"
@@ -467,6 +481,23 @@ main(int argc, char *argv[])
     bool with_keymap_file = false;
     enum xkb_keymap_format keymap_format = DEFAULT_INPUT_KEYMAP_FORMAT;
     const char *keymap_path = NULL;
+
+    /* Only used for state options */
+    core_kbd.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!core_kbd.ctx) {
+        ret = -1;
+        fprintf(stderr, "Couldn't create xkb context\n");
+        goto err_out;
+    }
+    state_options = xkb_state_options_new(core_kbd.ctx);
+    xkb_context_unref(core_kbd.ctx);
+    core_kbd.ctx = NULL;
+    if (!state_options) {
+        ret = -1;
+        fprintf(stderr, "Couldn't create xkb state options\n");
+        goto err_out;
+    }
+
     bool with_compose = false;
     const char *locale;
 #endif
@@ -477,6 +508,7 @@ main(int argc, char *argv[])
         OPT_MULTILINE,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
+        OPT_CONTROLS,
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
@@ -494,6 +526,7 @@ main(int argc, char *argv[])
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
+        {"controls",             required_argument,      0, OPT_CONTROLS},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
 #endif
         {0, 0, 0, 0},
@@ -522,8 +555,7 @@ main(int argc, char *argv[])
             keymap_format = xkb_keymap_parse_format(optarg);
             if (!keymap_format) {
                 fprintf(stderr, "ERROR: invalid --format \"%s\"\n", optarg);
-                usage(stderr, argv[0]);
-                return EXIT_INVALID_USAGE;
+                goto invalid_usage;
             }
             break;
 #ifdef KEYMAP_DUMP
@@ -541,6 +573,14 @@ main(int argc, char *argv[])
 local_state:
             use_local_state = true;
             break;
+        case OPT_CONTROLS:
+            if (!tools_parse_controls(optarg, state_options,
+                                      &kbd_controls_affect,
+                                      &kbd_controls_values)) {
+                goto invalid_usage;
+            }
+            /* --local-state is implied */
+            goto local_state;
         case OPT_KEYMAP:
             with_keymap_file = true;
             /* Optional arguments require `=`, but we want to make this
@@ -565,13 +605,13 @@ local_state:
 #endif
         case 'h':
             usage(stdout, argv[0]);
-            return EXIT_SUCCESS;
+            ret = EXIT_SUCCESS;
+            goto error_parse_args;
         default:
-#ifndef KEYMAP_DUMP
 invalid_usage:
-#endif
             usage(stderr, argv[0]);
-            return EXIT_INVALID_USAGE;
+            ret = EXIT_INVALID_USAGE;
+            goto error_parse_args;
         }
     }
 
@@ -703,5 +743,10 @@ err_out:
 #ifndef KEYMAP_DUMP
     xkb_keymap_unref(custom_keymap);
 #endif
-    exit(ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+error_parse_args:
+#ifndef KEYMAP_DUMP
+    xkb_state_options_destroy(state_options);
+#endif
+    exit(ret);
 }

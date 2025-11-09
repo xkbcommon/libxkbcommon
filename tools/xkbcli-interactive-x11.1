@@ -33,6 +33,20 @@ Print help and exit
 Enable local state handling and ignore modifiers/layouts state updates
 from the X11 server.
 .
+.It Fl \-controls Ar controls
+Enable or disable controls. It implies
+.Fl \-local\-state
+\&.
+.Ar controls
+is a comma-separated-list of the following entries:
+.Bl -tag -compact -hang
+.El
+Each entry may be preceeded by
+.Ar \-
+or
+.Ar \+
+in order to respectively enable or disable the corresponding control.
+.
 .It Fl \-keymap Oo Ar PATH Oc
 Load the XKB keymap from a file instead of the keymap from the compositor.
 It implies
