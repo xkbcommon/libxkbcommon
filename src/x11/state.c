@@ -52,6 +52,9 @@ static enum xkb_state_accessibility_flags
 translate_state_accessibility_flags(const xcb_xkb_get_controls_reply_t *reply)
 {
     enum xkb_state_accessibility_flags flags = XKB_STATE_A11Y_NO_FLAGS;
+    if (reply->accessXOption & XCB_XKB_AX_OPTION_LATCH_TO_LOCK) {
+        flags |= XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK;
+    }
     return flags;
 }
 

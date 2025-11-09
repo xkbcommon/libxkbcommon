@@ -1821,6 +1821,20 @@ enum xkb_state_accessibility_flags {
      * @since 1.14.0
      */
     XKB_STATE_A11Y_NO_FLAGS = 0,
+    /**
+     * If both `::XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK` and
+     * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
+     * users to [lock] modifier keys without requiring special locking keys.
+     * The user can press a [latch] modifier twice in a row to lock it, and
+     * then unlock it by pressing it one more time.
+     *
+     * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
+     * @since 1.14.0
+     *
+     * [latch]: @ref latched-mod-def
+     * [lock]:  @ref locked-mod-def
+     */
+    XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK = (1 << 0),
 };
 
 /**
@@ -2002,6 +2016,24 @@ enum xkb_keyboard_controls {
      * @since 1.14.0
      */
     XKB_KEYBOARD_CONTROL_NONE = 0,
+    /**
+     * **Sticky keys** is an accessibility feature primarily aimed at helping
+     * people that find it difficult or impossible to press two keys at once.
+     *
+     * The `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` control makes it easier for
+     * them to type by changing the behavior of the *modifier* and *group switch*
+     * keys. When *sticky keys* are enabled, <em>[set]</em> modifiers/group
+     * switch are transformed into their corresponding <em>[latch]</em> version:
+     * e.g. the user can first press a modifier, release it, then press another
+     * key.
+     *
+     * @sa `::XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK`
+     * @since 1.14.0
+     *
+     * [set]:   @ref depressed-mod-def
+     * [latch]: @ref latched-mod-def
+     */
+    XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS = (1 << 3),
 };
 
 /**

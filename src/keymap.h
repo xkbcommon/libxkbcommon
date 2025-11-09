@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -48,11 +49,16 @@ format_max_groups(enum xkb_keymap_format format)
         : XKB_MAX_GROUPS;
 }
 
+/* Don't allow more leds than we can hold in xkb_led_mask_t. */
+#define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * CHAR_BIT))
+
 /* Don't allow more modifiers than we can hold in xkb_mod_mask_t. */
 #define XKB_MAX_MODS ((xkb_mod_index_t) (sizeof(xkb_mod_mask_t) * CHAR_BIT))
 
-/* Don't allow more leds than we can hold in xkb_led_mask_t. */
-#define XKB_MAX_LEDS ((xkb_led_index_t) (sizeof(xkb_led_mask_t) * CHAR_BIT))
+enum {
+    /** Mask of all possible modifiers */
+    XKB_MOD_ALL = UINT32_MAX,
+};
 
 /* Special value to handle modMap None {…} */
 #define XKB_MOD_NONE 0xffffffffU
@@ -148,6 +154,12 @@ enum xkb_action_controls {
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
          CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK)
 };
+
+static_assert(
+    CONTROL_STICKY_KEYS ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+    "Private value should match public API"
+);
 
 enum xkb_match_operation {
     MATCH_NONE,
