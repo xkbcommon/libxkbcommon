@@ -528,6 +528,20 @@ Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
+<!-- Keyboard emulation actions -->
+<tr>
+<th>Keyboard emulation</th>
+<th>`RedirectKey()`</th>
+<td>✅ Full support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing only.
+- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+  the `xkb_state_machine` API.
+</details>
+</td>
+</tr>
 <!-- Legacy actions -->
 <tr>
 <th rowspan="7">Legacy action</th>
@@ -567,12 +581,7 @@ Unused in [xkeyboard-config] layouts.
 </tr>
 <!-- Unsupported actions -->
 <tr>
-<th rowspan="6">Unsupported legacy action</th>
-<th>`RedirectKey()`</th>
-<td>✅ Full support</td>
-<td colspan="2">❌️ Parsing only</td>
-</tr>
-<tr>
+<th rowspan="5">Unsupported legacy action</th>
 <th>`ISOLock()`</th>
 <td>✅ Full support</td>
 <td colspan="2">❌️ Parsing only</td>
