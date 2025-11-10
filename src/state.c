@@ -346,6 +346,7 @@ xkb_action_breaks_latch(const union xkb_action *action,
     case ACTION_TYPE_CTRL_LOCK:
     case ACTION_TYPE_SWITCH_VT:
     case ACTION_TYPE_TERMINATE:
+    case ACTION_TYPE_REDIRECT_KEY:
         return true;
     case ACTION_TYPE_INTERNAL:
         return (action->internal.flags & flag) &&
@@ -353,7 +354,7 @@ xkb_action_breaks_latch(const union xkb_action *action,
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 18 &&
+        static_assert(ACTION_TYPE_INTERNAL == 19 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
         return false;
