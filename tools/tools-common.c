@@ -667,6 +667,58 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
 
 #undef INDENT
 
+void
+tools_print_events(const char *prefix, struct xkb_state *state,
+                   struct xkb_event_iterator *events,
+                   struct xkb_compose_state *compose_state,
+                   enum print_state_options options, bool report_state_changes)
+{
+    const struct xkb_event *event;
+    while ((event = xkb_event_iterator_next(events)) != NULL) {
+        const enum xkb_event_type event_type =
+            xkb_event_get_type(event);
+        switch (event_type) {
+            case XKB_EVENT_TYPE_KEY_DOWN:
+            case XKB_EVENT_TYPE_KEY_UP: {
+                const xkb_keycode_t kc = xkb_event_get_keycode(event);
+                const enum xkb_key_direction direction =
+                    (event_type == XKB_EVENT_TYPE_KEY_UP)
+                        ? XKB_KEY_UP
+                        : XKB_KEY_DOWN;
+                if (compose_state && direction == XKB_KEY_DOWN) {
+                    const xkb_keysym_t keysym =
+                        xkb_state_key_get_one_sym(state, kc);
+                    xkb_compose_state_feed(compose_state, keysym);
+                }
+                tools_print_keycode_state(prefix, state, compose_state, kc,
+                                          direction, XKB_CONSUMED_MODE_XKB,
+                                          options);
+                if (compose_state) {
+                    const enum xkb_compose_status status =
+                        xkb_compose_state_get_status(compose_state);
+                    if (status == XKB_COMPOSE_CANCELLED ||
+                        status == XKB_COMPOSE_COMPOSED)
+                            xkb_compose_state_reset(compose_state);
+                }
+                break;
+            }
+            case XKB_EVENT_TYPE_COMPONENTS_CHANGE: {
+                const enum xkb_state_component changed =
+                    xkb_state_update_from_event(state, event);
+                if (report_state_changes && changed)
+                    tools_print_state_changes(prefix, state, changed, options);
+                break;
+            }
+            default: {
+                static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+                              XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+                              (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                              "Missing event type");
+            }
+        }
+    }
+}
+
 #ifdef _WIN32
 void
 tools_disable_stdin_echo(void)
@@ -825,7 +877,7 @@ err:
 }
 
 bool
-tools_parse_controls(const char *raw, struct xkb_state_options *options,
+tools_parse_controls(const char *raw, const struct xkb_any_state_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values)
 {
@@ -893,18 +945,36 @@ tools_parse_controls(const char *raw, struct xkb_state_options *options,
                 *controls_affect |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
                 break;
             case CONTROL_FIELD_LATCH_TO_LOCK:
-                ok = xkb_state_options_update_a11y_flags(
-                    options,
-                    XKB_STATE_A11Y_LATCH_TO_LOCK,
-                    (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
-                ) == 0;
+                if (options->state) {
+                    ok = xkb_state_options_update_a11y_flags(
+                        options->state,
+                        XKB_STATE_A11Y_LATCH_TO_LOCK,
+                        (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
+                    ) == 0;
+                }
+                if (options->machine) {
+                    ok = xkb_state_machine_options_update_a11y_flags(
+                        options->machine,
+                        XKB_STATE_A11Y_LATCH_TO_LOCK,
+                        (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
+                    ) == 0;
+                }
                 break;
             case CONTROL_FIELD_LATCH_SIMULTANEOUS:
-                ok = xkb_state_options_update_a11y_flags(
-                    options,
-                    XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
-                    (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
-                ) == 0;
+                if (options->state) {
+                    ok = xkb_state_options_update_a11y_flags(
+                        options->state,
+                        XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
+                        (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
+                    ) == 0;
+                }
+                if (options->machine) {
+                    ok = xkb_state_machine_options_update_a11y_flags(
+                        options->machine,
+                        XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
+                        (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
+                    ) == 0;
+                }
                 break;
             default:
                 {} /* Label followed by declaration requires C23 */

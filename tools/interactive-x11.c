@@ -61,7 +61,7 @@ static enum xkb_keymap_serialize_flags serialize_flags =
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
-static struct xkb_state_options *state_options = NULL;
+static struct xkb_any_state_options any_state_options = { 0 };
 static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
 static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static struct xkb_keymap *custom_keymap = NULL;
@@ -158,7 +158,7 @@ update_keymap(struct keyboard *kbd)
 #ifndef KEYMAP_DUMP
     } else if (!kbd->state) {
         /* Ignore state from server and reset only if state if undefined. */
-        kbd->state = xkb_state_new2(kbd->keymap, state_options);
+        kbd->state = xkb_state_new2(kbd->keymap, any_state_options.state);
         if (!kbd->state)
             return -1;
         xkb_state_update_controls(kbd->state,
@@ -480,10 +480,10 @@ main(int argc, char *argv[])
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
     }
-    state_options = xkb_state_options_new(core_kbd.ctx);
+    any_state_options.state = xkb_state_options_new(core_kbd.ctx);
     xkb_context_unref(core_kbd.ctx);
     core_kbd.ctx = NULL;
-    if (!state_options) {
+    if (!any_state_options.state) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb state options\n");
         goto err_out;
@@ -567,7 +567,7 @@ local_state:
             use_local_state = true;
             break;
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, state_options,
+            if (!tools_parse_controls(optarg, &any_state_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 goto invalid_usage;
@@ -742,7 +742,7 @@ err_out:
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP
-    xkb_state_options_destroy(state_options);
+    xkb_any_state_options_destroy(&any_state_options);
 #endif
     exit(ret);
 }
