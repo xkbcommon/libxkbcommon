@@ -2580,6 +2580,36 @@ test_keymap_from_rules(struct xkb_context *ctx)
 }
 
 static void
+test_redirect_key(struct xkb_context *ctx, bool update_output_files)
+{
+    const struct keymap_test_data tests[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; };\n"
+                "  xkb_symbols {\n"
+                /* Inexistent key */
+                "    key <A> { [RedirectKey(key=<?>)] };\n"
+                /* Multiple RedirectKey() on the same level */
+                "    key <S> { [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
+                /* OK! */
+                "    key <D> { [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "redirect-key-1.xkb"
+        },
+    };
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected, update_output_files));
+    }
+}
+
+static void
 test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
                                     bool update_output_files)
 {
@@ -2823,6 +2853,7 @@ main(int argc, char *argv[])
     test_no_action_void_action(ctx, update_output_files);
     test_prebuilt_keymap_roundtrip(ctx, update_output_files);
     test_keymap_from_rules(ctx);
+    test_redirect_key(ctx, update_output_files);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);
     test_extended_layout_indices(ctx, update_output_files);
 
