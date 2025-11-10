@@ -63,6 +63,12 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
                           enum print_state_options options);
 
 void
+tools_print_events(const char *prefix, struct xkb_state *state,
+                   struct xkb_event_iterator *events,
+                   struct xkb_compose_state *compose_state,
+                   enum print_state_options options, bool report_state_changes);
+
+void
 tools_disable_stdin_echo(void);
 
 void
