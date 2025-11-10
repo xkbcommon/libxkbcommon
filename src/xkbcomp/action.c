@@ -79,6 +79,7 @@ InitActionsInfo(ActionsInfo *info)
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
     info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
+    info->actions[ACTION_TYPE_REDIRECT_KEY].redirect.keycode = XKB_KEYCODE_INVALID;
 }
 
 static const LookupEntry fieldStrings[] = {
@@ -713,6 +714,56 @@ HandleSetLockControls(const struct xkb_keymap_info *keymap_info,
 }
 
 static bool
+HandleRedirectKey(const struct xkb_keymap_info *keymap_info,
+                  const struct xkb_mod_set *mods,
+                  union xkb_action *action, enum action_field field,
+                  const ExprDef *array_ndx, const ExprDef *value,
+                  ExprDef **value_ptr)
+{
+    const struct xkb_keymap * restrict const keymap = &keymap_info->keymap;
+    struct xkb_context * restrict const ctx = keymap->ctx;
+    struct xkb_redirect_key_action * const act = &action->redirect;
+
+    if (field == ACTION_FIELD_KEYCODE) {
+        if (array_ndx)
+            return ReportActionNotArray(ctx, action->type, field);
+        if (value->common.type != STMT_EXPR_KEYNAME_LITERAL) {
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "key name");
+        }
+        const struct xkb_key * const key =
+            XkbKeyByName(keymap, value->key_name.key_name, true);
+        if (key == NULL) {
+            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "RedirectKey field %s cannot resolve %s to a valid key\n",
+                    fieldText(field), KeyNameText(ctx, value->key_name.key_name));
+            return false;
+        }
+        act->keycode = key->keycode;
+        return true;
+    }
+
+    if (field == ACTION_FIELD_MODIFIERS || field == ACTION_FIELD_MODS_TO_CLEAR) {
+        enum xkb_action_flags flags = 0;
+        xkb_mod_mask_t m = 0;
+        if (!CheckModifierField(ctx, mods, action->type, array_ndx, value,
+                                &flags, &m))
+            return false;
+        if (flags)
+            return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
+                                  field, "modifier mask");
+        act->affect |= m;
+        if (field == ACTION_FIELD_MODIFIERS)
+            act->mods |= m;
+        else
+            act->mods &= ~m;
+        return true;
+    }
+
+    return ReportIllegal(ctx, action->type, field);
+}
+
+static bool
 HandleUnsupportedLegacy(const struct xkb_keymap_info *keymap_info,
                         const struct xkb_mod_set *mods,
                         union xkb_action *action, enum action_field field,
@@ -857,12 +908,13 @@ static const actionHandler handleAction[_ACTION_TYPE_NUM_ENTRIES] = {
     [ACTION_TYPE_SWITCH_VT] = HandleSwitchScreen,
     [ACTION_TYPE_CTRL_SET] = HandleSetLockControls,
     [ACTION_TYPE_CTRL_LOCK] = HandleSetLockControls,
+    [ACTION_TYPE_REDIRECT_KEY] = HandleRedirectKey,
     [ACTION_TYPE_UNSUPPORTED_LEGACY] = HandleUnsupportedLegacy,
     [ACTION_TYPE_PRIVATE] = HandlePrivate,
 };
 
 /* Ensure to not miss `xkb_action_type` updates */
-static_assert(ACTION_TYPE_INTERNAL == 18 &&
+static_assert(ACTION_TYPE_INTERNAL == 19 &&
               ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
               "Missing action type");
 

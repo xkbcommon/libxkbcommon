@@ -104,6 +104,7 @@ enum xkb_action_type {
     ACTION_TYPE_SWITCH_VT,
     ACTION_TYPE_CTRL_SET,
     ACTION_TYPE_CTRL_LOCK,
+    ACTION_TYPE_REDIRECT_KEY,
     ACTION_TYPE_UNSUPPORTED_LEGACY,
     ACTION_TYPE_PRIVATE,
     ACTION_TYPE_INTERNAL, /* Action specific and internal to xkbcommon */
@@ -219,6 +220,25 @@ struct xkb_pointer_button_action {
     uint8_t button;
 };
 
+struct xkb_redirect_key_action {
+    enum xkb_action_type type;
+    xkb_keycode_t keycode;
+    /*
+     * Next 2 fields are only used for parsing and serializing.
+     *
+     * We do not use `struct xkb_mods` here, because *both* fields denote
+     * *virtual* modifier indices, contrary to `xkb_mods`, where `mods` and
+     * `mask` denote respectively virtual and real mods.
+     *
+     * Ideally we would use 2 `xkb_mods` structs, but this would increase the
+     * `xkb_action` union type.
+     */
+    /** Affected virtual modifiers */
+    xkb_mod_mask_t affect;
+    /** State of the affected virtual modifiers */
+    xkb_mod_mask_t mods;
+};
+
 struct xkb_private_action {
     enum xkb_action_type type;
     uint8_t data[7];
@@ -248,6 +268,7 @@ union xkb_action {
     struct xkb_switch_screen_action screen;
     struct xkb_pointer_action ptr;
     struct xkb_pointer_button_action btn;
+    struct xkb_redirect_key_action redirect;
     struct xkb_private_action priv;
     struct xkb_internal_action internal;
 };
@@ -665,6 +686,26 @@ enum {
 
 void
 clear_level(struct xkb_level *leveli);
+
+/* ⚠️ Only valid before copying symbols to keymap */
+static inline struct xkb_key *
+XkbKeyByName(const struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
+{
+    if (name < keymap->num_key_names) {
+        const KeycodeMatch match = keymap->key_names[name];
+        if (match.found) {
+            if (!match.is_alias) {
+                assert(name == keymap->keys[match.key.index].name);
+                return &keymap->keys[match.key.index];
+            } else if (use_aliases) {
+                assert(match.alias.real ==
+                       keymap->keys[keymap->key_names[match.alias.real].key.index].name);
+                return &keymap->keys[keymap->key_names[match.alias.real].key.index];
+            }
+        }
+    }
+    return NULL;
+}
 
 static inline const struct xkb_key *
 XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)

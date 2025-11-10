@@ -304,19 +304,25 @@ CheckMultipleActionsCategories(struct xkb_keymap *keymap, struct xkb_key *key)
                 union xkb_action *action1 = &level->a.actions[i];
                 bool mod_action = is_mod_action(action1);
                 bool group_action = is_group_action(action1);
-                if (!(mod_action || group_action))
+                if (!(mod_action || group_action ||
+                      action1->type == ACTION_TYPE_REDIRECT_KEY))
                     continue;
                 for (xkb_action_count_t j = i + 1; j < level->num_actions; j++) {
                     union xkb_action *action2 = &level->a.actions[j];
-                    if ((mod_action && is_mod_action(action2)) ||
+                    if (action1->type == action2->type ||
+                        (mod_action && is_mod_action(action2)) ||
                         (group_action && is_group_action(action2)))
                     {
+                        const char * const type = (mod_action)
+                            ? "modifiers"
+                            : (group_action
+                                ? "group"
+                                : ActionTypeText(action1->type));
                         log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                                 "Cannot use multiple %s actions "
                                 "in the same level. Action #%u "
                                 "for key %s in group %"PRIu32"/level %"PRIu32" "
-                                "ignored.\n",
-                                (mod_action ? "modifiers" : "group"),
+                                "ignored.\n", type,
                                 j + 1, KeyNameText(keymap->ctx, key->name),
                                 g + 1, l + 1);
                         action2->type = ACTION_TYPE_NONE;

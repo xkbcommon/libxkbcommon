@@ -814,7 +814,7 @@ void_action:
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 18 &&
+        static_assert(ACTION_TYPE_INTERNAL == 19 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
         /* Unsupported legacy actions should have degraded to NoAction */

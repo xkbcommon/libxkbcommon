@@ -2591,11 +2591,8 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
         "    <3> = 3;\n"
         "    <4> = 4;\n"
         "    <5> = 5;\n"
-        "    <6> = 6;\n"
         "  };\n"
         "  xkb_compat {\n"
-        "    RedirectKey.key = <1>;\n"
-        "    RedirectKey.data = <1>;\n" /* invalid field */
         "    ISOLock.modifiers = modMapMods;\n"
         "    DeviceButton.data = <1>;\n" /* invalid field */
         "    LockDeviceButton.data = <1>;\n" /* invalid field */
@@ -2604,17 +2601,25 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
         "    interpret ISO_Lock {\n"
         "      action=ISOLock(affect=all);\n"
         "    };\n"
-        "    interpret VoidSymbol {\n"
-        "      action=RedirectKey(data=<1>);\n" /* invalid field */
+        "    interpret 0x10000 {\n"
+        "      action=DeviceButton(data=all);\n" /* invalid field */
+        "    };\n"
+        "    interpret 0x10001 {\n"
+        "      action=LockDeviceButton(data=all);\n" /* invalid field */
+        "    };\n"
+        "    interpret 0x10002 {\n"
+        "      action=DeviceValuator(data=all);\n" /* invalid field */
+        "    };\n"
+        "    interpret 0x10003 {\n"
+        "      action=ActionMessage(data=all);\n" /* invalid field */
         "    };\n"
         "  };\n"
         "  xkb_symbols {\n"
         "   key <1> { [ISOLock(affect=all)] };\n"
-        "   key <2> { [RedirectKey(data=<1>)] };\n" /* invalid field */
-        "   key <3> { [DeviceButton(data=<1>)] };\n" /* invalid field */
-        "   key <4> { [LockDeviceButton(data=<1>)] };\n" /* invalid field */
-        "   key <5> { [DeviceValuator(data=<1>)] };\n" /* invalid field */
-        "   key <6> { [ActionMessage(data=<1>)] };\n" /* invalid field */
+        "   key <2> { [DeviceButton(data=<1>)] };\n" /* invalid field */
+        "   key <3> { [LockDeviceButton(data=<1>)] };\n" /* invalid field */
+        "   key <4> { [DeviceValuator(data=<1>)] };\n" /* invalid field */
+        "   key <5> { [ActionMessage(data=<1>)] };\n" /* invalid field */
         "  };\n"
         "};";
     assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
