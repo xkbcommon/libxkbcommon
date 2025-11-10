@@ -7,7 +7,6 @@ xkb_keycodes {
 	<3>                  = 3;
 	<4>                  = 4;
 	<5>                  = 5;
-	<6>                  = 6;
 };
 
 xkb_types {
@@ -22,7 +21,16 @@ xkb_compatibility {
 	interpret ISO_Lock+AnyOfOrNone(all) {
 		action= NoAction();
 	};
-	interpret VoidSymbol+AnyOfOrNone(all) {
+	interpret 0x00010000+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret 0x00010001+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret 0x00010002+AnyOfOrNone(all) {
+		action= NoAction();
+	};
+	interpret 0x00010003+AnyOfOrNone(all) {
 		action= NoAction();
 	};
 };
