@@ -1050,6 +1050,9 @@ xkb_compatibility "complete" {
 	interpret Caps_Lock+AnyOfOrNone(all) {
 		action= LockMods(modifiers=Lock);
 	};
+	interpret 0x00010001+AnyOfOrNone(all) {
+		action= RedirectKey(keycode=<AE01>,modifiers=Mod5,clearMods=Control+Mod1);
+	};
 	interpret Any+Exactly(Lock) {
 		action= LockMods(modifiers=Lock);
 	};
