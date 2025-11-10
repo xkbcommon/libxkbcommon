@@ -790,6 +790,25 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                   suffix);
         break;
 
+    case ACTION_TYPE_REDIRECT_KEY: {
+        const struct xkb_key * const key = XkbKey(keymap, action->redirect.keycode);
+        write_buf(buf, "%s%s(keycode=%s",
+                  prefix, type, KeyNameText(keymap->ctx, key->name));
+        if (action->redirect.affect) {
+            xkb_mod_mask_t mask;
+            mask = (action->redirect.affect & action->redirect.mods);
+            if (mask)
+                write_buf(buf, ",modifiers=%s",
+                          ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, mask));
+            mask = (action->redirect.affect & ~action->redirect.mods);
+            if (mask)
+                write_buf(buf, ",clearMods=%s",
+                          ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, mask));
+        }
+        write_buf(buf, ")%s", suffix);
+        break;
+    }
+
     case ACTION_TYPE_NONE:
         write_buf(buf, "%sNoAction()%s", prefix, suffix);
         break;
