@@ -247,13 +247,13 @@ test_keymaps(void)
                 /* This uses invalid field, but we do not check fields of
                  * legacy actions */
                 "    interpret VoidSymbol+AnyOf(all) {\n"
-                "      action= RedirectKey(data=<garbage>);\n"
+                "      action= DeviceButton(data=<garbage>);\n"
                 "    };\n"
                 "  };\n"
                 "};",
             .log =
                 "warning: [XKB-362] Unsupported legacy action type \"ISOLock\".\n"
-                "warning: [XKB-362] Unsupported legacy action type \"RedirectKey\".\n",
+                "warning: [XKB-362] Unsupported legacy action type \"DeviceButton\".\n",
             .error = false
         },
         /* Invalid global var */
