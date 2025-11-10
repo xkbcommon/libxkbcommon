@@ -63,6 +63,12 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
                           enum print_state_options options);
 
 void
+tools_print_events(const char *prefix, struct xkb_state *state,
+                   struct xkb_event_iterator *events,
+                   struct xkb_compose_state *compose_state,
+                   enum print_state_options options, bool report_state_changes);
+
+void
 tools_disable_stdin_echo(void);
 
 void
@@ -80,8 +86,20 @@ is_pipe_or_regular_file(int fd);
 FILE*
 tools_read_stdin(void);
 
+struct xkb_any_state_options {
+    struct xkb_state_options *state;
+    struct xkb_state_machine_options *machine;
+};
+
+static inline void
+xkb_any_state_options_destroy(const struct xkb_any_state_options *options)
+{
+    xkb_state_options_destroy(options->state);
+    xkb_state_machine_options_destroy(options->machine);
+}
+
 bool
-tools_parse_controls(const char *s, struct xkb_state_options *options,
+tools_parse_controls(const char *s, const struct xkb_any_state_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values);
 
