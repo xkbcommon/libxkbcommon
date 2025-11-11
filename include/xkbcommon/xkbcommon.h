@@ -1955,7 +1955,7 @@ xkb_state_unref(struct xkb_state *state);
  * @returns The keymap which was passed to `xkb_state_new()` when creating
  * this state object.
  *
- * This function does not take a new reference on the keymap; you must
+ * @warning This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
  * lifetime of the state.
  *
@@ -1998,9 +1998,15 @@ enum xkb_key_direction {
 };
 
 /**
- * Modifier and layout types for state objects.  This enum is bitmaskable,
- * e.g. (`::XKB_STATE_MODS_DEPRESSED` | `::XKB_STATE_MODS_LATCHED`) is valid to
- * exclude locked modifiers.
+ * Component types for state objects, which belong to the following categories:
+ *
+ * - modifier,
+ * - layout,
+ * - indicator (LED),
+ * - keyboard global control.
+ *
+ * This enum is bitmaskable, e.g. <code>(::XKB_STATE_MODS_DEPRESSED |
+ * ::XKB_STATE_MODS_LATCHED)</code> is valid to exclude locked modifiers.
  *
  * In XKB, the `DEPRESSED` components are also known as *base*.
  */
@@ -2073,11 +2079,17 @@ enum xkb_keyboard_controls {
 /**
  * Update the keyboard state to change the [global keyboard controls].
  *
+ * This entry point is intended for *server* applications and should not be used
+ * by *client* applications; see @ref server-client-state for details.
+ *
  * @param state The keyboard state object.
  * @param affect
  * @param controls
  *     Global keyboard controls to lock or unlock. Only modifiers in @p affect
  *     are considered.
+ *
+ * @returns A mask of state components that have changed as a result of
+ * the update.  If nothing in the state has changed, returns 0.
  *
  * @since 1.14.0
  *
@@ -2108,6 +2120,10 @@ xkb_state_update_controls(struct xkb_state *state,
  * keysyms *before* updating the key, such that the keysyms reported for
  * the key event are not affected by the event itself.  This is the
  * conventional behavior.
+ *
+ * @param state     The keyboard state object.
+ * @param key       The key being operated.
+ * @param direction The direction of the key operation.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -2367,6 +2383,16 @@ enum xkb_state_match {
 /**
  * Serialization of the [global keyboard controls], to be used on the server
  * side of serialization.
+ *
+ * This entry point is intended for *server* applications; see @ref
+ * server-client-state for details.
+ *
+ * @param state      The keyboard state.
+ * @param components A mask of the keyboard control state components to
+ * serialize. State components other than `::XKB_STATE_CONTROLS` are ignored.
+ *
+ * @returns A `xkb_keyboard_controls` mask representing the given components of
+ * the keyboard controls state.
  *
  * @since 1.14.0
  *
