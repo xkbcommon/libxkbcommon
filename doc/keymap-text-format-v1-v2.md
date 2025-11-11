@@ -3125,12 +3125,12 @@ The following table provide an overview of the available actions:
 | [Group action] | [`SetGroup`][SetGroup] |         | Modifies the _base_ group          |
 | ^        | [`LatchGroup`][LatchGroup] |           | Modifies the _latched_ group       |
 | ^        | [`LockGroup`][LockGroup] |             | Modifies the _locked_ group        |
+| [Keyboard controls action] | [`SetControls`][SetControls] |         | Set the standard XKB controls      |
+| ^        | [`LockControls`][LockControls] |       | Lock the standard XKB controls     |
 | [Legacy action] | `MovePointer`| `MovePtr`        | Move the mouse pointer             |
 | ^        | `PointerButton`     | `PtrBtn`         | Simulate a mouse button press      |
 | ^        | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
 | ^        | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
-| ^        | [`SetControls`][SetControls] |         | Set the standard XKB controls      |
-| ^        | [`LockControls`][LockControls] |       | Lock the standard XKB controls     |
 | ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
 | ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
 | ^        | [`Private`][Private]|                  | Raw encoding of an action          |
@@ -3652,64 +3652,9 @@ additional effects:
 </tbody>
 </table>
 
+### Keyboard controls actions {#kbd-control-actions}
 
-### Legacy X11 actions {#legacy-x11-actions}
-
-[legacy action]: @ref legacy-x11-actions
-
-@attention The following legacy actions are kept for compatibility only: they are parsed
-and validated but have no effect. This allows to use keymaps defined in
-<code>[xkeyboard-config]</code> for both X11 and Wayland.
-
-#### Pointer actions
-
-<dl>
-<dt>`MovePointer`<dt>
-<dt>`MovePtr`</dt>
-<dd>
-Move the mouse pointer
-
-@todo MovePointer parameters
-<!-- blank required by Doxgen -->
-
-</dd>
-
-<dt>`PointerButton`</dt>
-<dt>`PtrBtn`</dt>
-<dd>
-Simulate a mouse button press
-
-@todo PointerButton parameters
-<!-- blank required by Doxgen -->
-
-</dd>
-
-<dt>`LockPointerButton`</dt>
-<dt>`LockPointerBtn`</dt>
-<dt>`LockPtrButton`</dt>
-<dt>`LockPtrBtn`</dt>
-<dd>
-Simulate a mouse button press, locked until this actiion’s key is pressed again
-
-@todo LockPointerButton parameters
-<!-- blank required by Doxgen -->
-
-</dd>
-
-<dt>`SetPointerDefault`</dt>
-<dt>`SetPtrDflt`</dt>
-<dd>
-Set the default select button (???)
-
-@todo SetPointerDefault parameters
-<!-- blank required by Doxgen -->
-
-<dd>
-</dl>
-
-
-#### Control flags actions
-
+[Keyboard controls action]: @ref kbd-control-actions
 [SetControls]:  @ref set-controls-action
 [LockControls]: @ref lock-controls-action
 
@@ -3849,6 +3794,62 @@ press.
 </tr>
 </tbody>
 </table>
+
+
+### Legacy X11 actions {#legacy-x11-actions}
+
+[legacy action]: @ref legacy-x11-actions
+
+@attention The following legacy actions are kept for compatibility only: they are parsed
+and validated but have no effect. This allows to use keymaps defined in
+<code>[xkeyboard-config]</code> for both X11 and Wayland.
+
+#### Pointer actions
+
+<dl>
+<dt>`MovePointer`<dt>
+<dt>`MovePtr`</dt>
+<dd>
+Move the mouse pointer
+
+@todo MovePointer parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`PointerButton`</dt>
+<dt>`PtrBtn`</dt>
+<dd>
+Simulate a mouse button press
+
+@todo PointerButton parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`LockPointerButton`</dt>
+<dt>`LockPointerBtn`</dt>
+<dt>`LockPtrButton`</dt>
+<dt>`LockPtrBtn`</dt>
+<dd>
+Simulate a mouse button press, locked until this actiion’s key is pressed again
+
+@todo LockPointerButton parameters
+<!-- blank required by Doxgen -->
+
+</dd>
+
+<dt>`SetPointerDefault`</dt>
+<dt>`SetPtrDflt`</dt>
+<dd>
+Set the default select button (???)
+
+@todo SetPointerDefault parameters
+<!-- blank required by Doxgen -->
+
+<dd>
+</dl>
+
 
 #### Server actions
 

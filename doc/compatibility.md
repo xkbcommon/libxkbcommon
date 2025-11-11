@@ -376,6 +376,7 @@ Unused in [xkeyboard-config] layouts.
 </tr>
 </thead>
 <tbody>
+<!-- Ineffectual actions -->
 <tr>
 <th rowspan="2">Ineffectual</th>
 <th>`NoAction()`</th>
@@ -388,6 +389,7 @@ Unused in [xkeyboard-config] layouts.
 <td>⚠️ Parsing only (since 1.10)</td>
 <td>✅ Full support (since 1.11)</td>
 </tr>
+<!-- Modifiers actions -->
 <tr>
 <th rowspan="3">Modifiers</th>
 <th>`SetModifiers()`</th>
@@ -459,6 +461,7 @@ Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
+<!-- Groups actions -->
 <tr>
 <th rowspan="3">Groups</th>
 <th>`SetGroup()`</th>
@@ -492,28 +495,9 @@ Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
+<!-- Controls actions -->
 <tr>
-<th rowspan="9">Legacy action</th>
-<th>`MovePointer()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
-<th>`PointerButton()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
-<th>`LockPointerButton()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
-<th>`SetPointerDefault()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
+<th rowspan="2">Keyboard controls</th>
 <th>`SetControls()`</th>
 <td>✅ Full support</td>
 <td colspan="2">
@@ -537,6 +521,28 @@ Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
+<!-- Legacy actions -->
+<tr>
+<th rowspan="7">Legacy action</th>
+<th>`MovePointer()`</th>
+<td>✅ Full support</td>
+<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
+</tr>
+<tr>
+<th>`PointerButton()`</th>
+<td>✅ Full support</td>
+<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
+</tr>
+<tr>
+<th>`LockPointerButton()`</th>
+<td>✅ Full support</td>
+<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
+</tr>
+<tr>
+<th>`SetPointerDefault()`</th>
+<td>✅ Full support</td>
+<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
+</tr>
 <tr>
 <th>`TerminateServer()`</th>
 <td>✅ Full support</td>
@@ -552,6 +558,7 @@ Unused in [xkeyboard-config] layouts.
 <td>✅ Full support</td>
 <td colspan="2">⚠️ Parsing and serializing only, no API support</td>
 </tr>
+<!-- Unsupported actions -->
 <tr>
 <th rowspan="6">Unsupported legacy action</th>
 <th>`RedirectKey()`</th>
