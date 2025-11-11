@@ -1807,7 +1807,7 @@ xkb_state_serialize_layout(struct xkb_state *state,
 }
 
 enum xkb_keyboard_controls
-xkb_state_serialize_controls(struct xkb_state *state,
+xkb_state_serialize_controls(const struct xkb_state *state,
                              enum xkb_state_component components)
 {
     return (components & XKB_STATE_CONTROLS)
