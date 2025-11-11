@@ -11,7 +11,7 @@ permissions: {}
 
 jobs:
   macos:
-    runs-on: macos-13
+    runs-on: macos-14
     permissions:
       contents: read
     steps:
