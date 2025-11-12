@@ -73,7 +73,7 @@ struct interactive_seat {
     struct wl_list link;
 };
 
-static bool terminate;
+static bool terminate = false;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
 #ifdef KEYMAP_DUMP
 static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
