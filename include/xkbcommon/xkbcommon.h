@@ -1794,6 +1794,33 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
+ * @page server-client-state Server State and Client State
+ * @parblock
+ *
+ * The xkb_state API is used by two distinct actors in most window-system
+ * architectures:
+ *
+ * 1. A *server* - for example, a Wayland compositor, an X11 server, an evdev
+ *    listener.
+ *
+ *    Servers maintain the XKB state for a device according to input events from
+ *    the device, such as key presses and releases, and out-of-band events from
+ *    the user, like UI layout switchers.
+ *
+ * 2. A *client* - for example, a Wayland client, an X11 client.
+ *
+ *    Clients do not listen to input from the device; instead, whenever the
+ *    server state changes, the server serializes the state and notifies the
+ *    clients that the state has changed; the clients then update the state
+ *    from the serialization.
+ *
+ * Some entry points in the xkb_state API are only meant for servers and some
+ * are only meant for clients, and the two should generally not be mixed.
+ *
+ * @endparblock
+ */
+
+/**
  * @struct xkb_state_options
  * Opaque options object to configure a keyboard state.
  *
@@ -1910,116 +1937,6 @@ xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
                                     enum xkb_state_accessibility_flags flags);
 
 /**
- * Create a new keyboard state object.
- *
- * This entry point is intended for both server and client applications.
- * However, *server* applications may prefer to use `xkb_state_new2()` to get
- * more control over the state configuration.
- *
- * @param keymap The keymap which the state will use.
- *
- * @returns A new keyboard state object, or `NULL` on failure.
- *
- * @sa `xkb_state_new2()`
- *
- * @memberof xkb_state
- */
-XKB_EXPORT struct xkb_state *
-xkb_state_new(struct xkb_keymap *keymap);
-
-/**
- * Create a new keyboard state object with explicit options.
- *
- * This entry point is intended for *server* applications; *client* applications
- * should use `xkb_state_new()` instead.
- *
- * @param keymap  The keymap which the state will use.
- * @param options The options to configure the state.
- *
- * @returns A new keyboard state object, or `NULL` on failure.
- *
- * @sa `xkb_state_new()`
- *
- * @since 1.14.0
- *
- * @memberof xkb_state
- */
-XKB_EXPORT struct xkb_state *
-xkb_state_new2(struct xkb_keymap *keymap,
-               const struct xkb_state_options *options);
-
-/**
- * Take a new reference on a keyboard state object.
- *
- * @returns The passed in object.
- *
- * @memberof xkb_state
- */
-XKB_EXPORT struct xkb_state *
-xkb_state_ref(struct xkb_state *state);
-
-/**
- * Release a reference on a keyboard state object, and possibly free it.
- *
- * @param state The state.  If it is `NULL`, this function does nothing.
- *
- * @memberof xkb_state
- */
-XKB_EXPORT void
-xkb_state_unref(struct xkb_state *state);
-
-/**
- * Get the keymap which a keyboard state object is using.
- *
- * @returns The keymap which was passed to `xkb_state_new()` when creating
- * this state object.
- *
- * @warning This function does not take a new reference on the keymap; you must
- * explicitly reference it yourself if you plan to use it beyond the
- * lifetime of the state.
- *
- * @memberof xkb_state
- */
-XKB_EXPORT struct xkb_keymap *
-xkb_state_get_keymap(struct xkb_state *state);
-
-/**
- * @page server-client-state Server State and Client State
- * @parblock
- *
- * The xkb_state API is used by two distinct actors in most window-system
- * architectures:
- *
- * 1. A *server* - for example, a Wayland compositor, an X11 server, an evdev
- *    listener.
- *
- *    Servers maintain the XKB state for a device according to input events from
- *    the device, such as key presses and releases, and out-of-band events from
- *    the user, like UI layout switchers.
- *
- * 2. A *client* - for example, a Wayland client, an X11 client.
- *
- *    Clients do not listen to input from the device; instead, whenever the
- *    server state changes, the server serializes the state and notifies the
- *    clients that the state has changed; the clients then update the state
- *    from the serialization.
- *
- * Some entry points in the xkb_state API are only meant for servers and some
- * are only meant for clients, and the two should generally not be mixed.
- *
- * @endparblock
- */
-
-/**
- * @enum xkb_key_direction
- * Specifies the direction of the key (press / release).
- */
-enum xkb_key_direction {
-    XKB_KEY_UP,   /**< The key was released. */
-    XKB_KEY_DOWN  /**< The key was pressed. */
-};
-
-/**
  * @enum xkb_state_component
  * Component types for state objects, which belong to the following categories:
  *
@@ -2099,6 +2016,89 @@ enum xkb_keyboard_controls {
      */
     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS = (1 << 3),
 };
+
+/**
+ * @enum xkb_key_direction
+ * Specifies the direction of the key (press / release).
+ */
+enum xkb_key_direction {
+    XKB_KEY_UP,   /**< The key was released. */
+    XKB_KEY_DOWN  /**< The key was pressed. */
+};
+
+/**
+ * Create a new keyboard state object.
+ *
+ * This entry point is intended for both server and client applications.
+ * However, *server* applications may prefer to use `xkb_state_new2()` to get
+ * more control over the state configuration.
+ *
+ * @param keymap The keymap which the state will use.
+ *
+ * @returns A new keyboard state object, or `NULL` on failure.
+ *
+ * @sa `xkb_state_new2()`
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_state *
+xkb_state_new(struct xkb_keymap *keymap);
+
+/**
+ * Create a new keyboard state object with explicit options.
+ *
+ * This entry point is intended for *server* applications; *client* applications
+ * should use `xkb_state_new()` instead.
+ *
+ * @param keymap  The keymap which the state will use.
+ * @param options The options to configure the state.
+ *
+ * @returns A new keyboard state object, or `NULL` on failure.
+ *
+ * @sa `xkb_state_new()`
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_state *
+xkb_state_new2(struct xkb_keymap *keymap,
+               const struct xkb_state_options *options);
+
+/**
+ * Take a new reference on a keyboard state object.
+ *
+ * @returns The passed in object.
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_state *
+xkb_state_ref(struct xkb_state *state);
+
+/**
+ * Release a reference on a keyboard state object, and possibly free it.
+ *
+ * @param state The state.  If it is `NULL`, this function does nothing.
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT void
+xkb_state_unref(struct xkb_state *state);
+
+/**
+ * Get the keymap which a keyboard state object is using.
+ *
+ * @returns The keymap which was passed to `xkb_state_new()` when creating
+ * this state object.
+ *
+ * @warning This function does not take a new reference on the keymap; you must
+ * explicitly reference it yourself if you plan to use it beyond the
+ * lifetime of the state.
+ *
+ * @memberof xkb_state
+ */
+XKB_EXPORT struct xkb_keymap *
+xkb_state_get_keymap(struct xkb_state *state);
 
 /**
  * Update the keyboard state to change the [global keyboard controls].
