@@ -1,0 +1,19 @@
+Added the **state event API:**
+- `struct xkb_state_machine` (new):
+  - `xkb_state_machine_new()`
+  - `xkb_state_machine_ref()`
+  - `xkb_state_machine_unref()`
+  - `xkb_state_machine_get_keymap()`
+  - `xkb_state_machine_update_latched_locked()`
+  - `xkb_state_machine_update_controls()`
+  - `xkb_state_machine_update_key()`
+- `struct xkb_event_iterator` (new):
+  - `xkb_event_iterator_new()`
+  - `xkb_event_iterator_destroy()`
+  - `xkb_event_iterator_next()`
+- `struct xkb_event` (new):
+  - `xkb_event_get_type()`
+  - `xkb_event_get_keycode()`
+  - `xkb_event_get_components()`
+- `struct xkb_state`:
+  - `xkb_state_update_from_event()`
