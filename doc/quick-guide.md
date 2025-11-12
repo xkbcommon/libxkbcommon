@@ -1,31 +1,35 @@
 # Quick Guide
 
+@tableofcontents{html:2}
+
 ## Introduction
 
 This document contains a quick walk-through of the often-used parts of
 the library. We will employ a few use-cases to lead the examples:
 
-1. An evdev client. "evdev" is the Linux kernel's input subsystem; it
+1. An **evdev** client. *evdev* is the Linux kernel’s input subsystem; it
    only reports to the client which keys are pressed and released.
 
-2. An X11 client, using the XCB library to communicate with the X
+2. An **X11** client, using the XCB library to communicate with the X
    server and the xcb-xkb library for using the XKB protocol.
 
-3. A Wayland client, using the standard protocol.
+3. A **Wayland** *client*, using the standard protocol.
 
 The snippets are not complete, and some support code is omitted. You
-can find complete and more complex examples in the source directory:
+can find complete and more complex examples in the [source directory]:
 
-1. tools/interactive-evdev.c contains an interactive evdev client.
+1. `tools/interactive-evdev.c` contains an interactive evdev client.
 
-2. tools/interactive-x11.c contains an interactive X11 client.
+2. `tools/interactive-x11.c` contains an interactive X11 client.
 
-3. tools/interactive-wayland.c contains an interactive Wayland client.
+3. `tools/interactive-wayland.c` contains an interactive Wayland client.
 
 Also, the library contains many more functions for examining and using
 the library context, the keymap and the keyboard state. See the
 hyper-linked reference documentation or go through the header files in
 xkbcommon/ for more details.
+
+[source directory]: https://github.com/xkbcommon/libxkbcommon
 
 ## Code
 
@@ -47,12 +51,14 @@ Next we need to create a keymap, `xkb_keymap`. This is an immutable object
 which contains all of the information about the keys, layouts, etc. There
 are different ways to do this.
 
-If we are an evdev client, we have nothing to go by, so we need to ask
+If we are an **evdev** client, we have nothing to go by, so we need to ask
 the user for his/her keymap preferences (for example, an Icelandic
 keyboard with a Dvorak layout). The configuration format is commonly
-called RMLVO (Rules+Model+Layout+Variant+Options), the same format used
+called [RMLVO] \(Rules+Model+Layout+Variant+Options), the same format used
 by the X server. With it, we can fill a struct called `xkb_rule_names`;
-passing `NULL` chooses the system's default.
+passing `NULL` chooses the system’s default.
+
+[RMLVO]: @ref RMLVO-intro
 
 ~~~{.c}
     struct xkb_keymap *keymap;
@@ -71,7 +77,7 @@ passing `NULL` chooses the system's default.
     if (!keymap) <error>
 ~~~
 
-If we are a Wayland client, the compositor gives us a string complete
+If we are a **Wayland** client, the compositor gives us a string complete
 with a keymap. In this case, we can create the keymap object like this:
 
 ~~~{.c}
@@ -85,7 +91,7 @@ with a keymap. In this case, we can create the keymap object like this:
     if (!keymap) <error>
 ~~~
 
-If we are an X11 client, we are better off getting the keymap from the
+If we are an **X11** client, we are better off getting the keymap from the
 X server directly. For this we need to choose the XInput device; here
 we will use the core keyboard device:
 
@@ -114,7 +120,7 @@ keyboard modifiers and LEDs are active:
     if (!state) <error>
 ~~~
 
-For X11/XCB clients, this is better:
+For **X11/XCB** clients, this is better:
 
 ~~~{.c}
     state = xkb_x11_state_new_from_device(keymap, conn, device_id);
@@ -145,7 +151,7 @@ We can see which keysym we got, and get its name:
 ~~~
 
 libxkbcommon also supports an extension to the classic XKB, whereby a
-single event can result in multiple keysyms. Here's how to use it:
+single event can result in multiple keysyms. Here’s how to use it:
 
 ~~~{.c}
     const xkb_keysym_t *keysyms;
@@ -171,7 +177,7 @@ We can also get a UTF-8 string representation for this key:
 Of course, we also need to keep the `xkb_state` up-to-date with the
 keyboard device, if we want to get the correct keysyms in the future.
 
-If we are an evdev client, we must let the library know whether a key
+If we are an **evdev** client, we must let the library know whether a key
 is pressed or released at any given time:
 
 ~~~{.c}
@@ -193,10 +199,10 @@ If it is a key-repeat event, we can ask the keymap what to do with it:
         <discard event>
 ~~~
 
-On the other hand, if we are an X or Wayland client, the server already
-does the hard work for us. It notifies us when the device's state
+On the other hand, if we are an **X** or **Wayland** client, the server already
+does the hard work for us. It notifies us when the device’s state
 changes, and we can simply use what it tells us (the necessary
-information usually comes in a form of some "state changed" event):
+information usually comes in a form of some “state changed” event):
 
 ~~~{.c}
     changed = xkb_state_update_mask(state,
@@ -221,7 +227,7 @@ whether the Num Lock LED is active:
         <The Num Lock LED is active>
 ~~~
 
-And that's it! Eventually, we should free the objects we've created:
+And that’s it! Eventually, we should free the objects we’ve created:
 
 ~~~{.c}
     xkb_state_unref(state);
