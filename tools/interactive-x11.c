@@ -61,6 +61,7 @@ static bool const use_local_state = false;
 static struct xkb_keymap * const custom_keymap = NULL;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
+static bool report_state_changes = true;
 static bool use_local_state = false;
 static struct xkb_state_options *state_options = NULL;
 static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
@@ -285,7 +286,8 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                                   event->state_notify.baseGroup,
                                   event->state_notify.latchedGroup,
                                   event->state_notify.lockedGroup);
-        tools_print_state_changes(NULL, kbd->state, changed, print_options);
+        if (report_state_changes)
+            tools_print_state_changes(NULL, kbd->state, changed, print_options);
         break;
     }
 
@@ -324,7 +326,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
             /* Run our local state machine */
             const enum xkb_state_component changed =
                 xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
-            if (changed)
+            if (changed && report_state_changes)
                 tools_print_state_changes(NULL, kbd->state, changed, print_options);
         }
 
@@ -343,7 +345,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
             /* Run our local state machine */
             const enum xkb_state_component changed =
                 xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
-            if (changed)
+            if (changed && report_state_changes)
                 tools_print_state_changes(NULL, kbd->state, changed, print_options);
         }
         break;
@@ -460,6 +462,7 @@ usage(FILE *fp, char *progname)
 #else
                 "    -1, --uniline        enable uniline event output\n"
                 "    --multiline          enable multiline event output\n"
+                "    --no-state-report    do not report changes to the state\n"
 #endif
                 "    --verbose            enable verbose debugging output\n"
                 "    --help               display this help and exit\n"
@@ -507,6 +510,7 @@ main(int argc, char *argv[])
         OPT_VERBOSE,
         OPT_UNILINE,
         OPT_MULTILINE,
+        OPT_NO_STATE_REPORT,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
         OPT_CONTROLS,
@@ -525,6 +529,7 @@ main(int argc, char *argv[])
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
+        {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
         {"controls",             required_argument,      0, OPT_CONTROLS},
@@ -602,6 +607,9 @@ local_state:
         case '*':
         case OPT_MULTILINE:
             print_options &= ~PRINT_UNILINE;
+            break;
+        case OPT_NO_STATE_REPORT:
+            report_state_changes = false;
             break;
 #endif
         case 'h':
