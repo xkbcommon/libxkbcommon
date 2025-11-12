@@ -378,6 +378,7 @@ usage(FILE *fp, char *progname)
                         "          --multiline (enable uniline event output)\n"
                         "          --short (shorter event output)\n"
                         "          --report-state-changes (report changes to the state)\n"
+                        "          --no-state-report (do not report changes to the state)\n"
                         "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
@@ -427,6 +428,7 @@ main(int argc, char *argv[])
         OPT_COMPOSE,
         OPT_SHORT,
         OPT_REPORT_STATE,
+        OPT_NO_STATE_REPORT,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
@@ -448,6 +450,7 @@ main(int argc, char *argv[])
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"short",                no_argument,            0, OPT_SHORT},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
+        {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
         {0, 0, 0, 0},
     };
@@ -546,6 +549,9 @@ main(int argc, char *argv[])
             break;
         case OPT_REPORT_STATE:
             report_state_changes = true;
+            break;
+        case OPT_NO_STATE_REPORT:
+            report_state_changes = false;
             break;
         case OPT_COMPOSE:
             with_compose = true;

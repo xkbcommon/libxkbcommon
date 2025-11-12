@@ -82,6 +82,7 @@ static enum xkb_keymap_serialize_flags serialize_flags =
 static bool dump_raw_keymap;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
+static bool report_state_changes = true;
 static bool use_local_state = false;
 static struct xkb_state_options *state_options = NULL;
 static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
@@ -508,7 +509,7 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
                                  (state == WL_KEYBOARD_KEY_STATE_RELEASED
                                          ? XKB_KEY_UP
                                          : XKB_KEY_DOWN));
-        if (changed)
+        if (changed && report_state_changes)
             tools_print_state_changes(prefix, seat->state, changed, print_options);
     }
 
@@ -538,7 +539,8 @@ kbd_modifiers(void *data, struct wl_keyboard *wl_kbd, uint32_t serial,
         seat->state, mods_depressed, mods_latched, mods_locked, 0, 0, group
     );
     char * const prefix = asprintf_safe("%s: ", seat->name_str);
-    tools_print_state_changes(prefix, seat->state, changed, print_options);
+    if (report_state_changes)
+        tools_print_state_changes(prefix, seat->state, changed, print_options);
     free(prefix);
 #endif
 }
@@ -853,6 +855,7 @@ usage(FILE *fp, char *progname)
                 "                       If <FILE> is \"-\" or missing, then load from stdin.\n"
                 "    -1, --uniline      enable uniline event output\n"
                 "    --multiline        enable multiline event output\n"
+                "    --no-state-report  do not report changes to the state\n"
 #endif
                 "    --verbose          enable verbose debugging output\n"
                 "    --help             display this help and exit\n"
@@ -895,6 +898,7 @@ main(int argc, char *argv[])
         OPT_VERBOSE,
         OPT_UNILINE,
         OPT_MULTILINE,
+        OPT_NO_STATE_REPORT,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
         OPT_CONTROLS,
@@ -919,6 +923,7 @@ main(int argc, char *argv[])
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
+        {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
@@ -1016,6 +1021,9 @@ local_state:
         case '*':
         case OPT_MULTILINE:
             print_options &= ~PRINT_UNILINE;
+            break;
+        case OPT_NO_STATE_REPORT:
+            report_state_changes = false;
             break;
 #endif
         case 'h':
