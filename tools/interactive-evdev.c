@@ -38,10 +38,10 @@ struct keyboard {
 };
 
 static bool verbose = false;
-static bool terminate;
+static bool terminate = false;
 static int evdev_offset = 8;
-static bool report_state_changes;
-static bool with_compose;
+static bool report_state_changes = true;
+static bool with_compose = false;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
 enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
