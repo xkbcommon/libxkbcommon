@@ -314,6 +314,7 @@ typedef uint32_t xkb_led_mask_t;
 struct xkb_rmlvo_builder;
 
 /**
+ * @enum xkb_rmlvo_builder_flags
  * Flags for `xkb_rmlvo_builder_new()`.
  *
  * @since 1.11.0
@@ -428,6 +429,7 @@ XKB_EXPORT void
 xkb_rmlvo_builder_unref(struct xkb_rmlvo_builder *rmlvo);
 
 /**
+ * @struct xkb_rule_names
  * Names to compile a keymap with, also known as [RMLVO].
  *
  * The names are the common configuration values by which a user picks
@@ -509,6 +511,7 @@ struct xkb_rule_names {
 };
 
 /**
+ * @struct xkb_component_names
  * Keymap components, also known as [KcCGST].
  *
  * The components are the result of the [RMLVO] resolution.
@@ -635,7 +638,10 @@ xkb_components_names_from_rules(struct xkb_context *context,
 XKB_EXPORT int
 xkb_keysym_get_name(xkb_keysym_t keysym, char *buffer, size_t size);
 
-/** Flags for xkb_keysym_from_name(). */
+/**
+ * @enum xkb_keysym_flags
+ * Flags for xkb_keysym_from_name().
+ */
 enum xkb_keysym_flags {
     /** Do not apply any flags. */
     XKB_KEYSYM_NO_FLAGS = 0,
@@ -795,7 +801,10 @@ xkb_keysym_to_lower(xkb_keysym_t ks);
  *   `XKB_DEFAULT_VARIANT`, `XKB_DEFAULT_OPTIONS` - see `xkb_rule_names`.
  */
 
-/** Flags for context creation. */
+/**
+ * @enum xkb_context_flags
+ * Flags for context creation.
+ */
 enum xkb_context_flags {
     /** Do not apply any context flags. */
     XKB_CONTEXT_NO_FLAGS = 0,
@@ -984,7 +993,10 @@ xkb_context_include_path_get(struct xkb_context *context, unsigned int index);
  * @{
  */
 
-/** Specifies a logging level. */
+/**
+ * @enum xkb_log_level
+ * Specifies a logging level.
+ */
 enum xkb_log_level {
     XKB_LOG_LEVEL_CRITICAL = 10, /**< Log critical internal errors only. */
     XKB_LOG_LEVEL_ERROR = 20,    /**< Log all errors. */
@@ -1083,13 +1095,17 @@ xkb_context_set_log_fn(struct xkb_context *context,
  * @{
  */
 
-/** Flags for keymap compilation. */
+/**
+ * @enum xkb_keymap_compile_flags
+ * Flags for keymap compilation.
+ */
 enum xkb_keymap_compile_flags {
     /** Do not apply any flags. */
     XKB_KEYMAP_COMPILE_NO_FLAGS = 0
 };
 
 /**
+ * @enum xkb_keymap_format
  * The possible keymap formats.
  *
  * See @ref keymap-text-format-v1-v2 "" for the complete description of the
@@ -1356,6 +1372,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 #define XKB_KEYMAP_USE_ORIGINAL_FORMAT ((enum xkb_keymap_format) -1)
 
 /**
+ * @enum xkb_keymap_serialize_flags
  * Flags to control keymap serialization.
  *
  * @since 1.12.0
@@ -1777,6 +1794,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
+ * @struct xkb_state_options
  * Opaque options object to configure a keyboard state.
  *
  * @since 1.14.0
@@ -1792,7 +1810,7 @@ struct xkb_state_options;
  *
  * @since 1.14.0
  *
- * @memberof xkb_state
+ * @memberof xkb_state_options
  */
 XKB_EXPORT struct xkb_state_options *
 xkb_state_options_new(struct xkb_context *context);
@@ -1804,12 +1822,13 @@ xkb_state_options_new(struct xkb_context *context);
  *
  * @since 1.14.0
  *
- * @memberof xkb_state
+ * @memberof xkb_state_options
  */
 XKB_EXPORT void
 xkb_state_options_destroy(struct xkb_state_options *options);
 
 /**
+ * @enum xkb_state_accessibility_flags
  * Flags for `xkb_state_options_update_a11y_flags()`.
  *
  * @since 1.14.0
@@ -1883,7 +1902,7 @@ enum xkb_state_accessibility_flags {
  *
  * @since 1.14.0
  *
- * @memberof xkb_state
+ * @memberof xkb_state_options
  */
 XKB_EXPORT int
 xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
@@ -1991,13 +2010,17 @@ xkb_state_get_keymap(struct xkb_state *state);
  * @endparblock
  */
 
-/** Specifies the direction of the key (press / release). */
+/**
+ * @enum xkb_key_direction
+ * Specifies the direction of the key (press / release).
+ */
 enum xkb_key_direction {
     XKB_KEY_UP,   /**< The key was released. */
     XKB_KEY_DOWN  /**< The key was pressed. */
 };
 
 /**
+ * @enum xkb_state_component
  * Component types for state objects, which belong to the following categories:
  *
  * - modifier,
@@ -2042,6 +2065,7 @@ enum xkb_state_component {
 };
 
 /**
+ * @enum xkb_keyboard_controls
  * **Global keyboard controls**, which affect the way libxkbcommon handles the
  * keyboard as a whole.
  *
@@ -2365,6 +2389,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
                         xkb_layout_index_t layout);
 
 /**
+ * @enum xkb_state_match
  * Match flags for `xkb_state::xkb_state_mod_indices_are_active()` and
  * `xkb_state::xkb_state_mod_names_are_active()`, specifying the conditions for a
  * successful match.  `::XKB_STATE_MATCH_NON_EXCLUSIVE` is bitmaskable with
@@ -2619,6 +2644,7 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
  */
 
 /**
+ * @enum xkb_consumed_mode
  * Consumed modifiers mode.
  *
  * There are several possible methods for deciding which modifiers are
