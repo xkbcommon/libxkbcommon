@@ -12,14 +12,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon.h"
+
 #include "context.h"
 #include "evdev-scancodes.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
+#include "src/state-priv.h"
 #include "test.h"
 #include "utils.h"
-#include "xkbcommon/xkbcommon-keysyms.h"
-#include "xkbcommon/xkbcommon.h"
 
 static const enum xkb_keymap_format keymap_formats[] = {
     XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -617,6 +619,92 @@ check_state(struct xkb_state *expected, struct xkb_state *got)
     return ok;
 }
 
+static bool
+xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
+{
+    if (event1->type != event2->type)
+        return false;
+    switch (event1->type) {
+    case XKB_EVENT_TYPE_KEY_DOWN:
+    case XKB_EVENT_TYPE_KEY_UP:
+        return event1->keycode == event2->keycode;
+    case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+        return memcmp(&event1->components, &event2->components,
+                      sizeof(event1->components)) == 0;
+    default:
+        {} /* Label followed by declaration requires C23 */
+        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+                      XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+                      (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                      "Missing state event type");
+        return false;
+    }
+}
+
+static void
+print_event(const char *prefix, const struct xkb_event *event)
+{
+    fprintf(stderr, "%s", prefix);
+    switch (event->type) {
+    case XKB_EVENT_TYPE_KEY_DOWN:
+        fprintf(stderr, "type: key down; keycode: %"PRIu32"\n", event->keycode);
+        break;
+    case XKB_EVENT_TYPE_KEY_UP:
+        fprintf(stderr, "type: key up; keycode: %"PRIu32"\n", event->keycode);
+        break;
+    case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+        fprintf(stderr, "type: components; changed: 0x%x\n"
+                "\tgroup: %"PRId32" %"PRId32" %"PRId32" %"PRIu32"\n"
+                "\tmods: 0x%08"PRIx32" 0x%08"PRIx32" 0x%08"PRIx32" %08"PRIx32"\n",
+                event->components.changed,
+                event->components.components.base_group,
+                event->components.components.latched_group,
+                event->components.components.locked_group,
+                event->components.components.group,
+                event->components.components.base_mods,
+                event->components.components.latched_mods,
+                event->components.components.locked_mods,
+                event->components.components.mods);
+        break;
+    default:
+        {} /* Label followed by declaration requires C23 */
+        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+                      XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+                      (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                      "Missing state event type");
+    }
+}
+
+static bool
+check_events(struct xkb_event_iterator *iter,
+             const struct xkb_event *events, size_t count)
+{
+    const struct xkb_event *got = NULL;
+    size_t got_count = 0;
+    bool ok = true;
+    while ((got = xkb_event_iterator_next(iter))) {
+        if (++got_count > count) {
+            fprintf(stderr, "%s() error at event #%zu:\n", __func__, got_count);
+            print_event("Unexpected event:\n", got);
+            break;
+        }
+        const struct xkb_event *expected = &events[got_count - 1];
+        if (!xkb_event_eq(got, expected)) {
+            fprintf(stderr, "%s() error at event #%zu:\n", __func__, got_count);
+            print_event("Expected: ", expected);
+            print_event("Got: ", got);
+            ok = false;
+            break;
+        }
+    }
+    if (got_count != count) {
+        fprintf(stderr, "%s() count error: expected %zu, got: %zu\n",
+                __func__, count, got_count);
+        ok = false;
+    }
+    return ok;
+}
+
 /* Utils for checking modifier state */
 typedef bool (* is_active_t)(int);
 
@@ -636,29 +724,78 @@ static void
 test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
 {
     struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+    struct xkb_state_machine *sm = xkb_state_machine_new(keymap, NULL);
+    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    assert(events);
     const xkb_keysym_t *syms;
     xkb_keysym_t one_sym;
     int num_syms;
     is_active_t check_active = pure_vmods ? is_not_active : is_active;
-
-    assert(state);
 
     xkb_mod_index_t ctrl = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
     xkb_mod_index_t mod1 = _xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_MOD1);
     xkb_mod_index_t alt  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
     xkb_mod_index_t meta = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
 
+#define update_states(state1, sm, key, direction) do {                     \
+    xkb_state_update_key((state1), (key), (direction));                    \
+    assert(xkb_state_machine_update_key((sm), (events), (key), (direction))\
+           == 0);                                                          \
+} while (0)
+
+#define check_events_(got, ...) do {                            \
+    const struct xkb_event expected[] = { __VA_ARGS__ };        \
+    assert(check_events((got), expected, ARRAY_SIZE(expected)));\
+} while (0)
+
     /* LCtrl down */
-    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
     fprintf(stderr, "dumping state for LCtrl down:\n");
     print_state(state);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .components = {
+                    .base_mods = xkb_keymap_mod_get_mask2(keymap, ctrl),
+                    .mods = xkb_keymap_mod_get_mask2(keymap, ctrl),
+                },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE
+            }
+        }
+    );
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
 
     /* LCtrl + RAlt down */
-    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
     fprintf(stderr, "dumping state for LCtrl + RAlt down:\n");
     print_state(state);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .components = {
+                    .base_mods = xkb_keymap_mod_get_mask2(keymap, ctrl)
+                               | xkb_keymap_mod_get_mask2(keymap, alt),
+                    .mods = xkb_keymap_mod_get_mask2(keymap, ctrl)
+                          | xkb_keymap_mod_get_mask2(keymap, alt),
+                },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE
+            }
+        }
+    );
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_ALT,
@@ -742,9 +879,26 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
                             NULL)));
 
     /* RAlt down */
-    xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for RAlt down:\n");
     print_state(state);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .components = {
+                    .base_mods = xkb_keymap_mod_get_mask2(keymap, alt),
+                    .mods = xkb_keymap_mod_get_mask2(keymap, alt),
+                },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE
+            }
+        }
+    );
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_ALT,
@@ -769,7 +923,21 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
                                           NULL) == 0);
 
     /* none down */
-    xkb_state_update_key(state, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .components = { .base_mods = 0, .mods = 0, },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE
+            }
+        }
+    );
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_MOD1,
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
     assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_ALT,
@@ -778,10 +946,10 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
 
     /* Caps locked */
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for Caps Lock:\n");
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
@@ -793,8 +961,8 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
     assert(num_syms == 1 && syms[0] == XKB_KEY_Q);
 
     /* Num Lock locked */
-    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for Caps Lock + Num Lock:\n");
     print_state(state);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
@@ -808,22 +976,22 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_NUM) > 0);
 
     /* Num Lock unlocked */
-    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
 
     /* Switch to group 2 */
-    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_led_name_is_active(state, "Group 2") > 0);
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_NUM) == 0);
 
     /* Switch back to group 1. */
-    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
 
     /* Caps unlocked */
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_CAPS) == 0);
@@ -838,13 +1006,32 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
            syms[4] == XKB_KEY_O);
     one_sym = xkb_state_key_get_one_sym(state, KEY_6 + EVDEV_OFFSET);
     assert(one_sym == XKB_KEY_NoSymbol);
-    xkb_state_update_key(state, KEY_6 + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_6 + EVDEV_OFFSET, XKB_KEY_UP);
+    update_states(state, sm, KEY_6 + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_6 + EVDEV_OFFSET
+        }
+    );
+    update_states(state, sm, KEY_6 + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_6 + EVDEV_OFFSET
+        }
+    );
 
     one_sym = xkb_state_key_get_one_sym(state, KEY_5 + EVDEV_OFFSET);
     assert(one_sym == XKB_KEY_5);
 
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(sm);
     xkb_state_unref(state);
+
+#undef update_states
+#undef check_events_
 }
 
 enum test_entry_input_type {
@@ -3102,6 +3289,48 @@ test_extended_layout_indices(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static enum xkb_state_component
+update_key(struct xkb_state_machine *sm,
+           struct xkb_event_iterator *events,
+           struct xkb_state *state,
+           bool use_machine, xkb_keycode_t key,
+           enum xkb_key_direction direction)
+{
+    if (use_machine) {
+        assert(xkb_state_machine_update_key(sm, events, key, direction) == 0);
+        const struct xkb_event *event;
+        enum xkb_state_component changed = 0;
+        while ((event = xkb_event_iterator_next(events))) {
+            changed |= xkb_state_update_from_event(state, event);
+        }
+        return changed;
+    } else {
+        return xkb_state_update_key(state, key, direction);
+    }
+}
+
+static enum xkb_state_component
+update_controls(struct xkb_state_machine *sm,
+                struct xkb_event_iterator *events,
+                struct xkb_state *state,
+                bool use_machine,
+                enum xkb_keyboard_controls affect,
+                enum xkb_keyboard_controls controls)
+{
+    if (use_machine) {
+        assert(xkb_state_machine_update_controls(sm, events, affect, controls)
+               == 0);
+        const struct xkb_event *event;
+        enum xkb_state_component changed = 0;
+        while ((event = xkb_event_iterator_next(events))) {
+            changed |= xkb_state_update_from_event(state, event);
+        }
+        return changed;
+    } else {
+        return xkb_state_update_controls(state, affect, controls);
+    }
+}
+
 static void
 test_sticky_keys(struct xkb_context *ctx)
 {
@@ -3111,6 +3340,10 @@ test_sticky_keys(struct xkb_context *ctx)
     );
     assert(keymap);
 
+    struct xkb_state_machine *sm = xkb_state_machine_new(keymap, NULL);
+    assert(sm);
+    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
 
@@ -3131,35 +3364,51 @@ test_sticky_keys(struct xkb_context *ctx)
     enum sticky_key_activation {
         STICKY_KEY_ACTION_SETCONTROLS = 0,
         STICKY_KEY_ACTION_LOCKCONTROLS,
-        STICKY_KEY_API,
+        STICKY_KEY_EVENTS_API,
+        STICKY_KEY_LEGACY_API,
     };
 
     enum sticky_key_activation tests[] = {
         STICKY_KEY_ACTION_SETCONTROLS,
         STICKY_KEY_ACTION_LOCKCONTROLS,
-        STICKY_KEY_API,
+        STICKY_KEY_EVENTS_API,
+        STICKY_KEY_LEGACY_API,
     };
 
     for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests); t++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
 
+        const bool use_events = tests[t] == STICKY_KEY_EVENTS_API;
+
         /* Enable controls */
         switch (tests[t]) {
         case STICKY_KEY_ACTION_SETCONTROLS:
             /* SetControls() */
-            changed = xkb_state_update_key(state, KEY_F1 + EVDEV_OFFSET, XKB_KEY_DOWN);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F1 + EVDEV_OFFSET, XKB_KEY_DOWN);
             assert(changed == XKB_STATE_CONTROLS);
             break;
         case STICKY_KEY_ACTION_LOCKCONTROLS:
             /* LockControls() */
-            changed = xkb_state_update_key(state, KEY_F2 + EVDEV_OFFSET, XKB_KEY_DOWN);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F2 + EVDEV_OFFSET, XKB_KEY_DOWN);
             assert(changed == XKB_STATE_CONTROLS);
             controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS);
             assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
-            changed = xkb_state_update_key(state, KEY_F2 + EVDEV_OFFSET, XKB_KEY_UP);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F2 + EVDEV_OFFSET, XKB_KEY_UP);
             assert(changed == 0);
             break;
-        case STICKY_KEY_API:
+        case STICKY_KEY_EVENTS_API: {
+            changed = update_controls(sm, events, state, true,
+                                      XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+                                      XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
+            assert(changed == XKB_STATE_CONTROLS);
+            controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS);
+            assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
+            break;
+        }
+        case STICKY_KEY_LEGACY_API:
             changed = xkb_state_update_controls(state,
                                                 XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
                                                 XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
@@ -3172,67 +3421,85 @@ test_sticky_keys(struct xkb_context *ctx)
         assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
 
         /* Latch shift (sticky) */
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == shift);
 
         /* No latch-to-lock */
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == 0);
 
         /* Latch shift (sticky) and control */
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == shift);
-        changed = xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == (shift | ctrl));
-        changed = xkb_state_update_key(state, KEY_Q + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_Q + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_Q + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_Q + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == 0);
 
         /* Latch (sticky) & lock groups */
-        changed = xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_LAYOUT_LOCKED | XKB_STATE_LAYOUT_EFFECTIVE |
                            XKB_STATE_LEDS));
-        changed = xkb_state_update_key(state, KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_COMPOSE + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == 0);
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 1);
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 1);
-        changed = xkb_state_update_key(state, KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE |
                            XKB_STATE_LEDS));
-        changed = xkb_state_update_key(state, KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_LATCHED));
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 1);
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 1);
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0);
 
         /* Latch shift (sticky) and lock Caps */
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == shift);
-        changed = xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED |
                            XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS));
-        changed = xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == (shift | caps));
@@ -3241,7 +3508,8 @@ test_sticky_keys(struct xkb_context *ctx)
         switch (tests[t]) {
         case STICKY_KEY_ACTION_SETCONTROLS:
             /* SetControls() */
-            changed = xkb_state_update_key(state, KEY_F1 + EVDEV_OFFSET, XKB_KEY_UP);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F1 + EVDEV_OFFSET, XKB_KEY_UP);
             assert(changed == (XKB_STATE_CONTROLS |
                                XKB_STATE_LAYOUT_LATCHED |
                                XKB_STATE_LAYOUT_LOCKED |
@@ -3252,7 +3520,8 @@ test_sticky_keys(struct xkb_context *ctx)
             break;
         case STICKY_KEY_ACTION_LOCKCONTROLS:
             /* LockControls() */
-            changed = xkb_state_update_key(state, KEY_F2 + EVDEV_OFFSET, XKB_KEY_DOWN);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F2 + EVDEV_OFFSET, XKB_KEY_DOWN);
             assert(changed == (XKB_STATE_MODS_LATCHED |
                                XKB_STATE_MODS_EFFECTIVE |
                                XKB_STATE_LAYOUT_LATCHED |
@@ -3260,7 +3529,8 @@ test_sticky_keys(struct xkb_context *ctx)
                                XKB_STATE_LEDS));
             mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
             assert(mods == caps);
-            changed = xkb_state_update_key(state, KEY_F2 + EVDEV_OFFSET, XKB_KEY_UP);
+            changed = update_key(sm, events, state, use_events,
+                                 KEY_F2 + EVDEV_OFFSET, XKB_KEY_UP);
             assert(changed == (XKB_STATE_CONTROLS |
                                XKB_STATE_LAYOUT_LOCKED |
                                XKB_STATE_LAYOUT_EFFECTIVE |
@@ -3268,7 +3538,19 @@ test_sticky_keys(struct xkb_context *ctx)
                                XKB_STATE_MODS_EFFECTIVE |
                                XKB_STATE_LEDS));
             break;
-        case STICKY_KEY_API:
+        case STICKY_KEY_EVENTS_API: {
+            changed = update_controls(sm, events, state, true,
+                                      XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS, 0);
+            assert(changed == (XKB_STATE_CONTROLS |
+                               XKB_STATE_LAYOUT_LATCHED |
+                               XKB_STATE_LAYOUT_LOCKED |
+                               XKB_STATE_MODS_LATCHED |
+                               XKB_STATE_MODS_LOCKED |
+                               XKB_STATE_MODS_EFFECTIVE |
+                               XKB_STATE_LEDS));
+            break;
+        }
+        case STICKY_KEY_LEGACY_API:
             changed = xkb_state_update_controls(state,
                                                 XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
                                                 0);
@@ -3288,9 +3570,11 @@ test_sticky_keys(struct xkb_context *ctx)
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0);
 
         /* Mods are not latched anymore */
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-        changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+        changed = update_key(sm, events, state, use_events,
+                             KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == 0);
@@ -3300,35 +3584,45 @@ test_sticky_keys(struct xkb_context *ctx)
     }
 
     xkb_state_unref(state);
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(sm);
 
     /*
      * Test latch-to-lock
      */
 
-    struct xkb_state_options * const options = xkb_state_options_new(ctx);
-    assert(options);
-    assert(xkb_state_options_update_a11y_flags(
-                options,
+    struct xkb_state_machine_options * const sm_options =
+        xkb_state_machine_options_new(ctx);
+    assert(sm_options);
+    assert(xkb_state_machine_options_update_a11y_flags(
+                sm_options,
                 XKB_STATE_A11Y_LATCH_TO_LOCK,
                 XKB_STATE_A11Y_LATCH_TO_LOCK) == 0);
-    state = xkb_state_new2(keymap, options);
+    sm = xkb_state_machine_new(keymap, sm_options);
+    assert(sm);
+    xkb_state_machine_options_destroy(sm_options);
+    events = xkb_event_iterator_new(sm);
+    assert(events);
+    state = xkb_state_new(keymap);
     assert(state);
-    xkb_state_options_destroy(options);
-
-    xkb_state_update_controls(state, XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
-                              XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
+    update_controls(sm, events, state, true,
+                    XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+                    XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
 
     /* Latch shift */
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE));
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(changed == (XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED));
     mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
     assert(mods == shift);
     mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
     assert(mods == shift);
     /* Lock shift */
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(changed == ( XKB_STATE_MODS_DEPRESSED |
                         XKB_STATE_MODS_LATCHED |
                         XKB_STATE_MODS_LOCKED |
@@ -3339,14 +3633,17 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(mods == 0);
     mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
     assert(mods == shift);
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(changed == XKB_STATE_MODS_DEPRESSED);
     mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
     assert(mods == shift);
     /* Unlock shift */
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(changed == XKB_STATE_MODS_DEPRESSED);
-    changed = xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
+    changed = update_key(sm, events, state, true,
+                         KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_UP);
     assert(changed == ( XKB_STATE_MODS_DEPRESSED |
                         XKB_STATE_MODS_LOCKED |
                         XKB_STATE_MODS_EFFECTIVE |
@@ -3355,6 +3652,8 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(mods == 0);
 
     xkb_state_unref(state);
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(sm);
 
     xkb_keymap_unref(keymap);
 }

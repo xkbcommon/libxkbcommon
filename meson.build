@@ -380,6 +380,7 @@ libxkbcommon_sources = [
     'src/scanner-utils.c',
     'src/scanner-utils.h',
     'src/state.c',
+    'src/state-priv.h',
     'src/text.c',
     'src/text.h',
     'src/utf8.c',
