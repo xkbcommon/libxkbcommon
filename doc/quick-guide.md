@@ -15,6 +15,8 @@ the library. We will employ a few use-cases to lead the examples:
 
 3. A **Wayland** *client*, using the standard protocol.
 
+4. A **Wayland** *server*, using the standard protocol.
+
 The snippets are not complete, and some support code is omitted. You
 can find complete and more complex examples in the [source directory]:
 
@@ -31,7 +33,7 @@ xkbcommon/ for more details.
 
 [source directory]: https://github.com/xkbcommon/libxkbcommon
 
-## Code
+## Code for clients {#quick-guide-clients}
 
 Before we can do anything interesting, we need a library context:
 
@@ -234,3 +236,133 @@ And that’s it! Eventually, we should free the objects we’ve created:
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
 ~~~
+
+## Code for a Wayland server {#quick-guide-wayland-server}
+
+The code is very similar to the evdev client presented hereinabove. The main
+difference is the use of the `xkb_state_machine` API instead of the `xkb_state`
+API.
+
+```c
+#include <xkbcommon/xkbcommon.h>
+
+int new_keyboard(…)
+{
+    /*
+    * Initialize the context
+    */
+
+    struct xkb_context *ctx;
+
+    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!ctx) <error>
+
+    struct xkb_keymap *keymap;
+    /* Example RMLVO for Icelandic Dvorak. */
+    struct xkb_rule_names names = {
+        .rules = NULL,
+        .model = "pc105",
+        .layout = "is",
+        .variant = "dvorak",
+        .options = "terminate:ctrl_alt_bksp"
+    };
+
+    /*
+    * Initialize the keymap
+    */
+
+    keymap = xkb_keymap_new_from_names2(ctx, &names,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1,
+                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
+    if (!keymap) <error>
+
+    /*
+    * Initialize the keymap
+    */
+
+    struct xkb_state_machine *state_machine;
+
+    state_machine = xkb_state_machine_new(keymap, NULL);
+    if (!state_machine) <error>
+
+    struct xkb_event_iterator *events;
+
+    events = xkb_event_iterator_new(state_machine);
+    if (!events) <error>
+
+    char *keymap_string =
+        xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);
+    <send keymap to the clients>
+    free(keymap_string)
+
+    <save the objects for further use>
+
+    return EXIT_SUCCESS;
+}
+
+int destroy_keyboard(…)
+{
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(state_machine);
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(ctx);
+    return EXIT_SUCCESS;
+}
+
+int handle_key(…)
+{
+    /*
+     * Update the state machine with the key event
+     */
+
+    enum xkb_key_direction direction = (<key release>)
+        ? XKB_KEY_UP
+        : XKB_KEY_DOWN;
+    int ret =
+        xkb_state_machine_update_key(state_machine, events, keycode, direction);
+    if (ret) <error>
+
+    /*
+     * Process the generated XKB events
+     */
+
+    const struct xkb_event *event;
+    while ((event = xkb_event_iterator_next(events)) != NULL) {
+        const enum xkb_event_type event_type =
+            xkb_event_get_type(event);
+        switch (event_type) {
+            case XKB_EVENT_TYPE_KEY_DOWN:
+            case XKB_EVENT_TYPE_KEY_UP: {
+                const xkb_keycode_t kc = xkb_event_get_keycode(event);
+                const enum xkb_key_direction direction =
+                    (event_type == XKB_EVENT_TYPE_KEY_UP)
+                        ? XKB_KEY_UP
+                        : XKB_KEY_DOWN;
+                <send key event to clients>
+            }
+            case XKB_EVENT_TYPE_COMPONENTS_CHANGE: {
+                const enum xkb_state_component =
+                    xkb_event_get_changed_components(event);
+                if (changed) {
+                    const xkb_mod_mask_t depressed_mods =
+                        xkb_event_serialize_mods(event, XKB_STATE_MODS_DEPRESSED);
+                    const xkb_mod_mask_t latched_mods =
+                        xkb_event_serialize_mods(event, XKB_STATE_MODS_LATCHED);
+                    const xkb_mod_mask_t locked_mods =
+                        xkb_event_serialize_mods(event, XKB_STATE_MODS_LOCKED);
+                    const xkb_layout_index_t depressed_layout =
+                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_DEPRESSED);
+                    const xkb_layout_index_t latched_layout =
+                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_LATCHED);
+                    const xkb_layout_index_t locked_layout =
+                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_LOCKED);
+                    <send modifiers event>
+                }
+                break;
+            }
+            default:
+                <report unhandled event>
+        }
+    }
+}
+```

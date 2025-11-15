@@ -598,6 +598,10 @@ struct xkb_keymap {
     char *compat_section_name;
 };
 
+enum {
+    _LAST_XKB_EVENT_TYPE = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+};
+
 #define xkb_keys_foreach(iter, keymap) \
     /*
      * Start at the first defined low or high keycode:
