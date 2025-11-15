@@ -57,8 +57,6 @@ static bool terminate;
 static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
-static bool const use_local_state = false;
-static struct xkb_keymap * const custom_keymap = NULL;
 #else
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
@@ -128,58 +126,47 @@ select_xkb_events_for_device(xcb_connection_t *conn, int32_t device_id)
 static int
 update_keymap(struct keyboard *kbd)
 {
-    struct xkb_keymap *new_keymap;
-
+#ifndef KEYMAP_DUMP
     if (custom_keymap) {
-        assert(use_local_state);
-        /* Keymap is set only the first time, then we only reference it. */
-        new_keymap = xkb_keymap_ref(custom_keymap);
-        /* Do not reset state if already defined */
-        if (!kbd->state) {
-            /* Ignore state from the server */
-#ifdef KEYMAP_DUMP
-            kbd->state = xkb_state_new(new_keymap);
-#else
-            kbd->state = xkb_state_new2(new_keymap, state_options);
-#endif
-            if (!kbd->state)
-                goto err_state;
+        if (!kbd->keymap) {
+            /* Keymap is only parsed the one time, then we just reference it. */
+            kbd->keymap = xkb_keymap_ref(custom_keymap);
         }
     } else {
-        new_keymap = xkb_x11_keymap_new_from_device(kbd->ctx, kbd->conn,
-                                                    kbd->device_id,
-                                                    XKB_KEYMAP_COMPILE_NO_FLAGS);
-        if (!new_keymap)
-            goto err_keymap;
-
-        /* Reset state on keymap reset.
-         * Ignore state from server if using local state. */
-        struct xkb_state * const new_state = (use_local_state)
-#ifdef KEYMAP_DUMP
-            ? xkb_state_new(new_keymap)
-#else
-            ? xkb_state_new2(new_keymap, state_options)
 #endif
-            : xkb_x11_state_new_from_device(new_keymap, kbd->conn,
-                                            kbd->device_id);
-        if (!new_state)
-            goto err_state;
+        const bool update = !!kbd->keymap && !!kbd->state;
+        xkb_keymap_unref(kbd->keymap);
+        kbd->keymap = xkb_x11_keymap_new_from_device(kbd->ctx, kbd->conn,
+                                                     kbd->device_id,
+                                                     XKB_KEYMAP_COMPILE_NO_FLAGS);
+        if (!kbd->keymap)
+            return -1;
 
-        if (kbd->keymap)
+        if (update)
             printf("Keymap updated!\n");
-
-        xkb_state_unref(kbd->state);
-        kbd->state = new_state;
+#ifndef KEYMAP_DUMP
     }
 
-    xkb_keymap_unref(kbd->keymap);
-    kbd->keymap = new_keymap;
-    return 0;
+    if (!use_local_state) {
+#endif
+        /* Reset state on keymap reset */
+        xkb_state_unref(kbd->state);
+        kbd->state = xkb_x11_state_new_from_device(kbd->keymap, kbd->conn,
+                                                   kbd->device_id);
+        if (!kbd->state)
+            return -1;
+#ifndef KEYMAP_DUMP
+    } else if (!kbd->state) {
+        /* Ignore state from server and reset only if state if undefined. */
+        kbd->state = xkb_state_new2(kbd->keymap, state_options);
+        if (!kbd->state)
+            return -1;
+        xkb_state_update_controls(kbd->state,
+                                  kbd_controls_affect, kbd_controls_values);
+    }
+#endif
 
-err_state:
-    xkb_keymap_unref(new_keymap);
-err_keymap:
-    return -1;
+    return 0;
 }
 
 static int
