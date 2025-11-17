@@ -1485,9 +1485,112 @@ XKB_EXPORT xkb_keycode_t
 xkb_keymap_max_keycode(struct xkb_keymap *keymap);
 
 /**
+ * @struct xkb_keymap_key_iterator
+ * Iterator over a keymap’s keys.
+ *
+ * @sa `xkb_keycode_t`
+ * @sa `xkb_keymap_key_iterator_new()`
+ * @sa `xkb_keymap_key_iterator_destroy()`
+ * @since 1.14.0
+ */
+struct xkb_keymap_key_iterator;
+
+/**
+ * @enum xkb_keymap_key_iterator_flags
+ * Flags for `xkb_keymap_key_iterator_new()`.
+ *
+ * @since 1.14.0
+ */
+enum xkb_keymap_key_iterator_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS = 0,
+    /**
+     * Iterate keys in *descending* order.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER = (1 << 0),
+    /**
+     * Skip *unbound* keys, i.e. keys with no groups.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND = (1 << 1),
+};
+
+/**
+ * Create a new iterator over a keymap’s keys.
+ *
+ * Intended use:
+ *
+ * ```c
+ * struct xkb_keymap_key_iterator *iter = xkb_keymap_key_iterator_new(keymap, 0);
+ * xkb_keycode_t kc;
+ * while ((kc = xkb_keymap_key_iterator_next(iter)) != XKB_KEYCODE_INVALID) {
+ *     // ...
+ * }
+ * xkb_keymap_key_iterator_destroy(iter);
+ * ```
+ *
+ * @param keymap The keymap to iterate over.
+ * @param flags  Flags to control the iterator behavior, or 0.
+ *
+ * @returns A new keys iterator, or `NULL` on failure.
+ *
+ * @sa `xkb_keymap_key_iterator`
+ * @sa `xkb_keymap_key_iterator_flags`
+ * @sa `xkb_keymap_key_iterator_next()`
+ * @sa `xkb_keymap_key_iterator_destroy()`
+ * @since 1.14.0
+ * @memberof xkb_keymap_key_iterator
+ */
+XKB_EXPORT struct xkb_keymap_key_iterator *
+xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
+                            enum xkb_keymap_key_iterator_flags flags);
+
+/**
+ * Free a keymap’s keys iterator.
+ *
+ * @param iter The iterator to free. If it is `NULL`, do nothing.
+ *
+ * @sa `xkb_keymap_key_iterator_new()`
+ * @since 1.14.0
+ * @memberof xkb_keymap_key_iterator
+ */
+XKB_EXPORT void
+xkb_keymap_key_iterator_destroy(struct xkb_keymap_key_iterator *iter);
+
+/**
+ * Get the next [keycode] from a keymap’s keys iterator.
+ *
+ * The keycodes are returned in *ascending* order unless
+ * `::XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER` was used to create the iterator.
+ *
+ * If a keymap is sparse, this function may be called fewer than
+ * `max_keycode - min_keycode + 1` times.
+ *
+ * @param iter The iterator to use.
+ *
+ * @returns A valid [keycode], otherwise `::XKB_KEYCODE_INVALID` in case there
+ * are no more entries.
+ *
+ * @sa `xkb_keycode_t`
+ * @since 1.14.0
+ * @memberof xkb_keymap_key_iterator
+ *
+ * [keycode]: @ref xkb_keycode_t
+ */
+XKB_EXPORT xkb_keycode_t
+xkb_keymap_key_iterator_next(struct xkb_keymap_key_iterator *iter);
+
+/**
  * The iterator used by `xkb_keymap_key_for_each()`.
  *
- * @sa xkb_keymap_key_for_each
+ * @sa `xkb_keymap_key_for_each()`
  * @memberof xkb_keymap
  * @since 0.3.1
  */
@@ -1498,11 +1601,12 @@ typedef void
 /**
  * Run a specified function for every valid keycode in the keymap.  If a
  * keymap is sparse, this function may be called fewer than
- * (max_keycode - min_keycode + 1) times.
+ * (max_keycode - min_keycode + 1) times with success.
  *
- * @sa xkb_keymap_min_keycode()
- * @sa xkb_keymap_max_keycode()
- * @sa xkb_keycode_t
+ * @sa `xkb_keymap_key_iterator`, which offers more control on the iteration.
+ * @sa `xkb_keymap_min_keycode()`
+ * @sa `xkb_keymap_max_keycode()`
+ * @sa `xkb_keycode_t`
  * @memberof xkb_keymap
  * @since 0.3.1
  */
