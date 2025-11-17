@@ -895,15 +895,15 @@ tools_parse_controls(const char *raw, struct xkb_state_options *options,
             case CONTROL_FIELD_LATCH_TO_LOCK:
                 ok = xkb_state_options_update_a11y_flags(
                     options,
-                    XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK,
-                    (disable ? 0 : XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK)
+                    XKB_STATE_A11Y_LATCH_TO_LOCK,
+                    (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
                 ) == 0;
                 break;
             case CONTROL_FIELD_LATCH_SIMULTANEOUS:
                 ok = xkb_state_options_update_a11y_flags(
                     options,
-                    XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS,
-                    (disable ? 0 : XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS)
+                    XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
+                    (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
                 ) == 0;
                 break;
             default:
