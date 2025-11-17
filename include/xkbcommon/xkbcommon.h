@@ -1834,7 +1834,7 @@ enum xkb_state_accessibility_flags {
      */
     XKB_STATE_A11Y_NO_FLAGS = 0,
     /**
-     * If both `::XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK` and
+     * If both `::XKB_STATE_A11Y_LATCH_TO_LOCK` and
      * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
      * users to [lock] modifier keys without requiring special locking keys.
      * The user can press a [latch] modifier twice in a row to lock it, and
@@ -1846,7 +1846,7 @@ enum xkb_state_accessibility_flags {
      * [latch]: @ref latched-mod-def
      * [lock]:  @ref locked-mod-def
      */
-    XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK = (1 << 0),
+    XKB_STATE_A11Y_LATCH_TO_LOCK = (1 << 0),
     /**
      * Without this option, the [latch] keys are only triggers if keys are
      * strictly *sequentially tapped*, e.g.:
@@ -1880,7 +1880,7 @@ enum xkb_state_accessibility_flags {
      *
      * [latch]: @ref latched-mod-def
      */
-    XKB_STATE_A11Y_FLAG_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
+    XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
 };
 
 /**
@@ -2009,7 +2009,7 @@ enum xkb_keyboard_controls {
      * e.g. the user can first press a modifier, release it, then press another
      * key.
      *
-     * @sa `::XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK`
+     * @sa `::XKB_STATE_A11Y_LATCH_TO_LOCK`
      * @since 1.14.0
      *
      * [set]:   @ref depressed-mod-def

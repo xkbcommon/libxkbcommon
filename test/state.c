@@ -3309,8 +3309,8 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(options);
     assert(xkb_state_options_update_a11y_flags(
                 options,
-                XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK,
-                XKB_STATE_A11Y_FLAG_LATCH_TO_LOCK) == 0);
+                XKB_STATE_A11Y_LATCH_TO_LOCK,
+                XKB_STATE_A11Y_LATCH_TO_LOCK) == 0);
     state = xkb_state_new2(keymap, options);
     assert(state);
     xkb_state_options_destroy(options);
