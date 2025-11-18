@@ -435,7 +435,7 @@ usage(FILE *fp, char *progname)
                         "          --short (shorter event output)\n"
                         "          --report-state-changes (report changes to the state)\n"
                         "          --no-state-report (do not report changes to the state)\n"
-                        "          --legacy-state-api (do not use the state event API)\n"
+                        "          --legacy-state-api[=true|false] (use legacy state API instead of event API)\n"
                         "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
@@ -503,7 +503,7 @@ main(int argc, char *argv[])
         {"variant",              required_argument,      0, OPT_VARIANT},
         {"options",              required_argument,      0, OPT_OPTION},
         {"keymap",               required_argument,      0, OPT_KEYMAP},
-        {"legacy-state-api",     no_argument,            0, OPT_LEGACY_STATE_API},
+        {"legacy-state-api",     optional_argument,      0, OPT_LEGACY_STATE_API},
         {"controls",             required_argument,      0, OPT_CONTROLS},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
@@ -638,9 +638,16 @@ main(int argc, char *argv[])
             print_modmaps = true;
             break;
 #endif
-        case OPT_LEGACY_STATE_API:
-            use_events_api = false;
+        case OPT_LEGACY_STATE_API: {
+            bool legacy_api = true;
+            if (!tools_parse_bool(optarg, TOOLS_ARG_OPTIONAL, &legacy_api)) {
+                usage(stderr, argv[0]);
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
+            }
+            use_events_api = !legacy_api;
             break;
+        }
         case OPT_CONTROLS:
             if (!tools_parse_controls(optarg, &any_state_options,
                                       &kbd_controls_affect,

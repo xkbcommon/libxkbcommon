@@ -98,6 +98,22 @@ xkb_any_state_options_destroy(const struct xkb_any_state_options *options)
     xkb_state_machine_options_destroy(options->machine);
 }
 
+/**
+ * Specialized bool for CLI arguments optionality, in order to avoid
+ * boolean blindness
+ */
+enum tools_arg_optionality {
+    TOOLS_ARG_REQUIRED = 0,
+    TOOLS_ARG_OPTIONAL = 1
+};
+
+/**
+ * If `optional` is `TOOLS_ARG_OPTIONAL`, then `out` is unchanged.
+ * Set `out` to the default value before calling this function.
+ */
+bool
+tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out);
+
 bool
 tools_parse_controls(const char *s, const struct xkb_any_state_options *options,
                      enum xkb_keyboard_controls *controls_affect,

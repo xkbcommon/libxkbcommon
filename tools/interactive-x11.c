@@ -503,7 +503,9 @@ usage(FILE *fp, char *progname)
                 "    --enable-compose     enable Compose\n"
                 "    --local-state        enable local state handling and ignore modifiers/layouts\n"
                 "                         state updates from the X11 server\n"
-                "    --legacy-state-api   do not use the state event API. It implies --local-state.\n"
+                "    --legacy-state-api [=true|false]\n"
+                "                         use the legacy state API instead of the event API.\n"
+                "                         It implies --local-state.\n"
                 "    --controls [<CONTROLS>]\n"
                 "                         use the given keyboard controls; available values are:\n"
                 "                         sticky-keys, latch-to-lock and latch-simultaneous.\n"
@@ -591,7 +593,7 @@ main(int argc, char *argv[])
         {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
-        {"legacy-state-api",     no_argument,            0, OPT_LEGACY_STATE_API},
+        {"legacy-state-api",     optional_argument,      0, OPT_LEGACY_STATE_API},
         {"controls",             required_argument,      0, OPT_CONTROLS},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
 #endif
@@ -639,9 +641,15 @@ main(int argc, char *argv[])
 local_state:
             use_local_state = true;
             break;
-        case OPT_LEGACY_STATE_API:
-            use_events_api = false;
-            goto local_state;
+        case OPT_LEGACY_STATE_API: {
+            bool legacy_api = true;
+            if (!tools_parse_bool(optarg, TOOLS_ARG_OPTIONAL, &legacy_api))
+                goto invalid_usage;
+            use_events_api = !legacy_api;
+            if (use_events_api)
+                goto local_state;
+            break;
+        }
         case OPT_CONTROLS:
             if (!tools_parse_controls(optarg, &any_state_options,
                                       &kbd_controls_affect,

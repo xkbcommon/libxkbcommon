@@ -877,6 +877,29 @@ err:
 }
 
 bool
+tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out)
+{
+    if (isempty(s)) {
+        if (optional == TOOLS_ARG_REQUIRED) {
+            fprintf(stderr, "ERROR: boolean value is required, but got none\n");
+            return false;
+        } else {
+            /* Keep value unchanged */
+            return true;
+        }
+    } else if (strncmp(s, "true", sizeof("true")) == 0) {
+        *out = true;
+        return true;
+    } else if (strncmp(s, "false", sizeof("false")) == 0) {
+        *out = false;
+        return true;
+    } else {
+        fprintf(stderr, "ERROR: invalid boolean value: \"%s\"\n", s);
+        return false;
+    }
+}
+
+bool
 tools_parse_controls(const char *raw, const struct xkb_any_state_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values)
