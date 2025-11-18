@@ -75,6 +75,27 @@ print_detailed_state(struct xkb_state *state)
     fprintf(stderr, "  LEDs: 0x%"PRIx32"\n", leds);
 }
 
+static bool
+update_key(struct xkb_state_machine *sm, struct xkb_event_iterator *events,
+           struct xkb_state *state, xkb_keycode_t kc,
+           enum xkb_key_direction direction)
+{
+    assert(xkb_state_machine_update_key(sm, events, kc, direction)
+            == 0);
+    const struct xkb_event *event;
+    while ((event = xkb_event_iterator_next(events))) {
+        switch (xkb_event_get_type(event)) {
+        case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+            xkb_state_update_from_event(state, event);
+            break;
+        default:
+            /* ignore */
+            break;
+        }
+    }
+    return true;
+}
+
 /*
  * Test a sequence of keysyms, resulting from a sequence of key presses,
  * against the keysyms they're supposed to generate.
@@ -92,8 +113,11 @@ print_detailed_state(struct xkb_state *state)
  * See below for examples.
  */
 int
-test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
+test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
+                struct xkb_event_iterator *events, va_list ap)
 {
+    assert(!(!sm ^ !events));
+
     struct xkb_state *state;
 
     xkb_keycode_t kc;
@@ -132,10 +156,19 @@ test_key_seq_va(struct xkb_keymap *keymap, va_list ap)
             syms = &sym;
         }
 
-        if (op == DOWN || op == BOTH)
-            xkb_state_update_key(state, kc, XKB_KEY_DOWN);
-        if (op == UP || op == BOTH)
-            xkb_state_update_key(state, kc, XKB_KEY_UP);
+        if (events) {
+            /* Use the state event API */
+            if (op == DOWN || op == BOTH)
+                assert(update_key(sm, events, state, kc, XKB_KEY_DOWN));
+            if (op == UP || op == BOTH)
+                assert(update_key(sm, events, state, kc, XKB_KEY_UP));
+        } else {
+            /* Use the legacy state API */
+            if (op == DOWN || op == BOTH)
+                xkb_state_update_key(state, kc, XKB_KEY_DOWN);
+            if (op == UP || op == BOTH)
+                xkb_state_update_key(state, kc, XKB_KEY_UP);
+        }
 
 #if HAVE_TOOLS
         tools_print_keycode_state("", state, NULL, kc,
@@ -204,7 +237,21 @@ test_key_seq(struct xkb_keymap *keymap, ...)
     int ret;
 
     va_start(ap, keymap);
-    ret = test_key_seq_va(keymap, ap);
+    ret = test_key_seq_va(keymap, NULL, NULL, ap);
+    va_end(ap);
+
+    return ret;
+}
+
+int
+test_key_seq2(struct xkb_keymap *keymap, struct xkb_state_machine *sm,
+              struct xkb_event_iterator *events, ...)
+{
+    va_list ap;
+    int ret;
+
+    va_start(ap, events);
+    ret = test_key_seq_va(keymap, sm, events, ap);
     va_end(ap);
 
     return ret;

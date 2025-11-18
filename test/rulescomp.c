@@ -32,7 +32,7 @@ test_rmlvo_va(struct xkb_context *context, enum xkb_keymap_format format,
             strnull(rules), strnull(model), strnull(layout),
             strnull(variant), strnull(options));
 
-    const int ret = test_key_seq_va(keymap, ap);
+    const int ret = test_key_seq_va(keymap, NULL, NULL, ap);
 
     xkb_keymap_unref(keymap);
 
@@ -54,7 +54,7 @@ test_rmlvo_builder_va(struct xkb_context *context, enum xkb_keymap_format format
             strnull(rules), strnull(model), strnull(layout),
             strnull(variant), strnull(options));
 
-    const int ret = test_key_seq_va(keymap, ap);
+    const int ret = test_key_seq_va(keymap, NULL, NULL, ap);
 
     xkb_keymap_unref(keymap);
 

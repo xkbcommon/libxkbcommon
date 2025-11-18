@@ -475,6 +475,102 @@ Nevertheless, the following snippet provide a minimal example to achieve it.
 
 @snippet "test/modifiers.c" xkb_keymap_mod_get_codes
 
+#### How to use keyboard shorcuts from a different layout?
+
+##### The keyboard shortcuts mess
+
+Keyboard shortcuts in applications are usually using Latin letters. In order to
+make them work on non-Latin keyboard layouts, each toolkit (Gtk, Qt, etc.)
+implements its strategy.
+
+However there are some edge cases where this does not work:
+
+- Strategies may differ slightly, resulting in different shortcuts behavior
+  depending on the app used.
+- Punctuation is usually not remapped. E.g. the standard Israeli
+  layout cannot remap its key `<AD01>` “slash” to the US layout “q”.
+- If one have multiple Latin layouts, shorcuts may be positioned
+  differently. E.g. US Qwerty and French Azerty have different
+  positions for Ctrl+Q, while the user might want all shortcuts to
+  be positioned independently of the layout.
+
+##### XKB limitations
+
+Some users want explicitly to use keyboard shortcuts as if they were typing on
+another keyboard layout, e.g. using Qwerty shorcuts with a Dvorak layout. While
+achievable with modern XKB features (e.g. multiple actions per level), this is
+non-trivial and it does not scale well, thus preventing support in the standard
+keyboard database, [xkeyboard-config].
+
+##### Custom and consistent shortcuts behavior using libxkbcommon
+
+Since libxkbcommon 1.14, tweaking the keyboard shortcuts can be achieved by using
+the following functions from the [state event API]:
+
+<dl>
+<dt>
+`xkb_state_machine_options::xkb_state_machine_options_shortcuts_update_mods()`
+</dt>
+<dd>
+Set the modifiers that will trigger the shortcuts tweak, typically
+`Control+Alt+Super`.
+
+```c
+const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+const xkb_mod_mask_t shortcuts_mask = ctrl | alt | super;
+if (xkb_state_machine_options_shortcuts_update_mods(options, shortcuts_mask, shortcuts_mask)) {
+    /* handle error */
+    …
+}
+```
+</dd>
+<dt>
+`xkb_state_machine_options::xkb_state_machine_options_shortcuts_set_mapping()`
+</dt>
+<dd>
+Set the layout to use for shorcuts for each relevant layout. There are 2 typical
+use cases:
+
+<dl>
+<dt>*Single* layout</dt>
+<dd>
+The user types with a single layout, but want the shorcuts to act as if using
+another layout: e.g. Qwerty shortcuts for the Arabic layout. The keymap would
+be configured with *2* layouts: the user layout then the shortcut layout (e.g.
+`ara,us`).
+
+```c
+if (xkb_state_machine_options_shortcuts_set_mapping(options, 0, 1)) {
+    /* handle error */
+    …
+}
+```
+</dd>
+<dt>*Multiple* layouts</dt>
+<dd>
+The user types with multiples layouts but wants shortcuts consistency accross
+all the layouts, typically using the first layout as the reference.
+
+```c
+// When using shortcuts, all layouts will behave as if using the *first* layout.
+const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
+for (xkb_layout_index_t source = 1; source < num_layouts; source++) {
+    if (xkb_state_machine_options_shortcuts_set_mapping(options, source, 0)) {
+        /* handle error */
+        …
+    }
+}
+```
+</dd>
+</dl>
+
+</dd>
+</dl>
+
+[state event API]: @ref server-client-state
+
 ### Keys
 
 #### How to check if a keymap defines/binds a keycode?
