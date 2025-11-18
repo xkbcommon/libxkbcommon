@@ -2370,6 +2370,85 @@ xkb_state_machine_options_shortcuts_set_mapping(
 
 static bool
 state_machine_set_shortcuts(struct xkb_state_machine *sm,
+                            const struct xkb_shortcuts_config_options *options);
+
+static bool
+get_shortcuts_config_from_env(struct xkb_keymap *keymap,
+                                   struct xkb_shortcuts_config_options *config)
+{
+    /*
+     * Modifier mask
+     */
+
+    const char *config_str = xkb_context_getenv(
+        keymap->ctx, "XKB_UNSTABLE_EXPERIMENTAL_SHORTCUT_MASK"
+    );
+    xkb_mod_mask_t mask = 0;
+    if (isempty(config_str)) {
+        /* Use default mask */
+        xkb_mod_index_t mod;
+        mod = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+        mod = xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+        mod = xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_SUPER);
+        if (mod != XKB_MOD_INVALID)
+            mask |= (UINT32_C(1) << mod);
+    } else {
+        char *endptr = NULL;
+        const unsigned long raw_mask = strtoul(config_str, &endptr, 16);
+        if (endptr[0] != '\0' || raw_mask > UINT32_MAX) {
+            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot parse shortcut tweak mod mask\n");
+            return true;
+        }
+        mask = (xkb_mod_mask_t) raw_mask;
+    }
+
+    mask = mod_mask_get_effective(keymap, mask);
+    config->mask = mask;
+
+    if (!mask)
+        return true;
+
+    /*
+     * Layout mappings
+     */
+
+    config_str = xkb_context_getenv(
+        keymap->ctx, "XKB_UNSTABLE_EXPERIMENTAL_SHORTCUT_TARGET_LAYOUTS"
+    );
+    if (isempty(config_str))
+        return true;
+    const char *start = config_str;
+    xkb_layout_index_t layout = 0;
+    /* Parse comma-separated list of layout indexes */
+    while (start[0] != '\0') {
+        char *endptr = NULL;
+        const unsigned long raw_layout = strtoul(start, &endptr, 10);
+        if ((endptr[0] != '\0' && endptr[0] != ',') ||
+            raw_layout < 1 || raw_layout > XKB_MAX_GROUPS ||
+            state_machine_set_shortcuts_reference_layout(
+                config, layout, (xkb_layout_index_t) raw_layout - 1)) {
+            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                    "Cannot parse shortcut tweak layout index #%"PRIu32"\n",
+                    layout);
+            return false;
+        }
+        fprintf(stderr, "~~~ %u -> %lu - %s\n", layout, raw_layout, endptr);
+        layout++;
+        if (endptr[0] == '\0')
+            break;
+        start = endptr + 1;
+    }
+
+    return true;
+}
+
+static bool
+state_machine_set_shortcuts(struct xkb_state_machine *sm,
                             const struct xkb_shortcuts_config_options *options)
 {
     struct xkb_keymap * const restrict keymap = sm->state.keymap;
@@ -2441,6 +2520,19 @@ xkb_state_machine_new(struct xkb_keymap *keymap,
     if (!darray_empty(options->shortcuts.targets)) {
         if (!state_machine_set_shortcuts(sm, &options->shortcuts))
             goto error;
+    } else {
+        // FIXME: remove after experimentation
+        struct xkb_shortcuts_config_options config = {
+            .mask = 0,
+            .targets = darray_new()
+        };
+        if (get_shortcuts_config_from_env(keymap, &config)) {
+            if (!state_machine_set_shortcuts(sm, &config)) {
+                darray_free(config.targets);
+                goto error;
+            }
+        }
+        darray_free(config.targets);
     }
 
     return sm;
