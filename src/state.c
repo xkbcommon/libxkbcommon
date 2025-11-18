@@ -989,80 +989,17 @@ xkb_filter_apply_all(struct xkb_state *state,
     }
 }
 
-struct xkb_state_options {
-    enum xkb_state_accessibility_flags a11y_affect;
-    enum xkb_state_accessibility_flags a11y_flags;
-    struct xkb_context *ctx;
-};
-
-enum {
-    /** Mask to filter out invalid flags */
-    XKB_STATE_A11Y_ALL = (XKB_STATE_A11Y_LATCH_TO_LOCK |
-                          XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS),
-};
-
-#define state_options_new(context) {        \
-    .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
-    .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
-    .ctx = (context)                        \
-}
-
-/* Default state options (context arg is unused) */
-static const struct xkb_state_options default_options = state_options_new(NULL);
-
-struct xkb_state_options *
-xkb_state_options_new(struct xkb_context *context)
-{
-    struct xkb_state_options* restrict const opt = calloc(1, sizeof(*opt));
-    if (!opt)
-        return NULL;
-
-    *opt = (struct xkb_state_options)
-           state_options_new(xkb_context_ref(context));
-
-    return opt;
-}
-
-void
-xkb_state_options_destroy(struct xkb_state_options *options)
-{
-    if (options == NULL)
-        return;
-    xkb_context_unref(options->ctx);
-    free(options);
-}
-
-int
-xkb_state_options_update_a11y_flags(struct xkb_state_options *options,
-                                    enum xkb_state_accessibility_flags affect,
-                                    enum xkb_state_accessibility_flags flags)
-{
-    if (affect & ~(enum xkb_state_accessibility_flags) XKB_STATE_A11Y_ALL) {
-        log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized state flags: %#x\n", flags);
-        return 1;
-    }
-
-    options->a11y_affect |= affect;
-    options->a11y_flags &= ~affect;
-    options->a11y_flags |= (flags & affect);
-
-    return 0;
-}
-
 static inline void
 xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
-               const struct xkb_state_options *options)
+               enum xkb_state_accessibility_flags a11y_affect,
+               enum xkb_state_accessibility_flags a11y_flags)
 {
-    if (options == NULL)
-        options = &default_options;
-
-    state->flags = options->a11y_flags;
+    state->flags = a11y_flags;
     if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
-        !(options->a11y_affect & XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
-            /* Keymap v2+: enable extension to XKB if not manually disabled */
-            state->flags |= XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS;
-    }
+        !(a11y_affect & XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
+             /* Keymap v2+: enable extension to XKB if not manually disabled */
+             state->flags |= XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS;
+     }
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
@@ -1070,22 +1007,15 @@ xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
 }
 
 struct xkb_state *
-xkb_state_new2(struct xkb_keymap *keymap,
-               const struct xkb_state_options *options)
+xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_state* restrict const state = calloc(1, sizeof(*state));
     if (!state)
         return NULL;
 
-    xkb_state_init(state, keymap, options);
+    xkb_state_init(state, keymap, 0, 0);
 
     return state;
-}
-
-struct xkb_state *
-xkb_state_new(struct xkb_keymap *keymap)
-{
-    return xkb_state_new2(keymap, &default_options);
 }
 
 struct xkb_state *
@@ -2290,11 +2220,15 @@ struct xkb_state_machine {
 };
 
 struct xkb_state_machine_options {
-    struct xkb_state_options state;
+    enum xkb_state_accessibility_flags a11y_affect;
+    enum xkb_state_accessibility_flags a11y_flags;
+    struct xkb_context *ctx;
 };
 
 #define state_machine_options_new(context) {\
-    .state = state_options_new(context)     \
+    .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
+    .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
+    .ctx = (context)                        \
 }
 
 /* Default state options (context arg is unused) */
@@ -2319,9 +2253,15 @@ xkb_state_machine_options_destroy(struct xkb_state_machine_options *options)
 {
     if (options == NULL)
         return;
-    xkb_context_unref(options->state.ctx);
+    xkb_context_unref(options->ctx);
     free(options);
 }
+
+enum {
+    /** Mask to filter out invalid flags */
+    XKB_STATE_A11Y_ALL = (XKB_STATE_A11Y_LATCH_TO_LOCK |
+                          XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS),
+};
 
 int
 xkb_state_machine_options_update_a11y_flags(
@@ -2329,7 +2269,17 @@ xkb_state_machine_options_update_a11y_flags(
     enum xkb_state_accessibility_flags affect,
     enum xkb_state_accessibility_flags flags)
 {
-    return xkb_state_options_update_a11y_flags(&options->state, affect, flags);
+    if (affect & ~(enum xkb_state_accessibility_flags) XKB_STATE_A11Y_ALL) {
+        log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized state flags: %#x\n", flags);
+        return 1;
+    }
+
+    options->a11y_affect |= affect;
+    options->a11y_flags &= ~affect;
+    options->a11y_flags |= (flags & affect);
+
+    return 0;
 }
 
 struct xkb_state_machine *
@@ -2343,7 +2293,8 @@ xkb_state_machine_new(struct xkb_keymap *keymap,
     if (!options)
         options = &default_machine_options;
 
-    xkb_state_init(&sm->state, keymap, &options->state);
+    xkb_state_init(&sm->state, keymap,
+                   options->a11y_affect, options->a11y_flags);
     return sm;
 }
 

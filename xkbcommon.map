@@ -153,10 +153,6 @@ global:
     xkb_keymap_key_iterator_new;
     xkb_keymap_key_iterator_destroy;
     xkb_keymap_key_iterator_next;
-    xkb_state_options_new;
-    xkb_state_options_destroy;
-    xkb_state_options_update_a11y_flags;
-    xkb_state_new2;
     xkb_state_update_from_event;
     xkb_state_update_controls;
     xkb_state_serialize_controls;
