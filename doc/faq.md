@@ -474,3 +474,30 @@ There is no dedicated API, since the use cases are too diverse or niche.
 Nevertheless, the following snippet provide a minimal example to achieve it.
 
 @snippet "test/modifiers.c" xkb_keymap_mod_get_codes
+
+### Keys
+
+#### How to check if a keymap defines/binds a keycode?
+
+<dl>
+<dt>Check if a keymaps *defines* a keycode<dt>
+<dd>
+`xkb_keymap::xkb_keymap_key_get_name()` returns `NULL` if the keycode is not
+defined in the corresponding keymap:
+
+```c
+if (xkb_keymap_key_get_name(keymap, keycode) != NULL)
+    // use existing key ...
+```
+</dd>
+<dt>Check if a keymaps *binds* a keycode<dt>
+<dd>
+`xkb_keymap::xkb_keymap_num_layouts_for_key()` returns `0` if the keycode is
+either not defined or unbound:
+
+```c
+if (xkb_keymap_num_layouts_for_key(keymap, keycode))
+    // use bound key ...
+```
+</dd>
+</dl>
