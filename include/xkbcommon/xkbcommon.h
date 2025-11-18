@@ -1962,6 +1962,12 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * This is the recommended API for **server** applications. It enables the full
  * feature set that libxkbcommon supports.
  *
+ * This API enables to generate a sequence of [events][event] corresponding to
+ * *atomic* state changes, contrary to the `xkb_state` API that cannot generate
+ * events. Additionally, the event API supports events other than state
+ * components changes, such as keys events, so that it enables to handle most of
+ * the XKB [key actions](@ref key-action-def).
+ *
  * See the [example for a Wayland server](@ref quick-guide-wayland-server)
  * in the quick guide.
  *
@@ -1984,6 +1990,8 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * </dl>
  *
  * @endparblock
+ *
+ * [event]: @ref xkb_event
  */
 
 /**
@@ -2409,6 +2417,10 @@ struct xkb_event_iterator;
 /**
  * Create an event iterator object.
  *
+ * @param sm The state machine that produces the event of the iterator.
+ *
+ * @returns A new event iterator object, or `NULL` on failure.
+ *
  * @since 1.14.0
  *
  * @sa `xkb_event_iterator_destroy()`
@@ -2421,6 +2433,10 @@ xkb_event_iterator_new(struct xkb_state_machine *sm);
 /**
  * Free an event iterator object.
  *
+ * @param events
+ *     The event iterator to free.
+ *     If it is `NULL`, this function does nothing.
+ *
  * @since 1.14.0
  *
  * @sa `xkb_event_iterator_new()`
@@ -2432,6 +2448,10 @@ xkb_event_iterator_destroy(struct xkb_event_iterator *events);
 
 /**
  * Get the next event queued in an event iterator object.
+ *
+ * @param events The event iterator.
+ *
+ * @returns The next event, or `NULL` if the queue is empty.
  *
  * @since 1.14.0
  *
