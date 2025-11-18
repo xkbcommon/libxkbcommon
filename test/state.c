@@ -42,30 +42,31 @@ static const enum xkb_keymap_format keymap_formats[] = {
 #endif
 
 static void
-test_state_options(struct xkb_context *ctx)
+test_state_machine_options(struct xkb_context *ctx)
 {
-    struct xkb_state_options *options = xkb_state_options_new(ctx);
+    struct xkb_state_machine_options *options =
+        xkb_state_machine_options_new(ctx);
     assert(options);
 
     /* Invalid flags */
-    assert(xkb_state_options_update_a11y_flags(options, -1000, 0) == 1);
-    assert(xkb_state_options_update_a11y_flags(options, 1000, 0) == 1);
+    assert(xkb_state_machine_options_update_a11y_flags(options, -1000, 0) == 1);
+    assert(xkb_state_machine_options_update_a11y_flags(options, 1000, 0) == 1);
 
     /* Valid flags */
     static_assert(XKB_STATE_A11Y_NO_FLAGS == 0, "default flags");
-    assert(xkb_state_options_update_a11y_flags(options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
+    assert(xkb_state_machine_options_update_a11y_flags(
+            options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
 
     struct xkb_keymap *keymap =
         xkb_keymap_new_from_names(ctx, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
     assert(keymap);
 
-    struct xkb_state *state = xkb_state_new2(keymap, options);
-    assert(state);
-    xkb_state_unref(state);
+    struct xkb_state_machine *sm = xkb_state_machine_new(keymap, options);
+    assert(sm);
 
+    xkb_state_machine_unref(sm);
     xkb_keymap_unref(keymap);
-
-    xkb_state_options_destroy(options);
+    xkb_state_machine_options_destroy(options);
 }
 
 /* Reference implementation from XkbAdjustGroup in Xorg xserver */
@@ -3673,7 +3674,7 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
 
-    test_state_options(context);
+    test_state_machine_options(context);
     test_group_wrap(context);
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};

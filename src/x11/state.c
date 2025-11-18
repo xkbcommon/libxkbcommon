@@ -48,6 +48,8 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
     return true;
 }
 
+#if 0
+// TODO: currently unused
 static enum xkb_state_accessibility_flags
 translate_state_accessibility_flags(const xcb_xkb_get_controls_reply_t *reply)
 {
@@ -57,10 +59,10 @@ translate_state_accessibility_flags(const xcb_xkb_get_controls_reply_t *reply)
     }
     return flags;
 }
+#endif
 
 static bool
 get_controls(struct xkb_context *ctx, xcb_connection_t *conn, int32_t device_id,
-             struct xkb_state_options *options,
              enum xkb_action_controls *controls)
 {
     xcb_xkb_get_controls_cookie_t cookie = xcb_xkb_get_controls(conn, device_id);
@@ -69,11 +71,7 @@ get_controls(struct xkb_context *ctx, xcb_connection_t *conn, int32_t device_id,
 
     FAIL_IF_BAD_REPLY(ctx, reply, "XkbGetControls");
 
-    const enum xkb_state_accessibility_flags flags =
-        translate_state_accessibility_flags(reply);
-    if (xkb_state_options_update_a11y_flags(options, flags, flags) != 0)
-        goto fail;
-
+    // TODO: translate_state_accessibility_flags(reply);
     *controls = translate_controls_mask(reply->enabledControls);
 
     free(reply);
@@ -94,18 +92,11 @@ xkb_x11_state_new_from_device(struct xkb_keymap *keymap,
         return NULL;
     }
 
-    struct xkb_state_options * const options = xkb_state_options_new(keymap->ctx);
-    if (options == NULL)
-        return NULL;
-
     enum xkb_action_controls controls = 0;
-    if (!get_controls(keymap->ctx, conn, device_id, options, &controls)) {
-        xkb_state_options_destroy(options);
+    if (!get_controls(keymap->ctx, conn, device_id, &controls))
         return NULL;
-    }
 
-    struct xkb_state * const state = xkb_state_new2(keymap, options);
-    xkb_state_options_destroy(options);
+    struct xkb_state * const state = xkb_state_new(keymap);
     if (!state)
         return NULL;
 
