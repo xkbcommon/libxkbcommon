@@ -471,7 +471,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                         /* Promote to lock */
                         filter->action.type = ACTION_TYPE_GROUP_LOCK;
                         filter->func = xkb_filter_group_lock_func;
-                        xkb_filter_group_lock_new(state, NULL, filter);
+                        xkb_filter_group_lock_new(state, events, filter);
                         state->components.latched_group -= priv.group_delta;
                         filter->key = key;
                         /* XXX beep beep! */
@@ -745,13 +745,13 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                         /* Mutate the action to LockMods() */
                         filter->action.type = ACTION_TYPE_MOD_LOCK;
                         filter->func = xkb_filter_mod_lock_func;
-                        xkb_filter_mod_lock_new(state, NULL, filter);
+                        xkb_filter_mod_lock_new(state, events, filter);
                     }
                     else {
                         /* Mutate the action to SetMods() */
                         filter->action.type = ACTION_TYPE_MOD_SET;
                         filter->func = xkb_filter_mod_set_func;
-                        xkb_filter_mod_set_new(state, NULL, filter);
+                        xkb_filter_mod_set_new(state, events, filter);
                     }
                     filter->key = key;
                     /* Clear latches */
@@ -2231,9 +2231,9 @@ struct xkb_state_machine_options {
     .ctx = (context)                        \
 }
 
-/* Default state options (context arg is unused) */
+/* Default state options */
 static const struct xkb_state_machine_options default_machine_options =
-    state_machine_options_new(NULL);
+    state_machine_options_new(NULL /* unused */);
 
 struct xkb_state_machine_options *
 xkb_state_machine_options_new(struct xkb_context *context)
