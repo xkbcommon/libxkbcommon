@@ -160,6 +160,8 @@ global:
     xkb_state_machine_options_new;
     xkb_state_machine_options_destroy;
     xkb_state_machine_options_update_a11y_flags;
+    xkb_state_machine_options_shortcuts_update_mods;
+    xkb_state_machine_options_shortcuts_set_mapping;
     xkb_state_machine_new;
     xkb_state_machine_ref;
     xkb_state_machine_unref;
