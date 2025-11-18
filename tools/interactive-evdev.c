@@ -88,7 +88,7 @@ is_keyboard(int fd)
 
 static int
 keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
-             const struct xkb_any_state_options *options,
+             const struct xkb_state_machine_options *options,
              enum xkb_keyboard_controls kbd_controls_affect,
              enum xkb_keyboard_controls kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
@@ -119,7 +119,7 @@ keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
     }
 
     if (use_events_api) {
-        state_machine = xkb_state_machine_new(keymap, options->machine);
+        state_machine = xkb_state_machine_new(keymap, options);
         if (!state_machine) {
             fprintf(stderr, "Couldn't create xkb state machine for %s\n", path);
             ret = -EFAULT;
@@ -132,11 +132,9 @@ keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
             ret = -EFAULT;
             goto err_state_events;
         }
-        state = xkb_state_new(keymap);
-    } else {
-        state = xkb_state_new2(keymap, options->state);
     }
 
+    state = xkb_state_new(keymap);
     if (!state) {
         fprintf(stderr, "Couldn't create xkb state for %s\n", path);
         ret = -EFAULT;
@@ -218,7 +216,7 @@ filter_device_name(const struct dirent *ent)
 
 static struct keyboard *
 get_keyboards(struct xkb_keymap *keymap,
-              const struct xkb_any_state_options *options,
+              const struct xkb_state_machine_options *options,
               enum xkb_keyboard_controls kbd_controls_affect,
               enum xkb_keyboard_controls kbd_controls_values,
               struct xkb_compose_table *compose_table)
@@ -520,11 +518,9 @@ main(int argc, char *argv[])
 
     /* Initialize state options */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
-    const struct xkb_any_state_options any_state_options = {
-        .state = xkb_state_options_new(ctx),
-        .machine = xkb_state_machine_options_new(ctx)
-    };
-    if (any_state_options.state == NULL || any_state_options.machine == NULL)
+    struct xkb_state_machine_options * const state_machine_options =
+        xkb_state_machine_options_new(ctx);
+    if (state_machine_options == NULL)
         goto error_state_options;
     xkb_context_unref(ctx);
     ctx = NULL;
@@ -649,13 +645,15 @@ main(int argc, char *argv[])
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, &any_state_options,
+            if (!tools_parse_controls(optarg, state_machine_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 usage(stderr, argv[0]);
                 ret = EXIT_INVALID_USAGE;
                 goto error_parse_args;
             }
+            /* --legacy-state-api=false is implied */
+            use_events_api = true;
             break;
         case 'h':
             usage(stdout, argv[0]);
@@ -762,12 +760,12 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(keymap, &any_state_options, kbd_controls_affect,
+    kbds = get_keyboards(keymap, state_machine_options, kbd_controls_affect,
                          kbd_controls_values, compose_table);
     if (!kbds) {
         goto out;
     }
-    xkb_any_state_options_destroy(&any_state_options);
+    xkb_state_machine_options_destroy(state_machine_options);
 
 #ifdef ENABLE_PRIVATE_APIS
     if (print_modmaps) {
@@ -794,7 +792,7 @@ out:
     xkb_keymap_unref(keymap);
 error_parse_args:
 error_state_options:
-    xkb_any_state_options_destroy(&any_state_options);
+    xkb_state_machine_options_destroy(state_machine_options);
     xkb_context_unref(ctx);
 
     return ret;
@@ -802,12 +800,12 @@ error_state_options:
 too_many_includes:
     fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
             ARRAY_SIZE(includes));
-    xkb_any_state_options_destroy(&any_state_options);
+    xkb_state_machine_options_destroy(state_machine_options);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     usage(stderr, argv[0]);
-    xkb_any_state_options_destroy(&any_state_options);
+    xkb_state_machine_options_destroy(state_machine_options);
     exit(EXIT_INVALID_USAGE);
 }
