@@ -2216,19 +2216,53 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t kc)
  *   bloated for *clients* applications.
  */
 struct xkb_state_machine {
+    /** Internal state */
     struct xkb_state state;
+
+    /** Extra event API-specific state data */
+    struct state_machine_data {
+        /** Configuration */
+        struct state_machine_config {
+            /** Shortcuts tweak */
+            struct state_machine_shortcuts_config {
+                /** Modifier mask to trigger tweak */
+                xkb_mod_mask_t mask;
+                /** Target layouts targets */
+                xkb_layout_index_t *targets;
+            } shortcuts;
+        } config;
+        /** State */
+        struct {
+            /** The “real” base group, before shortcuts tweak */
+            int32_t base_group;
+        } state;
+    } extra;
 };
 
 struct xkb_state_machine_options {
+    /** Accessibility flags */
     enum xkb_state_accessibility_flags a11y_affect;
     enum xkb_state_accessibility_flags a11y_flags;
+
+    /** Shortcuts tweak */
+    struct xkb_shortcuts_config_options {
+        /** Modifier mask to trigger tweak */
+        xkb_mod_mask_t mask;
+        /** Target layouts targets */
+        darray(xkb_layout_index_t) targets;
+    } shortcuts;
+
     struct xkb_context *ctx;
 };
 
 #define state_machine_options_new(context) {\
     .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
     .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
-    .ctx = (context)                        \
+    .shortcuts = {                          \
+        .mask = 0,                          \
+        .targets = darray_new(),            \
+    },                                      \
+    .ctx = (context),                       \
 }
 
 /* Default state options */
@@ -2253,6 +2287,8 @@ xkb_state_machine_options_destroy(struct xkb_state_machine_options *options)
 {
     if (options == NULL)
         return;
+
+    darray_free(options->shortcuts.targets);
     xkb_context_unref(options->ctx);
     free(options);
 }
@@ -2282,6 +2318,110 @@ xkb_state_machine_options_update_a11y_flags(
     return 0;
 }
 
+int
+xkb_state_machine_options_shortcuts_update_mods(
+    struct xkb_state_machine_options* restrict options,
+    xkb_mod_mask_t affect, xkb_mod_mask_t mask
+)
+{
+    options->shortcuts.mask &= ~affect;
+    options->shortcuts.mask |= (mask & affect);
+    return 0;
+}
+
+static int
+state_machine_set_shortcuts_reference_layout(
+    struct xkb_shortcuts_config_options* restrict options,
+    xkb_layout_index_t source, xkb_layout_index_t target
+)
+{
+    if (source >= XKB_MAX_GROUPS || target >= XKB_MAX_GROUPS)
+        return 1;
+
+    if (target == source) {
+        /* Skip default setting */
+        return 0;
+    }
+
+    /* Resize array & initialize new entries, if relevant */
+    if (source >= darray_size(options->targets)) {
+        xkb_layout_index_t new = darray_size(options->targets);
+        darray_resize(options->targets, source + 1);
+        for (; new < source; new++)
+            darray_item(options->targets, new) =
+                XKB_LAYOUT_INVALID;
+    }
+
+    darray_item(options->targets, source) = (source == target)
+        ? XKB_LAYOUT_INVALID
+        : target;
+    return 0;
+}
+
+int
+xkb_state_machine_options_shortcuts_set_mapping(
+    struct xkb_state_machine_options* restrict options,
+    xkb_layout_index_t source, xkb_layout_index_t target
+)
+{
+    return state_machine_set_shortcuts_reference_layout(&options->shortcuts,
+                                                        source, target);
+}
+
+static bool
+state_machine_set_shortcuts(struct xkb_state_machine *sm,
+                            const struct xkb_shortcuts_config_options *options)
+{
+    struct xkb_keymap * const restrict keymap = sm->state.keymap;
+
+    /* Consider only defined layouts */
+    xkb_layout_index_t count = MIN(
+        keymap->num_groups,
+        (xkb_layout_index_t) darray_size(options->targets)
+    );
+    /* Drop layout entries with default setting or invalid group */
+    static_assert(XKB_LAYOUT_INVALID > XKB_MAX_GROUPS, "");
+    while (count > 1) {
+        if (darray_item(options->targets, count - 1) <
+            keymap->num_groups)
+            break;
+        count--;
+    }
+    if (!count)
+        return true;
+
+    xkb_mod_mask_t mask = options->mask;
+    if (mask) {
+        /* Sanitize mask */
+        mask &= (UINT64_C(1) << xkb_keymap_num_mods(keymap)) - 1;
+    } else {
+        /* Default mask */
+        // TODO
+    }
+    if (!mask)
+        return true;
+
+    xkb_layout_index_t * const targets = calloc(keymap->num_groups,
+                                                sizeof(*targets));
+    if (!targets)
+        return false;
+
+    for (xkb_layout_index_t l = 0; l < count; l++) {
+        /* Sanitize layouts targets */
+        targets[l] = (darray_item(options->targets, l) <
+                        keymap->num_groups)
+                        ? darray_item(options->targets, l)
+                        : XKB_LAYOUT_INVALID;
+    }
+    for (xkb_layout_index_t l = count; l < keymap->num_groups; l++) {
+        targets[l] = XKB_LAYOUT_INVALID;
+    }
+
+    sm->extra.config.shortcuts.mask = mask;
+    sm->extra.config.shortcuts.targets = targets;
+    return true;
+}
+
 struct xkb_state_machine *
 xkb_state_machine_new(struct xkb_keymap *keymap,
                       const struct xkb_state_machine_options *options)
@@ -2295,7 +2435,19 @@ xkb_state_machine_new(struct xkb_keymap *keymap,
 
     xkb_state_init(&sm->state, keymap,
                    options->a11y_affect, options->a11y_flags);
+    sm->extra.state.base_group = (int32_t) XKB_LAYOUT_INVALID;
+
+    /* Shortcuts */
+    if (!darray_empty(options->shortcuts.targets)) {
+        if (!state_machine_set_shortcuts(sm, &options->shortcuts))
+            goto error;
+    }
+
     return sm;
+
+error:
+    xkb_state_machine_unref(sm);
+    return NULL;
 }
 
 struct xkb_state_machine *
@@ -2314,6 +2466,7 @@ xkb_state_machine_unref(struct xkb_state_machine *sm)
         return;
 
     xkb_state_destroy(&sm->state);
+    free(sm->extra.config.shortcuts.targets);
     free(sm);
 }
 
@@ -2336,6 +2489,8 @@ xkb_state_machine_update_controls(struct xkb_state_machine *sm,
     const enum xkb_state_component changed = state_update_controls(
         &sm->state, events, affect, controls
     );
+
+    // FIXME: shortcut tweak
 
     if (changed) {
         /* Create event only if some component actually changed */
@@ -2379,6 +2534,8 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
         locked_layout
     );
 
+    // FIXME: shortcut tweak
+
     if (changed) {
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
@@ -2402,11 +2559,17 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     events->next = 0;
 
     struct xkb_state * restrict const state = &sm->state;
+    struct state_machine_data * restrict const extra = &sm->extra;
     const struct xkb_key * const key = XkbKey(state->keymap, kc);
     if (key == NULL)
         return 0;
 
     const struct state_components prev_components = state->components;
+
+    if (extra->state.base_group != (int32_t) XKB_LAYOUT_INVALID) {
+        /* Restore the real base group, but not the effective group */
+        state->components.base_group = extra->state.base_group;
+    }
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -2439,6 +2602,25 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 
     xkb_state_update_derived(state);
 
+    bool used_shortcuts_tweak = false;
+    if (extra->config.shortcuts.targets &&
+        (state->components.mods & extra->config.shortcuts.mask) &&
+        (extra->config.shortcuts.targets[state->components.group] !=
+         XKB_LAYOUT_INVALID)) {
+        /* Activate shortcuts tweak */
+        extra->state.base_group = state->components.base_group;
+        state->components.base_group
+            = (int32_t) extra->config.shortcuts.targets[state->components.group]
+            - state->components.latched_group
+            - state->components.locked_group;
+        // TODO: could we avoid recomputing everything?
+        xkb_state_update_derived(state);
+        used_shortcuts_tweak = true;
+    } else {
+        /* Deactivate shortcuts tweak */
+        extra->state.base_group = (int32_t) XKB_LAYOUT_INVALID;
+    }
+
     const enum xkb_state_component changed =
         get_state_component_changes(&prev_components, &state->components);
 
@@ -2454,6 +2636,8 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
                 : XKB_EVENT_TYPE_KEY_UP,
             .keycode = kc
         });
+    } else if (used_shortcuts_tweak) {
+        // FIXME: we need to prepend the tweak
     }
 
     if (changed) {
