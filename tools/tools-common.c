@@ -900,7 +900,7 @@ tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out)
 }
 
 bool
-tools_parse_controls(const char *raw, const struct xkb_any_state_options *options,
+tools_parse_controls(const char *raw, struct xkb_state_machine_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values)
 {
@@ -914,13 +914,10 @@ tools_parse_controls(const char *raw, const struct xkb_any_state_options *option
         _NUM_CONTROL_FIELDS,
     };
 
-    static const struct {
-        const char *name;
-        enum control_field type;
-    } fields[] = {
-        { "sticky-keys",        CONTROL_FIELD_STICKY_KEYS },
-        { "latch-to-lock",      CONTROL_FIELD_LATCH_TO_LOCK },
-        { "latch-simultaneous", CONTROL_FIELD_LATCH_SIMULTANEOUS },
+    static const char * fields[] = {
+        [CONTROL_FIELD_STICKY_KEYS] = "sticky-keys",
+        [CONTROL_FIELD_LATCH_TO_LOCK] = "latch-to-lock",
+        [CONTROL_FIELD_LATCH_SIMULTANEOUS]= "latch-simultaneous",
     };
 
     const char *start = raw;
@@ -952,14 +949,16 @@ tools_parse_controls(const char *raw, const struct xkb_any_state_options *option
         }
 
         ok = false;
-        for (uint8_t f = 0; f < (uint8_t) ARRAY_SIZE(fields); f++) {
-            if (strncmp(start, fields[f].name, len) != 0 ||
-                fields[f].name[len] != '\0')
+        for (enum control_field type = 0;
+             type < (enum control_field) ARRAY_SIZE(fields);
+             type++) {
+            if (strncmp(start, fields[type], len) != 0 ||
+                fields[type][len] != '\0')
                 continue;
 
             ok = true;
 
-            switch (fields[f].type) {
+            switch (type) {
             case CONTROL_FIELD_STICKY_KEYS:
                 if (disable)
                     *controls_values &= ~XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
@@ -968,36 +967,16 @@ tools_parse_controls(const char *raw, const struct xkb_any_state_options *option
                 *controls_affect |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
                 break;
             case CONTROL_FIELD_LATCH_TO_LOCK:
-                if (options->state) {
-                    ok = xkb_state_options_update_a11y_flags(
-                        options->state,
-                        XKB_STATE_A11Y_LATCH_TO_LOCK,
-                        (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
-                    ) == 0;
-                }
-                if (options->machine) {
-                    ok = xkb_state_machine_options_update_a11y_flags(
-                        options->machine,
-                        XKB_STATE_A11Y_LATCH_TO_LOCK,
-                        (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
-                    ) == 0;
-                }
+                ok = xkb_state_machine_options_update_a11y_flags(
+                    options, XKB_STATE_A11Y_LATCH_TO_LOCK,
+                    (disable ? 0 : XKB_STATE_A11Y_LATCH_TO_LOCK)
+                ) == 0;
                 break;
             case CONTROL_FIELD_LATCH_SIMULTANEOUS:
-                if (options->state) {
-                    ok = xkb_state_options_update_a11y_flags(
-                        options->state,
-                        XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
-                        (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
-                    ) == 0;
-                }
-                if (options->machine) {
-                    ok = xkb_state_machine_options_update_a11y_flags(
-                        options->machine,
-                        XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
-                        (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
-                    ) == 0;
-                }
+                ok = xkb_state_machine_options_update_a11y_flags(
+                    options, XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
+                    (disable ? 0 : XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)
+                ) == 0;
                 break;
             default:
                 {} /* Label followed by declaration requires C23 */
