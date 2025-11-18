@@ -1598,6 +1598,9 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
  * This function always returns the canonical name of the key (see
  * description in `xkb_keycode_t`).
  *
+ * @param keymap  The keymap to query.
+ * @param key     The key to query.
+ *
  * @returns The key name. If no key with this keycode exists,
  * returns `NULL`.
  *
@@ -1767,6 +1770,12 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
  * This number can be different from `xkb_keymap_num_layouts()`, but is always
  * smaller.  It is the appropriate value to use when iterating over the
  * layouts of a key.
+ *
+ * @param keymap  The keymap to query.
+ * @param key     The key to query.
+ *
+ * @returns The number of layouts corresponding to the given key if it is valid
+ * in the given keymap, otherwise 0 if the key is undefined or unbound.
  *
  * @sa xkb_layout_index_t
  * @memberof xkb_keymap
