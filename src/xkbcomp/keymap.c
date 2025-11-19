@@ -542,7 +542,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     return true;
 }
 
-typedef bool (*compile_file_fn)(XkbFile *file, struct xkb_keymap *keymap);
+typedef bool (*compile_file_fn)(XkbFile *file, struct xkb_keymap_info *info);
 
 static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
     [FILE_TYPE_KEYCODES] = CompileKeycodes,
@@ -587,6 +587,23 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
     }
 
     /*
+     * Keymap augmented with compilation-specific data
+     */
+    struct xkb_keymap_info info = {
+        /* Copy the keymap */
+        .keymap = *keymap,
+        .features = {
+            .max_groups = format_max_groups(keymap->format),
+            .group_lock_on_release =
+                isGroupLockOnReleaseSupported(keymap->format),
+            .mods_unlock_on_press =
+                isModsUnLockOnPressSupported(keymap->format),
+            .mods_latch_on_press =
+                isModsLatchOnPressSupported(keymap->format),
+        },
+    };
+
+    /*
      * Compile sections
      *
      * NOTE: Any component is optional.
@@ -605,14 +622,18 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
         }
 
         /* Missing components are initialized with defaults */
-        const bool ok = compile_file_fns[type](files[type], keymap);
+        const bool ok = compile_file_fns[type](files[type], &info);
         if (!ok) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Failed to compile %s\n",
                     xkb_file_type_to_string(type));
+            /* Copy back to the keymap, so that all can be properly freed */
+            *keymap = info.keymap;
             return false;
         }
     }
 
+    /* Copy back the keymap */
+    *keymap = info.keymap;
     return UpdateDerivedKeymapFields(keymap);
 }
