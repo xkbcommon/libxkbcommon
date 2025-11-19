@@ -837,11 +837,12 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
 /***====================================================================***/
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap)
+CompileKeyTypes(XkbFile *file, struct xkb_keymap_info *keymap_info)
 {
     KeyTypesInfo info;
 
-    InitKeyTypesInfo(&info, keymap->ctx, 0, &keymap->mods);
+    InitKeyTypesInfo(&info, keymap_info->keymap.ctx, 0,
+                     &keymap_info->keymap.mods);
 
     if (file != NULL)
         HandleKeyTypesFile(&info, file);
@@ -849,7 +850,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap)
     if (info.errorCount != 0)
         goto err_info;
 
-    if (!CopyKeyTypesToKeymap(keymap, &info))
+    if (!CopyKeyTypesToKeymap(&keymap_info->keymap, &info))
         goto err_info;
 
     ClearKeyTypesInfo(&info);

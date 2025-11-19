@@ -179,20 +179,20 @@ typedef struct {
 
     xkb_layout_index_t max_groups;
     struct xkb_context *ctx;
-    /* Needed for AddKeySymbols. */
-    const struct xkb_keymap *keymap;
+    /* Needed for AddKeySymbols and parsing actions */
+    const struct xkb_keymap_info *keymap_info;
 } SymbolsInfo;
 
 static void
-InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap *keymap,
+InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap_info *keymap_info,
                 unsigned int include_depth, const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
-    info->ctx = keymap->ctx;
+    info->ctx = keymap_info->keymap.ctx;
     info->include_depth = include_depth;
-    info->keymap = keymap;
-    info->max_groups = format_max_groups(keymap->format);
-    InitKeyInfo(keymap->ctx, &info->default_key);
+    info->keymap_info = keymap_info;
+    info->max_groups = keymap_info->features.max_groups;
+    InitKeyInfo(keymap_info->keymap.ctx, &info->default_key);
     InitActionsInfo(&info->default_actions);
     InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
@@ -565,7 +565,7 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi, bool same_file)
      * following loop) is enough, and we won't get multiple KeyInfo's
      * for the same key because of aliases.
      */
-    keyi->name = XkbResolveKeyAlias(info->keymap, keyi->name);
+    keyi->name = XkbResolveKeyAlias(&info->keymap_info->keymap, keyi->name);
 
     KeyInfo *iter;
     darray_foreach(iter, info->keys)
@@ -695,7 +695,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitSymbolsInfo(&included, info->keymap, info->include_depth + 1,
+    InitSymbolsInfo(&included, info->keymap_info, info->include_depth + 1,
                     &info->mods);
     included.name = steal(&include->stmt);
 
@@ -712,7 +712,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitSymbolsInfo(&next_incl, info->keymap, info->include_depth + 1,
+        InitSymbolsInfo(&next_incl, info->keymap_info, info->include_depth + 1,
                         &included.mods);
         if (stmt->modifier) {
             next_incl.explicit_group = atoi(stmt->modifier) - 1;
@@ -724,7 +724,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
                 next_incl.explicit_group = info->explicit_group;
             }
         }
-        else if (info->keymap->num_groups != 0 && next_incl.include_depth == 1) {
+        else if (info->keymap_info->keymap.num_groups != 0 &&
+                 next_incl.include_depth == 1) {
             /* If keymap is the result of RMLVO resolution and we are at the
              * first include depth, transform e.g. `pc` into `pc:1` in order to
              * force only one group per key using the explicit group.
@@ -958,9 +959,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->keymap->format,
-                                 &info->default_actions, &info->mods,
-                                 act, &toAct)) {
+            if (!HandleActionDef(info->keymap_info, &info->default_actions,
+                                 &info->mods, act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %"PRIu32"/level %"PRIu32" ignored\n",
@@ -1309,8 +1309,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->ctx, info->keymap->format,
-                                    &info->default_actions,
+        ret = SetDefaultActionField(info->keymap_info, &info->default_actions,
                                     &info->mods, elem, field, arrayNdx,
                                     stmt->value, stmt->merge);
     } else {
@@ -1943,11 +1942,11 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 }
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
+CompileSymbols(XkbFile *file, struct xkb_keymap_info *keymap_info)
 {
     SymbolsInfo info;
 
-    InitSymbolsInfo(&info, keymap, 0, &keymap->mods);
+    InitSymbolsInfo(&info, keymap_info, 0, &keymap_info->keymap.mods);
 
     if (file !=NULL)
         HandleSymbolsFile(&info, file);
@@ -1955,7 +1954,7 @@ CompileSymbols(XkbFile *file, struct xkb_keymap *keymap)
     if (info.errorCount != 0)
         goto err_info;
 
-    if (!CopySymbolsToKeymap(keymap, &info))
+    if (!CopySymbolsToKeymap(&keymap_info->keymap, &info))
         goto err_info;
 
     ClearSymbolsInfo(&info);
