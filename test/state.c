@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "xkbcommon/xkbcommon-keysyms.h"
+#include "xkbcommon/xkbcommon-names.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "context.h"
@@ -462,6 +463,32 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_state_unref(state);
         xkb_keymap_unref(keymap);
     }}
+}
+
+/* Check that derived state is correctly initialized */
+static void
+test_initial_derived_values(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_rules(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+        "pc104", "us", NULL, "grp1_led:scroll"
+    );
+    assert(keymap);
+
+    struct xkb_state *state;
+
+    state = xkb_state_new(keymap);
+    assert(state);
+    assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_SCROLL));
+    xkb_state_unref(state);
+
+    struct xkb_state_machine * const sm = xkb_state_machine_new(keymap, NULL);
+    assert(sm);
+    state = xkb_state_machine_get_state(sm);
+    assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_SCROLL));
+    xkb_state_machine_unref(sm);
+
+    xkb_keymap_unref(keymap);
 }
 
 static inline xkb_mod_index_t
@@ -3676,6 +3703,7 @@ main(void)
 
     test_state_machine_options(context);
     test_group_wrap(context);
+    test_initial_derived_values(context);
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};
     for (size_t r = 0; r < ARRAY_SIZE(rules); r++) {
