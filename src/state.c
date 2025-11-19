@@ -2324,6 +2324,13 @@ xkb_state_machine_get_keymap(const struct xkb_state_machine *sm)
     return sm->state.keymap;
 }
 
+struct xkb_state *
+xkb_state_machine_get_state(struct xkb_state_machine *sm)
+{
+    /* Reference count is not updated. See API doc. */
+    return &sm->state;
+}
+
 int
 xkb_state_machine_update_controls(struct xkb_state_machine *sm,
                                   struct xkb_event_iterator *events,
