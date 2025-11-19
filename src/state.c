@@ -989,6 +989,9 @@ xkb_filter_apply_all(struct xkb_state *state,
     }
 }
 
+static void
+xkb_state_update_derived(struct xkb_state *state);
+
 static inline void
 xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
                enum xkb_state_accessibility_flags a11y_affect,
@@ -1004,6 +1007,8 @@ xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
     state->components.controls = keymap->enabled_ctrls;
+    /* Ensure that derived state is correctly initialized */
+    xkb_state_update_derived(state);
 }
 
 struct xkb_state *

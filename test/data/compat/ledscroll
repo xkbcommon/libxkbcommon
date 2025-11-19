@@ -9,6 +9,13 @@ default partial xkb_compatibility "scroll_lock" {
     };
 };
 
+partial xkb_compatibility "group1_lock" {
+    indicator "Scroll Lock" {
+	modifiers= None;
+	groups=group1;
+    };
+};
+
 partial xkb_compatibility "group_lock" {
     indicator "Scroll Lock" {
 	modifiers= None;
