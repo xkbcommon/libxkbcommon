@@ -36,3 +36,7 @@ struct xkb_event {
         } components;
     };
 };
+
+/** Reference count is not updated */
+XKB_EXPORT_PRIVATE struct xkb_state *
+xkb_state_machine_get_state(struct xkb_state_machine *sm);
