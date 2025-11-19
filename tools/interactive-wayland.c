@@ -688,7 +688,9 @@ seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps)
         xkb_keymap_unref(seat->keymap);
         xkb_compose_state_unref(seat->compose_state);
 
+        seat->events = NULL;
         seat->state = NULL;
+        seat->state_machine = NULL;
         seat->compose_state = NULL;
         seat->keymap = NULL;
         seat->wl_kbd = NULL;
