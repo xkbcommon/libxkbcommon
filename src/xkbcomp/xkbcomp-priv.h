@@ -9,6 +9,23 @@
 #include "keymap.h"
 #include "ast.h"
 #include "scanner-utils.h"
+#include "xkbcommon/xkbcommon.h"
+
+/** Keymap augmented with miscellanenous data used during compilation */
+struct xkb_keymap_info {
+    /** The keymap being compiled */
+    struct xkb_keymap keymap;
+
+    /** Features */
+    struct {
+        /** Maximum groups for the keymap format */
+        xkb_layout_index_t max_groups;
+        /* Actions */
+        bool group_lock_on_release;
+        bool mods_unlock_on_press;
+        bool mods_latch_on_press;
+    } features;
+};
 
 char *
 text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
@@ -40,16 +57,16 @@ XkbFileFromComponents(struct xkb_context *ctx,
                       const struct xkb_component_names *kkctgs);
 
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap);
+CompileKeycodes(XkbFile *file, struct xkb_keymap_info *keymap_info);
 
 bool
-CompileKeyTypes(XkbFile *file, struct xkb_keymap *keymap);
+CompileKeyTypes(XkbFile *file, struct xkb_keymap_info *keymap_info);
 
 bool
-CompileCompatMap(XkbFile *file, struct xkb_keymap *keymap);
+CompileCompatMap(XkbFile *file, struct xkb_keymap_info *keymap_info);
 
 bool
-CompileSymbols(XkbFile *file, struct xkb_keymap *keymap);
+CompileSymbols(XkbFile *file, struct xkb_keymap_info *keymap_info);
 
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap);
