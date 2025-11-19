@@ -184,7 +184,7 @@ err_compose_state:
 err_state:
     xkb_event_iterator_destroy(state_events);
 err_state_events:
-    xkb_state_machine_unref(kbd->state_machine);
+    xkb_state_machine_unref(state_machine);
 err_state_machine:
 err_fd:
     close(fd);
@@ -520,7 +520,7 @@ main(int argc, char *argv[])
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
     struct xkb_state_machine_options * const state_machine_options =
         xkb_state_machine_options_new(ctx);
-    if (state_machine_options == NULL)
+    if (!state_machine_options)
         goto error_state_options;
     xkb_context_unref(ctx);
     ctx = NULL;
@@ -765,7 +765,6 @@ too_much_arguments:
     if (!kbds) {
         goto out;
     }
-    xkb_state_machine_options_destroy(state_machine_options);
 
 #ifdef ENABLE_PRIVATE_APIS
     if (print_modmaps) {
