@@ -371,16 +371,18 @@ main(void)
 {
     test_init();
 
-    struct xkb_context *context = test_get_context(0);
-    xkb_atom_t atom;
+    /* Reject invalid flags */
+    assert(!xkb_context_new(-1));
+    assert(!xkb_context_new(0xffff));
 
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     assert(context);
 
     assert(xkb_context_num_include_paths(context) == 1);
     assert(!xkb_context_include_path_append(context, "¡NONSENSE!"));
     assert(xkb_context_num_include_paths(context) == 1);
 
-    atom = xkb_atom_intern(context, "HELLOjunkjunkjunk", 5);
+    xkb_atom_t atom = xkb_atom_intern(context, "HELLOjunkjunkjunk", 5);
     assert(atom != XKB_ATOM_NONE);
     assert(streq(xkb_atom_text(context, atom), "HELLO"));
 
