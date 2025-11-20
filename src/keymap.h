@@ -705,7 +705,7 @@ entry_is_active(const struct xkb_key_type_entry *entry)
 }
 
 struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
+xkb_keymap_new(struct xkb_context *ctx, const char* func,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags);
 
