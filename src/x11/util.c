@@ -7,6 +7,10 @@
 
 #include "x11-priv.h"
 
+enum {
+    XKB_X11_SETUP_XKB_EXTENSION_FLAGS = XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS
+};
+
 int
 xkb_x11_setup_xkb_extension(xcb_connection_t *conn,
                             uint16_t major_xkb_version,
@@ -20,7 +24,7 @@ xkb_x11_setup_xkb_extension(xcb_connection_t *conn,
     uint8_t base_event, base_error;
     uint16_t server_major, server_minor;
 
-    if (flags & ~(XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS)) {
+    if (flags & ~(XKB_X11_SETUP_XKB_EXTENSION_FLAGS)) {
         /* log_err_func(ctx, "unrecognized flags: %#x\n", flags); */
         return 0;
     }

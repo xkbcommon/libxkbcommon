@@ -486,6 +486,12 @@ log_verbosity(const char *verbosity) {
     return XKB_LOG_VERBOSITY_DEFAULT;
 }
 
+enum {
+    XKB_CONTEXT_FLAGS = XKB_CONTEXT_NO_DEFAULT_INCLUDES
+                      | XKB_CONTEXT_NO_ENVIRONMENT_NAMES
+                      | XKB_CONTEXT_NO_SECURE_GETENV
+};
+
 /**
  * Create a new context.
  */
@@ -502,6 +508,15 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_fn = default_log_fn;
     ctx->log_level = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = XKB_LOG_VERBOSITY_DEFAULT;
+
+    if (flags & ~(enum xkb_context_flags) XKB_CONTEXT_FLAGS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Invalid context flags: 0x%x\n",
+                (flags & ~(enum xkb_context_flags) XKB_CONTEXT_FLAGS));
+        free(ctx);
+        return NULL;
+    }
+
     ctx->use_environment_names = !(flags & XKB_CONTEXT_NO_ENVIRONMENT_NAMES);
     ctx->use_secure_getenv = !(flags & XKB_CONTEXT_NO_SECURE_GETENV);
 
