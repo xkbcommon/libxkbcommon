@@ -1,0 +1,18 @@
+/*
+ * Copyright © 2025 Pierre Le Marre
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "config.h"
+
+#include <stdint.h>
+
+#include "xkbcommon/xkbcommon.h"
+
+static const uint8_t version[] = { @MAJOR@, @MINOR@, @PATCH@ };
+
+const uint8_t *
+xkb_get_version(void)
+{
+    return version;
+}
