@@ -151,6 +151,15 @@ test_keymap(void)
 
     assert(context);
 
+    /* Reject unsupported flags */
+    static const struct xkb_rule_names names = {NULL, NULL, NULL, NULL, NULL};
+    assert(!xkb_keymap_new_from_names(context, &names, -1));
+    assert(!xkb_keymap_new_from_names(context, &names, 0xffff));
+    assert(!xkb_keymap_new_from_names2(context, &names,
+                                       XKB_KEYMAP_FORMAT_TEXT_V1, -1));
+    assert(!xkb_keymap_new_from_names2(context, &names,
+                                       XKB_KEYMAP_FORMAT_TEXT_V1, 0xffff));
+
     keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
                                 "pc104", "us,ru", NULL, "grp:menu_toggle");
     assert(keymap);

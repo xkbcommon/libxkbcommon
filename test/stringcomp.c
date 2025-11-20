@@ -160,6 +160,12 @@ main(int argc, char *argv[])
 
     assert(ctx);
 
+    /* Reject unsupported flags */
+    assert(!xkb_keymap_new_from_string(ctx, "xkb_keymap {};",
+                                       XKB_KEYMAP_FORMAT_TEXT_V1, -1));
+    assert(!xkb_keymap_new_from_string(ctx, "xkb_keymap {};",
+                                       XKB_KEYMAP_FORMAT_TEXT_V1, 0xffff));
+
     /* Make sure we can't (falsely claim to) compile an empty string. */
     keymap = test_compile_string(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "");
     assert(!keymap);
