@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "context.h"
 #include "table.h"
 #include "utils.h"
 #include "keysym.h"
@@ -33,9 +34,17 @@ struct xkb_compose_state *
 xkb_compose_state_new(struct xkb_compose_table *table,
                       enum xkb_compose_state_flags flags)
 {
-    struct xkb_compose_state *state;
+    static const enum xkb_compose_state_flags XKB_COMPOSE_STATE_FLAGS =
+        XKB_COMPOSE_STATE_NO_FLAGS;
 
-    state = calloc(1, sizeof(*state));
+    if (flags & ~XKB_COMPOSE_STATE_FLAGS) {
+        log_err_func(table->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Unsupported compose state flags: %#x\n",
+                     (flags & ~XKB_COMPOSE_STATE_FLAGS));
+        return NULL;
+    }
+
+    struct xkb_compose_state * const state = calloc(1, sizeof(*state));
     if (!state)
         return NULL;
 
