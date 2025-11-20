@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
-#include "messages-codes.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "messages-codes.h"
 #include "text.h"
 #include "expr.h"
 #include "keysym.h"
@@ -377,7 +378,7 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 }
 
 bool
-ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
                  const ExprDef *expr, xkb_layout_index_t *group_rtrn)
 {
     const struct named_integer_pattern group_name_pattern = {
@@ -385,20 +386,20 @@ ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
         .prefix = "Group",
         .prefix_length = sizeof("Group") - 1,
         .min = 1,
-        .max = max_groups,
+        .max = keymap_info->features.max_groups,
         .is_mask = false,
-        .entries = NULL,
+        .entries = keymap_info->groupIndicesNames,
         .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
     };
     int64_t result = 0;
-    if (!ExprResolveIntegerLookup(ctx, expr, &result, NamedIntegerPatternLookup,
-                                  &group_name_pattern))
+    if (!ExprResolveIntegerLookup(keymap_info->keymap.ctx, expr, &result,
+                                  NamedIntegerPatternLookup, &group_name_pattern))
         return false;
 
-    if (result < 1 || result > max_groups) {
-        log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+    if (result < 1 || result > keymap_info->features.max_groups) {
+        log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
-                result, max_groups);
+                result, keymap_info->features.max_groups);
         return false;
     }
 
@@ -701,7 +702,7 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
 }
 
 bool
-ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+ExprResolveGroupMask(const struct xkb_keymap_info *keymap_info,
                      const ExprDef *expr, xkb_layout_index_t *group_rtrn)
 {
     const struct named_integer_pattern group_name_pattern = {
@@ -709,11 +710,11 @@ ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
         .prefix = "Group",
         .prefix_length = sizeof("Group") - 1,
         .min = 1,
-        .max = max_groups,
+        .max = keymap_info->features.max_groups,
         .is_mask = true,
-        .entries = groupMaskNames,
+        .entries = keymap_info->groupMaskNames,
         .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX
     };
-    return ExprResolveMaskLookup(ctx, expr, group_rtrn,
+    return ExprResolveMaskLookup(keymap_info->keymap.ctx, expr, group_rtrn,
                                  NamedIntegerPatternLookup, &group_name_pattern);
 }

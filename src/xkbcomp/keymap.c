@@ -588,6 +588,8 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
     /*
      * Keymap augmented with compilation-specific data
      */
+    static_assert(XKB_MAX_GROUPS == 32,
+                  "Cannot guard against invalid left shift (UB)");
     struct xkb_keymap_info info = {
         /* Copy the keymap */
         .keymap = *keymap,
@@ -599,6 +601,33 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                 isModsUnLockOnPressSupported(keymap->format),
             .mods_latch_on_press =
                 isModsLatchOnPressSupported(keymap->format),
+        },
+
+        /*
+         * Some lookup tables that cannot be predefined
+         */
+        .groupIndicesNames = {
+            { "first", 1 },
+            /* This entry is active only if using the RMLVO API */
+            {
+                keymap->num_groups ? "last" : NULL,
+                keymap->num_groups /* 1-indexed */
+            },
+            { NULL, 0 },
+        },
+        .groupMaskNames = {
+            { "none", 0x00 },
+            { "all", XKB_ALL_GROUPS },
+            { "first", 0x01 },
+            /* This entry is active only if using the RMLVO API */
+            {
+                keymap->num_groups ? "last" : NULL,
+                /* Be extra cautious */
+                keymap->num_groups && keymap->num_groups <= XKB_MAX_GROUPS
+                    ? (UINT32_C(1) << (keymap->num_groups - 1))
+                    : 0
+            },
+            { NULL, 0 },
         },
     };
 

@@ -8,6 +8,7 @@
 
 #include "keymap.h"
 #include "ast.h"
+#include "text.h"
 #include "scanner-utils.h"
 #include "xkbcommon/xkbcommon.h"
 
@@ -25,6 +26,15 @@ struct xkb_keymap_info {
         bool mods_unlock_on_press;
         bool mods_latch_on_press;
     } features;
+
+    /*
+     * Non-static LUTs
+     */
+
+    /** Group indices names LUT */
+    const LookupEntry groupIndicesNames[3];
+    /** Group masks names LUT */
+    const LookupEntry groupMaskNames[5];
 };
 
 char *

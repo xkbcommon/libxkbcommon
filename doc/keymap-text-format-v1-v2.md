@@ -3473,6 +3473,7 @@ Modifies the *base* group.
 <td>
 Group index:
 - 1-based numbering
+- `First` and `Last` constants (since 1.14)
 - either absolute (no sign) or relative (`+`/`-` sign)
 </td>
 <td>0</td>

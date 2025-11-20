@@ -784,7 +784,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, ndx_rtrn)) {
+    if (!ExprResolveGroup(info->keymap_info, arrayNdx, ndx_rtrn)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
@@ -1050,7 +1050,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->default_type = val;
             keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
-        else if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &ndx)) {
+        else if (!ExprResolveGroup(info->keymap_info, arrayNdx, &ndx)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
@@ -1168,7 +1168,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
              istreq(field, "redirectgroups")) {
         xkb_layout_index_t grp = 0;
 
-        if (!ExprResolveGroup(info->ctx, info->max_groups, value, &grp)) {
+        if (!ExprResolveGroup(info->keymap_info, value, &grp)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
@@ -1204,7 +1204,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     }
 
     xkb_layout_index_t group = 0;
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &group)) {
+    if (!ExprResolveGroup(info->keymap_info, arrayNdx, &group)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");

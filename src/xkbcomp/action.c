@@ -341,17 +341,17 @@ HandleSetLatchLockMods(const struct xkb_keymap_info *keymap_info,
 }
 
 static bool
-CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
-                xkb_layout_index_t max_groups, const ExprDef *array_ndx,
-                const ExprDef *value, enum xkb_action_flags *flags_inout,
-                int32_t *group_rtrn)
+CheckGroupField(const struct xkb_keymap_info *keymap_info,
+                enum xkb_action_type action,
+                const ExprDef *array_ndx, const ExprDef *value,
+                enum xkb_action_flags *flags_inout, int32_t *group_rtrn)
 {
     const ExprDef *spec;
     xkb_layout_index_t idx = 0;
     enum xkb_action_flags flags = *flags_inout;
 
     if (array_ndx)
-        return ReportActionNotArray(ctx, action,
+        return ReportActionNotArray(keymap_info->keymap.ctx, action,
                                     ACTION_FIELD_GROUP);
 
     if (value->common.type == STMT_EXPR_NEGATE ||
@@ -364,8 +364,9 @@ CheckGroupField(struct xkb_context *ctx, enum xkb_action_type action,
         spec = value;
     }
 
-    if (!ExprResolveGroup(ctx, max_groups, spec, &idx))
-        return ReportMismatch(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
+    if (!ExprResolveGroup(keymap_info, spec, &idx))
+        return ReportMismatch(keymap_info->keymap.ctx,
+                              XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
                               ACTION_FIELD_GROUP, "integer");
 
     /* `+n`, `-n` are relative, `n` is absolute. */
@@ -392,7 +393,7 @@ HandleSetLatchLockGroup(const struct xkb_keymap_info *keymap_info,
     const enum xkb_action_type type = action->type;
 
     if (field == ACTION_FIELD_GROUP) {
-        return CheckGroupField(ctx, action->type, keymap_info->features.max_groups,
+        return CheckGroupField(keymap_info, action->type,
                                array_ndx, value, &act->flags, &act->group);
     }
     if ((type == ACTION_TYPE_GROUP_SET || type == ACTION_TYPE_GROUP_LATCH) &&

@@ -665,6 +665,24 @@ See @ref keymap-string-literal "string literal" for further information.
 </td>
 </tr>
 <tr>
+<th>`First`/`Last` group indices and masks constants</th>
+<td>❌️ No support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+Enable to define e.g. a proper interpretation entry of the keysym `ISO_Last_Group`:
+
+```c
+interpret ISO_Last_Group {
+    action= LockGroup(group=last);
+};
+```
+
+@note `Last` is only available when using the [RMLVO] API.
+</details>
+</td>
+</tr>
+<tr>
 <th>Extended `GroupN` constants</th>
 <td>
 <details>
