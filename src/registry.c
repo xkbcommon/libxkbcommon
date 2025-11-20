@@ -512,6 +512,19 @@ rxkb_context_new(enum rxkb_context_flags flags)
     if (env)
         rxkb_context_set_log_level(ctx, log_level(env));
 
+    static const enum rxkb_context_flags  RXKB_CONTEXT_FLAGS
+        = RXKB_CONTEXT_NO_DEFAULT_INCLUDES
+        | RXKB_CONTEXT_LOAD_EXOTIC_RULES
+        | RXKB_CONTEXT_NO_SECURE_GETENV;
+
+    if (flags & ~RXKB_CONTEXT_FLAGS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: Invalid context flags: 0x%x\n", __func__,
+                (flags & ~RXKB_CONTEXT_FLAGS));
+        free(ctx);
+        return NULL;
+    }
+
     list_init(&ctx->models);
     list_init(&ctx->layouts);
     list_init(&ctx->option_groups);
