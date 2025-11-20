@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "messages-codes.h"
 #include "xkbcommon/xkbcommon-names.h"
 #include "keymap.h"
 
@@ -42,14 +43,24 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
     keymap->canonical_state_mask = MOD_REAL_MASK_ALL;
 }
 
+enum {
+    XKB_KEYMAP_COMPILE_FLAGS = XKB_KEYMAP_COMPILE_NO_FLAGS
+};
+
 struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
+xkb_keymap_new(struct xkb_context *ctx, const char *func,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags)
 {
-    struct xkb_keymap *keymap;
+    if (flags & ~(enum xkb_keymap_compile_flags) XKB_KEYMAP_COMPILE_FLAGS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized keymap compilation flags: 0x%x\n", func,
+                flags & ~(enum xkb_keymap_compile_flags)
+                         XKB_KEYMAP_COMPILE_FLAGS);
+        return NULL;
+    }
 
-    keymap = calloc(1, sizeof(*keymap));
+    struct xkb_keymap * const keymap = calloc(1, sizeof(*keymap));
     if (!keymap)
         return NULL;
 
