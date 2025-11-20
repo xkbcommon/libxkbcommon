@@ -787,11 +787,16 @@ test_key_iterator(void)
         },
     };
 
+
     for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
         struct xkb_keymap * const keymap = test_compile_string(
             context, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].keymap
         );
         assert(keymap);
+
+        /* Reject invalid flags */
+        assert(!xkb_keymap_key_iterator_new(keymap, -1));
+        assert(!xkb_keymap_key_iterator_new(keymap, 0xffff));
 
         static const enum xkb_keymap_key_iterator_flags flags[] = {
             XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,

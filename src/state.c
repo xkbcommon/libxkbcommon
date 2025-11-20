@@ -2264,8 +2264,8 @@ xkb_state_machine_options_destroy(struct xkb_state_machine_options *options)
 
 enum {
     /** Mask to filter out invalid flags */
-    XKB_STATE_A11Y_ALL = (XKB_STATE_A11Y_LATCH_TO_LOCK |
-                          XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS),
+    XKB_STATE_A11Y_FLAGS = XKB_STATE_A11Y_LATCH_TO_LOCK
+                         | XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS,
 };
 
 int
@@ -2274,9 +2274,11 @@ xkb_state_machine_options_update_a11y_flags(
     enum xkb_state_accessibility_flags affect,
     enum xkb_state_accessibility_flags flags)
 {
-    if (affect & ~(enum xkb_state_accessibility_flags) XKB_STATE_A11Y_ALL) {
+    if (affect & ~(enum xkb_state_accessibility_flags) XKB_STATE_A11Y_FLAGS) {
         log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized state flags: %#x\n", flags);
+                     "unrecognized state flags: %#x\n",
+                     flags & ~(enum xkb_state_accessibility_flags)
+                              XKB_STATE_A11Y_FLAGS);
         return 1;
     }
 

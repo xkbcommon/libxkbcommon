@@ -233,16 +233,20 @@ parse_keysym_hex(const char *s, uint32_t *out)
     return (count > 0 && s[count] == '\0');
 }
 
+enum {
+    XKB_KEYSYM_FLAGS = XKB_KEYSYM_CASE_INSENSITIVE
+};
+
 xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
+    if (flags & ~(enum xkb_keysym_flags) XKB_KEYSYM_FLAGS)
+        return XKB_KEY_NoSymbol;
+
     const struct name_keysym *entry = NULL;
     char *tmp;
     uint32_t val;
     bool icase = (flags & XKB_KEYSYM_CASE_INSENSITIVE);
-
-    if (flags & ~XKB_KEYSYM_CASE_INSENSITIVE)
-        return XKB_KEY_NoSymbol;
 
     /*
      * We need to !icase case to be fast, for e.g. Compose file parsing.

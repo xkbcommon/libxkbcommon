@@ -247,16 +247,21 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
     return keymap;
 }
 
+enum {
+    XKB_KEYMAP_SERIALIZE_FLAGS = XKB_KEYMAP_SERIALIZE_PRETTY
+                               | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
+};
+
 char *
 xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
                           enum xkb_keymap_format format,
                           enum xkb_keymap_serialize_flags flags)
 {
-    const enum xkb_keymap_serialize_flags valid_flags =
-        XKB_KEYMAP_SERIALIZE_PRETTY | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
-    if (flags & ~valid_flags) {
+    if (flags & ~(enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS) {
         log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized serialization flags: %#x\n", flags);
+                     "unrecognized serialization flags: %#x\n",
+                     flags & ~(enum xkb_keymap_serialize_flags)
+                              XKB_KEYMAP_SERIALIZE_FLAGS);
         return NULL;
     }
 
@@ -603,7 +608,9 @@ xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
     if (flags &
         ~(enum xkb_keymap_key_iterator_flags) XKB_KEYMAP_KEY_ITERATOR_FLAGS) {
             log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "unrecognized keymap iterator flags: %#x\n", flags);
+                    "unrecognized keymap iterator flags: %#x\n",
+                    flags & ~(enum xkb_keymap_key_iterator_flags)
+                             XKB_KEYMAP_KEY_ITERATOR_FLAGS);
             return NULL;
     }
 
