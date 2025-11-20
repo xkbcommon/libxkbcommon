@@ -1126,6 +1126,10 @@ main(void)
 {
     test_init();
 
+    /* Reject unsupported flags */
+    assert(!rxkb_context_new(-1));
+    assert(!rxkb_context_new(0xffff));
+
     test_xml_error_handler();
     test_no_include_paths();
     test_invalid_include();
