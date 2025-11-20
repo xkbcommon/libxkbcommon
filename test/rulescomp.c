@@ -203,8 +203,11 @@ main(int argc, char *argv[])
     test_init();
 
     struct xkb_context *ctx = test_get_context(CONTEXT_ALLOW_ENVIRONMENT_NAMES);
-
     assert(ctx);
+
+    /* Reject invalid flags */
+    assert(!xkb_rmlvo_builder_new(ctx, NULL, NULL, -1));
+    assert(!xkb_rmlvo_builder_new(ctx, NULL, NULL, 0xffff));
 
 #define KS(name) xkb_keysym_from_name(name, 0)
 

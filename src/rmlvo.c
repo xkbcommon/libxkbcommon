@@ -22,6 +22,16 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
                       const char *rules, const char *model,
                       enum xkb_rmlvo_builder_flags flags)
 {
+    static const enum xkb_rmlvo_builder_flags XKB_RMLVO_BUILDER_FLAGS =
+        XKB_RMLVO_BUILDER_NO_FLAGS;
+
+    if (flags & ~XKB_RMLVO_BUILDER_FLAGS) {
+        log_err(context, XKB_LOG_MESSAGE_NO_ID,
+                "Unsupported RMLVO flags: 0x%x\n",
+                (flags & ~XKB_RMLVO_BUILDER_FLAGS));
+        return NULL;
+    }
+
     struct xkb_rmlvo_builder * const builder = calloc(1, sizeof(*builder));
     if (!builder)
         goto error;
