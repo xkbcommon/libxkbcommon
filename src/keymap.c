@@ -252,11 +252,14 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
                           enum xkb_keymap_format format,
                           enum xkb_keymap_serialize_flags flags)
 {
-    const enum xkb_keymap_serialize_flags valid_flags =
-        XKB_KEYMAP_SERIALIZE_PRETTY | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
-    if (flags & ~valid_flags) {
+    static const enum xkb_keymap_serialize_flags XKB_KEYMAP_SERIALIZE_FLAGS
+        = XKB_KEYMAP_SERIALIZE_PRETTY
+        | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
+
+    if (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
         log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized serialization flags: %#x\n", flags);
+                     "unrecognized serialization flags: %#x\n",
+                     (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS));
         return NULL;
     }
 
@@ -591,19 +594,18 @@ struct xkb_keymap_key_iterator {
     struct xkb_keymap *keymap;
 };
 
-enum {
-    XKB_KEYMAP_KEY_ITERATOR_FLAGS = XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
-                                  | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
-};
-
 struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
                             enum xkb_keymap_key_iterator_flags flags)
 {
-    if (flags &
-        ~(enum xkb_keymap_key_iterator_flags) XKB_KEYMAP_KEY_ITERATOR_FLAGS) {
+    static const enum xkb_keymap_key_iterator_flags XKB_KEYMAP_KEY_ITERATOR_FLAGS
+        = XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
+        | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND;
+
+    if (flags & ~XKB_KEYMAP_KEY_ITERATOR_FLAGS) {
             log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "unrecognized keymap iterator flags: %#x\n", flags);
+                    "unrecognized keymap iterator flags: %#x\n",
+                    (flags & ~XKB_KEYMAP_KEY_ITERATOR_FLAGS));
             return NULL;
     }
 
