@@ -793,6 +793,10 @@ test_key_iterator(void)
         );
         assert(keymap);
 
+        /* Reject invalid flags */
+        assert(!xkb_keymap_key_iterator_new(keymap, -1));
+        assert(!xkb_keymap_key_iterator_new(keymap, 0xffff));
+
         static const enum xkb_keymap_key_iterator_flags flags[] = {
             XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
             XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER,
