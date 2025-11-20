@@ -14,6 +14,7 @@
 
 #include "xkbcommon/xkbcommon-names.h"
 #include "keymap.h"
+#include "messages-codes.h"
 
 static void
 update_builtin_keymap_fields(struct xkb_keymap *keymap)
@@ -43,13 +44,21 @@ update_builtin_keymap_fields(struct xkb_keymap *keymap)
 }
 
 struct xkb_keymap *
-xkb_keymap_new(struct xkb_context *ctx,
+xkb_keymap_new(struct xkb_context *ctx, const char *func,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags)
 {
-    struct xkb_keymap *keymap;
+    static const enum xkb_keymap_compile_flags XKB_KEYMAP_COMPILE_FLAGS =
+        XKB_KEYMAP_COMPILE_NO_FLAGS;
 
-    keymap = calloc(1, sizeof(*keymap));
+    if (flags & ~XKB_KEYMAP_COMPILE_FLAGS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized keymap compilation flags: 0x%x\n", func,
+                (flags & ~XKB_KEYMAP_COMPILE_FLAGS));
+        return NULL;
+    }
+
+    struct xkb_keymap * const keymap = calloc(1, sizeof(*keymap));
     if (!keymap)
         return NULL;
 
