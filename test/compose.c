@@ -487,6 +487,10 @@ test_state(struct xkb_context *ctx)
     assert(table);
     fclose(file);
 
+    /* Reject unsupported flags */
+    assert(!xkb_compose_state_new(table, -1));
+    assert(!xkb_compose_state_new(table, 0xffff));
+
     state = xkb_compose_state_new(table, XKB_COMPOSE_STATE_NO_FLAGS);
     assert(state);
 
