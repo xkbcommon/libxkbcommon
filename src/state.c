@@ -2410,11 +2410,11 @@ struct xkb_state_machine {
                 /** Real modifier mask */
                 xkb_mod_mask_t mask;
                 /** Modifiers re-mappings */
+                darray_size_t mappings_num;
                 struct state_machine_mods_mapping {
                     xkb_mod_mask_t source;
                     xkb_mod_mask_t target;
-                } *mappings;
-                darray_size_t mappings_num;
+                } * mappings ATTR_COUNTED_BY(mappings_num);
             } modifiers;
 
             /** Shortcuts tweak */

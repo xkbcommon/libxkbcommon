@@ -343,6 +343,12 @@ open_file(const char *path);
 #define ATTR_PACKED
 #endif
 
+#if defined(HAVE_ATTR_COUNTED_BY) && HAVE_ATTR_COUNTED_BY
+# define ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+# define ATTR_COUNTED_BY(count)
+#endif
+
 #if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)
 XKB_EXPORT_PRIVATE int asprintf(char **strp, const char *fmt, ...) ATTR_PRINTF(2, 3);
 # if !(defined(HAVE_VASPRINTF) && HAVE_VASPRINTF)
