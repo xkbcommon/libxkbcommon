@@ -66,7 +66,7 @@ jobs:
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
           CFLAGS='-gdwarf-4 -fno-omit-frame-pointer' \
-              meson setup -Denable-docs=true -Denable-cool-uris=true \
+              meson setup -Dbuildtype=debugoptimized -Denable-docs=true -Denable-cool-uris=true \
                           $MESON_EXTRA_FLAGS \
                           build
         env:
