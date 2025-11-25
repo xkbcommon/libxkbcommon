@@ -6,6 +6,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include <stdlib.h>
 #include <sys/stat.h>

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 #include "config.h"
+#include "test-config.h"
 
 #include "test.h"
 
