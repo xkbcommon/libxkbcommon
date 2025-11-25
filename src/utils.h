@@ -6,11 +6,13 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -36,8 +38,6 @@
 typedef SSIZE_T ssize_t;
 #endif
 #endif
-
-#include "darray.h"
 
 static inline bool
 is_aligned(const void *restrict pointer, size_t byte_count)
