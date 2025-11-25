@@ -382,7 +382,9 @@ print_dot(struct xkb_context *ctx,
         }
     } else {
 #ifdef HAVE_REAL_PATH
-        realpath(path, root);
+        if (!realpath(path, root)) {
+            return false;
+        }
 #else
         if (unlikely(!strcpy_safe(root, sizeof(root), path)))
             return false;
