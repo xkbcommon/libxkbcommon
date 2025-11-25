@@ -866,6 +866,7 @@ test_env.set('HAVE_XKBCLI_LIST', configh_data.get('HAVE_XKBCLI_LIST', 0).to_stri
 
 test_configh_data = configuration_data()
 test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.current_source_dir()/'test'/'data')
+test_configh_data.set('_FORTIFY_SOURCE', '3')
 configure_file(output: 'test-config.h', configuration: test_configh_data)
 
 m_dep = cc.find_library('m', required : false)
