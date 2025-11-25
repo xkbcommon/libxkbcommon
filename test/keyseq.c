@@ -4,6 +4,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"

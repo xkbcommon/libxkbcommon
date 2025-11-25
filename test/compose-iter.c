@@ -4,6 +4,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include "src/darray.h"
 #include <stdio.h>

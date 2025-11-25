@@ -4,6 +4,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include <assert.h>
 #include <getopt.h>

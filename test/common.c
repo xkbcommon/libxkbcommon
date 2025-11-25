@@ -10,6 +10,7 @@
  */
 
 #include "config.h"
+#include "test-config.h"
 
 #include <stdlib.h>
 #include <limits.h>
