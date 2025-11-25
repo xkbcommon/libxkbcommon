@@ -39,6 +39,7 @@ jobs:
           source venv/bin/activate
           PATH="/usr/local/opt/bison/bin:${PATH}" \
             meson setup \
+              -Dbuildtype=debugoptimized \
               -Denable-wayland=false \
               -Denable-x11=true \
               -Dxkb-config-root="$(brew --prefix xkeyboardconfig)/share/X11/xkb" \
