@@ -336,14 +336,14 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
      */
 
     if (!s) {
-        struct matched_sval val = { .sval = { NULL, 0 } };
+        struct matched_sval val = { .sval = SVAL(NULL, 0) };
         darray_append(arr, val);
         return arr;
     }
 
     while (true) {
         struct matched_sval val = {
-            .sval = { s, 0 },
+            .sval = SVAL(s, 0),
             .matched = false,
             /* NOTE: Cannot store XKB_LAYOUT_INVALID */
             .layout = OPTIONS_MATCH_ALL_GROUPS
@@ -464,10 +464,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         struct xkb_rmlvo_builder_layout *layout;
         darray_foreach(layout, rmlvo->layouts) {
             struct matched_sval val = {
-                .sval = {
-                    .start = layout->layout,
-                    .len = strlen_safe(layout->layout)
-                },
+                .sval = SVAL(layout->layout, strlen_safe(layout->layout)),
                 .layout = OPTIONS_MATCH_ALL_GROUPS,
                 .matched = false
             };
@@ -485,10 +482,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         struct xkb_rmlvo_builder_option *option;
         darray_foreach(option, rmlvo->options) {
             struct matched_sval val = {
-                .sval = {
-                    .start = option->option,
-                    .len = strlen_safe(option->option),
-                },
+                .sval = SVAL(option->option, strlen_safe(option->option)),
                 .layout = (option->layout) == XKB_LAYOUT_INVALID
                     ? OPTIONS_MATCH_ALL_GROUPS
                     : option->layout,
@@ -1066,7 +1060,7 @@ static void
 matcher_rule_set_mlvo_wildcard(struct matcher *m, struct scanner *s,
                                enum mlvo_match_type match_type)
 {
-    struct sval dummy = { NULL, 0 };
+    struct sval dummy = SVAL(NULL, 0);
     matcher_rule_set_mlvo_common(m, s, dummy, match_type);
 }
 
