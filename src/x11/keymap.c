@@ -934,6 +934,7 @@ get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
 
         /* Allocate names for all levels, even if some names are missing */
         ALLOC_OR_FAIL(type->level_names, type->num_levels);
+        type->num_level_names = type->num_levels;
 
         x11_atom_interner_adopt_atom(interner, wire_type_name, &type->name);
         for (size_t j = 0; j < wire_num_levels; j++) {
@@ -945,7 +946,6 @@ get_type_names(struct xkb_keymap *keymap, struct x11_atom_interner *interner,
         for (size_t j = wire_num_levels; j < type->num_levels; j++)
             type->level_names[j] = XKB_ATOM_NONE;
 
-        type->num_level_names = type->num_levels;
         kt_level_names_iter += wire_num_levels;
         key_type_names_iter++;
         n_levels_per_type_iter++;
