@@ -2959,22 +2959,18 @@ static const uint16_t keysym_name_G[] = {
     0, 4288, 0, 0, 372, 0, 2116, 3417
 };
 
-static size_t
-keysym_name_hash_f(const char *key, const char *T)
-{
-    size_t sum = 0;
-    for (size_t i = 0; key[i] != '\0'; i++)
-        sum += (size_t) (T[i % 32] * key[i]);
-    return sum % 4715;
-}
-
 static inline size_t
 keysym_name_perfect_hash(const char *key)
 {
-    return (
-        keysym_name_G[keysym_name_hash_f(key, "Iz2bfjhEBbkDQ133MT2bGXVS2rw67fJk")] +
-        keysym_name_G[keysym_name_hash_f(key, "T6D61CKU3kKC4hAz1qt6DOnu0JsMYSvR")]
-    ) % 4715;
+    const char *T1 = "Iz2bfjhEBbkDQ133MT2bGXVS2rw67fJk";
+    const char *T2 = "T6D61CKU3kKC4hAz1qt6DOnu0JsMYSvR";
+    size_t h1 = 0;
+    size_t h2 = 0;
+    for (size_t i = 0; key[i] != '\0'; i++) {
+        h1 += (size_t) (T1[i % 32] * key[i]);
+        h2 += (size_t) (T2[i % 32] * key[i]);
+    }
+    return (keysym_name_G[h1 % 4715] + keysym_name_G[h2 % 4715]) % 4715;
 }
 
 
