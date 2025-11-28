@@ -24,6 +24,7 @@
 
 #include "xkbcommon/xkbregistry.h"
 #include "messages-codes.h"
+#include "darray.h"
 #include "utils.h"
 #include "util-list.h"
 #include "util-mem.h"
