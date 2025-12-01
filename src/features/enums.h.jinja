@@ -1,0 +1,72 @@
+/*
+ * NOTE: This file has been generated automatically by “{{ script }}”.
+ *       Do not edit manually!
+ */
+
+/*
+ * Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#pragma once
+
+#include "config.h"
+
+#include <assert.h>
+#include <limits.h>
+
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
+#include "xkbcommon/xkbcommon-features.h"
+
+#ifndef INT_WIDTH
+enum {
+    INT_WIDTH = sizeof(int) * CHAR_BIT
+};
+#endif
+
+/*
+ * Enumerations whose values can be ORed
+ */
+
+{% for enum, entries in enum_data.items() if not is_flag(enum, entries) and has_values_mask(entries) %}
+    {% for entry in entries %}
+static_assert({{entry["name"]}} >= 0 &&
+              {{entry["name"]}} < INT_WIDTH, "");
+    {% endfor %}
+{% endfor %}
+
+enum xkb_enumerations_values {
+{% for enum, entries in enum_data.items() if is_flag(enum, entries) or has_values_mask(entries) %}
+    {{ enum | upper }}_VALUES
+    {% for entry in entries %}
+        {%+ if loop.index0 %}| {% else %}= {% endif %}
+        {% if is_flag(enum, entries) -%}
+        {{ entry["name"] }}
+        {% else -%}
+        (1u << {{ entry["name"] }})
+        {% endif %}
+    {% endfor %}
+    ,
+{% endfor %}
+};
+
+/*
+ * Explicit values of enumerations
+ */
+{% for enum, entries in enum_data.items() %}
+
+{% set require_private_api = is_flag(enum, entries) or has_values_mask(entries) %}
+{% if require_private_api %}
+#ifdef ENABLE_PRIVATE_APIS
+{% endif %}
+static const int {{ enum }}_values[] = {
+    {% for entry in entries %}
+    {{ entry['name'] }},
+    {% endfor %}
+};
+{% if require_private_api %}
+#endif
+{% endif %}
+{% endfor %}

@@ -150,6 +150,7 @@ global:
 
 V_1.14.0 {
 global:
+    xkb_has_feature;
     xkb_keymap_key_iterator_new;
     xkb_keymap_key_iterator_destroy;
     xkb_keymap_key_iterator_next;
