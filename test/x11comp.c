@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <getopt.h>
+#include <limits.h>
 #include <signal.h>
 #include <spawn.h>
 #include <stdint.h>

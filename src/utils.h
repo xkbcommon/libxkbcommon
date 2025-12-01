@@ -6,11 +6,13 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -36,8 +38,6 @@
 typedef SSIZE_T ssize_t;
 #endif
 #endif
-
-#include "darray.h"
 
 static inline bool
 is_aligned(const void *restrict pointer, size_t byte_count)
@@ -341,6 +341,12 @@ open_file(const char *path);
 #define ATTR_PACKED  __attribute__((__packed__))
 #else
 #define ATTR_PACKED
+#endif
+
+#if defined(HAVE_ATTR_COUNTED_BY) && HAVE_ATTR_COUNTED_BY
+# define ATTR_COUNTED_BY(count) __attribute__((counted_by(count)))
+#else
+# define ATTR_COUNTED_BY(count)
 #endif
 
 #if !(defined(HAVE_ASPRINTF) && HAVE_ASPRINTF)

@@ -103,8 +103,8 @@ struct xkb_compose_table {
 };
 
 struct xkb_compose_table_entry {
-    xkb_keysym_t *sequence;
     size_t sequence_length;
+    xkb_keysym_t *sequence ATTR_COUNTED_BY(sequence_length);
     xkb_keysym_t keysym;
     const char *utf8;
 };

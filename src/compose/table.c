@@ -367,8 +367,8 @@ xkb_compose_table_iterator_next(struct xkb_compose_table_iterator *iter)
     while (1) {
         /* Follow down arrow */
         pending->processed = true;
-        iter->entry.sequence[iter->entry.sequence_length] = node->keysym;
         iter->entry.sequence_length++;
+        iter->entry.sequence[iter->entry.sequence_length - 1] = node->keysym;
         if (node->is_leaf) {
             /* Leaf: return entry */
             iter->entry.keysym = node->leaf.keysym;
