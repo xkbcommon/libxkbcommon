@@ -1,0 +1,66 @@
+/*
+ * Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "config.h"
+
+#include "xkbcommon/xkbcommon.h"
+#include "enums.h"
+#include "utils.h"
+
+static int
+is_supported_enum_value(const int *values, size_t size, int value)
+{
+    for (size_t v = 0; v < size; v++) {
+        if (values[v] == value) {
+            /* Valid value */
+            return 0;
+        }
+    }
+    /* Invalid value */
+    return -2;
+}
+
+static int
+is_supported_flag_value(const int *values, size_t size, int value)
+{
+    for (size_t v = 0; value && v < size; v++) {
+        if (values[v] & value) {
+            /* Remove flag */
+            value &= ~values[v];
+        }
+    }
+    /* Remaining flags are invalid */
+    return value;
+}
+
+int
+xkb_enumeration_is_valid(enum xkb_enumeration e, int value)
+{
+    switch (e) {
+    {% for entry in enum_data["xkb_enumeration"] %}
+    case {{ entry.name }}:
+        {% set enum_values = entry.name.replace("_ENUM_", "_").lower() + "_values" %}
+        {% if "_FLAG" in entry.name %}
+        return is_supported_flag_value(
+            {{enum_values}},
+            ARRAY_SIZE({{enum_values}}),
+            value
+        );
+        {% else %}
+        return is_supported_enum_value(
+            {{enum_values}},
+            ARRAY_SIZE({{enum_values}}),
+            value
+        );
+        {% endif %}
+    {% endfor %}
+    default:
+        /* Invalid enumeration */
+        return -1;
+    }
+
+    return 0;
+}
