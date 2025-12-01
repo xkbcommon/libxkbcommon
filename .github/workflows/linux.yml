@@ -34,14 +34,15 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: |
-          # Jinja2 is needed for merge-modes tests
-          python -m pip install --upgrade meson PyYAML ruff Jinja2
           sudo apt update
           sudo apt install -y \
             locales tzdata \
             doxygen libxcb-xkb-dev valgrind ninja-build \
             libwayland-dev wayland-protocols bison graphviz libicu-dev \
+            libclang-dev \
             ${{ matrix.sanitizers == 'sanitizers' && 'libasan8 libubsan1' || '' }}
+          # Jinja2 is needed for merge-modes tests
+          python3 -m pip install --upgrade meson PyYAML ruff Jinja2 clang==14
           # Generate locale for tests
           sudo locale-gen fr_FR.UTF-8
       - name: Install xkeyboard-config
@@ -81,8 +82,10 @@ jobs:
         run: |
           meson compile -C build
       - name: Test
-        # Use a specific non-US locale
-        run:
+        run: |
+          # Test enumerations
+          scripts/export-enums.py --libclang-path=/usr/lib/llvm-14/lib/ check
+          # Use a specific non-US locale
           LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs
       - name: Test with valgrind
         if: matrix.sanitizers != 'sanitizers'
