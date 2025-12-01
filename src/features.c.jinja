@@ -1,0 +1,68 @@
+/*
+ * NOTE: This file has been generated automatically by “{{ script }}”.
+ *       Do not edit manually!
+ */
+
+/*
+ * Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "config.h"
+
+#include "xkbcommon/xkbcommon-features.h"
+#include "features/enums.h"
+#include "utils.h"
+
+static bool
+is_supported_enum_value_mask(enum xkb_enumerations_values values, int value)
+{
+    return (value >= 0 && value < INT_WIDTH && (values & (1u << value)));
+}
+
+static bool
+is_supported_enum_value_array(const int *values, size_t size, int value)
+{
+    for (size_t v = 0; v < size; v++) {
+        if (values[v] == value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static inline bool
+is_supported_flag_value(enum xkb_enumerations_values values,
+                        bool accept_zero, int value)
+{
+    return (accept_zero || value) && ((int) values & value) == value;
+}
+
+bool
+xkb_has_feature(enum xkb_feature feature, int value)
+{
+    switch (feature) {
+    {# TODO: Non-enumeration features #}
+    {# Enumerations #}
+    {% for entry in enum_data["xkb_feature"] %}
+    case {{ entry.name }}:
+        {% set enum = enum_name_from_feature(entry.name) %}
+        {% set entries = enum_data[enum] %}
+        {% if is_flag(enum, entries) %}
+        return is_supported_flag_value(
+            {{enum.upper() + "_VALUES"}}, {{ has_zero(entries) | lower }}, value
+        );
+        {% elif has_values_mask(entries) %}
+        return is_supported_enum_value_mask({{enum.upper() + "_VALUES"}}, value);
+        {% else %}
+        return is_supported_enum_value_array(
+            {{enum.lower() + "_values"}}, ARRAY_SIZE({{enum + "_values"}}), value
+        );
+        {% endif %}
+    {% endfor %}
+    default:
+        /* Invalid feature */
+        return false;
+    }
+}

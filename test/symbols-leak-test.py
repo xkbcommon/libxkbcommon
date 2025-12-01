@@ -36,6 +36,7 @@ left, right = diff(
     [
         top_srcdir / "include/xkbcommon/xkbcommon.h",
         top_srcdir / "include/xkbcommon/xkbcommon-compose.h",
+        top_srcdir / "include/xkbcommon/xkbcommon-features.h",
     ],
 )
 if left:
