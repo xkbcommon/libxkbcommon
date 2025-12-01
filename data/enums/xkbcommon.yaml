@@ -1,0 +1,109 @@
+# Extracted Enums from: include/xkbcommon/xkbcommon.h
+
+xkb_rmlvo_builder_flags:
+  - name: XKB_RMLVO_BUILDER_NO_FLAGS
+    value: 0
+xkb_keysym_flags:
+  - name: XKB_KEYSYM_NO_FLAGS
+    value: 0
+  - name: XKB_KEYSYM_CASE_INSENSITIVE
+    value: 1
+xkb_context_flags:
+  - name: XKB_CONTEXT_NO_FLAGS
+    value: 0
+  - name: XKB_CONTEXT_NO_DEFAULT_INCLUDES
+    value: 1
+  - name: XKB_CONTEXT_NO_ENVIRONMENT_NAMES
+    value: 2
+  - name: XKB_CONTEXT_NO_SECURE_GETENV
+    value: 4
+xkb_log_level:
+  - name: XKB_LOG_LEVEL_CRITICAL
+    value: 10
+  - name: XKB_LOG_LEVEL_ERROR
+    value: 20
+  - name: XKB_LOG_LEVEL_WARNING
+    value: 30
+  - name: XKB_LOG_LEVEL_INFO
+    value: 40
+  - name: XKB_LOG_LEVEL_DEBUG
+    value: 50
+xkb_keymap_compile_flags:
+  - name: XKB_KEYMAP_COMPILE_NO_FLAGS
+    value: 0
+xkb_keymap_format:
+  - name: XKB_KEYMAP_FORMAT_TEXT_V1
+    value: 1
+  - name: XKB_KEYMAP_FORMAT_TEXT_V2
+    value: 2
+xkb_keymap_serialize_flags:
+  - name: XKB_KEYMAP_SERIALIZE_NO_FLAGS
+    value: 0
+  - name: XKB_KEYMAP_SERIALIZE_PRETTY
+    value: 1
+  - name: XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
+    value: 2
+xkb_keymap_key_iterator_flags:
+  - name: XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS
+    value: 0
+  - name: XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
+    value: 1
+  - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
+    value: 2
+xkb_state_accessibility_flags:
+  - name: XKB_STATE_A11Y_NO_FLAGS
+    value: 0
+  - name: XKB_STATE_A11Y_LATCH_TO_LOCK
+    value: 1
+  - name: XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS
+    value: 2
+xkb_event_type:
+  - name: XKB_EVENT_TYPE_KEY_DOWN
+    value: 1
+  - name: XKB_EVENT_TYPE_KEY_UP
+    value: 2
+  - name: XKB_EVENT_TYPE_COMPONENTS_CHANGE
+    value: 3
+xkb_state_component:
+  - name: XKB_STATE_MODS_DEPRESSED
+    value: 1
+  - name: XKB_STATE_MODS_LATCHED
+    value: 2
+  - name: XKB_STATE_MODS_LOCKED
+    value: 4
+  - name: XKB_STATE_MODS_EFFECTIVE
+    value: 8
+  - name: XKB_STATE_LAYOUT_DEPRESSED
+    value: 16
+  - name: XKB_STATE_LAYOUT_LATCHED
+    value: 32
+  - name: XKB_STATE_LAYOUT_LOCKED
+    value: 64
+  - name: XKB_STATE_LAYOUT_EFFECTIVE
+    value: 128
+  - name: XKB_STATE_LEDS
+    value: 256
+  - name: XKB_STATE_CONTROLS
+    value: 512
+xkb_keyboard_controls:
+  - name: XKB_KEYBOARD_CONTROL_NONE
+    value: 0
+  - name: XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
+    value: 8
+xkb_key_direction:
+  - name: XKB_KEY_UP
+    value: 0
+  - name: XKB_KEY_DOWN
+    value: 1
+xkb_state_match:
+  - name: XKB_STATE_MATCH_ANY
+    value: 1
+  - name: XKB_STATE_MATCH_ALL
+    value: 2
+  - name: XKB_STATE_MATCH_NON_EXCLUSIVE
+    value: 65536
+xkb_consumed_mode:
+  - name: XKB_CONSUMED_MODE_XKB
+    value: 0
+  - name: XKB_CONSUMED_MODE_GTK
+    value: 1
