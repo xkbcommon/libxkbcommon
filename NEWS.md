@@ -1,3 +1,16 @@
+libxkbcommon [1.13.1] – 2025-12-03
+==================================
+
+[1.13.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.1
+
+# API
+
+## Fixes
+
+- Fixed segfault triggering in unlikely setups.
+  ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
+
+
 libxkbcommon [1.13.0] – 2025-11-05
 ==================================
 
@@ -84,6 +97,19 @@ See @ref packaging-keyboard-layouts "" for further details.
   - `xkb_extra_path`
 
   See @ref packaging-keyboard-layouts "" for further details.
+
+
+libxkbcommon [1.12.4] – 2025-12-03
+==================================
+
+[1.12.4]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.4
+
+# API
+
+## Fixes
+
+- Fixed segfault triggering in unlikely setups.
+  ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
 
 
 libxkbcommon [1.12.3] – 2025-10-29
