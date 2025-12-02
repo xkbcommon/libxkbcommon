@@ -16,11 +16,27 @@
 #include "paths.h"
 
 static struct xkb_compose_table *
-xkb_compose_table_new(struct xkb_context *ctx,
+xkb_compose_table_new(struct xkb_context *ctx, const char *func,
                       const char *locale,
                       enum xkb_compose_format format,
                       enum xkb_compose_compile_flags flags)
 {
+    static const enum xkb_compose_compile_flags XKB_COMPOSE_COMPILE_FLAGS =
+        XKB_COMPOSE_COMPILE_NO_FLAGS;
+
+    if (flags & ~XKB_COMPOSE_COMPILE_FLAGS) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized flags: %#x\n", func,
+                (flags & ~XKB_COMPOSE_COMPILE_FLAGS));
+        return NULL;
+    }
+
+    if (format != XKB_COMPOSE_FORMAT_TEXT_V1) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unsupported compose format: %d\n", func, format);
+        return NULL;
+    }
+
     char *resolved_locale;
     struct xkb_compose_table *table;
     struct compose_node dummy = {0};
@@ -84,27 +100,12 @@ xkb_compose_table_new_from_file(struct xkb_context *ctx,
                                 enum xkb_compose_format format,
                                 enum xkb_compose_compile_flags flags)
 {
-    struct xkb_compose_table *table;
-    bool ok;
-
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
-        return NULL;
-    }
-
-    if (format != XKB_COMPOSE_FORMAT_TEXT_V1) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported compose format: %d\n", format);
-        return NULL;
-    }
-
-    table = xkb_compose_table_new(ctx, locale, format, flags);
+    struct xkb_compose_table * const table =
+        xkb_compose_table_new(ctx, __func__, locale, format, flags);
     if (!table)
         return NULL;
 
-    ok = parse_file(table, file, "(unknown file)");
-    if (!ok) {
+    if (!parse_file(table, file, "(unknown file)")) {
         xkb_compose_table_unref(table);
         return NULL;
     }
@@ -119,27 +120,12 @@ xkb_compose_table_new_from_buffer(struct xkb_context *ctx,
                                   enum xkb_compose_format format,
                                   enum xkb_compose_compile_flags flags)
 {
-    struct xkb_compose_table *table;
-    bool ok;
-
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
-        return NULL;
-    }
-
-    if (format != XKB_COMPOSE_FORMAT_TEXT_V1) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unsupported compose format: %d\n", format);
-        return NULL;
-    }
-
-    table = xkb_compose_table_new(ctx, locale, format, flags);
+    struct xkb_compose_table * const table =
+        xkb_compose_table_new(ctx, __func__, locale, format, flags);
     if (!table)
         return NULL;
 
-    ok = parse_string(table, buffer, length, "(input string)");
-    if (!ok) {
+    if (!parse_string(table, buffer, length, "(input string)")) {
         xkb_compose_table_unref(table);
         return NULL;
     }
@@ -152,24 +138,14 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
                                   const char *locale,
                                   enum xkb_compose_compile_flags flags)
 {
-    struct xkb_compose_table *table;
-    char *path;
-    FILE *file;
-    bool ok;
-
-    if (flags & ~(XKB_COMPOSE_COMPILE_NO_FLAGS)) {
-        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized flags: %#x\n", flags);
-        return NULL;
-    }
-
-    table = xkb_compose_table_new(ctx, locale, XKB_COMPOSE_FORMAT_TEXT_V1,
-                                  flags);
+    static const enum xkb_compose_format format = XKB_COMPOSE_FORMAT_TEXT_V1;
+    struct xkb_compose_table * const table =
+        xkb_compose_table_new(ctx, __func__, locale, format, flags);
     if (!table)
         return NULL;
 
-    path = get_xcomposefile_path(ctx);
-    file = open_file(path);
+    char *path = get_xcomposefile_path(ctx);
+    FILE *file = open_file(path);
     if (file)
         goto found_path;
     free(path);
@@ -199,7 +175,8 @@ xkb_compose_table_new_from_locale(struct xkb_context *ctx,
     return NULL;
 
 found_path:
-    ok = parse_file(table, file, path);
+    {} /* Label followed by a declaration is a C23 extension */
+    const bool ok = parse_file(table, file, path);
     fclose(file);
     if (!ok) {
         free(path);

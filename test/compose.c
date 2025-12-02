@@ -174,6 +174,17 @@ static void
 test_compose_utf8_bom(struct xkb_context *ctx)
 {
     const char buffer[] = "\xef\xbb\xbf<A> : X";
+
+    /* Reject invalid flags */
+    assert(!xkb_compose_table_new_from_buffer(ctx,
+                                              buffer, sizeof(buffer), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              -1));
+    assert(!xkb_compose_table_new_from_buffer(ctx,
+                                              buffer, sizeof(buffer), "",
+                                              XKB_COMPOSE_FORMAT_TEXT_V1,
+                                              0xffff));
+
     assert(test_compose_seq_buffer(ctx, buffer,
         XKB_KEY_A, XKB_COMPOSE_FEED_ACCEPTED, XKB_COMPOSE_COMPOSED, "X", XKB_KEY_X,
         XKB_KEY_NoSymbol));
@@ -464,6 +475,12 @@ test_state(struct xkb_context *ctx)
     assert(file);
     free(path);
 
+    /* Reject invalid flags */
+    assert(!xkb_compose_table_new_from_file(ctx, file, "",
+                                            XKB_COMPOSE_FORMAT_TEXT_V1, -1));
+    assert(!xkb_compose_table_new_from_file(ctx, file, "",
+                                            XKB_COMPOSE_FORMAT_TEXT_V1, 0xffff));
+
     table = xkb_compose_table_new_from_file(ctx, file, "",
                                             XKB_COMPOSE_FORMAT_TEXT_V1,
                                             XKB_COMPOSE_COMPILE_NO_FLAGS);
@@ -555,6 +572,10 @@ test_from_locale(struct xkb_context *ctx)
     path = test_get_path("locale");
     setenv("XLOCALEDIR", path, 1);
     free(path);
+
+    /* Reject invalid flags */
+    assert(!xkb_compose_table_new_from_locale(ctx, "en_US.UTF-8", -1));
+    assert(!xkb_compose_table_new_from_locale(ctx, "en_US.UTF-8", 0xffff));
 
     /* Direct directory name match. */
     table = xkb_compose_table_new_from_locale(ctx, "en_US.UTF-8",
