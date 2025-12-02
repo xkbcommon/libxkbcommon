@@ -329,14 +329,14 @@ static void
 add_key_aliases(struct xkb_keymap *keymap, darray_size_t min, darray_size_t max,
                 struct xkb_key_alias *aliases)
 {
-    darray_size_t num_key_aliases = 0;
     for (darray_size_t alias = min; alias <= max; alias++) {
         const KeycodeMatch entry = keymap->key_names[alias];
         if (entry.is_alias && entry.found) {
-            aliases[num_key_aliases++] = (struct xkb_key_alias) {
+            *aliases = (struct xkb_key_alias) {
                 .alias = alias,
                 .real = entry.alias.real
             };
+            aliases++;
         }
     }
 }
@@ -369,15 +369,15 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     static_assert(sizeof(struct xkb_key_alias) == 2 * sizeof(KeycodeMatch), "");
 #endif
     darray_size_t num_key_aliases = 0;
-    darray_size_t min_alias = DARRAY_SIZE_MAX;
+    darray_size_t min_alias = 0;
     darray_size_t max_alias = 0;
     for (xkb_atom_t alias = 0; alias < keymap->num_key_names; alias++) {
         const KeycodeMatch entry = keymap->key_names[alias];
         if (entry.is_alias && entry.found) {
-            num_key_aliases++;
-            if (min_alias == DARRAY_SIZE_MAX)
+            if (!num_key_aliases)
                 min_alias = alias;
             max_alias = alias;
+            num_key_aliases++;
         }
     }
     if (num_key_aliases) {
@@ -385,12 +385,13 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
          * No fancy algorithm used here: either we can trivially write the whole
          * range of `xkb_key_aliases` without overlapping with the `KeycodeMatch`
          * alias entries or we allocate a new array.
-         * In practice no new allocation is is needed and it delivers performs
-         * better than using a buffer to handle overlaps.
+         * In practice no new allocation is needed and it performs better than
+         * using a buffer to handle overlaps.
          */
         const darray_size_t required_space = sizeof(struct xkb_key_alias)
                                            / sizeof(KeycodeMatch)
                                            * num_key_aliases;
+        assert(num_key_aliases <= keymap->num_key_names);
         if (min_alias >= required_space) {
             /* Overwrite before the *first* alias entry */
             add_key_aliases(keymap, min_alias, max_alias, keymap->key_aliases);
@@ -398,24 +399,24 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
             struct xkb_key_alias * const r =
                 realloc(keymap->key_aliases,
                         num_key_aliases * sizeof(*keymap->key_aliases));
-            if (r == NULL)
+            if (!r)
                 return false;
             keymap->key_aliases = r;
         } else if (keymap->num_key_names - max_alias - 1 > required_space) {
-            /* Overwrite after the *last* alias entry, then move to the start */
+            /* Overwrite after the *last* alias entry */
             struct xkb_key_alias * const aliases = (struct xkb_key_alias *) (
-                keymap->key_names - required_space -
-                !is_aligned(keymap->key_names - required_space,
-                            sizeof(struct xkb_key_alias))
+                keymap->key_names + max_alias + 1 +
+                !is_aligned(keymap->key_names + max_alias + 1, sizeof(*aliases))
             );
             add_key_aliases(keymap, min_alias, max_alias, aliases);
+            /* Move to the start */
             memcpy(keymap->key_aliases, aliases,
-                   num_key_aliases * sizeof(*aliases));
+                   num_key_aliases * sizeof(*keymap->key_aliases));
             /* Shrink */
             struct xkb_key_alias * const r =
                 realloc(keymap->key_aliases,
                         num_key_aliases * sizeof(*keymap->key_aliases));
-            if (r == NULL)
+            if (!r)
                 return false;
             keymap->key_aliases = r;
         } else {
@@ -425,7 +426,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
              */
             struct xkb_key_alias * const aliases = calloc(num_key_aliases,
                                                           sizeof(*aliases));
-            if (aliases == NULL)
+            if (!aliases)
                 return false;
             add_key_aliases(keymap, min_alias, max_alias, aliases);
             free(keymap->key_names);
