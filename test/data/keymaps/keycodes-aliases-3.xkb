@@ -1,0 +1,50 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<1>                  = 1;
+	<2>                  = 2;
+	<3>                  = 3;
+	<4>                  = 4;
+	<5>                  = 5;
+	<6>                  = 6;
+	<7>                  = 7;
+	<8>                  = 8;
+	<9>                  = 9;
+	<10>                 = 10;
+	<11>                 = 11;
+	<12>                 = 12;
+	<13>                 = 13;
+	<14>                 = 14;
+	<15>                 = 15;
+	<16>                 = 16;
+	<17>                 = 17;
+	<18>                 = 18;
+	alias <A>            = <1>;
+	alias <B>            = <1>;
+	alias <C>            = <1>;
+	alias <D>            = <1>;
+	alias <E>            = <1>;
+	alias <F>            = <1>;
+	alias <G>            = <1>;
+	alias <H>            = <1>;
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+};
+
+};

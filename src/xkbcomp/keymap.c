@@ -385,8 +385,8 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
          * No fancy algorithm used here: either we can trivially write the whole
          * range of `xkb_key_aliases` without overlapping with the `KeycodeMatch`
          * alias entries or we allocate a new array.
-         * In practice no new allocation is is needed and it delivers performs
-         * better than using a buffer to handle overlaps.
+         * In practice no new allocation is needed and it performs better than
+         * using a buffer to handle overlaps.
          */
         const darray_size_t required_space = sizeof(struct xkb_key_alias)
                                            / sizeof(KeycodeMatch)
@@ -402,13 +402,14 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
                 return false;
             keymap->key_aliases = r;
         } else if (keymap->num_key_names - max_alias - 1 > required_space) {
-            /* Overwrite after the *last* alias entry, then move to the start */
+            /* Overwrite after the *last* alias entry */
             struct xkb_key_alias * const aliases = (struct xkb_key_alias *) (
-                keymap->key_names - required_space -
+                keymap->key_names + max_alias + 1 +
                 !is_aligned(keymap->key_names - required_space,
                             sizeof(struct xkb_key_alias))
             );
             add_key_aliases(keymap, min_alias, max_alias, aliases);
+            /* Move to the start */
             memcpy(keymap->key_aliases, aliases,
                    num_key_aliases * sizeof(*aliases));
             /* Shrink */
