@@ -843,6 +843,31 @@ test_key_iterator(void)
     xkb_context_unref(context);
 }
 
+/*
+ * Github issue 934: commit b09aa7c6d8440e1690619239fe57e5f12374af0d introduced
+ * a segfault while trying to optimize key aliases allocation.
+ */
+static void
+test_issue_934(void)
+{
+    struct xkb_keymap *keymap;
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+    assert(context);
+
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "base", "pc104", "us", NULL, NULL);
+    assert(keymap);
+    xkb_keymap_unref(keymap);
+
+    /* Would segfaulted before */
+    keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                "evdev", "pc104", "us", NULL, NULL);
+    assert(keymap);
+    xkb_keymap_unref(keymap);
+
+    xkb_context_unref(context);
+}
+
 int
 main(void)
 {
@@ -857,6 +882,7 @@ main(void)
     test_multiple_actions_per_level();
     test_keynames_atoms();
     test_key_iterator();
+    test_issue_934();
 
     return EXIT_SUCCESS;
 }
