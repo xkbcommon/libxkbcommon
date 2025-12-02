@@ -1055,7 +1055,7 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "  xkb_keycodes {\n"
                 /*
                  * Multiple aliases *before* names: check that the key name LUT
-                 * overwrite is done properly.
+                 * is replaced with new allocation.
                  */
                 "    alias <A> = <X>;\n"
                 "    alias <B> = <X>;\n"
@@ -1078,13 +1078,42 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-2.xkb"
         },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                /*
+                 * Multiple aliases *before* names: check that the key name LUT
+                 * overwrite is done properly after the last alias.
+                 */
+                "    alias <A> = <1>;\n"
+                "    alias <B> = <1>;\n"
+                "    alias <C> = <1>;\n"
+                "    alias <D> = <1>;\n"
+                "    alias <E> = <1>;\n"
+                "    <1> = 1;\n"
+                "    <2> = 2;\n"
+                "    <3> = 3;\n"
+                "    <4> = 4;\n"
+                "    <5> = 5;\n"
+                "    <6> = 6;\n"
+                "    <7> = 7;\n"
+                "    <8> = 8;\n"
+                "    <9> = 9;\n"
+                "    <10> = 10;\n"
+                "    <11> = 11;\n"
+                "    <12> = 12;\n"
+                "  };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "keycodes-aliases-3.xkb"
+        },
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         /*
          * We use a new context because we want to check key name LUT is
-         * correctly implemented
+         * correctly implemented: it requires an empty atom table.
          */
         struct xkb_context * const ctx2 = test_get_context(CONTEXT_NO_FLAG);
         assert(ctx2);
