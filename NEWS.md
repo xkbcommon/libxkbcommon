@@ -3,9 +3,9 @@ libxkbcommon [1.13.1] – 2025-12-03
 
 [1.13.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.1
 
-# API
+## API
 
-## Fixes
+### Fixes
 
 - Fixed segfault triggering in unlikely setups.
   ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
@@ -104,9 +104,9 @@ libxkbcommon [1.12.4] – 2025-12-03
 
 [1.12.4]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.4
 
-# API
+## API
 
-## Fixes
+### Fixes
 
 - Fixed segfault triggering in unlikely setups.
   ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
