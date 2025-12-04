@@ -3456,6 +3456,87 @@ xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);
 
 /** @} */
 
+/**
+ * @defgroup test-api Features availability
+ * Test features availability
+ *
+ * @{
+ */
+
+/**
+ * @enum xkb_enumeration
+ *
+ * Enumerate all the enumerations testable with `xkb_enumeration_is_valid()`.
+ *
+ * @since 1.14.0
+ */
+enum xkb_enumeration {
+    /** @since 1.14.0 */
+    XKB_ENUM_ENUMERATION = 0,
+    /** @since 1.14.0 */
+    XKB_ENUM_RMLVO_BUILDER_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYSYM_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_CONTEXT_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_LOG_LEVEL,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYMAP_COMPILE_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYMAP_FORMAT,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYMAP_SERIALIZE_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYMAP_KEY_ITERATOR_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_STATE_ACCESSIBILITY_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_EVENT_TYPE,
+    /** @since 1.14.0 */
+    XKB_ENUM_STATE_COMPONENT,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEYBOARD_CONTROLS,
+    /** @since 1.14.0 */
+    XKB_ENUM_KEY_DIRECTION,
+    /** @since 1.14.0 */
+    XKB_ENUM_STATE_MATCH,
+    /** @since 1.14.0 */
+    XKB_ENUM_CONSUMED_MODE,
+    /** @since 1.14.0 */
+    XKB_ENUM_COMPOSE_COMPILE_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_COMPOSE_FORMAT,
+    /** @since 1.14.0 */
+    XKB_ENUM_COMPOSE_STATE_FLAGS,
+    /** @since 1.14.0 */
+    XKB_ENUM_COMPOSE_STATUS,
+    /** @since 1.14.0 */
+    XKB_ENUM_COMPOSE_FEED_RESULT,
+};
+
+/**
+ * Test the avaibility of enumerations and their values.
+ *
+ * This is is useful when the library is dynamically linked.
+ *
+ * @param e     The enumeration to check
+ * @param value The value of the enumeration to check
+ *
+ * @returns On *success*: `0`.
+ * @returns On *failure*:
+ * - `-1` if the enumeration is not supported
+ * - `-2` if the value is unsupported and the enumeration does not denote flags.
+ * - the mask of unsupported flags of the given value if the enumeration denotes
+ *   flags.
+ *
+ * @since 1.14.0
+ */
+XKB_EXPORT int
+xkb_enumeration_is_valid(enum xkb_enumeration e, int value);
+
+/** @} */
+
 /* Leave this include last, so it can pick up our types, etc. */
 #include <xkbcommon/xkbcommon-compat.h>
 

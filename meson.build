@@ -364,6 +364,8 @@ libxkbcommon_sources = [
     'src/context.h',
     'src/context-priv.c',
     'src/darray.h',
+    'src/enums.c',
+    'src/enums.h',
     'src/keysym.c',
     'src/keysym.h',
     'src/keysym-case-mappings.c',
@@ -956,6 +958,11 @@ if get_option('enable-x11')
         dependencies: [x11_test_dep],
     )
 endif
+test(
+    'enums',
+    executable('test-enums', 'test/enums.c', dependencies: test_dep),
+    env: test_env,
+)
 # TODO: version range?
 keysyms_test_dep = [test_dep]
 keysyms_test_c_args = ['-DENABLE_PRIVATE_APIS']

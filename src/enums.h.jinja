@@ -1,0 +1,18 @@
+/*
+ * Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "config.h"
+
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
+
+{% for enum, entries in enum_data.items() %}
+static const int {{ enum }}_values[] = {
+    {% for entry in entries %}
+    {{ entry['name'] }},
+    {% endfor %}
+};
+{% endfor %}
