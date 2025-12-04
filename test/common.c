@@ -641,6 +641,10 @@ test_compile_rmlvo(struct xkb_context *context, enum xkb_keymap_format format,
         return NULL;
     }
 
+    /* Invalid flags */
+    assert(!xkb_keymap_new_from_rmlvo(rmlvo, format, -1));
+    assert(!xkb_keymap_new_from_rmlvo(rmlvo, format, 0xffff));
+
     keymap = xkb_keymap_new_from_rmlvo(rmlvo, format,
                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
 

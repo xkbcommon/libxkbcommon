@@ -416,6 +416,7 @@ int
 main(void)
 {
     test_init();
+
 #if HAVE_ICU
     u_getUnicodeVersion(icu_unicode_version);
 #endif
@@ -456,6 +457,10 @@ main(void)
     assert(!xkb_keysym_is_assigned(XKB_KEYSYM_MAX));
 
     test_modifiers_table();
+
+    /* Reject invalid flags */
+    assert(xkb_keysym_from_name("a", -1) == XKB_KEY_NoSymbol);
+    assert(xkb_keysym_from_name("a", 0xffff) == XKB_KEY_NoSymbol);
 
     /* Check xkb_keysym_get_explicit_names works */
     const char* aliases[XKB_KEYSYM_EXPLICIT_ALIASES_MAX] = {0};
