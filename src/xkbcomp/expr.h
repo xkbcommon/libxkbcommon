@@ -11,6 +11,7 @@
 #include "ast.h"
 #include "keymap.h"
 #include "text.h"
+#include "xkbcomp-priv.h"
 
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
@@ -40,11 +41,11 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_level_index_t *level_rtrn);
 
 bool
-ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
                  const ExprDef *expr, xkb_layout_index_t *group_rtrn);
 
 bool
-ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
+ExprResolveGroupMask(const struct xkb_keymap_info *keymap_info,
                      const ExprDef *expr, xkb_layout_index_t *group_rtrn);
 
 bool

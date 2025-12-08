@@ -490,7 +490,7 @@ typedef union {
     } alias;
 } KeycodeMatch;
 
-/* Common keyboard description structure */
+/** Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
 
@@ -759,3 +759,24 @@ struct xkb_keymap_format_ops {
 };
 
 extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;
+
+static inline bool
+isModsUnLockOnPressSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}
+
+static inline bool
+isGroupLockOnReleaseSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}
+
+static inline bool
+isModsLatchOnPressSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}
