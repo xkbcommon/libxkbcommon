@@ -179,7 +179,7 @@ typedef struct {
 
     xkb_layout_index_t max_groups;
     struct xkb_context *ctx;
-    /* Needed for AddKeySymbols. */
+    /* Needed for AddKeySymbols and parsing actions */
     const struct xkb_keymap *keymap;
 } SymbolsInfo;
 
@@ -522,25 +522,6 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
     ClearKeyInfo(from);
     InitKeyInfo(info->ctx, from);
     return true;
-}
-
-static struct xkb_key *
-XkbKeyByName(struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
-{
-    if (name < keymap->num_key_names) {
-        const KeycodeMatch match = keymap->key_names[name];
-        if (match.found) {
-            if (!match.is_alias) {
-                assert(name == keymap->keys[match.key.index].name);
-                return &keymap->keys[match.key.index];
-            } else if (use_aliases) {
-                assert(match.alias.real ==
-                       keymap->keys[keymap->key_names[match.alias.real].key.index].name);
-                return &keymap->keys[keymap->key_names[match.alias.real].key.index];
-            }
-        }
-    }
-    return NULL;
 }
 
 static xkb_atom_t
@@ -958,9 +939,8 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->ctx, info->keymap->format,
-                                 &info->default_actions, &info->mods,
-                                 act, &toAct)) {
+            if (!HandleActionDef(info->keymap, &info->default_actions,
+                                 &info->mods, act, &toAct)) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %"PRIu32"/level %"PRIu32" ignored\n",
@@ -1309,8 +1289,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->ctx, info->keymap->format,
-                                    &info->default_actions,
+        ret = SetDefaultActionField(info->keymap, &info->default_actions,
                                     &info->mods, elem, field, arrayNdx,
                                     stmt->value, stmt->merge);
     } else {

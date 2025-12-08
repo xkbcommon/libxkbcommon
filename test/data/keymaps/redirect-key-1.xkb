@@ -1,0 +1,37 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<A>                  = 38;
+	<S>                  = 39;
+	<D>                  = 40;
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		repeat= True;
+	};
+};
+
+xkb_symbols {
+	key <S>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [       RedirectKey(keycode=<A>) ]
+	};
+	key <D>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ RedirectKey(keycode=<S>,modifiers=Shift,clearMods=Control) ]
+	};
+};
+
+};
