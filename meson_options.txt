@@ -29,6 +29,11 @@ option(
     description: 'Directory for bash completion scripts'
 )
 option(
+    'zsh-completion-path',
+    type: 'string',
+    description: 'Directory for zsh completion scripts'
+)
+option(
     'default-rules',
     type: 'string',
     value: 'evdev',
@@ -99,4 +104,10 @@ option(
     type: 'boolean',
     value: true,
     description: 'Enable installing bash completion scripts',
+)
+option(
+    'enable-zsh-completion',
+    type: 'boolean',
+    value: true,
+    description: 'Enable installing zsh completion scripts',
 )
