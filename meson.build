@@ -324,6 +324,15 @@ yacc_gen = generator(
     output: ['@BASENAME@.c', '@BASENAME@.h'],
     arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
 )
+version_file = configure_file(
+    input: 'src/version.c.in',
+    output: 'version.c',
+    configuration: {
+        'MAJOR': xkbcommon_project_version[0],
+        'MINOR': xkbcommon_project_version[1],
+        'PATCH': xkbcommon_project_version[2],
+    },
+)
 libxkbcommon_sources = [
     'src/compose/constants.h',
     'src/compose/parser.c',
@@ -394,6 +403,7 @@ libxkbcommon_sources = [
     'src/utils-numbers.h',
     'src/utils-paths.c',
     'src/utils-paths.h',
+    version_file,
 ]
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []

@@ -314,6 +314,16 @@ typedef uint32_t xkb_led_mask_t;
 #define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
 /**
+ * Get the version of libxkbcommon in use.
+ *
+ * @returns a triplet representing MAJOR.MINOR.PATCH library version.
+ *
+ * @since 1.14.0
+ */
+XKB_EXPORT const uint8_t *
+xkb_get_version(void);
+
+/**
  * @defgroup rules-api Rules
  * Utility functions related to *rules*, whose purpose is introduced in:
  * @ref xkb-the-config "".
