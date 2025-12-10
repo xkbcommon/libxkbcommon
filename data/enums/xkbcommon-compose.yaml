@@ -1,0 +1,25 @@
+# Extracted Enums from: include/xkbcommon/xkbcommon-compose.h
+
+xkb_compose_compile_flags:
+  - name: XKB_COMPOSE_COMPILE_NO_FLAGS
+    value: 0
+xkb_compose_format:
+  - name: XKB_COMPOSE_FORMAT_TEXT_V1
+    value: 1
+xkb_compose_state_flags:
+  - name: XKB_COMPOSE_STATE_NO_FLAGS
+    value: 0
+xkb_compose_status:
+  - name: XKB_COMPOSE_NOTHING
+    value: 0
+  - name: XKB_COMPOSE_COMPOSING
+    value: 1
+  - name: XKB_COMPOSE_COMPOSED
+    value: 2
+  - name: XKB_COMPOSE_CANCELLED
+    value: 3
+xkb_compose_feed_result:
+  - name: XKB_COMPOSE_FEED_IGNORED
+    value: 0
+  - name: XKB_COMPOSE_FEED_ACCEPTED
+    value: 1
