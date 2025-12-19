@@ -14,17 +14,19 @@
 #include <assert.h>
 #include <limits.h>
 
+#include "utils.h"
+
 typedef unsigned int darray_size_t;
 #define DARRAY_SIZE_T_WIDTH (sizeof(darray_size_t) * CHAR_BIT)
 #define DARRAY_SIZE_MAX UINT_MAX
 
-#define darray(type) struct {       \
-    /** Array of items */           \
-    type *item;                     \
-    /** Current size */             \
-    darray_size_t size;             \
-    /** Count of allocated items */ \
-    darray_size_t alloc;            \
+#define darray(type) struct {         \
+    /** Current size */               \
+    darray_size_t size;               \
+    /** Count of allocated items */   \
+    darray_size_t alloc;              \
+    /** Array of items */             \
+    type *item ATTR_COUNTED_BY(size); \
 }
 
 #define darray_new() { 0, 0, 0 }
@@ -163,7 +165,8 @@ typedef darray (unsigned long)  darray_ulong;
     darray_size_t __count = (count), __oldSize = (arr).size; \
     darray_resize(arr, __oldSize + __count + 1); \
     memcpy((arr).item + __oldSize, items, __count * sizeof(*(arr).item)); \
-    (arr).item[--(arr).size] = 0; \
+    (arr).item[(arr).size - 1] = 0; \
+    (arr).size--; \
 } while (0)
 
 #define darray_prepends_nullterminate(arr, items, count) do { \
@@ -172,7 +175,8 @@ typedef darray (unsigned long)  darray_ulong;
     memmove((arr).item + __count, (arr).item, \
             __oldSize * sizeof(*(arr).item)); \
     memcpy((arr).item, items, __count * sizeof(*(arr).item)); \
-    (arr).item[--(arr).size] = 0; \
+    (arr).item[(arr).size - 1] = 0; \
+    (arr).size--; \
 } while (0)
 
 /*** Size management ***/
