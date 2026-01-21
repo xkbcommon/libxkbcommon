@@ -67,12 +67,22 @@ bench_stop(struct bench *bench)
 }
 
 #ifndef _WIN32
+
+static const clockid_t best_clock =
+    #if defined(HAVE_CLOCK_PROCESS_CPUTIME_ID)
+        CLOCK_PROCESS_CPUTIME_ID
+    #elif defined(HAVE_CLOCK_MONOTONIC)
+        CLOCK_MONOTONIC
+    #else
+        CLOCK_REALTIME
+    #endif
+;
+
 void
 bench_start2(struct bench *bench)
 {
     struct timespec t;
-	(void) clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-	// (void) clock_gettime(CLOCK_MONOTONIC, &t);
+	(void) clock_gettime(best_clock, &t);
     bench->start = (struct bench_time) {
         .seconds = t.tv_sec,
         .nanoseconds = t.tv_nsec,
@@ -83,8 +93,7 @@ void
 bench_stop2(struct bench *bench)
 {
     struct timespec t;
-	(void) clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);
-	// (void) clock_gettime(CLOCK_MONOTONIC, &t);
+	(void) clock_gettime(best_clock, &t);
     bench->stop = (struct bench_time) {
         .seconds = t.tv_sec,
         .nanoseconds = t.tv_nsec,
@@ -144,7 +153,7 @@ predictPerturbed(const struct bench_time *b1, const struct bench_time *b2,
 
 #ifndef _WIN32
     struct timespec ts;
-    (void) clock_getres(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    (void) clock_getres(best_clock, &ts);
     long long precision = MAX(ts.tv_sec * 1000000000 + ts.tv_nsec, MIN_PRECISION);
 #else
     long long precision = MIN_PRECISION;
