@@ -20,13 +20,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef _WIN32
-#include <io.h>
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <termios.h>
-#endif
 
 #include "xkbcommon/xkbcommon.h"
 
