@@ -105,7 +105,7 @@ xkb_message_get_all(const struct xkb_message_entry **messages)
 }
 
 const struct xkb_message_entry*
-xkb_message_get(xkb_message_code_t code)
+xkb_message_get(enum xkb_message_code code)
 {
     if (code < _XKB_LOG_MESSAGE_MIN_CODE || code > _XKB_LOG_MESSAGE_MAX_CODE)
         return NULL;

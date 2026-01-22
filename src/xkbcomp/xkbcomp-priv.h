@@ -81,8 +81,9 @@ ReportShouldBeArray(struct xkb_context *ctx, const char *type,
 }
 
 static inline bool
-ReportBadType(struct xkb_context *ctx, xkb_message_code_t code, const char *type,
-              const char *field, const char *name, const char *wanted)
+ReportBadType(struct xkb_context *ctx, enum xkb_message_code code,
+              const char *type, const char *field, const char *name,
+              const char *wanted)
 {
     log_err(ctx, code,
             "The %s %s field must be a %s; "

@@ -147,7 +147,7 @@ fieldText(enum action_field field)
 /***====================================================================***/
 
 static inline bool
-ReportMismatch(struct xkb_context *ctx, xkb_message_code_t code,
+ReportMismatch(struct xkb_context *ctx, enum xkb_message_code code,
                enum xkb_action_type action, enum action_field field,
                const char *type)
 {
