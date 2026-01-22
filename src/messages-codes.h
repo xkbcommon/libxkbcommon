@@ -210,5 +210,3 @@ enum xkb_message_code {
     XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE = 971,
     _XKB_LOG_MESSAGE_MAX_CODE = 971
 };
-
-typedef uint32_t xkb_message_code_t;

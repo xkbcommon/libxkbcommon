@@ -74,7 +74,7 @@ ReportTypeShouldBeArray(KeyTypesInfo *info, KeyTypeInfo *type,
 }
 
 static inline bool
-ReportTypeBadType(KeyTypesInfo *info, xkb_message_code_t code,
+ReportTypeBadType(KeyTypesInfo *info, enum xkb_message_code code,
                   KeyTypeInfo *type, const char *field, const char *wanted)
 {
     return ReportBadType(info->ctx, code, "key type", field,

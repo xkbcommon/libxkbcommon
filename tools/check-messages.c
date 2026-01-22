@@ -13,10 +13,9 @@
 #include "messages-codes.h"
 #include "messages.h"
 
-static xkb_message_code_t
+static enum xkb_message_code
 parse_message_code(char *raw_code) {
-    xkb_message_code_t code;
-    code = atoi(raw_code);
+    const enum xkb_message_code code = atoi(raw_code);
     if (!code && strstr(raw_code, "XKB-")) {
         return atoi(&(raw_code[4]));
     } else {
@@ -55,7 +54,7 @@ int main(int argc, char **argv) {
     }
 
     int rc = 0;
-    xkb_message_code_t code;
+    enum xkb_message_code code;
     const struct xkb_message_entry* entry;
     for (int k=1; k < argc; k++) {
         code = parse_message_code(argv[k]);
