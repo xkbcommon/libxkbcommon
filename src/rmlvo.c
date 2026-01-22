@@ -69,10 +69,9 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
 
     if (idx >= XKB_MAX_GROUPS) {
         log_err(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                "Maximum layout count reached: %"PRIu32"; "
+                "Maximum layout count reached: %u; "
                 "cannot add layout \"%s(%s)\" to the RMLVO builder.\n",
-                XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                layout, (variant) ? variant : "");
+                XKB_MAX_GROUPS, layout, (variant) ? variant : "");
         return false;
     }
 

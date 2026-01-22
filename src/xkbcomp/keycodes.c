@@ -402,7 +402,8 @@ AddLedName(KeyNamesInfo *info, bool same_file,
             xkb_led_index_t use    = (replace ? new_idx + 1 : old_idx + 1);
             xkb_led_index_t ignore = (replace ? old_idx + 1 : new_idx + 1);
             log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "Multiple indicators named %s; Using %u, ignoring %u\n",
+                     "Multiple indicators named %s; "
+                     "Using %"PRIu32", ignoring %"PRIu32"\n",
                      xkb_atom_text(info->ctx, new->name), use, ignore);
         }
 
@@ -424,7 +425,7 @@ AddLedName(KeyNamesInfo *info, bool same_file,
             const xkb_atom_t use    = (replace ? new->name : old->name);
             const xkb_atom_t ignore = (replace ? old->name : new->name);
             log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "Multiple names for indicator %u; "
+                     "Multiple names for indicator %"PRIu32"; "
                      "Using %s, ignoring %s\n", new_idx + 1,
                      xkb_atom_text(info->ctx, use),
                      xkb_atom_text(info->ctx, ignore));
@@ -823,7 +824,8 @@ HandleLedNameDef(KeyNamesInfo *info, LedNameDef *def, bool report)
         info->errorCount++;
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Illegal indicator index (%"PRId64") specified; "
-                "must be between 1 .. %u; Ignored\n", def->ndx, XKB_MAX_LEDS);
+                "must be between 1 .. %"PRIu32"; Ignored\n",
+                def->ndx, XKB_MAX_LEDS);
         return false;
     }
 

@@ -307,7 +307,7 @@ compare_types(struct xkb_context *ctx,
     if (type1->num_entries != type2->num_entries) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Key type \"%s\" entries count do not match: "
-                "%"PRIu32" != %"PRIu32"\n",
+                "%u != %u\n",
                 name1, type1->num_entries, type2->num_entries);
         identical = false;
     } else {

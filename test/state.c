@@ -515,7 +515,10 @@ print_modifiers_serialization(struct xkb_state *state)
     xkb_mod_mask_t latched = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
     xkb_mod_mask_t locked = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
     xkb_mod_mask_t effective = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    fprintf(stderr, "\tMods: Base: 0x%x, Latched: 0x%x, Locked: 0x%x, Effective: 0x%x\n", base, latched, locked, effective);
+    fprintf(stderr,
+            "\tMods: Base: 0x%"PRIx32", Latched: 0x%"PRIx32", "
+            "Locked: 0x%"PRIx32", Effective: 0x%"PRIx32"\n",
+            base, latched, locked, effective);
 }
 
 static void
@@ -525,7 +528,10 @@ print_layout_serialization(struct xkb_state *state)
     xkb_mod_mask_t latched = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED);
     xkb_mod_mask_t locked = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED);
     xkb_mod_mask_t effective = xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
-    fprintf(stderr, "\tLayout: Base: 0x%x, Latched: 0x%x, Locked: 0x%x, Effective: 0x%x\n", base, latched, locked, effective);
+    fprintf(stderr,
+            "\tLayout: Base: 0x%"PRIx32", Latched: 0x%"PRIx32", "
+            "Locked: 0x%"PRIx32", Effective: 0x%"PRIx32"\n",
+            base, latched, locked, effective);
 }
 
 static void
@@ -553,7 +559,7 @@ print_state(struct xkb_state *state)
                                              XKB_STATE_LAYOUT_LATCHED |
                                              XKB_STATE_LAYOUT_LOCKED) <= 0)
             continue;
-        fprintf(stderr, "\tgroup %s (%d): %s%s%s%s\n",
+        fprintf(stderr, "\tgroup %s (%"PRIu32"): %s%s%s%s\n",
                 xkb_keymap_layout_get_name(keymap, group),
                 group,
                 xkb_state_layout_index_is_active(state, group, XKB_STATE_LAYOUT_EFFECTIVE) > 0 ?
@@ -573,7 +579,7 @@ print_state(struct xkb_state *state)
                                           XKB_STATE_MODS_LATCHED |
                                           XKB_STATE_MODS_LOCKED) <= 0)
             continue;
-        fprintf(stderr, "\tmod %s (%d): %s%s%s%s\n",
+        fprintf(stderr, "\tmod %s (%"PRIu32"): %s%s%s%s\n",
                 xkb_keymap_mod_get_name(keymap, mod),
                 mod,
                 xkb_state_mod_index_is_active(state, mod, XKB_STATE_MODS_EFFECTIVE) > 0 ?
@@ -589,7 +595,7 @@ print_state(struct xkb_state *state)
     for (led = 0; led < xkb_keymap_num_leds(keymap); led++) {
         if (xkb_state_led_index_is_active(state, led) <= 0)
             continue;
-        fprintf(stderr, "\tled %s (%d): active\n",
+        fprintf(stderr, "\tled %s (%"PRIu32"): active\n",
                 xkb_keymap_led_get_name(keymap, led),
                 led);
     }
@@ -1976,7 +1982,7 @@ test_serialisation(struct xkb_keymap *keymap, bool pure_vmods)
 #define check_mods(keymap, state_, entry, type)                                     \
         for (xkb_mod_index_t idx = 0; idx < xkb_keymap_num_mods(keymap); idx++) {   \
             xkb_mod_mask_t mask = UINT32_C(1) << idx;                               \
-            fprintf(stderr, "#%"PRIu32" State %#"PRIx32", mod: %s (%"PRIu32")\n",   \
+            fprintf(stderr, "#%u State %#"PRIx32", mod: %s (%"PRIu32")\n",          \
                     k, (entry)->state, xkb_keymap_mod_get_name(keymap, idx), idx);  \
             {                                                                       \
                 xkb_mod_mask_t expected = mod_mask_get_effective(keymap,            \
@@ -2749,8 +2755,8 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
     assert(state);
 
 #define TEST_KEY(key, expected_utf8, expected_utf32) do { \
-    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, NULL, 0) == strlen(expected_utf8)); \
-    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, buf, sizeof(buf)) == strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, NULL, 0) == (int) strlen(expected_utf8)); \
+    assert(xkb_state_key_get_utf8(state, (key) + EVDEV_OFFSET, buf, sizeof(buf)) == (int) strlen(expected_utf8)); \
     assert(memcmp(buf, expected_utf8, sizeof(expected_utf8)) == 0); \
     assert(xkb_state_key_get_utf32(state, (key) + EVDEV_OFFSET) == (expected_utf32)); \
 } while (0)
@@ -2774,19 +2780,19 @@ test_get_utf8_utf32(struct xkb_keymap *keymap)
 
     /* Check truncation. */
     memset(buf, 'X', sizeof(buf));
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 0) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 0) == (int) strlen("HELLO"));
     assert(memcmp(buf, "X", 1) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 1) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 1) == (int) strlen("HELLO"));
     assert(memcmp(buf, "", 1) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 2) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 2) == (int) strlen("HELLO"));
     assert(memcmp(buf, "H", 2) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 3) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 3) == (int) strlen("HELLO"));
     assert(memcmp(buf, "HE", 3) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 5) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 5) == (int) strlen("HELLO"));
     assert(memcmp(buf, "HELL", 5) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 6) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 6) == (int) strlen("HELLO"));
     assert(memcmp(buf, "HELLO", 6) == 0);
-    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 7) == strlen("HELLO"));
+    assert(xkb_state_key_get_utf8(state, KEY_6 + EVDEV_OFFSET, buf, 7) == (int) strlen("HELLO"));
     assert(memcmp(buf, "HELLO\0X", 7) == 0);
 
     /* Switch to ru layout */
@@ -2880,7 +2886,7 @@ test_active_leds(struct xkb_state *state, xkb_led_mask_t leds_expected)
         }
     }
     if (!ret) {
-        fprintf(stderr, "ERROR: LEDs: expected 0x%x, got 0x%x\n",
+        fprintf(stderr, "ERROR: LEDs: expected 0x%"PRIx32", got 0x%"PRIx32"\n",
                 leds_expected, leds_got);
     }
     return ret;

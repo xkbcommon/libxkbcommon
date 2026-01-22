@@ -90,7 +90,7 @@ xkb_keysym_get_name(xkb_keysym_t ks, char *buffer, size_t size)
         return get_unicode_name(ks, buffer, size);
 
     /* Unnamed, non-Unicode, symbol (shouldn't generally happen). */
-    return snprintf(buffer, size, "0x%08x", ks);
+    return snprintf(buffer, size, "0x%08"PRIx32, ks);
 }
 
 bool
