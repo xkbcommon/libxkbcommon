@@ -269,6 +269,9 @@ endif
 if cc.has_header_symbol('time.h', 'CLOCK_MONOTONIC', prefix: system_ext_define)
     configh_data.set('HAVE_CLOCK_MONOTONIC', 1)
 endif
+if cc.has_header_symbol('termios.h', 'tcsetattr', prefix: system_ext_define)
+    configh_data.set('HAVE_TERMIOS', 1)
+endif
 has_glibc = cc.has_function(
     'gnu_get_libc_version',
     prefix: '#include <gnu/libc-version.h>'

@@ -27,7 +27,9 @@
 #include <process.h>
 #else
 #include <unistd.h>
+#if defined(HAVE_TERMIOS)
 #include <termios.h>
+#endif
 #endif
 
 #include "xkbcommon/xkbcommon.h"
@@ -737,7 +739,9 @@ tools_enable_stdin_echo(void)
     GetConsoleMode(stdin_handle, &mode);
     SetConsoleMode(stdin_handle, mode | ENABLE_ECHO_INPUT);
 }
-#else
+
+#elif defined(HAVE_TERMIOS)
+
 void
 tools_disable_stdin_echo(void)
 {
@@ -758,6 +762,22 @@ tools_enable_stdin_echo(void)
         termios.c_lflag |= ECHO;
         (void) tcsetattr(STDIN_FILENO, TCSADRAIN, &termios);
     }
+}
+
+#else
+
+/* Unsupported */
+
+void
+tools_disable_stdin_echo(void)
+{
+    fprintf(stderr, "ERROR: Disabling stdin echo is not supported\n");
+}
+
+void
+tools_enable_stdin_echo(void)
+{
+    fprintf(stderr, "ERROR: Enabling stdin echo is not supported\n");
 }
 
 #endif
