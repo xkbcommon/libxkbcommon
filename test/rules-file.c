@@ -48,7 +48,7 @@ test_rules(struct xkb_context *ctx, const struct test_data *data)
     if (data->should_fail)
         fprintf(stderr, "Expecting: FAILURE\n");
     else
-        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%s\t%u\n",
+        fprintf(stderr, "Expecting: %s\t%s\t%s\t%s\t%s\t%"PRIu32"\n",
                 data->keycodes, data->types, data->compat, data->symbols,
                 data->geometry, data->explicit_layouts);
 
@@ -70,7 +70,7 @@ test_rules(struct xkb_context *ctx, const struct test_data *data)
             ok = xkb_components_names_from_rules(ctx, &rmlvo, NULL, &kccgst);
         }
         if (ok) {
-            fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%s\t%u\n",
+            fprintf(stderr, "Received : %s\t%s\t%s\t%s\t%s\t%"PRIu32"\n",
                     kccgst.keycodes, kccgst.types, kccgst.compatibility,
                     kccgst.symbols, kccgst.geometry, explicit_layouts);
         } else {

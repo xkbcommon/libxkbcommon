@@ -394,7 +394,7 @@ AddLedMap(CompatInfo *info, LedInfo *new, bool same_file)
 
     if (info->num_leds >= XKB_MAX_LEDS) {
         log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Too many LEDs defined (maximum %u)\n",
+                "Too many LEDs defined (maximum %"PRIu32")\n",
                 XKB_MAX_LEDS);
         return false;
     }
@@ -957,7 +957,7 @@ CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
                 /* Not place to put it; ignore. */
                 if (i >= XKB_MAX_LEDS) {
                     log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                            "Too many indicators (maximum is %u); "
+                            "Too many indicators (maximum is %"PRIu32"); "
                             "Indicator name \"%s\" ignored\n",
                             XKB_MAX_LEDS, LEDText(info, ledi));
                     continue;

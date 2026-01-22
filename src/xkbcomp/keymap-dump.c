@@ -288,7 +288,7 @@ write_keycodes(struct xkb_keymap *keymap, bool pretty, struct buf *buf)
 
     xkb_leds_enumerate(idx, led, keymap)
         if (led->name != XKB_ATOM_NONE) {
-            write_buf(buf, "\tindicator %u = ", idx + 1);
+            write_buf(buf, "\tindicator %"PRIu32" = ", idx + 1);
             write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, led->name));
             copy_to_buf(buf, ";\n");
         }
@@ -386,7 +386,7 @@ write_led_map(struct xkb_keymap *keymap, struct buf *buf,
                       LedStateMaskText(keymap->ctx, groupComponentMaskNames,
                                        led->which_groups));
         }
-        write_buf(buf, "\t\tgroups= 0x%02x;\n",
+        write_buf(buf, "\t\tgroups= 0x%02"PRIx32";\n",
                   led->groups);
     }
 

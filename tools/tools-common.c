@@ -53,7 +53,7 @@ print_keycode(struct xkb_keymap *keymap, const char* prefix,
     if (keyname) {
         printf("%s%-4s%s", prefix, keyname, suffix);
     } else {
-        printf("%s%-4d%s", prefix, keycode, suffix);
+        printf("%s%-4"PRIu32"%s", prefix, keycode, suffix);
     }
 }
 
@@ -343,7 +343,7 @@ print_controls(struct xkb_state *state, bool verbose) {
     const enum xkb_keyboard_controls ctrls =
         xkb_state_serialize_controls(state, XKB_STATE_CONTROLS);
 
-    printf("0x%08"PRIx32" ", ctrls);
+    printf("0x%08x ", ctrls);
 
     if (!ctrls) {
         printf("(none)");

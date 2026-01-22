@@ -719,7 +719,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             if (next_incl.explicit_group >= info->max_groups) {
                 log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                         "Cannot set explicit group to %"PRIu32" - "
-                        "must be between 1..%u; Ignoring group number\n",
+                        "must be between 1..%"PRIu32"; Ignoring group number\n",
                         next_incl.explicit_group + 1, info->max_groups);
                 next_incl.explicit_group = info->explicit_group;
             }
@@ -772,7 +772,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
         if (i >= info->max_groups) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                    "Too many groups of %s for key %s (max %u); "
+                    "Too many groups of %s for key %s (max %"PRIu32"); "
                     "Ignoring %s defined for extra groups\n",
                     name, KeyInfoText(info, keyi), info->max_groups, name);
             return false;

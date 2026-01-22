@@ -72,7 +72,7 @@ print_detailed_state(struct xkb_state *state)
         if (xkb_state_led_index_is_active(state, led) > 0)
             leds |= UINT32_C(1) << led;
     }
-    fprintf(stderr, "  LEDs: 0x%x\n", leds);
+    fprintf(stderr, "  LEDs: 0x%"PRIx32"\n", leds);
 }
 
 /*

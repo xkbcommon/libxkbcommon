@@ -116,8 +116,8 @@ test_string(const char *string, xkb_keysym_t expected)
 
     keysym = xkb_keysym_from_name(string, XKB_KEYSYM_NO_FLAGS);
 
-    fprintf(stderr, "Expected string %s -> %x\n", string, expected);
-    fprintf(stderr, "Received string %s -> %x\n\n", string, keysym);
+    fprintf(stderr, "Expected string %s -> 0x%"PRIx32"\n", string, expected);
+    fprintf(stderr, "Received string %s -> 0x%"PRIx32"\n\n", string, keysym);
 
     return keysym == expected;
 }
@@ -129,8 +129,8 @@ test_casestring(const char *string, xkb_keysym_t expected)
 
     keysym = xkb_keysym_from_name(string, XKB_KEYSYM_CASE_INSENSITIVE);
 
-    fprintf(stderr, "Expected casestring %s -> %x\n", string, expected);
-    fprintf(stderr, "Received casestring %s -> %x\n\n", string, keysym);
+    fprintf(stderr, "Expected casestring %s -> 0x%"PRIx32"\n", string, expected);
+    fprintf(stderr, "Received casestring %s -> 0x%"PRIx32"\n\n", string, keysym);
 
     return keysym == expected;
 }
