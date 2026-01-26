@@ -321,8 +321,6 @@ test_keymap_roundtrip(struct xkb_context *ctx,
         ret = EXIT_FAILURE;
         fprintf(stderr, "ERROR: Failed to dump keymap.\n");
     } else {
-        if (print_keymap)
-            fprintf(stdout, "%s\n", got);
         if (!streq(got, expected)) {
             ret = EXIT_FAILURE;
             fprintf(stderr,
@@ -333,6 +331,8 @@ test_keymap_roundtrip(struct xkb_context *ctx,
             ret = EXIT_SUCCESS;
             fprintf(stderr, "Roundtrip succeed.\n");
         }
+        if (print_keymap)
+            fprintf(stdout, "%s\n", got);
         free(got);
     }
 
