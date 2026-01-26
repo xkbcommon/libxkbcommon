@@ -373,6 +373,8 @@ libxkbcommon_sources = [
     'src/context.h',
     'src/context-priv.c',
     'src/darray.h',
+    'src/features.c',
+    'src/features/enums.h',
     'src/keysym.c',
     'src/keysym.h',
     'src/keysym-case-mappings.c',
@@ -433,6 +435,7 @@ install_headers(
     'include/xkbcommon/xkbcommon.h',
     'include/xkbcommon/xkbcommon-compat.h',
     'include/xkbcommon/xkbcommon-compose.h',
+    'include/xkbcommon/xkbcommon-features.h',
     'include/xkbcommon/xkbcommon-keysyms.h',
     'include/xkbcommon/xkbcommon-names.h',
     subdir: 'xkbcommon',
@@ -965,6 +968,17 @@ if get_option('enable-x11')
         dependencies: [x11_test_dep],
     )
 endif
+test(
+    'features',
+    executable(
+        'test-features',
+        'test/features.c',
+        'src/features/enums.h',
+        dependencies: test_dep,
+        c_args: ['-DENABLE_PRIVATE_APIS'],
+    ),
+    env: test_env,
+)
 # TODO: version range?
 keysyms_test_dep = [test_dep]
 keysyms_test_c_args = ['-DENABLE_PRIVATE_APIS']
@@ -1417,6 +1431,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/license.md',
         'include/xkbcommon/xkbcommon.h',
         'include/xkbcommon/xkbcommon-compose.h',
+        'include/xkbcommon/xkbcommon-features.h',
         'include/xkbcommon/xkbcommon-keysyms.h',
         'include/xkbcommon/xkbcommon-names.h',
         'include/xkbcommon/xkbcommon-x11.h',
