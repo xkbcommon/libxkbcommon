@@ -1023,11 +1023,11 @@ CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
 /***====================================================================***/
 
 bool
-CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap)
+CompileKeycodes(XkbFile *file, struct xkb_keymap_info *keymap_info)
 {
     KeyNamesInfo info;
 
-    InitKeyNamesInfo(&info, keymap->ctx, 0);
+    InitKeyNamesInfo(&info, keymap_info->keymap.ctx, 0);
 
     if (file != NULL)
         HandleKeycodesFile(&info, file);
@@ -1035,7 +1035,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap *keymap)
     if (info.errorCount != 0)
         goto err_info;
 
-    if (!CopyKeyNamesInfoToKeymap(keymap, &info))
+    if (!CopyKeyNamesInfoToKeymap(&keymap_info->keymap, &info))
         goto err_info;
 
     ClearKeyNamesInfo(&info);
