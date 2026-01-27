@@ -3693,6 +3693,137 @@ test_sticky_keys(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+static void
+test_shortcuts_tweak(struct xkb_context *context)
+{
+    struct xkb_state_machine_options * const options =
+        xkb_state_machine_options_new(context);
+    assert(options);
+
+    const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
+
+    assert(xkb_state_machine_options_shortcuts_update_mods(options, ctrl, ctrl)
+           == 0);
+    assert(xkb_state_machine_options_shortcuts_set_mapping(options, 1, 2) == 0);
+    assert(xkb_state_machine_options_shortcuts_set_mapping(options, 3, 0) == 0);
+
+    struct xkb_keymap * const keymap =
+        test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                           "evdev", "pc104", "us,il,de,ru", NULL,
+                           "grp:menu_toggle,grp:win_switch");
+    assert(keymap);
+
+    struct xkb_state_machine * const sm = xkb_state_machine_new(keymap, options);
+    assert(sm);
+    xkb_state_machine_options_destroy(options);
+
+    struct xkb_event_iterator * const events = xkb_event_iterator_new(sm);
+    assert(events);
+
+    assert(test_key_seq2(
+        keymap, sm, events,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z             , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+
+        /* Layout 2: temporary switch */
+
+        KEY_LEFTMETA, DOWN, XKB_KEY_ISO_Group_Shift, NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* Layout 2 */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTMETA, UP  , XKB_KEY_ISO_Group_Shift, NEXT,
+
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT, /* Layout 1 (unchanged) */
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTMETA, DOWN, XKB_KEY_ISO_Group_Shift, NEXT, /* Layout 2 */
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT, /* Redirect to layout 3 */
+        KEY_Z       , BOTH, XKB_KEY_y              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* Layout 2 */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L          , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash          , NEXT, /* No redirection with Alt */
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain    , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L          , NEXT,
+        KEY_LEFTMETA, UP  , XKB_KEY_ISO_Group_Shift, NEXT, /* Layout 1 */
+
+        /* Layout 2: lock */
+
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* Match mask: redirect to layout 1 */
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* No match: no redirect */
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        /* Match mask: redirect to layout 1 */
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_slash         , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_hebrew_zain   , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        /* Layout 3 */
+
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L         , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L     , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q             , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_y             , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L         , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+        /* Layout 4 */
+
+        KEY_Q       , BOTH, XKB_KEY_Cyrillic_shorti, NEXT,
+        KEY_Z       , BOTH, XKB_KEY_Cyrillic_ya    , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_LEFTALT , DOWN, XKB_KEY_Alt_L          , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_Cyrillic_shorti, NEXT,
+        KEY_Z       , BOTH, XKB_KEY_Cyrillic_ya    , NEXT,
+        KEY_LEFTCTRL, DOWN, XKB_KEY_Control_L      , NEXT,
+        KEY_Q       , BOTH, XKB_KEY_q              , NEXT,
+        KEY_Z       , BOTH, XKB_KEY_z              , NEXT,
+        KEY_LEFTCTRL, UP  , XKB_KEY_Control_L      , NEXT,
+        KEY_LEFTALT , UP  , XKB_KEY_Alt_L          , NEXT,
+        KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group , FINISH
+    ));
+
+    xkb_event_iterator_destroy(events);
+    xkb_state_machine_unref(sm);
+    xkb_keymap_unref(keymap);
+}
+
 int
 main(void)
 {
@@ -3745,6 +3876,7 @@ main(void)
     test_void_action(context);
     test_extended_layout_indices(context);
     test_sticky_keys(context);
+    test_shortcuts_tweak(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;
