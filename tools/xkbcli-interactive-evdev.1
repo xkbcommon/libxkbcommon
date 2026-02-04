@@ -58,23 +58,23 @@ to add the default include paths.
 Add the default set of include directories.
 This option is order-dependent, include paths given first are searched first.
 .
-.It Fl \-format Ar keymap_format
+.It Fl \-format Ar KEYMAP_FORMAT
 Specify the keymap format (numeric or label, e.g.\&
 .Dq v1 )
 .
-.It Fl \-rules Ar rules
+.It Fl \-rules Ar RULES
 The XKB ruleset
 .
-.It Fl \-model Ar model
+.It Fl \-model Ar MODEL
 The XKB model
 .
-.It Fl \-layout Ar layout
+.It Fl \-layout Ar LAYOUT
 The XKB layout
 .
-.It Fl \-variant Ar variant
+.It Fl \-variant Ar VARIANT
 The XKB layout variant
 .
-.It Fl \-option Ar options
+.It Fl \-option Ar OPTIONS
 The XKB options
 .
 .It Fl \-enable\-environment\-names
@@ -96,11 +96,11 @@ Note that this option may affect the default values of the previous options.
 .It Fl \-legacy\-state\-api Op Ar =true|false
 Use the legacy state API instead of the state event API.
 .
-.It Fl \-controls Ar controls
+.It Fl \-controls Ar CONTROLS
 Enable or disable controls. It implies
 .Fl \-legacy\-state\-api=false
 \&.
-.Ar controls
+.Ar CONTROLS
 is a comma-separated-list of the following entries:
 .Bl -tag -compact -hang
 .It Ar sticky-keys
@@ -111,12 +111,12 @@ Enable latch-to-lock option for sticky-keys
 Relax the strict tapping sequence requirement operating key latches.
 .El
 Each entry may be preceded by
-.Ar \-
-or
 .Ar \+
+or
+.Ar \-
 in order to respectively enable or disable the corresponding control.
 .
-.It Fl \-keymap Ar file
+.It Fl \-keymap Ar FILE
 Specify a keymap path.
 This option is mutually exclusive with the RMLVO options.
 .
