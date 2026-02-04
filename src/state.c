@@ -1444,31 +1444,28 @@ clear_all_latches_and_locks(struct xkb_state *state,
                                 (xkb_mod_mask_t) XKB_MOD_ALL, 0, true, 0);
 }
 
-static enum xkb_state_component
+static void
 state_update_controls(struct xkb_state *state,
                       struct xkb_event_iterator *events,
                       enum xkb_keyboard_controls affect,
                       enum xkb_keyboard_controls controls)
 {
-    const struct state_components previous = state->components;
+    const bool had_sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
+
     /*
      * Enable to use the public API with the all the Control values, except
      * the internal ones, if any.
      */
-    const enum xkb_action_controls affect_ = (enum xkb_action_controls) affect
-                                           & CONTROL_ALL;
-    state->components.controls &= ~affect_;
-    state->components.controls |= (enum xkb_action_controls) controls & affect_;
+    affect = (enum xkb_action_controls) affect & CONTROL_ALL;
+    state->components.controls &= ~affect;
+    state->components.controls |= (enum xkb_action_controls) controls & affect;
 
-    if ((previous.controls & CONTROL_STICKY_KEYS) &&
-        !(state->components.controls & CONTROL_STICKY_KEYS)) {
+    if (had_sticky_keys && !(state->components.controls & CONTROL_STICKY_KEYS)) {
         /* Sticky keys were disabled: clear all locks and latches */
         clear_all_latches_and_locks(state, events);
     }
 
     xkb_state_update_derived(state);
-
-    return get_state_component_changes(&previous, &state->components);
 }
 
 enum xkb_state_component
@@ -1476,7 +1473,9 @@ xkb_state_update_controls(struct xkb_state *state,
                           enum xkb_keyboard_controls affect,
                           enum xkb_keyboard_controls controls)
 {
-    return state_update_controls(state, NULL, affect, controls);
+    const struct state_components previous = state->components;
+    state_update_controls(state, NULL, affect, controls);
+    return get_state_component_changes(&previous, &state->components);
 }
 
 /**
@@ -2344,17 +2343,20 @@ xkb_state_machine_update_controls(struct xkb_state_machine *sm,
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    const enum xkb_state_component changed = state_update_controls(
-        &sm->state, events, affect, controls
-    );
+    struct xkb_state * restrict const state = &sm->state;
+    const struct state_components previous_components = state->components;
 
+    state_update_controls(state, events, affect, controls);
+
+    const enum xkb_state_component changed =
+        get_state_component_changes(&previous_components, &state->components);
     if (changed) {
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
-                .components = sm->state.components
+                .components = state->components
             }
         });
     }
@@ -2403,7 +2405,7 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
-                .components = sm->state.components
+                .components = state->components
             }
         });
     }
@@ -2424,7 +2426,7 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     if (key == NULL)
         return 0;
 
-    const struct state_components prev_components = state->components;
+    const struct state_components previous_components = state->components;
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -2457,8 +2459,6 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 
     xkb_state_update_derived(state);
 
-    const enum xkb_state_component changed =
-        get_state_component_changes(&prev_components, &state->components);
 
     if (darray_empty(events->queue)) {
         // FIXME: this assumption seems too fragile!
@@ -2474,6 +2474,8 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
         });
     }
 
+    const enum xkb_state_component changed =
+        get_state_component_changes(&previous_components, &state->components);
     if (changed) {
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
