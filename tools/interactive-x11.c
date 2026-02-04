@@ -67,6 +67,7 @@ static bool use_local_state = false;
 static struct xkb_state_machine_options * state_machine_options = NULL;
 static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
 static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+static const char *raw_shortcuts_mask = NULL;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
@@ -168,6 +169,18 @@ update_keymap(struct keyboard *kbd)
         }
         if (use_events_api) {
             if (!kbd->state_machine) {
+                if (raw_shortcuts_mask) {
+                    xkb_state_machine_options_shortcuts_update_mods(
+                        state_machine_options, XKB_MOD_ALL, 0
+                    );
+                    if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, kbd->keymap,
+                                                    state_machine_options)) {
+                        fprintf(stderr,
+                                "ERROR: Failed to parse shorcuts mask: \"%s\"\n",
+                                raw_shortcuts_mask);
+                    }
+                }
+
                 kbd->state_machine =
                     xkb_state_machine_new(kbd->keymap, state_machine_options);
                 if (!kbd->state_machine)
@@ -506,6 +519,18 @@ usage(FILE *fp, char *progname)
                 "                         use the given keyboard controls; available values are:\n"
                 "                         sticky-keys, latch-to-lock and latch-simultaneous.\n"
                 "                         It implies --local-state and --legacy-state-api=false.\n"
+                "    --shortcuts-mask <MASK>\n"
+                "                         use the given modifier mask to enable selecting a specific\n"
+                "                         layout (see --shortcuts-mapping) when some of these modifiers\n"
+                "                         are active. The modifier mask is a plus-separated list of\n"
+                "                         modifiers names, e.g. \"Control+Alt+Super\".\n"
+                "                         It implies --local-state and --legacy-state-api=false.\n"
+                "    --shortcuts-mapping <MAPPINGS>\n"
+                "                         use the given layout mapping to enable selecting a specific\n"
+                "                         layout when some modifiers are active (see --shortcuts-mask).\n"
+                "                         <MAPPINGS> is a comma-separated list of 1-indexed layout\n"
+                "                         indices mappings with format \"source:target\", e.g. \"2:1,3:1\".\n"
+                "                         It implies --local-state and --legacy-state-api=false.\n"
                 "    --keymap [<FILE>]    use the given keymap instead of the keymap from the compositor.\n"
                 "                         It implies --local-state.\n"
                 "                         If <FILE> is \"-\" or missing, then load from stdin.\n"
@@ -570,6 +595,8 @@ main(int argc, char *argv[])
         OPT_LOCAL_STATE,
         OPT_LEGACY_STATE_API,
         OPT_CONTROLS,
+        OPT_SHORTCUTS_TWEAK_MASK,
+        OPT_SHORTCUTS_TWEAK_MAPPING,
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
@@ -590,6 +617,8 @@ main(int argc, char *argv[])
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
         {"legacy-state-api",     optional_argument,      0, OPT_LEGACY_STATE_API},
         {"controls",             required_argument,      0, OPT_CONTROLS},
+        {"shortcuts-mask",       required_argument,      0, OPT_SHORTCUTS_TWEAK_MASK},
+        {"shortcuts-mapping",    required_argument,      0, OPT_SHORTCUTS_TWEAK_MAPPING},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
 #endif
         {0, 0, 0, 0},
@@ -651,6 +680,17 @@ local_state:
                                       &kbd_controls_values)) {
                 goto invalid_usage;
             }
+            /* --local-state and --legacy-state-api=false are implied */
+            use_events_api = true;
+            goto local_state;
+        case OPT_SHORTCUTS_TWEAK_MASK:
+            raw_shortcuts_mask = optarg;
+            /* --local-state and --legacy-state-api=false are implied */
+            use_events_api = true;
+            goto local_state;
+        case OPT_SHORTCUTS_TWEAK_MAPPING:
+            if (!tools_parse_shortcuts_mappings(optarg, state_machine_options))
+                goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
