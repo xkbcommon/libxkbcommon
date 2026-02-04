@@ -664,6 +664,17 @@ if build_tools
                      install_dir: bash_completion_path)
     endif
 
+    # Tool: info
+    xkbcli_info = executable(
+        'xkbcli-info',
+        'tools/info.c',
+        dependencies: tools_dep,
+        install: true,
+        install_dir: dir_libexec
+    )
+    install_man('tools/xkbcli-info.1')
+    configh_data.set10('HAVE_XKBCLI_INFO', true)
+
     # Tool: compile-keymap
     xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
                                        'tools/compile-keymap.c',

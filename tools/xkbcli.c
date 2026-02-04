@@ -24,6 +24,11 @@ usage(void)
             *          Any change to the format (in particular to the indentation)
             *          should kept in the script in sync. */
            "Commands:\n"
+#if HAVE_XKBCLI_INFO
+           "  info\n"
+           "    Print information about libxkbcommon configuration\n"
+           "\n"
+#endif
 #if HAVE_XKBCLI_LIST
            "  list\n"
            "    List available rules, models, layouts, variants and options\n"
