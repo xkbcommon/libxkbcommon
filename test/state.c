@@ -3371,7 +3371,7 @@ test_sticky_keys(struct xkb_context *ctx)
 {
     struct xkb_keymap * const keymap = test_compile_rmlvo(
         ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-        "evdev", "pc104", "ca,cz", NULL, "controls,grp:lwin_switch,grp:menu_toggle"
+        "evdev", "pc104", "ca,cz,de", NULL, "controls,grp:lwin_switch,grp:menu_toggle"
     );
     assert(keymap);
 
@@ -3511,14 +3511,13 @@ test_sticky_keys(struct xkb_context *ctx)
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 1);
         changed = update_key(sm, events, state, use_events,
                              KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_DOWN);
-        assert(changed == (XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE |
-                           XKB_STATE_LEDS));
+        assert(changed == (XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE));
         changed = update_key(sm, events, state, use_events,
                              KEY_LEFTMETA + EVDEV_OFFSET, XKB_KEY_UP);
         assert(changed == (XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_LATCHED));
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 1);
         assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 1);
-        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 0);
+        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) == 2);
 
         /* Latch shift (sticky) and lock Caps */
         changed = update_key(sm, events, state, use_events,
@@ -3548,6 +3547,7 @@ test_sticky_keys(struct xkb_context *ctx)
             assert(changed == (XKB_STATE_CONTROLS |
                                XKB_STATE_LAYOUT_LATCHED |
                                XKB_STATE_LAYOUT_LOCKED |
+                               XKB_STATE_LAYOUT_EFFECTIVE |
                                XKB_STATE_MODS_LATCHED |
                                XKB_STATE_MODS_LOCKED |
                                XKB_STATE_MODS_EFFECTIVE |
@@ -3560,8 +3560,7 @@ test_sticky_keys(struct xkb_context *ctx)
             assert(changed == (XKB_STATE_MODS_LATCHED |
                                XKB_STATE_MODS_EFFECTIVE |
                                XKB_STATE_LAYOUT_LATCHED |
-                               XKB_STATE_LAYOUT_EFFECTIVE |
-                               XKB_STATE_LEDS));
+                               XKB_STATE_LAYOUT_EFFECTIVE));
             mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
             assert(mods == caps);
             changed = update_key(sm, events, state, use_events,
@@ -3579,6 +3578,7 @@ test_sticky_keys(struct xkb_context *ctx)
             assert(changed == (XKB_STATE_CONTROLS |
                                XKB_STATE_LAYOUT_LATCHED |
                                XKB_STATE_LAYOUT_LOCKED |
+                               XKB_STATE_LAYOUT_EFFECTIVE |
                                XKB_STATE_MODS_LATCHED |
                                XKB_STATE_MODS_LOCKED |
                                XKB_STATE_MODS_EFFECTIVE |
@@ -3592,6 +3592,7 @@ test_sticky_keys(struct xkb_context *ctx)
             assert(changed == (XKB_STATE_CONTROLS |
                                XKB_STATE_LAYOUT_LATCHED |
                                XKB_STATE_LAYOUT_LOCKED |
+                               XKB_STATE_LAYOUT_EFFECTIVE |
                                XKB_STATE_MODS_LATCHED |
                                XKB_STATE_MODS_LOCKED |
                                XKB_STATE_MODS_EFFECTIVE |

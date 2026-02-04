@@ -1371,7 +1371,7 @@ resolve_to_canonical_mods(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
                                mods & ~keymap->canonical_state_mask);
 }
 
-static enum xkb_state_component
+static void
 state_update_latched_locked(struct xkb_state *state,
                             struct xkb_event_iterator *events,
                             xkb_mod_mask_t affect_latched_mods,
@@ -1383,8 +1383,6 @@ state_update_latched_locked(struct xkb_state *state,
                             bool affect_locked_layout,
                             int32_t locked_layout)
 {
-    const struct state_components prev_components = state->components;
-
     /* Update locks */
     affect_locked_mods =
         resolve_to_canonical_mods(state->keymap, affect_locked_mods);
@@ -1407,9 +1405,6 @@ state_update_latched_locked(struct xkb_state *state,
     if (affect_latched_layout) {
         update_latch_group(state, events, latched_layout);
     }
-
-    xkb_state_update_derived(state);
-    return get_state_component_changes(&prev_components, &state->components);
 }
 
 enum xkb_state_component
@@ -1423,7 +1418,8 @@ xkb_state_update_latched_locked(struct xkb_state *state,
                                 bool affect_locked_layout,
                                 int32_t locked_layout)
 {
-    return state_update_latched_locked(
+    const struct state_components previous_components = state->components;
+    state_update_latched_locked(
         state,
         NULL,
         affect_latched_mods,
@@ -1435,6 +1431,8 @@ xkb_state_update_latched_locked(struct xkb_state *state,
         affect_locked_layout,
         locked_layout
     );
+    xkb_state_update_derived(state);
+    return get_state_component_changes(&previous_components, &state->components);
 }
 
 static inline void
@@ -1467,6 +1465,8 @@ state_update_controls(struct xkb_state *state,
         /* Sticky keys were disabled: clear all locks and latches */
         clear_all_latches_and_locks(state, events);
     }
+
+    xkb_state_update_derived(state);
 
     return get_state_component_changes(&previous, &state->components);
 }
@@ -2377,8 +2377,11 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    const enum xkb_state_component changed = state_update_latched_locked(
-        &sm->state,
+    struct xkb_state * restrict const state = &sm->state;
+    const struct state_components previous_components = state->components;
+
+    state_update_latched_locked(
+        state,
         events,
         affect_latched_mods,
         latched_mods,
@@ -2390,6 +2393,10 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
         locked_layout
     );
 
+    xkb_state_update_derived(state);
+
+    const enum xkb_state_component changed =
+        get_state_component_changes(&previous_components, &state->components);
     if (changed) {
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
