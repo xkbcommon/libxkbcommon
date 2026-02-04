@@ -241,10 +241,30 @@ typedef uint32_t xkb_level_index_t;
  * of some common modifiers are provided in the `xkbcommon/xkbcommon-names.h`
  * header file.  Modifier names are case-sensitive.
  *
- * @sa xkb_keymap_num_mods()
+ * @sa `xkb_keymap::xkb_keymap_num_mods()`
+ * @sa `xkb_mod_mask_t`
  */
 typedef uint32_t xkb_mod_index_t;
-/** A mask of modifier indices. */
+/**
+ * @parblock
+ * A mask of [modifier encodings](@ref modifiers-encoding), i.e. a mask
+ * of [real modifiers] indices.
+ * @endparblock
+ *
+ * @warning A [modifier encoding](@ref modifiers-encoding) is **opaque**.
+ *
+ * @warning Computing a modifier mask from its index works for [real modifiers]
+ * but does *not* work in general for [virtual modifiers].
+ * Therefore the encoding of a modifier should be retrieved *only* using
+ * `xkb_keymap::xkb_keymap_mod_get_mask()` or
+ * `xkb_keymap::xkb_keymap_mod_get_mask2()`.
+ *
+ * @sa `xkb_keymap::xkb_keymap_mod_get_mask()`
+ * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
+ *
+ * [real modifiers]: @ref real-modifier-def
+ * [virtual modifiers]: @ref virtual-modifier-def
+ */
 typedef uint32_t xkb_mod_mask_t;
 
 /**
@@ -1515,7 +1535,9 @@ enum xkb_keymap_key_iterator_flags {
      */
     XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER = (1 << 0),
     /**
+     * @parblock
      * Skip *unbound* keys, i.e. keys with no groups.
+     * @endparblock
      *
      * @since 1.14.0
      */
