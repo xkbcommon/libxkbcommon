@@ -29,7 +29,7 @@ This is a debugging tool, its behavior or output is not guaranteed to be stable.
 .It Fl \-help
 Print help and exit
 .
-.It Fl \-format Ar keymap_format
+.It Fl \-format Ar KEYMAP_FORMAT
 Specify the keymap format (numeric or label, e.g.\&
 .Dq v1 )
 .
@@ -39,14 +39,17 @@ from the compositor
 .
 .It Fl \-legacy\-state\-api Op Ar =true|false
 Use the legacy state API instead of the state event API.
+It implies
+.Fl \-local\-state
+if disabled.
 .
-.It Fl \-controls Ar controls
+.It Fl \-controls Ar CONTROLS
 Enable or disable controls. It implies
 .Fl \-local\-state
 and
 .Fl \-legacy\-state\-api=false
 \&.
-.Ar controls
+.Ar CONTROLS
 is a comma-separated-list of the following entries:
 .Bl -tag -compact -hang
 .It Ar sticky-keys
@@ -57,9 +60,9 @@ Enable latch-to-lock option for sticky-keys
 Relax the strict tapping sequence requirement operating key latches.
 .El
 Each entry may be preceded by
-.Ar \-
-or
 .Ar \+
+or
+.Ar \-
 in order to respectively enable or disable the corresponding control.
 .
 .It Fl \-keymap Oo Ar PATH Oc
