@@ -1898,6 +1898,12 @@ xkb_state_mod_index_is_active(struct xkb_state *state,
     return (xkb_state_serialize_mods(state, type) & mapping) == mapping;
 }
 
+enum {
+    XKB_STATE_MATCH_FLAGS = XKB_STATE_MATCH_ANY
+                          | XKB_STATE_MATCH_ALL
+                          | XKB_STATE_MATCH_NON_EXCLUSIVE
+};
+
 /**
  * Helper function for xkb_state_mod_indices_are_active and
  * xkb_state_mod_names_are_active.
@@ -1916,12 +1922,19 @@ match_mod_masks(struct xkb_state *state,
     if (match & XKB_STATE_MATCH_ANY)
         return active & wanted;
 
+    /* Ensure all flags but XKB_STATE_MATCH_ALL are processed before */
+    static_assert(XKB_STATE_MATCH_ALL ==
+                  ((enum xkb_state_match) XKB_STATE_MATCH_FLAGS &
+                   ~(XKB_STATE_MATCH_ANY | XKB_STATE_MATCH_NON_EXCLUSIVE)),
+                  "");
+
     return (active & wanted) == wanted;
 }
 
 /**
  * Returns 1 if the modifiers are active with the specified type(s), 0 if
- * not, or -1 if any of the modifiers are invalid.
+ * not, or -1 if any of the modifiers are invalid or -2 if the match flag is
+ * invalid.
  */
 int
 xkb_state_mod_indices_are_active(struct xkb_state *state,
@@ -1929,6 +1942,9 @@ xkb_state_mod_indices_are_active(struct xkb_state *state,
                                  enum xkb_state_match match,
                                  ...)
 {
+    if (match & ~((enum xkb_state_match) XKB_STATE_MATCH_FLAGS))
+        return -2;
+
     va_list ap;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
@@ -1976,7 +1992,8 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
 
 /**
  * Returns 1 if the modifiers are active with the specified type(s), 0 if
- * not, or -1 if any of the modifiers are invalid.
+ * not, -1 if any of the modifiers are invalid or -2 if the match flag is
+ * invalid.
  */
 ATTR_NULL_SENTINEL int
 xkb_state_mod_names_are_active(struct xkb_state *state,
@@ -1984,6 +2001,9 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
                                enum xkb_state_match match,
                                ...)
 {
+    if (match & ~((enum xkb_state_match) XKB_STATE_MATCH_FLAGS))
+        return -2;
+
     va_list ap;
     xkb_mod_mask_t wanted = 0;
     int ret = 0;
