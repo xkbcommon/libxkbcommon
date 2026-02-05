@@ -3132,12 +3132,14 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
- * the modifier names do not exist in the keymap, returns -1.
+ * the modifier names do not exist in the keymap, returns -1. If @p match
+ * contains invalid flags, returns -2.
  *
  * @memberof xkb_state
  *
  * @since 0.1.0: Works only with *real* modifiers
  * @since 1.8.0: Works also with *virtual* modifiers
+ * @since 1.14.0: Reject invalid @p match flags
  *
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def
@@ -3185,12 +3187,14 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * `::XKB_MOD_INVALID` argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
- * the modifier indices are invalid in the keymap, returns -1.
+ * the modifier indices are invalid in the keymap, returns -1. If @p match
+ * contains invalid flags, returns -2.
  *
  * @memberof xkb_state
  *
  * @since 0.1.0: Works only with *real* modifiers
  * @since 1.8.0: Works also with *virtual* modifiers
+ * @since 1.14.0: Reject invalid @p match flags
  *
  * [virtual modifiers]: @ref virtual-modifier-def
  * [real modifiers]: @ref real-modifier-def

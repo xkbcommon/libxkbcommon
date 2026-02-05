@@ -773,6 +773,11 @@ test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
     xkb_mod_index_t alt  = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_ALT);
     xkb_mod_index_t meta = _xkb_keymap_mod_get_index(keymap, XKB_VMOD_NAME_META);
 
+    assert(xkb_state_mod_names_are_active(state, XKB_STATE_MODS_EFFECTIVE, 0x4,
+                                          XKB_MOD_NAME_CTRL) == -2);
+    assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_EFFECTIVE, 0x4,
+                                            ctrl) == -2);
+
 #define update_states(state1, sm, key, direction) do {                     \
     xkb_state_update_key((state1), (key), (direction));                    \
     assert(xkb_state_machine_update_key((sm), (events), (key), (direction))\
