@@ -672,6 +672,29 @@ See @ref keymap-string-literal "string literal" for further information.
 </td>
 </tr>
 <tr>
+<th>`First`/`Last` group indices and masks constants</th>
+<td>❌️ No support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+Enable to define e.g. a proper interpretation entry of the keysym `ISO_Last_Group`:
+
+```c
+interpret ISO_Last_Group {
+    action= LockGroup(group=last);
+};
+```
+
+Note that contrary to `First`, `Last` cannot be used as an *array* index, i.e.
+`symbols[Last]` will be discarded or raise an error, depending of the API used.
+<!-- NOTE: It may only work if using the RMLVO API with *one* layout -->
+
+These constants are parsed but never used for *serialization*, in order to
+maintain compatibility with xkbcomp and older libxkbcommon versions.
+</details>
+</td>
+</tr>
+<tr>
 <th>Extended `GroupN` constants</th>
 <td>
 <details>

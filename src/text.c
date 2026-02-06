@@ -82,6 +82,7 @@ const LookupEntry groupComponentMaskNames[] = {
 
 const LookupEntry groupMaskNames[] = {
     { "none", 0x00 },
+    /* "first" is omitted for compatibility reasons */
     { "all", XKB_ALL_GROUPS },
     { NULL, 0 }
 };

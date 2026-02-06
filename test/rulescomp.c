@@ -7,6 +7,7 @@
 #include "test-config.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
 
@@ -208,8 +209,44 @@ main(int argc, char *argv[])
     /* Reject invalid flags */
     assert(!xkb_rmlvo_builder_new(ctx, NULL, NULL, -1));
     assert(!xkb_rmlvo_builder_new(ctx, NULL, NULL, 0xffff));
+    static const struct xkb_rule_names rmlvo = { NULL };
+    assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1, -1));
+    assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
+                                        XKB_KEYMAP_FORMAT_TEXT_V1, 5453));
 
-#define KS(name) xkb_keysym_from_name(name, 0)
+    /* Test “Last” group constant as an array index */
+    struct xkb_keymap *keymap =
+        test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev-modern",
+                           "pc105", "last-group", NULL, NULL);
+    assert(keymap);
+    assert(xkb_keymap_num_layouts(keymap) == 1);
+    const xkb_keysym_t *syms = NULL;
+    int nsyms = xkb_keymap_key_get_syms_by_level(
+        keymap, KEY_Q + EVDEV_OFFSET, 0, 0, &syms
+    );
+    assert(nsyms == 1);
+    assert(XKB_KEY_a == syms[0]); /* `Last` works: there is only one group */
+    xkb_keymap_unref(keymap);
+
+    keymap =
+        test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev-modern",
+                           "pc105", "last-group,us", NULL, NULL);
+    assert(keymap);
+    assert(xkb_keymap_num_layouts(keymap) == 2);
+    syms = NULL;
+    nsyms = xkb_keymap_key_get_syms_by_level(
+        keymap, KEY_Q + EVDEV_OFFSET, 0, 0, &syms
+    );
+    assert(nsyms == 0); /* `Last` does not work: there are multiple groups */
+    nsyms = xkb_keymap_key_get_syms_by_level(
+        keymap, KEY_Q + EVDEV_OFFSET, 1, 0, &syms
+    );
+    assert(nsyms == 1); /* Layout 2 is not impacted */
+    assert(XKB_KEY_q == syms[0]);
+    xkb_keymap_unref(keymap);
+
+#define KS(name) xkb_keysym_from_name(name, XKB_KEYSYM_NO_FLAGS)
 
     assert(test_rmlvo(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
                       "pc105", "us,il,ru,ca", ",,,multix",
@@ -317,20 +354,11 @@ main(int argc, char *argv[])
 
     xkb_context_unref(ctx);
 
-    ctx = test_get_context(0);
+    ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(test_rmlvo_env(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "broken",
                           "but", "ignored", "per", "ctx flags",
                           KEY_A,          BOTH, XKB_KEY_a,                FINISH));
 
-    /* Test response to invalid flags. */
-    {
-        struct xkb_rule_names rmlvo = { NULL };
-        assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
-                                           XKB_KEYMAP_FORMAT_TEXT_V1, -1));
-        assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
-                                           XKB_KEYMAP_FORMAT_TEXT_V1, 5453));
-    }
-
     xkb_context_unref(ctx);
-    return 0;
+    return EXIT_SUCCESS;
 }

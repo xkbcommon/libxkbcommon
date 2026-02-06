@@ -124,6 +124,7 @@ enum xkb_action_flags {
     ACTION_LOCK_ON_RELEASE = (1 << 10),
     ACTION_UNLOCK_ON_PRESS = (1 << 11),
     ACTION_LATCH_ON_PRESS = (1 << 12),
+    ACTION_PENDING_COMPUTATION = (1 << 13),
 };
 
 /**
@@ -288,9 +289,16 @@ struct xkb_sym_interpret {
     } a;
 };
 
+enum {XKB_STATE_COMPONENT_WIDTH = (sizeof(enum xkb_state_component) * CHAR_BIT)};
+static_assert(
+    (UINT64_C(1) << XKB_STATE_COMPONENT_WIDTH) - 1 > XKB_STATE_CONTROLS,
+    "Cannot encode xkb_led::pending_groups"
+);
+
 struct xkb_led {
     xkb_atom_t name;
-    enum xkb_state_component which_groups;
+    enum xkb_state_component which_groups:(XKB_STATE_COMPONENT_WIDTH - 1);
+    bool pending_groups:1;
     xkb_layout_mask_t groups;
     enum xkb_state_component which_mods;
     struct xkb_mods mods;
@@ -396,8 +404,9 @@ struct xkb_key {
     xkb_mod_mask_t modmap;
     xkb_mod_mask_t vmodmap;
 
-    bool repeats;
+    bool repeats:1;
 
+    bool out_of_range_pending_group:1;
     enum xkb_range_exceed_type out_of_range_group_action;
     xkb_layout_index_t out_of_range_group_number;
 

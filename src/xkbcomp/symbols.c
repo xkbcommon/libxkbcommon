@@ -58,6 +58,10 @@ typedef struct {
     xkb_atom_t type;
 } GroupInfo;
 
+enum {
+    XKB_RANGE_EXCEED_TYPE_WIDTH = sizeof(enum xkb_range_exceed_type) * CHAR_BIT
+};
+
 typedef struct {
     enum key_field defined;
     enum merge_mode merge;
@@ -70,7 +74,9 @@ typedef struct {
     xkb_mod_mask_t vmodmap;
     xkb_atom_t default_type;
 
-    enum xkb_range_exceed_type out_of_range_group_action;
+    enum xkb_range_exceed_type
+        out_of_range_group_action:(XKB_RANGE_EXCEED_TYPE_WIDTH - 1);
+    bool out_of_range_pending_group:1;
     xkb_layout_index_t out_of_range_group_number;
 } KeyInfo;
 
@@ -506,6 +512,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
     }
     if (UseNewKeyField(KEY_FIELD_GROUPINFO, into->defined, from->defined,
                        clobber, report, &collide)) {
+        into->out_of_range_pending_group = from->out_of_range_pending_group;
         into->out_of_range_group_action = from->out_of_range_group_action;
         into->out_of_range_group_number = from->out_of_range_group_number;
         into->defined |= KEY_FIELD_GROUPINFO;
@@ -726,11 +733,17 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         }
         else if (info->keymap_info->keymap.num_groups != 0 &&
                  next_incl.include_depth == 1) {
-            /* If keymap is the result of RMLVO resolution and we are at the
+            /*
+             * If keymap is the result of RMLVO resolution and we are at the
              * first include depth, transform e.g. `pc` into `pc:1` in order to
              * force only one group per key using the explicit group.
              *
-             * NOTE: X11’s xkbcomp does not apply this rule. */
+             * NOTE: X11’s xkbcomp does not apply this rule.
+             *
+             * WARNING: If this feature is removed, then the entries `Last` in
+             * the `groupIndexNames` and `groupMaskNames` LUT should initially
+             * be inactive.
+             */
             next_incl.explicit_group = 0;
         }
         else {
@@ -784,7 +797,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, ndx_rtrn)) {
+    if (!ExprResolveGroup(info->keymap_info, arrayNdx, ndx_rtrn, NULL)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
@@ -1033,8 +1046,9 @@ static const LookupEntry repeatEntries[] = {
 
 static bool
 SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
-                ExprDef *arrayNdx, ExprDef *value)
+                ExprDef *arrayNdx, ExprDef **value_ptr)
 {
+    ExprDef * restrict const value = *value_ptr;
     if (istreq(field, "type")) {
         xkb_layout_index_t ndx = 0;
         xkb_atom_t val = XKB_ATOM_NONE;
@@ -1050,7 +1064,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->default_type = val;
             keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
-        else if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &ndx)) {
+        else if (!ExprResolveGroup(info->keymap_info, arrayNdx, &ndx, NULL)) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
@@ -1167,8 +1181,10 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     else if (istreq(field, "groupsredirect") ||
              istreq(field, "redirectgroups")) {
         xkb_layout_index_t grp = 0;
+        bool pending = false;
 
-        if (!ExprResolveGroup(info->ctx, info->max_groups, value, &grp)) {
+        if (!ExprResolveGroup(info->keymap_info, value, &grp, &pending) &&
+            !pending) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
@@ -1176,8 +1192,29 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
+        if (pending) {
+            keyi->out_of_range_pending_group = true;
+            const darray_size_t pending_index =
+                darray_size(*info->keymap_info->pending_computations);
+            darray_append(
+                *info->keymap_info->pending_computations,
+                (struct pending_computation) {
+                    .expr = *value_ptr,
+                    .computed = false,
+                    .value = 0,
+                }
+            );
+            *value_ptr = NULL;
+            static_assert(sizeof(keyi->out_of_range_group_number) ==
+                          sizeof(pending_index),
+                        "Cannot save pending computation");
+            keyi->out_of_range_group_number = pending_index;
+        } else {
+            keyi->out_of_range_pending_group = false;
+            keyi->out_of_range_group_number = grp - 1;
+        }
+
         keyi->out_of_range_group_action = RANGE_REDIRECT;
-        keyi->out_of_range_group_number = grp - 1;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {
@@ -1204,7 +1241,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     }
 
     xkb_layout_index_t group = 0;
-    if (!ExprResolveGroup(info->ctx, info->max_groups, arrayNdx, &group)) {
+    if (!ExprResolveGroup(info->keymap_info, arrayNdx, &group, NULL)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
@@ -1277,7 +1314,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         temp.merge = (temp.merge == MERGE_REPLACE)
             ? MERGE_OVERRIDE
             : stmt->merge;
-        ret = SetSymbolsField(info, &temp, field, arrayNdx, stmt->value);
+        ret = SetSymbolsField(info, &temp, field, arrayNdx, &stmt->value);
         MergeKeys(info, &info->default_key, &temp, true);
     }
     else if (!elem && (istreq(field, "name") ||
@@ -1311,7 +1348,7 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
     else if (elem) {
         ret = SetDefaultActionField(info->keymap_info, &info->default_actions,
                                     &info->mods, elem, field, arrayNdx,
-                                    stmt->value, stmt->merge);
+                                    &stmt->value, stmt->merge);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
@@ -1362,7 +1399,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
             ok = false;
         }
 
-        if (!ok || !SetSymbolsField(info, keyi, field, arrayNdx, def->value))
+        if (!ok || !SetSymbolsField(info, keyi, field, arrayNdx, &def->value))
             all_valid_entries = false;
     }
 
@@ -1844,6 +1881,7 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
             key->explicit |= EXPLICIT_TYPES;
     }
 
+    key->out_of_range_pending_group = keyi->out_of_range_pending_group;
     key->out_of_range_group_number = keyi->out_of_range_group_number;
     key->out_of_range_group_action = keyi->out_of_range_group_action;
 

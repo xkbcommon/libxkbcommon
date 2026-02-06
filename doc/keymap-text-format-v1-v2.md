@@ -2027,6 +2027,29 @@ up.
 
     groups = All - group1;
 
+This is a *mask* of group indices.
+
+The following special values can be used in the expression:
+
+<dl>
+<dt>`GroupN`</dt>
+<dd>
+Denotes the N-th group, e.g. `Group3` is `0x4` = `1 << (3 - 1)`.
+<dt>`First`</dt>
+<dd>
+Denotes the *first* group and always equals to `0x1`.
+
+@since 1.14
+</dd>
+<dt>`Last`</dt>
+<dd>
+Denotes the *last* group and depends on the keymap setup: e.g. with 3 layouts
+it is to `0x4 = 1 << (3 - 1)`.
+
+@since 1.14
+</dd>
+</dl>
+
 If the given groups are in the required state (see below), the LED is
 lit.
 
@@ -2121,6 +2144,9 @@ A key description consists of:
 
         - @ref key-virtual-modifiers "Virtual modifiers"
         - @ref key-repeat "Repeat"
+        - group wrap control
+          @todo `groupsWrap`, `groupsClamp`, `groupsRedirect`
+          <!-- TODO: doc about special values First/Last -->
     </dd>
 </dl>
 
@@ -3473,6 +3499,26 @@ Modifies the *base* group.
 <td>
 Group index:
 - 1-based numbering
+- Named constants:
+
+  <dl>
+  <dt>`GroupN`</dt>
+  <dd>
+  Denotes the N-th group, e.g. `Group2` is the second group.
+  <dt>`First`</dt>
+  <dd>
+  Denotes the *first* group and always equals to `1`.
+
+  @since 1.14
+  </dd>
+  <dt>`Last`</dt>
+  <dd>
+  Denotes the *last* group and depends on the keymap setup: e.g. with 3 layouts
+  it equals to 3.
+
+  @since 1.14
+  </dd>
+  </dl>
 - either absolute (no sign) or relative (`+`/`-` sign)
 </td>
 <td>0</td>

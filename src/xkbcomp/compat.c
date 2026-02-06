@@ -332,6 +332,7 @@ MergeLedMap(CompatInfo *info, LedInfo *old, LedInfo *new, bool same_file)
     const bool report = (same_file && verbosity > 0) || verbosity > 9;
 
     if (old->led.mods.mods == new->led.mods.mods &&
+        old->led.pending_groups == new->led.pending_groups &&
         old->led.groups == new->led.groups &&
         old->led.ctrls == new->led.ctrls &&
         old->led.which_mods == new->led.which_mods &&
@@ -361,6 +362,7 @@ MergeLedMap(CompatInfo *info, LedInfo *old, LedInfo *new, bool same_file)
                        clobber, report, &collide)) {
         old->led.which_groups = new->led.which_groups;
         old->led.groups = new->led.groups;
+        old->led.pending_groups = new->led.pending_groups;
         old->defined |= LED_FIELD_GROUPS;
     }
     if (UseNewLEDField(LED_FIELD_CTRLS, old->defined, new->defined,
@@ -619,8 +621,9 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
 
 static bool
 SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
-               ExprDef *arrayNdx, ExprDef *value)
+               ExprDef *arrayNdx, ExprDef **value_ptr)
 {
+    ExprDef * restrict const value = *value_ptr;
     bool ok = true;
 
     if (istreq(field, "modifiers") || istreq(field, "mods")) {
@@ -634,15 +637,35 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         ledi->defined |= LED_FIELD_MODS;
     }
     else if (istreq(field, "groups")) {
-        uint32_t mask = 0;
+        xkb_layout_mask_t mask = 0;
 
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveGroupMask(info->ctx,
-                                  info->keymap_info->features.max_groups,
-                                  value, &mask))
-            return ReportLedBadType(info, ledi, field, "group mask");
+        bool pending = false;
+        if (!ExprResolveGroupMask(info->keymap_info, value, &mask, &pending)) {
+            if (pending) {
+                ledi->led.pending_groups = true;
+                const darray_size_t pending_index =
+                    darray_size(*info->keymap_info->pending_computations);
+                darray_append(
+                    *info->keymap_info->pending_computations,
+                    (struct pending_computation) {
+                        .expr = *value_ptr,
+                        .computed = false,
+                        .value = 0,
+                    }
+                );
+                *value_ptr = NULL;
+                static_assert(sizeof(pending_index) == sizeof(mask),
+                              "Cannot save pending computation");
+                mask = pending_index;
+            } else {
+                return ReportLedBadType(info, ledi, field, "group mask");
+            }
+        } else {
+            ledi->led.pending_groups = false;
+        }
 
         ledi->led.groups = mask;
         ledi->defined |= LED_FIELD_GROUPS;
@@ -744,13 +767,13 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         temp.merge = (temp.merge == MERGE_REPLACE)
             ? MERGE_OVERRIDE
             : stmt->merge;
-        ret = SetLedMapField(info, &temp, field, ndx, stmt->value);
+        ret = SetLedMapField(info, &temp, field, ndx, &stmt->value);
         MergeLedMap(info, &info->default_led, &temp, true);
     }
     else if (elem) {
         ret = SetDefaultActionField(info->keymap_info, &info->default_actions,
                                     &info->mods, elem, field, ndx,
-                                    stmt->value, stmt->merge);
+                                    &stmt->value, stmt->merge);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
@@ -845,7 +868,7 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def)
             ok = false;
         }
         else {
-            ok = SetLedMapField(info, &ledi, field, arrayNdx, var->value) && ok;
+            ok = SetLedMapField(info, &ledi, field, arrayNdx, &var->value) && ok;
         }
     }
 
@@ -966,9 +989,10 @@ CopyLedMapDefsToKeymap(struct xkb_keymap *keymap, CompatInfo *info)
         }
 
         *led = ledi->led;
-        if (led->groups != 0 && led->which_groups == 0)
+        /* Assume pending `groups` computation does not result in 0 */
+        if (led->which_groups == 0 && (led->groups != 0 || led->pending_groups))
             led->which_groups = XKB_STATE_LAYOUT_EFFECTIVE;
-        if (led->mods.mods != 0 && led->which_mods == 0)
+        if (led->which_mods == 0 && led->mods.mods != 0)
             led->which_mods = XKB_STATE_MODS_EFFECTIVE;
     }
 }
