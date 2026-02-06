@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
-#include "messages-codes.h"
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "messages-codes.h"
 #include "text.h"
 #include "expr.h"
 #include "keysym.h"
@@ -18,7 +19,8 @@
 #include "utils-checked-arithmetic.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
-                                xkb_atom_t field, uint32_t *val_rtrn);
+                                xkb_atom_t field, uint32_t *val_rtrn,
+                                bool *pending);
 
 bool
 ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
@@ -56,7 +58,7 @@ ExprResolveLhs(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 SimpleLookup(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-             uint32_t *val_rtrn)
+             uint32_t *val_rtrn, bool *pending_rtrn)
 {
     if (!priv || field == XKB_ATOM_NONE)
         return false;
@@ -78,6 +80,7 @@ struct named_integer_pattern {
     uint32_t min;
     uint32_t max;
     const LookupEntry *entries;
+    const LookupEntry *pending_entries;
     bool is_mask;
     enum xkb_message_code error_id;
 };
@@ -85,7 +88,8 @@ struct named_integer_pattern {
 /* Parse a number expressed with the pattern `<prefix><decimal number>` */
 static bool
 NamedIntegerPatternLookup(struct xkb_context *ctx, const void *priv,
-                          xkb_atom_t field, uint32_t *val_rtrn)
+                          xkb_atom_t field, uint32_t *val_rtrn,
+                          bool *pending_rtrn)
 {
     if (!priv || field == XKB_ATOM_NONE)
         return false;
@@ -111,10 +115,16 @@ NamedIntegerPatternLookup(struct xkb_context *ctx, const void *priv,
         }
         return true;
     } else {
-        return (
-            pattern->entries &&
-            SimpleLookup(ctx, pattern->entries, field, val_rtrn)
-        );
+        if (pattern->entries &&
+            SimpleLookup(ctx, pattern->entries, field, val_rtrn, NULL)) {
+            return true;
+        }
+        if (pattern->pending_entries && pending_rtrn &&
+            SimpleLookup(ctx, pattern->pending_entries, field, val_rtrn, NULL)) {
+            *pending_rtrn = true;
+            return true;
+        }
+        return false;
     }
 }
 
@@ -126,7 +136,7 @@ typedef struct {
 
 static bool
 LookupModMask(struct xkb_context *ctx, const void *priv, xkb_atom_t field,
-              xkb_mod_mask_t *val_rtrn)
+              xkb_mod_mask_t *val_rtrn, bool *pending_rtrn)
 {
     const char *str = xkb_atom_text(ctx, field);
     if (!str)
@@ -236,8 +246,8 @@ ExprResolveBoolean(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
-                         int64_t *val_rtrn, IdentLookupFunc lookup,
-                         const void *lookupPriv)
+                         int64_t *val_rtrn, bool *pending,
+                         IdentLookupFunc lookup, const void *lookupPriv)
 {
     bool ok = false;
     int64_t l = 0, r = 0;
@@ -261,7 +271,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case STMT_EXPR_IDENT:
         if (lookup)
-            ok = lookup(ctx, lookupPriv, expr->ident.ident, &u);
+            ok = lookup(ctx, lookupPriv, expr->ident.ident, &u, pending);
 
         if (!ok)
             log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
@@ -269,6 +279,11 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
                     xkb_atom_text(ctx, expr->ident.ident));
         else
             *val_rtrn = (int64_t) u;
+
+        if (pending && *pending) {
+            /* Postpone computation */
+            return false;
+        }
 
         return ok;
 
@@ -285,8 +300,8 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_DIVIDE:
         left = expr->binary.left;
         right = expr->binary.right;
-        if (!ExprResolveIntegerLookup(ctx, left, &l, lookup, lookupPriv) ||
-            !ExprResolveIntegerLookup(ctx, right, &r, lookup, lookupPriv))
+        if (!ExprResolveIntegerLookup(ctx, left, &l, pending, lookup, lookupPriv) ||
+            !ExprResolveIntegerLookup(ctx, right, &r, pending, lookup, lookupPriv))
             return false;
 
         switch (expr->common.type) {
@@ -348,7 +363,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_INVERT:
     case STMT_EXPR_NEGATE:
         left = expr->unary.child;
-        if (!ExprResolveIntegerLookup(ctx, left, &l, lookup, lookupPriv))
+        if (!ExprResolveIntegerLookup(ctx, left, &l, pending, lookup, lookupPriv))
             return false;
 
         *val_rtrn = (expr->common.type == STMT_EXPR_NEGATE ? -l : ~l);
@@ -356,7 +371,7 @@ ExprResolveIntegerLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case STMT_EXPR_UNARY_PLUS:
         left = expr->unary.child;
-        return ExprResolveIntegerLookup(ctx, left, val_rtrn, lookup,
+        return ExprResolveIntegerLookup(ctx, left, val_rtrn, pending, lookup,
                                         lookupPriv);
 
     default:
@@ -373,32 +388,40 @@ bool
 ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
                    int64_t *val_rtrn)
 {
-    return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL);
+    return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL, NULL);
 }
 
 bool
-ExprResolveGroup(struct xkb_context *ctx, xkb_layout_index_t max_groups,
-                 const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
+                 const ExprDef *expr, xkb_layout_index_t *group_rtrn,
+                 bool *pending)
 {
+    static const LookupEntry pendingGroupIndexNames[] = {
+        { GROUP_LAST_INDEX_NAME, 0 },
+        { NULL, 0 }
+    };
+
     const struct named_integer_pattern group_name_pattern = {
         /* Prefix is title-cased, because it is also used in error messages */
         .prefix = "Group",
         .prefix_length = sizeof("Group") - 1,
         .min = 1,
-        .max = max_groups,
+        .max = keymap_info->features.max_groups,
         .is_mask = false,
-        .entries = NULL,
+        .entries = keymap_info->lookup.groupIndexNames,
+        .pending_entries = pendingGroupIndexNames,
         .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
     };
+
     int64_t result = 0;
-    if (!ExprResolveIntegerLookup(ctx, expr, &result, NamedIntegerPatternLookup,
-                                  &group_name_pattern))
+    if (!ExprResolveIntegerLookup(keymap_info->keymap.ctx, expr, &result, pending,
+                                  NamedIntegerPatternLookup, &group_name_pattern))
         return false;
 
-    if (result < 1 || result > max_groups) {
-        log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+    if (result < 1 || result > keymap_info->features.max_groups) {
+        log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
-                result, max_groups);
+                result, keymap_info->features.max_groups);
         return false;
     }
 
@@ -421,7 +444,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
         .error_id = XKB_ERROR_UNSUPPORTED_SHIFT_LEVEL,
     };
     int64_t result = 0;
-    if (!ExprResolveIntegerLookup(ctx, expr, &result, NamedIntegerPatternLookup,
+    if (!ExprResolveIntegerLookup(ctx, expr, &result, NULL,
+                                  NamedIntegerPatternLookup,
                                   &level_name_pattern))
         return false;
 
@@ -440,7 +464,7 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 bool
 ExprResolveButton(struct xkb_context *ctx, const ExprDef *expr, int64_t *btn_rtrn)
 {
-    return ExprResolveIntegerLookup(ctx, expr, btn_rtrn, SimpleLookup,
+    return ExprResolveIntegerLookup(ctx, expr, btn_rtrn, NULL, SimpleLookup,
                                     buttonNames);
 }
 
@@ -514,7 +538,7 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
         return false;
     }
 
-    if (!SimpleLookup(ctx, values, expr->ident.ident, val_rtrn)) {
+    if (!SimpleLookup(ctx, values, expr->ident.ident, val_rtrn, NULL)) {
         log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
                 "Illegal identifier %s; expected one of:\n",
                 xkb_atom_text(ctx, expr->ident.ident));
@@ -531,8 +555,8 @@ ExprResolveEnum(struct xkb_context *ctx, const ExprDef *expr,
 
 static bool
 ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
-                      uint32_t *val_rtrn, IdentLookupFunc lookup,
-                      const void *lookupPriv)
+                      uint32_t *val_rtrn, bool *pending,
+                      IdentLookupFunc lookup, const void *lookupPriv)
 {
     bool ok = false;
     uint32_t l = 0, r = 0;
@@ -564,11 +588,15 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
         return false;
 
     case STMT_EXPR_IDENT:
-        ok = lookup(ctx, lookupPriv, expr->ident.ident, val_rtrn);
+        ok = lookup(ctx, lookupPriv, expr->ident.ident, val_rtrn, pending);
         if (!ok)
             log_err(ctx, XKB_ERROR_INVALID_IDENTIFIER,
                     "Identifier \"%s\" of type int is unknown\n",
                     xkb_atom_text(ctx, expr->ident.ident));
+        if (pending && *pending) {
+            /* Postpone computation */
+            return false;
+        }
         return ok;
 
     case STMT_EXPR_FIELD_REF:
@@ -595,8 +623,8 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_DIVIDE:
         left = expr->binary.left;
         right = expr->binary.right;
-        if (!ExprResolveMaskLookup(ctx, left, &l, lookup, lookupPriv) ||
-            !ExprResolveMaskLookup(ctx, right, &r, lookup, lookupPriv))
+        if (!ExprResolveMaskLookup(ctx, left, &l, pending, lookup, lookupPriv) ||
+            !ExprResolveMaskLookup(ctx, right, &r, pending, lookup, lookupPriv))
             return false;
 
         switch (expr->common.type) {
@@ -625,7 +653,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
 
     case STMT_EXPR_INVERT:
         left = expr->unary.child;
-        if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
+        if (!ExprResolveIntegerLookup(ctx, left, &v, pending, lookup, lookupPriv))
             return false;
         if (v < 0 || v > UINT32_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -640,7 +668,7 @@ ExprResolveMaskLookup(struct xkb_context *ctx, const ExprDef *expr,
     case STMT_EXPR_NEGATE:
     case STMT_EXPR_NOT:
         left = expr->unary.child;
-        if (!ExprResolveIntegerLookup(ctx, left, &v, lookup, lookupPriv))
+        if (!ExprResolveIntegerLookup(ctx, left, &v, pending, lookup, lookupPriv))
             return false;
         log_err(ctx, XKB_ERROR_INVALID_OPERATION,
                 "The '%c' unary operator cannot be used with a mask\n",
@@ -661,7 +689,7 @@ bool
 ExprResolveMask(struct xkb_context *ctx, const ExprDef *expr,
                 uint32_t *mask_rtrn, const LookupEntry *values)
 {
-    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, SimpleLookup, values);
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, NULL, SimpleLookup, values);
 }
 
 bool
@@ -670,7 +698,7 @@ ExprResolveModMask(struct xkb_context *ctx, const ExprDef *expr,
                    xkb_mod_mask_t *mask_rtrn)
 {
     LookupModMaskPriv priv = { .mods = mods, .mod_type = mod_type };
-    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, LookupModMask, &priv);
+    return ExprResolveMaskLookup(ctx, expr, mask_rtrn, NULL, LookupModMask, &priv);
 }
 
 bool
@@ -701,19 +729,28 @@ ExprResolveMod(struct xkb_context *ctx, const ExprDef *def,
 }
 
 bool
-ExprResolveGroupMask(struct xkb_context *ctx, xkb_layout_index_t max_groups,
-                     const ExprDef *expr, xkb_layout_index_t *group_rtrn)
+ExprResolveGroupMask(const struct xkb_keymap_info *keymap_info,
+                     const ExprDef *expr, xkb_layout_mask_t *group_rtrn,
+                     bool *pending_rtrn)
 {
+    static const LookupEntry pendingGroupMaskNames[] = {
+        { GROUP_LAST_INDEX_NAME, 0 },
+        { NULL, 0 }
+    };
+
     const struct named_integer_pattern group_name_pattern = {
         /* Prefix is title-cased, because it is also used in error messages */
         .prefix = "Group",
         .prefix_length = sizeof("Group") - 1,
         .min = 1,
-        .max = max_groups,
+        .max = keymap_info->features.max_groups,
         .is_mask = true,
-        .entries = groupMaskNames,
+        .entries = keymap_info->lookup.groupMaskNames,
+        .pending_entries = pendingGroupMaskNames,
         .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX
     };
-    return ExprResolveMaskLookup(ctx, expr, group_rtrn,
-                                 NamedIntegerPatternLookup, &group_name_pattern);
+
+    return ExprResolveMaskLookup(keymap_info->keymap.ctx, expr, group_rtrn,
+                                 pending_rtrn, NamedIntegerPatternLookup,
+                                 &group_name_pattern);
 }

@@ -15,7 +15,9 @@
 #include <stdbool.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "ast-build.h"
 #include "darray.h"
+#include "expr.h"
 #include "keymap.h"
 #include "text.h"
 #include "utils.h"
@@ -341,6 +343,96 @@ add_key_aliases(struct xkb_keymap *keymap, darray_size_t min, darray_size_t max,
     }
 }
 
+static bool
+update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
+{
+    if (key->out_of_range_pending_group) {
+        struct pending_computation * const pc = &darray_item(
+            *info->pending_computations, key->out_of_range_group_number
+        );
+        if (!pc->computed) {
+            xkb_layout_index_t group = 0;
+            if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                        "Invalid key redirect group index\n");
+                return false;
+            }
+            pc->computed = true;
+            pc->value = group - 1;
+        }
+        key->out_of_range_pending_group = false;
+        key->out_of_range_group_number = pc->value;
+    }
+    return true;
+}
+
+static bool
+update_pending_action_fields(struct xkb_keymap_info *info, union xkb_action *act)
+{
+    switch (act->type) {
+    case ACTION_TYPE_GROUP_SET:
+    case ACTION_TYPE_GROUP_LATCH:
+    case ACTION_TYPE_GROUP_LOCK:
+        if (act->group.flags & ACTION_PENDING_COMPUTATION) {
+            struct pending_computation * const pc =
+                &darray_item(*info->pending_computations, act->group.group);
+            if (!pc->computed) {
+                xkb_layout_index_t group = 0;
+                if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+                    log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                            "Invalid action group index\n");
+                    return false;
+                }
+                pc->computed = true;
+                if (!(act->group.flags & ACTION_ABSOLUTE_SWITCH)) {
+                    pc->value = group;
+                    if (pc->expr->common.type == STMT_EXPR_NEGATE)
+                        pc->value = (uint32_t) (-(int32_t) pc->value);
+                } else {
+                    pc->value = (int32_t) (group - 1);
+                }
+            }
+            act->group.group = (int32_t) pc->value;
+            act->group.flags &= ~ACTION_PENDING_COMPUTATION;
+        }
+        return true;
+    default:
+        return true;
+    }
+}
+
+static bool
+update_pending_led_fields(struct xkb_keymap_info *info, struct xkb_led *led)
+{
+    if (led->pending_groups) {
+        struct pending_computation * const pc =
+            &darray_item(*info->pending_computations, led->groups);
+        if (!pc->computed) {
+            xkb_layout_mask_t mask = 0;
+            if (!ExprResolveGroupMask(info, pc->expr, &mask, NULL)) {
+                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                        "Invalid LED group mask\n");
+                return false;
+            }
+            pc->computed = true;
+            pc->value = mask;
+        }
+        led->pending_groups = false;
+        led->groups = pc->value;
+    }
+    return true;
+}
+
+/** Indices for the array "groupIndexNames" */
+enum {
+    GROUP_INDEX_NAME_LAST = 1,
+};
+
+/** Indices for the array "groupMaskNames" */
+enum {
+    GROUP_MASK_NAME_LAST = 3,
+};
+
 /**
  * This collects a bunch of disparate functions which was done in the server
  * at various points that really should've been done within xkbcomp.  Turns out
@@ -348,8 +440,10 @@ add_key_aliases(struct xkb_keymap *keymap, darray_size_t min, darray_size_t max,
  * other than Shift actually do something ...
  */
 static bool
-UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
+UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
 {
+    struct xkb_keymap * restrict const keymap = &info->keymap;
+
     /**
      * Create the key alias list
      *
@@ -435,9 +529,56 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
     }
     keymap->num_key_aliases = num_key_aliases;
 
+    /* Find maximum number of groups out of all keys in the keymap. */
+    struct xkb_key *key;
+    xkb_keys_foreach(key, keymap)
+        keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
+
+    const bool pending_computations = !darray_empty(*info->pending_computations);
+
+    if (pending_computations) {
+        /*
+         * Update non-static LUTs for pending computations:
+         * - enable entry by setting a non-null name
+         * - update the corresponding value
+         */
+        const xkb_layout_index_t num_groups
+            = (keymap->num_groups)
+            ? keymap->num_groups
+            : 1; /* default to the “first” layout */
+        info->lookup.groupIndexNames[GROUP_INDEX_NAME_LAST] =
+            (LookupEntry) {
+                .name = GROUP_LAST_INDEX_NAME,
+                .value = num_groups
+            };
+        static_assert(XKB_MAX_GROUPS == 32, "Guard left shift");
+        info->lookup.groupMaskNames[GROUP_MASK_NAME_LAST] =
+            (LookupEntry) {
+                .name = GROUP_LAST_INDEX_NAME,
+                .value = UINT32_C(1) << (num_groups - 1)
+            };
+
+        /* Update interpret fields with pending computations */
+        for (darray_size_t i = 0; i < keymap->num_sym_interprets; i++) {
+            struct xkb_sym_interpret * restrict const interp =
+                &keymap->sym_interprets[i];
+            if (interp->num_actions <= 1) {
+                union xkb_action * restrict const act = &interp->a.action;
+                if (!update_pending_action_fields(info, act))
+                    return false;
+            } else {
+                for (xkb_action_count_t a = 0; a < interp->num_actions; a++) {
+                    union xkb_action * restrict const act =
+                        &interp->a.actions[a];
+                    if (!update_pending_action_fields(info, act))
+                        return false;
+                }
+            }
+        }
+    }
+
     /* Find all the interprets for the key and bind them to actions,
      * which will also update the vmodmap. */
-    struct xkb_key *key;
     xkb_keys_foreach(key, keymap) {
         if (!ApplyInterpsToKey(keymap, key))
             return false;
@@ -511,33 +652,42 @@ UpdateDerivedKeymapFields(struct xkb_keymap *keymap)
         }
     }
 
-    /* Update action modifiers. */
+    /* Update action modifiers and fields with pending computations. */
     xkb_keys_foreach(key, keymap) {
+        if (!update_pending_key_fields(info, key))
+                return false;
         for (xkb_layout_index_t i = 0; i < key->num_groups; i++) {
             for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
-                if (key->groups[i].levels[j].num_actions == 1) {
-                    UpdateActionMods(keymap, &key->groups[i].levels[j].a.action,
-                                     key->modmap);
+                if (key->groups[i].levels[j].num_actions <= 1) {
+                    union xkb_action * restrict const act =
+                        &key->groups[i].levels[j].a.action;
+                    UpdateActionMods(keymap, act, key->modmap);
+                    if (pending_computations &&
+                        !update_pending_action_fields(info, act))
+                        return false;
                 } else {
                     for (xkb_action_count_t k = 0;
                          k < key->groups[i].levels[j].num_actions; k++) {
-                        UpdateActionMods(keymap,
-                                         &key->groups[i].levels[j].a.actions[k],
-                                         key->modmap);
+                        union xkb_action * restrict const act =
+                            &key->groups[i].levels[j].a.actions[k];
+                        UpdateActionMods(keymap, act, key->modmap);
+                        if (pending_computations &&
+                            !update_pending_action_fields(info, act))
+                            return false;
                     }
                 }
             }
         }
     }
 
-    /* Update vmod -> led maps. */
+    /* Update LEDs */
     struct xkb_led *led;
-    xkb_leds_foreach(led, keymap)
-        ComputeEffectiveMask(keymap, &led->mods);
-
-    /* Find maximum number of groups out of all keys in the keymap. */
-    xkb_keys_foreach(key, keymap)
-        keymap->num_groups = MAX(keymap->num_groups, key->num_groups);
+    xkb_leds_foreach(led, keymap) {
+        ComputeEffectiveMask(keymap, &led->mods); /* vmod -> led maps */
+        if (pending_computations &&
+            !update_pending_led_fields(info, led))
+            return false;
+    }
 
     return true;
 }
@@ -550,6 +700,15 @@ static const compile_file_fn compile_file_fns[LAST_KEYMAP_FILE_TYPE + 1] = {
     [FILE_TYPE_COMPAT] = CompileCompatMap,
     [FILE_TYPE_SYMBOLS] = CompileSymbols,
 };
+
+static void
+pending_computations_array_free(pending_computation_array *p)
+{
+    struct pending_computation *pc;
+    darray_foreach(pc, *p)
+        FreeStmt((ParseCommon*) pc->expr);
+    darray_free(*p);
+}
 
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
@@ -589,6 +748,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
     /*
      * Keymap augmented with compilation-specific data
      */
+    pending_computation_array pending_computations = darray_new();
     struct xkb_keymap_info info = {
         /* Copy the keymap */
         .keymap = *keymap,
@@ -601,6 +761,51 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
             .mods_latch_on_press =
                 isModsLatchOnPressSupported(keymap->format),
         },
+        /*
+         * NOTE: `first` and `last` group constants are never used for
+         *       serialization, in order to maintain compatibility with
+         *       xkbcomp and older libxkbcommon versions.
+         */
+        .lookup = {
+            .groupIndexNames = {
+                { "first", 1 },
+                /*
+                 * The entry “last” is initially active only if using the RMLVO
+                 * API, otherwise it will be activated after parsing the symbols
+                 * and used for pending computations.
+                 *
+                 * NOTE: The RMLVO case is valid as long as multiple groups per
+                 * key is disallowed in a xkb_symbols section.
+                 */
+                [GROUP_INDEX_NAME_LAST] = {
+                    keymap->num_groups ? GROUP_LAST_INDEX_NAME : NULL,
+                    keymap->num_groups /* 1-indexed */
+                },
+                { NULL, 0 }
+            },
+            .groupMaskNames = {
+                { "none", 0x00 },
+                { "first", 0x01 },
+                { "all", XKB_ALL_GROUPS },
+                /*
+                 * The entry “last” is initially active only if using the RMLVO
+                 * API, otherwise it will be activated after parsing the symbols
+                 * and used for pending computations.
+                 *
+                 * NOTE: The RMLVO case is valid as long as multiple groups per
+                 * key is disallowed in a xkb_symbols section.
+                 */
+                [GROUP_MASK_NAME_LAST] = {
+                    keymap->num_groups ? GROUP_LAST_INDEX_NAME : NULL,
+                    /* Be extra cautious */
+                    keymap->num_groups && keymap->num_groups <= XKB_MAX_GROUPS
+                        ? (UINT32_C(1) << (keymap->num_groups - 1))
+                        : 0
+                },
+                { NULL, 0 }
+            },
+        },
+        .pending_computations = &pending_computations,
     };
 
     /*
@@ -629,11 +834,14 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                     xkb_file_type_to_string(type));
             /* Copy back to the keymap, so that all can be properly freed */
             *keymap = info.keymap;
+            pending_computations_array_free(&pending_computations);
             return false;
         }
     }
 
+    const bool ok = UpdateDerivedKeymapFields(&info);
     /* Copy back the keymap */
     *keymap = info.keymap;
-    return UpdateDerivedKeymapFields(keymap);
+    pending_computations_array_free(&pending_computations);
+    return ok;
 }

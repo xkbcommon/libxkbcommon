@@ -1577,7 +1577,88 @@ test_group_indices_names(struct xkb_context *ctx, bool update_output_files)
                 "};",
             .expected_v1 = NULL,
             .expected_v2 = NULL
-        }
+        },
+        /* First and Last: test default values */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    interpret ISO_First_Group {\n"
+                "      action= LockGroup(group=First);\n"
+                "    };\n"
+                "    interpret ISO_Last_Group {\n"
+                "      action= LockGroup(group=Last);\n"
+                "    };\n"
+                "    indicator \"First group\" {\n"
+                "      groups = First;\n"
+                "    };\n"
+                "    indicator \"Last group\" {\n"
+                "      groups = Last;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected_v1 = GOLDEN_TESTS_OUTPUTS "group-index-names-3.xkb",
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-3.xkb",
+        },
+        /* First and Last: test all properties */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "    SetGroup.group = Last;\n"
+                "    interpret ISO_First_Group {\n"
+                "      action= LockGroup(group=First);\n"
+                "    };\n"
+                "    interpret ISO_Last_Group {\n"
+                "      action= SetGroup();\n"
+                "    };\n"
+                "    indicator \"Later groups\" {\n"
+                "      groups = All - First;\n"
+                "    };\n"
+                "    indicator \"Last group\" {\n"
+                "      groups = Last;\n"
+                "    };\n"
+                "    indicator \"All but last group\" {\n"
+                "      groups = All - Last;\n"
+                "    };\n"
+                "    indicator \"Y\" {\n"
+                "      groups = Last + First;\n"
+                "    };\n"
+                "  };\n"
+                "  xkb_types {\n"
+                "    type \"ONE_LEVEL\" {};\n"
+                "    type \"TWO_LEVEL\" {\n"
+                "      modifiers = Shift;\n"
+                "      map[Shift] = 2;\n"
+                "    };\n"
+                "  };"
+                "  xkb_symbols {\n"
+                "    name[first] = \"1\";\n"
+                "    SetGroup.group = +(Last + 1);\n"
+                "    key.groupsRedirect = Last;\n"
+                "    key <> {\n"
+                "      symbols[FIRST] = [1],\n"
+                "      actions[First] = [SetGroup(group=Last), SetGroup(group=-Last)],\n"
+                "      symbols[2]     = [2],\n"
+                "      actions[2]     = [SetGroup(group=Last - First), SetGroup()],\n"
+                "      actions[3]     = [SetGroup(group=First), SetGroup(group=-First)]\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected_v1 = GOLDEN_TESTS_OUTPUTS "group-index-names-4.xkb",
+            .expected_v2 = GOLDEN_TESTS_OUTPUTS "group-index-names-4.xkb",
+        },
+        /* “Last” is not supported as a group index */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols { key <> { symbols[Last] = [a] }; };\n"
+                "};",
+            .expected_v1 = NULL,
+            .expected_v2 = NULL
+        },
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {

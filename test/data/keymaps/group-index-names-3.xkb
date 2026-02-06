@@ -1,0 +1,35 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	indicator 1 = "First group";
+	indicator 2 = "Last group";
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret ISO_First_Group+AnyOfOrNone(all) {
+		action= LockGroup(group=1);
+	};
+	interpret ISO_Last_Group+AnyOfOrNone(all) {
+		action= LockGroup(group=1);
+	};
+	indicator "First group" {
+		groups= 0x01;
+	};
+	indicator "Last group" {
+		groups= 0x01;
+	};
+};
+
+xkb_symbols {
+};
+
+};

@@ -712,6 +712,7 @@
   grab:break_actions	=	+xfree86(grab_break)
   grp:lockOnRelease	=	+iso9995-v2(lockOnRelease)
   grp:lockOnPress	=	+iso9995-v2(lockOnPress)
+  grp:group_bounds	=	+iso9995-v2(group_bounds)
   lv3:latchOnPress	=	+level3-v2(latchOnPress)
   lv3:latchOnRelease	=	+level3-v2(latchOnRelease)
 

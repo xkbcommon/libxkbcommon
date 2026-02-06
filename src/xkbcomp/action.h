@@ -32,4 +32,4 @@ bool
 SetDefaultActionField(const struct xkb_keymap_info *keymap_info,
                       ActionsInfo *info, struct xkb_mod_set *mods,
                       const char *elem, const char *field, ExprDef *array_ndx,
-                      ExprDef *value, enum merge_mode merge);
+                      ExprDef **value_ptr, enum merge_mode merge);

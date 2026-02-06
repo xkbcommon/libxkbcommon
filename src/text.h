@@ -12,6 +12,7 @@
 #include "atom.h"
 #include "keymap.h"
 
+/** LUT entry */
 typedef struct {
     const char *name;
     uint32_t value;
@@ -24,6 +25,7 @@ LookupString(const LookupEntry tab[], const char *string,
 const char *
 LookupValue(const LookupEntry tab[], unsigned int value);
 
+#define GROUP_LAST_INDEX_NAME "last"
 extern const LookupEntry ctrlMaskNames[];
 extern const LookupEntry modComponentMaskNames[];
 extern const LookupEntry groupComponentMaskNames[];

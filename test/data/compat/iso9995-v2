@@ -53,3 +53,19 @@ xkb_compatibility "lockOnRelease" {
 	action= LockGroup(group=2, lockOnRelease);
     };
 };
+
+partial
+xkb_compatibility "group_bounds" {
+    interpret ISO_First_Group {
+	action= LockGroup(group=first);
+    };
+
+    interpret ISO_Last_Group {
+	action= LockGroup(group=last);
+    };
+
+    indicator "Scroll Lock" {
+	modifiers= None;
+	groups=All-Last;
+    };
+};

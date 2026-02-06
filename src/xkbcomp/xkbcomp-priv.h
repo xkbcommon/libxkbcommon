@@ -6,10 +6,20 @@
 
 #include "config.h"
 
-#include "keymap.h"
-#include "ast.h"
-#include "scanner-utils.h"
 #include "xkbcommon/xkbcommon.h"
+#include "ast.h"
+#include "darray.h"
+#include "keymap.h"
+#include "scanner-utils.h"
+#include "text.h"
+
+typedef union ExprDef ExprDef;
+struct pending_computation {
+    ExprDef * expr;
+    bool computed;
+    uint32_t value;
+};
+typedef darray(struct pending_computation) pending_computation_array;
 
 /** Keymap augmented with miscellanenous data used during compilation */
 struct xkb_keymap_info {
@@ -25,6 +35,15 @@ struct xkb_keymap_info {
         bool mods_unlock_on_press;
         bool mods_latch_on_press;
     } features;
+
+    /* Non-static LUTs */
+    struct {
+        LookupEntry groupIndexNames[3];
+        LookupEntry groupMaskNames[5];
+    } lookup;
+
+    /** Pending computations */
+    pending_computation_array *pending_computations;
 };
 
 char *

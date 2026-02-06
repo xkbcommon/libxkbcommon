@@ -1,0 +1,60 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<>                   = 1;
+	indicator 1 = "Later groups";
+	indicator 2 = "Last group";
+	indicator 3 = "All but last group";
+	indicator 4 = "Y";
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret ISO_First_Group+AnyOfOrNone(all) {
+		action= LockGroup(group=1);
+	};
+	interpret ISO_Last_Group+AnyOfOrNone(all) {
+		action= SetGroup(group=3);
+	};
+	indicator "Later groups" {
+		groups= 0xfffffffe;
+	};
+	indicator "Last group" {
+		groups= 0x04;
+	};
+	indicator "All but last group" {
+		groups= 0xfffffffb;
+	};
+	indicator "Y" {
+		groups= 0x05;
+	};
+};
+
+xkb_symbols {
+	name[1]="1";
+
+	key <>                   {
+		repeat= No,
+		groupsRedirect= 3,
+		symbols[1]= [                              1,                       NoSymbol ],
+		actions[1]= [              SetGroup(group=3),             SetGroup(group=+3) ],
+		symbols[2]= [                              2,                       NoSymbol ],
+		actions[2]= [              SetGroup(group=2),             SetGroup(group=+4) ],
+		symbols[3]= [                       NoSymbol,                       NoSymbol ],
+		actions[3]= [              SetGroup(group=1),             SetGroup(group=-1) ]
+	};
+};
+
+};
