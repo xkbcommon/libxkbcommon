@@ -16,6 +16,7 @@
 #define _XKBCOMMON_COMPAT_H
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
+#include "src/keymap.h"
 
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
@@ -106,6 +107,14 @@ bool
 tools_parse_controls(const char *s, struct xkb_state_machine_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values);
+
+bool
+tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
+                           struct xkb_state_machine_options *options);
+
+bool
+tools_parse_shortcuts_mappings(const char *raw,
+                               struct xkb_state_machine_options *options);
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))

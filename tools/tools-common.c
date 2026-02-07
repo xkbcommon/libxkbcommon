@@ -40,6 +40,7 @@
 #include "src/keymap.h"
 #include "src/messages-codes.h"
 #include "src/utils.h"
+#include "src/utils-numbers.h"
 #include "src/utf8-decoding.h"
 
 #if defined(_WIN32) && !defined(S_ISFIFO)
@@ -1023,4 +1024,144 @@ next:
     }
 
     return ok;
+}
+
+static bool
+tools_parse_mod_mask(const char *raw, struct xkb_keymap *keymap,
+                     xkb_mod_mask_t *out)
+{
+    const char *start = raw;
+    const char *s = start;
+
+    char buf[64] = {0};
+
+    /* Parse plus-separated list of mask */
+    static const char sep = '+';
+    while (true) {
+        /* Consume until reaching next item or end of string */
+        while (*s != '\0' && *s != sep) { s++; }
+
+        const size_t len = s - start;
+        if (!len) {
+            if (s[0] == sep) {
+                /* Accept empty entry */
+                goto next;
+            } else {
+                break;
+            }
+        }
+
+        if (len >= ARRAY_SIZE(buf) || !memcpy(buf, start, len))
+            return false;
+        buf[len] = '\0';
+
+        const xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, buf);
+        if (idx == XKB_MOD_INVALID) {
+            fprintf(stderr, "ERROR: cannot parse modifier: \"%s\"\n", buf);
+            return false;
+        }
+
+        *out |= xkb_keymap_mod_get_mask2(keymap, idx);
+
+next:
+        if (s[0] == '\0')
+            break;
+
+        s++;
+        start = s;
+    }
+
+    return true;
+}
+
+bool
+tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
+                           struct xkb_state_machine_options *options)
+{
+    xkb_mod_mask_t mask = 0;
+    return tools_parse_mod_mask(raw, keymap, &mask) &&
+           !xkb_state_machine_options_shortcuts_update_mods(options, mask, mask);
+}
+
+static int
+tools_parse_layout_index1(const char *raw, size_t len, xkb_layout_index_t *out)
+{
+    int consumed = parse_dec_to_uint32_t(raw, len, out);
+    if (consumed > 0 && *out == 0) {
+        consumed = -1;
+    }
+    if (consumed < 0) {
+        fprintf(stderr, "ERROR: invalid layout index: \"%.*s\"\n",
+                (unsigned int) len, raw);
+    } else {
+        /* 1-indexed */
+        (*out)--;
+    }
+    return consumed;
+}
+
+bool
+tools_parse_shortcuts_mappings(const char *raw,
+                               struct xkb_state_machine_options *options)
+{
+    const char *start = raw;
+    const char *s = start;
+    static const char list_sep = ',';
+    static const char layout_sep = ':';
+
+    /* Parse comma-separated list of mappings */
+    while (true) {
+        /* Consume until reaching next item or end of string */
+        while (*s != '\0' && *s != list_sep) { s++; }
+
+        size_t len = s - start;
+        if (!len) {
+            if (s[0] == list_sep) {
+                /* Accept empty entry */
+                goto next;
+            } else {
+                break;
+            }
+        }
+
+        xkb_layout_index_t source = 0;
+        int consumed = tools_parse_layout_index1(start, len, &source);
+        if (consumed <= 0) {
+            fprintf(stderr, "ERROR: invalid shorcuts layout source\n");
+            return false;
+        }
+
+        if (start[consumed] != layout_sep) {
+            fprintf(stderr, "ERROR: invalid shorcuts layout mapping: \"%s\"\n",
+                    start);
+            return false;
+        }
+
+        start += consumed + 1;
+        len -= (size_t) consumed + 1;
+
+        xkb_layout_index_t target = 0;
+        consumed = tools_parse_layout_index1(start, len, &target);
+        if ((size_t) consumed != len) {
+            fprintf(stderr, "ERROR: invalid shortcuts layout target: \"%s\"\n",
+                    start);
+            return false;
+        }
+
+        if (xkb_state_machine_options_shortcuts_set_mapping(options, source, target)) {
+            fprintf(stderr,
+                    "ERROR: cannot add shortcuts layout mapping: "
+                    "%"PRIu32" -> %"PRIu32"\n", source, target);
+            return false;
+        }
+
+next:
+        if (s[0] == '\0')
+            break;
+
+        s++;
+        start = s;
+    }
+
+    return true;
 }

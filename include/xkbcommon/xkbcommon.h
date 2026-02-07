@@ -2137,6 +2137,48 @@ xkb_state_machine_options_update_a11y_flags(
 );
 
 /**
+ * Set the modifiers that trigger keyboard shortcuts tweak.
+ *
+ * @param options The state options object to modify.
+ * @param affect  See @p mask.
+ * @param mask    Modifiers to set, using their [encoding].
+ * Only the modifiers in @p affect are considered.
+ *
+ * @sa `xkb_state_machine_options_shortcuts_set_mapping()`
+ * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
+ * @since 1.14.0
+ * @memberof xkb_state_machine_options
+ *
+ * [encoding]: @ref modifiers-encoding
+ */
+XKB_EXPORT int
+xkb_state_machine_options_shortcuts_update_mods(
+    struct xkb_state_machine_options* restrict options,
+    xkb_mod_mask_t affect, xkb_mod_mask_t mask
+);
+
+/**
+ * Set layout mapping for keyboard shortcuts tweak.
+ *
+ * Enable tweaking keyboard shortcuts by switching the effective layout when
+ * any modifier set by `xkb_state_machine_options_shortcuts_update_mods()`
+ * is active.
+ *
+ * @param options The state options object to modify.
+ * @param source  Source layout.
+ * @param target  Target layout.
+ *
+ * @sa `xkb_state_machine_options_shortcuts_update_mods()`
+ * @since 1.14.0
+ * @memberof xkb_state_machine_options
+ */
+XKB_EXPORT int
+xkb_state_machine_options_shortcuts_set_mapping(
+    struct xkb_state_machine_options* restrict options,
+    xkb_layout_index_t source, xkb_layout_index_t target
+);
+
+/**
  * @struct xkb_event
  * Opaque keyboard state event object.
  *
