@@ -80,7 +80,7 @@ uncomment(const char *input, size_t input_length, const char *prefix)
     const char *start = input;
     const char *end = input + input_length;
 
-    char *next = strstr(start, prefix);
+    const char *next = strstr(start, prefix);
     size_t count;
     while (start < end && next != NULL) {
         count = (size_t)(next - start);
@@ -114,7 +114,7 @@ split_lines(const char *input, size_t input_length,
             struct text_line *output, size_t output_length)
 {
     const char *start = input;
-    char *next;
+    const char *next;
     size_t l;
     size_t i = 0;
 
