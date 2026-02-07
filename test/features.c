@@ -29,12 +29,12 @@ test_libxkbcommon_enums(void)
 
     static const struct {
         enum xkb_feature feature;
-        const char *name;
+        enum enum_property properties;
+        const char * name;
         const int * values;
         size_t count;
-        enum enum_property properties;
     } tests[] = {
-#define ENUM(feature, values, flag) { (feature), STRINGIFY(feature), (values), ARRAY_SIZE(values), (flag) }
+#define ENUM(feature, values, flag) { (feature), (flag), STRINGIFY(feature), (values), ARRAY_SIZE(values) }
         ENUM(XKB_FEATURE_ENUM_FEATURE, xkb_feature_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS, xkb_rmlvo_builder_flags_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_KEYSYM_FLAGS, xkb_keysym_flags_values, ENUM_FLAG),
