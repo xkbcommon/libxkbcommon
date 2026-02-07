@@ -37,121 +37,121 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_FEATURE = 1000,
     /**
-     * The enumeration @ref rmlvo_builder_flags
+     * The enumeration @ref xkb_rmlvo_builder_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS = 1001,
     /**
-     * The enumeration @ref keysym_flags
+     * The enumeration @ref xkb_keysym_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYSYM_FLAGS = 1002,
     /**
-     * The enumeration @ref context_flags
+     * The enumeration @ref xkb_context_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_CONTEXT_FLAGS = 1003,
     /**
-     * The enumeration @ref log_level
+     * The enumeration @ref xkb_log_level
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_LOG_LEVEL = 1004,
     /**
-     * The enumeration @ref keymap_compile_flags
+     * The enumeration @ref xkb_keymap_compile_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS = 1005,
     /**
-     * The enumeration @ref keymap_format
+     * The enumeration @ref xkb_keymap_format
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYMAP_FORMAT = 1006,
     /**
-     * The enumeration @ref keymap_serialize_flags
+     * The enumeration @ref xkb_keymap_serialize_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYMAP_SERIALIZE_FLAGS = 1007,
     /**
-     * The enumeration @ref keymap_key_iterator_flags
+     * The enumeration @ref xkb_keymap_key_iterator_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS = 1008,
     /**
-     * The enumeration @ref state_accessibility_flags
+     * The enumeration @ref xkb_state_accessibility_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS = 1009,
     /**
-     * The enumeration @ref event_type
+     * The enumeration @ref xkb_event_type
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_EVENT_TYPE = 1010,
     /**
-     * The enumeration @ref state_component
+     * The enumeration @ref xkb_state_component
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_STATE_COMPONENT = 1011,
     /**
-     * The enumeration @ref keyboard_controls
+     * The enumeration @ref xkb_keyboard_controls
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEYBOARD_CONTROLS = 1012,
     /**
-     * The enumeration @ref key_direction
+     * The enumeration @ref xkb_key_direction
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_KEY_DIRECTION = 1013,
     /**
-     * The enumeration @ref state_match
+     * The enumeration @ref xkb_state_match
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_STATE_MATCH = 1014,
     /**
-     * The enumeration @ref consumed_mode
+     * The enumeration @ref xkb_consumed_mode
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_CONSUMED_MODE = 1015,
     /**
-     * The enumeration @ref compose_compile_flags
+     * The enumeration @ref xkb_compose_compile_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS = 1016,
     /**
-     * The enumeration @ref compose_format
+     * The enumeration @ref xkb_compose_format
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_COMPOSE_FORMAT = 1017,
     /**
-     * The enumeration @ref compose_state_flags
+     * The enumeration @ref xkb_compose_state_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_COMPOSE_STATE_FLAGS = 1018,
     /**
-     * The enumeration @ref compose_status
+     * The enumeration @ref xkb_compose_status
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_COMPOSE_STATUS = 1019,
     /**
-     * The enumeration @ref compose_feed_result
+     * The enumeration @ref xkb_compose_feed_result
      *
      * @since 1.14.0
      */
