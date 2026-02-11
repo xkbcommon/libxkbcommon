@@ -108,6 +108,13 @@ tools_parse_controls(const char *s, struct xkb_state_machine_options *options,
                      enum xkb_keyboard_controls *controls_affect,
                      enum xkb_keyboard_controls *controls_values);
 
+void
+tools_reset_modifiers_mappings(struct xkb_state_machine_options *options);
+
+bool
+tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
+                               struct xkb_state_machine_options *options);
+
 bool
 tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
                            struct xkb_state_machine_options *options);

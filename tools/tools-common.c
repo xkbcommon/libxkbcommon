@@ -1026,8 +1026,8 @@ next:
     return ok;
 }
 
-static bool
-tools_parse_mod_mask(const char *raw, struct xkb_keymap *keymap,
+static size_t
+tools_parse_mod_mask(const char *raw, size_t length, struct xkb_keymap *keymap,
                      xkb_mod_mask_t *out)
 {
     const char *start = raw;
@@ -1037,9 +1037,10 @@ tools_parse_mod_mask(const char *raw, struct xkb_keymap *keymap,
 
     /* Parse plus-separated list of mask */
     static const char sep = '+';
+    size_t count = 0;
     while (true) {
         /* Consume until reaching next item or end of string */
-        while (*s != '\0' && *s != sep) { s++; }
+        while (count < length && *s != '\0' && *s != sep) { s++; count++; }
 
         const size_t len = s - start;
         if (!len) {
@@ -1052,16 +1053,87 @@ tools_parse_mod_mask(const char *raw, struct xkb_keymap *keymap,
         }
 
         if (len >= ARRAY_SIZE(buf) || !memcpy(buf, start, len))
-            return false;
+            return 0;
         buf[len] = '\0';
 
         const xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, buf);
         if (idx == XKB_MOD_INVALID) {
             fprintf(stderr, "ERROR: cannot parse modifier: \"%s\"\n", buf);
-            return false;
+            return 0;
         }
 
         *out |= xkb_keymap_mod_get_mask2(keymap, idx);
+
+next:
+        if (count >= length || s[0] == '\0')
+            break;
+
+        s++;
+        count++;
+        start = s;
+    }
+
+    return count;
+}
+
+bool
+tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
+                               struct xkb_state_machine_options *options)
+{
+    const char *start = raw;
+    const char *s = start;
+    static const char list_sep = ',';
+    static const char mods_sep = ':';
+
+    /* Parse comma-separated list of mappings */
+    while (true) {
+        /* Consume until reaching next item or end of string */
+        while (*s != '\0' && *s != list_sep) { s++; }
+
+        size_t len = s - start;
+        if (!len) {
+            if (s[0] == list_sep) {
+                /* Accept empty entry */
+                goto next;
+            } else {
+                break;
+            }
+        }
+
+        size_t source_len = 0;
+        while (source_len < len && start[source_len] != mods_sep)
+            source_len++;
+
+        xkb_mod_mask_t source = 0;
+        size_t consumed = tools_parse_mod_mask(start, source_len, keymap, &source);
+        if (consumed != source_len) {
+            fprintf(stderr, "ERROR: invalid modifiers mapping source\n");
+            return false;
+        }
+
+        if (start[consumed] != mods_sep) {
+            fprintf(stderr, "ERROR: invalid modifiers mapping: \"%s\"\n",
+                    start);
+            return false;
+        }
+
+        start += consumed + 1;
+        len -= consumed + 1;
+
+        xkb_mod_mask_t target = 0;
+        consumed = tools_parse_mod_mask(start, len, keymap, &target);
+        if (consumed != len) {
+            fprintf(stderr, "ERROR: invalid modifiers mapping target: \"%s\"\n",
+                    start);
+            return false;
+        }
+
+        if (xkb_state_machine_options_mods_set_mapping(options, source, target)) {
+            fprintf(stderr,
+                    "ERROR: cannot add modifiers mapping: "
+                    "0x%"PRIx32" -> 0x%"PRIx32"\n", source, target);
+            return false;
+        }
 
 next:
         if (s[0] == '\0')
@@ -1079,7 +1151,7 @@ tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
                            struct xkb_state_machine_options *options)
 {
     xkb_mod_mask_t mask = 0;
-    return tools_parse_mod_mask(raw, keymap, &mask) &&
+    return tools_parse_mod_mask(raw, SIZE_MAX, keymap, &mask) &&
            !xkb_state_machine_options_shortcuts_update_mods(options, mask, mask);
 }
 
