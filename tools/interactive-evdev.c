@@ -436,8 +436,9 @@ usage(FILE *fp, char *progname)
                         "          --no-state-report (do not report changes to the state)\n"
                         "          --legacy-state-api[=true|false] (use legacy state API instead of event API)\n"
                         "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
+                        "          --modifiers-mapping <MAPPING> (remap the modifiers)\n"
                         "          --shortcuts-mask <MASK> (set the modifier mask for shortcuts tweaks)\n"
-                        "          --shortcuts-mapping <MAPPINGS> (set the layout indices mapping for shortcuts tweaks)\n"
+                        "          --shortcuts-mapping <MAPPING> (set the layout indices mapping for shortcuts tweaks)\n"
                         "          --enable-compose (enable Compose)\n"
                         "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
                         "          --without-x11-offset (don't add X11 keycode offset)\n"
@@ -483,6 +484,7 @@ main(int argc, char *argv[])
         OPT_WITHOUT_X11_OFFSET,
         OPT_LEGACY_STATE_API,
         OPT_CONTROLS,
+        OPT_MODIFIERS_TWEAK_MAPPING,
         OPT_SHORTCUTS_TWEAK_MASK,
         OPT_SHORTCUTS_TWEAK_MAPPING,
         OPT_CONSUMED_MODE,
@@ -508,6 +510,7 @@ main(int argc, char *argv[])
         {"keymap",               required_argument,      0, OPT_KEYMAP},
         {"legacy-state-api",     optional_argument,      0, OPT_LEGACY_STATE_API},
         {"controls",             required_argument,      0, OPT_CONTROLS},
+        {"modifiers-mapping",    required_argument,      0, OPT_MODIFIERS_TWEAK_MAPPING},
         {"shortcuts-mask",       required_argument,      0, OPT_SHORTCUTS_TWEAK_MASK},
         {"shortcuts-mapping",    required_argument,      0, OPT_SHORTCUTS_TWEAK_MAPPING},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
@@ -533,6 +536,7 @@ main(int argc, char *argv[])
     ctx = NULL;
     enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
     enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+    const char *raw_modifiers_mapping = NULL;
     const char *raw_shortcuts_mask = NULL;
 
     while (1) {
@@ -663,6 +667,11 @@ main(int argc, char *argv[])
             /* --legacy-state-api=false is implied */
             use_events_api = true;
             break;
+        case OPT_MODIFIERS_TWEAK_MAPPING:
+            raw_modifiers_mapping = optarg;
+            /* --legacy-state-api=false is implied */
+            use_events_api = true;
+            break;
         case OPT_SHORTCUTS_TWEAK_MASK:
             raw_shortcuts_mask = optarg;
             /* --legacy-state-api=false is implied */
@@ -769,6 +778,14 @@ too_much_arguments:
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         goto out;
+    }
+
+    if (raw_modifiers_mapping &&
+        !tools_parse_modifiers_mappings(raw_modifiers_mapping, keymap,
+                                        state_machine_options)) {
+        fprintf(stderr,
+                "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
+                raw_modifiers_mapping);
     }
 
     if (raw_shortcuts_mask &&
