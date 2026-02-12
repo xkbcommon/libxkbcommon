@@ -12,6 +12,7 @@ Added the **state event API:**
   - `xkb_state_machine_options_destroy()`
   - `xkb_state_machine_options_update_a11y_flags()`
 - `struct xkb_event_iterator` (new):
+  - `enum xkb_event_iterator_flags`
   - `xkb_event_iterator_new()`
   - `xkb_event_iterator_destroy()`
   - `xkb_event_iterator_next()`

@@ -109,6 +109,12 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_EVENT_TYPE = 3200,
     /**
+     * The enumeration @ref xkb_event_iterator_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_EVENT_ITERATOR_FLAGS = 3210,
+    /**
      * The enumeration @ref xkb_key_direction
      *
      * @since 1.14.0

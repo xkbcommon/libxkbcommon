@@ -36,8 +36,9 @@
 #include "utils.h"
 
 struct xkb_event_iterator {
-    darray(struct xkb_event) queue;
+    enum xkb_event_iterator_flags flags;
     darray_size_t next;
+    darray(struct xkb_event) queue;
     struct xkb_context *ctx;
 };
 
@@ -2838,17 +2839,29 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 }
 
 struct xkb_event_iterator *
-xkb_event_iterator_new(struct xkb_state_machine *sm)
+xkb_event_iterator_new(struct xkb_context *context,
+                       enum xkb_event_iterator_flags flags)
 {
+    static const enum xkb_event_iterator_flags XKB_EVENT_ITERATOR_FLAGS =
+        XKB_EVENT_ITERATOR_NO_FLAGS;
+
+    if (flags & ~XKB_EVENT_ITERATOR_FLAGS) {
+        log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
+                     "unrecognized event iterator flags: %#x\n",
+                     (flags & ~XKB_EVENT_ITERATOR_FLAGS));
+        return NULL;
+    }
+
     struct xkb_event_iterator *events = calloc(1, sizeof(*events));
     if (events == NULL) {
-        log_err(sm->state.keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(context, XKB_ERROR_ALLOCATION_ERROR,
                 "%s: cannot allocate state event iterator\n", __func__);
         return events;
     }
     darray_init(events->queue);
+    events->flags = flags;
     events->next = 0;
-    events->ctx = xkb_context_ref(sm->state.keymap->ctx);
+    events->ctx = xkb_context_ref(context);
     return events;
 }
 

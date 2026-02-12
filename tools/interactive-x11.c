@@ -187,7 +187,8 @@ update_keymap(struct keyboard *kbd)
                     return -1;
             }
             if (!kbd->state_events) {
-                kbd->state_events = xkb_event_iterator_new(kbd->state_machine);
+                kbd->state_events =
+                    xkb_event_iterator_new(kbd->ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
                 if (!kbd->state_events)
                     return -1;
             }

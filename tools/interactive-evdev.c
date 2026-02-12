@@ -87,7 +87,8 @@ is_keyboard(int fd)
 }
 
 static int
-keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
+keyboard_new(struct dirent *ent,
+             struct xkb_context *ctx, struct xkb_keymap *keymap,
              const struct xkb_state_machine_options *options,
              enum xkb_keyboard_controls kbd_controls_affect,
              enum xkb_keyboard_controls kbd_controls_values,
@@ -126,7 +127,7 @@ keyboard_new(struct dirent *ent, struct xkb_keymap *keymap,
             goto err_state_machine;
         }
 
-        state_events = xkb_event_iterator_new(state_machine);
+        state_events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
         if (!state_events) {
             fprintf(stderr, "Couldn't create xkb events iterator for %s\n", path);
             ret = -EFAULT;
@@ -215,7 +216,7 @@ filter_device_name(const struct dirent *ent)
 }
 
 static struct keyboard *
-get_keyboards(struct xkb_keymap *keymap,
+get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
               const struct xkb_state_machine_options *options,
               enum xkb_keyboard_controls kbd_controls_affect,
               enum xkb_keyboard_controls kbd_controls_values,
@@ -232,7 +233,7 @@ get_keyboards(struct xkb_keymap *keymap,
     }
 
     for (i = 0; i < nents; i++) {
-        ret = keyboard_new(ents[i], keymap, options, kbd_controls_values,
+        ret = keyboard_new(ents[i], ctx, keymap, options, kbd_controls_values,
                            kbd_controls_affect, compose_table, &kbd);
         if (ret) {
             if (ret == -EACCES) {
@@ -789,7 +790,7 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(keymap, state_machine_options, kbd_controls_affect,
+    kbds = get_keyboards(ctx, keymap, state_machine_options, kbd_controls_affect,
                          kbd_controls_values, compose_table);
     if (!kbds) {
         goto out;
