@@ -120,6 +120,9 @@ enum xkb_enumerations_values {
         = XKB_KEYBOARD_CONTROL_NONE
         | XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
     ,
+    XKB_EVENT_ITERATOR_FLAGS_VALUES
+        = XKB_EVENT_ITERATOR_NO_FLAGS
+    ,
     XKB_KEY_DIRECTION_VALUES
         = (1u << XKB_KEY_UP)
         | (1u << XKB_KEY_DOWN)
@@ -256,6 +259,12 @@ static const int xkb_keyboard_controls_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
+static const int xkb_event_iterator_flags_values[] = {
+    XKB_EVENT_ITERATOR_NO_FLAGS,
+};
+#endif
+
+#ifdef ENABLE_PRIVATE_APIS
 static const int xkb_key_direction_values[] = {
     XKB_KEY_UP,
     XKB_KEY_DOWN,
@@ -325,6 +334,7 @@ static const int xkb_feature_values[] = {
     XKB_FEATURE_ENUM_KEYBOARD_CONTROLS,
     XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS,
     XKB_FEATURE_ENUM_EVENT_TYPE,
+    XKB_FEATURE_ENUM_EVENT_ITERATOR_FLAGS,
     XKB_FEATURE_ENUM_KEY_DIRECTION,
     XKB_FEATURE_ENUM_STATE_MATCH,
     XKB_FEATURE_ENUM_CONSUMED_MODE,

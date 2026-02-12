@@ -764,12 +764,14 @@ is_not_active(int x)
 }
 
 static void
-test_update_key(struct xkb_keymap *keymap, bool pure_vmods)
+test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
+                bool pure_vmods)
 {
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
     struct xkb_state_machine *sm = xkb_state_machine_new(keymap, NULL);
-    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    struct xkb_event_iterator *events =
+        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
     const xkb_keysym_t *syms;
     xkb_keysym_t one_sym;
@@ -3389,7 +3391,8 @@ test_sticky_keys(struct xkb_context *ctx)
 
     struct xkb_state_machine *sm = xkb_state_machine_new(keymap, NULL);
     assert(sm);
-    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    struct xkb_event_iterator *events =
+        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -3649,7 +3652,7 @@ test_sticky_keys(struct xkb_context *ctx)
     sm = xkb_state_machine_new(keymap, sm_options);
     assert(sm);
     xkb_state_machine_options_destroy(sm_options);
-    events = xkb_event_iterator_new(sm);
+    events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);
@@ -3782,7 +3785,8 @@ test_redirect_key(struct xkb_context *ctx)
     static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
     static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
 
-    struct xkb_event_iterator *events = xkb_event_iterator_new(sm);
+    struct xkb_event_iterator *events =
+        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
 
     xkb_state_machine_update_latched_locked(sm, events, 0, 0, false, 0,
@@ -3963,7 +3967,8 @@ test_shortcuts_tweak(struct xkb_context *context)
     assert(sm);
     xkb_state_machine_options_destroy(options);
 
-    struct xkb_event_iterator * const events = xkb_event_iterator_new(sm);
+    struct xkb_event_iterator * const events =
+        xkb_event_iterator_new(context, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
 
     /*
@@ -4293,10 +4298,15 @@ main(void)
     xkb_context_unref(NULL);
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
+    xkb_state_machine_unref(NULL);
+    xkb_state_machine_options_destroy(NULL);
+    xkb_event_iterator_destroy(NULL);
 
     test_state_machine_options(context);
     test_group_wrap(context);
     test_initial_derived_values(context);
+
+    assert(!xkb_event_iterator_new(context, -1));
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};
     for (size_t r = 0; r < ARRAY_SIZE(rules); r++) {
@@ -4310,7 +4320,7 @@ main(void)
         assert(keymap);
         const bool pure_vmods = !!r;
 
-        test_update_key(keymap, pure_vmods);
+        test_update_key(context, keymap, pure_vmods);
         test_update_latched_locked(keymap);
         test_serialisation(keymap, pure_vmods);
         test_update_mask_mods(keymap, pure_vmods);

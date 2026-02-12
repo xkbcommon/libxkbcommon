@@ -2479,9 +2479,20 @@ xkb_event_serialize_layout(const struct xkb_event *event,
 struct xkb_event_iterator;
 
 /**
+ * @enum xkb_event_iterator_flags
+ * Flags for `xkb_event_iterator::xkb_event_iterator_new()`.
+ *
+ * @since 1.14.0
+ */
+enum xkb_event_iterator_flags {
+    XKB_EVENT_ITERATOR_NO_FLAGS = 0
+};
+
+/**
  * Create an event iterator object.
  *
- * @param sm The state machine that produces the event of the iterator.
+ * @param context The context in which to create the iterator.
+ * @param flags   Optional flags for the iterator, or 0.
  *
  * @returns A new event iterator object, or `NULL` on failure.
  *
@@ -2492,7 +2503,8 @@ struct xkb_event_iterator;
  * @memberof xkb_event_iterator
  */
 XKB_EXPORT struct xkb_event_iterator *
-xkb_event_iterator_new(struct xkb_state_machine *sm);
+xkb_event_iterator_new(struct xkb_context *context,
+                       enum xkb_event_iterator_flags flags);
 
 /**
  * Free an event iterator object.

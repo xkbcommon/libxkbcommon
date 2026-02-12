@@ -27,6 +27,8 @@ xkb_feature:
     value: 3100
   - name: XKB_FEATURE_ENUM_EVENT_TYPE
     value: 3200
+  - name: XKB_FEATURE_ENUM_EVENT_ITERATOR_FLAGS
+    value: 3210
   - name: XKB_FEATURE_ENUM_KEY_DIRECTION
     value: 3300
   - name: XKB_FEATURE_ENUM_STATE_MATCH

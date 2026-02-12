@@ -287,7 +287,7 @@ int new_keyboard(…)
 
     struct xkb_event_iterator *events;
 
-    events = xkb_event_iterator_new(state_machine);
+    events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     if (!events) <error>
 
     char *keymap_string =
