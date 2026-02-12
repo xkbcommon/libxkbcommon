@@ -2466,7 +2466,7 @@ xkb_state_machine_options_shortcuts_update_mods(
 
 int
 xkb_state_machine_options_shortcuts_set_mapping(
-    struct xkb_state_machine_options* restrict options,
+    struct xkb_state_machine_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 )
 {
