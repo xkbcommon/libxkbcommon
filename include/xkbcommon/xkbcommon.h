@@ -40,6 +40,20 @@ extern "C" {
 # define XKB_EXPORT
 #endif
 
+#ifndef XKB_RESTRICT
+#if defined(__cplusplus)
+# if defined(__GNUC__)
+#  define XKB_RESTRICT  __restrict__
+# elif defined(_MSC_VER)
+#  define XKB_RESTRICT  __restrict
+# else
+#  define XKB_RESTRICT
+# endif
+#else
+# define XKB_RESTRICT   restrict
+#endif
+#endif
+
 /**
  * @file
  * Main libxkbcommon API.
@@ -2153,7 +2167,7 @@ xkb_state_machine_options_update_a11y_flags(
  */
 XKB_EXPORT int
 xkb_state_machine_options_shortcuts_update_mods(
-    struct xkb_state_machine_options* restrict options,
+    struct xkb_state_machine_options* XKB_RESTRICT options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 );
 
@@ -2174,7 +2188,7 @@ xkb_state_machine_options_shortcuts_update_mods(
  */
 XKB_EXPORT int
 xkb_state_machine_options_shortcuts_set_mapping(
-    struct xkb_state_machine_options* restrict options,
+    struct xkb_state_machine_options* XKB_RESTRICT options,
     xkb_layout_index_t source, xkb_layout_index_t target
 );
 
