@@ -3789,6 +3789,13 @@ test_redirect_key(struct xkb_context *ctx)
         xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
     assert(events);
 
+    assert(test_key_seq2(
+        keymap, sm, events,
+        KEY_A, BOTH, XKB_KEY_a, NEXT,
+        KEY_S, BOTH, XKB_KEY_a, NEXT,
+        KEY_D, BOTH, XKB_KEY_s, FINISH
+    ));
+
     xkb_state_machine_update_latched_locked(sm, events, 0, 0, false, 0,
                                             ctrl, ctrl, false, 0);
 

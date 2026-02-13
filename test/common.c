@@ -75,16 +75,29 @@ print_detailed_state(struct xkb_state *state)
     fprintf(stderr, "  LEDs: 0x%"PRIx32"\n", leds);
 }
 
+enum events_consume_flags {
+    ALL_EVENTS = 0,
+    UNTIL_KEY_EVENT = (1 << 0)
+};
+
 static bool
-update_key(struct xkb_state_machine *sm, struct xkb_event_iterator *events,
-           struct xkb_state *state, xkb_keycode_t kc,
-           enum xkb_key_direction direction)
+consume_events(struct xkb_state_machine *sm,
+               struct xkb_event_iterator *events,
+               struct xkb_state *state,
+               enum events_consume_flags flags,
+               xkb_keycode_t *kc)
 {
-    assert(xkb_state_machine_update_key(sm, events, kc, direction)
-            == 0);
     const struct xkb_event *event;
     while ((event = xkb_event_iterator_next(events))) {
         switch (xkb_event_get_type(event)) {
+        case XKB_EVENT_TYPE_KEY_DOWN:
+        case XKB_EVENT_TYPE_KEY_UP:
+            *kc = xkb_event_get_keycode(event);
+            if (flags & UNTIL_KEY_EVENT) {
+                /* Stop on key event */
+                return true;
+            }
+            break;
         case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
             xkb_state_update_from_event(state, event);
             break;
@@ -118,25 +131,17 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
 {
     assert(!(!sm ^ !events));
 
-    struct xkb_state *state;
-
-    xkb_keycode_t kc;
-    int op;
-    xkb_keysym_t keysym;
-
-    const xkb_keysym_t *syms;
-    xkb_keysym_t sym;
-    char ksbuf[XKB_KEYSYM_NAME_MAX_SIZE];
-    const char *opstr = NULL;
-
     fprintf(stderr, "----\n");
 
-    state = xkb_state_new(keymap);
+    struct xkb_state * const state = xkb_state_new(keymap);
     assert(state);
 
+    unsigned int count = 0;
+    char ksbuf[XKB_KEYSYM_NAME_MAX_SIZE];
     for (;;) {
-        kc = va_arg(ap, int) + EVDEV_OFFSET;
-        op = va_arg(ap, int);
+        const xkb_keycode_t kc = va_arg(ap, int) + EVDEV_OFFSET;
+        const int op = va_arg(ap, int);
+        const char *opstr = NULL;
 
         switch (op) {
             case DOWN: opstr = "DOWN"; break;
@@ -150,20 +155,38 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
                 goto fail;
         }
 
-        const int nsyms = xkb_state_key_get_syms(state, kc, &syms);
-        if (nsyms == 1) {
-            sym = xkb_state_key_get_one_sym(state, kc);
-            syms = &sym;
+        /*
+         * WARNING: the following assumes there is always exactly 1 key event in
+         *          the events queue.
+         */
+
+        xkb_keycode_t kc_new = kc;
+        if (events) {
+            /* State event API: consume until the first key event */
+            if (op == DOWN || op == BOTH) {
+                assert(xkb_state_machine_update_key(sm, events, kc, XKB_KEY_DOWN)
+                       == 0);
+                assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
+            }
+            if (op == UP || op == BOTH) {
+                if (op == BOTH) {
+                    /* Consume pending events */
+                    assert(consume_events(sm, events, state, ALL_EVENTS, &kc_new));
+                }
+                assert(xkb_state_machine_update_key(sm, events, kc, XKB_KEY_UP)
+                       == 0);
+                assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
+            }
         }
 
+        const xkb_keysym_t *syms;
+        const int nsyms = xkb_state_key_get_syms(state, kc_new, &syms);
+
         if (events) {
-            /* Use the state event API */
-            if (op == DOWN || op == BOTH)
-                assert(update_key(sm, events, state, kc, XKB_KEY_DOWN));
-            if (op == UP || op == BOTH)
-                assert(update_key(sm, events, state, kc, XKB_KEY_UP));
+            /* State event API: consume the rest of events */
+            assert(consume_events(sm, events, state, ALL_EVENTS, &kc_new));
         } else {
-            /* Use the legacy state API */
+            /* Legacy state API */
             if (op == DOWN || op == BOTH)
                 xkb_state_update_key(state, kc, XKB_KEY_DOWN);
             if (op == UP || op == BOTH)
@@ -176,8 +199,16 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
                                   XKB_CONSUMED_MODE_XKB,
                                   PRINT_ALL_FIELDS | PRINT_UNILINE);
 #endif
-        fprintf(stderr, "op %-6s got %d syms for keycode %3"PRIu32": [", opstr, nsyms, kc);
+        fprintf(stderr, "#%02u op %-6s got %d syms for keycode %3"PRIu32,
+                ++count, opstr, nsyms, kc);
 
+        if (kc_new != kc) {
+            fprintf(stderr, " (redirected to %3"PRIu32")", kc_new);
+        }
+
+        fprintf(stderr, ": [");
+
+        xkb_keysym_t keysym;
         for (int i = 0; i < nsyms; i++) {
             keysym = va_arg(ap, int);
             xkb_keysym_get_name(syms[i], ksbuf, sizeof(ksbuf));
