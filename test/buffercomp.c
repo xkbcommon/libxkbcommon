@@ -2589,11 +2589,11 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
                 "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; };\n"
                 "  xkb_symbols {\n"
                 /* Inexistent key */
-                "    key <A> { [RedirectKey(key=<?>)] };\n"
+                "    key <A> { [a], [RedirectKey(key=<?>)] };\n"
                 /* Multiple RedirectKey() on the same level */
-                "    key <S> { [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
+                "    key <S> { [s], [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
                 /* OK! */
-                "    key <D> { [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
+                "    key <D> { [d], [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "redirect-key-1.xkb"

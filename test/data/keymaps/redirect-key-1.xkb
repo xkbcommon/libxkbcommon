@@ -22,14 +22,19 @@ xkb_compatibility {
 };
 
 xkb_symbols {
+	key <A>                  {
+		repeat= No,
+		symbols[1]= [                              a ],
+		actions[1]= [                     NoAction() ]
+	};
 	key <S>                  {
 		repeat= No,
-		symbols[1]= [                       NoSymbol ],
+		symbols[1]= [                              s ],
 		actions[1]= [       RedirectKey(keycode=<A>) ]
 	};
 	key <D>                  {
 		repeat= No,
-		symbols[1]= [                       NoSymbol ],
+		symbols[1]= [                              d ],
 		actions[1]= [ RedirectKey(keycode=<S>,modifiers=Shift,clearMods=Control) ]
 	};
 };
