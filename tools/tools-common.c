@@ -1127,12 +1127,12 @@ tools_parse_shortcuts_mappings(const char *raw,
         xkb_layout_index_t source = 0;
         int consumed = tools_parse_layout_index1(start, len, &source);
         if (consumed <= 0) {
-            fprintf(stderr, "ERROR: invalid shorcuts layout source\n");
+            fprintf(stderr, "ERROR: invalid shortcuts layout source\n");
             return false;
         }
 
         if (start[consumed] != layout_sep) {
-            fprintf(stderr, "ERROR: invalid shorcuts layout mapping: \"%s\"\n",
+            fprintf(stderr, "ERROR: invalid shortcuts layout mapping: \"%s\"\n",
                     start);
             return false;
         }

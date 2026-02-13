@@ -1474,7 +1474,7 @@ can be consumed again in further keysym translations.
 @note Remember that @ref keysym-transformations may affect the resulting
 keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 
-@remark `preserve` statements may be used to tweak keyboard shorcuts.
+@remark `preserve` statements may be used to tweak keyboard shortcuts.
 @remark@figure
 @figcaption
 Example of use of `preserve` to tweak `Control` shortcuts. Note it would
