@@ -3,43 +3,43 @@
 xkb_feature:
   - name: XKB_FEATURE_ENUM_FEATURE
     value: 1000
-  - name: XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS
-    value: 1001
-  - name: XKB_FEATURE_ENUM_KEYSYM_FLAGS
-    value: 1002
   - name: XKB_FEATURE_ENUM_CONTEXT_FLAGS
-    value: 1003
+    value: 1100
   - name: XKB_FEATURE_ENUM_LOG_LEVEL
-    value: 1004
-  - name: XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS
-    value: 1005
+    value: 1110
   - name: XKB_FEATURE_ENUM_KEYMAP_FORMAT
-    value: 1006
+    value: 2000
+  - name: XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS
+    value: 2010
+  - name: XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS
+    value: 2020
   - name: XKB_FEATURE_ENUM_KEYMAP_SERIALIZE_FLAGS
-    value: 1007
+    value: 2100
   - name: XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS
-    value: 1008
-  - name: XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS
-    value: 1009
-  - name: XKB_FEATURE_ENUM_EVENT_TYPE
-    value: 1010
+    value: 2200
+  - name: XKB_FEATURE_ENUM_KEYSYM_FLAGS
+    value: 2300
   - name: XKB_FEATURE_ENUM_STATE_COMPONENT
-    value: 1011
+    value: 3000
   - name: XKB_FEATURE_ENUM_KEYBOARD_CONTROLS
-    value: 1012
+    value: 3020
+  - name: XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS
+    value: 3100
+  - name: XKB_FEATURE_ENUM_EVENT_TYPE
+    value: 3200
   - name: XKB_FEATURE_ENUM_KEY_DIRECTION
-    value: 1013
+    value: 3300
   - name: XKB_FEATURE_ENUM_STATE_MATCH
-    value: 1014
+    value: 3400
   - name: XKB_FEATURE_ENUM_CONSUMED_MODE
-    value: 1015
-  - name: XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS
-    value: 1016
+    value: 3410
   - name: XKB_FEATURE_ENUM_COMPOSE_FORMAT
-    value: 1017
+    value: 4000
+  - name: XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS
+    value: 4010
   - name: XKB_FEATURE_ENUM_COMPOSE_STATE_FLAGS
-    value: 1018
+    value: 4100
   - name: XKB_FEATURE_ENUM_COMPOSE_STATUS
-    value: 1019
+    value: 4200
   - name: XKB_FEATURE_ENUM_COMPOSE_FEED_RESULT
-    value: 1020
+    value: 4210

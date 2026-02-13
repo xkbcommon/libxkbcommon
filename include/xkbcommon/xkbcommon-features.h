@@ -37,125 +37,125 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_FEATURE = 1000,
     /**
-     * The enumeration @ref xkb_rmlvo_builder_flags
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS = 1001,
-    /**
-     * The enumeration @ref xkb_keysym_flags
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_KEYSYM_FLAGS = 1002,
-    /**
      * The enumeration @ref xkb_context_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_CONTEXT_FLAGS = 1003,
+    XKB_FEATURE_ENUM_CONTEXT_FLAGS = 1100,
     /**
      * The enumeration @ref xkb_log_level
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_LOG_LEVEL = 1004,
-    /**
-     * The enumeration @ref xkb_keymap_compile_flags
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS = 1005,
+    XKB_FEATURE_ENUM_LOG_LEVEL = 1110,
     /**
      * The enumeration @ref xkb_keymap_format
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEYMAP_FORMAT = 1006,
+    XKB_FEATURE_ENUM_KEYMAP_FORMAT = 2000,
+    /**
+     * The enumeration @ref xkb_keymap_compile_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS = 2010,
+    /**
+     * The enumeration @ref xkb_rmlvo_builder_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS = 2020,
     /**
      * The enumeration @ref xkb_keymap_serialize_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEYMAP_SERIALIZE_FLAGS = 1007,
+    XKB_FEATURE_ENUM_KEYMAP_SERIALIZE_FLAGS = 2100,
     /**
      * The enumeration @ref xkb_keymap_key_iterator_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS = 1008,
+    XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS = 2200,
     /**
-     * The enumeration @ref xkb_state_accessibility_flags
+     * The enumeration @ref xkb_keysym_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS = 1009,
-    /**
-     * The enumeration @ref xkb_event_type
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_EVENT_TYPE = 1010,
+    XKB_FEATURE_ENUM_KEYSYM_FLAGS = 2300,
     /**
      * The enumeration @ref xkb_state_component
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_STATE_COMPONENT = 1011,
+    XKB_FEATURE_ENUM_STATE_COMPONENT = 3000,
     /**
      * The enumeration @ref xkb_keyboard_controls
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEYBOARD_CONTROLS = 1012,
+    XKB_FEATURE_ENUM_KEYBOARD_CONTROLS = 3020,
+    /**
+     * The enumeration @ref xkb_state_accessibility_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS = 3100,
+    /**
+     * The enumeration @ref xkb_event_type
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_EVENT_TYPE = 3200,
     /**
      * The enumeration @ref xkb_key_direction
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEY_DIRECTION = 1013,
+    XKB_FEATURE_ENUM_KEY_DIRECTION = 3300,
     /**
      * The enumeration @ref xkb_state_match
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_STATE_MATCH = 1014,
+    XKB_FEATURE_ENUM_STATE_MATCH = 3400,
     /**
      * The enumeration @ref xkb_consumed_mode
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_CONSUMED_MODE = 1015,
-    /**
-     * The enumeration @ref xkb_compose_compile_flags
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS = 1016,
+    XKB_FEATURE_ENUM_CONSUMED_MODE = 3410,
     /**
      * The enumeration @ref xkb_compose_format
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_COMPOSE_FORMAT = 1017,
+    XKB_FEATURE_ENUM_COMPOSE_FORMAT = 4000,
+    /**
+     * The enumeration @ref xkb_compose_compile_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS = 4010,
     /**
      * The enumeration @ref xkb_compose_state_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_COMPOSE_STATE_FLAGS = 1018,
+    XKB_FEATURE_ENUM_COMPOSE_STATE_FLAGS = 4100,
     /**
      * The enumeration @ref xkb_compose_status
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_COMPOSE_STATUS = 1019,
+    XKB_FEATURE_ENUM_COMPOSE_STATUS = 4200,
     /**
      * The enumeration @ref xkb_compose_feed_result
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_COMPOSE_FEED_RESULT = 1020,
+    XKB_FEATURE_ENUM_COMPOSE_FEED_RESULT = 4210,
 };
 
 /**

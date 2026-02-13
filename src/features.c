@@ -47,14 +47,6 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_enum_value_array(
             xkb_feature_values, ARRAY_SIZE(xkb_feature_values), value
         );
-    case XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS:
-        return is_supported_flag_value(
-            XKB_RMLVO_BUILDER_FLAGS_VALUES, true, value
-        );
-    case XKB_FEATURE_ENUM_KEYSYM_FLAGS:
-        return is_supported_flag_value(
-            XKB_KEYSYM_FLAGS_VALUES, true, value
-        );
     case XKB_FEATURE_ENUM_CONTEXT_FLAGS:
         return is_supported_flag_value(
             XKB_CONTEXT_FLAGS_VALUES, true, value
@@ -63,12 +55,16 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_enum_value_array(
             xkb_log_level_values, ARRAY_SIZE(xkb_log_level_values), value
         );
+    case XKB_FEATURE_ENUM_KEYMAP_FORMAT:
+        return is_supported_enum_value_mask(XKB_KEYMAP_FORMAT_VALUES, value);
     case XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS:
         return is_supported_flag_value(
             XKB_KEYMAP_COMPILE_FLAGS_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_KEYMAP_FORMAT:
-        return is_supported_enum_value_mask(XKB_KEYMAP_FORMAT_VALUES, value);
+    case XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS:
+        return is_supported_flag_value(
+            XKB_RMLVO_BUILDER_FLAGS_VALUES, true, value
+        );
     case XKB_FEATURE_ENUM_KEYMAP_SERIALIZE_FLAGS:
         return is_supported_flag_value(
             XKB_KEYMAP_SERIALIZE_FLAGS_VALUES, true, value
@@ -77,12 +73,10 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_flag_value(
             XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS:
+    case XKB_FEATURE_ENUM_KEYSYM_FLAGS:
         return is_supported_flag_value(
-            XKB_STATE_ACCESSIBILITY_FLAGS_VALUES, true, value
+            XKB_KEYSYM_FLAGS_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_EVENT_TYPE:
-        return is_supported_enum_value_mask(XKB_EVENT_TYPE_VALUES, value);
     case XKB_FEATURE_ENUM_STATE_COMPONENT:
         return is_supported_flag_value(
             XKB_STATE_COMPONENT_VALUES, false, value
@@ -91,6 +85,12 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_flag_value(
             XKB_KEYBOARD_CONTROLS_VALUES, true, value
         );
+    case XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS:
+        return is_supported_flag_value(
+            XKB_STATE_ACCESSIBILITY_FLAGS_VALUES, true, value
+        );
+    case XKB_FEATURE_ENUM_EVENT_TYPE:
+        return is_supported_enum_value_mask(XKB_EVENT_TYPE_VALUES, value);
     case XKB_FEATURE_ENUM_KEY_DIRECTION:
         return is_supported_enum_value_mask(XKB_KEY_DIRECTION_VALUES, value);
     case XKB_FEATURE_ENUM_STATE_MATCH:
@@ -99,12 +99,12 @@ xkb_has_feature(enum xkb_feature feature, int value)
         );
     case XKB_FEATURE_ENUM_CONSUMED_MODE:
         return is_supported_enum_value_mask(XKB_CONSUMED_MODE_VALUES, value);
+    case XKB_FEATURE_ENUM_COMPOSE_FORMAT:
+        return is_supported_enum_value_mask(XKB_COMPOSE_FORMAT_VALUES, value);
     case XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS:
         return is_supported_flag_value(
             XKB_COMPOSE_COMPILE_FLAGS_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_COMPOSE_FORMAT:
-        return is_supported_enum_value_mask(XKB_COMPOSE_FORMAT_VALUES, value);
     case XKB_FEATURE_ENUM_COMPOSE_STATE_FLAGS:
         return is_supported_flag_value(
             XKB_COMPOSE_STATE_FLAGS_VALUES, true, value
