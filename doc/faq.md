@@ -39,17 +39,62 @@ They are usually located at `/usr/share/xkeyboard-config-2`, or
 @note Do not modify system files! See @ref how-do-i-customize-my-layout "" for
 further instructions.
 
-### Why do my keyboard shortcuts not work properly?
-
-- 🚧 TODO: Setups with multiple layout and/or non-Latin keyboard layouts may have some
-  issues.
-- 🚧 TODO: [#420]
-
-[#420]: https://github.com/xkbcommon/libxkbcommon/issues/420
-
 ### Why does my key combination to switch between layouts not work?
 
-There are currently some issue with modifier-only shortcuts. See [this issue][#420].
+There are some issues with *modifier-only* shortcuts: see [this bug report][#420].
+
+This can be fixed by using the new parameter <code>[lockOnRelease]</code> in
+`LockGroup()`, available since libxkbcommon 1.11. This will be done at some
+point in [xkeyboard-config].
+
+```diff
+ xkb_compatibility {
+     interpret ISO_Next_Group {
+         useModMapMods= level1;
+         virtualModifier= AltGr;
+-        action= LockGroup(group=+1);
++        action= LockGroup(group=+1, lockOnRelease);
+     };
+ };
+```
+
+[lockOnRelease]: @ref lockOnRelease
+
+### Why do my keyboard shortcuts not work properly?
+
+Users have different expectations when it comes to keyboard shortcuts. However,
+the reference use case is usually a single Latin keyboard layout, with fallbacks
+for other configurations. These fallbacks may not match users’ expectations nor
+even be consistent across applications. See @ref the-keyboard-shortcuts-mess ""
+for some examples.
+
+Since version 1.14, libxkbcommon offers a [dedicated API][shortcuts-api]
+for *Wayland* compositors, which enables to customize the layouts to use for
+keyboard shortcuts.
+
+<dl>
+<dt>Issue specific to a *single* application</dt>
+<dd>
+File a bug report to the corresponding project.
+Possible reasons:
+- Shortcuts handled with <em>[keycodes]</em>, not <em>[keysyms]</em>.
+- Shortcuts handled using only the first layout.
+- Shortcuts do not handle non-Latin keyboard layouts.
+</dd>
+<dt>Issue specific to *multiple* applications</dt>
+<dd>
+First, check if your desktop environment enables to customize shortcuts handling
+*globally*, e.g. by selecting specific layouts when some modifiers are active.
+If it does not, consider filing a bug report to your *Wayland* compositor project
+to encourage developers to implement the relevant [API][shortcuts-api].
+</dd>
+</dl>
+
+[shortcuts-api]: @ref xkb_state_machine_options::xkb_state_machine_options_shortcuts_set_mapping
+[keycodes]: @ref keycode-def
+[keysyms]: @ref keysym-def
+
+[#420]: https://github.com/xkbcommon/libxkbcommon/issues/420
 
 ### Why does my keyboard layout not work as expected?
 

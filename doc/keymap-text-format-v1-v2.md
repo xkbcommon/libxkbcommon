@@ -3593,7 +3593,7 @@ Modifies the *locked* group.
 <td>Target group or group delta</td>
 </tr>
 <tr>
-<th>`lockOnRelease`</th>
+<th>`lockOnRelease` @anchor lockOnRelease</th>
 <td>boolean</td>
 <td>false</td>
 <td>
