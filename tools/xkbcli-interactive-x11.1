@@ -58,6 +58,20 @@ or
 .Ar \-
 in order to respectively enable or disable the corresponding control.
 .
+.It Fl \-modifiers\-mapping Ar MAPPING
+Use the given modifiers mapping.
+.Ar MAPPING
+is a comma-separated list of modifiers masks mappings with format
+.Ar source:target
+, e.g.
+.Ar Control+Alt:LevelThree,Alt:Meta
+\&.
+It implies
+.Fl \-local\-state
+and
+.Fl \-legacy\-state\-api=false
+\&.
+.
 .It Fl \-shortcuts\-mask Ar MASK
 Use the given modifier mask to enable selecting a specific
 layout (see

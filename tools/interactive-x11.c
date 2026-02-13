@@ -67,6 +67,7 @@ static bool use_local_state = false;
 static struct xkb_state_machine_options * state_machine_options = NULL;
 static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
 static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+static const char *raw_modifiers_mapping = NULL;
 static const char *raw_shortcuts_mask = NULL;
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
@@ -169,6 +170,18 @@ update_keymap(struct keyboard *kbd)
         }
         if (use_events_api) {
             if (!kbd->state_machine) {
+                if (raw_modifiers_mapping) {
+                    xkb_state_machine_options_mods_set_mapping(
+                        state_machine_options, 0, 0
+                    );
+                    if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
+                                                        kbd->keymap,
+                                                        state_machine_options)) {
+                        fprintf(stderr,
+                                "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
+                                raw_modifiers_mapping);
+                    }
+                }
                 if (raw_shortcuts_mask) {
                     xkb_state_machine_options_shortcuts_update_mods(
                         state_machine_options, XKB_MOD_ALL, 0
@@ -520,16 +533,22 @@ usage(FILE *fp, char *progname)
                 "                         use the given keyboard controls; available values are:\n"
                 "                         sticky-keys, latch-to-lock and latch-simultaneous.\n"
                 "                         It implies --local-state and --legacy-state-api=false.\n"
+                "    --modifiers-mapping <MAPPING>\n"
+                "                         use the given modifiers mapping.\n"
+                "                         <MAPPING> is a comma-separated list of modifiers masks\n"
+                "                         mappings with format \"source:target\", e.g.\n"
+                "                         \"Control+Alt:LevelThree,Alt:Meta\".\n"
+                "                         It implies --local-state and --legacy-state-api=false.\n"
                 "    --shortcuts-mask <MASK>\n"
                 "                         use the given modifier mask to enable selecting a specific\n"
                 "                         layout (see --shortcuts-mapping) when some of these modifiers\n"
                 "                         are active. The modifier mask is a plus-separated list of\n"
                 "                         modifiers names, e.g. \"Control+Alt+Super\".\n"
                 "                         It implies --local-state and --legacy-state-api=false.\n"
-                "    --shortcuts-mapping <MAPPINGS>\n"
+                "    --shortcuts-mapping <MAPPING>\n"
                 "                         use the given layout mapping to enable selecting a specific\n"
                 "                         layout when some modifiers are active (see --shortcuts-mask).\n"
-                "                         <MAPPINGS> is a comma-separated list of 1-indexed layout\n"
+                "                         <MAPPING> is a comma-separated list of 1-indexed layout\n"
                 "                         indices mappings with format \"source:target\", e.g. \"2:1,3:1\".\n"
                 "                         It implies --local-state and --legacy-state-api=false.\n"
                 "    --keymap [<FILE>]    use the given keymap instead of the keymap from the compositor.\n"
@@ -596,6 +615,7 @@ main(int argc, char *argv[])
         OPT_LOCAL_STATE,
         OPT_LEGACY_STATE_API,
         OPT_CONTROLS,
+        OPT_MODIFIERS_TWEAK_MAPPING,
         OPT_SHORTCUTS_TWEAK_MASK,
         OPT_SHORTCUTS_TWEAK_MAPPING,
         OPT_KEYMAP_FORMAT,
@@ -618,6 +638,7 @@ main(int argc, char *argv[])
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
         {"legacy-state-api",     optional_argument,      0, OPT_LEGACY_STATE_API},
         {"controls",             required_argument,      0, OPT_CONTROLS},
+        {"modifiers-mapping",    required_argument,      0, OPT_MODIFIERS_TWEAK_MAPPING},
         {"shortcuts-mask",       required_argument,      0, OPT_SHORTCUTS_TWEAK_MASK},
         {"shortcuts-mapping",    required_argument,      0, OPT_SHORTCUTS_TWEAK_MAPPING},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
@@ -681,6 +702,11 @@ local_state:
                                       &kbd_controls_values)) {
                 goto invalid_usage;
             }
+            /* --local-state and --legacy-state-api=false are implied */
+            use_events_api = true;
+            goto local_state;
+        case OPT_MODIFIERS_TWEAK_MAPPING:
+            raw_modifiers_mapping = optarg;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
