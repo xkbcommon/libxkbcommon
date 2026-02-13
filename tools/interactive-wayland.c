@@ -472,7 +472,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, seat->keymap,
                                                 state_machine_options)) {
                     fprintf(stderr,
-                            "ERROR: Failed to parse shorcuts mask: \"%s\"\n",
+                            "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                             raw_shortcuts_mask);
                 }
             }

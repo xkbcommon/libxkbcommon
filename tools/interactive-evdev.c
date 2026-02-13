@@ -775,7 +775,7 @@ too_much_arguments:
         !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap,
                                     state_machine_options)) {
         fprintf(stderr,
-                "ERROR: Failed to parse shorcuts mask: \"%s\"\n",
+                "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                 raw_shortcuts_mask);
     }
 
