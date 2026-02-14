@@ -1,0 +1,7 @@
+xkb_symbols "copy" {
+	key <LatC> {
+		type = "PC_CONTROL_LEVEL3",
+		[c         , C         , XF86Copy],
+		[NoAction(), NoAction(), RedirectKey(key=<COPY>, clearmods=Control)]
+	};
+};
