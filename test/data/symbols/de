@@ -132,8 +132,6 @@ xkb_symbols "T3" {
     key.type[Group1] = "EIGHT_LEVEL";
     key <AD12> { [            plus,        asterisk,      asciitilde,        NoSymbol,      dead_tilde,     dead_macron,              at,        NoSymbol ] };
 
-    key.type[Group1] = "ONE_LEVEL";
-    key <CAPS>  { [ Caps_Lock	]	};
     key.type[Group1] = "EIGHT_LEVEL_ALPHABETIC";
     key <AC01> { [               a,               A,   lessthanequal,        NoSymbol,              ae,              AE,           U0329,        NoSymbol ] };
     key <AC02> { [               s,               S, greaterthanequal,       NoSymbol,          ssharp,         section,   dead_belowdot,        NoSymbol ] };

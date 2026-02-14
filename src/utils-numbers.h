@@ -114,4 +114,21 @@ MAKE_PARSE_HEX_TO(uint32_t, UINT32_MAX)
  */
 MAKE_PARSE_HEX_TO(uint64_t, UINT64_MAX)
 
+static inline int
+popcount32(uint32_t x) {
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_popcountl(x);
+#elif defined(_MSC_VER)
+    return __popcnt(x);
+#else
+    /* Fallback (Brian Kernighan’s method) */
+    int count = 0;
+    while (x) {
+        x &= x - 1;
+        count++;
+    }
+    return count;
+#endif
+}
+
 #undef MAKE_PARSE_HEX_TO
