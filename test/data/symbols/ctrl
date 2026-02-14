@@ -1,3 +1,11 @@
+partial modifier_keys
+xkb_symbols "rctrl_latch" {
+    key <RCTL> {
+	[ Control_R ], [LatchMods(modifiers=Control)],
+	type[group1] = "ONE_LEVEL"
+    };
+};
+
 // Eliminate CapsLock, making it another Ctrl.
 partial modifier_keys
 xkb_symbols "nocaps" {

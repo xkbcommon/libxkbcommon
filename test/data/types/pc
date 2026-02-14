@@ -124,3 +124,12 @@ default partial xkb_types "default" {
     };
 
 };
+
+xkb_types "control-levels" {
+    type "PC_CONTROL_LEVEL3" {
+	modifiers = Shift + Control;
+	map[None] = 1;
+	map[Shift] = 2;
+	map[Control] = 3;
+    };
+};
