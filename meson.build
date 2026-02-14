@@ -1160,7 +1160,22 @@ test(
 )
 test(
     'state',
-    executable('test-state', 'test/state.c', dependencies: test_dep),
+    executable(
+        'test-state',
+        'test/state.c',
+        'test/state.h',
+        dependencies: test_dep
+    ),
+    env: test_env,
+)
+test(
+    'state-machine',
+    executable(
+        'test-state-machine',
+        'test/state-machine.c',
+        'test/state.h',
+        dependencies: test_dep
+    ),
     env: test_env,
 )
 test(
