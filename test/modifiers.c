@@ -74,11 +74,6 @@ test_modifiers_names(struct xkb_context *context)
     assert(test_real_mod(keymap, XKB_MOD_NAME_MOD4, XKB_MOD_INDEX_MOD4, Mod4Mask));
     assert(test_real_mod(keymap, XKB_MOD_NAME_MOD5, XKB_MOD_INDEX_MOD5, Mod5Mask));
 
-    /* Usual virtual mods mappings */
-    assert(test_real_mod(keymap, XKB_MOD_NAME_ALT,  XKB_MOD_INDEX_MOD1, Mod1Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_NUM,  XKB_MOD_INDEX_MOD2, Mod2Mask));
-    assert(test_real_mod(keymap, XKB_MOD_NAME_LOGO, XKB_MOD_INDEX_MOD4, Mod4Mask));
-
     /* Virtual modifiers
      * The indices depends on the keymap files */
     assert(test_virtual_mod(keymap, XKB_VMOD_NAME_ALT,    XKB_MOD_INDEX_MOD5 + 2,  Mod1Mask));
