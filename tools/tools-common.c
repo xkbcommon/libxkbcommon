@@ -378,7 +378,11 @@ tools_print_detailed_keycode_state(const char *prefix,
     struct xkb_keymap * const keymap = xkb_state_get_keymap(state);
     const char * const keyname = xkb_keymap_key_get_name(keymap, keycode);
     printf("key %s 0x%03"PRIx32" <%s>\n",
-           (direction == XKB_KEY_UP ? "up:  " : "down:"),
+           (direction == XKB_KEY_UP
+                ? "up:   "
+                : direction == XKB_KEY_REPEATED
+                    ? "repeat:"
+                    : "down:  "),
            keycode, (keyname ? keyname : "(no name)"));
 
     if (direction == XKB_KEY_UP)
@@ -500,7 +504,12 @@ tools_print_one_liner_keycode_state(const char *prefix,
         printf("%s", prefix);
 
     struct xkb_keymap * const keymap = xkb_state_get_keymap(state);
-    printf("key %s", (direction == XKB_KEY_UP ? "up  " : "down"));
+    printf("key %s",
+           (direction == XKB_KEY_UP)
+                ? "up    "
+                : (direction == XKB_KEY_REPEATED)
+                    ? "repeat"
+                    : "down  ");
     print_keycode(keymap, " [ ", keycode, " ] ");
 
     if (direction == XKB_KEY_UP)
@@ -627,7 +636,7 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
     if (prefix)
         printf("%s", prefix);
     if (options & PRINT_UNILINE) {
-        printf("state    [ ");
+        printf("state      [ ");
         print_layouts(state, changed, XKB_KEYCODE_INVALID, false);
         print_modifiers(state, changed, XKB_KEYCODE_INVALID, false,
                         XKB_CONSUMED_MODE_XKB /* unused*/, false);
@@ -683,11 +692,14 @@ tools_print_events(const char *prefix, struct xkb_state *state,
             xkb_event_get_type(event);
         switch (event_type) {
             case XKB_EVENT_TYPE_KEY_DOWN:
+            case XKB_EVENT_TYPE_KEY_REPEATED:
             case XKB_EVENT_TYPE_KEY_UP: {
                 const xkb_keycode_t kc = xkb_event_get_keycode(event);
-                const enum xkb_key_direction direction =
-                    (event_type == XKB_EVENT_TYPE_KEY_UP)
-                        ? XKB_KEY_UP
+                const enum xkb_key_direction direction
+                    = (event_type == XKB_EVENT_TYPE_KEY_UP)
+                    ? XKB_KEY_UP
+                    : (event_type == XKB_EVENT_TYPE_KEY_REPEATED)
+                        ? XKB_KEY_REPEATED
                         : XKB_KEY_DOWN;
                 if (compose_state && direction == XKB_KEY_DOWN) {
                     const xkb_keysym_t keysym =
@@ -695,7 +707,8 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                     xkb_compose_state_feed(compose_state, keysym);
                 }
                 tools_print_keycode_state(prefix, state, compose_state, kc,
-                                          direction, consumed_mode, options);
+                                          direction, consumed_mode,
+                                          options);
                 if (compose_state) {
                     const enum xkb_compose_status status =
                         xkb_compose_state_get_status(compose_state);
