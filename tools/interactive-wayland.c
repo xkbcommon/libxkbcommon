@@ -1247,6 +1247,7 @@ too_much_arguments:
         custom_keymap = xkb_keymap_new_from_file(inter.ctx, file,
                                                  keymap_input_format,
                                                  XKB_KEYMAP_COMPILE_NO_FLAGS);
+        fclose(file);
     }
 
     if (with_compose) {

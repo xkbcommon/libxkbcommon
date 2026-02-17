@@ -481,6 +481,7 @@ main(int argc, char *argv[])
     const char *variant = NULL;
     const char *options = NULL;
     const char *keymap_path = NULL;
+    bool with_keymap_file = false;
     const char *locale;
     struct sigaction act;
     enum options {
@@ -631,6 +632,7 @@ main(int argc, char *argv[])
         case OPT_KEYMAP:
             if (has_rmlvo_options)
                 goto input_format_error;
+            with_keymap_file = true;
             keymap_path = optarg;
             break;
         case OPT_WITHOUT_X11_OFFSET:
@@ -728,7 +730,14 @@ too_much_arguments:
             ret = EXIT_INVALID_USAGE;
             goto error_parse_args;
         }
+        with_keymap_file = true;
+    } else if (is_pipe_or_regular_file(STDIN_FILENO) && !with_keymap_file) {
+        /* No positional argument: piping detected */
+        with_keymap_file = true;
     }
+
+    if (isempty(keymap_path) || strcmp(keymap_path, "-") == 0)
+        keymap_path = NULL;
 
     if (!(print_options & PRINT_VERBOSE) && (print_options & PRINT_UNILINE)) {
         print_options &= ~PRINT_VERBOSE_ONE_LINE_FIELDS;
@@ -758,11 +767,18 @@ too_much_arguments:
             xkb_context_include_path_append(ctx, include);
     }
 
-    if (keymap_path) {
-        FILE *file = fopen(keymap_path, "rb");
+    if (with_keymap_file) {
+        FILE *file = NULL;
+        if (keymap_path) {
+            /* Read from regular file */
+            file = fopen(keymap_path, "rb");
+        } else {
+            /* Read from stdin */
+            file = tools_read_stdin();
+        }
         if (!file) {
-            fprintf(stderr, "ERROR: Couldn't open '%s': %s\n",
-                    keymap_path, strerror(errno));
+            fprintf(stderr, "ERROR: Failed to open keymap file \"%s\": %s\n",
+                    keymap_path ? keymap_path : "stdin", strerror(errno));
             goto out;
         }
         keymap = xkb_keymap_new_from_file(ctx, file, keymap_format,

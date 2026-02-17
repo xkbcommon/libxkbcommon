@@ -844,9 +844,9 @@ too_much_arguments:
             xkb_context_unref(ctx);
             goto err_out;
         }
-        custom_keymap = xkb_keymap_new_from_file(ctx, file,
-                                                 keymap_format,
+        custom_keymap = xkb_keymap_new_from_file(ctx, file, keymap_format,
                                                  XKB_KEYMAP_COMPILE_NO_FLAGS);
+        fclose(file);
     }
 
     if (with_compose) {
