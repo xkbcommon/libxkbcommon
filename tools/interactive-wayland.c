@@ -903,9 +903,14 @@ usage(FILE *fp, char *progname)
                 "Usage: %s [--help] [--verbose]"
 #ifdef KEYMAP_DUMP
                 " [--no-pretty] [--drop-unused] [--raw] [--input-format]"
-                " [--output-format] [--format]"
+                " [--output-format] [--format] [--no-pretty] [--drop-unused]"
 #else
-                " [--format] [--local-state] [--keymap FILE] [--enable-compose]"
+                " [--uniline] [--multiline] [no-state-report] [--format]"
+                " [--enable-compose]"
+                " [--local-state] [--legacy-state-api true|false]"
+                " [--controls CONTROLS] [--modifiers-mapping MAPPING]"
+                " [--shortcuts-mask MASK] [--shortcuts-mapping]"
+                " [--keymap FILE]"
 #endif
                 "\n",
                 progname);
@@ -924,7 +929,8 @@ usage(FILE *fp, char *progname)
                 "                       state updates from the compositor\n"
                 "    --legacy-state-api [=true|false]\n"
                 "                       use the legacy state API instead of the event API.\n"
-                "                       It implies --local-state if disabled.\n"
+                "                       It implies --local-state if explicitly disabled.\n"
+                "                       Default: false.\n"
                 "    --controls [<CONTROLS>]\n"
                 "                       use the given keyboard controls; available values are:\n"
                 "                       sticky-keys, latch-to-lock and latch-simultaneous.\n"
@@ -1040,6 +1046,11 @@ main(int argc, char *argv[])
     };
 
     setlocale(LC_ALL, "");
+
+#ifndef KEYMAP_DUMP
+    /* Ensure synced with usage() and man page */
+    assert(use_events_api);
+#endif
 
     while (1) {
         int opt;

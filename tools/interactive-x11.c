@@ -515,11 +515,17 @@ usage(FILE *fp, char *progname)
         fprintf(fp,
                 "Usage: %s [--help] [--verbose]"
 #ifndef KEYMAP_DUMP
-                " [--uniline] [--multiline] [--local-state] [--keymap FILE ]"
+                " [--uniline] [--multiline] [no-state-report]"
 #endif
-                " [--format=<format>]"
-#ifndef KEYMAP_DUMP
+                " [--format FORMAT]"
+#ifdef KEYMAP_DUMP
+                " [--no-pretty] [--drop-unused]"
+#else
                 " [--enable-compose]"
+                " [--local-state] [--legacy-state-api true|false]"
+                " [--controls CONTROLS] [--modifiers-mapping MAPPING]"
+                " [--shortcuts-mask MASK] [--shortcuts-mapping]"
+                " [--keymap FILE]"
 #endif
                 "\n",
                 progname);
@@ -530,7 +536,8 @@ usage(FILE *fp, char *progname)
                 "                         state updates from the X11 server\n"
                 "    --legacy-state-api [=true|false]\n"
                 "                         use the legacy state API instead of the event API.\n"
-                "                         It implies --local-state if disabled.\n"
+                "                         It implies --local-state if explicitly disabled.\n"
+                "                         Default: false.\n"
                 "    --controls [<CONTROLS>]\n"
                 "                         use the given keyboard controls; available values are:\n"
                 "                         sticky-keys, latch-to-lock and latch-simultaneous.\n"
@@ -650,6 +657,11 @@ main(int argc, char *argv[])
     };
 
     setlocale(LC_ALL, "");
+
+#ifndef KEYMAP_DUMP
+    /* Ensure synced with usage() and man page */
+    assert(use_events_api);
+#endif
 
     while (1) {
         int opt;
