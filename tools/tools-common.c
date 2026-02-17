@@ -674,6 +674,7 @@ void
 tools_print_events(const char *prefix, struct xkb_state *state,
                    struct xkb_event_iterator *events,
                    struct xkb_compose_state *compose_state,
+                   enum xkb_consumed_mode consumed_mode,
                    enum print_state_options options, bool report_state_changes)
 {
     const struct xkb_event *event;
@@ -694,8 +695,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                     xkb_compose_state_feed(compose_state, keysym);
                 }
                 tools_print_keycode_state(prefix, state, compose_state, kc,
-                                          direction, XKB_CONSUMED_MODE_XKB,
-                                          options);
+                                          direction, consumed_mode, options);
                 if (compose_state) {
                     const enum xkb_compose_status status =
                         xkb_compose_state_get_status(compose_state);

@@ -86,6 +86,7 @@ static enum xkb_keymap_serialize_flags serialize_flags =
 static bool dump_raw_keymap;
 #else
 static bool use_events_api = true;
+static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
@@ -552,8 +553,8 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
             // TODO: better error handling
         } else {
             tools_print_events(prefix, seat->state, seat->events,
-                               seat->compose_state, print_options,
-                               report_state_changes);
+                               seat->compose_state, consumed_mode,
+                               print_options, report_state_changes);
         }
     } else {
         if (seat->compose_state && direction == XKB_KEY_DOWN) {
@@ -562,7 +563,7 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
             xkb_compose_state_feed(seat->compose_state, keysym);
         }
         tools_print_keycode_state(prefix, seat->state, seat->compose_state,
-                                  keycode, direction, XKB_CONSUMED_MODE_XKB,
+                                  keycode, direction, consumed_mode,
                                   print_options);
         if (seat->compose_state) {
             const enum xkb_compose_status status =
@@ -905,8 +906,8 @@ usage(FILE *fp, char *progname)
                 " [--no-pretty] [--drop-unused] [--raw] [--input-format]"
                 " [--output-format] [--format] [--no-pretty] [--drop-unused]"
 #else
-                " [--uniline] [--multiline] [no-state-report] [--format]"
-                " [--enable-compose]"
+                " [--uniline] [--multiline] [--consumed-mode={xkb|gtk}]"
+                " [--no-state-report] [--format] [--enable-compose]"
                 " [--local-state] [--legacy-state-api true|false]"
                 " [--controls CONTROLS] [--modifiers-mapping MAPPING]"
                 " [--shortcuts-mask MASK] [--shortcuts-mapping]"
@@ -958,6 +959,8 @@ usage(FILE *fp, char *progname)
                 "                       If <FILE> is \"-\" or missing, then load from stdin.\n"
                 "    -1, --uniline      enable uniline event output\n"
                 "    --multiline        enable multiline event output\n"
+                "    --consumed-mode={xkb|gtk}\n"
+                "                       select the consumed modifiers mode (default: xkb)\n"
                 "    --no-state-report  do not report changes to the state\n"
 #endif
                 "    --verbose          enable verbose debugging output\n"
@@ -1002,6 +1005,7 @@ main(int argc, char *argv[])
         OPT_VERBOSE,
         OPT_UNILINE,
         OPT_MULTILINE,
+        OPT_CONSUMED_MODE,
         OPT_NO_STATE_REPORT,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
@@ -1031,6 +1035,7 @@ main(int argc, char *argv[])
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
+        {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"format",               required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
@@ -1050,6 +1055,7 @@ main(int argc, char *argv[])
 #ifndef KEYMAP_DUMP
     /* Ensure synced with usage() and man page */
     assert(use_events_api);
+    assert(consumed_mode == XKB_CONSUMED_MODE_XKB);
 #endif
 
     while (1) {
@@ -1164,6 +1170,19 @@ local_state:
         case '*':
         case OPT_MULTILINE:
             print_options &= ~PRINT_UNILINE;
+            break;
+        case OPT_CONSUMED_MODE:
+            if (strcmp(optarg, "gtk") == 0) {
+                consumed_mode = XKB_CONSUMED_MODE_GTK;
+            } else if (strcmp(optarg, "xkb") == 0) {
+                consumed_mode = XKB_CONSUMED_MODE_XKB;
+            } else {
+                fprintf(stderr, "ERROR: invalid --consumed-mode \"%s\"\n",
+                        optarg);
+                usage(stderr, argv[0]);
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
+            }
             break;
         case OPT_NO_STATE_REPORT:
             report_state_changes = false;
