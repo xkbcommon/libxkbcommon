@@ -46,3 +46,13 @@ xkb_keymap_is_supported_format(enum xkb_keymap_format format);
  */
 enum xkb_keymap_format
 xkb_keymap_parse_format(const char *raw);
+
+/**
+ * Return a human-friendly label for the keymap format.
+ *
+ * @param[in] format A keymap format to look for.
+ *
+ * @return The label corresponding to the format, or `NULL` if not supported.
+ */
+const char *
+xkb_keymap_get_format_label(enum xkb_keymap_format format);

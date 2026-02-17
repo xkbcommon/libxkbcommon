@@ -56,6 +56,8 @@ struct keyboard {
 
 static bool terminate;
 #ifdef KEYMAP_DUMP
+static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+              "Out of sync usage()");
 static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
@@ -555,7 +557,7 @@ usage(FILE *fp, char *progname)
                 "                         It implies --local-state.\n"
                 "                         If <FILE> is \"-\" or missing, then load from stdin.\n"
 #endif
-                "    --format <FORMAT>    use keymap format <FORMAT>\n"
+                "    --format <FORMAT>    use keymap format <FORMAT> (default: '%s')\n"
 #ifdef KEYMAP_DUMP
                 "    --no-pretty          do not pretty-print when serializing a keymap\n"
                 "    --drop-unused        disable unused bits serialization\n"
@@ -565,7 +567,8 @@ usage(FILE *fp, char *progname)
                 "    --no-state-report    do not report changes to the state\n"
 #endif
                 "    --verbose            enable verbose debugging output\n"
-                "    --help               display this help and exit\n"
+                "    --help               display this help and exit\n",
+                xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
         );
 }
 

@@ -964,7 +964,7 @@ usage(FILE *file, const char *progname)
            "    This option is order-dependent, include paths given first\n"
            "    are searched first.\n"
            " --format <format>\n"
-           "    The keymap format to use for parsing (default: '%d')\n"
+           "    The keymap format to use for parsing (default: '%s')\n"
            " --section <name>\n"
            "    The name of a specific section to parse\n"
            " --type <type>\n"
@@ -989,7 +989,8 @@ usage(FILE *file, const char *progname)
            "    $(find \"" DFLT_XKB_CONFIG_ROOT "/symbols\" -type f -not -name README | xargs)\n"
            "to process all symbols files."
            "\n",
-           progname, DEFAULT_INPUT_KEYMAP_FORMAT, progname);
+           progname, xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT),
+           progname);
 }
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"

@@ -104,7 +104,7 @@ usage(FILE *fp, const char *argv0)
         "\n"
         "XKB-specific options:\n"
         " --format <format>\n"
-        "    The keymap format to use (default: %d)\n"
+        "    The keymap format to use (default: '%s')\n"
         " --keymap=<file>\n"
         "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
         "    is \"-\" or missing, then load from stdin.\n"
@@ -127,7 +127,7 @@ usage(FILE *fp, const char *argv0)
         "    - XKB_DEFAULT_OPTIONS\n"
         "    Note that this option may affect the default values of the previous options.\n"
         "\n",
-        DEFAULT_INPUT_KEYMAP_FORMAT,
+        xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT),
         DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
         DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
         DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
