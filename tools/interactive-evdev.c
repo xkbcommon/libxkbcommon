@@ -313,8 +313,8 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
             // TODO: better error handling
         } else {
             tools_print_events(NULL, kbd->state, kbd->state_events,
-                               kbd->compose_state, print_options,
-                               report_state_changes);
+                               kbd->compose_state, consumed_mode,
+                               print_options, report_state_changes);
         }
     } else {
         /* Use the legacy state API */
@@ -452,7 +452,7 @@ usage(FILE *fp, char *progname)
             " --enable-compose\n"
             "    Enable Compose\n"
             " --consumed-mode={xkb|gtk}\n"
-            "    Select the consumed modifiers mode, (default: xkb)\n"
+            "    Select the consumed modifiers mode (default: xkb)\n"
             " --without-x11-offset\n"
             "    Don't add X11 keycode offset\n"
             "Other:\n"
