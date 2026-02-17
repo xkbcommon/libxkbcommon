@@ -383,6 +383,18 @@ class TestXkbcli(unittest.TestCase):
     def test_xkbcli_too_many_args(self):
         self.xkbcli.run_command_invalid(["a"] * 64)
 
+    def test_compile_keymap(self):
+        for args in (
+            ["--verbose", "-h"],
+            ["--format=v2", "-h"],
+            ["--input-format=xkb_v1", "-h"],
+            ["--output-format=xkb_v2", "-h"],
+            ["--no-pretty", "-h"],
+            ["--drop-unused", "-h"],
+        ):
+            with self.subTest(args=args):
+                self.xkbcli_compile_keymap.run_command_success(args)
+
     def test_compile_keymap_args(self):
         xkb_root = Path(os.environ["XKB_CONFIG_ROOT"])
         keymap_path = xkb_root / "keymaps/masks.xkb"
@@ -640,39 +652,96 @@ class TestXkbcli(unittest.TestCase):
                 with self.subTest(rmlvo=rmlvo):
                     future.result()
 
+    # Note: use -h in the interactive tools to speedup the tests
+
     def test_interactive_evdev(self):
         # Note: --enable-compose fails if $prefix doesn't have the compose tables
         # installed
         for args in (
-            ["--verbose"],
-            ["--uniline"],
-            ["--multiline"],
-            ["--report-state-changes"],
-            ["--enable-compose"],
-            ["--consumed-mode=xkb"],
-            ["--consumed-mode=gtk"],
-            ["--without-x11-offset"],
+            ["--verbose", "-h"],
+            ["--uniline", "-h"],
+            ["--multiline", "-h"],
+            ["--report-state-changes", "-h"],
+            ["--no-state-report", "-h"],
+            ["--consumed-mode=xkb", "-h"],
+            ["--consumed-mode=gtk", "-h"],
+            ["--without-x11-offset", "-h"],
+            ["--format=xkb_v2", "-h"],
+            ["--enable-compose", "-h"],
+            ["--legacy-state-api", "-h"],
+            ["--legacy-state-api=false", "-h"],
+            ["--legacy-state-api=true", "-h"],
+            ["--controls=+sticky-keys,-latch-to-lock", "-h"],
+            ["--modifiers-mapping=Control+Alt:Level3", "-h"],
+            ["--shortcuts-mask=Control+Alt+Super", "-h"],
+            ["--shortcuts-mapping=2:1", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_interactive_evdev.run_command_success(args)
 
     def test_interactive_x11(self):
         for args in (
-            ["--verbose"],
-            ["--uniline"],
-            ["--multiline"],
+            ["--verbose", "-h"],
+            ["--uniline", "-h"],
+            ["--multiline", "-h"],
+            ["--no-state-report", "-h"],
+            ["--consumed-mode=xkb", "-h"],
+            ["--consumed-mode=gtk", "-h"],
+            ["--format=xkb_v2", "-h"],
+            ["--enable-compose", "-h"],
+            ["--local-state", "-h"],
+            ["--legacy-state-api", "-h"],
+            ["--legacy-state-api=false", "-h"],
+            ["--legacy-state-api=true", "-h"],
+            ["--controls=+sticky-keys,-latch-to-lock", "-h"],
+            ["--modifiers-mapping=Control+Alt:Level3", "-h"],
+            ["--shortcuts-mask=Control+Alt+Super", "-h"],
+            ["--shortcuts-mapping=2:1", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_interactive_x11.run_command_success(args)
 
     def test_interactive_wayland(self):
         for args in (
-            ["--verbose"],
-            ["--uniline"],
-            ["--multiline"],
+            ["--verbose", "-h"],
+            ["--uniline", "-h"],
+            ["--multiline", "-h"],
+            ["--no-state-report", "-h"],
+            ["--consumed-mode=xkb", "-h"],
+            ["--consumed-mode=gtk", "-h"],
+            ["--format=xkb_v2", "-h"],
+            ["--enable-compose", "-h"],
+            ["--local-state", "-h"],
+            ["--legacy-state-api", "-h"],
+            ["--legacy-state-api=false", "-h"],
+            ["--legacy-state-api=true", "-h"],
+            ["--controls=+sticky-keys,-latch-to-lock", "-h"],
+            ["--modifiers-mapping=Control+Alt:Level3", "-h"],
+            ["--shortcuts-mask=Control+Alt+Super", "-h"],
+            ["--shortcuts-mapping=2:1", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_interactive_wayland.run_command_success(args)
+
+    def test_dump_keymap_wayland(self):
+        for args in (
+            ["--verbose", "-h"],
+            ["--format=v2", "-h"],
+            ["--no-pretty", "-h"],
+            ["--drop-unused", "-h"],
+        ):
+            with self.subTest(args=args):
+                self.xkbcli_dump_keymap_wayland.run_command_success(args)
+
+    def test_dump_keymap_x11(self):
+        for args in (
+            ["--verbose", "-h"],
+            ["--format=v2", "-h"],
+            ["--no-pretty", "-h"],
+            ["--drop-unused", "-h"],
+        ):
+            with self.subTest(args=args):
+                self.xkbcli_dump_keymap_x11.run_command_success(args)
 
 
 if __name__ == "__main__":
