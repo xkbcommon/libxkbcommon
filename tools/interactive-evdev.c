@@ -419,33 +419,48 @@ sigintr_handler(int signum)
 static void
 usage(FILE *fp, char *progname)
 {
-        fprintf(fp, "Usage: %s [--include=<path>] [--include-defaults] [--format=<format>]"
-                "[--rules=<rules>] [--model=<model>] [--layout=<layout>] "
-                "[--variant=<variant>] [--options=<options>] "
-                "[--enable-environment-names]\n",
-                progname);
-        fprintf(fp, "   or: %s --keymap <path to keymap file>\n",
-                progname);
-        fprintf(fp, "For both:\n"
-                    "          --format <FORMAT> (use keymap format FORMAT; default: '%s')\n"
-                    "          --verbose (enable verbose debugging output)\n"
-                    "          -1, --uniline (enable uniline event output)\n"
-                    "          --multiline (enable uniline event output)\n"
-                    "          --short (shorter event output)\n"
-                    "          --report-state-changes (report changes to the state)\n"
-                    "          --no-state-report (do not report changes to the state)\n"
-                    "          --legacy-state-api[=true|false] (use legacy state API instead of event API)\n"
-                    "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
-                    "          --modifiers-mapping <MAPPING> (remap the modifiers)\n"
-                    "          --shortcuts-mask <MASK> (set the modifier mask for shortcuts tweaks)\n"
-                    "          --shortcuts-mapping <MAPPING> (set the layout indices mapping for shortcuts tweaks)\n"
-                    "          --enable-compose (enable Compose)\n"
-                    "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
-                    "          --without-x11-offset (don't add X11 keycode offset)\n"
-                    "Other:\n"
-                    "          --help (display this help and exit)\n",
-                xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
-        );
+    fprintf(fp, "Usage: %s [--include=<path>] [--include-defaults] [--format=<format>]"
+            "[--rules=<rules>] [--model=<model>] [--layout=<layout>] "
+            "[--variant=<variant>] [--options=<options>] "
+            "[--enable-environment-names]\n"
+            "    or: %s --keymap <path to keymap file>\n"
+            "Options:\n"
+            " --format <FORMAT>\n"
+            "    Use keymap format FORMAT (default: '%s')\n"
+            " --verbose\n"
+            "    Enable verbose debugging output\n"
+            " -1, --uniline\n"
+            "    Enable uniline event output\n"
+            " --multiline\n"
+            "    Enable uniline event output\n"
+            " --short\n"
+            "    Shorter event output\n"
+            " --report-state-changes\n"
+            "    Report changes to the state\n"
+            " --no-state-report\n"
+            "    Do not report changes to the state\n"
+            " --legacy-state-api[=true|false]\n"
+            "    Use legacy state API instead of event API\n"
+            " --controls\n"
+            "    Sticky-keys, latch-to-lock, latch-simultaneous\n"
+            " --modifiers-mapping <MAPPING>\n"
+            "    Remap the modifiers\n"
+            " --shortcuts-mask <MASK>\n"
+            "    Set the modifier mask for shortcuts tweaks\n"
+            " --shortcuts-mapping <MAPPING>\n"
+            "    Set the layout indices mapping for shortcuts tweaks\n"
+            " --enable-compose\n"
+            "    Enable Compose\n"
+            " --consumed-mode={xkb|gtk}\n"
+            "    Select the consumed modifiers mode, (default: xkb)\n"
+            " --without-x11-offset\n"
+            "    Don't add X11 keycode offset\n"
+            "Other:\n"
+            "    --help\n"
+            "    Display this help and exit\n",
+            progname, progname,
+            xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
+    );
 }
 
 int
@@ -539,6 +554,9 @@ main(int argc, char *argv[])
     enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
     const char *raw_modifiers_mapping = NULL;
     const char *raw_shortcuts_mask = NULL;
+
+    /* Ensure synced with usage() and man page */
+    assert(consumed_mode == XKB_CONSUMED_MODE_XKB);
 
     while (1) {
         int option_index = 0;
