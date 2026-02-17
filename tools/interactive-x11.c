@@ -51,6 +51,7 @@ struct keyboard {
     struct xkb_state_machine *state_machine;
     struct xkb_event_iterator *state_events;
     struct xkb_compose_state *compose_state;
+    xkb_keycode_t repeated_key;
     int32_t device_id;
 };
 
@@ -62,6 +63,7 @@ static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 #else
+static bool detect_repeat = false;
 static bool use_events_api = true;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
@@ -241,6 +243,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
     kbd->keymap = NULL;
     kbd->state = NULL;
     kbd->compose_state = NULL;
+    kbd->repeated_key = XKB_KEYCODE_INVALID;
     kbd->device_id = device_id;
 
     ret = update_keymap(kbd);
@@ -355,11 +358,18 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
         const xkb_keycode_t keycode = event->detail;
 
+        const bool repeated = detect_repeat && kbd->repeated_key == keycode;
+        if (!repeated)
+            kbd->repeated_key = keycode;
+        const enum xkb_key_direction direction = (repeated)
+                                               ? XKB_KEY_REPEATED
+                                               : XKB_KEY_DOWN;
+
         if (use_local_state && use_events_api) {
             /* Run our local state machine with the event API */
             const int ret = xkb_state_machine_update_key(kbd->state_machine,
                                                          kbd->state_events,
-                                                         keycode, XKB_KEY_DOWN);
+                                                         keycode, direction);
             if (ret) {
                 fprintf(stderr, "ERROR: could not update the state machine\n");
                 // TODO: better error handling
@@ -376,8 +386,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
             }
 
             tools_print_keycode_state(NULL, kbd->state, kbd->compose_state,
-                                      keycode, XKB_KEY_DOWN, consumed_mode,
-                                      print_options);
+                                      keycode, direction,
+                                      consumed_mode, print_options);
 
             if (kbd->compose_state) {
                 enum xkb_compose_status status =
@@ -389,7 +399,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
             if (use_local_state) {
                 /* Run our local state machine with the legacy API */
                 const enum xkb_state_component changed =
-                    xkb_state_update_key(kbd->state, keycode, XKB_KEY_DOWN);
+                    xkb_state_update_key(kbd->state, keycode, direction);
                 if (changed && report_state_changes)
                     tools_print_state_changes(NULL, kbd->state,
                                               changed, print_options);
@@ -404,6 +414,10 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
     case XCB_KEY_RELEASE: {
         xcb_key_press_event_t *event = (xcb_key_press_event_t *) gevent;
         const xkb_keycode_t keycode = event->detail;
+
+        if (kbd->repeated_key == keycode)
+            kbd->repeated_key = XKB_KEYCODE_INVALID;
+
         if (use_local_state && use_events_api) {
             /* Run our local state machine */
             const int ret = xkb_state_machine_update_key(kbd->state_machine,
@@ -842,6 +856,37 @@ too_much_arguments:
         fprintf(stderr, "Couldn't setup XKB extension\n");
         goto err_conn;
     }
+
+#ifndef KEYMAP_DUMP
+    /*
+     * Enable detection of repeated keys
+     *
+     * The X server usually generates both press and release events whenever an
+     * autorepeating key is held down. With the following change, client will
+     * receive:    Press →           Press →           Press → Release
+     * instead of: Press → Release → Press → Release → Press → Release
+     *
+     * See: https://www.x.org/releases/X11R7.7/doc/kbproto/xkbproto.html#Detectable_Autorepeat
+     */
+    xcb_xkb_per_client_flags_cookie_t pcf = xcb_xkb_per_client_flags(
+        conn, XCB_XKB_ID_USE_CORE_KBD,
+        XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT,
+        XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT,
+        0, 0, 0
+    );
+    xcb_xkb_per_client_flags_reply_t *pcf_reply;
+    if (!(pcf_reply = xcb_xkb_per_client_flags_reply(conn, pcf, NULL))) {
+        fprintf(stderr, "ERROR: Couldn't set X11 detectable auto-repeat\n");
+    } else {
+        detect_repeat =
+            (pcf_reply->value & XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT);
+        if (!detect_repeat)
+            fprintf(stderr,
+                    "WARNING: Detectable auto-repeat is not supported by "
+                    "the X server\n");
+        free(pcf_reply);
+    }
+#endif
 
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx) {

@@ -792,6 +792,12 @@ if build_tools
 You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         endif
 
+        if cc.has_header_symbol('wayland/wayland-client-protocol.h', \
+                                'WL_KEYBOARD_KEY_STATE_REPEATED', \
+                                dependencies: wayland_client_dep)
+            configh_data.set10('HAVE_WL_KEYBOARD_KEY_STATE_REPEATED', true)
+        endif
+
         wayland_scanner = find_program(wayland_scanner_dep.get_variable(pkgconfig: 'wayland_scanner'))
         wayland_scanner_code_gen = generator(
             wayland_scanner,
