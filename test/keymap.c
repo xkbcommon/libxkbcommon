@@ -32,9 +32,13 @@ test_supported_formats(void)
     assert(xkb_keymap_parse_format("x") == 0);
     assert(xkb_keymap_parse_format("v") == 0);
     assert(xkb_keymap_parse_format("vx") == 0);
+    assert(xkb_keymap_parse_format("0b1") == 0); /* only base 10 */
+    assert(xkb_keymap_parse_format("0o1") == 0); /* only base 10 */
     assert(xkb_keymap_parse_format("0x1") == 0); /* only base 10 */
-    assert(xkb_keymap_parse_format("+1") == XKB_KEYMAP_FORMAT_TEXT_V1);
-    assert(xkb_keymap_parse_format(" 1") == XKB_KEYMAP_FORMAT_TEXT_V1);
+    assert(xkb_keymap_parse_format("+1") == 0);
+    assert(xkb_keymap_parse_format(" 1") == 0);
+    assert(xkb_keymap_parse_format("1 ") == XKB_KEYMAP_FORMAT_TEXT_V1);
+    assert(xkb_keymap_parse_format("01") == XKB_KEYMAP_FORMAT_TEXT_V1);
 
     const struct {
         int value;
@@ -47,12 +51,12 @@ test_supported_formats(void)
         { .value = XKB_KEYMAP_USE_ORIGINAL_FORMAT, .labels = NULL, .expected = 0 },
         {
           .value = XKB_KEYMAP_FORMAT_TEXT_V1,
-          .labels = (const char* const[]) { "v1", NULL },
+          .labels = (const char* const[]) { "xkb_v1", "v1", NULL },
           .expected = XKB_KEYMAP_FORMAT_TEXT_V1
         },
         {
           .value = XKB_KEYMAP_FORMAT_TEXT_V2,
-          .labels = (const char* const[]) { "v2", NULL },
+          .labels = (const char* const[]) { "xkb_v2", "v2", NULL },
           .expected = XKB_KEYMAP_FORMAT_TEXT_V2
         },
     };
@@ -60,6 +64,11 @@ test_supported_formats(void)
     for (size_t k = 0; k < ARRAY_SIZE(entries); k++) {
         assert(xkb_keymap_is_supported_format(entries[k].value) ==
                !!entries[k].expected);
+        /* Canonical label */
+        if (entries[k].labels) {
+            assert_streq_not_null("Canonical format label", entries[k].labels[0],
+                                  xkb_keymap_get_format_label(entries[k].value));
+        }
         /* Parse labels */
         for (size_t l = 0; entries[k].labels && entries[k].labels[l]; l++) {
             assert_printf(xkb_keymap_parse_format(entries[k].labels[l]) ==

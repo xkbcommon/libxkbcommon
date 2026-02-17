@@ -38,10 +38,10 @@ usage(FILE *fp, char **argv)
            "\n"
            "XKB-specific options:\n"
            " --input-format <format>\n"
-           "    The keymap format to use for parsing (default: %d)\n"
+           "    The keymap format to use for parsing (default: '%s')\n"
 #ifdef KEYMAP_DUMP
            " --output-format <format>\n"
-           "    The keymap format to use for serializing (default: %d)\n"
+           "    The keymap format to use for serializing (default: same as input)\n"
 #endif
            " --pretty\n"
            "    Enable pretty-printing in keymap serialization\n"
@@ -60,10 +60,8 @@ usage(FILE *fp, char **argv)
            " --options <options>\n"
            "    The XKB options (default: '%s')\n"
            "\n",
-           argv[0], DEFAULT_STDEV * 100, DEFAULT_INPUT_KEYMAP_FORMAT,
-#ifdef KEYMAP_DUMP
-           DEFAULT_OUTPUT_KEYMAP_FORMAT,
-#endif
+           argv[0], DEFAULT_STDEV * 100,
+            xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT),
            DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
@@ -100,6 +98,8 @@ main(int argc, char **argv)
     struct estimate est;
     enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
 #ifdef KEYMAP_DUMP
+    static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                  "Out of sync usage()");
     enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 #endif
     enum xkb_keymap_serialize_flags serialize_flags = XKB_KEYMAP_SERIALIZE_NO_FLAGS;

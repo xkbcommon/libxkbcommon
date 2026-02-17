@@ -66,9 +66,9 @@ usage(FILE *file, const char *progname)
            "    This option is order-dependent, include paths given first\n"
            "    are searched first.\n"
            " --input-format <format>\n"
-           "    The keymap format to use for parsing (default: '%d')\n"
+           "    The keymap format to use for parsing (default: '%s')\n"
            " --output-format <format>\n"
-           "    The keymap format to use for serializing (default: '%d')\n"
+           "    The keymap format to use for serializing (default: same as input)\n"
            " --format <format>\n"
            "    The keymap format to use for both parsing and serializing\n"
            " --no-pretty\n"
@@ -111,7 +111,7 @@ usage(FILE *file, const char *progname)
            "    Print real and virtual key modmaps and modifiers encodings in YAML format\n"
            "\n",
            progname,
-           DEFAULT_INPUT_KEYMAP_FORMAT, DEFAULT_OUTPUT_KEYMAP_FORMAT,
+           xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT),
            DEFAULT_XKB_RULES, DEFAULT_XKB_MODEL, DEFAULT_XKB_LAYOUT,
            DEFAULT_XKB_VARIANT ? DEFAULT_XKB_VARIANT : "<none>",
            DEFAULT_XKB_OPTIONS ? DEFAULT_XKB_OPTIONS : "<none>");
@@ -563,6 +563,8 @@ main(int argc, char **argv)
     struct xkb_rule_names names = { 0 };
     bool use_env_names = false;
     enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+    static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                  "Out of sync usage()");
     enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
     enum xkb_keymap_serialize_flags serialize_flags =
         (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;

@@ -78,6 +78,8 @@ struct interactive_seat {
 static bool terminate = false;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
 #ifdef KEYMAP_DUMP
+static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+              "Out of sync usage()");
 static enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
@@ -909,14 +911,14 @@ usage(FILE *fp, char *progname)
                 progname);
         fprintf(fp,
 #ifdef KEYMAP_DUMP
-                "    --input-format <FORMAT>     use input keymap format FORMAT\n"
-                "    --output-format <FORMAT>    use output keymap format FORMAT\n"
+                "    --input-format <FORMAT>     use input keymap format FORMAT (default: '%s')\n"
+                "    --output-format <FORMAT>    use output keymap format FORMAT (default: same as input)\n"
                 "    --format <FORMAT>           keymap format to use for both input and output\n"
                 "    --no-pretty                 do not pretty-print when serializing a keymap\n"
                 "    --drop-unused               disable unused bits serialization\n"
                 "    --raw                       dump the raw keymap, without parsing it\n"
 #else
-                "    --format <FORMAT>  use keymap format FORMAT\n"
+                "    --format <FORMAT>  use keymap format FORMAT (default: '%s')\n"
                 "    --enable-compose   enable Compose\n"
                 "    --local-state      enable local state handling and ignore modifiers/layouts\n"
                 "                       state updates from the compositor\n"
@@ -953,7 +955,8 @@ usage(FILE *fp, char *progname)
                 "    --no-state-report  do not report changes to the state\n"
 #endif
                 "    --verbose          enable verbose debugging output\n"
-                "    --help             display this help and exit\n"
+                "    --help             display this help and exit\n",
+                xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
         );
 }
 

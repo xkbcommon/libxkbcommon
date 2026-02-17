@@ -427,23 +427,24 @@ usage(FILE *fp, char *progname)
         fprintf(fp, "   or: %s --keymap <path to keymap file>\n",
                 progname);
         fprintf(fp, "For both:\n"
-                        "          --format <FORMAT> (use keymap format FORMAT)\n"
-                        "          --verbose (enable verbose debugging output)\n"
-                        "          -1, --uniline (enable uniline event output)\n"
-                        "          --multiline (enable uniline event output)\n"
-                        "          --short (shorter event output)\n"
-                        "          --report-state-changes (report changes to the state)\n"
-                        "          --no-state-report (do not report changes to the state)\n"
-                        "          --legacy-state-api[=true|false] (use legacy state API instead of event API)\n"
-                        "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
-                        "          --modifiers-mapping <MAPPING> (remap the modifiers)\n"
-                        "          --shortcuts-mask <MASK> (set the modifier mask for shortcuts tweaks)\n"
-                        "          --shortcuts-mapping <MAPPING> (set the layout indices mapping for shortcuts tweaks)\n"
-                        "          --enable-compose (enable Compose)\n"
-                        "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
-                        "          --without-x11-offset (don't add X11 keycode offset)\n"
+                    "          --format <FORMAT> (use keymap format FORMAT; default: '%s')\n"
+                    "          --verbose (enable verbose debugging output)\n"
+                    "          -1, --uniline (enable uniline event output)\n"
+                    "          --multiline (enable uniline event output)\n"
+                    "          --short (shorter event output)\n"
+                    "          --report-state-changes (report changes to the state)\n"
+                    "          --no-state-report (do not report changes to the state)\n"
+                    "          --legacy-state-api[=true|false] (use legacy state API instead of event API)\n"
+                    "          --controls (sticky-keys, latch-to-lock, latch-simultaneous)\n"
+                    "          --modifiers-mapping <MAPPING> (remap the modifiers)\n"
+                    "          --shortcuts-mask <MASK> (set the modifier mask for shortcuts tweaks)\n"
+                    "          --shortcuts-mapping <MAPPING> (set the layout indices mapping for shortcuts tweaks)\n"
+                    "          --enable-compose (enable Compose)\n"
+                    "          --consumed-mode={xkb|gtk} (select the consumed modifiers mode, default: xkb)\n"
+                    "          --without-x11-offset (don't add X11 keycode offset)\n"
                     "Other:\n"
-                        "          --help (display this help and exit)\n"
+                    "          --help (display this help and exit)\n",
+                xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
         );
 }
 
