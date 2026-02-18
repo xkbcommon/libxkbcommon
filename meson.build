@@ -4,6 +4,7 @@ project(
     version: '1.13.0',
     default_options: [
         'c_std=c11',
+        'build.c_std=c11',
         'warning_level=3',
     ],
     meson_version : '>= 1.4.0', # Released on March 2024
@@ -891,6 +892,33 @@ test_configh_data = configuration_data()
 test_configh_data.set_quoted('TEST_XKB_CONFIG_ROOT', meson.current_source_dir()/'test'/'data')
 test_configh_data.set('_FORTIFY_SOURCE', '3')
 configure_file(output: 'test-config.h', configuration: test_configh_data)
+
+# Headers C++ compatibility test (optional)
+# Exclude MSVC because it does not handle mixing C and C++ well
+if build_machine.system() != 'windows' and \
+   add_languages('cpp', required: false, native: false)
+    cpp = meson.get_compiler('cpp')
+    cpp_compat_test_deps = []
+    cpp_compat_test_cpp_args = []
+    if get_option('enable-x11')
+        cpp_compat_test_cpp_args += '-DHAS_XKB_X11'
+        cpp_compat_test_deps += xcb_dep
+    endif
+    if get_option('enable-xkbregistry')
+        cpp_compat_test_cpp_args += '-DHAS_XKB_REGISTRY'
+    endif
+    test(
+        'headers C++ compatibility',
+        executable(
+            'test-cpp-headers',
+            'test/headers-compatibility.cpp',
+            include_directories: include_directories('include'),
+            dependencies: cpp_compat_test_deps,
+            cpp_args: cpp_compat_test_cpp_args,
+            override_options: ['cpp_std=c++11'],
+        )
+    )
+endif
 
 m_dep = cc.find_library('m', required : false)
 # Some tests need to use unexported symbols, so we link them against

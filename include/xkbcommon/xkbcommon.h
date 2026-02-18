@@ -2199,7 +2199,7 @@ xkb_state_machine_options_mods_set_mapping(
  */
 XKB_EXPORT int
 xkb_state_machine_options_shortcuts_update_mods(
-    struct xkb_state_machine_options* restrict options,
+    struct xkb_state_machine_options* options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 );
 
