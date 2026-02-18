@@ -632,6 +632,7 @@
   keypad:future_wang    		=	+keypad(future_wang)
   keypad:hex            		=	+keypad(ops)+keypad(hex)
   keypad:atm            		=	+keypad(ops)+keypad(hex)+keypad(atm)
+  keypad:nmlk_repeats			=	+keypad(numlock_repeats)
   nbsp:none             		=	+nbsp(none)
   nbsp:level2           		=	+nbsp(level2)
   nbsp:level3           		=	+nbsp(level3)

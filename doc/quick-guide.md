@@ -317,7 +317,9 @@ int handle_key(…)
 
     enum xkb_key_direction direction = (<key release>)
         ? XKB_KEY_UP
-        : XKB_KEY_DOWN;
+        : (<key repeated>)
+            ? XKB_KEY_REPEATED
+            : XKB_KEY_DOWN;
     int ret =
         xkb_state_machine_update_key(state_machine, events, keycode, direction);
     if (ret) <error>
@@ -332,12 +334,15 @@ int handle_key(…)
             xkb_event_get_type(event);
         switch (event_type) {
             case XKB_EVENT_TYPE_KEY_DOWN:
+            case XKB_EVENT_TYPE_KEY_REPEATED:
             case XKB_EVENT_TYPE_KEY_UP: {
                 const xkb_keycode_t kc = xkb_event_get_keycode(event);
                 const enum xkb_key_direction direction =
                     (event_type == XKB_EVENT_TYPE_KEY_UP)
                         ? XKB_KEY_UP
-                        : XKB_KEY_DOWN;
+                        : (XKB_EVENT_TYPE_KEY_REPEATED)
+                            ? XKB_KEY_REPEATED
+                            : XKB_KEY_DOWN;
                 <send key event to clients>
             }
             case XKB_EVENT_TYPE_COMPONENTS_CHANGE: {

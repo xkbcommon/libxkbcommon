@@ -91,6 +91,7 @@ consume_events(struct xkb_state_machine *sm,
     while ((event = xkb_event_iterator_next(events))) {
         switch (xkb_event_get_type(event)) {
         case XKB_EVENT_TYPE_KEY_DOWN:
+        case XKB_EVENT_TYPE_KEY_REPEATED:
         case XKB_EVENT_TYPE_KEY_UP:
             *kc = xkb_event_get_keycode(event);
             if (flags & UNTIL_KEY_EVENT) {
@@ -102,8 +103,12 @@ consume_events(struct xkb_state_machine *sm,
             xkb_state_update_from_event(state, event);
             break;
         default:
+            {} /* Label followed by declaration requires C23 */
+            static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
+                          XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+                          (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                          "Missing state event type");
             /* ignore */
-            break;
         }
     }
     return true;
@@ -163,9 +168,10 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
         xkb_keycode_t kc_new = kc;
         if (events) {
             /* State event API: consume until the first key event */
-            if (op == DOWN || op == BOTH) {
-                assert(xkb_state_machine_update_key(sm, events, kc, XKB_KEY_DOWN)
-                       == 0);
+            if (op == DOWN || op == REPEAT || op == BOTH) {
+                assert(!xkb_state_machine_update_key(
+                    sm, events, kc, (op == REPEAT ? XKB_KEY_REPEATED : XKB_KEY_DOWN)
+                ));
                 assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
             }
             if (op == UP || op == BOTH) {
@@ -187,15 +193,22 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
             assert(consume_events(sm, events, state, ALL_EVENTS, &kc_new));
         } else {
             /* Legacy state API */
-            if (op == DOWN || op == BOTH)
-                xkb_state_update_key(state, kc, XKB_KEY_DOWN);
+            if (op == DOWN || op == REPEAT || op == BOTH)
+                xkb_state_update_key(
+                    state, kc, (op == REPEAT ? XKB_KEY_REPEATED : XKB_KEY_DOWN)
+                );
             if (op == UP || op == BOTH)
                 xkb_state_update_key(state, kc, XKB_KEY_UP);
         }
 
 #if HAVE_TOOLS
-        tools_print_keycode_state("", state, NULL, kc,
-                                  (op == DOWN ? XKB_KEY_DOWN : XKB_KEY_UP),
+        const enum xkb_key_direction direction
+            = (op == DOWN)
+                ? XKB_KEY_DOWN
+                : (op == REPEAT)
+                    ? XKB_KEY_REPEATED
+                    : XKB_KEY_UP;
+        tools_print_keycode_state("", state, NULL, kc, direction,
                                   XKB_CONSUMED_MODE_XKB,
                                   PRINT_ALL_FIELDS | PRINT_UNILINE);
 #endif

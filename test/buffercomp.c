@@ -2598,9 +2598,9 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
                 /* Inexistent key */
                 "    key <A> { [a], [RedirectKey(key=<?>)] };\n"
                 /* Multiple RedirectKey() on the same level */
-                "    key <S> { [s], [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
+                "    key <S> { repeat=true, [s], [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
                 /* OK! */
-                "    key <D> { [d], [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
+                "    key <D> { repeat=true, [d], [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
                 /* No parameters (implicit auto) */
                 "    key <F> { [f], [RedirectKey()] };\n"
                 /* Explicit auto keycode */

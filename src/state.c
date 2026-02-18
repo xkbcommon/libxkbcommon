@@ -255,12 +255,15 @@ xkb_filter_group_set_func(struct xkb_state *state,
         return XKB_FILTER_CONTINUE;
     }
 
-    if (direction == XKB_KEY_DOWN) {
+    switch (direction) {
+    case XKB_KEY_DOWN:
         filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
         return XKB_FILTER_CONSUME;
-    }
-    else if (--filter->refcnt > 0) {
-        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
     }
 
     static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
@@ -344,12 +347,16 @@ xkb_filter_group_lock_func(struct xkb_state *state,
         return XKB_FILTER_CONTINUE;
     }
 
-    if (direction == XKB_KEY_DOWN) {
+    switch (direction) {
+    case XKB_KEY_DOWN:
         filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
         return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
     }
-    if (--filter->refcnt > 0)
-        return XKB_FILTER_CONSUME;
 
     if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
         /*
@@ -533,7 +540,13 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             assert(latch == NO_LATCH);
         }
     }
-    else if (direction == XKB_KEY_UP && key == filter->key) {
+    else if (key != filter->key) {
+        /* Ignore repeat/release of other keys */
+    }
+    else if (direction == XKB_KEY_REPEATED) {
+        return XKB_FILTER_CONSUME; // TODO: check
+    }
+    else {
         /* Our key got released.  If we've set it to clear locks, and we
          * currently have a group locked, then release it and
          * don't actually latch.  Else we've actually hit the latching
@@ -562,9 +575,6 @@ xkb_filter_group_latch_func(struct xkb_state *state,
             state->components.latched_group += priv.group_delta;
             /* XXX beep beep! */
         }
-    }
-    else {
-        /* Ignore release of other keys */
     }
 
     priv.latch = latch;
@@ -603,17 +613,21 @@ xkb_filter_mod_set_func(struct xkb_state *state,
                         const struct xkb_key *key,
                         enum xkb_key_direction direction)
 {
+
     if (key != filter->key) {
         filter->action.mods.flags &= ~ACTION_LOCK_CLEAR;
         return XKB_FILTER_CONTINUE;
     }
 
-    if (direction == XKB_KEY_DOWN) {
+    switch (direction) {
+    case XKB_KEY_DOWN:
         filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
         return XKB_FILTER_CONSUME;
-    }
-    else if (--filter->refcnt > 0) {
-        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
     }
 
     state->clear_mods |= (xkb_mod_mask_t) filter->priv;
@@ -662,12 +676,16 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
     if (key != filter->key)
         return XKB_FILTER_CONTINUE;
 
-    if (direction == XKB_KEY_DOWN) {
+    switch (direction) {
+    case XKB_KEY_DOWN:
         filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
         return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
     }
-    if (--filter->refcnt > 0)
-        return XKB_FILTER_CONSUME;
 
     state->clear_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
@@ -809,7 +827,13 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             assert(latch == NO_LATCH);
         }
     }
-    else if (direction == XKB_KEY_UP && key == filter->key) {
+    else if (key != filter->key) {
+        /* Ignore repeat/release of other keys */
+    }
+    else if (direction == XKB_KEY_REPEATED) {
+        return XKB_FILTER_CONSUME; // TODO: check
+    }
+    else {
         /* Our key got released.  If we’ve set it to clear locks, and we
          * currently have the same modifiers locked, then release them and
          * don't actually latch.  Else we’ve actually hit the latching
@@ -845,9 +869,6 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
             state->components.latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
-    }
-    else {
-        /* Ignore release of other keys */
     }
 
     filter->priv = latch;
@@ -893,12 +914,16 @@ xkb_filter_ctrls_func(struct xkb_state *state,
     if (key != filter->key)
         return XKB_FILTER_CONTINUE;
 
-    if (direction == XKB_KEY_DOWN) {
+    switch (direction) {
+    case XKB_KEY_DOWN:
         filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
         return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
     }
-    if (--filter->refcnt > 0)
-        return XKB_FILTER_CONSUME;
 
     if (filter->action.type == ACTION_TYPE_CTRL_SET ||
         !(filter->action.ctrls.flags & ACTION_LOCK_NO_UNLOCK)) {
@@ -965,9 +990,11 @@ append_redirect_key_events(struct xkb_state *state,
     }
 
     darray_append(events->queue, (struct xkb_event) {
-        .type = (direction == XKB_KEY_DOWN)
-              ? XKB_EVENT_TYPE_KEY_DOWN
-              : XKB_EVENT_TYPE_KEY_UP,
+        .type = (direction == XKB_KEY_UP)
+              ? XKB_EVENT_TYPE_KEY_UP
+              : (direction == XKB_KEY_REPEATED)
+                ? XKB_EVENT_TYPE_KEY_REPEATED
+                : XKB_EVENT_TYPE_KEY_DOWN,
         .keycode = redirect->keycode
     });
 
@@ -1014,7 +1041,7 @@ xkb_filter_redirect_key_func(struct xkb_state *state,
                                    XKB_KEY_UP);
         filter->func = NULL;
         return XKB_FILTER_CONSUME;
-     } else {
+     } else if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
         const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
 
@@ -1029,12 +1056,11 @@ xkb_filter_redirect_key_func(struct xkb_state *state,
                 return XKB_FILTER_CONTINUE;
             }
         }
-
-        /* Repeat */
-        append_redirect_key_events(state, events, &filter->action.redirect,
-                                   XKB_KEY_DOWN);
-        return XKB_FILTER_CONSUME;
     }
+
+    append_redirect_key_events(state, events, &filter->action.redirect,
+                               direction);
+    return XKB_FILTER_CONSUME;
 }
 
 static const struct {
@@ -1333,7 +1359,8 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
     const struct xkb_key* const key = XkbKey(state->keymap, kc);
-    if (!key)
+    /* Ignore unknown key and repeat state for non-repeating key */
+    if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
 
     const struct state_components prev_components = state->components;
@@ -3009,7 +3036,8 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 
     struct xkb_state * restrict const state = &sm->state;
     const struct xkb_key * const key = XkbKey(state->keymap, kc);
-    if (key == NULL)
+    /* Ignore unknown key and repeat state for non-repeating key */
+    if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
 
     const struct state_components previous_components = state->components;
@@ -3056,6 +3084,7 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     darray_foreach(event, events->queue) {
         switch (event->type) {
         case XKB_EVENT_TYPE_KEY_DOWN:
+        case XKB_EVENT_TYPE_KEY_REPEATED:
         case XKB_EVENT_TYPE_KEY_UP:
             has_key_event = true;
             break;
@@ -3070,9 +3099,11 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
          * RedirectKey().
          */
         darray_append(events->queue, (struct xkb_event) {
-            .type = (direction == XKB_KEY_DOWN)
-                ? XKB_EVENT_TYPE_KEY_DOWN
-                : XKB_EVENT_TYPE_KEY_UP,
+            .type = (direction == XKB_KEY_UP)
+                ? XKB_EVENT_TYPE_KEY_UP
+                : (direction == XKB_KEY_REPEATED)
+                    ? XKB_EVENT_TYPE_KEY_REPEATED
+                    : XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = kc
         });
     }
@@ -3155,6 +3186,7 @@ xkb_event_get_keycode(const struct xkb_event *event)
 {
     switch (event->type) {
     case XKB_EVENT_TYPE_KEY_DOWN:
+    case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
         return event->keycode;
     default:
