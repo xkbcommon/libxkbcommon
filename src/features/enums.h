@@ -36,6 +36,8 @@ static_assert(XKB_KEYMAP_FORMAT_TEXT_V2 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V2 < INT_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY_DOWN >= 0 &&
               XKB_EVENT_TYPE_KEY_DOWN < INT_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_KEY_REPEATED >= 0 &&
+              XKB_EVENT_TYPE_KEY_REPEATED < INT_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY_UP >= 0 &&
               XKB_EVENT_TYPE_KEY_UP < INT_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE >= 0 &&
@@ -44,6 +46,8 @@ static_assert(XKB_KEY_UP >= 0 &&
               XKB_KEY_UP < INT_WIDTH, "");
 static_assert(XKB_KEY_DOWN >= 0 &&
               XKB_KEY_DOWN < INT_WIDTH, "");
+static_assert(XKB_KEY_REPEATED >= 0 &&
+              XKB_KEY_REPEATED < INT_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_XKB >= 0 &&
               XKB_CONSUMED_MODE_XKB < INT_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_GTK >= 0 &&
@@ -101,6 +105,7 @@ enum xkb_enumerations_values {
     ,
     XKB_EVENT_TYPE_VALUES
         = (1u << XKB_EVENT_TYPE_KEY_DOWN)
+        | (1u << XKB_EVENT_TYPE_KEY_REPEATED)
         | (1u << XKB_EVENT_TYPE_KEY_UP)
         | (1u << XKB_EVENT_TYPE_COMPONENTS_CHANGE)
     ,
@@ -126,6 +131,7 @@ enum xkb_enumerations_values {
     XKB_KEY_DIRECTION_VALUES
         = (1u << XKB_KEY_UP)
         | (1u << XKB_KEY_DOWN)
+        | (1u << XKB_KEY_REPEATED)
     ,
     XKB_STATE_MATCH_VALUES
         = XKB_STATE_MATCH_ANY
@@ -231,6 +237,7 @@ static const int xkb_state_accessibility_flags_values[] = {
 #ifdef ENABLE_PRIVATE_APIS
 static const int xkb_event_type_values[] = {
     XKB_EVENT_TYPE_KEY_DOWN,
+    XKB_EVENT_TYPE_KEY_REPEATED,
     XKB_EVENT_TYPE_KEY_UP,
     XKB_EVENT_TYPE_COMPONENTS_CHANGE,
 };
@@ -268,6 +275,7 @@ static const int xkb_event_iterator_flags_values[] = {
 static const int xkb_key_direction_values[] = {
     XKB_KEY_UP,
     XKB_KEY_DOWN,
+    XKB_KEY_REPEATED,
 };
 #endif
 

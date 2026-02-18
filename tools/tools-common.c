@@ -713,7 +713,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 break;
             }
             default: {
-                static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+                static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
                               XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
                               (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                               "Missing event type");
