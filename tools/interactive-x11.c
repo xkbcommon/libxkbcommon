@@ -569,6 +569,7 @@ usage(FILE *fp, char *progname)
 #ifdef KEYMAP_DUMP
                 "    --no-pretty          do not pretty-print when serializing a keymap\n"
                 "    --drop-unused        disable unused bits serialization\n"
+                "    --explicit-values    force serializing all values\n"
 #else
                 "    -1, --uniline        enable uniline event output\n"
                 "    --multiline          enable multiline event output\n"
@@ -635,6 +636,7 @@ main(int argc, char *argv[])
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
+        OPT_KEYMAP_EXPLICIT,
         OPT_KEYMAP,
     };
     static struct option opts[] = {
@@ -644,6 +646,7 @@ main(int argc, char *argv[])
 #ifdef KEYMAP_DUMP
         {"no-pretty",            no_argument,            0, OPT_KEYMAP_NO_PRETTY},
         {"drop-unused",          no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
+        {"explicit-values",      no_argument,            0, OPT_KEYMAP_EXPLICIT},
 #else
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
@@ -699,6 +702,9 @@ main(int argc, char *argv[])
             break;
         case OPT_KEYMAP_DROP_UNUSED:
             serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
+            break;
+        case OPT_KEYMAP_EXPLICIT:
+            serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT;
             break;
 #else
         case OPT_COMPOSE:

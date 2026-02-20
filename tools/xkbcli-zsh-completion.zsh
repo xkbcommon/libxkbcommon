@@ -87,12 +87,12 @@ _xkbcli_commands() {
 }
 
 local -a rmlvo_opts_common=(
-	'--rules=[the XKB ruleset]:rules:(base evdev)'
-	'--model=[the XKB model]:model:_xkb_model'
-	'--layout=[the XKB layout]:layout:_xkb_layout'
-	'--variant=[the XKB variant]:variant:_xkb_variant'
-	'--options=[the XKB options]:options:_xkb_options'
-	'--enable-environment-names[set the default RMLVO values from the environment]'
+	'(--keymap)--rules=[the XKB ruleset]:rules:(base evdev)'
+	'(--keymap)--model=[the XKB model]:model:_xkb_model'
+	'(--keymap)--layout=[the XKB layout]:layout:_xkb_layout'
+	'(--keymap)--variant=[the XKB variant]:variant:_xkb_variant'
+	'(--keymap)--options=[the XKB options]:options:_xkb_options'
+	'(--keymap)--enable-environment-names[set the default RMLVO values from the environment]'
 )
 
 _xkbcli-list() {
@@ -139,7 +139,7 @@ _xkbcli-interactive-evdev() {
 		'--short[shorter event output]' \
 		'(--no-state-report)--report-state-changes[report changes to the state]' \
 		'--without-x11-offset[do not add X11 keycode offset]' \
-		'--keymap=[use the given keymap]:keymap:_xkbcli_keymap' \
+		'(--rules --model --layout --variant --options)--keymap=[use the given keymap]:keymap:_xkbcli_keymap' \
 		"$interactive_common[@]" \
 		"$rmlvo_opts_common[@]"
 }
@@ -150,8 +150,9 @@ local -a dump_common=(
 	'(--format)--input-format=[use the given input keymap format]:xkb format:(v1 v2)'
 	'(--format)--output-format=[use the given output keymap format]:xkb format:(v1 v2)'
 	'(--input-format --output-format)--format=[use the given keymap format for input and output]:xkb format:(v1 v2)'
-	'--no-pretty[do not pretty preint when serializing a keymap]'
+	'--no-pretty[do not pretty print when serializing a keymap]'
 	'--drop-unused[disable unused bits serialization]'
+	'--explicit-values[force serializing all values]'
 )
 
 _xkbcli-dump-keymap() {
@@ -174,17 +175,18 @@ _xkbcli-compile-keymap() {
 		'*--include[add the given path to the include path list]' \
 		'--include-defaults[add the default set of include directories]' \
 		'(--format)--input-format=[the keymap format to use for parsing]:xkb format:(v1 v2)' \
-		'(--format)--output-format=[the keymap format to use for serializing]:xkb format:(v1 v2)' \
 		'(--input-format --output-format)--format=[the keymap format to use for parsing and serializing]:xkb format:(v1 v2)' \
-		'--no-pretty[do not pretty print when serializing a keymap]' \
-		'--drop-unused[disable unused bits serialization]' \
-		'(--enable-environment-names)--keymap=[use the given keymap file]:keymap:_xkbcli_keymap' \
+		'(--rules --model --layout --variant --options --enable-environment-names)--keymap=[use the given keymap file]:keymap:_xkbcli_keymap' \
 		"$rmlvo_opts_common[@]" \
 		+ '(output)' \
-		'--kccgst[print a keymap in KcCGST format]' \
-		'--kccgst-yaml[print a KcCGST keymap in YAML format]' \
-		'--rmlvo[print the full RMLVO in YAML format]' \
-		'--modmaps[print the real and virtual key modmaps in YAML format]'
+		'(--format)--output-format=[the keymap format to use for serializing]:xkb format:(v1 v2)' \
+		'--no-pretty[do not pretty print when serializing a keymap]' \
+		'--drop-unused[disable unused bits serialization]' \
+		'--explicit-values[force serializing all values]' \
+		'(--kccgst-yaml --rmlvo --modmaps)--kccgst[print a keymap in KcCGST format]' \
+		'(--kccgst      --rmlvo --modmaps)--kccgst-yaml[print a KcCGST keymap in YAML format]' \
+		'(--kccgst-yaml         --modmaps)--rmlvo[print the full RMLVO in YAML format]' \
+		'(--kccgst-yaml --rmlvo          )--modmaps[print the real and virtual key modmaps in YAML format]'
 }
 
 _xkbcli-compile-compose() {
@@ -213,7 +215,7 @@ _xkbcli-how-to-type() {
 		'--disable-compose[disable Compose support]' \
 		+ xkb \
 		'--format=[the keymap format to use]:xkb format:(v1 v2)' \
-		'--keymap=[the keymap file to load]:xkb keymap:_xkbcli_keymap' \
+		'(--rules --model --layout --variant --options)--keymap=[the keymap file to load]:xkb keymap:_xkbcli_keymap' \
 		"$rmlvo_opts_common[@]" \
 		': :->key' && ret=0
 
