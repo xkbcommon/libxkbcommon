@@ -1855,8 +1855,10 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
         /* Copy the level */
         darray_steal(groupi->levels, &key->groups[i].levels, NULL);
         if (key->groups[i].type->num_levels > 1 ||
-            key->groups[i].levels[0].num_syms > 0)
+            key->groups[i].levels[0].num_syms > 0) {
+            key->groups[i].explicit_symbols = true;
             key->explicit |= EXPLICIT_SYMBOLS;
+        }
         if (groupi->defined & GROUP_FIELD_ACTS) { // FIXME
             key->groups[i].explicit_actions = true;
             key->explicit |= EXPLICIT_INTERP;

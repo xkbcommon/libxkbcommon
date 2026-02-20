@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-keysyms.h"
 #include "atom.h"
 #include "keymap.h"
 #include "x11-priv.h"
@@ -510,6 +511,8 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
                         /* Set capitalization transformation */
                         key->groups[group].levels[level].upper =
                             xkb_keysym_to_upper(wire_keysym);
+                        if (wire_keysym != XKB_KEY_NoSymbol)
+                            key->groups[group].explicit_symbols = true;
                     }
 
                     syms_iter++;
@@ -567,10 +570,13 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
                         FAIL_UNLESS(translate_action(action, wire_action,
                                                      min_key_code, max_key_code));
 
-                        /* If the action and the keysym are both undefined,
-                         * discard them */
-                        if (action->type == ACTION_TYPE_NONE &&
-                            key->groups[group].levels[level].s.sym == XKB_KEY_NoSymbol) {
+                        if (action->type != ACTION_TYPE_NONE) {
+                            key->groups[group].implicit_actions =
+                                !(key->explicit & EXPLICIT_INTERP);
+                        } else if (key->groups[group].levels[level].s.sym ==
+                                   XKB_KEY_NoSymbol) {
+                            /* If the action and the keysym are both undefined,
+                             * discard them */
                             key->groups[group].levels[level].num_syms = 0;
                             key->groups[group].levels[level].num_actions = 0;
                         }
@@ -578,6 +584,9 @@ get_actions(struct xkb_keymap *keymap, xcb_connection_t *conn,
 
                     xcb_xkb_action_next(&acts_iter);
                 }
+
+                if (key->groups[group].implicit_actions)
+                    key->implicit_actions = true;
             }
         }
 
@@ -659,7 +668,10 @@ get_explicits(struct xkb_keymap *keymap, xcb_connection_t *conn,
         }
         if (wire->explicit & XCB_XKB_EXPLICIT_INTERPRET) {
             key->explicit |= EXPLICIT_INTERP;
-            /* Make all key groups have explicit actions too */
+            /*
+             * Make all key groups have explicit actions too, because we have
+             * no way to know which one is implicit.
+             */
             for (xkb_layout_index_t l = 0; l < key->num_groups; l++) {
                 key->groups[l].explicit_actions = true;
             }

@@ -395,12 +395,16 @@ struct xkb_level {
  * Group in a key
  */
 struct xkb_group {
+    /** Flag that indicates whether a group has some *explicit* symbols */
+    bool explicit_symbols:1;
     /**
      * Flag that indicates whether a group has explicit actions. In case it has,
      * compatibility interpretations will not be used on it.
      * See also EXPLICIT_INTERP flag at key level.
      */
     bool explicit_actions:1;
+    /** Flag that indicates whether a group has some *implicit* actions */
+    bool implicit_actions:1;
     /**
      * Flag that indicates whether a group has an explicit key type. In case it
      * has, type detection will not be used on it.
@@ -444,6 +448,8 @@ struct xkb_key {
     xkb_mod_mask_t vmodmap;
 
     bool repeats:1;
+    /** Flag that indicates whether some group has implicit actions */
+    bool implicit_actions:1;
 
     bool out_of_range_pending_group:1;
     enum xkb_range_exceed_type out_of_range_group_action;

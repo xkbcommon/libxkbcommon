@@ -261,9 +261,15 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     }
             }
 
+            if (!darray_empty(actions))
+                key->groups[group].implicit_actions = true;
+
             /* Do not free here */
             darray_resize(actions, 0);
         }
+
+        if (key->groups[group].implicit_actions)
+            key->implicit_actions = true;
     }
     darray_free(actions);
     darray_free(interprets);
