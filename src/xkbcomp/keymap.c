@@ -65,14 +65,12 @@ UpdateActionMods(struct xkb_keymap *keymap, union xkb_action *act,
     }
 }
 
-const struct xkb_sym_interpret default_interpret = {
-    /* Keysym unused for when applying interpretation, but used as a default
-     * entry when dumping the keymap */
-    .sym = XKB_KEY_VoidSymbol,
-    .repeat = true,
+static const struct xkb_sym_interpret default_interpret = {
+    .sym = XKB_KEY_NoSymbol /* unused */,
     .match = MATCH_ANY_OR_NONE,
     .mods = 0,
-    .virtual_mod = XKB_MOD_INVALID,
+    .repeat = DEFAULT_INTERPRET_KEY_REPEAT,
+    .virtual_mod = (xkb_mod_index_t) DEFAULT_INTERPRET_VMOD,
     .num_actions = 0,
     .a = { .action = { .type = ACTION_TYPE_NONE } },
 };
@@ -208,9 +206,12 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     if (!(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
                         key->repeats = true;
 
-                if ((group == 0 && level == 0) || !interp->level_one_only)
+                if ((group == 0 && level == 0) || !interp->level_one_only) {
+                    static_assert(DEFAULT_INTERPRET_VMOD == XKB_MOD_INVALID, "");
+                    static_assert(!DEFAULT_INTERPRET_VMODMAP, "");
                     if (interp->virtual_mod != XKB_MOD_INVALID)
                         vmodmap |= (UINT32_C(1) << interp->virtual_mod);
+                }
 
                 switch (interp->num_actions) {
                 case 0:

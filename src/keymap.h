@@ -416,6 +416,24 @@ struct xkb_group {
     struct xkb_level *levels;
 };
 
+enum {
+    DEFAULT_KEY_REPEAT = false,
+    /**
+     * Any key with no explicit key repeat value that trigger the default
+     * interpret, e.g. some explicit symbols in a group with no action that do
+     * not trigger any explicit interpret.
+     */
+    DEFAULT_INTERPRET_KEY_REPEAT = true,
+    FALLBACK_INTERPRET_KEY_REPEAT = DEFAULT_KEY_REPEAT
+};
+
+enum {
+    DEFAULT_KEY_VMODMAP = 0,
+    DEFAULT_INTERPRET_VMOD = XKB_MOD_INVALID,
+    DEFAULT_INTERPRET_VMODMAP = DEFAULT_KEY_VMODMAP,
+    FALLBACK_INTERPRET_VMODMAP = DEFAULT_KEY_VMODMAP
+};
+
 struct xkb_key {
     xkb_keycode_t keycode;
     xkb_atom_t name;
