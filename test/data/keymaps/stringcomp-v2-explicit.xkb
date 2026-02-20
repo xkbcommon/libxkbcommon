@@ -1,0 +1,3533 @@
+xkb_keymap {
+xkb_keycodes "evdev_aliases(qwerty)" {
+	minimum = 8;
+	maximum = 255;
+	<ESC>                = 9;
+	<AE01>               = 10;
+	<AE02>               = 11;
+	<AE03>               = 12;
+	<AE04>               = 13;
+	<AE05>               = 14;
+	<AE06>               = 15;
+	<AE07>               = 16;
+	<AE08>               = 17;
+	<AE09>               = 18;
+	<AE10>               = 19;
+	<AE11>               = 20;
+	<AE12>               = 21;
+	<BKSP>               = 22;
+	<TAB>                = 23;
+	<AD01>               = 24;
+	<AD02>               = 25;
+	<AD03>               = 26;
+	<AD04>               = 27;
+	<AD05>               = 28;
+	<AD06>               = 29;
+	<AD07>               = 30;
+	<AD08>               = 31;
+	<AD09>               = 32;
+	<AD10>               = 33;
+	<AD11>               = 34;
+	<AD12>               = 35;
+	<RTRN>               = 36;
+	<LCTL>               = 37;
+	<AC01>               = 38;
+	<AC02>               = 39;
+	<AC03>               = 40;
+	<AC04>               = 41;
+	<AC05>               = 42;
+	<AC06>               = 43;
+	<AC07>               = 44;
+	<AC08>               = 45;
+	<AC09>               = 46;
+	<AC10>               = 47;
+	<AC11>               = 48;
+	<TLDE>               = 49;
+	<LFSH>               = 50;
+	<BKSL>               = 51;
+	<AB01>               = 52;
+	<AB02>               = 53;
+	<AB03>               = 54;
+	<AB04>               = 55;
+	<AB05>               = 56;
+	<AB06>               = 57;
+	<AB07>               = 58;
+	<AB08>               = 59;
+	<AB09>               = 60;
+	<AB10>               = 61;
+	<RTSH>               = 62;
+	<KPMU>               = 63;
+	<LALT>               = 64;
+	<SPCE>               = 65;
+	<CAPS>               = 66;
+	<FK01>               = 67;
+	<FK02>               = 68;
+	<FK03>               = 69;
+	<FK04>               = 70;
+	<FK05>               = 71;
+	<FK06>               = 72;
+	<FK07>               = 73;
+	<FK08>               = 74;
+	<FK09>               = 75;
+	<FK10>               = 76;
+	<NMLK>               = 77;
+	<SCLK>               = 78;
+	<KP7>                = 79;
+	<KP8>                = 80;
+	<KP9>                = 81;
+	<KPSU>               = 82;
+	<KP4>                = 83;
+	<KP5>                = 84;
+	<KP6>                = 85;
+	<KPAD>               = 86;
+	<KP1>                = 87;
+	<KP2>                = 88;
+	<KP3>                = 89;
+	<KP0>                = 90;
+	<KPDL>               = 91;
+	<LVL3>               = 92;
+	<LSGT>               = 94;
+	<FK11>               = 95;
+	<FK12>               = 96;
+	<AB11>               = 97;
+	<KATA>               = 98;
+	<HIRA>               = 99;
+	<HENK>               = 100;
+	<HKTG>               = 101;
+	<MUHE>               = 102;
+	<JPCM>               = 103;
+	<KPEN>               = 104;
+	<RCTL>               = 105;
+	<KPDV>               = 106;
+	<PRSC>               = 107;
+	<RALT>               = 108;
+	<LNFD>               = 109;
+	<HOME>               = 110;
+	<UP>                 = 111;
+	<PGUP>               = 112;
+	<LEFT>               = 113;
+	<RGHT>               = 114;
+	<END>                = 115;
+	<DOWN>               = 116;
+	<PGDN>               = 117;
+	<INS>                = 118;
+	<DELE>               = 119;
+	<I120>               = 120;
+	<MUTE>               = 121;
+	<VOL->               = 122;
+	<VOL+>               = 123;
+	<POWR>               = 124;
+	<KPEQ>               = 125;
+	<I126>               = 126;
+	<PAUS>               = 127;
+	<I128>               = 128;
+	<I129>               = 129;
+	<HNGL>               = 130;
+	<HJCV>               = 131;
+	<AE13>               = 132;
+	<LWIN>               = 133;
+	<RWIN>               = 134;
+	<COMP>               = 135;
+	<STOP>               = 136;
+	<AGAI>               = 137;
+	<PROP>               = 138;
+	<UNDO>               = 139;
+	<FRNT>               = 140;
+	<COPY>               = 141;
+	<OPEN>               = 142;
+	<PAST>               = 143;
+	<FIND>               = 144;
+	<CUT>                = 145;
+	<HELP>               = 146;
+	<I147>               = 147;
+	<I148>               = 148;
+	<I149>               = 149;
+	<I150>               = 150;
+	<I151>               = 151;
+	<I152>               = 152;
+	<I153>               = 153;
+	<I154>               = 154;
+	<I155>               = 155;
+	<I156>               = 156;
+	<I157>               = 157;
+	<I158>               = 158;
+	<I159>               = 159;
+	<I160>               = 160;
+	<I161>               = 161;
+	<I162>               = 162;
+	<I163>               = 163;
+	<I164>               = 164;
+	<I165>               = 165;
+	<I166>               = 166;
+	<I167>               = 167;
+	<I168>               = 168;
+	<I169>               = 169;
+	<I170>               = 170;
+	<I171>               = 171;
+	<I172>               = 172;
+	<I173>               = 173;
+	<I174>               = 174;
+	<I175>               = 175;
+	<I176>               = 176;
+	<I177>               = 177;
+	<I178>               = 178;
+	<I179>               = 179;
+	<I180>               = 180;
+	<I181>               = 181;
+	<I182>               = 182;
+	<I183>               = 183;
+	<I184>               = 184;
+	<I185>               = 185;
+	<I186>               = 186;
+	<I187>               = 187;
+	<I188>               = 188;
+	<I189>               = 189;
+	<I190>               = 190;
+	<FK13>               = 191;
+	<FK14>               = 192;
+	<FK15>               = 193;
+	<FK16>               = 194;
+	<FK17>               = 195;
+	<FK18>               = 196;
+	<FK19>               = 197;
+	<FK20>               = 198;
+	<FK21>               = 199;
+	<FK22>               = 200;
+	<FK23>               = 201;
+	<FK24>               = 202;
+	<MDSW>               = 203;
+	<ALT>                = 204;
+	<META>               = 205;
+	<SUPR>               = 206;
+	<HYPR>               = 207;
+	<I208>               = 208;
+	<I209>               = 209;
+	<I210>               = 210;
+	<I211>               = 211;
+	<I212>               = 212;
+	<I213>               = 213;
+	<I214>               = 214;
+	<I215>               = 215;
+	<I216>               = 216;
+	<I217>               = 217;
+	<I218>               = 218;
+	<I219>               = 219;
+	<I220>               = 220;
+	<I221>               = 221;
+	<I222>               = 222;
+	<I223>               = 223;
+	<I224>               = 224;
+	<I225>               = 225;
+	<I226>               = 226;
+	<I227>               = 227;
+	<I228>               = 228;
+	<I229>               = 229;
+	<I230>               = 230;
+	<I231>               = 231;
+	<I232>               = 232;
+	<I233>               = 233;
+	<I234>               = 234;
+	<I235>               = 235;
+	<I236>               = 236;
+	<I237>               = 237;
+	<I238>               = 238;
+	<I239>               = 239;
+	<I240>               = 240;
+	<I241>               = 241;
+	<I242>               = 242;
+	<I243>               = 243;
+	<I244>               = 244;
+	<I245>               = 245;
+	<I246>               = 246;
+	<I247>               = 247;
+	<I248>               = 248;
+	<I249>               = 249;
+	<I250>               = 250;
+	<I251>               = 251;
+	<I252>               = 252;
+	<I253>               = 253;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "Compose";
+	indicator 5 = "Kana";
+	indicator 6 = "Sleep";
+	indicator 7 = "Suspend";
+	indicator 8 = "Mute";
+	indicator 9 = "Misc";
+	indicator 10 = "Mail";
+	indicator 11 = "Charging";
+	indicator 12 = "Shift Lock";
+	indicator 13 = "Group 2";
+	indicator 14 = "Mouse Keys";
+	alias <AC12>         = <BKSL>;
+	alias <MENU>         = <COMP>;
+	alias <HZTG>         = <TLDE>;
+	alias <LMTA>         = <LWIN>;
+	alias <RMTA>         = <RWIN>;
+	alias <ALGR>         = <RALT>;
+	alias <KPPT>         = <I129>;
+	alias <LatQ>         = <AD01>;
+	alias <LatW>         = <AD02>;
+	alias <LatE>         = <AD03>;
+	alias <LatR>         = <AD04>;
+	alias <LatT>         = <AD05>;
+	alias <LatY>         = <AD06>;
+	alias <LatU>         = <AD07>;
+	alias <LatI>         = <AD08>;
+	alias <LatO>         = <AD09>;
+	alias <LatP>         = <AD10>;
+	alias <LatA>         = <AC01>;
+	alias <LatS>         = <AC02>;
+	alias <LatD>         = <AC03>;
+	alias <LatF>         = <AC04>;
+	alias <LatG>         = <AC05>;
+	alias <LatH>         = <AC06>;
+	alias <LatJ>         = <AC07>;
+	alias <LatK>         = <AC08>;
+	alias <LatL>         = <AC09>;
+	alias <LatZ>         = <AB01>;
+	alias <LatX>         = <AB02>;
+	alias <LatC>         = <AB03>;
+	alias <LatV>         = <AB04>;
+	alias <LatB>         = <AB05>;
+	alias <LatN>         = <AB06>;
+	alias <LatM>         = <AB07>;
+};
+
+xkb_types "complete" {
+	virtual_modifiers NumLock=Mod2,Alt=Mod1,LevelThree=Mod5,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl=0x4000,ScrollLock=0x8000,LevelFive=0x10000,AltGr=Mod5,Meta=Mod1,Super=Mod4,Hyper=Mod4;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+	type "SHIFT+ALT" {
+		modifiers= Shift+Alt;
+		map[Shift+Alt]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift+Alt";
+	};
+	type "PC_CONTROL_LEVEL2" {
+		modifiers= Control;
+		map[Control]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Control";
+	};
+	type "PC_LCONTROL_LEVEL2" {
+		modifiers= LControl;
+		map[LControl]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "LControl";
+	};
+	type "PC_RCONTROL_LEVEL2" {
+		modifiers= RControl;
+		map[RControl]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "RControl";
+	};
+	type "PC_ALT_LEVEL2" {
+		modifiers= Alt;
+		map[Alt]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Alt";
+	};
+	type "PC_LALT_LEVEL2" {
+		modifiers= LAlt;
+		map[LAlt]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "LAlt";
+	};
+	type "PC_RALT_LEVEL2" {
+		modifiers= RAlt;
+		map[RAlt]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "RAlt";
+	};
+	type "CTRL+ALT" {
+		modifiers= Shift+Control+Alt+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Control+Alt]= 5;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "Ctrl+Alt";
+	};
+	type "LOCAL_EIGHT_LEVEL" {
+		modifiers= Shift+Lock+Control+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+Lock+LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 4;
+		map[Control]= 5;
+		map[Shift+Lock+Control]= 5;
+		map[Shift+Control]= 6;
+		map[Lock+Control]= 6;
+		map[Control+LevelThree]= 7;
+		map[Shift+Lock+Control+LevelThree]= 7;
+		map[Shift+Control+LevelThree]= 8;
+		map[Lock+Control+LevelThree]= 8;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Level3";
+		level_name[4]= "Shift Level3";
+		level_name[5]= "Ctrl";
+		level_name[6]= "Shift Ctrl";
+		level_name[7]= "Level3 Ctrl";
+		level_name[8]= "Shift Level3 Ctrl";
+	};
+	type "THREE_LEVEL" {
+		modifiers= Shift+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Level3";
+	};
+	type "EIGHT_LEVEL" {
+		modifiers= Shift+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "EIGHT_LEVEL_ALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 4;
+		map[Shift+Lock+LevelThree]= 3;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		map[Lock+LevelFive]= 6;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		map[Lock+LevelThree+LevelFive]= 8;
+		map[Shift+Lock+LevelThree+LevelFive]= 7;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "EIGHT_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree+LevelFive;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		map[LevelFive]= 5;
+		map[Shift+LevelFive]= 6;
+		map[Lock+LevelFive]= 6;
+		preserve[Lock+LevelFive]= Lock;
+		map[LevelThree+LevelFive]= 7;
+		map[Shift+LevelThree+LevelFive]= 8;
+		map[Lock+LevelThree+LevelFive]= 7;
+		preserve[Lock+LevelThree+LevelFive]= Lock;
+		map[Shift+Lock+LevelThree+LevelFive]= 8;
+		preserve[Shift+Lock+LevelThree+LevelFive]= Lock;
+		map[Shift+Lock+LevelFive]= 1;
+		preserve[Shift+Lock+LevelFive]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "X";
+		level_name[6]= "X Shift";
+		level_name[7]= "X Alt Base";
+		level_name[8]= "X Shift Alt";
+	};
+	type "FOUR_LEVEL" {
+		modifiers= Shift+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_ALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 4;
+		map[Shift+Lock+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_SEMIALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 4;
+		preserve[Shift+Lock+LevelThree]= Lock;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_MIXED_KEYPAD" {
+		modifiers= Shift+NumLock+LevelThree;
+		map[NumLock]= 2;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[NumLock+LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Shift+NumLock+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+	};
+	type "FOUR_LEVEL_X" {
+		modifiers= Shift+Control+Alt+LevelThree;
+		map[LevelThree]= 2;
+		map[Shift+LevelThree]= 3;
+		map[Control+Alt]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Alt Base";
+		level_name[3]= "Shift Alt";
+		level_name[4]= "Ctrl+Alt";
+	};
+	type "SEPARATE_CAPS_AND_SHIFT_ALPHABETIC" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[Lock]= 4;
+		preserve[Lock]= Lock;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock+LevelThree]= 3;
+		preserve[Lock+LevelThree]= Lock;
+		map[Shift+Lock+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "AltGr Base";
+		level_name[4]= "Shift AltGr";
+	};
+	type "FOUR_LEVEL_PLUS_LOCK" {
+		modifiers= Shift+Lock+LevelThree;
+		map[Shift]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[Lock]= 5;
+		map[Shift+Lock]= 2;
+		map[Lock+LevelThree]= 3;
+		map[Shift+Lock+LevelThree]= 4;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Shift Alt";
+		level_name[5]= "Lock";
+	};
+	type "KEYPAD" {
+		modifiers= Shift+NumLock;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+	};
+	type "FOUR_LEVEL_KEYPAD" {
+		modifiers= Shift+NumLock+LevelThree;
+		map[Shift]= 2;
+		map[NumLock]= 2;
+		map[LevelThree]= 3;
+		map[Shift+LevelThree]= 4;
+		map[NumLock+LevelThree]= 4;
+		map[Shift+NumLock+LevelThree]= 3;
+		level_name[1]= "Base";
+		level_name[2]= "Number";
+		level_name[3]= "Alt Base";
+		level_name[4]= "Alt Number";
+	};
+};
+
+xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_level5(level5_lock)_4" {
+	virtual_modifiers NumLock=Mod2,Alt=Mod1,LevelThree=Mod5,LAlt=Mod1,RAlt=0x100,RControl=0x210001,LControl=0x4000,ScrollLock=0x8000,LevelFive=0x10000,AltGr=Mod5,Meta=Mod1,Super=Mod4,Hyper=Mod4;
+
+	SetMods.modifiers = 0;
+	SetMods.clearLocks = false;
+	SetMods.unlockOnPress = false;
+	LatchMods.modifiers = 0;
+	LatchMods.clearLocks = false;
+	LatchMods.latchOnPress = false;
+	LatchMods.latchToLock = false;
+	LatchMods.unlockOnPress = false;
+	LockMods.modifiers = 0;
+	LockMods.affect = both;
+	LockMods.unlockOnPress = false;
+	SetGroup.group = +0;
+	SetGroup.clearLocks = false;
+	LatchGroup.group = +0;
+	LatchGroup.clearLocks = false;
+	LatchGroup.latchToLock = false;
+	LockGroup.group = +0;
+	LockGroup.lockOnRelease = false;
+	MovePtr.x = +0;
+	MovePtr.y = +0;
+	MovePtr.accel = true;
+	PtrBtn.button = 0;
+	PtrBtn.count = 0;
+	LockPtrBtn.button = 0;
+	LockPtrBtn.count = 0;
+	LockPtrBtn.affect = both;
+	SetPtrDflt.button = +1;
+	SwitchScreen.screen = +0;
+	SwitchScreen.same = true;
+	SetControls.controls = 0;
+	LockControls.controls = 0;
+	LockControls.affect = both;
+	RedirectKey.keycode = auto;
+	RedirectKey.modifiers = 0;
+	RedirectKey.clearMods = 0;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret ISO_Level2_Latch+Exactly(Shift) {
+		useModMapMods=level1;
+		repeat= False;
+		action= LatchMods(modifiers=Shift,clearLocks,latchToLock);
+	};
+	interpret Shift_Lock+AnyOf(Shift+Lock) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=Shift);
+	};
+	interpret Num_Lock+AnyOf(all) {
+		virtualModifier= NumLock;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret ISO_Lock+AnyOf(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+	};
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		repeat= False;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret ISO_Level3_Latch+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		repeat= False;
+		action= LatchMods(modifiers=LevelThree,clearLocks,latchToLock);
+	};
+	interpret ISO_Level3_Lock+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		repeat= False;
+		action= LockMods(modifiers=LevelThree);
+	};
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Alt_R+AnyOf(all) {
+		virtualModifier= Alt;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Meta_L+AnyOf(all) {
+		virtualModifier= Meta;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Meta_R+AnyOf(all) {
+		virtualModifier= Meta;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Super_L+AnyOf(all) {
+		virtualModifier= Super;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Super_R+AnyOf(all) {
+		virtualModifier= Super;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Hyper_L+AnyOf(all) {
+		virtualModifier= Hyper;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Hyper_R+AnyOf(all) {
+		virtualModifier= Hyper;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret Scroll_Lock+AnyOf(all) {
+		virtualModifier= ScrollLock;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=modMapMods);
+	};
+	interpret ISO_Level5_Shift+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=level1;
+		repeat= False;
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret ISO_Level5_Latch+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LatchMods(modifiers=LevelFive,clearLocks,latchToLock);
+	};
+	interpret ISO_Level5_Lock+AnyOf(all) {
+		virtualModifier= LevelFive;
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=LevelFive);
+	};
+	interpret Mode_switch+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		repeat= False;
+		action= SetGroup(group=+1);
+	};
+	interpret ISO_Level3_Shift+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+	interpret ISO_Level3_Latch+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LatchMods(modifiers=LevelThree,clearLocks,latchToLock);
+	};
+	interpret ISO_Level3_Lock+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=LevelThree);
+	};
+	interpret ISO_Group_Latch+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		repeat= False;
+		action= LatchGroup(group=2);
+	};
+	interpret ISO_Next_Group+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		repeat= False;
+		action= LockGroup(group=+1);
+	};
+	interpret ISO_Prev_Group+AnyOfOrNone(all) {
+		virtualModifier= AltGr;
+		useModMapMods=level1;
+		repeat= False;
+		action= LockGroup(group=-1);
+	};
+	interpret ISO_First_Group+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockGroup(group=1);
+	};
+	interpret ISO_Last_Group+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockGroup(group=2);
+	};
+	interpret KP_1+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=+1);
+	};
+	interpret KP_End+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=+1);
+	};
+	interpret KP_2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+0,y=+1);
+	};
+	interpret KP_Down+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+0,y=+1);
+	};
+	interpret KP_3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=+1);
+	};
+	interpret KP_Next+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=+1);
+	};
+	interpret KP_4+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=+0);
+	};
+	interpret KP_Left+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=+0);
+	};
+	interpret KP_6+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=+0);
+	};
+	interpret KP_Right+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=+0);
+	};
+	interpret KP_7+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=-1);
+	};
+	interpret KP_Home+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=-1);
+	};
+	interpret KP_8+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+0,y=-1);
+	};
+	interpret KP_Up+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+0,y=-1);
+	};
+	interpret KP_9+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=-1);
+	};
+	interpret KP_Prior+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=-1);
+	};
+	interpret KP_5+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= PtrBtn(button=default);
+	};
+	interpret KP_Begin+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= PtrBtn(button=default);
+	};
+	interpret KP_F2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=1);
+	};
+	interpret KP_Divide+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=1);
+	};
+	interpret KP_F3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=2);
+	};
+	interpret KP_Multiply+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=2);
+	};
+	interpret KP_F4+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=3);
+	};
+	interpret KP_Subtract+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=3);
+	};
+	interpret KP_Separator+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= PtrBtn(button=default,count=2);
+	};
+	interpret KP_Add+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= PtrBtn(button=default,count=2);
+	};
+	interpret KP_0+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=lock);
+	};
+	interpret KP_Insert+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=lock);
+	};
+	interpret KP_Decimal+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=unlock);
+	};
+	interpret KP_Delete+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= LockPtrBtn(button=default,affect=unlock);
+	};
+	interpret F25+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=1);
+	};
+	interpret F26+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SetPtrDflt(affect=button,button=2);
+	};
+	interpret F27+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=-1);
+	};
+	interpret F29+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=-1);
+	};
+	interpret F31+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= PtrBtn(button=default);
+	};
+	interpret F33+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=-1,y=+1);
+	};
+	interpret F35+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= MovePtr(x=+1,y=+1);
+	};
+	interpret Pointer_Button_Dflt+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=default);
+	};
+	interpret Pointer_Button1+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=1);
+	};
+	interpret Pointer_Button2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=2);
+	};
+	interpret Pointer_Button3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=3);
+	};
+	interpret Pointer_DblClick_Dflt+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=default,count=2);
+	};
+	interpret Pointer_DblClick1+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=1,count=2);
+	};
+	interpret Pointer_DblClick2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=2,count=2);
+	};
+	interpret Pointer_DblClick3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= PtrBtn(button=3,count=2);
+	};
+	interpret Pointer_Drag_Dflt+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockPtrBtn(button=default,affect=both);
+	};
+	interpret Pointer_Drag1+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockPtrBtn(button=1,affect=both);
+	};
+	interpret Pointer_Drag2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockPtrBtn(button=2,affect=both);
+	};
+	interpret Pointer_Drag3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockPtrBtn(button=3,affect=both);
+	};
+	interpret Pointer_EnableKeys+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=MouseKeys);
+	};
+	interpret Pointer_Accelerate+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=MouseKeysAccel);
+	};
+	interpret Pointer_DfltBtnNext+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetPtrDflt(affect=button,button=+1);
+	};
+	interpret Pointer_DfltBtnPrev+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetPtrDflt(affect=button,button=-1);
+	};
+	interpret AccessX_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=AccessXKeys);
+	};
+	interpret AccessX_Feedback_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=AccessXFeedback);
+	};
+	interpret RepeatKeys_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=RepeatKeys);
+	};
+	interpret SlowKeys_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=SlowKeys);
+	};
+	interpret BounceKeys_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=BounceKeys);
+	};
+	interpret StickyKeys_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=StickyKeys);
+	};
+	interpret MouseKeys_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=MouseKeys);
+	};
+	interpret MouseKeys_Accel_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=MouseKeysAccel);
+	};
+	interpret Overlay1_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=none);
+	};
+	interpret Overlay2_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=none);
+	};
+	interpret AudibleBell_Enable+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockControls(controls=AudibleBell);
+	};
+	interpret Terminate_Server+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= Terminate();
+	};
+	interpret Alt_L+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Alt,clearLocks);
+	};
+	interpret Alt_R+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Alt,clearLocks);
+	};
+	interpret Meta_L+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Meta,clearLocks);
+	};
+	interpret Meta_R+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Meta,clearLocks);
+	};
+	interpret Super_L+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Super,clearLocks);
+	};
+	interpret Super_R+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Super,clearLocks);
+	};
+	interpret Hyper_L+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Hyper,clearLocks);
+	};
+	interpret Hyper_R+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Hyper,clearLocks);
+	};
+	interpret Shift_L+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=Shift);
+	};
+	interpret XF86Switch_VT_1+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=1,!same);
+	};
+	interpret XF86Switch_VT_2+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=2,!same);
+	};
+	interpret XF86Switch_VT_3+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=3,!same);
+	};
+	interpret XF86Switch_VT_4+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=4,!same);
+	};
+	interpret XF86Switch_VT_5+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=5,!same);
+	};
+	interpret XF86Switch_VT_6+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=6,!same);
+	};
+	interpret XF86Switch_VT_7+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=7,!same);
+	};
+	interpret XF86Switch_VT_8+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=8,!same);
+	};
+	interpret XF86Switch_VT_9+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=9,!same);
+	};
+	interpret XF86Switch_VT_10+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=10,!same);
+	};
+	interpret XF86Switch_VT_11+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=11,!same);
+	};
+	interpret XF86Switch_VT_12+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= SwitchScreen(screen=12,!same);
+	};
+	interpret XF86LogGrabInfo+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x50,data[1]=0x72,data[2]=0x47,data[3]=0x72,data[4]=0x62,data[5]=0x73,data[6]=0x00);
+	};
+	interpret XF86LogWindowTree+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x50,data[1]=0x72,data[2]=0x57,data[3]=0x69,data[4]=0x6e,data[5]=0x73,data[6]=0x00);
+	};
+	interpret XF86Next_VMode+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
+	};
+	interpret XF86Prev_VMode+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= True;
+		action= Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00);
+	};
+	interpret ISO_Level5_Shift+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=LevelFive,clearLocks);
+	};
+	interpret ISO_Level5_Latch+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LatchMods(modifiers=LevelFive,clearLocks,latchToLock);
+	};
+	interpret ISO_Level5_Lock+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=NumLock);
+	};
+	interpret Caps_Lock+AnyOfOrNone(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+Exactly(Lock) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= LockMods(modifiers=Lock);
+	};
+	interpret Any+AnyOf(all) {
+		useModMapMods=AnyLevel;
+		repeat= False;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	indicator "Caps Lock" {
+		whichModState= locked;
+		modifiers= Lock;
+	};
+	indicator "Num Lock" {
+		whichModState= locked;
+		modifiers= NumLock;
+	};
+	indicator "Scroll Lock" {
+		whichModState= locked;
+		modifiers= ScrollLock;
+	};
+	indicator "Shift Lock" {
+		whichModState= locked;
+		modifiers= Shift;
+	};
+	indicator "Group 2" {
+		whichGroupState= effective;
+		groups= 0xfe;
+	};
+	indicator "Mouse Keys" {
+		controls= MouseKeys;
+	};
+};
+
+xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
+	name[1]="English (US)";
+	name[2]="Russian";
+	name[3]="Canadian Multilingual";
+	name[4]="German (Neo 2)";
+
+	SetMods.modifiers = 0;
+	SetMods.clearLocks = false;
+	SetMods.unlockOnPress = false;
+	LatchMods.modifiers = 0;
+	LatchMods.clearLocks = false;
+	LatchMods.latchOnPress = false;
+	LatchMods.latchToLock = false;
+	LatchMods.unlockOnPress = false;
+	LockMods.modifiers = 0;
+	LockMods.affect = both;
+	LockMods.unlockOnPress = false;
+	SetGroup.group = +0;
+	SetGroup.clearLocks = false;
+	LatchGroup.group = +0;
+	LatchGroup.clearLocks = false;
+	LatchGroup.latchToLock = false;
+	LockGroup.group = +0;
+	LockGroup.lockOnRelease = false;
+	MovePtr.x = +0;
+	MovePtr.y = +0;
+	MovePtr.accel = true;
+	PtrBtn.button = 0;
+	PtrBtn.count = 0;
+	LockPtrBtn.button = 0;
+	LockPtrBtn.count = 0;
+	LockPtrBtn.affect = both;
+	SetPtrDflt.button = +1;
+	SwitchScreen.screen = +0;
+	SwitchScreen.same = true;
+	SetControls.controls = 0;
+	LockControls.controls = 0;
+	LockControls.affect = both;
+	RedirectKey.keycode = auto;
+	RedirectKey.modifiers = 0;
+	RedirectKey.clearMods = 0;
+
+	key <ESC>                {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Escape ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <AE01>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              1,                         exclam ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              1,                         exclam ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              1,                         exclam,                      plusminus,                       NoSymbol,                    onesuperior,                     exclamdown,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              1,                         degree,                    onesuperior,                   onesubscript,                    ordfeminine,                       NoSymbol,                        notsign,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE02>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              2,                             at ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              2,                       quotedbl ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              2,                             at,                             at,                       NoSymbol,                    twosuperior,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              2,                        section,                    twosuperior,                   twosubscript,                      masculine,                       NoSymbol,                      logicalor,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE03>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              3,                     numbersign ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              3,                     numerosign ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              3,                     numbersign,                       sterling,                       NoSymbol,                  threesuperior,                       sterling,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              3,                          U2113,                  threesuperior,                 threesubscript,                     numerosign,                       NoSymbol,                     logicaland,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE04>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              4,                         dollar ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              4,                      semicolon ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              4,                         dollar,                           cent,                       NoSymbol,                     onequarter,                       currency,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              4,                 guillemotright,                          U203A,                   femalesymbol,                       NoSymbol,                       NoSymbol,                          U22A5,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE05>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              5,                        percent ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              5,                        percent ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              5,                        percent,                       currency,                       NoSymbol,                        onehalf,                   threeeighths,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              5,                  guillemotleft,                          U2039,                     malesymbol,                 periodcentered,                       NoSymbol,                          U2221,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE06>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [ {                              H,                              E,                              L,                              L,                              O },                    asciicircum ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              6,                          colon ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              6,                       question,                        notsign,                       NoSymbol,                  threequarters,                    fiveeighths,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              6,                         dollar,                           cent,                          U26A5,                       sterling,                       NoSymbol,                          U2225,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE07>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [ {                              Y,                              E,                              S,                          space,                              T,                              H,                              I,                              S,                          space,                              I,                              S,                          space,                              D,                              O,                              G },                      ampersand ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              7,                       question ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              7,                      ampersand,                      braceleft,                       NoSymbol,                       NoSymbol,                   seveneighths,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              7,                       EuroSign,                            yen,                          U03F0,                       currency,                       NoSymbol,                     rightarrow,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE08>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              8,                       asterisk ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              8,                       asterisk ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              8,                       asterisk,                     braceright,                       NoSymbol,                       NoSymbol,                      trademark,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              8,             doublelowquotemark,             singlelowquotemark,                          U27E8,                            Tab,                   ISO_Left_Tab,                          U221E,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AE09>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              9,                      parenleft ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              9,                      parenleft ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              9,                      parenleft,                    bracketleft,                       NoSymbol,                       NoSymbol,                      plusminus,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              9,            leftdoublequotemark,            leftsinglequotemark,                          U27E9,                      KP_Divide,                      KP_Divide,                      variation,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction(),                     NoAction() ]
+	};
+	key <AE10>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              0,                     parenright ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                              0,                     parenright ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              0,                     parenright,                   bracketright,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              0,           rightdoublequotemark,           rightsinglequotemark,                  zerosubscript,                    KP_Multiply,                    KP_Multiply,                       emptyset,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction(),                     NoAction() ]
+	};
+	key <AE11>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          minus,                     underscore ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                          minus,                     underscore ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                          minus,                     underscore,                        onehalf,                       NoSymbol,                       NoSymbol,                   questiondown,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                          minus,                         emdash,                       NoSymbol,                          U2011,                    KP_Subtract,                    KP_Subtract,                         hyphen,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3),                     NoAction(),                     NoAction() ]
+	};
+	key <AE12>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          equal,                           plus ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                          equal,                           plus ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                          equal,                           plus,                        notsign,                       NoSymbol,                   dead_cedilla,                    dead_ogonek,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                     dead_grave,                   dead_cedilla,                 dead_abovering,        dead_abovereversedcomma,                 dead_diaeresis,                       NoSymbol,                    dead_macron,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <BKSP>               {
+		type= "TWO_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      BackSpace,                      BackSpace ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <TAB>                {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "TWO_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                            Tab,                   ISO_Left_Tab ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                            Tab,                   ISO_Left_Tab ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                            Tab,                   ISO_Left_Tab ],
+		actions[3]= [                     NoAction(),                     NoAction() ],
+		symbols[4]= [                            Tab,                   ISO_Left_Tab,                      Multi_key,                ISO_Level5_Lock,                       NoSymbol,                       NoSymbol,                       NoSymbol,                ISO_Level5_Lock ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),    LockMods(modifiers=NumLock),                     NoAction(),                     NoAction(),                     NoAction(),    LockMods(modifiers=NumLock) ]
+	};
+	key <AD01>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              q,                              Q ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                Cyrillic_shorti,                Cyrillic_SHORTI ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              q,                              Q,                       NoSymbol,                       NoSymbol,                       NoSymbol,                    Greek_OMEGA,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              x,                              X,                       ellipsis,                       Greek_xi,                          Prior,                          Prior,                       Greek_XI,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD02>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              w,                              W ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                   Cyrillic_tse,                   Cyrillic_TSE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              w,                              W,                       NoSymbol,                       NoSymbol,                        lstroke,                        Lstroke,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              v,                              V,                     underscore,                       NoSymbol,                      BackSpace,                      BackSpace,                        radical,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD03>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              e,                              E ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                     Cyrillic_u,                     Cyrillic_U ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              e,                              E,                       NoSymbol,                       NoSymbol,                             oe,                             OE,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              l,                              L,                    bracketleft,                    Greek_lamda,                             Up,                             Up,                    Greek_LAMDA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD04>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              r,                              R ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ka,                    Cyrillic_KA ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              r,                              R,                       NoSymbol,                       NoSymbol,                      paragraph,                     registered,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              c,                              C,                   bracketright,                      Greek_chi,                         Delete,                         Delete,                          U2102,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD05>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              t,                              T ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ie,                    Cyrillic_IE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              t,                              T,                       NoSymbol,                       NoSymbol,                         tslash,                         Tslash,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              w,                              W,                    asciicircum,                    Greek_omega,                           Next,                           Next,                    Greek_OMEGA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD06>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              y,                              Y ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_en,                    Cyrillic_EN ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              y,                              Y,                       NoSymbol,                       NoSymbol,                      leftarrow,                            yen,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              k,                              K,                         exclam,                    Greek_kappa,                     exclamdown,                       NoSymbol,                       multiply,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD07>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              u,                              U ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                   Cyrillic_ghe,                   Cyrillic_GHE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              u,                              U,                       NoSymbol,                       NoSymbol,                      downarrow,                        uparrow,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              h,                              H,                           less,                      Greek_psi,                           KP_7,                           KP_7,                      Greek_PSI,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=-1),             MovePtr(x=-1,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <AD08>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              i,                              I ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                   Cyrillic_sha,                   Cyrillic_SHA ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              i,                              I,                       NoSymbol,                       NoSymbol,                     rightarrow,                       idotless,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              g,                              G,                        greater,                    Greek_gamma,                           KP_8,                           KP_8,                    Greek_GAMMA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+0,y=-1),             MovePtr(x=+0,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <AD09>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              o,                              O ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                 Cyrillic_shcha,                 Cyrillic_SHCHA ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              o,                              O,                        section,                       NoSymbol,                         oslash,                         Oslash,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              f,                              F,                          equal,                      Greek_phi,                           KP_9,                           KP_9,                      Greek_PHI,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=-1),             MovePtr(x=+1,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <AD10>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              p,                              P ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ze,                    Cyrillic_ZE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              p,                              P,                      paragraph,                       NoSymbol,                          thorn,                          THORN,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              q,                              Q,                      ampersand,                          U03D5,                         KP_Add,                         KP_Add,                          U211A,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2),                     NoAction(),                     NoAction() ]
+	};
+	key <AD11>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    bracketleft,                      braceleft ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ha,                    Cyrillic_HA ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                dead_circumflex,                 dead_diaeresis,                     dead_grave,                       NoSymbol,                       NoSymbol,                 dead_abovering,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                         ssharp,                          U1E9E,                          U017F,          Greek_finalsmallsigma,                          U2212,                       NoSymbol,                            jot,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AD12>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   bracketright,                     braceright ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [              Cyrillic_hardsign,              Cyrillic_HARDSIGN ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                       ccedilla,                       Ccedilla,                     asciitilde,                       NoSymbol,                     dead_tilde,                    dead_macron,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                     dead_acute,                     dead_tilde,                    dead_stroke,                dead_abovecomma,               dead_doubleacute,                       NoSymbol,                     dead_breve,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <RTRN>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Return ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <LCTL>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                      Control_L ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <AC01>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              a,                              A ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ef,                    Cyrillic_EF ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              a,                              A,                       NoSymbol,                       NoSymbol,                             ae,                             AE,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              u,                              U,                      backslash,                       NoSymbol,                           Home,                           Home,                     includedin,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC02>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              s,                              S ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                  Cyrillic_yeru,                  Cyrillic_YERU ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              s,                              S,                       NoSymbol,                       NoSymbol,                         ssharp,                        section,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              i,                              I,                          slash,                     Greek_iota,                           Left,                           Left,                       integral,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC03>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              d,                              D ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ve,                    Cyrillic_VE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              d,                              D,                       NoSymbol,                       NoSymbol,                            eth,                            ETH,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              a,                              A,                      braceleft,                    Greek_alpha,                           Down,                           Down,                          U2200,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC04>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              f,                              F ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                     Cyrillic_a,                     Cyrillic_A ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              f,                              F,                       NoSymbol,                       NoSymbol,                       NoSymbol,                    ordfeminine,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              e,                              E,                     braceright,                  Greek_epsilon,                          Right,                          Right,                          U2203,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC05>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              g,                              G ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_pe,                    Cyrillic_PE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              g,                              G,                       NoSymbol,                       NoSymbol,                            eng,                            ENG,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              o,                              O,                       asterisk,                  Greek_omicron,                            End,                            End,                      elementof,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC06>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              h,                              H ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_er,                    Cyrillic_ER ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              h,                              H,                       NoSymbol,                       NoSymbol,                        hstroke,                        Hstroke,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              s,                              S,                       question,                    Greek_sigma,                   questiondown,                       NoSymbol,                    Greek_SIGMA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC07>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              j,                              J ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                     Cyrillic_o,                     Cyrillic_O ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              j,                              J,                       NoSymbol,                       NoSymbol,                          U0133,                          U0132,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              n,                              N,                      parenleft,                       Greek_nu,                           KP_4,                           KP_4,                          U2115,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=+0),             MovePtr(x=-1,y=+0),                     NoAction(),                     NoAction() ]
+	};
+	key <AC08>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              k,                              K ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_el,                    Cyrillic_EL ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              k,                              K,                       NoSymbol,                       NoSymbol,                            kra,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              r,                              R,                     parenright,                      Greek_rho,                           KP_5,                           KP_5,                          U211D,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),         PtrBtn(button=default),         PtrBtn(button=default),                     NoAction(),                     NoAction() ]
+	};
+	key <AC09>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              l,                              L ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_de,                    Cyrillic_DE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              l,                              L,                       NoSymbol,                       NoSymbol,                          U0140,                          U013F,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              t,                              T,                          minus,                      Greek_tau,                           KP_6,                           KP_6,              partialderivative,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=+0),             MovePtr(x=+1,y=+0),                     NoAction(),                     NoAction() ]
+	};
+	key <AC10>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      semicolon,                          colon ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                   Cyrillic_zhe,                   Cyrillic_ZHE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                      semicolon,                          colon,                         degree,                       NoSymbol,                     dead_acute,               dead_doubleacute,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              d,                              D,                          colon,                    Greek_delta,                   KP_Separator,                          comma,                    Greek_DELTA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), PtrBtn(button=default,count=2),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AC11>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     apostrophe,                       quotedbl ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                     Cyrillic_e,                     Cyrillic_E ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                         egrave,                         Egrave,                      braceleft,                       NoSymbol,                       NoSymbol,                     dead_caron,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              y,                              Y,                             at,                  Greek_upsilon,                         period,                     KP_Decimal,                          nabla,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=unlock),                     NoAction(),                     NoAction() ]
+	};
+	key <TLDE>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          grave,                     asciitilde ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_io,                    Cyrillic_IO ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                          slash,                      backslash,                            bar,                       NoSymbol,                       NoSymbol,                         hyphen,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                dead_circumflex,                     dead_caron,                          U21BB,                          U02DE,                  dead_abovedot,             Pointer_EnableKeys,                  dead_belowdot,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), LockControls(controls=MouseKeys),                     NoAction(),                     NoAction() ]
+	};
+	key <LFSH>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                        Shift_L ],
+		actions[1]= [       SetMods(modifiers=Shift) ],
+		symbols[2]= [                        Shift_L ],
+		actions[2]= [       SetMods(modifiers=Shift) ],
+		symbols[3]= [                        Shift_L ],
+		actions[3]= [       SetMods(modifiers=Shift) ],
+		symbols[4]= [                        Shift_L,                      Caps_Lock ],
+		actions[4]= [       SetMods(modifiers=Shift),       LockMods(modifiers=Lock) ]
+	};
+	key <BKSL>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      backslash,                            bar ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                      backslash,                          slash ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                         agrave,                         Agrave,                     braceright,                       NoSymbol,                       NoSymbol,                     dead_breve,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [               ISO_Level3_Shift ],
+		actions[4]= [ SetMods(modifiers=LevelThree,clearLocks) ]
+	};
+	key <AB01>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              z,                              Z ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_ya,                    Cyrillic_YA ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              z,                              Z,                  guillemotleft,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                     udiaeresis,                     Udiaeresis,                     numbersign,                       NoSymbol,                         Escape,                         Escape,                          union,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB02>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "FOUR_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              x,                              X ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                   Cyrillic_che,                   Cyrillic_CHE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              x,                              X,                 guillemotright,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                     odiaeresis,                     Odiaeresis,                         dollar,                          U03F5,                            Tab,                            Tab,                   intersection,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB03>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              c,                              C ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_es,                    Cyrillic_ES ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              c,                              C,                       NoSymbol,                       NoSymbol,                           cent,                      copyright,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                     adiaeresis,                     Adiaeresis,                            bar,                      Greek_eta,                         Insert,                         Insert,                          U2135,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB04>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              v,                              V ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_em,                    Cyrillic_EM ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              v,                              V,                       NoSymbol,                       NoSymbol,            leftdoublequotemark,            leftsinglequotemark,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              p,                              P,                     asciitilde,                       Greek_pi,                         Return,                         Return,                       Greek_PI,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB05>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              b,                              B ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                     Cyrillic_i,                     Cyrillic_I ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              b,                              B,                       NoSymbol,                       NoSymbol,           rightdoublequotemark,           rightsinglequotemark,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              z,                              Z,                          grave,                     Greek_zeta,                           Undo,                           Undo,                          U2124,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB06>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              n,                              N ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_te,                    Cyrillic_TE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              n,                              N,                       NoSymbol,                       NoSymbol,                          U0149,                          U266A,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              b,                              B,                           plus,                     Greek_beta,                          colon,                       NoSymbol,                          U21D0,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <AB07>               {
+		type[1]= "ALPHABETIC",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              m,                              M ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [              Cyrillic_softsign,              Cyrillic_SOFTSIGN ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                              m,                              M,                             mu,                       NoSymbol,                             mu,                      masculine,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              m,                              M,                        percent,                       Greek_mu,                           KP_1,                           KP_1,                       ifonlyif,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=+1),             MovePtr(x=-1,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <AB08>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          comma,                           less ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_be,                    Cyrillic_BE ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                          comma,                     apostrophe,                           less,                       NoSymbol,                 Greek_horizbar,                       multiply,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                          comma,                         endash,                       quotedbl,                          U03F1,                           KP_2,                           KP_2,                          U21D2,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+0,y=+1),             MovePtr(x=+0,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <AB09>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "ALPHABETIC",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         period,                        greater ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                    Cyrillic_yu,                    Cyrillic_YU ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                         period,                       quotedbl,                        greater,                       NoSymbol,                 periodcentered,                       division,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                         period,             enfilledcircbullet,                     apostrophe,                          U03D1,                           KP_3,                           KP_3,                          U21A6,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=+1),             MovePtr(x=+1,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <AB10>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          slash,                       question ],
+		actions[1]= [                     NoAction(),                     NoAction() ],
+		symbols[2]= [                         period,                          comma ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                         eacute,                         Eacute,                     dead_acute,                       NoSymbol,                       NoSymbol,                  dead_abovedot,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                              j,                              J,                      semicolon,                    Greek_theta,                      semicolon,                       NoSymbol,                    Greek_THETA,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <RTSH>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                        Shift_R ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[2]= [                        Shift_R ],
+		actions[2]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[3]= [                        Shift_R ],
+		actions[3]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[4]= [                        Shift_R,                      Caps_Lock ],
+		actions[4]= [ SetMods(modifiers=modMapMods,clearLocks),       LockMods(modifiers=Lock) ]
+	};
+	key <KPMU>               {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                  XF86ClearGrab ],
+		actions[1]= [ SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction() ],
+		symbols[2]= [                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                  XF86ClearGrab ],
+		actions[2]= [ SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction() ],
+		symbols[3]= [                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                    KP_Multiply,                  XF86ClearGrab ],
+		actions[3]= [ SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction() ],
+		symbols[4]= [                    KP_Multiply,                    KP_Multiply,                          U2219,                          U2299,                       multiply,                       NoSymbol,                          U2297,                       NoSymbol ],
+		actions[4]= [ SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <LALT>               {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= Alt+Meta,
+		symbols[1]= [                          Alt_L,                         Meta_L ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <SPCE>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "FOUR_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          space ],
+		actions[1]= [                     NoAction() ],
+		symbols[2]= [                          space ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [                          space,                          space,                   nobreakspace,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [                          space,                          space,                          space,                   nobreakspace,                           KP_0,                           KP_0,                          U202F,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock),                     NoAction(),                     NoAction() ]
+	};
+	key <CAPS>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                      Caps_Lock ],
+		actions[1]= [       LockMods(modifiers=Lock) ],
+		symbols[2]= [                      Caps_Lock ],
+		actions[2]= [       LockMods(modifiers=Lock) ],
+		symbols[3]= [                      Caps_Lock ],
+		actions[3]= [       LockMods(modifiers=Lock) ],
+		symbols[4]= [               ISO_Level3_Shift ],
+		actions[4]= [ SetMods(modifiers=LevelThree,clearLocks) ]
+	};
+	key <FK01>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F1,                             F1,                             F1,                             F1,                XF86Switch_VT_1 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=1,!same) ]
+	};
+	key <FK02>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F2,                             F2,                             F2,                             F2,                XF86Switch_VT_2 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=2,!same) ]
+	};
+	key <FK03>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F3,                             F3,                             F3,                             F3,                XF86Switch_VT_3 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=3,!same) ]
+	};
+	key <FK04>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F4,                             F4,                             F4,                             F4,                XF86Switch_VT_4 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=4,!same) ]
+	};
+	key <FK05>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F5,                             F5,                             F5,                             F5,                XF86Switch_VT_5 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=5,!same) ]
+	};
+	key <FK06>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F6,                             F6,                             F6,                             F6,                XF86Switch_VT_6 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=6,!same) ]
+	};
+	key <FK07>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F7,                             F7,                             F7,                             F7,                XF86Switch_VT_7 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=7,!same) ]
+	};
+	key <FK08>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F8,                             F8,                             F8,                             F8,                XF86Switch_VT_8 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=8,!same) ]
+	};
+	key <FK09>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             F9,                             F9,                             F9,                             F9,                XF86Switch_VT_9 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=9,!same) ]
+	};
+	key <FK10>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                            F10,                            F10,                            F10,                            F10,               XF86Switch_VT_10 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),  SwitchScreen(screen=10,!same) ]
+	};
+	key <NMLK>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		repeat= No,
+		virtualMods= NumLock,
+		symbols[1]= [                       Num_Lock ],
+		actions[1]= [    LockMods(modifiers=NumLock) ],
+		symbols[2]= [                       Num_Lock ],
+		actions[2]= [    LockMods(modifiers=NumLock) ],
+		symbols[3]= [                       Num_Lock ],
+		actions[3]= [    LockMods(modifiers=NumLock) ],
+		symbols[4]= [                            Tab,                   ISO_Left_Tab,                          equal,                       approxeq,                       notequal,             Pointer_EnableKeys,                      identical,                       NoSymbol ],
+		actions[4]= [ SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), LockControls(controls=MouseKeys), SetMods(modifiers=modMapMods,clearLocks),                     NoAction() ]
+	};
+	key <SCLK>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    Scroll_Lock ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <KP7>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        KP_Home,                           KP_7 ],
+		actions[1]= [             MovePtr(x=-1,y=-1),             MovePtr(x=-1,y=-1) ],
+		symbols[2]= [                        KP_Home,                           KP_7 ],
+		actions[2]= [             MovePtr(x=-1,y=-1),             MovePtr(x=-1,y=-1) ],
+		symbols[3]= [                        KP_Home,                           KP_7 ],
+		actions[3]= [             MovePtr(x=-1,y=-1),             MovePtr(x=-1,y=-1) ],
+		symbols[4]= [                           KP_7,                          U2714,                          U2195,                          U226A,                        KP_Home,                        KP_Home,                        upstile,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=-1,y=-1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=-1),             MovePtr(x=-1,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <KP8>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          KP_Up,                           KP_8 ],
+		actions[1]= [             MovePtr(x=+0,y=-1),             MovePtr(x=+0,y=-1) ],
+		symbols[2]= [                          KP_Up,                           KP_8 ],
+		actions[2]= [             MovePtr(x=+0,y=-1),             MovePtr(x=+0,y=-1) ],
+		symbols[3]= [                          KP_Up,                           KP_8 ],
+		actions[3]= [             MovePtr(x=+0,y=-1),             MovePtr(x=+0,y=-1) ],
+		symbols[4]= [                           KP_8,                          U2718,                        uparrow,                   intersection,                          KP_Up,                          KP_Up,                          U22C2,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+0,y=-1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+0,y=-1),             MovePtr(x=+0,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <KP9>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       KP_Prior,                           KP_9 ],
+		actions[1]= [             MovePtr(x=+1,y=-1),             MovePtr(x=+1,y=-1) ],
+		symbols[2]= [                       KP_Prior,                           KP_9 ],
+		actions[2]= [             MovePtr(x=+1,y=-1),             MovePtr(x=+1,y=-1) ],
+		symbols[3]= [                       KP_Prior,                           KP_9 ],
+		actions[3]= [             MovePtr(x=+1,y=-1),             MovePtr(x=+1,y=-1) ],
+		symbols[4]= [                           KP_9,                         dagger,                          U20D7,                          U226B,                       KP_Prior,                       KP_Prior,                          U2309,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+1,y=-1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=-1),             MovePtr(x=+1,y=-1),                     NoAction(),                     NoAction() ]
+	};
+	key <KPSU>               {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                 XF86Prev_VMode ],
+		actions[1]= [ SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[2]= [                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                 XF86Prev_VMode ],
+		actions[2]= [ SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[3]= [                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                    KP_Subtract,                 XF86Prev_VMode ],
+		actions[3]= [ SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3), Private(type=0x86,data[0]=0x2d,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[4]= [                    KP_Subtract,                    KP_Subtract,                          U2212,                          U2296,                          U2216,                       NoSymbol,                          U2238,                       NoSymbol ],
+		actions[4]= [ SetPtrDflt(affect=button,button=3), SetPtrDflt(affect=button,button=3),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <KP4>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        KP_Left,                           KP_4 ],
+		actions[1]= [             MovePtr(x=-1,y=+0),             MovePtr(x=-1,y=+0) ],
+		symbols[2]= [                        KP_Left,                           KP_4 ],
+		actions[2]= [             MovePtr(x=-1,y=+0),             MovePtr(x=-1,y=+0) ],
+		symbols[3]= [                        KP_Left,                           KP_4 ],
+		actions[3]= [             MovePtr(x=-1,y=+0),             MovePtr(x=-1,y=+0) ],
+		symbols[4]= [                           KP_4,                           club,                      leftarrow,                     includedin,                        KP_Left,                        KP_Left,                          U2286,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=-1,y=+0),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=+0),             MovePtr(x=-1,y=+0),                     NoAction(),                     NoAction() ]
+	};
+	key <KP5>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       KP_Begin,                           KP_5 ],
+		actions[1]= [         PtrBtn(button=default),         PtrBtn(button=default) ],
+		symbols[2]= [                       KP_Begin,                           KP_5 ],
+		actions[2]= [         PtrBtn(button=default),         PtrBtn(button=default) ],
+		symbols[3]= [                       KP_Begin,                           KP_5 ],
+		actions[3]= [         PtrBtn(button=default),         PtrBtn(button=default) ],
+		symbols[4]= [                           KP_5,                       EuroSign,                          colon,                          U22B6,                       KP_Begin,                       KP_Begin,                          U22B7,                       NoSymbol ],
+		actions[4]= [         PtrBtn(button=default),                     NoAction(),                     NoAction(),                     NoAction(),         PtrBtn(button=default),         PtrBtn(button=default),                     NoAction(),                     NoAction() ]
+	};
+	key <KP6>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       KP_Right,                           KP_6 ],
+		actions[1]= [             MovePtr(x=+1,y=+0),             MovePtr(x=+1,y=+0) ],
+		symbols[2]= [                       KP_Right,                           KP_6 ],
+		actions[2]= [             MovePtr(x=+1,y=+0),             MovePtr(x=+1,y=+0) ],
+		symbols[3]= [                       KP_Right,                           KP_6 ],
+		actions[3]= [             MovePtr(x=+1,y=+0),             MovePtr(x=+1,y=+0) ],
+		symbols[4]= [                           KP_6,                          U2023,                     rightarrow,                       includes,                       KP_Right,                       KP_Right,                          U2287,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+1,y=+0),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=+0),             MovePtr(x=+1,y=+0),                     NoAction(),                     NoAction() ]
+	};
+	key <KPAD>               {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         KP_Add,                         KP_Add,                         KP_Add,                         KP_Add,                 XF86Next_VMode ],
+		actions[1]= [ PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[2]= [                         KP_Add,                         KP_Add,                         KP_Add,                         KP_Add,                 XF86Next_VMode ],
+		actions[2]= [ PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[3]= [                         KP_Add,                         KP_Add,                         KP_Add,                         KP_Add,                 XF86Next_VMode ],
+		actions[3]= [ PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), PtrBtn(button=default,count=2), Private(type=0x86,data[0]=0x2b,data[1]=0x56,data[2]=0x4d,data[3]=0x6f,data[4]=0x64,data[5]=0x65,data[6]=0x00) ],
+		symbols[4]= [                         KP_Add,                         KP_Add,                      plusminus,                          U2295,                          U2213,                       NoSymbol,                          U2214,                       NoSymbol ],
+		actions[4]= [ PtrBtn(button=default,count=2), PtrBtn(button=default,count=2),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <KP1>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         KP_End,                           KP_1 ],
+		actions[1]= [             MovePtr(x=-1,y=+1),             MovePtr(x=-1,y=+1) ],
+		symbols[2]= [                         KP_End,                           KP_1 ],
+		actions[2]= [             MovePtr(x=-1,y=+1),             MovePtr(x=-1,y=+1) ],
+		symbols[3]= [                         KP_End,                           KP_1 ],
+		actions[3]= [             MovePtr(x=-1,y=+1),             MovePtr(x=-1,y=+1) ],
+		symbols[4]= [                           KP_1,                        diamond,                          U2194,                  lessthanequal,                         KP_End,                         KP_End,                      downstile,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=-1,y=+1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=-1,y=+1),             MovePtr(x=-1,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <KP2>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        KP_Down,                           KP_2 ],
+		actions[1]= [             MovePtr(x=+0,y=+1),             MovePtr(x=+0,y=+1) ],
+		symbols[2]= [                        KP_Down,                           KP_2 ],
+		actions[2]= [             MovePtr(x=+0,y=+1),             MovePtr(x=+0,y=+1) ],
+		symbols[3]= [                        KP_Down,                           KP_2 ],
+		actions[3]= [             MovePtr(x=+0,y=+1),             MovePtr(x=+0,y=+1) ],
+		symbols[4]= [                           KP_2,                          heart,                      downarrow,                          union,                        KP_Down,                        KP_Down,                          U22C3,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+0,y=+1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+0,y=+1),             MovePtr(x=+0,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <KP3>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        KP_Next,                           KP_3 ],
+		actions[1]= [             MovePtr(x=+1,y=+1),             MovePtr(x=+1,y=+1) ],
+		symbols[2]= [                        KP_Next,                           KP_3 ],
+		actions[2]= [             MovePtr(x=+1,y=+1),             MovePtr(x=+1,y=+1) ],
+		symbols[3]= [                        KP_Next,                           KP_3 ],
+		actions[3]= [             MovePtr(x=+1,y=+1),             MovePtr(x=+1,y=+1) ],
+		symbols[4]= [                           KP_3,                          U2660,                          U21CC,               greaterthanequal,                        KP_Next,                        KP_Next,                          U230B,                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+1,y=+1),                     NoAction(),                     NoAction(),                     NoAction(),             MovePtr(x=+1,y=+1),             MovePtr(x=+1,y=+1),                     NoAction(),                     NoAction() ]
+	};
+	key <KP0>                {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      KP_Insert,                           KP_0 ],
+		actions[1]= [ LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock) ],
+		symbols[2]= [                      KP_Insert,                           KP_0 ],
+		actions[2]= [ LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock) ],
+		symbols[3]= [                      KP_Insert,                           KP_0 ],
+		actions[3]= [ LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock) ],
+		symbols[4]= [                           KP_0,                          U2423,                        percent,                          U2030,                      KP_Insert,                      KP_Insert,                          U25A1,                       NoSymbol ],
+		actions[4]= [ LockPtrBtn(button=default,affect=lock),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock),                     NoAction(),                     NoAction() ]
+	};
+	key <KPDL>               {
+		type[1]= "KEYPAD",
+		type[2]= "KEYPAD",
+		type[3]= "KEYPAD",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      KP_Delete,                     KP_Decimal ],
+		actions[1]= [ LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock) ],
+		symbols[2]= [                      KP_Delete,                   KP_Separator ],
+		actions[2]= [ LockPtrBtn(button=default,affect=unlock), PtrBtn(button=default,count=2) ],
+		symbols[3]= [                      KP_Delete,                     KP_Decimal ],
+		actions[3]= [ LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock) ],
+		symbols[4]= [                   KP_Separator,                         period,                          comma,                        minutes,                      KP_Delete,                      KP_Delete,                        seconds,                       NoSymbol ],
+		actions[4]= [ PtrBtn(button=default,count=2),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock),                     NoAction(),                     NoAction() ]
+	};
+	key <LVL3>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= LevelThree,
+		symbols[1]= [               ISO_Level3_Shift ],
+		actions[1]= [ SetMods(modifiers=LevelThree,clearLocks) ]
+	};
+	key <LSGT>               {
+		type[1]= "FOUR_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
+		type[4]= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           less,                        greater,                            bar,                      brokenbar ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[2]= [                          slash,                            bar ],
+		actions[2]= [                     NoAction(),                     NoAction() ],
+		symbols[3]= [                         ugrave,                         Ugrave,                         degree,                       NoSymbol,                       NoSymbol,                      brokenbar,                       NoSymbol,                       NoSymbol ],
+		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
+		symbols[4]= [               ISO_Level5_Shift ],
+		actions[4]= [ SetMods(modifiers=LevelFive,clearLocks) ]
+	};
+	key <FK11>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                            F11,                            F11,                            F11,                            F11,               XF86Switch_VT_11 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),  SwitchScreen(screen=11,!same) ]
+	};
+	key <FK12>               {
+		type= "CTRL+ALT",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                            F12,                            F12,                            F12,                            F12,               XF86Switch_VT_12 ],
+		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),  SwitchScreen(screen=12,!same) ]
+	};
+	key <AB11>               {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                      Control_L, {                      Control_L,                    Mode_switch } ],
+		actions[1]= [     SetMods(modifiers=Control), {     SetMods(modifiers=Control),             SetGroup(group=+1) } ],
+		symbols[2]= [ {                      Control_L,                    Mode_switch },                      Control_L ],
+		actions[2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
+	};
+	key <KATA>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       Katakana ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HIRA>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       Hiragana ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HENK>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    Henkan_Mode ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HKTG>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [              Hiragana_Katakana ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <MUHE>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       Muhenkan ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <KPEN>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       KP_Enter ],
+		actions[1]= [                     NoAction() ],
+		symbols[2]= [                       KP_Enter ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [                       KP_Enter ],
+		actions[3]= [                     NoAction() ],
+		symbols[4]= [                       KP_Enter,                       KP_Enter,                       KP_Enter,                       KP_Enter,                       KP_Enter,                       KP_Enter,                       KP_Enter,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <RCTL>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                      Control_R ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[2]= [                      Control_R ],
+		actions[2]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[3]= [               ISO_Level5_Shift ],
+		actions[3]= [ SetMods(modifiers=LevelFive,clearLocks) ]
+	};
+	key <KPDV>               {
+		type[1]= "CTRL+ALT",
+		type[2]= "CTRL+ALT",
+		type[3]= "CTRL+ALT",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      KP_Divide,                      KP_Divide,                      KP_Divide,                      KP_Divide,                     XF86Ungrab ],
+		actions[1]= [ SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction() ],
+		symbols[2]= [                      KP_Divide,                      KP_Divide,                      KP_Divide,                      KP_Divide,                     XF86Ungrab ],
+		actions[2]= [ SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction() ],
+		symbols[3]= [                      KP_Divide,                      KP_Divide,                      KP_Divide,                      KP_Divide,                     XF86Ungrab ],
+		actions[3]= [ SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction() ],
+		symbols[4]= [                      KP_Divide,                      KP_Divide,                       division,                          U2300,                          U2215,                       NoSymbol,                          U2223,                       NoSymbol ],
+		actions[4]= [ SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <PRSC>               {
+		type= "PC_ALT_LEVEL2",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          Print,                        Sys_Req ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <RALT>               {
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= Alt+Meta,
+		symbols[1]= [                          Alt_R,                         Meta_R ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[2]= [                          Alt_R,                         Meta_R ],
+		actions[2]= [ SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[3]= [               ISO_Level3_Shift ],
+		actions[3]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[4]= [               ISO_Level5_Shift ],
+		actions[4]= [ SetMods(modifiers=LevelFive,clearLocks) ]
+	};
+	key <LNFD>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       Linefeed ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HOME>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Home ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <UP>                 {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                             Up ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <PGUP>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          Prior ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <LEFT>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Left ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <RGHT>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          Right ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <END>                {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                            End ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <DOWN>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Down ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <PGDN>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Next ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <INS>                {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Insert ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <DELE>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Delete ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <MUTE>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioMute ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <VOL->               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [           XF86AudioLowerVolume ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <VOL+>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [           XF86AudioRaiseVolume ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <POWR>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   XF86PowerOff ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <KPEQ>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "EIGHT_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       KP_Equal ],
+		actions[1]= [                     NoAction() ],
+		symbols[2]= [                       KP_Equal ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [                       KP_Equal ],
+		actions[3]= [                     NoAction() ],
+		symbols[4]= [                       KP_Equal,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol,                       NoSymbol ],
+		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
+	};
+	key <I126>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      plusminus ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <PAUS>               {
+		type= "PC_CONTROL_LEVEL2",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          Pause,                          Break ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <I128>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86LaunchA ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I129>               {
+		type= "KEYPAD",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     KP_Decimal,                     KP_Decimal ],
+		actions[1]= [ LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock) ]
+	};
+	key <HNGL>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Hangul ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HJCV>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   Hangul_Hanja ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <LWIN>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= Super,
+		symbols[1]= [                        Super_L ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <RWIN>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= Super,
+		symbols[1]= [                        Super_R ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <COMP>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Menu ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <STOP>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Cancel ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <AGAI>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Redo ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <PROP>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       SunProps ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <UNDO>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Undo ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FRNT>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       SunFront ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <COPY>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Copy ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <OPEN>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        SunOpen ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <PAST>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Paste ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FIND>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Find ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <CUT>                {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        XF86Cut ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <HELP>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Help ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I147>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     XF86MenuKB ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I148>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86Calculator ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I150>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Sleep ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I151>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     XF86WakeUp ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I152>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   XF86Explorer ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I153>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Send ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I155>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Xfer ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I156>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch1 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I157>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch2 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I158>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        XF86WWW ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I159>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        XF86DOS ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I160>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                XF86ScreenSaver ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I162>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [              XF86RotateWindows ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I163>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Mail ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I164>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86Favorites ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I165>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86MyComputer ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I166>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Back ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I167>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Forward ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I169>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Eject ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I170>               {
+		type= "TWO_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Eject,                      XF86Eject ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <I171>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioNext ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I172>               {
+		type= "TWO_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioPlay,                 XF86AudioPause ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <I173>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioPrev ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I174>               {
+		type= "TWO_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioStop,                      XF86Eject ],
+		actions[1]= [                     NoAction(),                     NoAction() ]
+	};
+	key <I175>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                XF86AudioRecord ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I176>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                XF86AudioRewind ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I177>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Phone ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I179>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Tools ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I180>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   XF86HomePage ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I181>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     XF86Reload ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I182>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Close ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I185>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                   XF86ScrollUp ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I186>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86ScrollDown ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I187>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      parenleft ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I188>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     parenright ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I189>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                        XF86New ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I190>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                           Redo ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK13>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Tools ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK14>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch5 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK15>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch6 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK16>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch7 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK17>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch8 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK18>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch9 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK21>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [             XF86TouchpadToggle ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK22>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86TouchpadOn ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <FK23>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                XF86TouchpadOff ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <MDSW>               {
+		type= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= AltGr,
+		symbols[1]= [                    Mode_switch ],
+		actions[1]= [             SetGroup(group=+1) ]
+	};
+	key <ALT>                {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                       NoSymbol,                          Alt_L ],
+		actions[1]= [                     NoAction(), SetMods(modifiers=Alt,clearLocks) ]
+	};
+	key <META>               {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= Meta,
+		symbols[1]= [                       NoSymbol,                         Meta_L ],
+		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <SUPR>               {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= Super,
+		symbols[1]= [                       NoSymbol,                        Super_L ],
+		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <HYPR>               {
+		type= "TWO_LEVEL",
+		repeat= No,
+		virtualMods= Hyper,
+		symbols[1]= [                       NoSymbol,                        Hyper_L ],
+		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <I208>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioPlay ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I209>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86AudioPause ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I210>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch3 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I211>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Launch4 ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I212>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86LaunchB ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I213>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Suspend ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I214>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Close ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I215>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86AudioPlay ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I216>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [               XF86AudioForward ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I218>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                          Print ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I220>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     XF86WebCam ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I223>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Mail ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I224>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86Messenger ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I225>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                     XF86Search ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I226>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         XF86Go ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I227>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Finance ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I228>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Game ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I229>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Shop ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I231>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                         Cancel ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I232>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [          XF86MonBrightnessDown ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I233>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [            XF86MonBrightnessUp ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I234>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                 XF86AudioMedia ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I235>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Display ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I236>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [              XF86KbdLightOnOff ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I237>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [          XF86KbdBrightnessDown ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I238>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [            XF86KbdBrightnessUp ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I239>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Send ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I240>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                      XF86Reply ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I241>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                XF86MailForward ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I242>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86Save ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I243>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86Documents ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I244>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                    XF86Battery ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I245>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                  XF86Bluetooth ],
+		actions[1]= [                     NoAction() ]
+	};
+	key <I246>               {
+		type= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                       XF86WLAN ],
+		actions[1]= [                     NoAction() ]
+	};
+	modifier_map Shift { <LFSH>, <RTSH> };
+	modifier_map Lock { <CAPS> };
+	modifier_map Control { <LCTL> };
+	modifier_map Mod1 { <LALT>, <RALT>, <META> };
+	modifier_map Mod2 { <NMLK> };
+	modifier_map Mod3 { <RCTL> };
+	modifier_map Mod4 { <LWIN>, <RWIN>, <SUPR>, <HYPR> };
+	modifier_map Mod5 { <LVL3>, <MDSW> };
+};
+
+};

@@ -80,12 +80,12 @@ xkb_symbols {
 	key <D>                  {
 		repeat= No,
 		virtualMods= M4,
-		[               d,               D ]
+		symbols[1]= [               d,               D ]
 	};
 	key <F>                  {
 		repeat= No,
 		virtualMods= M4,
-		[               f,               F ]
+		symbols[1]= [               f,               F ]
 	};
 	key <G>                  {
 		type= "ONE_LEVEL",
