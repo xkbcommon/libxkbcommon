@@ -150,8 +150,9 @@ local -a dump_common=(
 	'(--format)--input-format=[use the given input keymap format]:xkb format:(v1 v2)'
 	'(--format)--output-format=[use the given output keymap format]:xkb format:(v1 v2)'
 	'(--input-format --output-format)--format=[use the given keymap format for input and output]:xkb format:(v1 v2)'
-	'--no-pretty[do not pretty preint when serializing a keymap]'
+	'--no-pretty[do not pretty print when serializing a keymap]'
 	'--drop-unused[disable unused bits serialization]'
+	'--explicit-values[force serializing all values]'
 )
 
 _xkbcli-dump-keymap() {

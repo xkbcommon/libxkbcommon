@@ -101,6 +101,14 @@ usage(FILE *file, const char *progname)
            "    This option must not be used with --keymap.\n"
            "\n"
            "Output options:\n"
+           " --output-format <format>\n"
+           "    The keymap format to use for serializing (default: same as input)\n"
+           " --no-pretty\n"
+           "    Do not pretty-print when serializing a keymap\n"
+           " --drop-unused\n"
+           "    Disable unused bits serialization\n"
+           " --explicit-values\n"
+           "    Force serializing all values\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
            " --kccgst-yaml\n"
@@ -156,6 +164,7 @@ parse_options(int argc, char **argv,
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
+        OPT_KEYMAP_EXPLICIT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -184,10 +193,7 @@ parse_options(int argc, char **argv,
         {"from-xkb",         optional_argument,      0, OPT_KEYMAP},
         {"enable-environment-names", no_argument,    0, OPT_ENABLE_ENV_NAMES},
         {"input-format",     required_argument,      0, OPT_KEYMAP_INPUT_FORMAT},
-        {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
         {"format",           required_argument,      0, OPT_KEYMAP_FORMAT},
-        {"no-pretty",        no_argument,            0, OPT_KEYMAP_NO_PRETTY},
-        {"drop-unused",      no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
         {"rules",            required_argument,      0, OPT_RULES},
         {"model",            required_argument,      0, OPT_MODEL},
         {"layout",           required_argument,      0, OPT_LAYOUT},
@@ -196,6 +202,10 @@ parse_options(int argc, char **argv,
         /*
          * Output
          */
+        {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
+        {"no-pretty",        no_argument,            0, OPT_KEYMAP_NO_PRETTY},
+        {"drop-unused",      no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
+        {"explicit-values",  no_argument,            0, OPT_KEYMAP_EXPLICIT},
         {"kccgst",           no_argument,            0, OPT_KCCGST},
         {"kccgst-yaml",      no_argument,            0, OPT_KCCGST_YAML},
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
@@ -287,6 +297,9 @@ parse_options(int argc, char **argv,
             break;
         case OPT_KEYMAP_DROP_UNUSED:
             *serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
+            break;
+        case OPT_KEYMAP_EXPLICIT:
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT;
             break;
         case OPT_RULES:
             if (input_format == INPUT_FORMAT_KEYMAP)
