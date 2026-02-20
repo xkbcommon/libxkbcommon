@@ -923,6 +923,17 @@ write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     return true;
 }
 
+static const struct xkb_sym_interpret fallback_interpret = {
+    .sym = XKB_KEY_VoidSymbol,
+    .required = true,
+    .repeat = FALLBACK_INTERPRET_KEY_REPEAT,
+    .match = MATCH_ANY_OR_NONE,
+    .mods = 0,
+    .virtual_mod = (xkb_mod_index_t) DEFAULT_INTERPRET_VMOD,
+    .num_actions = 0,
+    .a = { .action = { .type = ACTION_TYPE_NONE } },
+};
+
 static bool
 write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
              xkb_layout_index_t max_groups, bool drop_unused, bool pretty,
@@ -949,7 +960,7 @@ write_compat(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     const struct xkb_sym_interpret* const sym_interprets
         = keymap->num_sym_interprets
         ? keymap->sym_interprets
-        : &default_interpret;
+        : &fallback_interpret;
 
     for (darray_size_t i = 0; i < num_sym_interprets; i++) {
         const struct xkb_sym_interpret *si = &sym_interprets[i];

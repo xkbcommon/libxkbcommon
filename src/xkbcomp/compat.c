@@ -133,6 +133,8 @@ InitInterp(SymInterpInfo *info)
 {
     info->merge = MERGE_DEFAULT; /* Unused */
     info->interp.virtual_mod = XKB_MOD_INVALID;
+    static_assert(!DEFAULT_KEY_VMODMAP, "invalid initial value");
+    static_assert(!DEFAULT_KEY_REPEAT, "invalid initial value");
 }
 
 static inline void

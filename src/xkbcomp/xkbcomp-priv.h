@@ -90,8 +90,6 @@ CompileSymbols(XkbFile *file, struct xkb_keymap_info *keymap_info);
 bool
 CompileKeymap(XkbFile *file, struct xkb_keymap *keymap);
 
-extern const struct xkb_sym_interpret default_interpret;
-
 /***====================================================================***/
 
 static inline bool
