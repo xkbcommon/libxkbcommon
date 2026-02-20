@@ -20,8 +20,8 @@
 
 /* Point to some substring in the file; used to avoid copying. */
 struct sval {
-    const char *start;
     size_t len;
+    const char *start ATTR_COUNTED_BY(len);
 };
 typedef darray(struct sval) darray_sval;
 
@@ -53,9 +53,9 @@ struct scanner_loc {
 };
 
 struct scanner {
-    const char *s;
     size_t pos;
     size_t len;
+    const char *s ATTR_COUNTED_BY(len);
     /*
      * Internal buffer.
      * Since this is used to handle paths that are possibly absolute, in theory
