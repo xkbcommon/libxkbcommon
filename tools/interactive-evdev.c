@@ -301,7 +301,9 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 
     const enum xkb_key_direction direction = (value == KEY_STATE_RELEASE)
         ? XKB_KEY_UP
-        : XKB_KEY_DOWN;
+        : (value == KEY_STATE_REPEAT)
+            ? XKB_KEY_REPEATED
+            : XKB_KEY_DOWN;
 
     if (use_events_api) {
         /* Use the state event API */

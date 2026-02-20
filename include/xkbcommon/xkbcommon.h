@@ -2246,6 +2246,12 @@ enum xkb_event_type {
      */
     XKB_EVENT_TYPE_KEY_DOWN = 1,
     /**
+     * **Key _repeated_** event
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_KEY_REPEATED,
+    /**
      * **Key _up_** event
      *
      * @since 1.14.0
@@ -2271,12 +2277,14 @@ xkb_event_get_type(const struct xkb_event *event);
 
 /**
  * Get the keycode associated to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_KEY_DOWN` or `::XKB_EVENT_TYPE_KEY_UP`.
+ * `::XKB_EVENT_TYPE_KEY_DOWN`, `::XKB_EVENT_TYPE_KEY_REPEATED` or
+ * `::XKB_EVENT_TYPE_KEY_UP`.
  *
  * @param event The event to process.
  *
  * @returns For an event of type `::XKB_EVENT_TYPE_KEY_DOWN` or
- * `::XKB_EVENT_TYPE_KEY_UP`, returns the corresponding keycode.
+ * `::XKB_EVENT_TYPE_KEY_REPEATED` or `::XKB_EVENT_TYPE_KEY_UP`,
+ * returns the corresponding keycode.
  * @returns
  * The result is *undefined* if the given event has another type.
  *
@@ -2678,8 +2686,16 @@ xkb_state_machine_update_controls(struct xkb_state_machine *sm,
  * Specifies the direction of the key (press / release).
  */
 enum xkb_key_direction {
-    XKB_KEY_UP,   /**< The key was released. */
-    XKB_KEY_DOWN  /**< The key was pressed. */
+    /** The key was *released*. */
+    XKB_KEY_UP,
+    /** The key was *pressed*. */
+    XKB_KEY_DOWN,
+    /**
+     * The key was *repeated*.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEY_REPEATED
 };
 
 /**

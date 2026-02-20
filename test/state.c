@@ -569,6 +569,11 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     );
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
+    /* Ensure it does not repeat */
+    update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
+                                        XKB_STATE_MODS_DEPRESSED) > 0);
 
     /* LCtrl + RAlt down */
     update_states(state, sm, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
@@ -674,6 +679,9 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
                             (XKB_STATE_MATCH_ANY | XKB_STATE_MATCH_NON_EXCLUSIVE),
                             XKB_VMOD_NAME_META,
                             NULL)));
+    /* Ensure it does not repeat */
+    update_states(state, sm, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
 
     /* RAlt down */
     update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
@@ -743,9 +751,18 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
                                         XKB_STATE_MODS_EFFECTIVE) == 0);
 
     /* Caps locked */
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_MODS_EFFECTIVE) == 0);
     update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_MODS_LOCKED) > 0);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_MODS_DEPRESSED) > 0);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_MODS_LOCKED) > 0);
     update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
     fprintf(stderr, "dumping state for Caps Lock:\n");
     print_state(state);
@@ -795,6 +812,235 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     num_syms = xkb_state_key_get_syms(state, KEY_Q + EVDEV_OFFSET, &syms);
     assert(num_syms == 1 && syms[0] == XKB_KEY_q);
 
+    /* Repeat CapsLock does nothing: non-repeating key */
+    const xkb_mod_mask_t caps = _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CAPS);
+    const xkb_led_mask_t caps_led =
+        UINT32_C(1) << _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_CAPS);
+    assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CAPS,
+                                        XKB_STATE_MODS_EFFECTIVE) == 0);
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                         | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
+                .components = {
+                    .base_mods = caps,
+                    .locked_mods = caps,
+                    .mods = caps,
+                    .leds = caps_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = caps,
+                    .mods = caps,
+                    .leds = caps_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = caps,
+                    .locked_mods = caps,
+                    .mods = caps,
+                    .leds = caps_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    update_states(state, sm, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                         | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = 0,
+                    .mods = 0,
+                    .leds = 0,
+                }
+            }
+        }
+    );
+
+    /* Repeat NumLock does nothing: repeating key */
+    const xkb_mod_mask_t num = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_NUM);
+    const xkb_led_mask_t num_led =
+        UINT32_C(1) << _xkb_keymap_led_get_index(keymap, XKB_LED_NAME_NUM);
+    assert(xkb_state_mod_name_is_active(state, XKB_VMOD_NAME_NUM,
+                                        XKB_STATE_MODS_EFFECTIVE) == 0);
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                         | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
+                .components = {
+                    .base_mods = num,
+                    .locked_mods = num,
+                    .mods = num,
+                    .leds = num_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        }
+    );
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = num,
+                    .mods = num,
+                    .leds = num_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = num,
+                    .locked_mods = num,
+                    .mods = num,
+                    .leds = num_led
+                }
+            }
+        }
+    );
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        }
+    );
+    update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+        },
+        {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                         | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = 0,
+                    .mods = 0,
+                    .leds = 0,
+                }
+            }
+        }
+    );
+
+    /* One symbol */
+    num_syms = xkb_state_key_get_syms(state, KEY_5 + EVDEV_OFFSET, &syms);
+    assert(num_syms == 1 && syms[0] == XKB_KEY_5);
+    one_sym = xkb_state_key_get_one_sym(state, KEY_5 + EVDEV_OFFSET);
+    assert(one_sym == XKB_KEY_5);
+    update_states(state, sm, KEY_5 + EVDEV_OFFSET, XKB_KEY_DOWN);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .keycode = KEY_5 + EVDEV_OFFSET
+        }
+    );
+    /* Ensure it does repeat */
+    update_states(state, sm, KEY_5 + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .keycode = KEY_5 + EVDEV_OFFSET
+        }
+    );
+    update_states(state, sm, KEY_5 + EVDEV_OFFSET, XKB_KEY_UP);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_UP,
+            .keycode = KEY_5 + EVDEV_OFFSET
+        }
+    );
+
     /* Multiple symbols */
     num_syms = xkb_state_key_get_syms(state, KEY_6 + EVDEV_OFFSET, &syms);
     assert(num_syms == 5 &&
@@ -811,6 +1057,15 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
             .keycode = KEY_6 + EVDEV_OFFSET
         }
     );
+    /* Ensure it does repeat */
+    update_states(state, sm, KEY_6 + EVDEV_OFFSET, XKB_KEY_REPEATED);
+    check_events_(
+        events,
+        {
+            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .keycode = KEY_6 + EVDEV_OFFSET
+        }
+    );
     update_states(state, sm, KEY_6 + EVDEV_OFFSET, XKB_KEY_UP);
     check_events_(
         events,
@@ -819,9 +1074,6 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
             .keycode = KEY_6 + EVDEV_OFFSET
         }
     );
-
-    one_sym = xkb_state_key_get_one_sym(state, KEY_5 + EVDEV_OFFSET);
-    assert(one_sym == XKB_KEY_5);
 
     xkb_event_iterator_destroy(events);
     xkb_state_machine_unref(sm);
@@ -3172,7 +3424,8 @@ main(void)
                                     "grp:menu_toggle,grp:lwin_latch,"
                                     "grp:rwin_latch_lock_clear,"
                                     "grp:sclk_latch_no_lock,"
-                                    "lv3:lsgt_latch,lv3:bksl_latch_no_lock");
+                                    "lv3:lsgt_latch,lv3:bksl_latch_no_lock,"
+                                    "keypad:nmlk_repeats");
         assert(keymap);
         const bool pure_vmods = !!r;
 

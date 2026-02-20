@@ -28,12 +28,12 @@ xkb_symbols {
 		actions[1]= [                     NoAction() ]
 	};
 	key <S>                  {
-		repeat= No,
+		repeat= Yes,
 		symbols[1]= [                              s ],
 		actions[1]= [       RedirectKey(keycode=<A>) ]
 	};
 	key <D>                  {
-		repeat= No,
+		repeat= Yes,
 		symbols[1]= [                              d ],
 		actions[1]= [ RedirectKey(keycode=<S>,modifiers=Shift,clearMods=Control) ]
 	};

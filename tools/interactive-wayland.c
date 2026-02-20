@@ -552,8 +552,14 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
     xkb_keycode_t keycode = key + EVDEV_OFFSET;
 
     char * const prefix = asprintf_safe("%s: ", seat->name_str);
-    const enum xkb_key_direction direction =
-        (state == WL_KEYBOARD_KEY_STATE_RELEASED) ? XKB_KEY_UP : XKB_KEY_DOWN;
+    const enum xkb_key_direction direction
+        = (state == WL_KEYBOARD_KEY_STATE_RELEASED)
+        ? XKB_KEY_UP
+#if HAVE_WL_KEYBOARD_KEY_STATE_REPEATED
+        : (state == WL_KEYBOARD_KEY_STATE_REPEATED)
+            ? XKB_KEY_REPEATED
+#endif
+            : XKB_KEY_DOWN;
 
     if (use_local_state && use_events_api) {
         /* Run our local state machine with the state event API */
@@ -786,7 +792,7 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
     seat->global_name = name;
     seat->inter = inter;
     seat->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface,
-                                     MIN(version, 5));
+                                     MIN(version, 10));
     wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
     if (seat->inter->compose_table) {
         seat->compose_state = xkb_compose_state_new(seat->inter->compose_table,

@@ -215,6 +215,10 @@ xkb_symbols "core" {
     key <KPEQ> { [ KP_Equal                     ] };
 };
 
+partial keypad_keys
+xkb_symbols "numlock_repeats" {
+    key <NMLK> { [ Num_Lock                     ], repeat = true };
+};
 
 // Legacy keypad math area
 // Copyright © 2006 Nicolas Mailhot <nicolas.mailhot @ laposte.net>

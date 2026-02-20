@@ -149,6 +149,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
         return false;
     switch (event1->type) {
     case XKB_EVENT_TYPE_KEY_DOWN:
+    case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
         return event1->keycode == event2->keycode;
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
@@ -156,7 +157,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
                       sizeof(event1->components)) == 0;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
                       XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
@@ -170,10 +171,15 @@ print_event(const char *prefix, const struct xkb_event *event)
     fprintf(stderr, "%s", prefix);
     switch (event->type) {
     case XKB_EVENT_TYPE_KEY_DOWN:
-        fprintf(stderr, "type: key down; keycode: %"PRIu32"\n", event->keycode);
-        break;
+    case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
-        fprintf(stderr, "type: key up; keycode: %"PRIu32"\n", event->keycode);
+        fprintf(stderr, "type: key %s; keycode: %"PRIu32"\n",
+                (event->type == XKB_EVENT_TYPE_KEY_UP)
+                    ? "up"
+                    : event->type == XKB_EVENT_TYPE_KEY_REPEATED
+                        ? "repeat"
+                        : "down",
+                event->keycode);
         break;
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
         fprintf(stderr, "type: components; changed: 0x%x\n"
@@ -195,7 +201,7 @@ print_event(const char *prefix, const struct xkb_event *event)
         break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 3 &&
+        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
                       XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
