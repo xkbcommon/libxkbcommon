@@ -990,8 +990,8 @@ xkb_filter_redirect_key_new(struct xkb_state *state,
                             struct xkb_event_iterator *events,
                             struct xkb_filter *filter)
 {
-    if (events == NULL) {
-        /* Action effectual only if using the state event API */
+    /* Action effectual only with the state event API and a valid keycode */
+    if (!events || filter->action.redirect.keycode == XKB_KEYCODE_INVALID) {
         filter->func = NULL;
         return;
     }
