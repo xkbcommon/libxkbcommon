@@ -2586,7 +2586,7 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; };\n"
+                "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; <F> = 41; };\n"
                 "  xkb_symbols {\n"
                 /* Inexistent key */
                 "    key <A> { [a], [RedirectKey(key=<?>)] };\n"
@@ -2594,6 +2594,8 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
                 "    key <S> { [s], [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
                 /* OK! */
                 "    key <D> { [d], [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
+                /* No parameters */
+                "    key <F> { [f], [RedirectKey()] };\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "redirect-key-1.xkb"
