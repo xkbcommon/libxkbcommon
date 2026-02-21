@@ -359,7 +359,7 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
         );
         if (!pc->computed) {
             xkb_layout_index_t group = 0;
-            if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+            if (!ExprResolveGroup(info, pc->expr, true, &group, NULL)) {
                 log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                         "Invalid key redirect group index\n");
                 return false;
@@ -386,18 +386,20 @@ update_pending_action_fields(struct xkb_keymap_info *info,
                 &darray_item(*info->pending_computations, act->group.group);
             if (!pc->computed) {
                 xkb_layout_index_t group = 0;
-                if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+                const bool absolute =
+                    (act->group.flags & ACTION_ABSOLUTE_SWITCH);
+                if (!ExprResolveGroup(info, pc->expr, absolute, &group, NULL)) {
                     log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                             "Invalid action group index\n");
                     return false;
                 }
                 pc->computed = true;
-                if (!(act->group.flags & ACTION_ABSOLUTE_SWITCH)) {
+                if (absolute) {
+                    pc->value = (int32_t) (group - 1);
+                } else {
                     pc->value = group;
                     if (pc->expr->common.type == STMT_EXPR_NEGATE)
                         pc->value = (uint32_t) (-(int32_t) pc->value);
-                } else {
-                    pc->value = (int32_t) (group - 1);
                 }
             }
             act->group.group = (int32_t) pc->value;

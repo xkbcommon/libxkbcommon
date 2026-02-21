@@ -10,6 +10,10 @@ xkb_types {
 	type "ONE_LEVEL" {
 		modifiers= none;
 	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+	};
 };
 
 xkb_compatibility {
@@ -26,7 +30,11 @@ xkb_symbols {
 		symbols[1]= [                       NoSymbol ],
 		actions[1]= [              MovePtr(x=0,y=+0) ],
 		symbols[2]= [                       NoSymbol ],
-		actions[2]= [           MovePtr(x=2,y=32766) ]
+		actions[2]= [           MovePtr(x=2,y=32766) ],
+		symbols[3]= [                       NoSymbol,                       NoSymbol ],
+		actions[3]= [             SetGroup(group=+0),            LockGroup(group=+0) ],
+		symbols[4]= [                       NoSymbol ],
+		actions[4]= [             MovePtr(x=+0,y=+0) ]
 	};
 };
 

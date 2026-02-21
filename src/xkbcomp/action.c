@@ -364,14 +364,15 @@ CheckGroupField(const struct xkb_keymap_info *keymap_info,
         flags &= ~ACTION_ABSOLUTE_SWITCH;
         spec = value->unary.child;
         value_ptr = &(*value_ptr)->unary.child;
-    }
-    else {
+    } else {
         flags |= ACTION_ABSOLUTE_SWITCH;
         spec = value;
     }
 
+    const bool absolute = (flags & ACTION_ABSOLUTE_SWITCH);
     bool pending = false;
-    if (!ExprResolveGroup(keymap_info, spec, &idx, &pending) && !pending)
+    if (!ExprResolveGroup(keymap_info, spec, absolute, &idx, &pending) &&
+        !pending)
         return ReportMismatch(keymap_info->keymap.ctx,
                               XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
                               ACTION_FIELD_GROUP, "integer");
