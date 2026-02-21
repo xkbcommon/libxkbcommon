@@ -5,6 +5,7 @@ xkb_keycodes {
 	<A>                  = 38;
 	<S>                  = 39;
 	<D>                  = 40;
+	<F>                  = 41;
 };
 
 xkb_types {
@@ -36,6 +37,11 @@ xkb_symbols {
 		repeat= No,
 		symbols[1]= [                              d ],
 		actions[1]= [ RedirectKey(keycode=<S>,modifiers=Shift,clearMods=Control) ]
+	};
+	key <F>                  {
+		repeat= No,
+		symbols[1]= [                              f ],
+		actions[1]= [                  RedirectKey() ]
 	};
 };
 
