@@ -393,8 +393,8 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
-                 const ExprDef *expr, xkb_layout_index_t *group_rtrn,
-                 bool *pending)
+                 const ExprDef *expr, bool absolute,
+                 xkb_layout_index_t *group_rtrn, bool *pending)
 {
     static const LookupEntry pendingGroupIndexNames[] = {
         { GROUP_LAST_INDEX_NAME, 0 },
@@ -418,7 +418,7 @@ ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
                                   NamedIntegerPatternLookup, &group_name_pattern))
         return false;
 
-    if (result < 1 || result > keymap_info->features.max_groups) {
+    if (result < !!absolute || result > keymap_info->features.max_groups) {
         log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
                 result, keymap_info->features.max_groups);
