@@ -1242,6 +1242,8 @@ xkb_x11_keymap_new_from_device(struct xkb_context *ctx,
     if (!keymap)
         return NULL;
 
+    keymap->redirect_key_auto = XKB_KEYCODE_MAX; /* Invalid X11 keycode */
+
     struct x11_atom_interner interner;
     x11_atom_interner_init(&interner, ctx, conn);
 

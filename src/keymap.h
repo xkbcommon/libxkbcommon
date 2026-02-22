@@ -629,6 +629,9 @@ struct xkb_keymap {
      */
     xkb_mod_mask_t canonical_state_mask;
 
+    /** Encode the “auto” special value of RedirectKey() */
+    xkb_keycode_t redirect_key_auto;
+
     /* This field has 2 uses:
      * • During parsing: Expected layouts count after RMLVO resolution, if any;
      * • After parsing: Number of groups in the key with the most groups. */
