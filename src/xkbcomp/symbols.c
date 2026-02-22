@@ -201,7 +201,7 @@ InitSymbolsInfo(SymbolsInfo *info, const struct xkb_keymap_info *keymap_info,
     info->keymap_info = keymap_info;
     info->max_groups = keymap_info->features.max_groups;
     InitKeyInfo(keymap_info->keymap.ctx, &info->default_key);
-    InitActionsInfo(&info->default_actions);
+    InitActionsInfo(&keymap_info->keymap, &info->default_actions);
     InitVMods(&info->mods, mods, include_depth > 0);
     info->explicit_group = XKB_LAYOUT_INVALID;
 }

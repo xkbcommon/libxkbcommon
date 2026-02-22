@@ -21,7 +21,7 @@ typedef struct {
 } ActionsInfo;
 
 void
-InitActionsInfo(ActionsInfo *info);
+InitActionsInfo(const struct xkb_keymap *keymap, ActionsInfo *info);
 
 bool
 HandleActionDef(const struct xkb_keymap_info *keymap_info, ActionsInfo *info,

@@ -151,7 +151,7 @@ InitCompatInfo(CompatInfo *info, const struct xkb_keymap_info *keymap_info,
     info->ctx = keymap_info->keymap.ctx;
     info->keymap_info = keymap_info;
     info->include_depth = include_depth;
-    InitActionsInfo(&info->default_actions);
+    InitActionsInfo(&keymap_info->keymap, &info->default_actions);
     InitVMods(&info->mods, mods, include_depth > 0);
     InitInterp(&info->default_interp);
     InitLED(&info->default_led);

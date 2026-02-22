@@ -3868,8 +3868,28 @@ or button which caused the event, else on the *core* keyboard device.
 <tr>
 <th>`key`</th>
 <td>`keycode`, `kc`</td>
-<td>keycode</td>
-<td>0</td>
+<td>
+keycode or `auto`.
+
+@anchor redirect-key-auto
+`auto` is a special value that resolves to the keycode where the action is
+located, e.g.:
+
+```c
+// Original: implict parameter
+key <AB01> { [RedirectKey(…) ] };
+// Original: explicit parameter
+key <AB01> { [RedirectKey(keycode=auto, …) ] };
+// Resolved
+key <AB01> { [RedirectKey(keycode=<AB01>, …) ] };
+```
+</td>
+<td>
+`auto`
+
+@since 1.0.0: invalid keycode
+@since 1.14.0: `auto`
+</td>
 <td>Target keycode to emulate</td>
 <tr>
 <th>`clearmodifiers`</th>

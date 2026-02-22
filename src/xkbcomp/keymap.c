@@ -374,7 +374,8 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
 }
 
 static bool
-update_pending_action_fields(struct xkb_keymap_info *info, union xkb_action *act)
+update_pending_action_fields(struct xkb_keymap_info *info,
+                             xkb_keycode_t keycode, union xkb_action *act)
 {
     switch (act->type) {
     case ACTION_TYPE_GROUP_SET:
@@ -403,6 +404,20 @@ update_pending_action_fields(struct xkb_keymap_info *info, union xkb_action *act
             act->group.flags &= ~ACTION_PENDING_COMPUTATION;
         }
         return true;
+    case ACTION_TYPE_REDIRECT_KEY: {
+        if (keycode == XKB_KEYCODE_INVALID ||
+            act->redirect.keycode != info->keymap.redirect_key_auto) {
+            /* No auto value to set */
+            return true;
+        } else {
+            /*
+             * Auto value: use the provided keycode to redirect to the key
+             * where the action is defined
+             */
+            act->redirect.keycode = keycode;
+        }
+        return true;
+    }
     default:
         return true;
     }
@@ -571,13 +586,14 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                 &keymap->sym_interprets[i];
             if (interp->num_actions <= 1) {
                 union xkb_action * restrict const act = &interp->a.action;
-                if (!update_pending_action_fields(info, act))
+                if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID, act))
                     return false;
             } else {
                 for (xkb_action_count_t a = 0; a < interp->num_actions; a++) {
                     union xkb_action * restrict const act =
                         &interp->a.actions[a];
-                    if (!update_pending_action_fields(info, act))
+                    if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID,
+                                                      act))
                         return false;
                 }
             }
@@ -669,8 +685,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                     union xkb_action * restrict const act =
                         &key->groups[i].levels[j].a.action;
                     UpdateActionMods(keymap, act, key->modmap);
-                    if (pending_computations &&
-                        !update_pending_action_fields(info, act))
+                    if ((pending_computations ||
+                         act->type == ACTION_TYPE_REDIRECT_KEY) &&
+                        !update_pending_action_fields(info, key->keycode, act))
                         return false;
                 } else {
                     for (xkb_action_count_t k = 0;
@@ -678,8 +695,10 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                         union xkb_action * restrict const act =
                             &key->groups[i].levels[j].a.actions[k];
                         UpdateActionMods(keymap, act, key->modmap);
-                        if (pending_computations &&
-                            !update_pending_action_fields(info, act))
+                        if ((pending_computations ||
+                             act->type == ACTION_TYPE_REDIRECT_KEY) &&
+                            !update_pending_action_fields(info, key->keycode,
+                                                          act))
                             return false;
                     }
                 }

@@ -532,7 +532,13 @@ Unused in [xkeyboard-config] layouts.
 <tr>
 <th>Keyboard emulation</th>
 <th>`RedirectKey()`</th>
-<td>✅ Full support</td>
+<td>
+<details>
+<summary>✅ Full support</summary>
+Note that the <code>[auto](@ref redirect-key-auto)</code> value for the `keycode`
+parameter is not supported: the default value is 0, an invalid X11 keycode.
+</details>
+</td>
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
