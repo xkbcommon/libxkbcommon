@@ -719,6 +719,10 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "  xkb_compat {\n"
                 "    group 0xffffffff = Mod5;\n"
                 "  };\n"
+                "  xkb_types {\n"
+                "    type \"ONE_LEVEL\" {};"
+                "    type \"TWO_LEVEL\" { modifiers = Shift; map[Shift] = 2;};\n"
+                "  };\n"
                 "  xkb_symbols {\n"
                 /* Computations with 64 bit ints that then fit into 16 bits */
                 "    key <> {\n"
@@ -727,7 +731,10 @@ test_integers(struct xkb_context *ctx, bool update_output_files) {
                 "                   y=~-0x7fff * 0x30000 / 0x2ffff)],\n"
                 /* Test (INT64_MIN + 1) and INT64_MAX */
                 "      [MovePointer(x=-9223372036854775807\n"
-                "                     +9223372036854775807)]\n"
+                "                     +9223372036854775807)],\n"
+                /* Test +0 */
+                "      [SetGroup(group=+0), LockGroup(group=+(Last-4))],\n"
+                "      [MovePointer(x=+0, y=-(1-1))]\n"
                 "    };\n"
                 "  };\n"
                 "};",
@@ -2586,7 +2593,7 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
         {
             .keymap =
                 "xkb_keymap {\n"
-                "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; <F> = 41; };\n"
+                "  xkb_keycodes { <A> = 38; <S> = 39; <D> = 40; <F> = 41; <G> = 42;};\n"
                 "  xkb_symbols {\n"
                 /* Inexistent key */
                 "    key <A> { [a], [RedirectKey(key=<?>)] };\n"
@@ -2594,8 +2601,10 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
                 "    key <S> { [s], [RedirectKey(key=<A>), RedirectKey(key=<D>)] };\n"
                 /* OK! */
                 "    key <D> { [d], [RedirectKey(key=<S>,mods=Shift,clearMods=Control)] };\n"
-                /* No parameters */
+                /* No parameters (implicit auto) */
                 "    key <F> { [f], [RedirectKey()] };\n"
+                /* Explicit auto keycode */
+                "    key <G> { [g], [RedirectKey(keycode=auto)] };\n"
                 "  };\n"
                 "};",
             .expected = GOLDEN_TESTS_OUTPUTS "redirect-key-1.xkb"

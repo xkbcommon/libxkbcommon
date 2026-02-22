@@ -391,6 +391,7 @@ class TestXkbcli(unittest.TestCase):
             ["--output-format=xkb_v2", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
+            ["--explicit-values", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_compile_keymap.run_command_success(args)
@@ -729,6 +730,7 @@ class TestXkbcli(unittest.TestCase):
             ["--format=v2", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
+            ["--explicit-values", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_dump_keymap_wayland.run_command_success(args)
@@ -739,6 +741,7 @@ class TestXkbcli(unittest.TestCase):
             ["--format=v2", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
+            ["--explicit-values", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_dump_keymap_x11.run_command_success(args)

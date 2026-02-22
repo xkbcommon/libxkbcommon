@@ -261,9 +261,15 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                     }
             }
 
+            if (!darray_empty(actions))
+                key->groups[group].implicit_actions = true;
+
             /* Do not free here */
             darray_resize(actions, 0);
         }
+
+        if (key->groups[group].implicit_actions)
+            key->implicit_actions = true;
     }
     darray_free(actions);
     darray_free(interprets);
@@ -359,7 +365,7 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
         );
         if (!pc->computed) {
             xkb_layout_index_t group = 0;
-            if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+            if (!ExprResolveGroup(info, pc->expr, true, &group, NULL)) {
                 log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                         "Invalid key redirect group index\n");
                 return false;
@@ -374,7 +380,8 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
 }
 
 static bool
-update_pending_action_fields(struct xkb_keymap_info *info, union xkb_action *act)
+update_pending_action_fields(struct xkb_keymap_info *info,
+                             xkb_keycode_t keycode, union xkb_action *act)
 {
     switch (act->type) {
     case ACTION_TYPE_GROUP_SET:
@@ -385,24 +392,40 @@ update_pending_action_fields(struct xkb_keymap_info *info, union xkb_action *act
                 &darray_item(*info->pending_computations, act->group.group);
             if (!pc->computed) {
                 xkb_layout_index_t group = 0;
-                if (!ExprResolveGroup(info, pc->expr, &group, NULL)) {
+                const bool absolute =
+                    (act->group.flags & ACTION_ABSOLUTE_SWITCH);
+                if (!ExprResolveGroup(info, pc->expr, absolute, &group, NULL)) {
                     log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                             "Invalid action group index\n");
                     return false;
                 }
                 pc->computed = true;
-                if (!(act->group.flags & ACTION_ABSOLUTE_SWITCH)) {
+                if (absolute) {
+                    pc->value = (int32_t) (group - 1);
+                } else {
                     pc->value = group;
                     if (pc->expr->common.type == STMT_EXPR_NEGATE)
                         pc->value = (uint32_t) (-(int32_t) pc->value);
-                } else {
-                    pc->value = (int32_t) (group - 1);
                 }
             }
             act->group.group = (int32_t) pc->value;
             act->group.flags &= ~ACTION_PENDING_COMPUTATION;
         }
         return true;
+    case ACTION_TYPE_REDIRECT_KEY: {
+        if (keycode == XKB_KEYCODE_INVALID ||
+            act->redirect.keycode != info->keymap.redirect_key_auto) {
+            /* No auto value to set */
+            return true;
+        } else {
+            /*
+             * Auto value: use the provided keycode to redirect to the key
+             * where the action is defined
+             */
+            act->redirect.keycode = keycode;
+        }
+        return true;
+    }
     default:
         return true;
     }
@@ -571,13 +594,14 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                 &keymap->sym_interprets[i];
             if (interp->num_actions <= 1) {
                 union xkb_action * restrict const act = &interp->a.action;
-                if (!update_pending_action_fields(info, act))
+                if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID, act))
                     return false;
             } else {
                 for (xkb_action_count_t a = 0; a < interp->num_actions; a++) {
                     union xkb_action * restrict const act =
                         &interp->a.actions[a];
-                    if (!update_pending_action_fields(info, act))
+                    if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID,
+                                                      act))
                         return false;
                 }
             }
@@ -669,8 +693,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                     union xkb_action * restrict const act =
                         &key->groups[i].levels[j].a.action;
                     UpdateActionMods(keymap, act, key->modmap);
-                    if (pending_computations &&
-                        !update_pending_action_fields(info, act))
+                    if ((pending_computations ||
+                         act->type == ACTION_TYPE_REDIRECT_KEY) &&
+                        !update_pending_action_fields(info, key->keycode, act))
                         return false;
                 } else {
                     for (xkb_action_count_t k = 0;
@@ -678,8 +703,10 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                         union xkb_action * restrict const act =
                             &key->groups[i].levels[j].a.actions[k];
                         UpdateActionMods(keymap, act, key->modmap);
-                        if (pending_computations &&
-                            !update_pending_action_fields(info, act))
+                        if ((pending_computations ||
+                             act->type == ACTION_TYPE_REDIRECT_KEY) &&
+                            !update_pending_action_fields(info, key->keycode,
+                                                          act))
                             return false;
                     }
                 }

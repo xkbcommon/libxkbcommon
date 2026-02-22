@@ -18,6 +18,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
+#include "features/enums.h"
 #include "keymap.h"
 #include "messages-codes.h"
 #include "text.h"
@@ -253,8 +254,7 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
                           enum xkb_keymap_serialize_flags flags)
 {
     static const enum xkb_keymap_serialize_flags XKB_KEYMAP_SERIALIZE_FLAGS
-        = XKB_KEYMAP_SERIALIZE_PRETTY
-        | XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
+        = (enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS_VALUES;
 
     if (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
         log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,

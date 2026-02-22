@@ -42,8 +42,8 @@ ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
 
 bool
 ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
-                 const ExprDef *expr, xkb_layout_index_t *group_rtrn,
-                 bool *pending_rtrn);
+                 const ExprDef *expr, bool absolute,
+                 xkb_layout_index_t *group_rtrn, bool *pending_rtrn);
 
 bool
 ExprResolveGroupMask(const struct xkb_keymap_info *keymap_info,

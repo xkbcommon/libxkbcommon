@@ -67,7 +67,7 @@ enum action_field {
 };
 
 void
-InitActionsInfo(ActionsInfo *info)
+InitActionsInfo(const struct xkb_keymap *keymap, ActionsInfo *info)
 {
     for (enum xkb_action_type type = 0; type < _ACTION_TYPE_NUM_ENTRIES; type++)
         info->actions[type].type = type;
@@ -79,7 +79,8 @@ InitActionsInfo(ActionsInfo *info)
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
     info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
-    info->actions[ACTION_TYPE_REDIRECT_KEY].redirect.keycode = XKB_KEYCODE_INVALID;
+    info->actions[ACTION_TYPE_REDIRECT_KEY].redirect.keycode =
+        keymap->redirect_key_auto;
 }
 
 static const LookupEntry fieldStrings[] = {
@@ -363,14 +364,15 @@ CheckGroupField(const struct xkb_keymap_info *keymap_info,
         flags &= ~ACTION_ABSOLUTE_SWITCH;
         spec = value->unary.child;
         value_ptr = &(*value_ptr)->unary.child;
-    }
-    else {
+    } else {
         flags |= ACTION_ABSOLUTE_SWITCH;
         spec = value;
     }
 
+    const bool absolute = (flags & ACTION_ABSOLUTE_SWITCH);
     bool pending = false;
-    if (!ExprResolveGroup(keymap_info, spec, &idx, &pending) && !pending)
+    if (!ExprResolveGroup(keymap_info, spec, absolute, &idx, &pending) &&
+        !pending)
         return ReportMismatch(keymap_info->keymap.ctx,
                               XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
                               ACTION_FIELD_GROUP, "integer");
@@ -727,6 +729,13 @@ HandleRedirectKey(const struct xkb_keymap_info *keymap_info,
     if (field == ACTION_FIELD_KEYCODE) {
         if (array_ndx)
             return ReportActionNotArray(ctx, action->type, field);
+        if (value->common.type == STMT_EXPR_IDENT) {
+            const char *valStr = xkb_atom_text(ctx, value->ident.ident);
+            if (valStr && istreq(valStr, "auto")) {
+                act->keycode = keymap_info->keymap.redirect_key_auto;
+                return true;
+            }
+        }
         if (value->common.type != STMT_EXPR_KEYNAME_LITERAL) {
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "key name");

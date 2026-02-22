@@ -4,6 +4,7 @@
  */
 
 #include "config.h"
+#include "features/enums.h"
 #include "test-config.h"
 
 #include <assert.h>
@@ -198,6 +199,19 @@ main(int argc, char *argv[])
             .path = "keymaps/stringcomp-v2.xkb",
             .format = XKB_KEYMAP_FORMAT_TEXT_V2,
             .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
+        },
+        {
+            .path = "keymaps/stringcomp-v2-explicit.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .serialize_flags = TEST_KEYMAP_SERIALIZE_FLAGS
+                             | XKB_KEYMAP_SERIALIZE_EXPLICIT
+        },
+        {
+            .path = "keymaps/stringcomp-v2-explicit-drop-unused.xkb",
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .serialize_flags = ( TEST_KEYMAP_SERIALIZE_FLAGS
+                               | XKB_KEYMAP_SERIALIZE_EXPLICIT )
+                             & ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
         },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {

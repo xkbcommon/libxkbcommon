@@ -1015,6 +1015,26 @@ CopyKeyNamesInfoToKeymap(struct xkb_keymap *keymap, KeyNamesInfo *info)
         !CopyLedNamesToKeymap(keymap, info))
         return false;
 
+    /*
+     * Choose an undefined keycode as an intermediary value to encode special
+     * “auto” value of RedirectKey(), because there is no space left in the
+     * action type to store a flag.
+     */
+    if (!keymap->num_keys ||
+        keymap->min_key_code > 0) {
+        keymap->redirect_key_auto = 0;
+    } else {
+        /* Slow path */
+        xkb_keycode_t keycode = XKB_KEYCODE_INVALID - 1;
+        for (xkb_keycode_t k = keymap->num_keys; k-- > keymap->num_keys_low;) {
+            if (keycode > keymap->keys[k].keycode)
+                break;
+            /* Try next keycode downwards */
+            keycode = keymap->keys[k].keycode - 1;
+        }
+        keymap->redirect_key_auto = keycode;
+    }
+
     keymap->keycodes_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->keycodes_section_name);
     return true;
