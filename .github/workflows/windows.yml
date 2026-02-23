@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         shell: cmd
         run: |
-          # Jinja2 is needed for merge-modes tests
+          :: Jinja2 is needed for merge-modes tests
           python -m pip install --upgrade meson Jinja2
           choco install -y winflexbison3
       - name: Setup
