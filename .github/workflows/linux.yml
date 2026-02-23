@@ -70,14 +70,16 @@ jobs:
       - name: Setup
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
-          CFLAGS='-gdwarf-4 -fno-omit-frame-pointer' \
+          CFLAGS="-gdwarf-4 -fno-omit-frame-pointer $CFLAGS_EXTRA" \
               meson setup -Dbuildtype=debugoptimized -Denable-docs=true -Denable-cool-uris=true \
                           $MESON_EXTRA_FLAGS \
                           build
         env:
           CC: ${{ matrix.compiler }}
+          # Use _FORTIFY_SOURCE only if not using sanitizers
+          CFLAGS_EXTRA: ${{ matrix.sanitizers != 'sanitizers' && '-Wp,-D_FORTIFY_SOURCE=3' || '' }}
           # Use sanitizers only if not using Valgrind
-          MESON_EXTRA_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined' || '' }}
+          MESON_EXTRA_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined,leak' || '' }}
       - name: Build
         run: |
           meson compile -C build
