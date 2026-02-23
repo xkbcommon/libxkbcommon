@@ -15,7 +15,7 @@ permissions: {}
 
 jobs:
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -42,7 +42,7 @@ jobs:
             libclang-dev \
             ${{ matrix.sanitizers == 'sanitizers' && 'libasan8 libubsan1' || '' }}
           # Jinja2 is needed for merge-modes tests
-          python3 -m pip install --upgrade meson PyYAML ruff Jinja2 clang==14
+          python3 -m pip install --upgrade meson PyYAML ruff Jinja2 clang==18.*
           # Generate locale for tests
           sudo locale-gen fr_FR.UTF-8
       - name: Install xkeyboard-config
@@ -84,7 +84,7 @@ jobs:
       - name: Test
         run: |
           # Test enumerations
-          scripts/export-enums.py --libclang-path=/usr/lib/llvm-14/lib/ check
+          scripts/export-enums.py --libclang-path=/usr/lib/llvm-18/lib/ check
           # Use a specific non-US locale
           LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs
       - name: Test with valgrind
@@ -103,9 +103,9 @@ jobs:
       - name: Ensure doxygen version is correct
         run: |
             doxygen --version > version.txt
-            echo "1.9.6" >> version.txt
-            if [ $(sort -V version.txt | tail -n1) != "1.9.6" ]; then
-                echo "Doxygen version 1.9.6 or earlier expected, see #347"
+            echo "1.9.8" >> version.txt
+            if [ $(sort -V version.txt | tail -n1) != "1.9.8" ]; then
+                echo "Doxygen version 1.9.8 or earlier expected, see #347"
                 exit 1
             fi
       - name: Store doxygen docs for use by the pages workflow
