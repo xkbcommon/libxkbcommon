@@ -960,24 +960,22 @@ append_redirect_key_events(struct xkb_state *state,
      * use the current state.
      */
     struct xkb_event *event;
-    const struct state_components *last_components = &state->components;
+    struct state_components last_components = state->components;
     darray_foreach_reverse(event, events->queue) {
         if (event->type == XKB_EVENT_TYPE_COMPONENTS_CHANGE) {
-            last_components = &event->components.components;
+            last_components = event->components.components;
             break;
         }
     }
-    /* Ensure that only tweaks could have affected the queue */
-    assert((last_components != &state->components) ^ darray_empty(events->queue));
 
     if (mask) {
-        struct state_components new = *last_components;
+        struct state_components new = last_components;
         new.base_mods = (new.base_mods & ~mask) | redirect->mods;
         new.latched_mods = (new.latched_mods & ~mask) | redirect->mods;
         new.locked_mods = (new.locked_mods & ~mask) | redirect->mods;
         new.mods = (new.mods & ~mask) | redirect->mods;
 
-        changed = get_state_component_changes(last_components, &new);
+        changed = get_state_component_changes(&last_components, &new);
         if (changed) {
             darray_append(events->queue, (struct xkb_event) {
                 .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
@@ -1003,7 +1001,7 @@ append_redirect_key_events(struct xkb_state *state,
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
-                .components = *last_components,
+                .components = last_components,
                 .changed = changed
             }
         });
