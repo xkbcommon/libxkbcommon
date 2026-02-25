@@ -179,8 +179,8 @@ int
 x11_tests_run(void)
 {
     int rc = 0;
-    for (const struct test_function *t = &__start_test_func_sec;
-         t < &__stop_test_func_sec;
+    for (const struct test_function *t = __start_test_func_sec;
+         t < __stop_test_func_sec;
          t++) {
         fprintf(stderr, "------ Running test: %s from %s ------\n",
                 t->name, t->file);

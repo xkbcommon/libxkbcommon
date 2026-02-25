@@ -1777,9 +1777,14 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     }
 
     key->groups = calloc(key->num_groups, sizeof(*key->groups));
+    assert(darray_size(keyi->groups) == key->num_groups);
 
     /* Find and assign the groups' types in the keymap. */
     darray_enumerate(i, groupi, keyi->groups) {
+        #ifdef __clang__
+        /* Make clang-tidy happy */
+        __builtin_assume(i < key->num_groups);
+        #endif
         bool explicit_type = false;
         const struct xkb_key_type * const type =
             FindTypeForGroup(keymap, keyi, i, &explicit_type);

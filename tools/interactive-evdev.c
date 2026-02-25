@@ -372,16 +372,15 @@ loop(struct keyboard *kbds)
     int ret = -1;
     struct keyboard *kbd;
     nfds_t nfds, i;
-    struct pollfd *fds = NULL;
 
     for (kbd = kbds, nfds = 0; kbd; kbd = kbd->next, nfds++) {}
-    fds = calloc(nfds, sizeof(*fds));
-    if (fds == NULL) {
+    struct pollfd *fds = calloc(nfds, sizeof(*fds));
+    if (!fds) {
         fprintf(stderr, "Out of memory");
         goto out;
     }
 
-    for (i = 0, kbd = kbds; kbd; kbd = kbd->next, i++) {
+    for (i = 0, kbd = kbds; kbd && i < nfds; kbd = kbd->next, i++) {
         fds[i].fd = kbd->fd;
         fds[i].events = POLLIN;
     }
@@ -396,7 +395,7 @@ loop(struct keyboard *kbds)
             goto out;
         }
 
-        for (i = 0, kbd = kbds; kbd; kbd = kbd->next, i++) {
+        for (i = 0, kbd = kbds; kbd && i < nfds; kbd = kbd->next, i++) {
             if (fds[i].revents != 0) {
                 ret = read_keyboard(kbd);
                 if (ret) {

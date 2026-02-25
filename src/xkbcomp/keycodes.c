@@ -196,7 +196,8 @@ keycode_store_update_alias(KeycodeStore *store, xkb_atom_t alias, xkb_atom_t rea
 static inline void
 keycode_store_delete_name(const KeycodeStore *store, xkb_atom_t name)
 {
-    darray_item(store->names, name).found = false;
+    if (name < darray_size(store->names))
+        darray_item(store->names, name).found = false;
 }
 
 static void

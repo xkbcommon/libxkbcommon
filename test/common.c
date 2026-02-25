@@ -372,37 +372,52 @@ test_get_path(const char *path_rel)
 char *
 read_file(const char *path, FILE *file)
 {
+    enum { MAX_FILE_SIZE = 1u << 20 }; /* 1 MiB */
+
     if (!file)
         return NULL;
 
+    errno = 0;
     const int fd = fileno(file);
-    if (fd < 0)
+    if (fd < 0) {
+        fprintf(stderr, "Error getting file descriptor for %s: %s\n",
+                path, strerror(errno));
         return NULL;
+    }
 
+    errno = 0;
     struct stat info;
     if (fstat(fd, &info) != 0) {
-        fclose(file);
+        fprintf(stderr, "Error getting file stats for %s: %s\n",
+                path, strerror(errno));
         return NULL;
     }
 
-    char* ret = malloc(info.st_size + 1);
-    if (!ret) {
-        fclose(file);
+    const size_t size = (size_t)info.st_size;
+    if (size > MAX_FILE_SIZE) {
+        fprintf(stderr, "Error: file %s exceeds maximum size\n", path);
         return NULL;
     }
+    char *ret = malloc(size + 1);
+    if (!ret)
+        return NULL;
 
-    const size_t size = info.st_size;
+    /*
+     * Null-terminated string.
+     * Write here to avoid clang-tidy warning about tainted index due to fread.
+     */
+    ret[size] = '\0';
+
+    errno = 0;
     const size_t count = fread(ret, sizeof(*ret), size, file);
     if (count != size) {
         if (!feof(file))
             printf("Error reading file %s: unexpected end of file\n", path);
         else if (ferror(file))
-            perror("Error reading file");
-        fclose(file);
+            fprintf(stderr, "Error reading file %s: %s\n", path, strerror(errno));
         free(ret);
         return NULL;
     }
-    ret[count] = '\0';
 
     return ret;
 }

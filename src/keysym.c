@@ -407,16 +407,23 @@ xkb_keysym_is_deprecated(xkb_keysym_t keysym,
             }
             /* There is a reference name that is not deprecated */
             *reference_name = get_name_by_index(deprecated_keysyms[mid].offset);
-            if (name == NULL)
+            if (!name) {
                 /* No name to check: indicate not deprecated */
                 return false;
+            }
             if (deprecated_keysyms[mid].explicit_count) {
                 /* Only some explicit names are deprecated */
-                uint8_t k = deprecated_keysyms[mid].explicit_index;
                 const uint8_t k_max = deprecated_keysyms[mid].explicit_index
                                     + deprecated_keysyms[mid].explicit_count;
+                assert(k_max <= ARRAY_SIZE(explicit_deprecated_aliases));
                 /* Check every deprecated alias */
-                for (; k < k_max; k++) {
+                for (uint8_t k = deprecated_keysyms[mid].explicit_index;
+                     k < k_max; k++) {
+                    #ifdef __clang__
+                    /* Make clang-tidy happy */
+                    __builtin_assume(k_max <=
+                                     ARRAY_SIZE(explicit_deprecated_aliases));
+                    #endif
                     const char *alias =
                         get_name_by_index(explicit_deprecated_aliases[k]);
                     if (strcmp(name, alias) == 0)

@@ -146,6 +146,7 @@ print(
 #include <stdint.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -343,6 +344,10 @@ print("};\n")
 print("static const uint32_t explicit_deprecated_aliases[] = {")
 generate_mixed_aliases(explicit_deprecated_aliases)
 print("};")
+print("""
+static_assert(ARRAY_SIZE(explicit_deprecated_aliases) < UINT8_MAX,
+              "Cannot encode index and count in deprecated_keysym::explicit_*");
+""")
 
 print(f"max name offset: {max(entry_offsets.values())}", file=sys.stderr)
 

@@ -669,26 +669,23 @@ main(int argc, char *argv[])
                      * Keep only the lowest level, so that we avoid combinatorial
                      * explosion.
                      */
-                    bool found = false;
                     /* Look for the current keysym in previous levels */
                     for (darray_size_t k = 0;
                          k < darray_size(key_compose_keysyms);
                          k++) {
                         if (darray_item(key_compose_keysyms, k) == syms[0]) {
                             /* Found it: skip this level */
-                            found = true;
-                            break;
+                            goto next_level;
                         }
                     }
-                    if (!found) {
-                        /* First occurrence of the keysym on the layout/key */
-                        darray_append(key_compose_keysyms, syms[0]);
-                        /* Add the keysym position if in a Compose sequence */
-                        found = add_compose_keysym_entry(
-                            keymap, &keysym_entries, syms[0],
-                            keycode, layout, level
-                        );
-                    }
+                    /* First occurrence of the keysym on the layout/key */
+                    darray_append(key_compose_keysyms, syms[0]);
+                    /* Add the keysym position if in a Compose sequence */
+                    add_compose_keysym_entry(
+                        keymap, &keysym_entries, syms[0],
+                        keycode, layout, level
+                    );
+next_level:
                     continue;
                 }
 

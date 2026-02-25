@@ -51,9 +51,9 @@ struct test_function {
 
 /* Custom section pointers. See: https://stackoverflow.com/a/22366882 */
 #define DECLARE_TEST_ELF_SECTION_POINTERS(_section) \
-extern const struct test_function CONCAT2(__start_, _section) \
+extern const struct test_function CONCAT2(__start_, _section)[] \
     __asm("section$start$__DATA$" STRINGIFY2(_section)); \
-extern const struct test_function CONCAT2(__stop_, _section) \
+extern const struct test_function CONCAT2(__stop_, _section)[] \
     __asm("section$end$__DATA$" STRINGIFY2(_section))
 
 #else
@@ -64,7 +64,7 @@ extern const struct test_function CONCAT2(__stop_, _section) \
 
 #define DECLARE_TEST_ELF_SECTION_POINTERS(_section) \
     extern const struct test_function \
-    CONCAT2(__start_, _section), CONCAT2(__stop_, _section)
+    CONCAT2(__start_, _section)[], CONCAT2(__stop_, _section)[]
 #endif
 
 #define X11_TEST(_func) \

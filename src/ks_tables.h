@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "utils.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -8284,3 +8285,6 @@ static const struct deprecated_keysym deprecated_keysyms[] = {
 static const uint32_t explicit_deprecated_aliases[] = {
     24029,
 };
+
+static_assert(ARRAY_SIZE(explicit_deprecated_aliases) < UINT8_MAX,
+              "Cannot encode index and count in deprecated_keysym::explicit_*");
