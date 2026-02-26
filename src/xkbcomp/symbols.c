@@ -1347,7 +1347,8 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
-        return false;
+        return !(info->keymap_info->strict &
+                 PARSER_NO_UNKNOWN_SYMBOLS_GLOBAL_FIELDS);
     }
 
     return ret;

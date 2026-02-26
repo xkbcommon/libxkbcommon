@@ -43,6 +43,7 @@ typedef struct {
     struct xkb_mod_set mods;
 
     struct xkb_context *ctx;
+    const struct xkb_keymap_info *keymap_info;
 } KeyTypesInfo;
 
 /***====================================================================***/
@@ -84,12 +85,13 @@ ReportTypeBadType(KeyTypesInfo *info, enum xkb_message_code code,
 /***====================================================================***/
 
 static void
-InitKeyTypesInfo(KeyTypesInfo *info, struct xkb_context *ctx,
+InitKeyTypesInfo(KeyTypesInfo *info, const struct xkb_keymap_info *keymap_info,
                  unsigned int include_depth,
                  const struct xkb_mod_set *mods)
 {
     memset(info, 0, sizeof(*info));
-    info->ctx = ctx;
+    info->ctx = keymap_info->keymap.ctx;
+    info->keymap_info = keymap_info;
     info->include_depth = include_depth;
     InitVMods(&info->mods, mods, include_depth > 0);
 }
@@ -210,7 +212,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
         return false;
     }
 
-    InitKeyTypesInfo(&included, info->ctx, info->include_depth + 1,
+    InitKeyTypesInfo(&included, info->keymap_info, info->include_depth + 1,
                      &info->mods);
     included.name = steal(&include->stmt);
 
@@ -227,7 +229,7 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
             return false;
         }
 
-        InitKeyTypesInfo(&next_incl, info->ctx, info->include_depth + 1,
+        InitKeyTypesInfo(&next_incl, info->keymap_info, info->include_depth + 1,
                          &included.mods);
 
         HandleKeyTypesFile(&next_incl, file);
@@ -660,10 +662,10 @@ HandleGlobalVar(KeyTypesInfo *info, VarDef *stmt)
     ExprDef *arrayNdx;
 
     if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field,
-                        &arrayNdx))
+                        &arrayNdx)) {
         return false;           /* internal error, already reported */
-
-    if (elem && istreq(elem, "type")) {
+    }
+    else if (elem && istreq(elem, "type")) {
         log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,
                 "Support for changing the default type has been removed; "
                 "Statement ignored\n");
@@ -677,6 +679,8 @@ HandleGlobalVar(KeyTypesInfo *info, VarDef *stmt)
     else if (field) {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
+        return !(info->keymap_info->strict &
+                 PARSER_NO_UNKNOWN_TYPES_GLOBAL_FIELDS);
     }
 
     return false;
@@ -846,7 +850,7 @@ CompileKeyTypes(XkbFile *file, struct xkb_keymap_info *keymap_info)
 {
     KeyTypesInfo info;
 
-    InitKeyTypesInfo(&info, keymap_info->keymap.ctx, 0,
+    InitKeyTypesInfo(&info, keymap_info, 0,
                      &keymap_info->keymap.mods);
 
     if (file != NULL)

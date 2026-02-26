@@ -270,6 +270,7 @@ AddInterp(CompatInfo *info, SymInterpInfo *new, bool same_file)
 
 /***====================================================================***/
 
+// TODO: more lenient?
 static bool
 ResolveStateAndPredicate(ExprDef *expr, enum xkb_match_operation *pred_rtrn,
                          xkb_mod_mask_t *mods_rtrn, CompatInfo *info)
@@ -776,7 +777,8 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
             ? MERGE_OVERRIDE
             : stmt->merge;
         ret = SetInterpField(info, &temp, field, ndx, stmt->value);
-        MergeInterp(info, &info->default_interp, &temp, true);
+        if (ret)
+            MergeInterp(info, &info->default_interp, &temp, true);
     }
     else if (elem && istreq(elem, "indicator")) {
         LedInfo temp = {0};
@@ -786,7 +788,8 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
             ? MERGE_OVERRIDE
             : stmt->merge;
         ret = SetLedMapField(info, &temp, field, ndx, &stmt->value);
-        MergeLedMap(info, &info->default_led, &temp, true);
+        if (ret)
+            MergeLedMap(info, &info->default_led, &temp, true);
     }
     else if (elem) {
         ret = (SetDefaultActionField(info->keymap_info, &info->default_actions,
@@ -796,7 +799,8 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
-        return false;
+        return !(info->keymap_info->strict &
+                 PARSER_NO_UNKNOWN_COMPAT_GLOBAL_FIELDS);
     }
     return ret;
 }

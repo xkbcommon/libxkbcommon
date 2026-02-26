@@ -807,13 +807,15 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         log_err(info->ctx, XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE,
                 "Cannot set global defaults for \"%s\" element; "
                 "Assignment to \"%s.%s\" ignored\n", elem, elem, field);
-        return false;
+        return !(info->keymap_info->strict &
+                 PARSER_NO_UNKNOWN_KEYCODES_GLOBAL_FIELDS);
     }
 
     if (!istreq(field, "minimum") && !istreq(field, "maximum")) {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
-        return false;
+        return !(info->keymap_info->strict &
+                 PARSER_NO_UNKNOWN_KEYCODES_GLOBAL_FIELDS);
     }
 
     if (arrayNdx) {
