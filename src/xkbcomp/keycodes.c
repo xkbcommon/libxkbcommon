@@ -360,6 +360,7 @@ typedef struct {
     xkb_led_index_t num_led_names;
 
     struct xkb_context *ctx;
+    const struct xkb_keymap_info *keymap_info;
 } KeyNamesInfo;
 
 /***====================================================================***/
@@ -450,11 +451,12 @@ ClearKeyNamesInfo(KeyNamesInfo *info)
 }
 
 static void
-InitKeyNamesInfo(KeyNamesInfo *info, struct xkb_context *ctx,
+InitKeyNamesInfo(KeyNamesInfo *info, const struct xkb_keymap_info *keymap_info,
                  unsigned int include_depth)
 {
     memset(info, 0, sizeof(*info));
-    info->ctx = ctx;
+    info->ctx = keymap_info->keymap.ctx;
+    info->keymap_info = keymap_info;
     info->include_depth = include_depth;
     keycode_store_init(&info->keycodes);
 }
@@ -677,7 +679,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include, bool report)
         return false;
     }
 
-    InitKeyNamesInfo(&included, info->ctx, 0 /* unused */);
+    InitKeyNamesInfo(&included, info->keymap_info, 0 /* unused */);
     included.name = steal(&include->stmt);
 
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
@@ -693,7 +695,7 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include, bool report)
             return false;
         }
 
-        InitKeyNamesInfo(&next_incl, info->ctx, info->include_depth + 1);
+        InitKeyNamesInfo(&next_incl, info->keymap_info, info->include_depth + 1);
 
         HandleKeycodesFile(&next_incl, file);
 
@@ -812,6 +814,20 @@ HandleKeyNameVar(KeyNamesInfo *info, VarDef *stmt)
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
         return false;
+    }
+
+    if (arrayNdx) {
+        ReportNotArray(info->ctx, "keycodes", field, "defaults");
+        return !(info->keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH);
+    }
+
+    int64_t val = 0;
+    if (!ExprResolveInteger(info->ctx, stmt->value, &val) ||
+        val < 0 || val > UINT32_MAX) {
+        ReportBadType(info->ctx, XKB_ERROR_WRONG_FIELD_TYPE, "keycodes",
+                      field, "defaults", "integer 0..0xfffffffe");
+        static_assert(XKB_KEYCODE_MAX == 0xfffffffe, "update error message");
+        return !(info->keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH);
     }
 
     /* We ignore explicit min/max statements, we always use computed. */
@@ -1048,7 +1064,7 @@ CompileKeycodes(XkbFile *file, struct xkb_keymap_info *keymap_info)
 {
     KeyNamesInfo info;
 
-    InitKeyNamesInfo(&info, keymap_info->keymap.ctx, 0);
+    InitKeyNamesInfo(&info, keymap_info, 0);
 
     if (file != NULL)
         HandleKeycodesFile(&info, file);

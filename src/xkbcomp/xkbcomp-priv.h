@@ -15,8 +15,9 @@
 
 enum xkb_parser_strict_flags {
     PARSER_NO_STRICT_FLAGS = 0,
+    PARSER_NO_FIELD_TYPE_MISMATCH = (1 << 1),
 
-    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_STRICT_FLAGS << 1) - 1),
+    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_FIELD_TYPE_MISMATCH << 1) - 1),
     /* Limited flexibility */
     PARSER_V1_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,
 

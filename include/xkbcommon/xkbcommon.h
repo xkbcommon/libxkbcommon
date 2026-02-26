@@ -1150,6 +1150,7 @@ enum xkb_keymap_compile_flags {
      * This useful mainly for debugging.
      *
      * When this flag is set, the following will raise an error:
+     * - field type mismatch (e.g. a number instead of a string)
      * - TODO
      *
      * @since 1.14.0
