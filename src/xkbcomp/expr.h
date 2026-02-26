@@ -40,7 +40,7 @@ bool
 ExprResolveLevel(struct xkb_context *ctx, const ExprDef *expr,
                  xkb_level_index_t *level_rtrn);
 
-bool
+enum xkb_parser_error
 ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
                  const ExprDef *expr, bool absolute,
                  xkb_layout_index_t *group_rtrn, bool *pending_rtrn);

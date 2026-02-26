@@ -828,6 +828,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         break;
     }
 
+    case ACTION_TYPE_UNKNOWN:
     case ACTION_TYPE_NONE:
         write_buf(buf, "%sNoAction()%s", prefix, suffix);
         break;
@@ -852,7 +853,7 @@ void_action:
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 19 &&
+        static_assert(ACTION_TYPE_INTERNAL == 20 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
         /* Unsupported legacy actions should have degraded to NoAction */
@@ -1046,7 +1047,7 @@ write_action_defaults(const struct xkb_keymap *keymap,
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 19 &&
+        static_assert(ACTION_TYPE_INTERNAL == 20 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
     }

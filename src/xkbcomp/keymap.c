@@ -365,13 +365,18 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
         );
         if (!pc->computed) {
             xkb_layout_index_t group = 0;
-            if (!ExprResolveGroup(info, pc->expr, true, &group, NULL)) {
+            switch (ExprResolveGroup(info, pc->expr, true, &group, NULL)) {
+            case PARSER_SUCCESS:
+                pc->computed = true;
+                pc->value = group - 1;
+                break;
+            case PARSER_FATAL_ERROR:
                 log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                         "Invalid key redirect group index\n");
-                return false;
+                return (info->strict & PARSER_NO_FIELD_TYPE_MISMATCH);
+            default:
+                /* Recover from error: ignore */;
             }
-            pc->computed = true;
-            pc->value = group - 1;
         }
         key->out_of_range_pending_group = false;
         key->out_of_range_group_number = pc->value;
@@ -394,18 +399,23 @@ update_pending_action_fields(struct xkb_keymap_info *info,
                 xkb_layout_index_t group = 0;
                 const bool absolute =
                     (act->group.flags & ACTION_ABSOLUTE_SWITCH);
-                if (!ExprResolveGroup(info, pc->expr, absolute, &group, NULL)) {
+                switch (ExprResolveGroup(info, pc->expr, absolute, &group, NULL)) {
+                case PARSER_FATAL_ERROR:
                     log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                             "Invalid action group index\n");
                     return false;
-                }
-                pc->computed = true;
-                if (absolute) {
-                    pc->value = (int32_t) (group - 1);
-                } else {
-                    pc->value = group;
-                    if (pc->expr->common.type == STMT_EXPR_NEGATE)
-                        pc->value = (uint32_t) (-(int32_t) pc->value);
+                case PARSER_RECOVERABLE_ERROR:
+                    /* ignore */
+                    break;
+                default:
+                    pc->computed = true;
+                    if (absolute) {
+                        pc->value = (int32_t) (group - 1);
+                    } else {
+                        pc->value = group;
+                        if (pc->expr->common.type == STMT_EXPR_NEGATE)
+                            pc->value = (uint32_t) (-(int32_t) pc->value);
+                    }
                 }
             }
             act->group.group = (int32_t) pc->value;

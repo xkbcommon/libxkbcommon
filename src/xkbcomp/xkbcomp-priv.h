@@ -13,13 +13,31 @@
 #include "scanner-utils.h"
 #include "text.h"
 
+enum xkb_parser_error {
+    PARSER_SUCCESS = 0,
+    PARSER_RECOVERABLE_ERROR,
+    PARSER_FATAL_ERROR
+};
+
+/**
+ * Flags to control where the parser strictness applies.
+ *
+ * This is probably overkill, but it could enable fine grained control
+ * depending of the keymap format or other factors.
+ */
 enum xkb_parser_strict_flags {
     PARSER_NO_STRICT_FLAGS = 0,
     PARSER_NO_FIELD_TYPE_MISMATCH = (1 << 1),
+    PARSER_NO_FIELD_VALUE_MISMATCH = (1 << 2),
 
-    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_FIELD_TYPE_MISMATCH << 1) - 1),
+    PARSER_NO_UNKNOWN_ACTION = (1 << 11),
+    PARSER_NO_UNKNOWN_ACTION_FIELDS = (1 << 12),
+    PARSER_NO_ILLEGAL_ACTION_FIELDS = (1 << 13),
+
+    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_ILLEGAL_ACTION_FIELDS << 1) - 1),
     /* Limited flexibility */
-    PARSER_V1_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,
+    PARSER_V1_LAX_FLAGS = (PARSER_V1_STRICT_FLAGS &
+                           ~PARSER_NO_FIELD_VALUE_MISMATCH),
 
     PARSER_V2_STRICT_FLAGS = PARSER_V1_STRICT_FLAGS,
     PARSER_V2_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,

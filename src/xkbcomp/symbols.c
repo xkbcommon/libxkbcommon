@@ -780,7 +780,8 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         return true;
     }
 
-    if (!ExprResolveGroup(info->keymap_info, arrayNdx, false, ndx_rtrn, NULL)) {
+    if (ExprResolveGroup(info->keymap_info, arrayNdx, false, ndx_rtrn, NULL) !=
+        PARSER_SUCCESS) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
@@ -955,14 +956,21 @@ AddActionsToKey(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         for (ExprDef *act = actionList->actions;
              act; act = (ExprDef *) act->common.next) {
             union xkb_action toAct = { 0 };
-            if (!HandleActionDef(info->keymap_info, &info->default_actions,
-                                 &info->mods, act, &toAct)) {
+            const enum xkb_parser_error r =
+                HandleActionDef(info->keymap_info, &info->default_actions,
+                                &info->mods, act, &toAct);
+            if (r != PARSER_SUCCESS) {
                 log_err(info->ctx, XKB_ERROR_INVALID_VALUE,
                         "Illegal action definition for %s; "
                         "Action for group %"PRIu32"/level %"PRIu32" ignored\n",
                         KeyInfoText(info, keyi), ndx + 1, level + 1);
-                /* Ensure action type is reset */
-                toAct.type = ACTION_TYPE_NONE;
+                if (r == PARSER_FATAL_ERROR) {
+                    darray_free(actions);
+                    return false;
+                } else {
+                    /* Ensure action type is reset */
+                    toAct.type = ACTION_TYPE_NONE;
+                }
             }
             if (toAct.type == ACTION_TYPE_NONE) {
                 /* Drop action */
@@ -1047,8 +1055,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->default_type = val;
             keyi->defined |= KEY_FIELD_DEFAULT_TYPE;
         }
-        else if (!ExprResolveGroup(info->keymap_info, arrayNdx, false,
-                                   &ndx, NULL)) {
+        else if (ExprResolveGroup(info->keymap_info, arrayNdx, false,
+                                  &ndx, NULL) != PARSER_SUCCESS) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
@@ -1167,8 +1175,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         xkb_layout_index_t grp = 0;
         bool pending = false;
 
-        if (!ExprResolveGroup(info->keymap_info, value, false, &grp, &pending) &&
-            !pending) {
+        // TODO: recover?
+        if (ExprResolveGroup(info->keymap_info, value, false, &grp, &pending) !=
+            PARSER_SUCCESS && !pending) {
             log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
@@ -1225,7 +1234,8 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     }
 
     xkb_layout_index_t group = 0;
-    if (!ExprResolveGroup(info->keymap_info, arrayNdx, false, &group, NULL)) {
+    if (ExprResolveGroup(info->keymap_info, arrayNdx, false, &group, NULL) !=
+        PARSER_SUCCESS) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
@@ -1330,9 +1340,10 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         ret = true;
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->keymap_info, &info->default_actions,
-                                    &info->mods, elem, field, arrayNdx,
-                                    &stmt->value, stmt->merge);
+        ret = (SetDefaultActionField(info->keymap_info, &info->default_actions,
+                                     &info->mods, elem, field, arrayNdx,
+                                     &stmt->value, stmt->merge) !=
+               PARSER_FATAL_ERROR);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
@@ -1345,9 +1356,6 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
 static bool
 HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
 {
-    if (!def)
-        return true; /* Empty body */
-
     bool all_valid_entries = true;
 
     for (; def; def = (VarDef *) def->common.next) {

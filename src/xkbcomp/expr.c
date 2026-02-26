@@ -391,7 +391,7 @@ ExprResolveInteger(struct xkb_context *ctx, const ExprDef *expr,
     return ExprResolveIntegerLookup(ctx, expr, val_rtrn, NULL, NULL, NULL);
 }
 
-bool
+enum xkb_parser_error
 ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
                  const ExprDef *expr, bool absolute,
                  xkb_layout_index_t *group_rtrn, bool *pending)
@@ -416,17 +416,21 @@ ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
     int64_t result = 0;
     if (!ExprResolveIntegerLookup(keymap_info->keymap.ctx, expr, &result, pending,
                                   NamedIntegerPatternLookup, &group_name_pattern))
-        return false;
+        return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
+            ? PARSER_FATAL_ERROR
+            : PARSER_RECOVERABLE_ERROR;
 
     if (result < !!absolute || result > keymap_info->features.max_groups) {
         log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
-                "Group index %"PRId64" is out of range (1..%"PRIu32")\n",
-                result, keymap_info->features.max_groups);
-        return false;
+                "Group index %"PRId64" is out of range (%u..%"PRIu32")\n",
+                result, !!absolute, keymap_info->features.max_groups);
+        return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
+            ? PARSER_FATAL_ERROR
+            : PARSER_RECOVERABLE_ERROR;
     }
 
     *group_rtrn = (xkb_layout_index_t) result;
-    return true;
+    return PARSER_SUCCESS;
 }
 
 bool

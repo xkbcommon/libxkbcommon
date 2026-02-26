@@ -342,7 +342,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire,
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 19 &&
+        static_assert(ACTION_TYPE_INTERNAL == 20 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
 

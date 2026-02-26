@@ -527,10 +527,17 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
             for (ExprDef *act = value->actions.actions;
                  act; act = (ExprDef *) act->common.next) {
                 union xkb_action toAct = { 0 };
-                if (!HandleActionDef(info->keymap_info, &info->default_actions,
-                                     &info->mods, act, &toAct)) {
+                switch (HandleActionDef(info->keymap_info,
+                                        &info->default_actions,
+                                        &info->mods, act, &toAct)) {
+                case PARSER_RECOVERABLE_ERROR:
+                    toAct.type = ACTION_TYPE_NONE;
+                    break;
+                case PARSER_FATAL_ERROR:
                     darray_free(actions);
                     return false;
+                default:
+                    ;
                 }
                 if (toAct.type == ACTION_TYPE_NONE) {
                     /* Drop action */
@@ -561,12 +568,21 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
                 darray_steal(actions, &si->interp.a.actions, NULL);
             }
         }
-        else if (HandleActionDef(info->keymap_info, &info->default_actions,
-                                 &info->mods, value, &si->interp.a.action))
-            si->interp.num_actions =
-                (si->interp.a.action.type != ACTION_TYPE_NONE);
-        else
-            return false;
+        else {
+            switch (HandleActionDef(info->keymap_info,
+                                    &info->default_actions,
+                                    &info->mods, value, &si->interp.a.action)) {
+            case PARSER_RECOVERABLE_ERROR:
+                si->interp.a.action.type = ACTION_TYPE_NONE;
+                si->interp.num_actions = 0;
+                break;
+            case PARSER_FATAL_ERROR:
+                return false;
+            default:
+                si->interp.num_actions =
+                    (si->interp.a.action.type != ACTION_TYPE_NONE);
+            }
+        }
 
         si->defined |= SI_FIELD_ACTION;
     }
@@ -773,9 +789,10 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
         MergeLedMap(info, &info->default_led, &temp, true);
     }
     else if (elem) {
-        ret = SetDefaultActionField(info->keymap_info, &info->default_actions,
-                                    &info->mods, elem, field, ndx,
-                                    &stmt->value, stmt->merge);
+        ret = (SetDefaultActionField(info->keymap_info, &info->default_actions,
+                                     &info->mods, elem, field, ndx,
+                                     &stmt->value, stmt->merge) !=
+               PARSER_FATAL_ERROR);
     } else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
@@ -868,14 +885,12 @@ HandleLedMapDef(CompatInfo *info, LedMapDef *def)
             ok = false;
         }
         else {
-            ok = SetLedMapField(info, &ledi, field, arrayNdx, &var->value) && ok;
+            if (!SetLedMapField(info, &ledi, field, arrayNdx, &var->value))
+                ok = false;
         }
     }
 
-    if (ok)
-        return AddLedMap(info, &ledi, true);
-
-    return false;
+    return ok && AddLedMap(info, &ledi, true);
 }
 
 static void

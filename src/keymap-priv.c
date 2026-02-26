@@ -170,6 +170,7 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
                 a->redirect.affect == b->redirect.affect &&
                 a->redirect.mods == b->redirect.mods);
     case ACTION_TYPE_UNSUPPORTED_LEGACY:
+    case ACTION_TYPE_UNKNOWN:
         return true;
     /* ACTION_TYPE_PRIVATE processed in the default case */
     case ACTION_TYPE_INTERNAL:
@@ -178,7 +179,7 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
     default:
         {} /* Label followed by declaration requires C23 */
         /* Ensure to not miss `xkb_action_type` updates */
-        static_assert(ACTION_TYPE_INTERNAL == 19 &&
+        static_assert(ACTION_TYPE_INTERNAL == 20 &&
                       ACTION_TYPE_INTERNAL + 1 == _ACTION_TYPE_NUM_ENTRIES,
                       "Missing action type");
         /* Private/custom action */

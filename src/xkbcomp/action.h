@@ -23,12 +23,12 @@ typedef struct {
 void
 InitActionsInfo(const struct xkb_keymap *keymap, ActionsInfo *info);
 
-bool
+enum xkb_parser_error
 HandleActionDef(const struct xkb_keymap_info *keymap_info, ActionsInfo *info,
                 const struct xkb_mod_set *mods, ExprDef *def,
                 union xkb_action *action);
 
-bool
+enum xkb_parser_error
 SetDefaultActionField(const struct xkb_keymap_info *keymap_info,
                       ActionsInfo *info, struct xkb_mod_set *mods,
                       const char *elem, const char *field, ExprDef *array_ndx,

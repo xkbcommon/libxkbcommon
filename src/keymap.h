@@ -106,6 +106,7 @@ enum xkb_action_type {
     ACTION_TYPE_CTRL_LOCK,
     ACTION_TYPE_REDIRECT_KEY,
     ACTION_TYPE_UNSUPPORTED_LEGACY,
+    ACTION_TYPE_UNKNOWN,
     ACTION_TYPE_PRIVATE,
     ACTION_TYPE_INTERNAL, /* Action specific and internal to xkbcommon */
     _ACTION_TYPE_NUM_ENTRIES
