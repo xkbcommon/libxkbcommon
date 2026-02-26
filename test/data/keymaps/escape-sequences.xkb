@@ -40,7 +40,10 @@ xkb_symbols "La_libertÃ__commence_oÃ__lâ__ignorance_finit_" {
 
 	key <>                   {
 		type= "%1ğŸºâœ¨ğŸ•Šï¸\0014",
-		symbols[1]= [               a,               A ]
+		repeat= Yes,
+		symbols[1]= [               a,               A ],
+		symbols[2]= [                       NoSymbol,                       NoSymbol ],
+		actions[2]= [ Private(type=0x7b,data[0]=0x61,data[1]=0x62,data[2]=0x63,data[3]=0x00,data[4]=0x00,data[5]=0x00,data[6]=0x00),                     NoAction() ]
 	};
 };
 

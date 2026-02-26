@@ -30,7 +30,7 @@ xkb_symbols {
 	key <2>                  {
 		repeat= No,
 		symbols[1]= [                              y ],
-		actions[1]= [                     NoAction() ]
+		actions[1]= [ LockControls(controls=none,affect=neither) ]
 	};
 	key <3>                  {
 		repeat= No,

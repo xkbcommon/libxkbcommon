@@ -39,6 +39,8 @@
                   test_name ". Expected " format ", got: " format "\n", \
                   ##__VA_ARGS__, expected, got)
 
+#define TEST_KEYMAP_COMPILE_FLAGS XKB_KEYMAP_COMPILE_STRICT_MODE
+
 #define TEST_KEYMAP_SERIALIZE_FLAGS (    \
     XKB_KEYMAP_SERIALIZE_PRETTY |        \
     XKB_KEYMAP_SERIALIZE_KEEP_UNUSED     \
@@ -108,6 +110,11 @@ test_compile_string(struct xkb_context *context, enum xkb_keymap_format format,
 struct xkb_keymap *
 test_compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
                     const char *buf, size_t len);
+
+struct xkb_keymap *
+test_compile_buffer2(struct xkb_context *context, enum xkb_keymap_format format,
+                     enum xkb_keymap_compile_flags flags,
+                     const char *buf, size_t len);
 
 typedef struct xkb_keymap * (*test_compile_buffer_t)(struct xkb_context *context,
                                                      enum xkb_keymap_format format,

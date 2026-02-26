@@ -37,7 +37,11 @@ static struct xkb_keymap *
 compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
                const char *buf, size_t len, void *private)
 {
-    return test_compile_buffer(context, format, buf, len);
+    const enum xkb_keymap_compile_flags flags
+        = (private)
+        ? *(enum xkb_keymap_compile_flags*)private
+        : TEST_KEYMAP_COMPILE_FLAGS;
+    return test_compile_buffer2(context, format, flags, buf, len);
 }
 
 static void
@@ -1201,7 +1205,7 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
         assert(count > 0 && (size_t) count < available);
 
         struct xkb_keymap * const keymap = xkb_keymap_new_from_string(
-            ctx, buffer, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS
+            ctx, buffer, XKB_KEYMAP_FORMAT_TEXT_V1, TEST_KEYMAP_COMPILE_FLAGS
         );
         assert(keymap);
         for (unsigned int k = 0; k < keycode_index; k++) {
@@ -2393,7 +2397,7 @@ test_escape_sequences(struct xkb_context *ctx, bool update_output_files)
         "    key <> {\n"
         "      symbols[1]=[a, A],\n"
         "      type[1]=\"%1\\u{1F3BA}\\u{2728}\\u{00001F54a}\\u{0fE0f}\\u{0C}\",\n"
-        "      actions[2]=[Private(type=123, data=\"\0abcdefg\")]"
+        "      actions[2]=[Private(type=123, data=\"abc\0def\")]"
         "    };\n"
         "  };\n"
         "};";
@@ -2492,34 +2496,47 @@ test_no_action_void_action(struct xkb_context *ctx, bool update_output_files)
         "   key <3> { [NoAction()] };\n"
         "  };\n"
         "};";
-    /* v1 → v1 */
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                               XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                               compile_buffer, NULL, __func__,
-                               keymap_str, sizeof(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "no_void_action-v1.xkb",
-                               update_output_files));
-    /* v1 → v2 */
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
-                               XKB_KEYMAP_FORMAT_TEXT_V2,
-                               compile_buffer, NULL, __func__,
-                               keymap_str, sizeof(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "no_void_action-v2.xkb",
-                               update_output_files));
-    /* v2 → v2 */
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
-                               XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                               compile_buffer, NULL, __func__,
-                               keymap_str, sizeof(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "no_void_action-v2.xkb",
-                               update_output_files));
-    /* v2 → v1 */
-    assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
-                               XKB_KEYMAP_FORMAT_TEXT_V1,
-                               compile_buffer, NULL, __func__,
-                               keymap_str, sizeof(keymap_str),
-                               GOLDEN_TESTS_OUTPUTS "no_void_action-v1.xkb",
-                               update_output_files));
+
+    const enum xkb_keymap_compile_flags flags = TEST_KEYMAP_COMPILE_FLAGS
+                                              & ~XKB_KEYMAP_COMPILE_STRICT_MODE;
+
+    static const struct {
+        struct {
+            enum xkb_keymap_format input;
+            enum xkb_keymap_format output;
+        } format;
+        const char* output;
+    } tests[] = {
+        {
+            /* v1 → v1 */
+            { XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_FORMAT_TEXT_V1},
+            NULL,
+        },
+        {
+            /* v1 → v2 */
+            { XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_FORMAT_TEXT_V2},
+            NULL,
+        },
+        {
+            /* v2 → v2 */
+            { XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_FORMAT_TEXT_V2},
+            GOLDEN_TESTS_OUTPUTS "no_void_action-v2.xkb",
+        },
+        {
+            /* v2 → v1 */
+            { XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_FORMAT_TEXT_V1},
+            GOLDEN_TESTS_OUTPUTS "no_void_action-v1.xkb",
+        },
+    };
+
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, tests[t].format.input,
+                                   tests[t].format.output,
+                                   compile_buffer, (void*)&flags, NULL,
+                                   keymap_str, sizeof(keymap_str),
+                                   tests[t].output, update_output_files));
+    }
 }
 
 static void
@@ -2551,6 +2568,7 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
         },
     };
     for (unsigned int k = 0; k < ARRAY_SIZE(data); k++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
         char *original = test_read_file(data[k].path);
         assert(original);
         /* Load a prebuild keymap, once without, once with the trailing \0 */
@@ -2610,11 +2628,13 @@ test_redirect_key(struct xkb_context *ctx, bool update_output_files)
             .expected = GOLDEN_TESTS_OUTPUTS "redirect-key-1.xkb"
         },
     };
+    const enum xkb_keymap_compile_flags flags = TEST_KEYMAP_COMPILE_FLAGS
+                                              & ~XKB_KEYMAP_COMPILE_STRICT_MODE;
     for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
         assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
-                                   compile_buffer, NULL, __func__,
+                                   compile_buffer, (void*)&flags, __func__,
                                    tests[t].keymap, strlen(tests[t].keymap),
                                    tests[t].expected, update_output_files));
     }
@@ -2744,7 +2764,7 @@ test_extended_layout_indices(struct xkb_context *ctx,
                 "    name[5] = \"G5\";\n"
                 "    name[1] = \"G1\";\n"
                 "    key <a> { symbols[1]=[a], symbols[5]=[Greek_alpha] };\n"
-                "    key <b> { actions[1]=[Latchgroup(group=-5)], actions[5]=[LockGroup(group=5)], [SetGroup(+9)] };\n"
+                "    key <b> { actions[1]=[Latchgroup(group=-5)], actions[5]=[LockGroup(group=5)], [SetGroup(group=+9)] };\n"
                 "    key <c> { [1], [2], [3], [4], [5], [6], [7], [8], [9] };\n"
                 "  };\n"
                 "};",

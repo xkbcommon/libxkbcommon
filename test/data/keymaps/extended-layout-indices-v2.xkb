@@ -41,7 +41,7 @@ xkb_symbols {
 		symbols[1]= [                       NoSymbol ],
 		actions[1]= [           LatchGroup(group=-5) ],
 		symbols[2]= [                       NoSymbol ],
-		actions[2]= [                     NoAction() ],
+		actions[2]= [             SetGroup(group=+9) ],
 		symbols[3]= [                       NoSymbol ],
 		actions[3]= [           LatchGroup(group=-5) ],
 		symbols[4]= [                       NoSymbol ],

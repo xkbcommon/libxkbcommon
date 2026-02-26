@@ -1129,6 +1129,11 @@ test(
     executable('test-buffercomp', 'test/buffercomp.c', dependencies: test_dep),
     env: test_env,
 )
+test(
+    'lenient-mode',
+    executable('test-lenient-mode', 'test/lenient-mode.c', dependencies: test_dep),
+    env: test_env,
+)
 if has_extensions_directories
     extensions_test_deps = [test_dep]
     extensions_test_c_args = []

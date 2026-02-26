@@ -41,7 +41,7 @@ test_state_machine_options(struct xkb_context *ctx)
             options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
 
     struct xkb_keymap *keymap =
-        xkb_keymap_new_from_names(ctx, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
+        xkb_keymap_new_from_names(ctx, NULL, TEST_KEYMAP_COMPILE_FLAGS);
     assert(keymap);
 
     struct xkb_state_machine *sm = xkb_state_machine_new(keymap, options);

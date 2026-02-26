@@ -252,7 +252,7 @@ pipe_error:
 //         return NULL;
 //
 //     return xkb_x11_keymap_new_from_device(ctx, config->conn, config->device_id,
-//                                           XKB_KEYMAP_COMPILE_NO_FLAGS);
+//                                           TEST_KEYMAP_COMPILE_FLAGS);
 // }
 
 static int
@@ -307,7 +307,7 @@ test_keymap_roundtrip(struct xkb_context *ctx,
     /* Get keymap from X server */
     struct xkb_keymap *keymap =
         xkb_x11_keymap_new_from_device(ctx, conn, device_id,
-                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                       TEST_KEYMAP_COMPILE_FLAGS);
     assert(keymap);
     if (!keymap) {
         ret = EXIT_FAILURE;
@@ -423,7 +423,7 @@ X11_TEST(test_basic)
 
     struct xkb_keymap *keymap =
         xkb_x11_keymap_new_from_device(ctx, conn, device_id,
-                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                       TEST_KEYMAP_COMPILE_FLAGS);
     assert(keymap);
 
     /* Check capitalization transformation */

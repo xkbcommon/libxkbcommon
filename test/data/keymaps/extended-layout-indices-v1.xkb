@@ -39,7 +39,7 @@ xkb_symbols {
 		symbols[1]= [                       NoSymbol ],
 		actions[1]= [ LockControls(controls=none,affect=neither) ],
 		symbols[2]= [                       NoSymbol ],
-		actions[2]= [                     NoAction() ],
+		actions[2]= [ LockControls(controls=none,affect=neither) ],
 		symbols[3]= [                       NoSymbol ],
 		actions[3]= [ LockControls(controls=none,affect=neither) ],
 		symbols[4]= [                       NoSymbol ],

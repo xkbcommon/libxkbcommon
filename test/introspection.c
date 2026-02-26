@@ -319,7 +319,7 @@ test_file_section_parse(struct xkb_context *ctx)
         const bool is_default = tests[k].flags & MAP_IS_DEFAULT;
         assert(xkb_file_section_parse(
             ctx, XKB_FILE_ITERATOR_FAIL_ON_INCLUDE_ERROR,
-            XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS,
+            XKB_KEYMAP_FORMAT_TEXT_V2, TEST_KEYMAP_COMPILE_FLAGS,
             0, path, (is_default ? NULL : tests[k].name), &section
         ));
         test_section(&tests[k], &section);
@@ -561,7 +561,7 @@ test_file_iterator(struct xkb_context *ctx)
         struct xkb_file_iterator * const iter =
             xkb_file_iterator_new_from_buffer(
                 ctx, XKB_FILE_ITERATOR_FAIL_ON_INCLUDE_ERROR,
-                XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS,
+                XKB_KEYMAP_FORMAT_TEXT_V2, TEST_KEYMAP_COMPILE_FLAGS,
                 "(string)", tests[k].map, FILE_TYPE_INVALID,
                 tests[k].string, strlen(tests[k].string)
             );

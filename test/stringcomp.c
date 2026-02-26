@@ -235,7 +235,7 @@ main(int argc, char *argv[])
          */
 
         keymap = xkb_keymap_new_from_string(ctx, original, data[k].format,
-                                            XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                            TEST_KEYMAP_COMPILE_FLAGS);
         assert(keymap);
         free(original);
         const enum xkb_keymap_serialize_flags test_serialize_flags[] = {
@@ -247,7 +247,7 @@ main(int argc, char *argv[])
                                                  test_serialize_flags[f]);
             assert(original);
             struct xkb_keymap *keymap2 = xkb_keymap_new_from_string(
-                ctx, original, data[k].format, XKB_KEYMAP_COMPILE_NO_FLAGS
+                ctx, original, data[k].format, TEST_KEYMAP_COMPILE_FLAGS
             );
             assert(keymap2);
             free(original);
@@ -272,7 +272,7 @@ main(int argc, char *argv[])
         assert(original);
 
         struct xkb_keymap *keymap2 = xkb_keymap_new_from_string(
-            ctx, original, data[k].format, XKB_KEYMAP_COMPILE_NO_FLAGS
+            ctx, original, data[k].format, TEST_KEYMAP_COMPILE_FLAGS
         );
         assert(keymap2);
         assert(xkb_keymap_compare(ctx, keymap, keymap2, XKB_KEYMAP_CMP_ALL));

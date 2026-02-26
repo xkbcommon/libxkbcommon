@@ -1,0 +1,24 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+};
+
+xkb_types {
+	type "1" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		action= NoAction();
+	};
+};
+
+xkb_symbols {
+};
+
+};
