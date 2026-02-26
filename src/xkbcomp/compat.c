@@ -792,9 +792,10 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        ok = ExprResolveLhs(info->ctx, def->name, &elem, &field, &arrayNdx);
-        if (!ok)
+        if (!ExprResolveLhs(info->ctx, def->name, &elem, &field, &arrayNdx)) {
+            ok = false;
             continue;
+        }
         if (elem) {
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot set a global default value for \"%s\" element from "
@@ -804,7 +805,8 @@ HandleInterpBody(CompatInfo *info, VarDef *def, SymInterpInfo *si)
             ok = false;
             continue;
         }
-        ok = SetInterpField(info, si, field, arrayNdx, def->value);
+        if (!SetInterpField(info, si, field, arrayNdx, def->value))
+            ok = false;
     }
 
     return ok;
@@ -846,16 +848,12 @@ HandleInterpDef(CompatInfo *info, InterpDef *def)
 static bool
 HandleLedMapDef(CompatInfo *info, LedMapDef *def)
 {
-    LedInfo ledi;
-    VarDef *var;
-    bool ok;
-
-    ledi = info->default_led;
+    LedInfo ledi = info->default_led;
     ledi.merge = def->merge;
     ledi.led.name = def->name;
 
-    ok = true;
-    for (var = def->body; var != NULL; var = (VarDef *) var->common.next) {
+    bool ok = true;
+    for (VarDef *var = def->body; var != NULL; var = (VarDef *) var->common.next) {
         const char *elem, *field;
         ExprDef *arrayNdx;
         if (!ExprResolveLhs(info->ctx, var->name, &elem, &field, &arrayNdx)) {

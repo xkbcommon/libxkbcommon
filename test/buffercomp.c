@@ -2797,6 +2797,46 @@ test_extended_layout_indices(struct xkb_context *ctx,
     }
 }
 
+static void
+test_compound_statement_errors(struct xkb_context *ctx)
+{
+    /* Check that any error invalidates the whole compound statement */
+    const struct keymap_test_data tests[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    interpret a {\n"
+                "      action[0] = NoAction();\n" /* error on field */
+                "      repeat = true;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_compat {\n"
+                "    interpret a {\n"
+                "      action = \"xxx\";\n" /* error on value */
+                "      repeat = true;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+    };
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected, false));
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -2867,6 +2907,7 @@ main(int argc, char *argv[])
     test_redirect_key(ctx, update_output_files);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);
     test_extended_layout_indices(ctx, update_output_files);
+    test_compound_statement_errors(ctx);
 
     xkb_context_unref(ctx);
 
