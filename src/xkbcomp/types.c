@@ -584,6 +584,7 @@ SetKeyTypeField(KeyTypesInfo *info, KeyTypeInfo *type,
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
                 "Unknown field \"%s\" in key type \"%s\"; Definition ignored\n",
                 field, TypeTxt(info, type));
+        ok = !(info->keymap_info->strict & PARSER_NO_UNKNOWN_TYPE_FIELDS);
     }
 
     type->defined |= type_field;

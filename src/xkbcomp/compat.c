@@ -631,8 +631,9 @@ SetInterpField(CompatInfo *info, SymInterpInfo *si, const char *field,
         si->defined |= SI_FIELD_LEVEL_ONE_ONLY;
     }
     else {
-        return ReportBadField(info->ctx, "symbol interpretation", field,
-                              siText(si, info));
+        ReportBadField(info->ctx, "symbol interpretation", field,
+                       siText(si, info));
+        return !(info->keymap_info->strict & PARSER_NO_UNKNOWN_INTERPRET_FIELDS);
     }
 
     return true;
@@ -643,7 +644,6 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
                ExprDef *arrayNdx, ExprDef **value_ptr)
 {
     ExprDef * restrict const value = *value_ptr;
-    bool ok = true;
 
     if (istreq(field, "modifiers") || istreq(field, "mods")) {
         if (arrayNdx)
@@ -754,10 +754,10 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
                 "Unknown field \"%s\" in map for %s indicator; "
                 "Definition ignored\n",
                 field, LEDText(info, ledi));
-        ok = false;
+        return !(info->keymap_info->strict & PARSER_NO_UNKNOWN_LED_FIELDS);
     }
 
-    return ok;
+    return true;
 }
 
 static bool

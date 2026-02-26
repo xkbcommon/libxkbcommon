@@ -1152,6 +1152,7 @@ enum xkb_keymap_compile_flags {
      * When this flag is set, the following will raise an error:
      * - field type mismatch (e.g. a number instead of a string)
      * - unknown global variable
+     * - unknown statement field
      * - unknown action/action parameter
      * - invalid action parameter value
      * - TODO

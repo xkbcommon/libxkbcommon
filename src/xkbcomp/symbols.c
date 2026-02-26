@@ -1212,10 +1212,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
     }
     else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_FIELD,
-                "Unknown field \"%s\" in a symbol interpretation; "
-                "Definition ignored\n",
+                "Unknown field \"%s\" in a key; definition ignored\n",
                 field);
-        return false;
+        return !(info->keymap_info->strict & PARSER_NO_UNKNOWN_KEY_FIELDS);
     }
 
     return true;
