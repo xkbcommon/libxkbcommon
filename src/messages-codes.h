@@ -94,6 +94,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_INCLUDE_STATEMENT = 203,
     /** A modmap entry is invalid */
     XKB_ERROR_INVALID_MODMAP_ENTRY = 206,
+    /** The statement is unknown */
+    XKB_ERROR_UNKNOWN_STATEMENT = 222,
     /** Warn when a group index is not supported */
     XKB_ERROR_UNSUPPORTED_GROUP_INDEX = 237,
     /** The name of a key type level is defined multiple times. */

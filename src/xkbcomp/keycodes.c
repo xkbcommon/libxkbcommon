@@ -892,6 +892,12 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file)
         case STMT_LED_NAME:
             ok = HandleLedNameDef(info, (LedNameDef *) stmt, report_same_file);
             break;
+        case STMT_UNKNOWN_COMPOUND:
+            log_err(info->ctx, XKB_ERROR_UNKNOWN_STATEMENT,
+                    "Unsupported keycodes compound statement \"%s\"; "
+                    "Ignoring\n", ((UnknownCompoundStatement *)stmt)->name);
+            ok = !(info->keymap_info->strict & PARSER_NO_UNKNOWN_STATEMENTS);
+            break;
         default:
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Keycode files may define key and indicator names only; "

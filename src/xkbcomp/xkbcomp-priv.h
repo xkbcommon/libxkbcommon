@@ -27,6 +27,7 @@ enum xkb_parser_error {
  */
 enum xkb_parser_strict_flags {
     PARSER_NO_STRICT_FLAGS = 0,
+    PARSER_NO_UNKNOWN_STATEMENTS = (1 << 0),
     PARSER_NO_FIELD_TYPE_MISMATCH = (1 << 1),
     PARSER_NO_FIELD_VALUE_MISMATCH = (1 << 2),
 

@@ -78,6 +78,7 @@ enum stmt_type {
     STMT_GROUP_COMPAT,
     STMT_LED_MAP,
     STMT_LED_NAME,
+    STMT_UNKNOWN_COMPOUND,
 
     _STMT_NUM_VALUES
 };
@@ -292,6 +293,11 @@ typedef struct {
     xkb_atom_t name;
     VarDef *body;
 } LedMapDef;
+
+typedef struct {
+    ParseCommon common;
+    char *name;
+} UnknownCompoundStatement;
 
 enum xkb_map_flags {
     MAP_IS_DEFAULT = (1 << 0),

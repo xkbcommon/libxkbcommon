@@ -676,6 +676,7 @@ HandleGlobalVar(KeyTypesInfo *info, VarDef *stmt)
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown element \"%s\"; "
                 "Value for field \"%s.%s\" ignored\n", elem, elem, field);
+        return !(info->keymap_info->strict & PARSER_NO_UNKNOWN_STATEMENTS);
     }
     else if (field) {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
@@ -683,7 +684,6 @@ HandleGlobalVar(KeyTypesInfo *info, VarDef *stmt)
         return !(info->keymap_info->strict &
                  PARSER_NO_UNKNOWN_TYPES_GLOBAL_FIELDS);
     }
-
     return false;
 }
 
@@ -708,6 +708,12 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
             break;
         case STMT_VMOD:
             ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
+            break;
+        case STMT_UNKNOWN_COMPOUND:
+            log_err(info->ctx, XKB_ERROR_UNKNOWN_STATEMENT,
+                    "Unsupported types compound statement \"%s\"; "
+                    "Ignoring\n", ((UnknownCompoundStatement *)stmt)->name);
+            ok = !(info->keymap_info->strict & PARSER_NO_UNKNOWN_STATEMENTS);
             break;
         default:
             log_err(info->ctx, XKB_ERROR_WRONG_STATEMENT_TYPE,

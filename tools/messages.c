@@ -38,6 +38,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_ILLEGAL_KEY_TYPE_PRESERVE_RESULT, "Illegal key type preserve result"},
     {XKB_ERROR_INVALID_INCLUDE_STATEMENT, "Invalid include statement"},
     {XKB_ERROR_INVALID_MODMAP_ENTRY, "Invalid modmap entry"},
+    {XKB_ERROR_UNKNOWN_STATEMENT, "Unknown statement"},
     {XKB_ERROR_UNSUPPORTED_GROUP_INDEX, "Unsupported group index"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES, "Conflicting key type level names"},
     {XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT, "Invalid set default statement"},

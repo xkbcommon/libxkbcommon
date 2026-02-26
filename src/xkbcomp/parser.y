@@ -194,6 +194,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         LedNameDef      *ledName;
         KeycodeDef      *keyCode;
         KeyAliasDef     *keyAlias;
+        UnknownCompoundStatement *unknown;
         void            *geom;
         XkbFile         *file;
         struct { XkbFile *head; XkbFile *last; } fileList;
@@ -213,7 +214,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <noSymbolOrActionList> NoSymbolOrActionList
 %type <any>     Decl
 %type <anyList> DeclList
-%type <expr>    Expr Term Lhs Terminal Coord CoordList
+%type <expr>    Expr Term Lhs Terminal OptTerminal Coord CoordList
 %type <expr>    MultiKeySymOrActionList NonEmptyActions Actions Action
 %type <expr>    KeySyms NonEmptyKeySyms KeySymList KeyOrKeySym
 %type <exprList> ExprList KeyOrKeySymList
@@ -234,6 +235,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <geom>    ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
 %type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
 %type <geom>    DoodadDecl
+%type <unknown> UnknownCompoundStatementDecl
 %type <file>    XkbFile XkbMapConfig
 %type <fileList> XkbMapConfigList
 %type <file>    XkbCompositeMap
@@ -415,6 +417,8 @@ Decl            :       OptMergeMode VarDecl
                 |       OptMergeMode ShapeDecl          { $$ = NULL; }
                 |       OptMergeMode SectionDecl        { $$ = NULL; }
                 |       OptMergeMode DoodadDecl         { $$ = NULL; }
+                |       OptMergeMode UnknownCompoundStatementDecl
+                            { $$ = (ParseCommon *) $2; }
                 |       MergeMode STRING
                         {
                             $$ = (ParseCommon *) IncludeCreate(param->ctx, $2, $1);
@@ -607,6 +611,15 @@ LedNameDecl:            INDICATOR Integer EQUALS Expr SEMI
                         { $$ = LedNameCreate($2, $4, false); }
                 |       VIRTUAL INDICATOR Integer EQUALS Expr SEMI
                         { $$ = LedNameCreate($3, $5, true); }
+                ;
+
+UnknownCompoundStatementDecl:
+                        IDENT OptTerminal OBRACE VarDeclList CBRACE SEMI
+                        {
+                            FreeStmt((ParseCommon *) $2);
+                            FreeStmt((ParseCommon *) $4.head);
+                            $$ = UnknownCompoundStatementCreate($1);
+                        }
                 ;
 
 ShapeDecl       :       SHAPE String OBRACE OutlineList CBRACE SEMI
@@ -840,6 +853,11 @@ Lhs             :       FieldSpec
                         { $$ = ExprCreateArrayRef(XKB_ATOM_NONE, $1, $3); }
                 |       FieldSpec DOT FieldSpec OBRACKET Expr CBRACKET
                         { $$ = ExprCreateArrayRef($1, $3, $5); }
+                ;
+
+OptTerminal     :       Terminal
+                        { $$ = $1; }
+                |       { $$ = NULL; }
                 ;
 
 Terminal        :       String

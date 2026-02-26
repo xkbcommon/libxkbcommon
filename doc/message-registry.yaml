@@ -152,13 +152,27 @@
   added: ALWAYS
   type: error
   description: "A modmap entry is invalid"
+- id: "unknown-statement"
+  code: 222
+  added: "1.14.0"
+  type: error
+  description: "The statement is unknown"
+  details: |
+    libxkbcommon encountered an unknown statement and either:
+    - rejected it (strict mode);
+    - accepted but discarded it in order to provide forward-compatibility (lenient mode).
+
+    Please check if:
+    - it is a typo;
+    - the [keymap format](@ref xkb_keymap_format) used for parsing is correct;
+    - the statement is supported in a [newer version of libxkbcommon](release-notes.md).
 - id: "unsupported-group-index"
   code: 237
   added: ALWAYS
   type: error
   description: "Warn when a group index is not supported"
   details: |
-    xkbcommon supports different *group index* ranges, depending of the target
+    libxkbcommon supports different *group index* ranges, depending of the target
     *keymap format*:
     - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..{{XKB_MAX_GROUPS_X11}}
     - `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..{{XKB_MAX_GROUPS}}

@@ -100,6 +100,9 @@ LedMapCreate(xkb_atom_t name, VarDef *body);
 LedNameDef *
 LedNameCreate(int64_t ndx, ExprDef *name, bool virtual);
 
+UnknownCompoundStatement *
+UnknownCompoundStatementCreate(struct sval name);
+
 IncludeStmt *
 IncludeCreate(struct xkb_context *ctx, char *str, enum merge_mode merge);
 
