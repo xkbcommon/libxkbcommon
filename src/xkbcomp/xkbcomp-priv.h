@@ -13,6 +13,17 @@
 #include "scanner-utils.h"
 #include "text.h"
 
+enum xkb_parser_strict_flags {
+    PARSER_NO_STRICT_FLAGS = 0,
+
+    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_STRICT_FLAGS << 1) - 1),
+    /* Limited flexibility */
+    PARSER_V1_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,
+
+    PARSER_V2_STRICT_FLAGS = PARSER_V1_STRICT_FLAGS,
+    PARSER_V2_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,
+};
+
 typedef union ExprDef ExprDef;
 struct pending_computation {
     ExprDef * expr;
@@ -25,6 +36,9 @@ typedef darray(struct pending_computation) pending_computation_array;
 struct xkb_keymap_info {
     /** The keymap being compiled */
     struct xkb_keymap keymap;
+
+    /** Flags of the strict mode */
+    enum xkb_parser_strict_flags strict;
 
     /** Features */
     struct {

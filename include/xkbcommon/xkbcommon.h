@@ -1143,7 +1143,18 @@ xkb_context_set_log_fn(struct xkb_context *context,
  */
 enum xkb_keymap_compile_flags {
     /** Do not apply any flags. */
-    XKB_KEYMAP_COMPILE_NO_FLAGS = 0
+    XKB_KEYMAP_COMPILE_NO_FLAGS = 0,
+    /**
+     * Make the parser operate in *strict* mode.
+     *
+     * This useful mainly for debugging.
+     *
+     * When this flag is set, the following will raise an error:
+     * - TODO
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_COMPILE_STRICT_MODE = (1 << 0)
 };
 
 /**
@@ -1275,6 +1286,7 @@ enum xkb_keymap_format {
  * the compilation failed.
  *
  * @since 1.11.0
+ * @since 1.14.0 Parser is lenient by default.
  * @sa `xkb_keymap_new_from_names2()`
  * @sa `xkb_rmlvo_builder`
  * @memberof xkb_keymap
@@ -1296,6 +1308,7 @@ xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
  * @since 1.11.0: Deprecated
  * @since 1.11.0: Use internally `::XKB_KEYMAP_FORMAT_TEXT_V2` instead of
  * `::XKB_KEYMAP_FORMAT_TEXT_V1`
+ * @since 1.14.0 Parser is lenient by default.
  * @sa `xkb_keymap_new_from_names2()`
  * @sa `xkb_rule_names`
  * @sa `xkb_keymap_new_from_rmlvo()`
@@ -1322,10 +1335,11 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * @returns A keymap compiled according to the [RMLVO] names, or `NULL` if
  * the compilation failed.
  *
+ * @since 1.11.0
+ * @since 1.14.0 Parser is lenient by default.
  * @sa `xkb_rule_names`
  * @sa `xkb_keymap_new_from_rmlvo()`
  * @memberof xkb_keymap
- * @since 1.11.0
  *
  * [RMLVO]: @ref RMLVO-intro
  */
@@ -1351,6 +1365,8 @@ xkb_keymap_new_from_names2(struct xkb_context *context,
  * top level `%xkb_keymap` section, which in turn contains other required
  * sections.
  *
+ * @since 1.14.0 Parser is lenient by default.
+ *
  * @memberof xkb_keymap
  */
 XKB_EXPORT struct xkb_keymap *
@@ -1364,6 +1380,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  * This is just like `xkb_keymap_new_from_file()`, but instead of a file, gets
  * the keymap as one enormous string.
  *
+ * @since 1.14.0 Parser is lenient by default.
  * @see `xkb_keymap_new_from_file()`
  * @memberof xkb_keymap
  */
@@ -1378,9 +1395,10 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  * This is just like `xkb_keymap_new_from_string()`, but takes a length argument
  * so the input string does not have to be zero-terminated.
  *
+ * @since 0.3.0
+ * @since 1.14.0 Parser is lenient by default.
  * @see `xkb_keymap_new_from_string()`
  * @memberof xkb_keymap
- * @since 0.3.0
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,

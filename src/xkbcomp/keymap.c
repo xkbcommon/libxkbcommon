@@ -786,6 +786,13 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
     struct xkb_keymap_info info = {
         /* Copy the keymap */
         .keymap = *keymap,
+        .strict = (keymap->format == XKB_KEYMAP_FORMAT_TEXT_V1)
+            ? (keymap->flags & XKB_KEYMAP_COMPILE_STRICT_MODE
+                ? PARSER_V1_STRICT_FLAGS
+                : PARSER_V1_LAX_FLAGS)
+            : (keymap->flags & XKB_KEYMAP_COMPILE_STRICT_MODE
+                ? PARSER_V2_STRICT_FLAGS
+                : PARSER_V2_LAX_FLAGS),
         .features = {
             .max_groups = format_max_groups(keymap->format),
             .group_lock_on_release =

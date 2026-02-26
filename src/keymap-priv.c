@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon-names.h"
+#include "features/enums.h"
 #include "keymap.h"
 #include "messages-codes.h"
 
@@ -49,7 +50,7 @@ xkb_keymap_new(struct xkb_context *ctx, const char *func,
                enum xkb_keymap_compile_flags flags)
 {
     static const enum xkb_keymap_compile_flags XKB_KEYMAP_COMPILE_FLAGS =
-        XKB_KEYMAP_COMPILE_NO_FLAGS;
+        (enum xkb_keymap_compile_flags) XKB_KEYMAP_COMPILE_FLAGS_VALUES;
 
     if (flags & ~XKB_KEYMAP_COMPILE_FLAGS) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,

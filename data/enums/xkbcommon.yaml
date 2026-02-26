@@ -31,6 +31,8 @@ xkb_log_level:
 xkb_keymap_compile_flags:
   - name: XKB_KEYMAP_COMPILE_NO_FLAGS
     value: 0
+  - name: XKB_KEYMAP_COMPILE_STRICT_MODE
+    value: 1
 xkb_keymap_format:
   - name: XKB_KEYMAP_FORMAT_TEXT_V1
     value: 1

@@ -83,6 +83,7 @@ enum xkb_enumerations_values {
     ,
     XKB_KEYMAP_COMPILE_FLAGS_VALUES
         = XKB_KEYMAP_COMPILE_NO_FLAGS
+        | XKB_KEYMAP_COMPILE_STRICT_MODE
     ,
     XKB_KEYMAP_FORMAT_VALUES
         = (1u << XKB_KEYMAP_FORMAT_TEXT_V1)
@@ -201,6 +202,7 @@ static const int xkb_log_level_values[] = {
 #ifdef ENABLE_PRIVATE_APIS
 static const int xkb_keymap_compile_flags_values[] = {
     XKB_KEYMAP_COMPILE_NO_FLAGS,
+    XKB_KEYMAP_COMPILE_STRICT_MODE,
 };
 #endif
 
