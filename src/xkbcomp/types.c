@@ -709,10 +709,13 @@ HandleKeyTypesFile(KeyTypesInfo *info, XkbFile *file)
         case STMT_VMOD:
             ok = HandleVModDef(info->ctx, &info->mods, (VModDef *) stmt);
             break;
+        case STMT_UNKNOWN_DECLARATION:
         case STMT_UNKNOWN_COMPOUND:
             log_err(info->ctx, XKB_ERROR_UNKNOWN_STATEMENT,
-                    "Unsupported types compound statement \"%s\"; "
-                    "Ignoring\n", ((UnknownCompoundStatement *)stmt)->name);
+                    "Unsupported types %s statement \"%s\"; Ignoring\n",
+                    (stmt->type == STMT_UNKNOWN_COMPOUND
+                        ? "compound" : "declaration"),
+                    ((UnknownStatement *)stmt)->name);
             ok = !(info->keymap_info->strict & PARSER_NO_UNKNOWN_STATEMENTS);
             break;
         default:

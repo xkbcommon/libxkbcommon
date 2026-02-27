@@ -472,14 +472,14 @@ LedNameCreate(int64_t ndx, ExprDef *name, bool virtual)
     return def;
 }
 
-UnknownCompoundStatement *
-UnknownCompoundStatementCreate(struct sval name)
+UnknownStatement *
+UnknownStatementCreate(enum stmt_type type, struct sval name)
 {
-    UnknownCompoundStatement *def = malloc(sizeof(*def));
+    UnknownStatement *def = malloc(sizeof(*def));
     if (!def)
         return NULL;
 
-    def->common.type = STMT_UNKNOWN_COMPOUND;
+    def->common.type = type;
     def->common.next = NULL;
     def->name = strndup(name.start, name.len);
     if (!def->name) {
@@ -729,12 +729,13 @@ FreeStmt(ParseCommon *stmt)
         case STMT_LED_NAME:
             FreeStmt((ParseCommon *) ((LedNameDef *) stmt)->name);
             break;
+        case STMT_UNKNOWN_DECLARATION:
         case STMT_UNKNOWN_COMPOUND:
-            free(((UnknownCompoundStatement *) stmt)->name);
+            free(((UnknownStatement *) stmt)->name);
             break;
         default:
             {} /* Label followed by declaration requires C23 */
-            static_assert(_STMT_NUM_VALUES == 36 &&
+            static_assert(_STMT_NUM_VALUES == 37 &&
                           _STMT_NUM_VALUES == STMT_UNKNOWN_COMPOUND + 1,
                           "Missing statement type");
             break;
@@ -831,9 +832,10 @@ static const char *stmt_type_strings[_STMT_NUM_VALUES] = {
     [STMT_GROUP_COMPAT] = "group declaration",
     [STMT_LED_MAP] = "indicator map declaration",
     [STMT_LED_NAME] = "indicator name declaration",
+    [STMT_UNKNOWN_DECLARATION] = "unknown declaration statement",
     [STMT_UNKNOWN_COMPOUND] = "unknown compound statement",
 };
-static_assert(_STMT_NUM_VALUES == 36 &&
+static_assert(_STMT_NUM_VALUES == 37 &&
               _STMT_NUM_VALUES == STMT_UNKNOWN_COMPOUND + 1,
               "Missing statement type");
 

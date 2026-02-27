@@ -194,7 +194,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         LedNameDef      *ledName;
         KeycodeDef      *keyCode;
         KeyAliasDef     *keyAlias;
-        UnknownCompoundStatement *unknown;
+        UnknownStatement *unknown;
         void            *geom;
         XkbFile         *file;
         struct { XkbFile *head; XkbFile *last; } fileList;
@@ -235,7 +235,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 %type <geom>    ShapeDecl SectionDecl SectionBody SectionBodyItem RowBody RowBodyItem
 %type <geom>    Keys Key OverlayDecl OverlayKeyList OverlayKey OutlineList OutlineInList
 %type <geom>    DoodadDecl
-%type <unknown> UnknownCompoundStatementDecl
+%type <unknown> UnknownDecl UnknownCompoundStatementDecl
 %type <file>    XkbFile XkbMapConfig
 %type <fileList> XkbMapConfigList
 %type <file>    XkbCompositeMap
@@ -417,6 +417,8 @@ Decl            :       OptMergeMode VarDecl
                 |       OptMergeMode ShapeDecl          { $$ = NULL; }
                 |       OptMergeMode SectionDecl        { $$ = NULL; }
                 |       OptMergeMode DoodadDecl         { $$ = NULL; }
+                |       OptMergeMode UnknownDecl
+                            { $$ = (ParseCommon *) $2; }
                 |       OptMergeMode UnknownCompoundStatementDecl
                             { $$ = (ParseCommon *) $2; }
                 |       MergeMode STRING
@@ -613,12 +615,20 @@ LedNameDecl:            INDICATOR Integer EQUALS Expr SEMI
                         { $$ = LedNameCreate($3, $5, true); }
                 ;
 
+UnknownDecl     :       IDENT Terminal EQUALS Expr SEMI
+                        {
+                            FreeStmt((ParseCommon *) $2);
+                            FreeStmt((ParseCommon *) $4);
+                            $$ = UnknownStatementCreate(STMT_UNKNOWN_DECLARATION, $1);
+                        }
+                ;
+
 UnknownCompoundStatementDecl:
                         IDENT OptTerminal OBRACE VarDeclList CBRACE SEMI
                         {
                             FreeStmt((ParseCommon *) $2);
                             FreeStmt((ParseCommon *) $4.head);
-                            $$ = UnknownCompoundStatementCreate($1);
+                            $$ = UnknownStatementCreate(STMT_UNKNOWN_COMPOUND, $1);
                         }
                 ;
 

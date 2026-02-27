@@ -1539,10 +1539,13 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
         case STMT_MODMAP:
             ok = HandleModMapDef(info, (ModMapDef *) stmt);
             break;
+        case STMT_UNKNOWN_DECLARATION:
         case STMT_UNKNOWN_COMPOUND:
             log_err(info->ctx, XKB_ERROR_UNKNOWN_STATEMENT,
-                    "Unsupported symbols compound statement \"%s\"; "
-                    "Ignoring\n", ((UnknownCompoundStatement *)stmt)->name);
+                    "Unsupported symbols %s statement \"%s\"; Ignoring\n",
+                    (stmt->type == STMT_UNKNOWN_COMPOUND
+                        ? "compound" : "declaration"),
+                    ((UnknownStatement *)stmt)->name);
             ok = !(info->keymap_info->strict & PARSER_NO_UNKNOWN_STATEMENTS);
             break;
         default:
