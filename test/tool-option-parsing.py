@@ -669,6 +669,7 @@ class TestXkbcli(unittest.TestCase):
             ["--consumed-mode=gtk", "-h"],
             ["--without-x11-offset", "-h"],
             ["--format=xkb_v2", "-h"],
+            ["--strict", "-h"],
             ["--enable-compose", "-h"],
             ["--legacy-state-api", "-h"],
             ["--legacy-state-api=false", "-h"],

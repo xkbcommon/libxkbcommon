@@ -1,4 +1,4 @@
-.Dd June 4, 2024
+.Dd February 27, 2026
 .Dt XKBCLI\-INTERACTIVE\-EVDEV 1
 .Os
 .
@@ -26,7 +26,7 @@ user or belonging to the
 .Dq input
 group.
 .
-.Pp
+.Ppr
 Press the
 .Aq Escape
 key to exit.
@@ -61,6 +61,9 @@ This option is order-dependent, include paths given first are searched first.
 .It Fl \-format Ar KEYMAP_FORMAT
 Specify the keymap format (numeric or label, e.g.\&
 .Dq v1 )
+.
+.It Fl \-strict
+Parse using the strict mode.
 .
 .It Fl \-rules Ar RULES
 The XKB ruleset
