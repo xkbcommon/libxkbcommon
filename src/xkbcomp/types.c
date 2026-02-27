@@ -252,10 +252,12 @@ SetModifiers(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 {
     xkb_mod_mask_t mods = 0;
 
-    if (arrayNdx)
-        log_warn(info->ctx, XKB_LOG_MESSAGE_NO_ID,
-                 "The modifiers field of a key type is not an array; "
-                 "Illegal array subscript ignored\n");
+    if (arrayNdx) {
+        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "The modifiers field of a key type is not an array; "
+                "Illegal array subscript ignored\n");
+        return false;
+    }
 
     if (!ExprResolveModMask(info->ctx, value, MOD_BOTH, &info->mods, &mods)) {
         log_err(info->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
@@ -594,10 +596,12 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
     ExprDef *arrayNdx;
 
     for (; def; def = (VarDef *) def->common.next) {
-        ok = ExprResolveLhs(info->ctx, def->name, &elem, &field,
-                            &arrayNdx);
-        if (!ok)
+        if (!ExprResolveLhs(info->ctx, def->name, &elem, &field,
+                            &arrayNdx)) {
+            /* internal error, already reported */
+            ok = false;
             continue;
+        }
 
         if (elem) {
             if (istreq(elem, "type")) {
@@ -616,7 +620,8 @@ HandleKeyTypeBody(KeyTypesInfo *info, VarDef *def, KeyTypeInfo *type)
             continue;
         }
 
-        ok = SetKeyTypeField(info, type, field, arrayNdx, def->value);
+        if (!SetKeyTypeField(info, type, field, arrayNdx, def->value))
+            ok = false;
     }
 
     return ok;
