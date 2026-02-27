@@ -78,6 +78,8 @@ struct interactive_seat {
 
 static bool terminate = false;
 static enum xkb_keymap_format keymap_input_format = DEFAULT_INPUT_KEYMAP_FORMAT;
+static enum xkb_keymap_compile_flags compile_flags =
+    (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
 #ifdef KEYMAP_DUMP
 static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
               "Out of sync usage()");
@@ -445,7 +447,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         seat->keymap = xkb_keymap_new_from_buffer(seat->inter->ctx,
                                                   buf, size - 1,
                                                   keymap_input_format,
-                                                  XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                                  compile_flags);
         munmap(buf, size);
         close(fd);
 #ifndef KEYMAP_DUMP
@@ -930,11 +932,11 @@ usage(FILE *fp, char *progname)
         fprintf(fp,
                 "Usage: %s [--help] [--verbose]"
 #ifdef KEYMAP_DUMP
-                " [--no-pretty] [--drop-unused] [--raw] [--input-format]"
+                " [--no-pretty] [--drop-unused] [--raw] [--input-format] [--strict]"
                 " [--output-format] [--format] [--no-pretty] [--drop-unused]"
 #else
                 " [--uniline] [--multiline] [--consumed-mode={xkb|gtk}]"
-                " [--no-state-report] [--format] [--enable-compose]"
+                " [--no-state-report] [--format] [--strict] [--enable-compose]"
                 " [--local-state] [--legacy-state-api true|false]"
                 " [--controls CONTROLS] [--modifiers-mapping MAPPING]"
                 " [--shortcuts-mask MASK] [--shortcuts-mapping]"
@@ -947,12 +949,14 @@ usage(FILE *fp, char *progname)
                 "    --input-format <FORMAT>     use input keymap format FORMAT (default: '%s')\n"
                 "    --output-format <FORMAT>    use output keymap format FORMAT (default: same as input)\n"
                 "    --format <FORMAT>           keymap format to use for both input and output\n"
+                "    --strict                    parse using strict mode\n"
                 "    --no-pretty                 do not pretty-print when serializing a keymap\n"
                 "    --drop-unused               disable unused bits serialization\n"
                 "    --explicit-values           force serializing all values\n"
                 "    --raw                       dump the raw keymap, without parsing it\n"
 #else
                 "    --format <FORMAT>  use keymap format FORMAT (default: '%s')\n"
+                "    --strict           parse using strict mode\n"
                 "    --enable-compose   enable Compose\n"
                 "    --local-state      enable local state handling and ignore modifiers/layouts\n"
                 "                       state updates from the compositor\n"
@@ -1045,6 +1049,7 @@ main(int argc, char *argv[])
         OPT_INPUT_KEYMAP_FORMAT,
         OPT_OUTPUT_KEYMAP_FORMAT,
         OPT_KEYMAP_FORMAT,
+        OPT_KEYMAP_STRICT_PARSER,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
         OPT_KEYMAP_EXPLICIT,
@@ -1054,6 +1059,7 @@ main(int argc, char *argv[])
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
+        {"strict",               no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
 #ifdef KEYMAP_DUMP
         {"input-format",         required_argument,      0, OPT_INPUT_KEYMAP_FORMAT},
         {"output-format",        required_argument,      0, OPT_OUTPUT_KEYMAP_FORMAT},
@@ -1112,6 +1118,9 @@ main(int argc, char *argv[])
                         optarg);
                 goto invalid_usage;
             }
+            break;
+        case OPT_KEYMAP_STRICT_PARSER:
+            compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
             break;
 #ifdef KEYMAP_DUMP
         case OPT_OUTPUT_KEYMAP_FORMAT:
@@ -1298,7 +1307,7 @@ too_much_arguments:
         }
         custom_keymap = xkb_keymap_new_from_file(inter.ctx, file,
                                                  keymap_input_format,
-                                                 XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                                 compile_flags);
         fclose(file);
     }
 

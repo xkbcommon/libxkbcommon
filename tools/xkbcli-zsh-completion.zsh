@@ -114,6 +114,7 @@ local -a interactive_common=(
 	'--consumed-mode=[select the consumed modifiers mode]:mode:(xkb gtk)'
 	'(--report-state-changes)--no-state-report[do not report changes to the state]'
 	'--format=[use the given keymap format]:xkb format:(v1 v2)'
+	'--strict[parse using the strict mode]'
 	'--enable-compose[enable Compose]'
 	'--legacy-state-api=[use the legacy state API instead of state event API]:state:(true false)'
 	'(--local-state --legacy-state-api)--modifiers-mapping=[use the given modifiers mapping]:modifiers mapping:_xkbcli_modifiers_mapping' \
@@ -151,6 +152,7 @@ local -a dump_common=(
 	'(--format)--input-format=[use the given input keymap format]:xkb format:(v1 v2)'
 	'(--format)--output-format=[use the given output keymap format]:xkb format:(v1 v2)'
 	'(--input-format --output-format)--format=[use the given keymap format for input and output]:xkb format:(v1 v2)'
+	'--strict[parse using the strict mode]'
 	'--no-pretty[do not pretty print when serializing a keymap]'
 	'--drop-unused[disable unused bits serialization]'
 	'--explicit-values[force serializing all values]'

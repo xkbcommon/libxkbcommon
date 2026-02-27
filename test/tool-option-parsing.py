@@ -712,6 +712,7 @@ class TestXkbcli(unittest.TestCase):
             ["--consumed-mode=xkb", "-h"],
             ["--consumed-mode=gtk", "-h"],
             ["--format=xkb_v2", "-h"],
+            ["--strict", "-h"],
             ["--enable-compose", "-h"],
             ["--local-state", "-h"],
             ["--legacy-state-api", "-h"],
@@ -729,6 +730,7 @@ class TestXkbcli(unittest.TestCase):
         for args in (
             ["--verbose", "-h"],
             ["--format=v2", "-h"],
+            ["--strict", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
             ["--explicit-values", "-h"],
