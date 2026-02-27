@@ -924,6 +924,8 @@ too_much_arguments:
         }
         custom_keymap = xkb_keymap_new_from_file(ctx, file, keymap_format,
                                                  compile_flags);
+        if (!custom_keymap)
+            goto err_keymap;
         fclose(file);
     }
 
@@ -969,6 +971,8 @@ too_much_arguments:
 err_window:
     xkb_compose_table_unref(compose_table);
 err_compose:
+    xkb_keymap_unref(custom_keymap);
+err_keymap:
 #endif
     deinit_kbd(&core_kbd);
 err_ctx:
@@ -976,9 +980,6 @@ err_ctx:
 err_conn:
     xcb_disconnect(conn);
 err_out:
-#ifndef KEYMAP_DUMP
-    xkb_keymap_unref(custom_keymap);
-#endif
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP

@@ -1308,6 +1308,8 @@ too_much_arguments:
         custom_keymap = xkb_keymap_new_from_file(inter.ctx, file,
                                                  keymap_input_format,
                                                  compile_flags);
+        if (!custom_keymap)
+            goto err_out;
         fclose(file);
     }
 
