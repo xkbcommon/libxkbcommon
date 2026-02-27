@@ -2805,6 +2805,30 @@ test_compound_statement_errors(struct xkb_context *ctx)
         {
             .keymap =
                 "xkb_keymap {\n"
+                "  xkb_types {\n"
+                "    type \"1\" {\n"
+                "      modifiers[0] = Shift;\n" /* error on field */
+                "      map[Shift] = 2;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_types {\n"
+                "    type \"1\" {\n"
+                "      modifiers = \"xxx\";\n" /* error on value */
+                "      map[Shift] = 2;\n"
+                "    };\n"
+                "  };\n"
+                "};",
+            .expected = NULL
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
                 "  xkb_compat {\n"
                 "    interpret a {\n"
                 "      action[0] = NoAction();\n" /* error on field */
