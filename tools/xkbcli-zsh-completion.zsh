@@ -71,6 +71,7 @@ _xkbcli_controls() {
 _xkbcli_commands() {
 	local -a commands=(
 		'list:list available rules, models, layouts, variants and options'
+		'info:print information about libxkbcommon configuration'
 		'interactive:interactive debugger for XKB keymaps'
 		'interactive-wayland:interactive debugger for XKB keymaps for Wayland'
 		'interactive-x11:interactive debugger for XKB keymaps for X11'
@@ -176,6 +177,7 @@ _xkbcli-compile-keymap() {
 		'--include-defaults[add the default set of include directories]' \
 		'(--format)--input-format=[the keymap format to use for parsing]:xkb format:(v1 v2)' \
 		'(--input-format --output-format)--format=[the keymap format to use for parsing and serializing]:xkb format:(v1 v2)' \
+		'--strict[parse using the strict mode]' \
 		'(--rules --model --layout --variant --options --enable-environment-names)--keymap=[use the given keymap file]:keymap:_xkbcli_keymap' \
 		"$rmlvo_opts_common[@]" \
 		+ '(output)' \

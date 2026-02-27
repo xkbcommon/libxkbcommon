@@ -67,14 +67,10 @@ usage(FILE *file, const char *progname)
            "    are searched first.\n"
            " --input-format <format>\n"
            "    The keymap format to use for parsing (default: '%s')\n"
-           " --output-format <format>\n"
-           "    The keymap format to use for serializing (default: same as input)\n"
            " --format <format>\n"
            "    The keymap format to use for both parsing and serializing\n"
-           " --no-pretty\n"
-           "    Do not pretty-print when serializing a keymap\n"
-           " --drop-unused\n"
-           "    Disable unused bits serialization\n"
+           " --strict\n"
+           "    Parse using the strict mode.\n"
            " --keymap <file>\n"
            " --from-xkb <file>\n"
            "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
@@ -144,6 +140,7 @@ parse_options(int argc, char **argv,
               enum output_format *output_format_out,
               enum xkb_keymap_format *keymap_input_format,
               enum xkb_keymap_format *keymap_output_format,
+              enum xkb_keymap_compile_flags *compile_flags,
               enum xkb_keymap_serialize_flags *serialize_flags,
               bool *use_env_names,
               char **path, struct xkb_rule_names *names)
@@ -160,17 +157,18 @@ parse_options(int argc, char **argv,
         OPT_KEYMAP,
         OPT_ENABLE_ENV_NAMES,
         OPT_KEYMAP_INPUT_FORMAT,
-        OPT_KEYMAP_OUTPUT_FORMAT,
         OPT_KEYMAP_FORMAT,
-        OPT_KEYMAP_NO_PRETTY,
-        OPT_KEYMAP_DROP_UNUSED,
-        OPT_KEYMAP_EXPLICIT,
+        OPT_KEYMAP_STRICT_PARSER,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
         OPT_VARIANT,
         OPT_OPTION,
         /* Output */
+        OPT_KEYMAP_OUTPUT_FORMAT,
+        OPT_KEYMAP_NO_PRETTY,
+        OPT_KEYMAP_DROP_UNUSED,
+        OPT_KEYMAP_EXPLICIT,
         OPT_KCCGST,
         OPT_KCCGST_YAML,
         OPT_RMLVO,
@@ -191,6 +189,7 @@ parse_options(int argc, char **argv,
         {"keymap",           optional_argument,      0, OPT_KEYMAP},
         /* Alias maintained for backward compatibility */
         {"from-xkb",         optional_argument,      0, OPT_KEYMAP},
+        {"strict",           no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
         {"enable-environment-names", no_argument,    0, OPT_ENABLE_ENV_NAMES},
         {"input-format",     required_argument,      0, OPT_KEYMAP_INPUT_FORMAT},
         {"format",           required_argument,      0, OPT_KEYMAP_FORMAT},
@@ -291,6 +290,9 @@ parse_options(int argc, char **argv,
                 exit(EXIT_INVALID_USAGE);
             }
             *keymap_output_format = *keymap_input_format;
+            break;
+        case OPT_KEYMAP_STRICT_PARSER:
+            *compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
             break;
         case OPT_KEYMAP_NO_PRETTY:
             *serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
@@ -492,7 +494,8 @@ out:
 
 static struct xkb_keymap*
 load_keymap(struct xkb_context *ctx, enum xkb_keymap_format keymap_input_format,
-            enum input_format format, const struct xkb_rule_names *rmlvo,
+            enum xkb_keymap_compile_flags compile_flags, enum input_format format,
+            const struct xkb_rule_names *rmlvo,
             const char *path)
 {
     if (format == INPUT_FORMAT_KEYMAP) {
@@ -511,33 +514,36 @@ load_keymap(struct xkb_context *ctx, enum xkb_keymap_format keymap_input_format,
         }
         return xkb_keymap_new_from_file(ctx, file,
                                         keymap_input_format,
-                                        XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                        compile_flags);
     } else {
         return xkb_keymap_new_from_names2(ctx, rmlvo, keymap_input_format,
-                                          XKB_KEYMAP_COMPILE_NO_FLAGS);
+                                          compile_flags);
     }
 }
 
 static int
 print_keymap(struct xkb_context *ctx,
              enum xkb_keymap_format keymap_input_format,
+             enum xkb_keymap_compile_flags compile_flags,
+             enum input_format format,
+             const struct xkb_rule_names *rmlvo, const char *path,
              enum xkb_keymap_format keymap_output_format,
-             enum input_format format, enum xkb_keymap_serialize_flags flags,
-             const struct xkb_rule_names *rmlvo,
-             const char *path)
+             enum xkb_keymap_serialize_flags serialize_flags)
 {
     int ret = EXIT_SUCCESS;
     struct xkb_keymap *keymap = load_keymap(ctx, keymap_input_format,
-                                            format, rmlvo, path);
+                                            compile_flags, format, rmlvo, path);
 
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
     } else if (!test) {
-        char* keymap_string =
-            xkb_keymap_get_as_string2(keymap, keymap_output_format, flags);
+        char* keymap_string = xkb_keymap_get_as_string2(
+            keymap, keymap_output_format, serialize_flags
+        );
         if (!keymap_string) {
             fprintf(stderr, "ERROR: Couldn't get the keymap string\n");
+            ret = EXIT_FAILURE;
         } else {
             fputs(keymap_string, stdout);
             free(keymap_string);
@@ -550,12 +556,13 @@ print_keymap(struct xkb_context *ctx,
 static int
 print_modmaps(struct xkb_context *ctx,
               enum xkb_keymap_format keymap_input_format,
+              enum xkb_keymap_compile_flags compile_flags,
               enum input_format format, const struct xkb_rule_names *rmlvo,
               const char *path)
 {
     int ret = EXIT_SUCCESS;
     struct xkb_keymap *keymap = load_keymap(ctx, keymap_input_format,
-                                            format, rmlvo, path);
+                                            compile_flags, format, rmlvo, path);
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
@@ -579,6 +586,8 @@ main(int argc, char **argv)
     static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                   "Out of sync usage()");
     enum xkb_keymap_format keymap_output_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
+    enum xkb_keymap_compile_flags compile_flags =
+        (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
     enum xkb_keymap_serialize_flags serialize_flags =
         (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
     int rc = 1;
@@ -594,7 +603,8 @@ main(int argc, char **argv)
     enum output_format output_format = OUTPUT_FORMAT_KEYMAP;
     if (!parse_options(argc, argv, &input_format, &output_format,
                        &keymap_input_format, &keymap_output_format,
-                       &serialize_flags, &use_env_names, &keymap_path, &names))
+                       &compile_flags, &serialize_flags, &use_env_names,
+                       &keymap_path, &names))
         return EXIT_INVALID_USAGE;
 
     enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
@@ -633,11 +643,12 @@ main(int argc, char **argv)
         break;
     case OUTPUT_FORMAT_MODMAPS:
         rc = print_modmaps(ctx, keymap_input_format,
-                           input_format, &names, keymap_path);
+                           compile_flags, input_format, &names, keymap_path);
         break;
     default:
-        rc = print_keymap(ctx, keymap_input_format, keymap_output_format,
-                          input_format, serialize_flags, &names, keymap_path);
+        rc = print_keymap(ctx, keymap_input_format, compile_flags, input_format,
+                          &names, keymap_path,
+                          keymap_output_format, serialize_flags);
     }
 
     xkb_context_unref(ctx);

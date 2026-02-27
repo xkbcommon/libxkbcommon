@@ -21,6 +21,7 @@
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 
 enum {
+    DEFAULT_KEYMAP_COMPILE_FLAGS = XKB_KEYMAP_COMPILE_NO_FLAGS,
     DEFAULT_KEYMAP_SERIALIZE_FLAGS = XKB_KEYMAP_SERIALIZE_PRETTY |
                                      XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
 };

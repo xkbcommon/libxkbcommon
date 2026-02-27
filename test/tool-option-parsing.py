@@ -389,6 +389,7 @@ class TestXkbcli(unittest.TestCase):
             ["--format=v2", "-h"],
             ["--input-format=xkb_v1", "-h"],
             ["--output-format=xkb_v2", "-h"],
+            ["--strict", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
             ["--explicit-values", "-h"],
