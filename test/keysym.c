@@ -186,13 +186,10 @@ static int
 test_utf8(xkb_keysym_t keysym, const char *expected)
 {
     char s[XKB_KEYSYM_UTF8_MAX_SIZE];
-    int ret;
 
-    ret = xkb_keysym_to_utf8(keysym, s, sizeof(s));
-    if (ret <= 0)
-        return ret;
-
-    assert(expected != NULL);
+    const int ret = xkb_keysym_to_utf8(keysym, s, sizeof(s));
+    if (ret <= 0 || !expected)
+        return (!ret && !expected);
 
     fprintf(stderr, "Expected keysym %#06"PRIx32" -> %s (%zu bytes)\n", keysym, expected,
             strlen(expected));
@@ -861,13 +858,47 @@ main(void)
     assert(test_utf8(XKB_KEY_Return, "\r"));
     assert(test_utf8(XKB_KEY_KP_Enter, "\r"));
     assert(test_utf8(XKB_KEY_KP_Equal, "="));
-    assert(test_utf8(XKB_KEY_9, "9"));
-    assert(test_utf8(XKB_KEY_KP_9, "9"));
+    assert(test_utf8(XKB_KEY_asterisk, "*"));
     assert(test_utf8(XKB_KEY_KP_Multiply, "*"));
+    assert(test_utf8(XKB_KEY_XF86NumericStar, "*"));
+    assert(test_utf8(XKB_KEY_plus, "+"));
+    assert(test_utf8(XKB_KEY_KP_Add, "+"));
+    assert(test_utf8(XKB_KEY_minus, "-"));
     assert(test_utf8(XKB_KEY_KP_Subtract, "-"));
+    assert(test_utf8(XKB_KEY_slash, "/"));
+    assert(test_utf8(XKB_KEY_KP_Divide, "/"));
+    assert(test_utf8(XKB_KEY_numbersign, "#"));
+    assert(test_utf8(XKB_KEY_XF86NumericPound, "#"));
+    assert(test_utf8(XKB_KEY_9, "9"));
+    assert(test_utf8(XKB_KEY_KP_0, "0"));
+    assert(test_utf8(XKB_KEY_KP_1, "1"));
+    assert(test_utf8(XKB_KEY_KP_2, "2"));
+    assert(test_utf8(XKB_KEY_KP_3, "3"));
+    assert(test_utf8(XKB_KEY_KP_4, "4"));
+    assert(test_utf8(XKB_KEY_KP_5, "5"));
+    assert(test_utf8(XKB_KEY_KP_6, "6"));
+    assert(test_utf8(XKB_KEY_KP_7, "7"));
+    assert(test_utf8(XKB_KEY_KP_8, "8"));
+    assert(test_utf8(XKB_KEY_KP_9, "9"));
+    assert(test_utf8(XKB_KEY_XF86Numeric0, "0"));
+    assert(test_utf8(XKB_KEY_XF86Numeric1, "1"));
+    assert(test_utf8(XKB_KEY_XF86Numeric2, "2"));
+    assert(test_utf8(XKB_KEY_XF86Numeric3, "3"));
+    assert(test_utf8(XKB_KEY_XF86Numeric4, "4"));
+    assert(test_utf8(XKB_KEY_XF86Numeric5, "5"));
+    assert(test_utf8(XKB_KEY_XF86Numeric6, "6"));
+    assert(test_utf8(XKB_KEY_XF86Numeric7, "7"));
+    assert(test_utf8(XKB_KEY_XF86Numeric8, "8"));
+    assert(test_utf8(XKB_KEY_XF86Numeric9, "9"));
+
+    /* These are function keys, not letters */
+    assert(test_utf8(XKB_KEY_XF86NumericA, NULL));
+    assert(test_utf8(XKB_KEY_XF86NumericB, NULL));
+    assert(test_utf8(XKB_KEY_XF86NumericC, NULL));
+    assert(test_utf8(XKB_KEY_XF86NumericD, NULL));
 
     /* Unicode keysyms */
-    assert(test_utf8(XKB_KEYSYM_UNICODE_OFFSET, NULL) == 0); /* Min Unicode codepoint */
+    assert(test_utf8(XKB_KEYSYM_UNICODE_OFFSET, NULL)); /* Min Unicode codepoint */
     assert(test_utf8(0x1000001, "\x01"));     /* Currently accepted, but not intended (< 0x100100) */
     assert(test_utf8(0x1000020, " "));        /* Currently accepted, but not intended (< 0x100100) */
     assert(test_utf8(0x100007f, "\x7f"));     /* Currently accepted, but not intended (< 0x100100) */
@@ -875,9 +906,9 @@ main(void)
     assert(test_utf8(XKB_KEYSYM_UNICODE_MIN, "Ā")); /* Min Unicode keysym */
     assert(test_utf8(0x10005d0, "א"));
     assert(test_utf8(XKB_KEYSYM_UNICODE_MAX, "\xf4\x8f\xbf\xbf")); /* Max Unicode */
-    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MIN, NULL) == 0);
-    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MAX, NULL) == 0);
-    assert(test_utf8(XKB_KEYSYM_UNICODE_MAX + 1, NULL) == 0);
+    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MIN, NULL));
+    assert(test_utf8(XKB_KEYSYM_UNICODE_SURROGATE_MAX, NULL));
+    assert(test_utf8(XKB_KEYSYM_UNICODE_MAX + 1, NULL));
 
     assert(test_utf32_to_keysym('y', XKB_KEY_y));
     assert(test_utf32_to_keysym('u', XKB_KEY_u));
@@ -898,14 +929,36 @@ main(void)
     assert(test_utf32_to_keysym(0x1b, XKB_KEY_Escape));
     assert(test_utf32_to_keysym(0x7f, XKB_KEY_Delete));
 
+    /* Not keypad nor phone keys */
     assert(test_utf32_to_keysym(' ', XKB_KEY_space));
+    assert(test_utf32_to_keysym('\t', XKB_KEY_Tab));
+    assert(test_utf32_to_keysym('\r', XKB_KEY_Return));
     assert(test_utf32_to_keysym(',', XKB_KEY_comma));
     assert(test_utf32_to_keysym('.', XKB_KEY_period));
     assert(test_utf32_to_keysym('=', XKB_KEY_equal));
+    assert(test_utf32_to_keysym('0', XKB_KEY_0));
+    assert(test_utf32_to_keysym('1', XKB_KEY_1));
+    assert(test_utf32_to_keysym('2', XKB_KEY_2));
+    assert(test_utf32_to_keysym('3', XKB_KEY_3));
+    assert(test_utf32_to_keysym('4', XKB_KEY_4));
+    assert(test_utf32_to_keysym('5', XKB_KEY_5));
+    assert(test_utf32_to_keysym('6', XKB_KEY_6));
+    assert(test_utf32_to_keysym('7', XKB_KEY_7));
+    assert(test_utf32_to_keysym('8', XKB_KEY_8));
     assert(test_utf32_to_keysym('9', XKB_KEY_9));
+    assert(test_utf32_to_keysym('A', XKB_KEY_A));
+    assert(test_utf32_to_keysym('B', XKB_KEY_B));
+    assert(test_utf32_to_keysym('C', XKB_KEY_C));
+    assert(test_utf32_to_keysym('D', XKB_KEY_D));
+    assert(test_utf32_to_keysym('E', XKB_KEY_E));
+    assert(test_utf32_to_keysym('F', XKB_KEY_F));
+    assert(test_utf32_to_keysym('#', XKB_KEY_numbersign));
+    assert(test_utf32_to_keysym('+', XKB_KEY_plus));
+    assert(test_utf32_to_keysym('-', XKB_KEY_minus));
     assert(test_utf32_to_keysym('*', XKB_KEY_asterisk));
     assert(test_utf32_to_keysym(0xd7, XKB_KEY_multiply));
-    assert(test_utf32_to_keysym('-', XKB_KEY_minus));
+    assert(test_utf32_to_keysym('/', XKB_KEY_slash));
+
     assert(test_utf32_to_keysym(0x10fffd, 0x110fffd));
     assert(test_utf32_to_keysym(0x20ac, XKB_KEY_EuroSign));
 

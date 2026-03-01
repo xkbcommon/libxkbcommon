@@ -80,8 +80,7 @@ def parse_keysyms(path: Path) -> Iterator[Keysym]:
                     deprecated=Deprecation.EXPLICIT
                     if m.group("deprecated") or m.group("deprecated_unicode")
                     else Deprecation.NONE,
-                    alias="alias for" in line.casefold()
-                    or m.group("unicode_alt_semantics"),
+                    alias="alias for" in line.casefold(),
                 )
 
 
