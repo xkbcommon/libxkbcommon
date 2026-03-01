@@ -894,8 +894,18 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym)
     if (XKB_KEYSYM_UNICODE_OFFSET <= keysym && keysym <= XKB_KEYSYM_UNICODE_MAX)
         return keysym - XKB_KEYSYM_UNICODE_OFFSET;
 
-    /* search main table */
-    return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
+    /* Some EVDEV keysyms that do not fit in `keysymtab` */
+    if (keysym >= XKB_KEY_XF86Numeric0 && keysym <= XKB_KEY_XF86Numeric9)
+        return keysym - XKB_KEY_XF86Numeric0 + 0x30;
+    switch (keysym) {
+    case XKB_KEY_XF86NumericStar:
+        return 0x2a; /* * */
+    case XKB_KEY_XF86NumericPound:
+        return 0x23; /* # */
+    default:
+        /* search main table */
+        return bin_search(keysymtab, ARRAY_SIZE(keysymtab) - 1, keysym);
+    }
 }
 
 xkb_keysym_t
