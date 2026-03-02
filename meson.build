@@ -394,7 +394,7 @@ libxkbcommon_sources = [
     'src/keysym.h',
     'src/keysym-case-mappings.c',
     'src/keysym-utf.c',
-    'src/ks_tables.h',
+    'src/keysym-names.h',
     'src/keymap.c',
     'src/keymap.h',
     'src/keymap-compare.c',

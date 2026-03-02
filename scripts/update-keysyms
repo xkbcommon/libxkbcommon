@@ -8,5 +8,5 @@ KEYSYMS_HEADER="include/xkbcommon/xkbcommon-keysyms.h"
 scripts/update-keysyms-definitions.py > "$KEYSYMS_HEADER"
 scripts/update-keysyms-names-handling.py "$KEYSYMS_HEADER" \
                                          src/xkbcomp/keywords.gperf > \
-                                         src/ks_tables.h
+                                         src/keysym-names.h
 scripts/update-keysyms-derived-headers.py
