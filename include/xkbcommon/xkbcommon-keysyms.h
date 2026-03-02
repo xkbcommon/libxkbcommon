@@ -3108,6 +3108,8 @@ SOFTWARE.
 #define XKB_KEY_XF86DoNotDisturb             0x1008124f      /* v6.10   KEY_DO_NOT_DISTURB */
 #define XKB_KEY_XF86BrightnessMin            0x10081250      /* v3.16   KEY_BRIGHTNESS_MIN */
 #define XKB_KEY_XF86BrightnessMax            0x10081251      /* v3.16   KEY_BRIGHTNESS_MAX */
+#define XKB_KEY_XF86ElectronicPrivacyScreenOn  0x10081252      /* v6.18   KEY_EPRIVACY_SCREEN_ON */
+#define XKB_KEY_XF86ElectronicPrivacyScreenOff 0x10081253      /* v6.18   KEY_EPRIVACY_SCREEN_OFF */
 #define XKB_KEY_XF86KbdInputAssistPrev       0x10081260      /* v3.18   KEY_KBDINPUTASSIST_PREV */
 #define XKB_KEY_XF86KbdInputAssistNext       0x10081261      /* v3.18   KEY_KBDINPUTASSIST_NEXT */
 #define XKB_KEY_XF86KbdInputAssistPrevgroup  0x10081262      /* v3.18   KEY_KBDINPUTASSIST_PREVGROUP */

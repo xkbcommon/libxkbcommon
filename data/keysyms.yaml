@@ -6832,6 +6832,10 @@
   name: XF86BrightnessMin
 0x10081251:
   name: XF86BrightnessMax
+0x10081252:
+  name: XF86ElectronicPrivacyScreenOn
+0x10081253:
+  name: XF86ElectronicPrivacyScreenOff
 0x10081260:
   name: XF86KbdInputAssistPrev
 0x10081261:
