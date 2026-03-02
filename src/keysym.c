@@ -19,7 +19,7 @@
 #include "utils.h"
 #include "utils-numbers.h"
 #include "keysym.h"
-#include "ks_tables.h"
+#include "keysym-names.h"
 
 static ssize_t
 find_keysym_index(xkb_keysym_t ks)
