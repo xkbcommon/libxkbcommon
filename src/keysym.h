@@ -38,7 +38,7 @@
 /** Maximum keysym value with explicit name */
 #define XKB_KEYSYM_MAX_EXPLICIT   0x1008ffb8
 /** Count of keysym value with explicit name */
-#define XKB_KEYSYM_COUNT_EXPLICIT 2496
+#define XKB_KEYSYM_COUNT_EXPLICIT 2498
 /** Offset to use when converting a Unicode code point to a keysym */
 #define XKB_KEYSYM_UNICODE_OFFSET 0x01000000
 /** Minimum Unicode keysym. NOTE: code points in 0..0xff cannot be converted. */
@@ -52,11 +52,11 @@
 /** Unicode version used for case mappings */
 #define XKB_KEYSYM_UNICODE_VERSION { 17, 0, 0, 0 }
 /** Maximum keysym canonical name length, plus terminating NULL byte */
-#define XKB_KEYSYM_NAME_MAX_SIZE  28
+#define XKB_KEYSYM_NAME_MAX_SIZE  31
 /** Longest keysym canonical name */
-#define XKB_KEYSYM_LONGEST_CANONICAL_NAME ISO_Discontinuous_Underline
+#define XKB_KEYSYM_LONGEST_CANONICAL_NAME XF86ElectronicPrivacyScreenOff
 /** Longest keysym name */
-#define XKB_KEYSYM_LONGEST_NAME ISO_Discontinuous_Underline
+#define XKB_KEYSYM_LONGEST_NAME XF86ElectronicPrivacyScreenOff
 /** Maximum of distinct explicit names for a keysym */
 #define XKB_KEYSYM_EXPLICIT_ALIASES_MAX 9
 /** Maximum bytes to encode the Unicode representation of a keysym in UTF-8:
