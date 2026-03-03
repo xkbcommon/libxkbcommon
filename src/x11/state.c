@@ -33,8 +33,9 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
         return false;
 
     /* NOTE: Use the public API with private enum values */
-    xkb_state_update_controls(state, (enum xkb_keyboard_controls) controls,
-                              (enum xkb_keyboard_controls) controls);
+    xkb_state_update_enabled_controls(state,
+                                      (enum xkb_keyboard_control_flags) controls,
+                                      (enum xkb_keyboard_control_flags) controls);
 
     xkb_state_update_mask(state,
                           reply->baseMods,

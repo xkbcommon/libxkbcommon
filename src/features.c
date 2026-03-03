@@ -81,9 +81,9 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_flag_value(
             XKB_STATE_COMPONENT_VALUES, false, value
         );
-    case XKB_FEATURE_ENUM_KEYBOARD_CONTROLS:
+    case XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS:
         return is_supported_flag_value(
-            XKB_KEYBOARD_CONTROLS_VALUES, true, value
+            XKB_KEYBOARD_CONTROL_FLAGS_VALUES, true, value
         );
     case XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS:
         return is_supported_flag_value(

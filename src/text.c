@@ -52,7 +52,7 @@ const LookupEntry ctrlMaskNames[] = {
     { "AccessXFeedback", CONTROL_AX_FEEDBACK },
     { "AudibleBell", CONTROL_BELL },
     { "IgnoreGroupLock", CONTROL_IGNORE_GROUP_LOCK },
-    { "all", CONTROL_ALL },
+    { "all", CONTROL_ALL_BOOLEAN },
     { "none", 0 },
     { "Overlay1", 0 },
     { "Overlay2", 0 },
@@ -292,7 +292,7 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
     if (mask == 0)
         return "none";
 
-    if (mask == CONTROL_ALL)
+    if (mask == CONTROL_ALL_BOOLEAN)
         return "all";
 
     for (unsigned int i = 0; mask; i++) {

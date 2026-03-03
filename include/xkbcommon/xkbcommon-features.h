@@ -91,11 +91,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_STATE_COMPONENT = 3000,
     /**
-     * The enumeration @ref xkb_keyboard_controls
+     * The enumeration @ref xkb_keyboard_control_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_KEYBOARD_CONTROLS = 3020,
+    XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS = 3020,
     /**
      * The enumeration @ref xkb_state_accessibility_flags
      *

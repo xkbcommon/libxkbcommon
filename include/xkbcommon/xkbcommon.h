@@ -2357,7 +2357,7 @@ xkb_event_get_keycode(const struct xkb_event *event);
  * [modifier]: @ref modifier-def
  * [layout]: @ref layout-def
  * [indicator]: @ref indicator-def
- * [keyboard global control]: @ref xkb_keyboard_controls
+ * [keyboard global control]: @ref xkb_keyboard_control_flags
  */
 enum xkb_state_component {
     /**
@@ -2433,7 +2433,7 @@ enum xkb_state_component {
     /**
      * Effective [keyboard controls]
      *
-     * [keyboard controls]: @ref xkb_keyboard_controls
+     * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
     XKB_STATE_CONTROLS = (1 << 9)
 };
@@ -2459,15 +2459,15 @@ XKB_EXPORT enum xkb_state_component
 xkb_event_get_changed_components(const struct xkb_event *event);
 
 /**
- * @enum xkb_keyboard_controls
- * **Global keyboard controls**, which affect the way libxkbcommon handles the
- * keyboard as a whole.
+ * @enum xkb_keyboard_control_flags
+ * _Boolean_ **global keyboard controls**, which affect the way libxkbcommon
+ * handles the keyboard as a whole.
  *
  * This enumeration is bit-maskable.
  *
  * @since 1.14.0
  */
-enum xkb_keyboard_controls {
+enum xkb_keyboard_control_flags {
     /**
      * Do not apply any control.
      *
@@ -2495,7 +2495,7 @@ enum xkb_keyboard_controls {
 };
 
 /**
- * Serialization of the [global keyboard controls]
+ * Serialization of the *boolean* [global keyboard controls]
  * corresponding to a [state event](@ref xkb_event) of type
  * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE` .
  *
@@ -2504,7 +2504,7 @@ enum xkb_keyboard_controls {
  * serialize. State components other than `::XKB_STATE_CONTROLS` are ignored.
  *
  * @returns For an event of type `::XKB_EVENT_TYPE_COMPONENTS_CHANGE`
- * returns the corresponding `xkb_keyboard_controls` mask.
+ * returns the corresponding `xkb_keyboard_control_flags` mask.
  * @returns
  * The result is *undefined* if the given event has another type.
  *
@@ -2512,11 +2512,11 @@ enum xkb_keyboard_controls {
  *
  * @memberof xkb_event
  *
- * [global keyboard controls]: @ref xkb_keyboard_controls
+ * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
-XKB_EXPORT enum xkb_keyboard_controls
-xkb_event_serialize_controls(const struct xkb_event *event,
-                             enum xkb_state_component components);
+XKB_EXPORT enum xkb_keyboard_control_flags
+xkb_event_serialize_enabled_controls(const struct xkb_event *event,
+                                     enum xkb_state_component components);
 
 /**
  * Serialization of the [modifiers](@ref xkb_mod_mask_t)
@@ -2700,34 +2700,38 @@ XKB_EXPORT struct xkb_keymap *
 xkb_state_machine_get_keymap(const struct xkb_state_machine *sm);
 
 /**
- * Update the keyboard state machine to change the [global keyboard controls].
+ * Update the keyboard state machine to change the *boolean*
+ * [global keyboard controls].
  *
  * @param sm     The keyboard state machine object.
- * @param events The event iterator to store the events. It will be resetted.
+ * @param events The event iterator to store the events. It will be reset.
  * @param affect
-       Global keyboard controls to modify. @p controls contains the actual
-       values.
+       *Boolean* global keyboard controls to modify. @p controls contains the
+       actual values.
  * @param controls
- *     Global keyboard controls to lock or unlock. Only modifiers in @p affect
- *     are considered.
+ *     *Boolean* global keyboard controls to lock or unlock. Only controls in
+ *     @p affect are considered.
  *
  * @returns 0 on success, otherwise an error code.
+ *
+ * Non-boolean controls are ignored.
  *
  * @since 1.14.0
  *
  * @memberof xkb_state_machine
  *
- * [global keyboard controls]: @ref xkb_keyboard_controls
+ * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
 XKB_EXPORT int
-xkb_state_machine_update_controls(struct xkb_state_machine *sm,
-                                  struct xkb_event_iterator *events,
-                                  enum xkb_keyboard_controls affect,
-                                  enum xkb_keyboard_controls controls);
+xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
+                                          struct xkb_event_iterator *events,
+                                          enum xkb_keyboard_control_flags affect,
+                                          enum xkb_keyboard_control_flags controls);
+
 
 /**
  * @enum xkb_key_direction
- * Specifies the direction of the key (press / release).
+ * Specifies the direction of the key (press / release) or a repetition.
  */
 enum xkb_key_direction {
     /** The key was *released*. */
@@ -2755,7 +2759,7 @@ enum xkb_key_direction {
  * to missed input events), situations like “stuck modifiers” may occur.
  *
  * @param sm        The keyboard state machine object.
- * @param events    The event iterator to store the events. It will be resetted.
+ * @param events    The event iterator to store the events. It will be reset.
  * @param key       The key being operated.
  * @param direction The direction of the key operation.
  *
@@ -2789,7 +2793,7 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
  * @endparblock
  *
  * @param sm     The keyboard state machine object.
- * @param events The event iterator to store the events. It will be resetted.
+ * @param events The event iterator to store the events. It will be reset.
  * @param affect_latched_mods See @p latched_mods.
  * @param latched_mods
  *     Modifiers to set as latched or unlatched. Only modifiers in
@@ -2875,7 +2879,7 @@ XKB_EXPORT struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);
 
 /**
- * Update the keyboard state to change the [global keyboard controls].
+ * Update the keyboard state to change the *boolean* [global keyboard controls].
  *
  * This entry point is intended for *server* applications and should not be used
  * by *client* applications; see @ref server-client-state for details.
@@ -2883,8 +2887,8 @@ xkb_state_get_keymap(struct xkb_state *state);
  * @param state The keyboard state object.
  * @param affect See @p controls.
  * @param controls
- *     Global keyboard controls to lock or unlock. Only modifiers in @p affect
- *     are considered.
+ *     *Boolean* [global keyboard controls] to lock or unlock. Only controls in
+ *     @p affect are considered.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -2893,12 +2897,12 @@ xkb_state_get_keymap(struct xkb_state *state);
  *
  * @memberof xkb_state
  *
- * [global keyboard controls]: @ref xkb_keyboard_controls
+ * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
 XKB_EXPORT enum xkb_state_component
-xkb_state_update_controls(struct xkb_state *state,
-                          enum xkb_keyboard_controls affect,
-                          enum xkb_keyboard_controls controls);
+xkb_state_update_enabled_controls(struct xkb_state *state,
+                                  enum xkb_keyboard_control_flags affect,
+                                  enum xkb_keyboard_control_flags controls);
 
 /**
  * Update the keyboard state to reflect a given key being pressed or
@@ -3211,8 +3215,8 @@ enum xkb_state_match {
 };
 
 /**
- * Serialization of the [global keyboard controls], to be used on the server
- * side of serialization.
+ * Serialization of the *boolean* [global keyboard controls], to be used on the
+ * server side of serialization.
  *
  * This entry point is intended for *server* applications; see @ref
  * server-client-state for details.
@@ -3221,18 +3225,18 @@ enum xkb_state_match {
  * @param components A mask of the keyboard control state components to
  * serialize. State components other than `::XKB_STATE_CONTROLS` are ignored.
  *
- * @returns A `xkb_keyboard_controls` mask representing the given components of
- * the keyboard controls state.
+ * @returns A `xkb_keyboard_control_flags` mask representing the enabled
+ * keyboard controls for the given @p components.
  *
  * @since 1.14.0
  *
  * @memberof xkb_state
  *
- * [global keyboard controls]: @ref xkb_keyboard_controls
+ * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
-XKB_EXPORT enum xkb_keyboard_controls
-xkb_state_serialize_controls(const struct xkb_state *state,
-                             enum xkb_state_component components);
+XKB_EXPORT enum xkb_keyboard_control_flags
+xkb_state_serialize_enabled_controls(const struct xkb_state *state,
+                                     enum xkb_state_component components);
 
 /**
  * The counterpart to `xkb_state::xkb_state_update_mask()` for modifiers, to be

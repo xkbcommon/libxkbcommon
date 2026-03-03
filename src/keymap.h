@@ -130,7 +130,7 @@ enum xkb_action_flags {
 };
 
 /**
- * This is the general version of the *public* `xkb_keyboard_controls` enum.
+ * This is the general version of the *public* `xkb_keyboard_control_flags` enum.
  * We do not expose the following enum, as it does not make sense to expose
  * controls whose effects we do not support.
  * However, we should enforce both enum to share the same values.
@@ -152,6 +152,12 @@ enum xkb_action_controls {
      * should not include them.
      */
     CONTROL_ALL = \
+        (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
+         CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
+         CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
+         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
+    /* All the boolean controls */
+    CONTROL_ALL_BOOLEAN = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
