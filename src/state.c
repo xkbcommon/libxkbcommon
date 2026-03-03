@@ -1191,7 +1191,6 @@ xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
-    state->components.controls = keymap->enabled_ctrls;
     /* Ensure that derived state is correctly initialized */
     xkb_state_update_derived(state);
 }
