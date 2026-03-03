@@ -107,8 +107,8 @@ tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out);
 
 bool
 tools_parse_controls(const char *s, struct xkb_state_machine_options *options,
-                     enum xkb_keyboard_controls *controls_affect,
-                     enum xkb_keyboard_controls *controls_values);
+                     enum xkb_keyboard_control_flags *controls_affect,
+                     enum xkb_keyboard_control_flags *controls_values);
 
 void
 tools_reset_modifiers_mappings(struct xkb_state_machine_options *options);

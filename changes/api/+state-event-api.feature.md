@@ -5,7 +5,7 @@ Added the **state event API:**
   - `xkb_state_machine_unref()`
   - `xkb_state_machine_get_keymap()`
   - `xkb_state_machine_update_latched_locked()`
-  - `xkb_state_machine_update_controls()`
+  - `xkb_state_machine_update_enabled_controls()`
   - `xkb_state_machine_update_key()`
 - `struct xkb_state_machine_options` (new):
   - `xkb_state_machine_options_new()`

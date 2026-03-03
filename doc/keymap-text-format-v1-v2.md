@@ -3749,7 +3749,7 @@ Plus 2 special values:
 - `none`
 </td>
 <td>0</td>
-<td>Standard XKB controls</td>
+<td>Standard XKB *boolean* controls</td>
 </tbody>
 </table>
 
@@ -3775,7 +3775,7 @@ Lock the standard XKB controls
 <td>`ctrls`</td>
 <td>Mask (see [`SetControls`][SetControls])</td>
 <td>0</td>
-<td>Standard XKB controls</td>
+<td>Standard XKB *boolean* controls</td>
 <tr>
 <th>`affect`</th>
 <td></td>
@@ -3802,7 +3802,7 @@ enumeration:
 </dl>
 
 @warning Only a subset of the original XKB controls are *effectual*.
-See `xkb_keyboard_controls` for further details.
+See `xkb_keyboard_control_flags` for further details.
 
 <table>
 <caption>

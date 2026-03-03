@@ -90,8 +90,8 @@ static int
 keyboard_new(struct dirent *ent,
              struct xkb_context *ctx, struct xkb_keymap *keymap,
              const struct xkb_state_machine_options *options,
-             enum xkb_keyboard_controls kbd_controls_affect,
-             enum xkb_keyboard_controls kbd_controls_values,
+             enum xkb_keyboard_control_flags kbd_controls_affect,
+             enum xkb_keyboard_control_flags kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
 {
     int ret;
@@ -143,14 +143,17 @@ keyboard_new(struct dirent *ent,
     }
 
     if (use_events_api) {
-        xkb_state_machine_update_controls(state_machine, state_events,
-                                          kbd_controls_affect, kbd_controls_values);
+        xkb_state_machine_update_enabled_controls(state_machine, state_events,
+                                                  kbd_controls_affect,
+                                                  kbd_controls_values);
         const struct xkb_event *event;
         while ((event = xkb_event_iterator_next(state_events))) {
             xkb_state_update_from_event(state, event);
         }
     } else {
-        xkb_state_update_controls(state, kbd_controls_affect, kbd_controls_values);
+        xkb_state_update_enabled_controls(state,
+                                          kbd_controls_affect,
+                                          kbd_controls_values);
     }
 
     if (with_compose) {
@@ -218,8 +221,8 @@ filter_device_name(const struct dirent *ent)
 static struct keyboard *
 get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
               const struct xkb_state_machine_options *options,
-              enum xkb_keyboard_controls kbd_controls_affect,
-              enum xkb_keyboard_controls kbd_controls_values,
+              enum xkb_keyboard_control_flags kbd_controls_affect,
+              enum xkb_keyboard_control_flags kbd_controls_values,
               struct xkb_compose_table *compose_table)
 {
     int ret, i, nents;
@@ -558,8 +561,8 @@ main(int argc, char *argv[])
         goto error_state_options;
     xkb_context_unref(ctx);
     ctx = NULL;
-    enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
-    enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+    enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+    enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
     const char *raw_modifiers_mapping = NULL;
     const char *raw_shortcuts_mask = NULL;
 

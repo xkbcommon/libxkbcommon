@@ -72,8 +72,8 @@ static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
 static struct xkb_state_machine_options * state_machine_options = NULL;
-static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
-static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static const char *raw_modifiers_mapping = NULL;
 static const char *raw_shortcuts_mask = NULL;
 static struct xkb_keymap *custom_keymap = NULL;
@@ -212,7 +212,7 @@ update_keymap(struct keyboard *kbd)
                 if (!kbd->state_events)
                     return -1;
             }
-            const int ret = xkb_state_machine_update_controls(
+            const int ret = xkb_state_machine_update_enabled_controls(
                 kbd->state_machine, kbd->state_events,
                 kbd_controls_affect, kbd_controls_values
             );
@@ -223,8 +223,9 @@ update_keymap(struct keyboard *kbd)
                 xkb_state_update_from_event(kbd->state, event);
             }
         } else {
-            xkb_state_update_controls(kbd->state,
-                                      kbd_controls_affect, kbd_controls_values);
+            xkb_state_update_enabled_controls(kbd->state,
+                                              kbd_controls_affect,
+                                              kbd_controls_values);
         }
     }
 #endif

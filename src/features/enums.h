@@ -123,7 +123,7 @@ enum xkb_enumerations_values {
         | XKB_STATE_LEDS
         | XKB_STATE_CONTROLS
     ,
-    XKB_KEYBOARD_CONTROLS_VALUES
+    XKB_KEYBOARD_CONTROL_FLAGS_VALUES
         = XKB_KEYBOARD_CONTROL_NONE
         | XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
     ,
@@ -263,7 +263,7 @@ static const int xkb_state_component_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keyboard_controls_values[] = {
+static const int xkb_keyboard_control_flags_values[] = {
     XKB_KEYBOARD_CONTROL_NONE,
     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
 };
@@ -343,7 +343,7 @@ static const int xkb_feature_values[] = {
     XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS,
     XKB_FEATURE_ENUM_KEYSYM_FLAGS,
     XKB_FEATURE_ENUM_STATE_COMPONENT,
-    XKB_FEATURE_ENUM_KEYBOARD_CONTROLS,
+    XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS,
     XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS,
     XKB_FEATURE_ENUM_EVENT_TYPE,
     XKB_FEATURE_ENUM_EVENT_ITERATOR_FLAGS,

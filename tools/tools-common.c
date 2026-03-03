@@ -333,7 +333,7 @@ print_controls(struct xkb_state *state, bool verbose) {
         { CONTROL_IGNORE_GROUP_LOCK, "ignore-group-lock" },
     };
     static_assert(
-        CONTROL_ALL ==
+        CONTROL_ALL_BOOLEAN ==
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
@@ -341,8 +341,8 @@ print_controls(struct xkb_state *state, bool verbose) {
         "missing controls names"
     );
 
-    const enum xkb_keyboard_controls ctrls =
-        xkb_state_serialize_controls(state, XKB_STATE_CONTROLS);
+    const enum xkb_keyboard_control_flags ctrls =
+        xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS);
 
     printf("0x%08x ", ctrls);
 
@@ -935,8 +935,8 @@ tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out)
 
 bool
 tools_parse_controls(const char *raw, struct xkb_state_machine_options *options,
-                     enum xkb_keyboard_controls *controls_affect,
-                     enum xkb_keyboard_controls *controls_values)
+                     enum xkb_keyboard_control_flags *controls_affect,
+                     enum xkb_keyboard_control_flags *controls_values)
 {
     if (isempty(raw))
         return true;

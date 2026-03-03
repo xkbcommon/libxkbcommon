@@ -1600,10 +1600,10 @@ clear_all_latches_and_locks(struct xkb_state *state,
 }
 
 static void
-state_update_controls(struct xkb_state *state,
-                      struct xkb_event_iterator *events,
-                      enum xkb_keyboard_controls affect,
-                      enum xkb_keyboard_controls controls)
+state_update_enabled_controls(struct xkb_state *state,
+                              struct xkb_event_iterator *events,
+                              enum xkb_keyboard_control_flags affect,
+                              enum xkb_keyboard_control_flags controls)
 {
     const bool had_sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
 
@@ -1611,7 +1611,7 @@ state_update_controls(struct xkb_state *state,
      * Enable to use the public API with the all the Control values, except
      * the internal ones, if any.
      */
-    affect = (enum xkb_action_controls) affect & CONTROL_ALL;
+    affect = (enum xkb_action_controls) affect & CONTROL_ALL_BOOLEAN;
     state->components.controls &= ~affect;
     state->components.controls |= (enum xkb_action_controls) controls & affect;
 
@@ -1624,12 +1624,12 @@ state_update_controls(struct xkb_state *state,
 }
 
 enum xkb_state_component
-xkb_state_update_controls(struct xkb_state *state,
-                          enum xkb_keyboard_controls affect,
-                          enum xkb_keyboard_controls controls)
+xkb_state_update_enabled_controls(struct xkb_state *state,
+                                  enum xkb_keyboard_control_flags affect,
+                                  enum xkb_keyboard_control_flags controls)
 {
     const struct state_components previous = state->components;
-    state_update_controls(state, NULL, affect, controls);
+    state_update_enabled_controls(state, NULL, affect, controls);
     return get_state_component_changes(&previous, &state->components);
 }
 
@@ -1991,7 +1991,7 @@ xkb_state_serialize_layout(struct xkb_state *state,
     return serialize_layout(&state->components, type);
 }
 
-static inline enum xkb_keyboard_controls
+static inline enum xkb_keyboard_control_flags
 serialize_controls(const struct state_components *components,
                    enum xkb_state_component type)
 {
@@ -2000,13 +2000,14 @@ serialize_controls(const struct state_components *components,
          * Enable to use the public API with the all the Controls values, except
          * the internal ones, if any.
          */
-        ? (enum xkb_keyboard_controls) (components->controls & CONTROL_ALL)
+        ? (enum xkb_keyboard_control_flags) (components->controls &
+                                        CONTROL_ALL_BOOLEAN)
         : 0;
 }
 
-enum xkb_keyboard_controls
-xkb_state_serialize_controls(const struct xkb_state *state,
-                             enum xkb_state_component type)
+enum xkb_keyboard_control_flags
+xkb_state_serialize_enabled_controls(const struct xkb_state *state,
+                                     enum xkb_state_component type)
 {
     return serialize_controls(&state->components, type);
 }
@@ -2797,10 +2798,10 @@ xkb_state_machine_get_state(struct xkb_state_machine *sm)
 }
 
 int
-xkb_state_machine_update_controls(struct xkb_state_machine *sm,
-                                  struct xkb_event_iterator *events,
-                                  enum xkb_keyboard_controls affect,
-                                  enum xkb_keyboard_controls controls)
+xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
+                                          struct xkb_event_iterator *events,
+                                          enum xkb_keyboard_control_flags affect,
+                                          enum xkb_keyboard_control_flags controls)
 {
     darray_size(events->queue) = 0;
     events->next = 0;
@@ -2808,7 +2809,7 @@ xkb_state_machine_update_controls(struct xkb_state_machine *sm,
     struct xkb_state * restrict const state = &sm->state;
     const struct state_components previous_components = state->components;
 
-    state_update_controls(state, events, affect, controls);
+    state_update_enabled_controls(state, events, affect, controls);
 
     const enum xkb_state_component changed =
         get_state_component_changes(&previous_components, &state->components);
@@ -3198,9 +3199,9 @@ xkb_event_get_changed_components(const struct xkb_event *event)
         : 0;
 }
 
-enum xkb_keyboard_controls
-xkb_event_serialize_controls(const struct xkb_event *event,
-                             enum xkb_state_component components)
+enum xkb_keyboard_control_flags
+xkb_event_serialize_enabled_controls(const struct xkb_event *event,
+                                     enum xkb_state_component components)
 {
     return (event->type == XKB_EVENT_TYPE_COMPONENTS_CHANGE)
         ? serialize_controls(&event->components.components, components)

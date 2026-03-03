@@ -308,7 +308,7 @@ Rational:
 <td colspan="2">
 <details>
 <summary>⚠️ Limited support (since 1.14)</summary>
-See the supported keyboard controls in `xkb_keyboard_controls`, as well as
+See the supported keyboard controls in `xkb_keyboard_control_flags`, as well as
 the [corresponding actions](@ref compatibility-key-actions).
 </details>
 </td>
@@ -512,7 +512,7 @@ Unused in [xkeyboard-config] layouts.
 <summary>⚠️ Partial support</summary>
 - libxkbcommon \< 1.14: Parsing and serializing only, no API support
 - libxkbcommon ≥ 1.14: API support for a limited number of controls:
-  see `xkb_keyboard_controls`.
+  see `xkb_keyboard_control_flags`.
 </details>
 </td>
 </tr>
@@ -524,7 +524,7 @@ Unused in [xkeyboard-config] layouts.
 <summary>⚠️ Partial support</summary>
 - libxkbcommon \< 1.14: Parsing and serializing only, no API support
 - libxkbcommon ≥ 1.14: API support for a limited number of controls:
-  see `xkb_keyboard_controls`.
+  see `xkb_keyboard_control_flags`.
 </details>
 </td>
 </tr>

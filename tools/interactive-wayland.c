@@ -94,8 +94,8 @@ static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
 static struct xkb_state_machine_options * state_machine_options = NULL;
-static enum xkb_keyboard_controls kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
-static enum xkb_keyboard_controls kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
+static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static const char *raw_modifiers_mapping = NULL;
 static const char *raw_shortcuts_mask = NULL;
 static struct xkb_keymap *custom_keymap = NULL;
@@ -473,8 +473,9 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             fprintf(stderr, "%s: ERROR: Failed to create XKB state!\n",
                     seat->name_str);
         } else if (use_local_state && !use_events_api) {
-            xkb_state_update_controls(seat->state,
-                                      kbd_controls_affect, kbd_controls_values);
+            xkb_state_update_enabled_controls(seat->state,
+                                              kbd_controls_affect,
+                                              kbd_controls_values);
         }
     }
     if (use_local_state && use_events_api) {
@@ -515,10 +516,10 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             seat->events = xkb_event_iterator_new(seat->inter->ctx,
                                                   XKB_EVENT_ITERATOR_NO_FLAGS);
             if (seat->events) {
-                xkb_state_machine_update_controls(seat->state_machine,
-                                                  seat->events,
-                                                  kbd_controls_affect,
-                                                  kbd_controls_values);
+                xkb_state_machine_update_enabled_controls(seat->state_machine,
+                                                          seat->events,
+                                                          kbd_controls_affect,
+                                                          kbd_controls_values);
                 const struct xkb_event *event;
                 while ((event = xkb_event_iterator_next(seat->events))) {
                     xkb_state_update_from_event(seat->state, event);

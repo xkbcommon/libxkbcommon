@@ -186,7 +186,6 @@ def update_command(args: argparse.Namespace) -> int:
 
     IMPLICIT_FLAGS = {
         "xkb_state_component",
-        "xkb_keyboard_controls",
         "xkb_state_match",
     }
 
