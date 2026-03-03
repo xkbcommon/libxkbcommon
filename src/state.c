@@ -2398,31 +2398,30 @@ struct xkb_state_machine {
     /** Internal state */
     struct xkb_state state;
 
-    /** Extra event API-specific state data */
-    struct state_machine_data {
-        /** Configuration */
-        struct state_machine_config {
-            /** Modifiers remapping */
-            struct state_machine_modifiers_config {
-                /** Real modifier mask */
-                xkb_mod_mask_t mask;
-                /** Modifiers re-mappings */
-                darray_size_t mappings_num;
-                struct state_machine_mods_mapping {
-                    xkb_mod_mask_t source;
-                    xkb_mod_mask_t target;
-                } * mappings ATTR_COUNTED_BY(mappings_num);
-            } modifiers;
+    /* Extra event API-specific state data */
 
-            /** Shortcuts tweak */
-            struct state_machine_shortcuts_config {
-                /** Real modifier mask to trigger shortcuts tweaks */
-                xkb_mod_mask_t mask;
-                /** Layouts targets */
-                xkb_layout_index_t *targets;
-            } shortcuts;
-        } config;
-    } extra;
+    /** Configuration */
+    struct state_machine_config {
+        /** Modifiers remapping */
+        struct state_machine_modifiers_config {
+            /** Real modifier mask */
+            xkb_mod_mask_t mask;
+            /** Modifiers re-mappings */
+            darray_size_t mappings_num;
+            struct state_machine_mods_mapping {
+                xkb_mod_mask_t source;
+                xkb_mod_mask_t target;
+            } * mappings ATTR_COUNTED_BY(mappings_num);
+        } modifiers;
+
+        /** Shortcuts tweak */
+        struct state_machine_shortcuts_config {
+            /** Real modifier mask to trigger shortcuts tweaks */
+            xkb_mod_mask_t mask;
+            /** Layouts targets */
+            xkb_layout_index_t *targets;
+        } shortcuts;
+    } config;
 };
 
 typedef darray(struct state_machine_mods_mapping) state_machine_mods_mappings;
@@ -2658,12 +2657,12 @@ state_machine_set_mods(struct xkb_state_machine *sm,
 
         darray_steal(
             mappings,
-            &sm->extra.config.modifiers.mappings,
-            &sm->extra.config.modifiers.mappings_num
+            &sm->config.modifiers.mappings,
+            &sm->config.modifiers.mappings_num
         );
-        sm->extra.config.modifiers.mask = mask;
+        sm->config.modifiers.mask = mask;
     } else {
-        sm->extra.config.modifiers = (struct state_machine_modifiers_config) {
+        sm->config.modifiers = (struct state_machine_modifiers_config) {
             .mappings = NULL,
             .mappings_num = 0,
             .mask = 0
@@ -2678,7 +2677,7 @@ state_machine_set_shortcuts(struct xkb_state_machine *sm,
                             const struct xkb_shortcuts_config_options *options)
 {
     if (darray_empty(options->targets)) {
-        sm->extra.config.shortcuts = (struct state_machine_shortcuts_config) {
+        sm->config.shortcuts = (struct state_machine_shortcuts_config) {
             .mask = 0,
             .targets = NULL
         };
@@ -2730,7 +2729,7 @@ state_machine_set_shortcuts(struct xkb_state_machine *sm,
         targets[l] = XKB_LAYOUT_INVALID;
     }
 
-    sm->extra.config.shortcuts = (struct state_machine_shortcuts_config) {
+    sm->config.shortcuts = (struct state_machine_shortcuts_config) {
         .mask = mask,
         .targets = targets
     };
@@ -2778,8 +2777,8 @@ xkb_state_machine_unref(struct xkb_state_machine *sm)
         return;
 
     xkb_state_destroy(&sm->state);
-    free(sm->extra.config.shortcuts.targets);
-    free(sm->extra.config.modifiers.mappings);
+    free(sm->config.shortcuts.targets);
+    free(sm->config.modifiers.mappings);
     free(sm);
 }
 
@@ -3039,10 +3038,10 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 
     const struct state_components previous_components = state->components;
 
-    ssize_t remap_event = do_remap_modifiers(&sm->extra.config.modifiers, state,
+    ssize_t remap_event = do_remap_modifiers(&sm->config.modifiers, state,
                                              events, key);
 
-    remap_event = do_shortcuts_tweak(&sm->extra.config.shortcuts, state,
+    remap_event = do_shortcuts_tweak(&sm->config.shortcuts, state,
                                      &previous_components, events, remap_event);
 
     state->set_mods = 0;
