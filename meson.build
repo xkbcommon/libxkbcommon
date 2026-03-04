@@ -1332,6 +1332,7 @@ if get_option('enable-x11')
     test(
         'x11',
         executable('test-x11', 'test/x11.c', dependencies: x11_xvfb_test_dep),
+        suite: ['x11'],
         env: test_env,
         is_parallel : false,
     )
@@ -1344,6 +1345,7 @@ if get_option('enable-x11')
             'test/utils-text.h',
             dependencies: x11_xvfb_test_dep
         ),
+        suite: ['x11', 'flaky'],
         env: test_env,
         is_parallel : false,
     )
