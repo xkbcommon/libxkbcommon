@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-names.h"
 #include "features/enums.h"
 #include "keymap.h"

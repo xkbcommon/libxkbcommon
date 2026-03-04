@@ -99,6 +99,18 @@ xkb_keyboard_control_flags:
 xkb_event_iterator_flags:
   - name: XKB_EVENT_ITERATOR_NO_FLAGS
     value: 0
+xkb_keyboard_control_param:
+  - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY
+    value: 0
+  - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT
+    value: 1
+xkb_out_of_range_layout_policy:
+  - name: XKB_OUT_OF_RANGE_LAYOUT_WRAP
+    value: 1
+  - name: XKB_OUT_OF_RANGE_LAYOUT_SATURATE
+    value: 2
+  - name: XKB_OUT_OF_RANGE_LAYOUT_REDIRECT
+    value: 3
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0

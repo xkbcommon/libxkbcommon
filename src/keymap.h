@@ -136,6 +136,7 @@ enum xkb_action_flags {
  * However, we should enforce both enum to share the same values.
  */
 enum xkb_action_controls {
+    /* X11 encoding */
     CONTROL_REPEAT = (1 << 0),
     CONTROL_SLOW = (1 << 1),
     CONTROL_DEBOUNCE = (1 << 2),
@@ -146,7 +147,11 @@ enum xkb_action_controls {
     CONTROL_AX_TIMEOUT = (1 << 7),
     CONTROL_AX_FEEDBACK = (1 << 8),
     CONTROL_BELL = (1 << 9),
-    CONTROL_IGNORE_GROUP_LOCK = (1 << 10),
+    CONTROL_IGNORE_GROUP_LOCK = (1 << 12),
+
+    /* Non-X11 encoding */
+    CONTROL_GROUPS_WRAP = (1 << 13),
+
     /**
      * All the XKB Controls. If we ever introduce *internal* controls, this mask
      * should not include them.
@@ -155,7 +160,7 @@ enum xkb_action_controls {
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
-         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
+         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK | CONTROL_GROUPS_WRAP),
     /* All the boolean controls */
     CONTROL_ALL_BOOLEAN = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
@@ -352,12 +357,6 @@ struct xkb_controls {
     unsigned short axt_opts_values;
     unsigned int axt_ctrls_mask;
     unsigned int axt_ctrls_values;
-};
-
-enum xkb_out_of_range_layout_policy {
-    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 0,
-    XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
-    XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
 };
 
 enum xkb_explicit_components {

@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-features.h"
 #include "darray.h"
 #include "keymap.h"
 #include "keysym.h"
@@ -62,6 +63,13 @@ struct xkb_state {
      * allows us to report which components of the state have changed.
      */
     struct state_components components;
+
+    struct state_machine_controls {
+        struct {
+            enum xkb_out_of_range_layout_policy policy;
+            xkb_layout_index_t redirect_group;
+        } out_of_range_group;
+    } controls;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -1188,6 +1196,8 @@ xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
              /* Keymap v2+: enable extension to XKB if not manually disabled */
              state->flags |= XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS;
      }
+    state->controls.out_of_range_group.policy =
+        XKB_OUT_OF_RANGE_LAYOUT_WRAP;
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
@@ -1325,12 +1335,11 @@ xkb_state_update_derived(struct xkb_state *state)
                               state->components.latched_mods |
                               state->components.locked_mods);
 
-    /* TODO: Use groups_wrap control instead of always RANGE_WRAP. */
-
     /* Lock group must be adjusted, but not base nor latched groups */
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    XKB_OUT_OF_RANGE_LAYOUT_WRAP, 0);
+                                    state->controls.out_of_range_group.policy,
+                                    state->controls.out_of_range_group.redirect_group);
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.locked_group =
         (int32_t) (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
@@ -1340,7 +1349,8 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    XKB_OUT_OF_RANGE_LAYOUT_WRAP, 0);
+                                    state->controls.out_of_range_group.policy,
+                                    state->controls.out_of_range_group.redirect_group);
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
@@ -2825,6 +2835,35 @@ xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
     }
 
     return 0;
+}
+
+int
+xkb_state_machine_update_control(struct xkb_state_machine *sm,
+                                 enum xkb_keyboard_control_param control,
+                                 uint32_t value)
+{
+    switch (control) {
+    case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY:
+        if (!xkb_has_feature(XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY,
+                             (int)value))
+            break;
+        sm->state.controls.out_of_range_group.policy =
+            (enum xkb_out_of_range_layout_policy)value;
+        return 0;
+    case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT:
+        if (sm->state.controls.out_of_range_group.policy !=
+            XKB_OUT_OF_RANGE_LAYOUT_REDIRECT ||
+            value >= sm->state.keymap->num_groups)
+            break;
+        sm->state.controls.out_of_range_group.redirect_group = value;
+        return 0;
+    default:
+        ;
+    }
+    log_warn_func(sm->state.keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                  "Unsupported control parameter %d with value 0x%"PRIx32"\n",
+                  control, value);
+    return -1;
 }
 
 int
