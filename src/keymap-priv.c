@@ -205,7 +205,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
-                      enum xkb_range_exceed_type out_of_range_group_action,
+                      enum xkb_out_of_range_layout_policy out_of_range_group_policy,
                       xkb_layout_index_t out_of_range_group_number)
 {
     if (num_groups == 0)
@@ -214,19 +214,19 @@ XkbWrapGroupIntoRange(int32_t group,
     if (group >= 0 && (xkb_layout_index_t) group < num_groups)
         return group;
 
-    switch (out_of_range_group_action) {
-    case RANGE_REDIRECT:
+    switch (out_of_range_group_policy) {
+    case XKB_OUT_OF_RANGE_LAYOUT_REDIRECT:
         if (out_of_range_group_number >= num_groups)
             return 0;
         return out_of_range_group_number;
 
-    case RANGE_SATURATE:
+    case XKB_OUT_OF_RANGE_LAYOUT_SATURATE:
         if (group < 0)
             return 0;
         else
             return num_groups - 1;
 
-    case RANGE_WRAP:
+    case XKB_OUT_OF_RANGE_LAYOUT_WRAP:
     default: {
         /*
          * Ensure conversion xkb_layout_index_t → int32_t is lossless.
@@ -261,7 +261,7 @@ xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
         goto err;
 
     layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
-                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_policy,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         goto err;

@@ -1400,13 +1400,13 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     #undef require_explicit
 
-    switch (key->out_of_range_group_action) {
-    case RANGE_SATURATE:
+    switch (key->out_of_range_group_policy) {
+    case XKB_OUT_OF_RANGE_LAYOUT_SATURATE:
         copy_to_buf(buf, "\n\t\tgroupsClamp,");
         simple = false;
         break;
 
-    case RANGE_REDIRECT:
+    case XKB_OUT_OF_RANGE_LAYOUT_REDIRECT:
         if (key->out_of_range_group_number < num_groups) {
             /* TODO: Fallback or warning if condition fails? */
             write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",",

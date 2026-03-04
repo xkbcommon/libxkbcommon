@@ -409,7 +409,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t kc,
 
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
-                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_policy,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         return 0;
@@ -472,7 +472,7 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
 
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
-                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_policy,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         return 0;
@@ -525,7 +525,7 @@ xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
 {
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     layout = XkbWrapGroupIntoRange((int32_t) layout, key->num_groups,
-                                   key->out_of_range_group_action,
+                                   key->out_of_range_group_policy,
                                    key->out_of_range_group_number);
     if (layout == XKB_LAYOUT_INVALID)
         return NULL;

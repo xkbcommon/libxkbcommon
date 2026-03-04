@@ -59,7 +59,8 @@ typedef struct {
 } GroupInfo;
 
 enum {
-    XKB_RANGE_EXCEED_TYPE_WIDTH = sizeof(enum xkb_range_exceed_type) * CHAR_BIT
+    XKB_OUT_OF_RANGE_LAYOUT_POLICY_WIDTH =
+        sizeof(enum xkb_out_of_range_layout_policy) * CHAR_BIT
 };
 
 typedef struct {
@@ -74,8 +75,8 @@ typedef struct {
     xkb_mod_mask_t vmodmap;
     xkb_atom_t default_type;
 
-    enum xkb_range_exceed_type
-        out_of_range_group_action:(XKB_RANGE_EXCEED_TYPE_WIDTH - 1);
+    enum xkb_out_of_range_layout_policy
+        out_of_range_group_policy:(XKB_OUT_OF_RANGE_LAYOUT_POLICY_WIDTH - 1);
     bool out_of_range_pending_group:1;
     xkb_layout_index_t out_of_range_group_number;
 } KeyInfo;
@@ -147,7 +148,7 @@ InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
     static_assert(!DEFAULT_KEY_REPEAT, "key repeat not initialized properly");
     static_assert(!DEFAULT_KEY_VMODMAP, "key vmodmap not initialized properly");
     keyi->name = xkb_atom_intern_literal(ctx, "*");
-    keyi->out_of_range_group_action = RANGE_WRAP;
+    keyi->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_WRAP;
 }
 
 static void
@@ -515,7 +516,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
     if (UseNewKeyField(KEY_FIELD_GROUPINFO, into->defined, from->defined,
                        clobber, report, &collide)) {
         into->out_of_range_pending_group = from->out_of_range_pending_group;
-        into->out_of_range_group_action = from->out_of_range_group_action;
+        into->out_of_range_group_policy = from->out_of_range_group_policy;
         into->out_of_range_group_number = from->out_of_range_group_number;
         into->defined |= KEY_FIELD_GROUPINFO;
     }
@@ -1152,7 +1153,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->out_of_range_group_action = (set ? RANGE_WRAP : RANGE_SATURATE);
+        keyi->out_of_range_group_policy = (set)
+            ? XKB_OUT_OF_RANGE_LAYOUT_WRAP
+            : XKB_OUT_OF_RANGE_LAYOUT_SATURATE;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsclamp") ||
@@ -1167,7 +1170,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->out_of_range_group_action = (set ? RANGE_SATURATE : RANGE_WRAP);
+        keyi->out_of_range_group_policy = (set)
+            ? XKB_OUT_OF_RANGE_LAYOUT_SATURATE
+            : XKB_OUT_OF_RANGE_LAYOUT_WRAP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsredirect") ||
@@ -1207,7 +1212,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->out_of_range_group_number = grp - 1;
         }
 
-        keyi->out_of_range_group_action = RANGE_REDIRECT;
+        keyi->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {
@@ -1891,7 +1896,7 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     key->out_of_range_pending_group = keyi->out_of_range_pending_group;
     key->out_of_range_group_number = keyi->out_of_range_group_number;
-    key->out_of_range_group_action = keyi->out_of_range_group_action;
+    key->out_of_range_group_policy = keyi->out_of_range_group_policy;
 
 key_fields:
     if (keyi->defined & KEY_FIELD_VMODMAP) {
