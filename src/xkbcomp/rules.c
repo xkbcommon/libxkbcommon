@@ -1565,109 +1565,248 @@ matcher_rule_verify(struct matcher *m, struct scanner *s)
     }
 }
 
+/*
+ * NOTE: The wildcard `*` behaves differently depending on the MLVO field:
+ * - model and options: matches any value, including empty;
+ * - layout and variant: matches any *non-empty* value.
+ *
+ * This aligns with the implementation in libxkbfile and xserver, with
+ * the exception of options, where `*` is entirely ignored.
+ *
+ * The underlying rationale for this discrepancy across MLVO fields is
+ * undocumented.
+ *
+ * In xkbcommon, `*` behaves identically for both model and options to
+ * maintain consistency and simplicity. This divergence is unlikely
+ * to have a practical impact: to the best of our knowledge, `*` has
+ * no real-world use for the options field.
+ *
+ * | MLVO field | Wildcard `*` matches        |
+ * | ---------- | --------------------------- |
+ * | Model      | Any value (including empty) |
+ * | Option     | Any value (including empty) |
+ * | Layout     | Non-empty values only       |
+ * | Variant    | Non-empty values only       |
+ *
+ */
+
+/** Match the `model` MLVO field
+ *
+ * `model` input is a single value.
+ */
+static bool
+matcher_rule_match_model(struct matcher *m, const struct sval value,
+                         enum mlvo_match_type match_type)
+{
+    return match_value_and_mark(
+        m, value, &m->rmlvo.model, match_type, WILDCARD_MATCH_ALL,
+        /* layout-independent */
+        (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS
+    );
+}
+
+/**
+ * Match the `option` MLVO field.
+ *
+ * `option` input is a list of values (*not* layout-indexed).
+ *
+ * Matching an option field requires considering the entire list of input options
+ * (e.g. `grp:menu_toggle,caps:swapescape`), because any number of them may
+ * legitimately satisfy a single rule at once.
+ *
+ * - If the rule has no `layout` nor `variant` field, evaluation stops early on
+ *   the first match.
+ * - Otherwise each option potentially covers a different subset of the
+ *   candidate layout indices. Candidates are narrowed by accumulating which
+ *   candidates get covered:
+ *
+ *   - A layout-specific option (e.g. `grp:menu_toggle!1`, encoded as a non-zero
+ *     `option->layouts` mask) can only cover candidates it applies to, so it
+ *     is tried against `unmatched & option->layouts`.
+ *   - A layout-generic option (e.g. `grp:menu_toggle`) is not restricted to
+ *     specific layout indices, so a match covers every remaining candidate at
+ *     once.
+ *
+ *   Matching stops early once every candidate is covered; otherwise every
+ *   input option is tried. Any candidate left uncovered at the end cannot
+ *   match the next RMLVO field (if any), so it is dropped from the candidates
+ *   list.
+ *
+ * NOTE: The matching logic here differs from `model`, `layout`, and `variant`.
+ * While the rule still provides a single value to match against, how that value
+ * relates to candidate layout indices varies:
+ *
+ * | MLVO field | Input type                          | Candidates constraint   |
+ * | ---------- | ----------------------------------- | ----------------------- |
+ * | `model`    | single value                        | none                    |
+ * | `layout`   | list of layout-indexed values       | 1-to-1                  |
+ * | `variant`  | list of layout-indexed values       | 1-to-1                  |
+ * | `option`   | list of values (not layout-indexed) | many-to-many            |
+ *
+ */
+static bool
+matcher_rule_match_option(struct matcher *m, const struct sval value,
+                          enum mlvo_match_type match_type,
+                          xkb_layout_mask_t *candidates)
+{
+    /* There is always at least one value */
+    assert(!darray_empty(m->rmlvo.options));
+
+    /* Remaining layout indices to match if MLVO has a layout/variant field */
+    xkb_layout_mask_t unmatched =
+        (m->mapping.defined_mlvo_mask & MLVO_LAYOUT_AND_VARIANT)
+            ? *candidates
+            : 0;
+
+    bool matched = false;
+    struct matched_sval *option;
+    darray_foreach(option, m->rmlvo.options) {
+        const xkb_layout_mask_t matchable = option->layouts
+            /*
+             * Layout-specific option; may match only if:
+             * - there is a layout or variant field, and
+             * - the option layout matches the remaining candidates.
+             */
+            ? (unmatched & option->layouts)
+            /* Layout-generic option: no restriction */
+            : (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS;
+        if (matchable && match_value_and_mark(m, value, option, match_type,
+                                              WILDCARD_MATCH_ALL, matchable)) {
+            matched = true;
+            unmatched &= ~matchable;
+            if (!unmatched)
+                break;
+        }
+    }
+    if (unmatched) {
+        /* Remove unmatched layout indices */
+        *candidates &= ~unmatched;
+    }
+    return matched;
+}
+
+/**
+ * Match the `layout` or `variant` field
+ *
+ * Input is a list of layout-indexed values.
+ *
+ * The value of the rule’s field is tested against each remaining candidate
+ * index using the corresponding RMLVO input list.
+ *
+ * - An index that fails to match can never satisfy this rule, so it is
+ *   cleared from the candidates set. This narrows what later MLVO fields in
+ *   the same rule still need to consider.
+ * - An index that matches remains a candidate. Evaluation stops as soon as no
+ *   candidates remain, since nothing left can satisfy the rule.
+ */
+static bool
+matcher_rule_match_layout_or_variant(struct matcher *m,
+                                     darray_matched_sval *input,
+                                     const struct sval value,
+                                     enum mlvo_match_type match_type,
+                                     xkb_layout_mask_t *candidates)
+{
+    /* There is always at least one value */
+    assert(!darray_empty(*input));
+
+    bool matched = false;
+    /* Loop over the layout index range */
+    for (xkb_layout_index_t idx = m->mapping.layout_idx_min;
+         idx < m->mapping.layout_idx_max && *candidates;
+         idx++)
+    {
+        /* Process only if layout index is enabled */
+        const xkb_layout_mask_t layout = (UINT32_C(1) << idx);
+        if (layout & *candidates) {
+            struct matched_sval *to = &darray_item(*input, idx);
+            if (match_value_and_mark(m, value, to, match_type,
+                                     WILDCARD_MATCH_NONEMPTY, layout)) {
+                /* Matched, keep index */
+                matched = true;
+            } else {
+                /* Not matched, remove index */
+                *candidates &= ~layout;
+            }
+        }
+    }
+    return matched;
+}
+
+/**
+ * Try to match the current rule against the RMLVO input; if every MLVO
+ * field in the mapping matches, apply the rule’s KcCGST value(s).
+ *
+ * A mapping’s header line lists which MLVO fields it tests (some subset
+ * of `model`, `layout`, `variant`, `option`, in any order) and which
+ * KcCGST fields it produces. When the RMLVO input has several layouts
+ * (e.g. `us,de,fr`), each rule needs to be checked against each layout
+ * index independently. A candidate layout mask tracks the layout indices
+ * valid for the current rule. Each MLVO field affects the candidates
+ * layout indices differently:
+ *
+ * - `model` is layout-independent: it matches globally, for every
+ *   candidate at once, or not at all.
+ * - `layout` and `variant` narrow the mask directly: a candidate index
+ *   survives only if the RMLVO value at that index matches the rule.
+ * - `option` is different because the RMLVO input may contain multiple
+ *   option values, possibly covering different candidates (or all of them,
+ *   for a layout-generic option). A layout candidate survives only if some
+ *   option matches and covers it.
+ *
+ * If any MLVO field fails to match, the rule cannot apply and this function
+ * returns immediately, without changing the KcCGST output. For fields that
+ * operate on layout indices (`layout`, `variant`, and `option`), this occurs
+ * once no candidate layout indices remain.
+ *
+ * If every field matches, the KcCGST value(s) are processed for `%`-expansions
+ * (e.g., `%l` for matched layout, `%v` for variant, `%m` for model, `%i` for
+ * layout index) and applied against the remaining candidate layouts. If the
+ * ruleset spans multiple layout indices and includes an `option` field, the
+ * `%`-expanded values are buffered and subsequently merged to guarantee they
+ * follow layout order first, rule order second.
+ *
+ * Within a rule set, a successful match normally terminates evaluation.
+ * The only exception is rules containing an `option` field, which do not
+ * terminate the set so that additional matching options may contribute.
+ */
 static void
 matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
 {
     /* Initial candidates (used if MLVO has a layout or variant field) */
     xkb_layout_mask_t candidate_layouts = m->mapping.layouts_candidates_mask;
+
     /* Loop over MLVO pattern components */
     for (mlvo_index_t i = 0; i < m->mapping.num_mlvo; i++) {
-        enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
-        struct sval value = m->rule.mlvo_value_at_pos[i];
-        enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
-        struct matched_sval *to;
+        const enum rules_mlvo mlvo = m->mapping.mlvo_at_pos[i];
+        const struct sval value = m->rule.mlvo_value_at_pos[i];
+        const enum mlvo_match_type match_type = m->rule.match_type_at_pos[i];
         bool matched = false;
 
-        /*
-         * NOTE: The wildcard `*` behaves differently depending on the MLVO field:
-         * - model and options: matches any value, including empty;
-         * - layout and variant: matches any *non-empty* value.
-         *
-         * This aligns with the implementation in libxkbfile and xserver, with
-         * the exception of options, where `*` is entirely ignored.
-         *
-         * The underlying rationale for this discrepancy across MLVO fields is
-         * undocumented.
-         *
-         * In xkbcommon, `*` behaves identically for both model and options to
-         * maintain consistency and simplicity. This divergence is unlikely
-         * to have a practical impact: to the best of our knowledge, `*` has
-         * no real-world use for the options field.
-         */
-        if (mlvo == MLVO_MODEL) {
-            to = &m->rmlvo.model;
-            matched = match_value_and_mark(m, value, to, match_type,
-                                           WILDCARD_MATCH_ALL,
-                                           (xkb_layout_mask_t)
-                                           GLOBAL_MATCHED_LAYOUTS);
-        } else if (mlvo == MLVO_OPTION) {
-            /* There is always at least one value "" */
-            assert(!darray_empty(m->rmlvo.options));
-
-            /* Layout indices to match if MLVO has a layout or variant field */
-            xkb_layout_mask_t unmatched =
-                (m->mapping.defined_mlvo_mask & MLVO_LAYOUT_AND_VARIANT)
-                    ? candidate_layouts
-                    : 0;
-
-            darray_foreach(to, m->rmlvo.options) {
-                const xkb_layout_mask_t matchable = to->layouts
-                    /*
-                     * Layout-specific option; may match only if:
-                     * - there is a layout or variant field, and
-                     * - the option layout matches the remaining candidates.
-                     */
-                    ? (unmatched & to->layouts)
-                    /* Layout-generic option: no restriction */
-                    : (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS;
-                if (matchable && match_value_and_mark(m, value, to, match_type,
-                                                      WILDCARD_MATCH_ALL,
-                                                      matchable)) {
-                    matched = true;
-                    unmatched &= ~matchable;
-                    if (!unmatched)
-                        break;
-                }
-            }
-            if (unmatched) {
-                /* Remove unmatched layout indices */
-                candidate_layouts &= ~unmatched;
-            }
-        } else {
-            assert(mlvo == MLVO_LAYOUT || mlvo == MLVO_VARIANT);
-            /* Mapping has layout or variant field: loop over the index range */
-            for (xkb_layout_index_t idx = m->mapping.layout_idx_min;
-                 idx < m->mapping.layout_idx_max && candidate_layouts;
-                 idx++)
-            {
-                /* Process only if index not skipped */
-                const xkb_layout_mask_t mask = (UINT32_C(1) << idx);
-                if (candidate_layouts & mask) {
-                    if (mlvo == MLVO_LAYOUT) {
-                        to = &darray_item(m->rmlvo.layouts, idx);
-                        if (match_value_and_mark(m, value, to, match_type,
-                                                 WILDCARD_MATCH_NONEMPTY,
-                                                 mask)) {
-                            /* Mark matched, keep index */
-                            matched = true;
-                        } else {
-                            /* Not matched, remove index */
-                            candidate_layouts &= ~mask;
-                        }
-                    } else {
-                        to = &darray_item(m->rmlvo.variants, idx);
-                        if (match_value_and_mark(m, value, to, match_type,
-                                                 WILDCARD_MATCH_NONEMPTY,
-                                                 mask)) {
-                            /* Mark matched, keep index */
-                            matched = true;
-                        } else {
-                            /* Not matched, remove index */
-                            candidate_layouts &= ~mask;
-                        }
-                    }
-                }
-            }
+        switch (mlvo) {
+        case MLVO_MODEL:
+            matched = matcher_rule_match_model(m, value, match_type);
+            break;
+        case MLVO_LAYOUT:
+            matched = matcher_rule_match_layout_or_variant(
+                m, &m->rmlvo.layouts, value, match_type, &candidate_layouts
+            );
+            break;
+        case MLVO_VARIANT:
+            matched = matcher_rule_match_layout_or_variant(
+                m, &m->rmlvo.variants, value, match_type, &candidate_layouts
+            );
+            break;
+        case MLVO_OPTION:
+            matched = matcher_rule_match_option(
+                m, value, match_type, &candidate_layouts
+            );
+            break;
+        default: {
+            static_assert(MLVO_OPTION == 3 &&
+                          MLVO_OPTION == _MLVO_NUM_ENTRIES - 1,
+                          "Unexpected MLVO field");
+            assert(!"Unreachable");
+        }
         }
 
         if (!matched)
@@ -1721,8 +1860,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                      * - the relative order of the options for layout C follows
                      *   the order within the rule set, not the order of RMLVO.
                      */
-                    register struct kccgst_buffer * const buf =
-                        &m->pending_kccgst;
+                    struct kccgst_buffer * const buf = &m->pending_kccgst;
                     const darray_size_t prev_buffer_length =
                         darray_size(buf->buffer);
                     append_expanded_kccgst_value(m, s, false, &buf->buffer,
