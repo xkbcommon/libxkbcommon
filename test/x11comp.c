@@ -332,7 +332,7 @@ test_keymap_roundtrip(struct xkb_context *ctx,
             ret = EXIT_SUCCESS;
             fprintf(stderr, "Roundtrip succeed.\n");
         }
-        if (print_keymap)
+        if (print_keymap || ret == EXIT_FAILURE)
             fprintf(stdout, "%s\n", got);
         free(got);
     }
