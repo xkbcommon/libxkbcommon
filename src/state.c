@@ -139,7 +139,7 @@ state_key_get_layout(struct xkb_state *state, const struct xkb_key *key)
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     return XkbWrapGroupIntoRange((int32_t) state->components.group,
                                  key->num_groups,
-                                 key->out_of_range_group_action,
+                                 key->out_of_range_group_policy,
                                  key->out_of_range_group_number);
 }
 
@@ -1330,7 +1330,7 @@ xkb_state_update_derived(struct xkb_state *state)
     /* Lock group must be adjusted, but not base nor latched groups */
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    XKB_OUT_OF_RANGE_LAYOUT_WRAP, 0);
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.locked_group =
         (int32_t) (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
@@ -1340,7 +1340,7 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    RANGE_WRAP, 0);
+                                    XKB_OUT_OF_RANGE_LAYOUT_WRAP, 0);
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 

@@ -523,13 +523,13 @@ keymap_compare_symbols(struct xkb_context *ctx,
                     "%d != %d\n", kc, key1->repeats, key2->repeats);
             identical = false;
         }
-        if (key1->out_of_range_group_action != key2->out_of_range_group_action ||
+        if (key1->out_of_range_group_policy != key2->out_of_range_group_policy ||
             key1->out_of_range_group_number != key2->out_of_range_group_number) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Key 0x%"PRIx32" out-of-range do not match: "
                     "%d != %d or %"PRIu32" != %"PRIu32"\n", kc,
-                    key1->out_of_range_group_action,
-                    key2->out_of_range_group_action,
+                    key1->out_of_range_group_policy,
+                    key2->out_of_range_group_policy,
                     key1->out_of_range_group_number,
                     key2->out_of_range_group_number);
             identical = false;

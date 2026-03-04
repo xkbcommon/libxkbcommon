@@ -354,11 +354,10 @@ struct xkb_controls {
     unsigned int axt_ctrls_values;
 };
 
-/* Such an awkward name.  Oh well. */
-enum xkb_range_exceed_type {
-    RANGE_WRAP = 0,
-    RANGE_SATURATE,
-    RANGE_REDIRECT,
+enum xkb_out_of_range_layout_policy {
+    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 0,
+    XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+    XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
 };
 
 enum xkb_explicit_components {
@@ -459,7 +458,7 @@ struct xkb_key {
     bool implicit_actions:1;
 
     bool out_of_range_pending_group:1;
-    enum xkb_range_exceed_type out_of_range_group_action;
+    enum xkb_out_of_range_layout_policy out_of_range_group_policy;
     xkb_layout_index_t out_of_range_group_number;
 
     xkb_layout_index_t num_groups;
@@ -810,7 +809,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b);
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
-                      enum xkb_range_exceed_type out_of_range_group_action,
+                      enum xkb_out_of_range_layout_policy out_of_range_group_policy,
                       xkb_layout_index_t out_of_range_group_number);
 
 XKB_EXPORT_PRIVATE xkb_mod_mask_t
