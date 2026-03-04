@@ -169,6 +169,7 @@ global:
     xkb_state_machine_get_keymap;
     xkb_state_machine_update_latched_locked;
     xkb_state_machine_update_enabled_controls;
+    xkb_state_machine_update_control;
     xkb_state_machine_update_key;
     xkb_event_iterator_new;
     xkb_event_iterator_destroy;

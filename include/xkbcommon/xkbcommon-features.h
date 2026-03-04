@@ -97,11 +97,23 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS = 3020,
     /**
+     * The enumeration @ref xkb_keyboard_control_param
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_KEYBOARD_CONTROL_PARAM = 3030,
+    /**
      * The enumeration @ref xkb_state_accessibility_flags
      *
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS = 3100,
+    /**
+     * The enumeration @ref xkb_out_of_range_layout_policy
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY = 3110,
     /**
      * The enumeration @ref xkb_event_type
      *

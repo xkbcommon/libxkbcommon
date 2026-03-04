@@ -2728,6 +2728,76 @@ xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
                                           enum xkb_keyboard_control_flags affect,
                                           enum xkb_keyboard_control_flags controls);
 
+/**
+ * @enum xkb_keyboard_control_param
+ * Specifies a keyboard control with a parameter.
+ *
+ * @since 1.14.0
+ */
+enum xkb_keyboard_control_param {
+    /*
+     * Select the policy to handle out-of-bound layout indices.
+     *
+     * Possible values are defined in the `xkb_out_of_range_layout_policy`
+     * enumeration.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY = 0,
+    /**
+     * Select the layout to redirect to if the policiy is
+     * `::XKB_OUT_OF_RANGE_LAYOUT_REDIRECT`.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT
+};
+
+/**
+ * @enum xkb_out_of_range_layout_policy
+ * Out-of-range layout policies
+ *
+ * @since 1.14.0
+ */
+enum xkb_out_of_range_layout_policy {
+    /**
+     * Wrap into range using integer modulus (default).
+     *
+     * @since 1.14.0
+     */
+    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 1,
+    /**
+     * Clamp into range, i.e. invalid indices are corrected to the closest
+     * valid bound (0 or highest layout index).
+     *
+     * @since 1.14.0
+     */
+    XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+    /**
+     * Redirect to a specific [layout index](@ref xkb_layout_index_t).
+     *
+     * @since 1.14.0
+     */
+    XKB_OUT_OF_RANGE_LAYOUT_REDIRECT
+};
+
+/**
+ * Update the value of a keyboard control parameter.
+ *
+ * @param sm      The keyboard state machine object.
+ * @param control Global keyboard control to modify.
+ * @param value   Value to set.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_state_machine
+ */
+XKB_EXPORT int
+xkb_state_machine_update_control(struct xkb_state_machine *sm,
+                                 enum xkb_keyboard_control_param control,
+                                 uint32_t value);
 
 /**
  * @enum xkb_key_direction

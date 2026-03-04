@@ -137,6 +137,8 @@ xkb_context_sanitize_rule_names(struct xkb_context *ctx,
  * called from.
  * Here we must have the silly 1 variant.
  */
+#define log_warn_func(ctx, id, fmt, ...) \
+    log_warn(ctx, id, "%s: " fmt, __func__, __VA_ARGS__)
 #define log_err_func(ctx, id, fmt, ...) \
     log_err(ctx, id, "%s: " fmt, __func__, __VA_ARGS__)
 #define log_err_func1(ctx, id, fmt) \
