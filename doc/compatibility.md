@@ -315,8 +315,32 @@ the [corresponding actions](@ref compatibility-key-actions).
 <tr>
 <th rowspan="3">[Key behaviors](@ref key-behaviors)</th>
 <th>[Overlays](@ref key-behavior-overlay)</th>
-<td>✅ Full support</td>
-<td colspan="2">❌️ Parsing only</td>
+<td>
+<details>
+<summary>⚠️ Partial support</summary>
+- Only **2** overlays
+- [Disjoint overlays][Overlapping overlays]
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing overlays 1-2 only.
+- libxkbcommon ≥ 1.14: Supported. Note that the API support requires using
+  the `xkb_state_machine` API.
+  - Only **2** overlays
+  - [Disjoint overlays][Overlapping overlays]
+</details>
+</td>
+<td>
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing overlays 1-2 only.
+- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+  the `xkb_state_machine` API.
+  - **8** overlays
+  - [Overlapping overlays]
+</details>
+</td>
 </tr>
 <tr>
 <th>[Radio groups](@ref key-behavior-radio-groups)</th>
@@ -375,6 +399,10 @@ Rational:
 </table>
 
 [Indicator behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#:~:text=IM_LEDDrivesKB
+[Overlay1]: @ref XKB_KEYBOARD_CONTROL_OVERLAY1
+[Overlay2]: @ref XKB_KEYBOARD_CONTROL_OVERLAY2
+[Overlay8]: @ref XKB_KEYBOARD_CONTROL_OVERLAY8
+[Overlapping overlays]: @ref overlapping-overlays
 
 
 ### Key actions {#compatibility-key-actions}

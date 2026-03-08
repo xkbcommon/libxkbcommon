@@ -2165,7 +2165,7 @@ Press and release events are processed normally.
 <dt>Overlays @anchor key-behavior-overlay</dt>
 <dd>
 A *keyboard overlay* allows some subset of the keyboard to report *alternate keycodes*
-when the corresponding overlay control is
+when the corresponding [overlay control](@ref XKB_KEYBOARD_CONTROL_OVERLAY1) is
 enabled.
 
 For example a keyboard overlay can be used to *simulate* a numeric or editing
@@ -2185,9 +2185,101 @@ keycodes corresponding to their bottom-right label. E.g.:
 @image html numeric-keypad-overlay.svg width=100%
 @endfigure
 
-@warning libxkbcommon support only *parsing* keyboard overlays.
+libxkbcommon supports *effectful* keyboard overlays since version 1.14.0. The
+differences between [keymap formats] is presented in the
+table hereinafter:
+
+<table>
+<caption>
+Overlay support by [keymap formats]
+</caption>
+<thead>
+<tr>
+<th>Feature</th>
+<th>`::XKB_KEYMAP_FORMAT_TEXT_V1`</th>
+<th>`::XKB_KEYMAP_FORMAT_TEXT_V2`</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Number of overlays</th>
+<td>
+**2**
+</td>
+<td>
+**8**
+</td>
+</tr>
+<tr>
+<th>Corresponding [keyboard controls]</th>
+<td>
+[`Overlay1`][Overlay1] and [`Overlay2`][Overlay2]
+</td>
+<td>
+[`Overlay1`][Overlay1] to [`Overlay8`][Overlay8]
+</td>
+</tr>
+<tr>
+<th>Overlapping @anchor overlapping-overlays</th>
+<td>
+**Disjoint overlays:** *no* overlap is allowed, i.e. each key can be part of
+*at most* one overlay.
+</td>
+<td>
+A key may be assigned to **any overlay without restriction**, enabling
+**overlapping** overlays. There is no limitation on which overlay a given key
+may belong to, and a key may be assigned to *more than one overlay*.
+
+When *multiple* overlays are active at the same time and a key belongs to more
+than one of them, the effective mapping for that key is determined by
+**activation order**: the mapping defined by the **most recently activated**
+overlay takes precedence over all previously activated ones, regardless of
+the indices of the overlays involved.
+
+@important This behavior differs from classic X11 overlay semantics, where
+activation order carries no significance.
+
+<details>
+<summary>Example of 2 overlapping overlays</summary>
+@figure
+@figcaption
+Example of overlay overlap
+@endfigcaption
+
+Assume `<AD07>` is assigned to two overlays:
+
+```c
+xkb_symbols {
+    key <AD07> {
+        [u, U],
+        overlay1=<KP6>, // numpad overlay
+        overlay2=<INS>  // edit overlay
+    };
+};
+```
+
+Given the following activation sequence:
+
+1. [`Overlay1`][Overlay1] is activated. `<AD07>` resolves to `<KP6>`.
+2. [`Overlay2`][Overlay2] is subsequently activated, while [`Overlay1`][Overlay1]
+   remains active. As [`Overlay2`][Overlay2] is now the most recently activated
+   overlay to which `<AD07>` belongs, it takes precedence: `<AD07>` resolves to
+   `<INS>`.
+3. [`Overlay2`][Overlay2] is deactivated. [`Overlay1`][Overlay1] remains active
+   and, being the most recently activated applicable overlay, resumes precedence.
+   `<AD07>` resolves once again to `<KP6>`.
+
+@endfigure
+</details>
+
+</td>
+</tbody>
+</table>
 
 [Key behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Behavior
+[Overlay1]: @ref XKB_KEYBOARD_CONTROL_OVERLAY1
+[Overlay2]: @ref XKB_KEYBOARD_CONTROL_OVERLAY2
+[Overlay8]: @ref XKB_KEYBOARD_CONTROL_OVERLAY8
 [keyboard controls]: @ref xkb_keyboard_control_flags
 [keymap formats]: @ref xkb_keymap_format
 <!-- blank required by Doxygen -->
@@ -3826,8 +3918,15 @@ Mask of the following enumeration:
 - `AccessXFeedback`
 - `AudibleBell`
 - `IgnoreGroupLock`
-- `Overlay1`
-- `Overlay2`
+- [`Overlay1`](@ref XKB_KEYBOARD_CONTROL_OVERLAY1)
+- [`Overlay2`](@ref XKB_KEYBOARD_CONTROL_OVERLAY2)
+- Requires `::XKB_KEYMAP_FORMAT_TEXT_V2` and version 1.14+
+  - [`Overlay3`](@ref XKB_KEYBOARD_CONTROL_OVERLAY3)
+  - [`Overlay4`](@ref XKB_KEYBOARD_CONTROL_OVERLAY4)
+  - [`Overlay5`](@ref XKB_KEYBOARD_CONTROL_OVERLAY5)
+  - [`Overlay6`](@ref XKB_KEYBOARD_CONTROL_OVERLAY6)
+  - [`Overlay7`](@ref XKB_KEYBOARD_CONTROL_OVERLAY7)
+  - [`Overlay8`](@ref XKB_KEYBOARD_CONTROL_OVERLAY8)
 
 Plus 2 special values:
 - `all`
