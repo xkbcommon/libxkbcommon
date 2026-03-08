@@ -53,6 +53,14 @@ _xkbcli_controls() {
 		"sticky-keys:sticky-keys accessibility feature"
 		"latch-to-lock:latch-to-lock option for sticky-keys"
 		"latch-simulations:relax the strict tapping sequence requirement for operating key latches"
+		"overlay1:Overlay 1"
+		"overlay2:Overlay 2"
+		"overlay3:Overlay 3"
+		"overlay4:Overlay 4"
+		"overlay5:Overlay 5"
+		"overlay6:Overlay 6"
+		"overlay7:Overlay 7"
+		"overlay8:Overlay 8"
 	)
 	local -a completed_controls=( ${${(s-,-)${words[CURRENT]#*=}}} )
 	local -a remaining_controls=( ${controls:#(${(~j.|.)completed_controls#[+-]}):*} )
