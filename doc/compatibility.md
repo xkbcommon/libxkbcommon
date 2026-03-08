@@ -28,16 +28,16 @@ Please [report any issue](https://github.com/xkbcommon/libxkbcommon/issues).
 <caption>Keymap features compatibility table</caption>
 <thead>
 <tr>
-<th>Feature</th>
+<th colspan="2">Feature</th>
 <th>X11</th>
-<th>xkbcommon (v1 format)</th>
-<th>xkbcommon (v2 format)</th>
+<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
+<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
 </tr>
 </thead>
 <tbody>
 <!-- Additions -->
 <tr>
-<th>Wayland support</th>
+<th colspan="2">Wayland support</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -53,7 +53,7 @@ libxkbcommon is the *reference* implementation of the keyboard keymap handling
 </td>
 </tr>
 <tr>
-<th>User configuration</th>
+<th colspan="2">User configuration</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -73,7 +73,7 @@ See @ref user-configuration "" for further information.
 </td>
 </tr>
 <tr>
-<th>Configuration via third-party packages</th>
+<th colspan="2">Configuration via third-party packages</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -93,7 +93,7 @@ See @ref packaging-keyboard-layouts "" for further information.
 </td>
 </tr>
 <tr>
-<th>Keycode override with aliases</th>
+<th colspan="2">Keycode override with aliases</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -108,7 +108,7 @@ Keycodes and aliases share the same namespace.
 </td>
 </tr>
 <tr>
-<th>Extended keycodes</th>
+<th colspan="2">Extended keycodes</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -123,7 +123,7 @@ Support all Linux keycodes using **32**-bit keycodes.
 </td>
 </tr>
 <tr>
-<th>Extended key names</th>
+<th colspan="2">Extended key names</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -145,7 +145,7 @@ Support any key and aliases names of any length.
 </td>
 </tr>
 <tr>
-<th>Extended number of layouts</th>
+<th colspan="2">Extended number of layouts</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -166,7 +166,7 @@ Enable up to **32** layouts when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
 </td>
 </tr>
 <tr>
-<th>Unified modifiers</th>
+<th colspan="2">Unified modifiers</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -185,7 +185,7 @@ as a X11 compatibility feature.
 </td>
 </tr>
 <tr>
-<th>Extended modifiers</th>
+<th colspan="2">Extended modifiers</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -200,7 +200,7 @@ Enable up to **32** *independent* modifiers.
 </td>
 </tr>
 <tr>
-<th>Canonical virtual modifiers</th>
+<th colspan="2">Canonical virtual modifiers</th>
 <td>
 <details>
 <summary>❌️ No support</summary>
@@ -225,7 +225,7 @@ their <em>[canonical mapping](@ref canonical-modifier-def)</em>.
 </td>
 </tr>
 <tr>
-<th>Multiple groups per key</th>
+<th colspan="2">Multiple groups per key</th>
 <td>
 <details>
 <summary>✅ Full support</summary>
@@ -245,7 +245,7 @@ See @ref how-do-i-define-multiple-groups-per-key "" for migration instructions.
 </td>
 </tr>
 <tr>
-<th>Multiple keysyms per level</th>
+<th colspan="2">Multiple keysyms per level</th>
 <td>
 <details>
 <summary>❌️ Parsing only</summary>
@@ -260,11 +260,12 @@ Ignored: fallback to `NoSymbol`.
 </td>
 </tr>
 <tr>
-<th>Multiple actions per level</th>
+<th colspan="2">Multiple actions per level</th>
 <td>
 <details>
-<summary>❌️ No support</summary>
-Parse error.
+<summary>❌️ Parsing only</summary>
+- xkbcomp \< 1.5: Parse error
+- xkbcomp ≥ 1.5: Parsing only
 </details>
 </td>
 <td>
@@ -285,69 +286,60 @@ Currently limited to 1 action for each action type “group” and “modifier�
 </details>
 </td>
 </tr>
-<!-- Removals -->
 <tr>
-<th>Geometry @anchor geometry-support</th>
-<td>✅ Full support</td>
-<td colspan="2">
+<th colspan="2">Keyboard controls</th>
+<td>
 <details>
-<summary>⚠️ Parsing only</summary>
-
-Rational:
-- There were very few geometry definitions available in [xkeyboard-config], and
-  while xkbcommon was responsible for parsing this insanely complex format,
-  it never actually did anything with it.
-- Hopefully someone will develop a companion library which supports keyboard
-  geometries in a more useful format, e.g. SVG.
+<summary>✅ Full support</summary>
+Only *overlay* controls [`1`][Overlay1] and [`2`][Overlay2] are supported,
+consistent with the [keyboard overlay](@ref key-behavior-overlay) support.
 </details>
 </td>
-</tr>
-<tr>
-<th>Keyboard controls</th>
-<td>✅ Full support</td>
-<td colspan="2">
+<td>
 <details>
-<summary>⚠️ Limited support (since 1.14)</summary>
+<summary>⚠️ Partial support (since 1.14)</summary>
+Only *overlay* controls [`1`][Overlay1] and [`2`][Overlay2] are supported,
+consistent with the [keyboard overlay](@ref key-behavior-overlay) support.
+</details>
+</td>
+<td>
+<details>
+<summary>⚠️ Partial support (since 1.14)</summary>
 See the supported keyboard controls in `xkb_keyboard_control_flags`, as well as
 the [corresponding actions](@ref compatibility-key-actions).
+
+*Overlay* controls [`1`][Overlay1] to [`8`][Overlay8] are supported.
 </details>
 </td>
 </tr>
 <tr>
-<th>Radio groups</th>
+<th rowspan="3">[Key behaviors](@ref key-behaviors)</th>
+<th>[Overlays](@ref key-behavior-overlay)</th>
+<td>✅ Full support</td>
+<td colspan="2">❌️ Parsing only</td>
+</tr>
+<tr>
+<th>[Radio groups](@ref key-behavior-radio-groups)</th>
 <td>✅ Full support</td><!-- exact status? -->
 <td colspan="2">
 <details>
-<summary>❌️ No support</summary>
+<summary>❌️ Parsing only</summary>
 Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
 <tr>
-<th>Overlays</th>
-<td>✅ Full support</td>
+<th>[Lock](@ref key-behavior-lock)</th>
+<td>✅ Full support</td><!-- exact status? -->
 <td colspan="2">
 <details>
-<summary>❌️ No support</summary>
+<summary>❌️ Parsing only</summary>
 Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
 <tr>
-<th>[Key behaviors]</th>
-<td>✅ Full support</td>
-<td colspan="2">
-<details>
-<summary>❌️ No support</summary>
-Used to implement radio groups and overlays, and to deal with things
-like keys that physically lock;
-
-Unused in [xkeyboard-config] layouts.
-</details>
-</td>
-</tr>
-<tr>
-<th>[Indicator behaviors]</th>
+<th colspan="2">[Indicator behaviors]</th>
 <td>✅ Full support</td>
 <td colspan="2">
 <details>
@@ -362,10 +354,26 @@ Unused in [xkeyboard-config] layouts.
 </details>
 </td>
 </tr>
+<!-- Removals -->
+<tr>
+<th colspan="2">Geometry @anchor geometry-support</th>
+<td>✅ Full support</td>
+<td colspan="2">
+<details>
+<summary>❌️ Parsing only</summary>
+
+Rational:
+- There were very few geometry definitions available in [xkeyboard-config], and
+  while xkbcommon was responsible for parsing this insanely complex format,
+  it never actually did anything with it.
+- Hopefully someone will develop a companion library which supports keyboard
+  geometries in a more useful format, e.g. SVG.
+</details>
+</td>
+</tr>
 </tbody>
 </table>
 
-[Key behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Behavior
 [Indicator behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#:~:text=IM_LEDDrivesKB
 
 
@@ -378,8 +386,8 @@ Unused in [xkeyboard-config] layouts.
 <th>Type</th>
 <th>Action</th>
 <th>X11</th>
-<th>xkbcommon (v1 format)</th>
-<th>xkbcommon (v2 format)</th>
+<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
+<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
 </tr>
 </thead>
 <tbody>
@@ -393,7 +401,7 @@ Unused in [xkeyboard-config] layouts.
 <tr>
 <th>`VoidAction()`</th>
 <td>❌️ No support</td>
-<td>⚠️ Parsing only (since 1.10)</td>
+<td>❌️ Parsing only (since 1.10)</td>
 <td>✅ Full support (since 1.11)</td>
 </tr>
 <!-- Modifiers actions -->
@@ -624,8 +632,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <tr>
 <th>Feature</th>
 <th>X11 (xkbcomp)</th>
-<th>xkbcommon (v1 format)</th>
-<th>xkbcommon (v2 format)</th>
+<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
+<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
 </tr>
 </thead>
 <tbody>
@@ -820,8 +828,8 @@ Multiple groups per symbol section is supported when parsing a [KcCGST] keymap.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon (v1 format)</th>
-<th>xkbcommon (v2 format)</th>
+<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
+<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
 </tr>
 </thead>
 <tbody>
@@ -877,8 +885,8 @@ Obsolete legacy file format tied to X11 ecosystem.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon (v1 format)</th>
-<th>xkbcommon (v2 format)</th>
+<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
+<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
 </tr>
 </thead>
 <tbody>
@@ -1026,7 +1034,7 @@ Compose(5) man-page):
 <td>✅ Full support</td>
 <td>
 <details>
-<summary>⚠️ Parsing only</summary>
+<summary>❌️ Parsing only</summary>
 Syntax: `[([!] ([~] MODIFIER)...) | None] <keysym>`
 
 If the modifier list is preceded by `!` it must match exactly. MODIFIER may be

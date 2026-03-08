@@ -1,0 +1,2480 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="2691.3333"
+   height="1051.3334"
+   viewBox="59.5 199.5 2691.3333 1051.3334"
+   preserveAspectRatio="xMinYMin"
+   id="svg236"
+   sodipodi:docname="numeric-keypad-overlay.svg"
+   inkscape:version="1.4.3 (unknown)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+   id="namedview236"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   showgrid="false"
+   inkscape:zoom="0.42066146"
+   inkscape:cx="1345.5"
+   inkscape:cy="450.48101"
+   inkscape:window-width="1876"
+   inkscape:window-height="1052"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg236" />
+&quot;
+  <style
+   id="style1"><![CDATA[
+    @font-face {
+      font-family: "IsoKeyCaps";
+      src: url("data:application/font-woff2;charset=utf-8;base64,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");
+    }
+    :root {
+      font-size: 49px;
+      --color-000: black;
+      --color-001: white;
+      --color-002: #cccccc; /* grey20 */
+      --color-003: #b2b2b2; /* grey30 */
+      --color-004: #00ff00; /* green */
+      --color-005: #004c00; /* green30 */
+      --color-006: #e5e5e5; /* grey10 */
+      --label-color: var(--color-000);
+      --base-color: var(--color-002);
+      --dead-key-color: #36c;
+      --overlay-color: #36c;
+      --overlay-label-color: white;
+      --stroke-width: 1pt;
+      --stroke-color: black;
+    }
+    .color-000 {
+      --color: var(--color-000);
+    }
+    .color-001 {
+      --color: var(--color-001);
+    }
+    .color-002 {
+      --color: var(--color-002);
+    }
+    .color-003 {
+      --color: var(--color-003);
+    }
+    .color-004 {
+      --color: var(--color-004);
+    }
+    .color-005 {
+      --color: var(--color-005);
+    }
+    .color-006 {
+      --color: var(--color-006);
+    }
+    .fn {
+      --color: var(--overlay-color);
+    }
+    .overlay {
+      --color: var(--overlay-color);
+      --stroke-width: 6pt;
+    }
+    rect {
+      fill: var(--color, var(--base-color));
+      stroke: var(--stroke-color);
+      stroke-width: var(--stroke-width);
+    }
+    path {
+      fill: var(--color, var(--base-color));
+      stroke: var(--stroke-color);
+      stroke-width: var(--stroke-width);
+    }
+    .debug {
+      fill: none;
+      stroke: red;
+    }
+    text {
+      fill: var(--color, var(--label-color));
+    }
+    text.label.cap {
+      text-anchor: middle;
+      text-align: center;
+      dominant-baseline: middle;
+    }
+    text.label.cap.dead-key {
+      fill: var(--dead-key-color);
+      font-weight: bold;
+    }
+    text.label.cap.fn {
+      fill: var(--label-color);
+      font-weight: bold;
+    }
+    text.label.cap.overlay {
+      fill: var(--overlay-label-color);
+      font-weight: bold;
+    }
+    text.label.cap.system {
+    }
+    ]]></style>
+<defs
+   id="defs12">
+  <g
+     id="shape-NORM"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="150"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="170"
+       height="170"
+       rx="10"
+       id="rect1"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-NARR"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="130"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="150"
+       height="170"
+       rx="10"
+       id="rect2"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-FKEY"
+     data-shape-top-x1="10"
+     data-shape-top-y1="10"
+     data-shape-top-x2="141"
+     data-shape-top-y2="145"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="151"
+       height="155"
+       rx="10"
+       id="rect3"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-ESC"
+     data-shape-top-x1="10"
+     data-shape-top-y1="10"
+     data-shape-top-x2="141"
+     data-shape-top-y2="145"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="164"
+       height="155"
+       rx="10"
+       id="rect4"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-WIDE"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="230"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="250"
+       height="170"
+       rx="10"
+       id="rect5"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-RTRN"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="255"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="275"
+       height="170"
+       rx="10"
+       id="rect6"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-CAPS"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="280"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="300"
+       height="170"
+       rx="10"
+       id="rect7"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-LFSH"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="365"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="385"
+       height="170"
+       rx="10"
+       id="rect8"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-RTSH"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="190"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="210"
+       height="170"
+       rx="10"
+       id="rect9"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-SPCE"
+     data-shape-top-x1="20"
+     data-shape-top-y1="10"
+     data-shape-top-x2="868"
+     data-shape-top-y2="150"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="888"
+       height="170"
+       rx="10"
+       id="rect10"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-WELL"
+     data-shape-top-x1="0"
+     data-shape-top-y1="0"
+     data-shape-top-x2="2690"
+     data-shape-top-y2="1050"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="2690"
+       height="1050"
+       rx="10"
+       id="rect11"
+       x="0"
+       y="0" />
+  </g>
+  <g
+     id="shape-LED"
+     data-shape-top-x1="0"
+     data-shape-top-y1="0"
+     data-shape-top-x2="30"
+     data-shape-top-y2="100"
+     class="shape">
+    <rect
+       data-outline="1"
+       class="outline"
+       width="30"
+       height="100"
+       rx="15"
+       id="rect12"
+       x="0"
+       y="0" />
+  </g>
+</defs>
+<!-- Begin Group '2' -->
+<use
+   data-doodad="KeyWell"
+   class="doodad solid color-006"
+   href="#shape-WELL"
+   x="60"
+   y="350"
+   id="use21"
+   transform="translate(0.16666669,-149.83333)" />
+<g
+   id="section-Whole-2"
+   class="section"
+   transform="translate(60.166667,200.16667)">
+  <use
+     data-key="LALT"
+     class="solid color-003"
+     href="#shape-NORM"
+     x="621"
+     y="865"
+     id="use22" />
+  <g
+     data-row="1"
+     class="row"
+     id="g40">
+    <g
+       data-key="ESC"
+       class="key"
+       id="g23">
+      <use
+         class="key color-003"
+         href="#shape-ESC"
+         x="15"
+         y="5"
+         id="use23" />
+    </g>
+    <g
+       data-key="FK01"
+       class="key"
+       id="g24">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="184"
+         y="5"
+         id="use24" />
+    </g>
+    <g
+       data-key="FK02"
+       class="key"
+       id="g25">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="340"
+         y="5"
+         id="use25" />
+    </g>
+    <g
+       data-key="FK03"
+       class="key"
+       id="g26">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="496"
+         y="5"
+         id="use26" />
+    </g>
+    <g
+       data-key="FK04"
+       class="key"
+       id="g27">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="652"
+         y="5"
+         id="use27" />
+    </g>
+    <g
+       data-key="FK05"
+       class="key"
+       id="g28">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="808"
+         y="5"
+         id="use28" />
+    </g>
+    <g
+       data-key="FK06"
+       class="key"
+       id="g29">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="964"
+         y="5"
+         id="use29" />
+    </g>
+    <g
+       data-key="FK07"
+       class="key"
+       id="g30">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1120"
+         y="5"
+         id="use30" />
+    </g>
+    <g
+       data-key="FK08"
+       class="key"
+       id="g31">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1276"
+         y="5"
+         id="use31" />
+    </g>
+    <g
+       data-key="FK09"
+       class="key"
+       id="g32">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1432"
+         y="5"
+         id="use32" />
+    </g>
+    <g
+       data-key="FK10"
+       class="key"
+       id="g33">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1588"
+         y="5"
+         id="use33" />
+    </g>
+    <g
+       data-key="FK11"
+       class="key"
+       id="g34">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1744"
+         y="5"
+         id="use34" />
+    </g>
+    <g
+       data-key="FK12"
+       class="key"
+       id="g35">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="1900"
+         y="5"
+         id="use35" />
+    </g>
+    <g
+       data-key="NMLK"
+       class="key"
+       id="g36">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="2056"
+         y="5"
+         id="use36" />
+    </g>
+    <g
+       data-key="PRSC"
+       class="key"
+       id="g37">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="2212"
+         y="5"
+         id="use37" />
+    </g>
+    <g
+       data-key="SCLK"
+       class="key"
+       id="g38">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="2368"
+         y="5"
+         id="use38" />
+    </g>
+    <g
+       data-key="PAUS"
+       class="key"
+       id="g39">
+      <use
+         class="key color-003"
+         href="#shape-FKEY"
+         x="2524"
+         y="5"
+         id="use39" />
+    </g>
+  </g>
+  <g
+     data-row="2"
+     class="row"
+     id="g56">
+    <g
+       data-key="TLDE"
+       class="key"
+       id="g41">
+      <use
+         class="key color-002"
+         href="#shape-NARR"
+         x="15"
+         y="165"
+         id="use40" />
+    </g>
+    <g
+       data-key="AE01"
+       class="key"
+       id="g42">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="170"
+         y="165"
+         id="use41" />
+    </g>
+    <g
+       data-key="AE02"
+       class="key"
+       id="g43">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="345"
+         y="165"
+         id="use42" />
+    </g>
+    <g
+       data-key="AE03"
+       class="key"
+       id="g44">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="520"
+         y="165"
+         id="use43" />
+    </g>
+    <g
+       data-key="AE04"
+       class="key"
+       id="g45">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="695"
+         y="165"
+         id="use44" />
+    </g>
+    <g
+       data-key="AE05"
+       class="key"
+       id="g46">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="870"
+         y="165"
+         id="use45" />
+    </g>
+    <g
+       data-key="AE06"
+       class="key"
+       id="g47">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1045"
+         y="165"
+         id="use46" />
+    </g>
+    <g
+       data-key="AE07"
+       class="key"
+       id="g48">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1220"
+         y="165"
+         id="use47" />
+    </g>
+    <g
+       data-key="AE08"
+       class="key"
+       id="g49">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1395"
+         y="165"
+         id="use48" />
+    </g>
+    <g
+       data-key="AE09"
+       class="key"
+       id="g50">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1570"
+         y="165"
+         id="use49" />
+    </g>
+    <g
+       data-key="AE10"
+       class="key"
+       id="g51">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1745"
+         y="165"
+         id="use50" />
+    </g>
+    <g
+       data-key="AE11"
+       class="key"
+       id="g52">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1920"
+         y="165"
+         id="use51" />
+    </g>
+    <g
+       data-key="AE12"
+       class="key"
+       id="g53">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="2095"
+         y="165"
+         id="use52" />
+    </g>
+    <g
+       data-key="BKSP"
+       class="key"
+       id="g54">
+      <use
+         class="key color-003"
+         href="#shape-WIDE"
+         x="2270"
+         y="165"
+         id="use53" />
+    </g>
+    <g
+       data-key="HOME"
+       class="key"
+       id="g55">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2525"
+         y="165"
+         id="use54" />
+    </g>
+  </g>
+  <g
+     data-row="3"
+     class="row"
+     id="g72">
+    <g
+       data-key="TAB"
+       class="key"
+       id="g57">
+      <use
+         class="key color-003"
+         href="#shape-WIDE"
+         x="15"
+         y="340"
+         id="use56" />
+    </g>
+    <g
+       data-key="AD01"
+       class="key"
+       id="g58">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="270"
+         y="340"
+         id="use57" />
+    </g>
+    <g
+       data-key="AD02"
+       class="key"
+       id="g59">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="445"
+         y="340"
+         id="use58" />
+    </g>
+    <g
+       data-key="AD03"
+       class="key"
+       id="g60">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="620"
+         y="340"
+         id="use59" />
+    </g>
+    <g
+       data-key="AD04"
+       class="key"
+       id="g61">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="795"
+         y="340"
+         id="use60" />
+    </g>
+    <g
+       data-key="AD05"
+       class="key"
+       id="g62">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="970"
+         y="340"
+         id="use61" />
+    </g>
+    <g
+       data-key="AD06"
+       class="key"
+       id="g63">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1145"
+         y="340"
+         id="use62" />
+    </g>
+    <g
+       data-key="AD07"
+       class="key"
+       id="g64">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1320"
+         y="340"
+         id="use63" />
+    </g>
+    <g
+       data-key="AD08"
+       class="key"
+       id="g65">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1495"
+         y="340"
+         id="use64" />
+    </g>
+    <g
+       data-key="AD09"
+       class="key"
+       id="g66">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1670"
+         y="340"
+         id="use65" />
+    </g>
+    <g
+       data-key="AD10"
+       class="key"
+       id="g67">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1845"
+         y="340"
+         id="use66" />
+    </g>
+    <g
+       data-key="AD11"
+       class="key"
+       id="g68">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="2020"
+         y="340"
+         id="use67" />
+    </g>
+    <g
+       data-key="AD12"
+       class="key"
+       id="g69">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="2195"
+         y="340"
+         id="use68" />
+    </g>
+    <g
+       data-key="BKSL"
+       class="key"
+       id="g70">
+      <use
+         class="key color-002"
+         href="#shape-NARR"
+         x="2370"
+         y="340"
+         id="use69" />
+    </g>
+    <g
+       data-key="PGUP"
+       class="key"
+       id="g71">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2525"
+         y="340"
+         id="use70" />
+    </g>
+  </g>
+  <g
+     data-row="4"
+     class="row"
+     id="g87">
+    <g
+       data-key="CAPS"
+       class="key"
+       id="g73">
+      <use
+         class="key color-003"
+         href="#shape-CAPS"
+         x="15"
+         y="515"
+         id="use72" />
+    </g>
+    <g
+       data-key="AC01"
+       class="key"
+       id="g74">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="320"
+         y="515"
+         id="use73" />
+    </g>
+    <g
+       data-key="AC02"
+       class="key"
+       id="g75">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="495"
+         y="515"
+         id="use74" />
+    </g>
+    <g
+       data-key="AC03"
+       class="key"
+       id="g76">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="670"
+         y="515"
+         id="use75" />
+    </g>
+    <g
+       data-key="AC04"
+       class="key"
+       id="g77">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="845"
+         y="515"
+         id="use76" />
+    </g>
+    <g
+       data-key="AC05"
+       class="key"
+       id="g78">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1020"
+         y="515"
+         id="use77" />
+    </g>
+    <g
+       data-key="AC06"
+       class="key"
+       id="g79">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1195"
+         y="515"
+         id="use78" />
+    </g>
+    <g
+       data-key="AC07"
+       class="key"
+       id="g80">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1370"
+         y="515"
+         id="use79" />
+    </g>
+    <g
+       data-key="AC08"
+       class="key"
+       id="g81">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1545"
+         y="515"
+         id="use80" />
+    </g>
+    <g
+       data-key="AC09"
+       class="key"
+       id="g82">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1720"
+         y="515"
+         id="use81" />
+    </g>
+    <g
+       data-key="AC10"
+       class="key"
+       id="g83">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1895"
+         y="515"
+         id="use82" />
+    </g>
+    <g
+       data-key="AC11"
+       class="key"
+       id="g84">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="2070"
+         y="515"
+         id="use83" />
+    </g>
+    <g
+       data-key="RTRN"
+       class="key"
+       id="g85">
+      <use
+         class="key color-003"
+         href="#shape-RTRN"
+         x="2245"
+         y="515"
+         id="use84" />
+    </g>
+    <g
+       data-key="PGDN"
+       class="key"
+       id="g86">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2525"
+         y="515"
+         id="use85" />
+    </g>
+  </g>
+  <g
+     data-row="5"
+     class="row"
+     id="g102">
+    <g
+       data-key="LFSH"
+       class="key"
+       id="g88">
+      <use
+         class="key color-003"
+         href="#shape-LFSH"
+         x="15"
+         y="690"
+         id="use87" />
+    </g>
+    <g
+       data-key="AB01"
+       class="key"
+       id="g89">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="405"
+         y="690"
+         id="use88" />
+    </g>
+    <g
+       data-key="AB02"
+       class="key"
+       id="g90">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="580"
+         y="690"
+         id="use89" />
+    </g>
+    <g
+       data-key="AB03"
+       class="key"
+       id="g91">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="755"
+         y="690"
+         id="use90" />
+    </g>
+    <g
+       data-key="AB04"
+       class="key"
+       id="g92">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="930"
+         y="690"
+         id="use91" />
+    </g>
+    <g
+       data-key="AB05"
+       class="key"
+       id="g93">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1105"
+         y="690"
+         id="use92" />
+    </g>
+    <g
+       data-key="AB06"
+       class="key"
+       id="g94">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1280"
+         y="690"
+         id="use93" />
+    </g>
+    <g
+       data-key="AB07"
+       class="key"
+       id="g95">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1455"
+         y="690"
+         id="use94" />
+    </g>
+    <g
+       data-key="AB08"
+       class="key"
+       id="g96">
+      <use
+         class="key color-002"
+         href="#shape-NORM"
+         x="1630"
+         y="690"
+         id="use95" />
+    </g>
+    <g
+       data-key="AB09"
+       class="key"
+       id="g97">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1805"
+         y="690"
+         id="use96" />
+    </g>
+    <g
+       data-key="AB10"
+       class="key"
+       id="g98">
+      <use
+         class="key color-002 overlay"
+         href="#shape-NORM"
+         x="1980"
+         y="690"
+         id="use97" />
+    </g>
+    <g
+       data-key="RTSH"
+       class="key"
+       id="g99">
+      <use
+         class="key color-003"
+         href="#shape-RTSH"
+         x="2155"
+         y="690"
+         id="use98" />
+    </g>
+    <g
+       data-key="UP"
+       class="key"
+       id="g100">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2370"
+         y="690"
+         id="use99" />
+    </g>
+    <g
+       data-key="END"
+       class="key"
+       id="g101">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2525"
+         y="690"
+         id="use100" />
+    </g>
+  </g>
+  <g
+     data-row="6"
+     class="row"
+     id="g113">
+    <g
+       data-key="LCTL"
+       class="key"
+       id="g103">
+      <use
+         class="key color-003"
+         href="#shape-WIDE"
+         x="15"
+         y="865"
+         id="use102" />
+    </g>
+    <g
+       data-key="I472"
+       class="key"
+       id="g104">
+      <use
+         class="key color-003 fn"
+         href="#shape-NORM"
+         x="270"
+         y="865"
+         id="use103" />
+    </g>
+    <g
+       data-key="LWIN"
+       class="key"
+       id="g105">
+      <use
+         class="key color-003"
+         href="#shape-NORM"
+         x="445"
+         y="865"
+         id="use104" />
+    </g>
+    <g
+       data-key="SPCE"
+       class="key"
+       id="g106">
+      <use
+         class="key color-002"
+         href="#shape-SPCE"
+         x="795"
+         y="865"
+         id="use105" />
+    </g>
+    <g
+       data-key="RALT"
+       class="key"
+       id="g107">
+      <use
+         class="key color-003"
+         href="#shape-NORM"
+         x="1688"
+         y="865"
+         id="use106" />
+    </g>
+    <g
+       data-key="RWIN"
+       class="key"
+       id="g108">
+      <use
+         class="key color-003"
+         href="#shape-NORM"
+         x="1863"
+         y="865"
+         id="use107" />
+    </g>
+    <g
+       data-key="RCTL"
+       class="key"
+       id="g109">
+      <use
+         class="key color-003"
+         href="#shape-NORM"
+         x="2038"
+         y="865"
+         id="use108" />
+    </g>
+    <g
+       data-key="LEFT"
+       class="key"
+       id="g110">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2213"
+         y="865"
+         id="use109" />
+    </g>
+    <g
+       data-key="DOWN"
+       class="key"
+       id="g111">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2368"
+         y="865"
+         id="use110" />
+    </g>
+    <g
+       data-key="RGHT"
+       class="key"
+       id="g112">
+      <use
+         class="key color-003"
+         href="#shape-NARR"
+         x="2523"
+         y="865"
+         id="use111" />
+    </g>
+  </g>
+  <g
+     data-row="1"
+     class="row label"
+     id="g131">
+    <text
+       data-key="ESC"
+       data-key-slot="1"
+       data-keysym="Escape"
+       x="90"
+       y="82"
+       class="key label cap system"
+       id="text113"><![CDATA[Esc ]]><title
+   id="title113">&lt;ESC&gt; Escape</title></text>
+    <text
+       data-key="FK01"
+       data-key-slot="1"
+       data-keysym="F1"
+       x="259"
+       y="82"
+       class="key label cap system"
+       id="text114"><![CDATA[F1 ]]><title
+   id="title114">&lt;FK01&gt; F1</title></text>
+    <text
+       data-key="FK02"
+       data-key-slot="1"
+       data-keysym="F2"
+       x="415"
+       y="82"
+       class="key label cap system"
+       id="text115"><![CDATA[F2 ]]><title
+   id="title115">&lt;FK02&gt; F2</title></text>
+    <text
+       data-key="FK03"
+       data-key-slot="1"
+       data-keysym="F3"
+       x="571"
+       y="82"
+       class="key label cap system"
+       id="text116"><![CDATA[F3 ]]><title
+   id="title116">&lt;FK03&gt; F3</title></text>
+    <text
+       data-key="FK04"
+       data-key-slot="1"
+       data-keysym="F4"
+       x="727"
+       y="82"
+       class="key label cap system"
+       id="text117"><![CDATA[F4 ]]><title
+   id="title117">&lt;FK04&gt; F4</title></text>
+    <text
+       data-key="FK05"
+       data-key-slot="1"
+       data-keysym="F5"
+       x="883"
+       y="82"
+       class="key label cap system"
+       id="text118"><![CDATA[F5 ]]><title
+   id="title118">&lt;FK05&gt; F5</title></text>
+    <text
+       data-key="FK06"
+       data-key-slot="1"
+       data-keysym="F6"
+       x="1039"
+       y="82"
+       class="key label cap system"
+       id="text119"><![CDATA[F6 ]]><title
+   id="title119">&lt;FK06&gt; F6</title></text>
+    <text
+       data-key="FK07"
+       data-key-slot="1"
+       data-keysym="F7"
+       x="1195"
+       y="82"
+       class="key label cap system"
+       id="text120"><![CDATA[F7 ]]><title
+   id="title120">&lt;FK07&gt; F7</title></text>
+    <text
+       data-key="FK08"
+       data-key-slot="1"
+       data-keysym="F8"
+       x="1351"
+       y="82"
+       class="key label cap system"
+       id="text121"><![CDATA[F8 ]]><title
+   id="title121">&lt;FK08&gt; F8</title></text>
+    <text
+       data-key="FK09"
+       data-key-slot="1"
+       data-keysym="F9"
+       x="1507"
+       y="82"
+       class="key label cap system"
+       id="text122"><![CDATA[F9 ]]><title
+   id="title122">&lt;FK09&gt; F9</title></text>
+    <text
+       data-key="FK10"
+       data-key-slot="1"
+       data-keysym="F10"
+       x="1663"
+       y="82"
+       class="key label cap system"
+       id="text123"><![CDATA[F10 ]]><title
+   id="title123">&lt;FK10&gt; F10</title></text>
+    <text
+       data-key="FK11"
+       data-key-slot="1"
+       data-keysym="F11"
+       x="1819"
+       y="82"
+       class="key label cap system"
+       id="text124"><![CDATA[F11 ]]><title
+   id="title124">&lt;FK11&gt; F11</title></text>
+    <text
+       data-key="FK12"
+       data-key-slot="1"
+       data-keysym="F12"
+       x="1975"
+       y="82"
+       class="key label cap system"
+       id="text125"><![CDATA[F12 ]]><title
+   id="title125">&lt;FK12&gt; F12</title></text>
+    <text
+       data-key="NMLK"
+       data-key-slot="1"
+       data-keysym="Num_Lock"
+       x="2131"
+       y="82"
+       class="key label cap system"
+       id="text126"><![CDATA[Num🔒︎ ]]><title
+   id="title126">&lt;NMLK&gt; Num_Lock</title></text>
+    <text
+       data-key="PRSC"
+       data-key-slot="1"
+       data-keysym="Print"
+       x="2287"
+       y="115"
+       class="key label cap system"
+       id="text127"><![CDATA[Print ]]><title
+   id="title127">&lt;PRSC&gt; Print</title></text>
+    <text
+       data-key="PRSC"
+       data-key-slot="2"
+       data-keysym="Sys_Req"
+       x="2287"
+       y="48"
+       class="key label cap system"
+       id="text128"><![CDATA[SysReq ]]><title
+   id="title128">&lt;PRSC&gt; Sys_Req</title></text>
+    <text
+       data-key="SCLK"
+       data-key-slot="1"
+       data-keysym="Scroll_Lock"
+       x="2443"
+       y="82"
+       class="key label cap system"
+       id="text129"><![CDATA[Scroll🔒︎]]><title
+   id="title129">&lt;SCLK&gt; Scroll_Lock</title></text>
+    <text
+       data-key="PAUS"
+       data-key-slot="1"
+       data-keysym="Pause"
+       x="2599"
+       y="115"
+       class="key label cap system"
+       id="text130"><![CDATA[Pause ]]><title
+   id="title130">&lt;PAUS&gt; Pause</title></text>
+    <text
+       data-key="PAUS"
+       data-key-slot="2"
+       data-keysym="Break"
+       x="2599"
+       y="48"
+       class="key label cap system"
+       id="text131"><![CDATA[Break ]]><title
+   id="title131">&lt;PAUS&gt; Break</title></text>
+  </g>
+  <g
+     data-row="2"
+     class="row label"
+     id="g163">
+    <text
+       data-key="TLDE"
+       data-key-slot="1"
+       data-keysym="grave"
+       x="62"
+       y="280"
+       class="key label cap"
+       id="text132"><![CDATA[` ]]><title
+   id="title132">&lt;TLDE&gt; grave</title></text>
+    <text
+       data-key="TLDE"
+       data-key-slot="2"
+       data-keysym="asciitilde"
+       x="62"
+       y="210"
+       class="key label cap"
+       id="text133"><![CDATA[~ ]]><title
+   id="title133">&lt;TLDE&gt; asciitilde</title></text>
+    <text
+       data-key="AE01"
+       data-key-slot="1"
+       data-keysym="1"
+       x="222"
+       y="280"
+       class="key label cap"
+       id="text134"><![CDATA[1 ]]><title
+   id="title134">&lt;AE01&gt; 1</title></text>
+    <text
+       data-key="AE01"
+       data-key-slot="2"
+       data-keysym="exclam"
+       x="222"
+       y="210"
+       class="key label cap"
+       id="text135"><![CDATA[! ]]><title
+   id="title135">&lt;AE01&gt; exclam</title></text>
+    <text
+       data-key="AE02"
+       data-key-slot="1"
+       data-keysym="2"
+       x="397"
+       y="280"
+       class="key label cap"
+       id="text136"><![CDATA[2 ]]><title
+   id="title136">&lt;AE02&gt; 2</title></text>
+    <text
+       data-key="AE02"
+       data-key-slot="2"
+       data-keysym="at"
+       x="397"
+       y="210"
+       class="key label cap"
+       id="text137"><![CDATA[@ ]]><title
+   id="title137">&lt;AE02&gt; at</title></text>
+    <text
+       data-key="AE03"
+       data-key-slot="1"
+       data-keysym="3"
+       x="572"
+       y="280"
+       class="key label cap"
+       id="text138"><![CDATA[3 ]]><title
+   id="title138">&lt;AE03&gt; 3</title></text>
+    <text
+       data-key="AE03"
+       data-key-slot="2"
+       data-keysym="numbersign"
+       x="572"
+       y="210"
+       class="key label cap"
+       id="text139"><![CDATA[# ]]><title
+   id="title139">&lt;AE03&gt; numbersign</title></text>
+    <text
+       data-key="AE04"
+       data-key-slot="1"
+       data-keysym="4"
+       x="747"
+       y="280"
+       class="key label cap"
+       id="text140"><![CDATA[4 ]]><title
+   id="title140">&lt;AE04&gt; 4</title></text>
+    <text
+       data-key="AE04"
+       data-key-slot="2"
+       data-keysym="dollar"
+       x="747"
+       y="210"
+       class="key label cap"
+       id="text141"><![CDATA[$ ]]><title
+   id="title141">&lt;AE04&gt; dollar</title></text>
+    <text
+       data-key="AE05"
+       data-key-slot="1"
+       data-keysym="5"
+       x="922"
+       y="280"
+       class="key label cap"
+       id="text142"><![CDATA[5 ]]><title
+   id="title142">&lt;AE05&gt; 5</title></text>
+    <text
+       data-key="AE05"
+       data-key-slot="2"
+       data-keysym="percent"
+       x="922"
+       y="210"
+       class="key label cap"
+       id="text143"><![CDATA[% ]]><title
+   id="title143">&lt;AE05&gt; percent</title></text>
+    <text
+       data-key="AE06"
+       data-key-slot="1"
+       data-keysym="6"
+       x="1097"
+       y="280"
+       class="key label cap"
+       id="text144"><![CDATA[6 ]]><title
+   id="title144">&lt;AE06&gt; 6</title></text>
+    <text
+       data-key="AE06"
+       data-key-slot="2"
+       data-keysym="asciicircum"
+       x="1097"
+       y="210"
+       class="key label cap"
+       id="text145"><![CDATA[^ ]]><title
+   id="title145">&lt;AE06&gt; asciicircum</title></text>
+    <text
+       data-key="AE07"
+       data-key-slot="1"
+       data-keysym="7"
+       x="1272"
+       y="280"
+       class="key label cap"
+       id="text146"><![CDATA[7 ]]><title
+   id="title146">&lt;AE07&gt; 7</title></text>
+    <text
+       data-key="AE07"
+       data-key-slot="2"
+       data-keysym="ampersand"
+       x="1272"
+       y="210"
+       class="key label cap"
+       id="text147"><![CDATA[& ]]><title
+   id="title147">&lt;AE07&gt; ampersand</title></text>
+    <text
+       data-key="AE07"
+       data-key-slot="3"
+       data-keysym="KP_7"
+       x="1337"
+       y="280"
+       class="key label cap overlay"
+       id="text148"><![CDATA[7 ]]><title
+   id="title148">&lt;KP7&gt; KP_7</title></text>
+    <text
+       data-key="AE08"
+       data-key-slot="1"
+       data-keysym="8"
+       x="1447"
+       y="280"
+       class="key label cap"
+       id="text149"><![CDATA[8 ]]><title
+   id="title149">&lt;AE08&gt; 8</title></text>
+    <text
+       data-key="AE08"
+       data-key-slot="2"
+       data-keysym="asterisk"
+       x="1447"
+       y="210"
+       class="key label cap"
+       id="text150"><![CDATA[* ]]><title
+   id="title150">&lt;AE08&gt; asterisk</title></text>
+    <text
+       data-key="AE08"
+       data-key-slot="3"
+       data-keysym="KP_8"
+       x="1512"
+       y="280"
+       class="key label cap overlay"
+       id="text151"><![CDATA[8 ]]><title
+   id="title151">&lt;KP8&gt; KP_8</title></text>
+    <text
+       data-key="AE09"
+       data-key-slot="1"
+       data-keysym="9"
+       x="1622"
+       y="280"
+       class="key label cap"
+       id="text152"><![CDATA[9 ]]><title
+   id="title152">&lt;AE09&gt; 9</title></text>
+    <text
+       data-key="AE09"
+       data-key-slot="2"
+       data-keysym="parenleft"
+       x="1622"
+       y="210"
+       class="key label cap"
+       id="text153"><![CDATA[( ]]><title
+   id="title153">&lt;AE09&gt; parenleft</title></text>
+    <text
+       data-key="AE09"
+       data-key-slot="3"
+       data-keysym="KP_9"
+       x="1687"
+       y="280"
+       class="key label cap overlay"
+       id="text154"><![CDATA[9 ]]><title
+   id="title154">&lt;KP9&gt; KP_9</title></text>
+    <text
+       data-key="AE10"
+       data-key-slot="1"
+       data-keysym="0"
+       x="1797"
+       y="280"
+       class="key label cap"
+       id="text155"><![CDATA[0 ]]><title
+   id="title155">&lt;AE10&gt; 0</title></text>
+    <text
+       data-key="AE10"
+       data-key-slot="2"
+       data-keysym="parenright"
+       x="1797"
+       y="210"
+       class="key label cap"
+       id="text156"><![CDATA[) ]]><title
+   id="title156">&lt;AE10&gt; parenright</title></text>
+    <text
+       data-key="AE10"
+       data-key-slot="3"
+       data-keysym="KP_Divide"
+       x="1862"
+       y="280"
+       class="key label cap overlay"
+       id="text157"><![CDATA[/ ]]><title
+   id="title157">&lt;KPDV&gt; KP_Divide</title></text>
+    <text
+       data-key="AE11"
+       data-key-slot="1"
+       data-keysym="minus"
+       x="1972"
+       y="280"
+       class="key label cap"
+       id="text158"><![CDATA[- ]]><title
+   id="title158">&lt;AE11&gt; minus</title></text>
+    <text
+       data-key="AE11"
+       data-key-slot="2"
+       data-keysym="underscore"
+       x="1972"
+       y="210"
+       class="key label cap"
+       id="text159"><![CDATA[_ ]]><title
+   id="title159">&lt;AE11&gt; underscore</title></text>
+    <text
+       data-key="AE12"
+       data-key-slot="1"
+       data-keysym="equal"
+       x="2147"
+       y="280"
+       class="key label cap"
+       id="text160"><![CDATA[= ]]><title
+   id="title160">&lt;AE12&gt; equal</title></text>
+    <text
+       data-key="AE12"
+       data-key-slot="2"
+       data-keysym="plus"
+       x="2147"
+       y="210"
+       class="key label cap"
+       id="text161"><![CDATA[+ ]]><title
+   id="title161">&lt;AE12&gt; plus</title></text>
+    <text
+       data-key="BKSP"
+       data-key-slot="1"
+       data-keysym="BackSpace"
+       x="2395"
+       y="245"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text162"><![CDATA[k ]]><title
+   id="title162">&lt;BKSP&gt; BackSpace</title></text>
+    <text
+       data-key="HOME"
+       data-key-slot="1"
+       data-keysym="Home"
+       x="2600"
+       y="245"
+       class="key label cap system"
+       id="text163"><![CDATA[Home ]]><title
+   id="title163">&lt;HOME&gt; Home</title></text>
+  </g>
+  <g
+     data-row="3"
+     class="row label"
+     id="g186">
+    <text
+       data-key="TAB"
+       data-key-slot="1"
+       data-keysym="Tab"
+       x="140"
+       y="455"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text164"><![CDATA[h ]]><title
+   id="title164">&lt;TAB&gt; Tab</title></text>
+    <text
+       data-key="TAB"
+       data-key-slot="2"
+       data-keysym="ISO_Left_Tab"
+       x="140"
+       y="385"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text165"><![CDATA[g ]]><title
+   id="title165">&lt;TAB&gt; ISO_Left_Tab</title></text>
+    <text
+       data-key="AD01"
+       data-key-slot="2"
+       data-keysym="Q"
+       x="322"
+       y="385"
+       class="key label cap"
+       id="text166"><![CDATA[Q ]]><title
+   id="title166">&lt;AD01&gt; Q</title></text>
+    <text
+       data-key="AD02"
+       data-key-slot="2"
+       data-keysym="W"
+       x="497"
+       y="385"
+       class="key label cap"
+       id="text167"><![CDATA[W ]]><title
+   id="title167">&lt;AD02&gt; W</title></text>
+    <text
+       data-key="AD03"
+       data-key-slot="2"
+       data-keysym="E"
+       x="672"
+       y="385"
+       class="key label cap"
+       id="text168"><![CDATA[E ]]><title
+   id="title168">&lt;AD03&gt; E</title></text>
+    <text
+       data-key="AD04"
+       data-key-slot="2"
+       data-keysym="R"
+       x="847"
+       y="385"
+       class="key label cap"
+       id="text169"><![CDATA[R ]]><title
+   id="title169">&lt;AD04&gt; R</title></text>
+    <text
+       data-key="AD05"
+       data-key-slot="2"
+       data-keysym="T"
+       x="1022"
+       y="385"
+       class="key label cap"
+       id="text170"><![CDATA[T ]]><title
+   id="title170">&lt;AD05&gt; T</title></text>
+    <text
+       data-key="AD06"
+       data-key-slot="2"
+       data-keysym="Y"
+       x="1197"
+       y="385"
+       class="key label cap"
+       id="text171"><![CDATA[Y ]]><title
+   id="title171">&lt;AD06&gt; Y</title></text>
+    <text
+       data-key="AD07"
+       data-key-slot="2"
+       data-keysym="U"
+       x="1372"
+       y="385"
+       class="key label cap"
+       id="text172"><![CDATA[U ]]><title
+   id="title172">&lt;AD07&gt; U</title></text>
+    <text
+       data-key="AD07"
+       data-key-slot="3"
+       data-keysym="KP_4"
+       x="1437"
+       y="455"
+       class="key label cap overlay"
+       id="text173"><![CDATA[4 ]]><title
+   id="title173">&lt;KP4&gt; KP_4</title></text>
+    <text
+       data-key="AD08"
+       data-key-slot="2"
+       data-keysym="I"
+       x="1547"
+       y="385"
+       class="key label cap"
+       id="text174"><![CDATA[I ]]><title
+   id="title174">&lt;AD08&gt; I</title></text>
+    <text
+       data-key="AD08"
+       data-key-slot="3"
+       data-keysym="KP_5"
+       x="1612"
+       y="455"
+       class="key label cap overlay"
+       id="text175"><![CDATA[5 ]]><title
+   id="title175">&lt;KP5&gt; KP_5</title></text>
+    <text
+       data-key="AD09"
+       data-key-slot="2"
+       data-keysym="O"
+       x="1722"
+       y="385"
+       class="key label cap"
+       id="text176"><![CDATA[O ]]><title
+   id="title176">&lt;AD09&gt; O</title></text>
+    <text
+       data-key="AD09"
+       data-key-slot="3"
+       data-keysym="KP_6"
+       x="1787"
+       y="455"
+       class="key label cap overlay"
+       id="text177"><![CDATA[6 ]]><title
+   id="title177">&lt;KP6&gt; KP_6</title></text>
+    <text
+       data-key="AD10"
+       data-key-slot="2"
+       data-keysym="P"
+       x="1897"
+       y="385"
+       class="key label cap"
+       id="text178"><![CDATA[P ]]><title
+   id="title178">&lt;AD10&gt; P</title></text>
+    <text
+       data-key="AD10"
+       data-key-slot="3"
+       data-keysym="KP_Multiply"
+       x="1962"
+       y="455"
+       class="key label cap overlay"
+       id="text179"><![CDATA[* ]]><title
+   id="title179">&lt;KPMU&gt; KP_Multiply</title></text>
+    <text
+       data-key="AD11"
+       data-key-slot="1"
+       data-keysym="bracketleft"
+       x="2072"
+       y="455"
+       class="key label cap"
+       id="text180"><![CDATA[[ ]]><title
+   id="title180">&lt;AD11&gt; bracketleft</title></text>
+    <text
+       data-key="AD11"
+       data-key-slot="2"
+       data-keysym="braceleft"
+       x="2072"
+       y="385"
+       class="key label cap"
+       id="text181"><![CDATA[{ ]]><title
+   id="title181">&lt;AD11&gt; braceleft</title></text>
+    <text
+       data-key="AD12"
+       data-key-slot="1"
+       data-keysym="bracketright"
+       x="2247"
+       y="455"
+       class="key label cap"
+       id="text182"><![CDATA[] ]]><title
+   id="title182">&lt;AD12&gt; bracketright</title></text>
+    <text
+       data-key="AD12"
+       data-key-slot="2"
+       data-keysym="braceright"
+       x="2247"
+       y="385"
+       class="key label cap"
+       id="text183"><![CDATA[} ]]><title
+   id="title183">&lt;AD12&gt; braceright</title></text>
+    <text
+       data-key="BKSL"
+       data-key-slot="1"
+       data-keysym="backslash"
+       x="2417"
+       y="455"
+       class="key label cap"
+       id="text184"><![CDATA[\ ]]><title
+   id="title184">&lt;BKSL&gt; backslash</title></text>
+    <text
+       data-key="BKSL"
+       data-key-slot="2"
+       data-keysym="bar"
+       x="2417"
+       y="385"
+       class="key label cap"
+       id="text185"><![CDATA[| ]]><title
+   id="title185">&lt;BKSL&gt; bar</title></text>
+    <text
+       data-key="PGUP"
+       data-key-slot="1"
+       data-keysym="Prior"
+       x="2600"
+       y="420"
+       class="key label cap system"
+       id="text186"><![CDATA[Prior ]]><title
+   id="title186">&lt;PGUP&gt; Prior</title></text>
+  </g>
+  <g
+     data-row="4"
+     class="row label"
+     id="g206">
+    <text
+       data-key="CAPS"
+       data-key-slot="1"
+       data-keysym="Caps_Lock"
+       x="165"
+       y="595"
+       class="key label cap system"
+       id="text187"><![CDATA[Caps Lock ]]><title
+   id="title187">&lt;CAPS&gt; Caps_Lock</title></text>
+    <text
+       data-key="AC01"
+       data-key-slot="2"
+       data-keysym="A"
+       x="372"
+       y="560"
+       class="key label cap"
+       id="text188"><![CDATA[A ]]><title
+   id="title188">&lt;AC01&gt; A</title></text>
+    <text
+       data-key="AC02"
+       data-key-slot="2"
+       data-keysym="S"
+       x="547"
+       y="560"
+       class="key label cap"
+       id="text189"><![CDATA[S ]]><title
+   id="title189">&lt;AC02&gt; S</title></text>
+    <text
+       data-key="AC03"
+       data-key-slot="2"
+       data-keysym="D"
+       x="722"
+       y="560"
+       class="key label cap"
+       id="text190"><![CDATA[D ]]><title
+   id="title190">&lt;AC03&gt; D</title></text>
+    <text
+       data-key="AC04"
+       data-key-slot="2"
+       data-keysym="F"
+       x="897"
+       y="560"
+       class="key label cap"
+       id="text191"><![CDATA[F ]]><title
+   id="title191">&lt;AC04&gt; F</title></text>
+    <text
+       data-key="AC05"
+       data-key-slot="2"
+       data-keysym="G"
+       x="1072"
+       y="560"
+       class="key label cap"
+       id="text192"><![CDATA[G ]]><title
+   id="title192">&lt;AC05&gt; G</title></text>
+    <text
+       data-key="AC06"
+       data-key-slot="2"
+       data-keysym="H"
+       x="1247"
+       y="560"
+       class="key label cap"
+       id="text193"><![CDATA[H ]]><title
+   id="title193">&lt;AC06&gt; H</title></text>
+    <text
+       data-key="AC07"
+       data-key-slot="2"
+       data-keysym="J"
+       x="1422"
+       y="560"
+       class="key label cap"
+       id="text194"><![CDATA[J ]]><title
+   id="title194">&lt;AC07&gt; J</title></text>
+    <text
+       data-key="AC07"
+       data-key-slot="3"
+       data-keysym="KP_1"
+       x="1487"
+       y="630"
+       class="key label cap overlay"
+       id="text195"><![CDATA[1 ]]><title
+   id="title195">&lt;KP1&gt; KP_1</title></text>
+    <text
+       data-key="AC08"
+       data-key-slot="2"
+       data-keysym="K"
+       x="1597"
+       y="560"
+       class="key label cap"
+       id="text196"><![CDATA[K ]]><title
+   id="title196">&lt;AC08&gt; K</title></text>
+    <text
+       data-key="AC08"
+       data-key-slot="3"
+       data-keysym="KP_2"
+       x="1662"
+       y="630"
+       class="key label cap overlay"
+       id="text197"><![CDATA[2 ]]><title
+   id="title197">&lt;KP2&gt; KP_2</title></text>
+    <text
+       data-key="AC09"
+       data-key-slot="2"
+       data-keysym="L"
+       x="1772"
+       y="560"
+       class="key label cap"
+       id="text198"><![CDATA[L ]]><title
+   id="title198">&lt;AC09&gt; L</title></text>
+    <text
+       data-key="AC09"
+       data-key-slot="3"
+       data-keysym="KP_3"
+       x="1837"
+       y="630"
+       class="key label cap overlay"
+       id="text199"><![CDATA[3 ]]><title
+   id="title199">&lt;KP3&gt; KP_3</title></text>
+    <text
+       data-key="AC10"
+       data-key-slot="1"
+       data-keysym="semicolon"
+       x="1947"
+       y="630"
+       class="key label cap"
+       id="text200"><![CDATA[; ]]><title
+   id="title200">&lt;AC10&gt; semicolon</title></text>
+    <text
+       data-key="AC10"
+       data-key-slot="2"
+       data-keysym="colon"
+       x="1947"
+       y="560"
+       class="key label cap"
+       id="text201"><![CDATA[: ]]><title
+   id="title201">&lt;AC10&gt; colon</title></text>
+    <text
+       data-key="AC10"
+       data-key-slot="3"
+       data-keysym="KP_Subtract"
+       x="2012"
+       y="630"
+       class="key label cap overlay"
+       id="text202"><![CDATA[- ]]><title
+   id="title202">&lt;KPSU&gt; KP_Subtract</title></text>
+    <text
+       data-key="AC11"
+       data-key-slot="1"
+       data-keysym="apostrophe"
+       x="2122"
+       y="630"
+       class="key label cap"
+       id="text203"><![CDATA[' ]]><title
+   id="title203">&lt;AC11&gt; apostrophe</title></text>
+    <text
+       data-key="AC11"
+       data-key-slot="2"
+       data-keysym="quotedbl"
+       x="2122"
+       y="560"
+       class="key label cap"
+       id="text204"><![CDATA[" ]]><title
+   id="title204">&lt;AC11&gt; quotedbl</title></text>
+    <text
+       data-key="RTRN"
+       data-key-slot="1"
+       data-keysym="Return"
+       x="2382"
+       y="595"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text205"><![CDATA[M ]]><title
+   id="title205">&lt;RTRN&gt; Return</title></text>
+    <text
+       data-key="PGDN"
+       data-key-slot="1"
+       data-keysym="Next"
+       x="2600"
+       y="595"
+       class="key label cap system"
+       id="text206"><![CDATA[Next ]]><title
+   id="title206">&lt;PGDN&gt; Next</title></text>
+  </g>
+  <g
+     data-row="5"
+     class="row label"
+     id="g226">
+    <text
+       data-key="LFSH"
+       data-key-slot="1"
+       data-keysym="Shift_L"
+       x="207"
+       y="770"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text207"><![CDATA[0 ]]><title
+   id="title207">&lt;LFSH&gt; Shift_L</title></text>
+    <text
+       data-key="AB01"
+       data-key-slot="2"
+       data-keysym="Z"
+       x="457"
+       y="735"
+       class="key label cap"
+       id="text208"><![CDATA[Z ]]><title
+   id="title208">&lt;AB01&gt; Z</title></text>
+    <text
+       data-key="AB02"
+       data-key-slot="2"
+       data-keysym="X"
+       x="632"
+       y="735"
+       class="key label cap"
+       id="text209"><![CDATA[X ]]><title
+   id="title209">&lt;AB02&gt; X</title></text>
+    <text
+       data-key="AB03"
+       data-key-slot="2"
+       data-keysym="C"
+       x="807"
+       y="735"
+       class="key label cap"
+       id="text210"><![CDATA[C ]]><title
+   id="title210">&lt;AB03&gt; C</title></text>
+    <text
+       data-key="AB04"
+       data-key-slot="2"
+       data-keysym="V"
+       x="982"
+       y="735"
+       class="key label cap"
+       id="text211"><![CDATA[V ]]><title
+   id="title211">&lt;AB04&gt; V</title></text>
+    <text
+       data-key="AB05"
+       data-key-slot="2"
+       data-keysym="B"
+       x="1157"
+       y="735"
+       class="key label cap"
+       id="text212"><![CDATA[B ]]><title
+   id="title212">&lt;AB05&gt; B</title></text>
+    <text
+       data-key="AB06"
+       data-key-slot="2"
+       data-keysym="N"
+       x="1332"
+       y="735"
+       class="key label cap"
+       id="text213"><![CDATA[N ]]><title
+   id="title213">&lt;AB06&gt; N</title></text>
+    <text
+       data-key="AB07"
+       data-key-slot="2"
+       data-keysym="M"
+       x="1507"
+       y="735"
+       class="key label cap"
+       id="text214"><![CDATA[M ]]><title
+   id="title214">&lt;AB07&gt; M</title></text>
+    <text
+       data-key="AB07"
+       data-key-slot="3"
+       data-keysym="KP_0"
+       x="1572"
+       y="805"
+       class="key label cap overlay"
+       id="text215"><![CDATA[0 ]]><title
+   id="title215">&lt;KP0&gt; KP_0</title></text>
+    <text
+       data-key="AB08"
+       data-key-slot="1"
+       data-keysym="comma"
+       x="1682"
+       y="805"
+       class="key label cap"
+       id="text216"><![CDATA[, ]]><title
+   id="title216">&lt;AB08&gt; comma</title></text>
+    <text
+       data-key="AB08"
+       data-key-slot="2"
+       data-keysym="less"
+       x="1682"
+       y="735"
+       class="key label cap"
+       id="text217"><![CDATA[< ]]><title
+   id="title217">&lt;AB08&gt; less</title></text>
+    <text
+       data-key="AB09"
+       data-key-slot="1"
+       data-keysym="period"
+       x="1857"
+       y="805"
+       class="key label cap"
+       id="text218"><![CDATA[. ]]><title
+   id="title218">&lt;AB09&gt; period</title></text>
+    <text
+       data-key="AB09"
+       data-key-slot="2"
+       data-keysym="greater"
+       x="1857"
+       y="735"
+       class="key label cap"
+       id="text219"><![CDATA[> ]]><title
+   id="title219">&lt;AB09&gt; greater</title></text>
+    <text
+       data-key="AB09"
+       data-key-slot="3"
+       data-keysym="KP_Decimal"
+       x="1922"
+       y="805"
+       class="key label cap overlay"
+       id="text220"><![CDATA[. ]]><title
+   id="title220">&lt;KPDL&gt; KP_Decimal</title></text>
+    <text
+       data-key="AB10"
+       data-key-slot="1"
+       data-keysym="slash"
+       x="2032"
+       y="805"
+       class="key label cap"
+       id="text221"><![CDATA[/ ]]><title
+   id="title221">&lt;AB10&gt; slash</title></text>
+    <text
+       data-key="AB10"
+       data-key-slot="2"
+       data-keysym="question"
+       x="2032"
+       y="735"
+       class="key label cap"
+       id="text222"><![CDATA[? ]]><title
+   id="title222">&lt;AB10&gt; question</title></text>
+    <text
+       data-key="AB10"
+       data-key-slot="3"
+       data-keysym="KP_Add"
+       x="2097"
+       y="805"
+       class="key label cap overlay"
+       id="text223"><![CDATA[+ ]]><title
+   id="title223">&lt;KPAD&gt; KP_Add</title></text>
+    <text
+       data-key="RTSH"
+       data-key-slot="1"
+       data-keysym="Shift_R"
+       x="2260"
+       y="770"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text224"><![CDATA[0 ]]><title
+   id="title224">&lt;RTSH&gt; Shift_R</title></text>
+    <text
+       data-key="UP"
+       data-key-slot="1"
+       data-keysym="Up"
+       x="2445"
+       y="770"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text225"><![CDATA[U ]]><title
+   id="title225">&lt;UP&gt; Up</title></text>
+    <text
+       data-key="END"
+       data-key-slot="1"
+       data-keysym="End"
+       x="2600"
+       y="770"
+       class="key label cap system"
+       id="text226"><![CDATA[End ]]><title
+   id="title226">&lt;END&gt; End</title></text>
+  </g>
+  <g
+     data-row="6"
+     class="row label"
+     id="g236">
+    <text
+       data-key="LCTL"
+       data-key-slot="1"
+       data-keysym="Control_L"
+       x="140"
+       y="945"
+       class="key label cap system"
+       id="text227"><![CDATA[Control ]]><title
+   id="title227">&lt;LCTL&gt; Control_L</title></text>
+    <text
+       data-key="I472"
+       data-key-slot="1"
+       data-keysym=""
+       x="355"
+       y="945"
+       class="key label cap system fn"
+       id="text228"><![CDATA[Fn ]]><title
+   id="title228">&lt;I472&gt;</title></text>
+    <text
+       data-key="LWIN"
+       data-key-slot="1"
+       data-keysym="Super_L"
+       x="530"
+       y="945"
+       class="key label cap system"
+       id="text229"><![CDATA[❖ ]]><title
+   id="title229">&lt;LWIN&gt; Super_L</title></text>
+    <text
+       data-key="LALT"
+       data-key-slot="1"
+       data-keysym="Alt_L"
+       x="705"
+       y="945"
+       class="key label cap system"
+       id="text229bis"><![CDATA[Alt ]]><title
+   id="title229bis">&lt;LALT&gt; Alt_L</title></text>
+    <text
+       data-key="SPCE"
+       data-key-slot="1"
+       data-keysym="space"
+       x="1239"
+       y="945"
+       class="key label cap system"
+       id="text230"><![CDATA[space ]]><title
+   id="title230">&lt;SPCE&gt; space</title></text>
+    <text
+       data-key="RALT"
+       data-key-slot="1"
+       data-keysym="Alt_R"
+       x="1773"
+       y="945"
+       class="key label cap system"
+       id="text231"><![CDATA[Alt ]]><title
+   id="title231">&lt;RALT&gt; Alt_R</title></text>
+    <text
+       data-key="RWIN"
+       data-key-slot="1"
+       data-keysym="Super_R"
+       x="1948"
+       y="945"
+       class="key label cap system"
+       id="text232"><![CDATA[❖ ]]><title
+   id="title232">&lt;RWIN&gt; Super_R</title></text>
+    <text
+       data-key="RCTL"
+       data-key-slot="1"
+       data-keysym="Control_R"
+       x="2123"
+       y="945"
+       class="key label cap system"
+       id="text233"><![CDATA[Control ]]><title
+   id="title233">&lt;RCTL&gt; Control_R</title></text>
+    <text
+       data-key="LEFT"
+       data-key-slot="1"
+       data-keysym="Left"
+       x="2288"
+       y="945"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text234"><![CDATA[W ]]><title
+   id="title234">&lt;LEFT&gt; Left</title></text>
+    <text
+       data-key="DOWN"
+       data-key-slot="1"
+       data-keysym="Down"
+       x="2443"
+       y="945"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text235"><![CDATA[V ]]><title
+   id="title235">&lt;DOWN&gt; Down</title></text>
+    <text
+       data-key="RGHT"
+       data-key-slot="1"
+       data-keysym="Right"
+       x="2598"
+       y="945"
+       class="key label cap system"
+       style="font-family:IsoKeyCaps"
+       id="text236"><![CDATA[X ]]><title
+   id="title236">&lt;RGHT&gt; Right</title></text>
+  </g>
+</g>
+</svg>

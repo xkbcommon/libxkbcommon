@@ -1523,6 +1523,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/diagrams/xkb-configuration.dot',
         'doc/diagrams/xkb-keymap-components.dot',
         'doc/diagrams/xkb-types-explanation.dot',
+        'doc/img/numeric-keypad-overlay.svg',
         'doc/doxygen-extra.css',
         'doc/faq.md',
         'doc/introduction-to-xkb.md',
