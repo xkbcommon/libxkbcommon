@@ -265,11 +265,15 @@ print_layouts(struct xkb_state *state, enum xkb_state_component changed,
                    (k == 0) ? 0 : (unsigned int) sizeof(label) - 1, "",
                    changed_indicator, types[k].label,
                    types[k].padding, "", layout);
-            if (types[k].component == XKB_STATE_LAYOUT_LOCKED ||
-                types[k].component == XKB_STATE_LAYOUT_EFFECTIVE)
-                printf(" \"%s\"\n", xkb_keymap_layout_get_name(keymap, layout));
-            else
+            const char * const layout_name =
+                xkb_keymap_layout_get_name(keymap, layout);
+            if (layout_name &&
+                (types[k].component == XKB_STATE_LAYOUT_LOCKED ||
+                 types[k].component == XKB_STATE_LAYOUT_EFFECTIVE)) {
+                printf(" \"%s\"\n", layout_name);
+            } else {
                 printf("\n");
+            }
         }
     } else if (changed) {
         for (unsigned int k = 0; k < ARRAY_SIZE(types); k++) {
@@ -283,14 +287,16 @@ print_layouts(struct xkb_state *state, enum xkb_state_component changed,
     if (keycode != XKB_KEYCODE_INVALID) {
         const xkb_layout_index_t layout =
             xkb_state_key_get_layout(state, keycode);
+        const char * const layout_name =
+            xkb_keymap_layout_get_name(keymap, layout);
         if (verbose) {
             printf("%*s%skey:       %"PRIu32" \"%s\"\n",
                    (unsigned int) sizeof(label) - 1, "",
                    (changed ? " " : ""),
-                   layout, xkb_keymap_layout_get_name(keymap, layout));
+                   layout, (layout_name ? layout_name : "(no name)"));
         } else {
             printf(INDENT "layout: %"PRIu32"  \"%s\"\n",
-                   layout, xkb_keymap_layout_get_name(keymap, layout));
+                   layout, (layout_name ? layout_name : "(no name)"));
         }
     }
 }
@@ -581,8 +587,10 @@ tools_print_one_liner_keycode_state(const char *prefix,
 
     const xkb_layout_index_t layout = xkb_state_key_get_layout(state, keycode);
     if (options & PRINT_LAYOUT) {
+        const char * const layout_name =
+            xkb_keymap_layout_get_name(keymap, layout);
         printf("layout [ #%"PRIu32" %s ] ",
-               layout, xkb_keymap_layout_get_name(keymap, layout));
+               layout, (layout_name ? layout_name : "(no name)"));
     }
 
     printf("level [ %"PRIu32" ] ",
