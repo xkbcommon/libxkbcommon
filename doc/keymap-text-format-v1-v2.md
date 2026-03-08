@@ -2128,26 +2128,111 @@ of record of the `xkb_symbols` section. The possible keycodes are defined in the
 A key description consists of:
 
 <dl>
-    <dt>Groups</dt>
-    <dd>
-        Each key may have one or more associated [groups]. Each group can be
-        configured with the following parameters:
+<dt>Groups</dt>
+<dd>
+Each key may have one or more associated [groups]. Each group can be
+configured with the following parameters:
 
-        - @ref key-type-setting "Type"</dt>
-        - @ref key-symbols-table "Symbols"</dt>
-        - @ref key-actions-table "Actions"</dt>
-    </dd>
-    <dt>Additional attributes</dt>
-    <dd>
-        These attributes are usually set via the <code>[xkb_compat]</code>
-        section, but may be also set directly:
+- @ref key-type-setting "Type"</dt>
+- @ref key-symbols-table "Symbols"</dt>
+- @ref key-actions-table "Actions"</dt>
+</dd>
 
-        - @ref key-virtual-modifiers "Virtual modifiers"
-        - @ref key-repeat "Repeat"
-        - group wrap control
-          @todo `groupsWrap`, `groupsClamp`, `groupsRedirect`
-          <!-- TODO: doc about special values First/Last -->
-    </dd>
+<dt>Key behavior @anchor key-behaviors</dt>
+<dd>
+[*Key behavior*][Key behaviors] enables to *alter the key events processing*
+before running the actions filters. Key behavior is independent of keyboard
+modifier or group state.
+
+Each key has exactly *one* behavior, described hereinafter.
+
+Key behaviors are used to *simulate* any of these types of keys.
+
+@note @anchor key-behavior-permanent All the parameters presented hereinafter
+can be optionally *prefixed* by `permanent` to indicate an *unmodifiable*
+physical, electrical or software driver characteristic of a key.
+@note The `permanent` flag indicates a characteristic of the underlying system
+that libxkbcommon cannot affect, so libxkbcommon treats all permanent behaviors
+as if they were [*default*](@ref key-behavior-default) and *ignore* the
+corresponding parameters.
+<!-- blank required by Doxygen -->
+
+<dl>
+<dt>Default @anchor key-behavior-default</dt>
+<dd>
+Press and release events are processed normally.
+</dd>
+<dt>Overlays @anchor key-behavior-overlay</dt>
+<dd>
+A *keyboard overlay* allows some subset of the keyboard to report *alternate keycodes*
+when the corresponding overlay control is
+enabled.
+
+For example a keyboard overlay can be used to *simulate* a numeric or editing
+keypad on keyboard that does not actually have one. This technique is very
+common on laptop computers and embedded systems with small keyboards, see
+an example hereinafter.
+
+@figure
+@figcaption
+Numeric keypad hardware overlay example.<br/>
+The keys with a thick border and a blue background can be overlaid by using the
+`Fn` key. When the overlay is enabled, they produce alternative *numeric keypad*
+keycodes corresponding to their bottom-right label. E.g.:
+- the key `<AD07>` and labelled `U` produces the keycode `<KP4>` (numpad `4`),
+- the key `<AD10>` and labelled `P` produces the keycode `<KPMU>` (numpad multiplication).
+@endfigcaption
+@image html numeric-keypad-overlay.svg width=100%
+@endfigure
+
+@warning libxkbcommon support only *parsing* keyboard overlays.
+
+[Key behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Behavior
+[keyboard controls]: @ref xkb_keyboard_control_flags
+[keymap formats]: @ref xkb_keymap_format
+<!-- blank required by Doxygen -->
+
+</dd>
+<dt>Lock @anchor key-behavior-lock</dt>
+<dd>
+@warning Only parsing is supported
+
+- `locks` / `locking`: boolean
+
+<!-- TODO: lock (for posterity) -->
+@todo See [Key behaviors] for a complete description
+<!-- blank required by Doxygen -->
+
+</dd>
+<dt>Radio groups @anchor key-behavior-radio-groups</dt>
+<dd>
+@warning Only parsing is supported
+
+- `radiogroup`: positive integer
+- `allownone`: boolean
+
+<!-- TODO: radio groups (for posterity) -->
+@todo See [Key behaviors] for a complete description
+<!-- blank required by Doxygen -->
+
+</dd>
+</dl>
+</dd>
+
+<dt>Additional attributes</dt>
+<dd>
+These attributes are usually set via the <code>[xkb_compat]</code>
+section, but may be also set directly:
+
+- @ref key-virtual-modifiers "Virtual modifiers"
+- @ref key-repeat "Repeat"
+- group wrap control
+
+@todo `groupsWrap`, `groupsClamp`, `groupsRedirect`
+<!-- TODO: doc about special values First/Last -->
+<!-- blank required by Doxygen -->
+
+</dd>
 </dl>
 
 @warning Using multiple groups in *symbols* files is not recommended, because
@@ -3953,7 +4038,7 @@ and validated but have no effect. This allows to use keymaps defined in
 Move the mouse pointer
 
 @todo MovePointer parameters
-<!-- blank required by Doxgen -->
+<!-- blank required by Doxygen -->
 
 </dd>
 
@@ -3963,7 +4048,7 @@ Move the mouse pointer
 Simulate a mouse button press
 
 @todo PointerButton parameters
-<!-- blank required by Doxgen -->
+<!-- blank required by Doxygen -->
 
 </dd>
 
@@ -3975,7 +4060,7 @@ Simulate a mouse button press
 Simulate a mouse button press, locked until this actiion’s key is pressed again
 
 @todo LockPointerButton parameters
-<!-- blank required by Doxgen -->
+<!-- blank required by Doxygen -->
 
 </dd>
 
@@ -3985,7 +4070,7 @@ Simulate a mouse button press, locked until this actiion’s key is pressed agai
 Set the default select button (???)
 
 @todo SetPointerDefault parameters
-<!-- blank required by Doxgen -->
+<!-- blank required by Doxygen -->
 
 <dd>
 </dl>
