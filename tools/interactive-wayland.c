@@ -967,7 +967,7 @@ usage(FILE *fp, char *progname)
                 "                       Default: false.\n"
                 "    --controls [<CONTROLS>]\n"
                 "                       use the given keyboard controls; available values are:\n"
-                "                       sticky-keys, latch-to-lock and latch-simultaneous.\n"
+                "                       sticky-keys, latch-to-lock, latch-simultaneous and overlay{1-8}.\n"
                 "                       It implies --local-state and --legacy-state-api=false.\n"
                 "    --modifiers-mapping <MAPPING>\n"
                 "                       use the given modifiers mapping.\n"

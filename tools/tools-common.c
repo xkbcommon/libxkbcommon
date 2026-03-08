@@ -336,17 +336,25 @@ print_controls(struct xkb_state *state, bool verbose) {
         { CONTROL_AX_TIMEOUT, "ax-timeout" },
         { CONTROL_AX_FEEDBACK, "ax-feedback" },
         { CONTROL_BELL, "bell" },
+        { CONTROL_OVERLAY1, "overlay1" },
+        { CONTROL_OVERLAY2, "overlay2" },
         { CONTROL_IGNORE_GROUP_LOCK, "ignore-group-lock" },
+        { CONTROL_OVERLAY3, "overlay3" },
+        { CONTROL_OVERLAY4, "overlay4" },
+        { CONTROL_OVERLAY5, "overlay5" },
+        { CONTROL_OVERLAY6, "overlay6" },
+        { CONTROL_OVERLAY7, "overlay7" },
+        { CONTROL_OVERLAY8, "overlay8" },
     };
     static_assert(
-        (CONTROL_ALL_BOOLEAN &
-         ~(CONTROL_OVERLAY1 | CONTROL_OVERLAY2 | CONTROL_OVERLAY3 |
-           CONTROL_OVERLAY4 | CONTROL_OVERLAY5 | CONTROL_OVERLAY6 |
-           CONTROL_OVERLAY7 | CONTROL_OVERLAY8)) ==
+        CONTROL_ALL_BOOLEAN ==
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE |
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL |
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK |
-         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
+         CONTROL_BELL | CONTROL_OVERLAY1 | CONTROL_OVERLAY2 |
+         CONTROL_IGNORE_GROUP_LOCK |
+         CONTROL_OVERLAY3 | CONTROL_OVERLAY4 | CONTROL_OVERLAY5 |
+         CONTROL_OVERLAY6 | CONTROL_OVERLAY7 | CONTROL_OVERLAY8),
         "missing controls names"
     );
 
@@ -953,13 +961,29 @@ tools_parse_controls(const char *raw, struct xkb_state_machine_options *options,
         return true;
 
     enum control_field {
-        CONTROL_FIELD_STICKY_KEYS = 0,
+        CONTROL_FIELD_OVERLAY1 = 0,
+        CONTROL_FIELD_OVERLAY2,
+        CONTROL_FIELD_OVERLAY3,
+        CONTROL_FIELD_OVERLAY4,
+        CONTROL_FIELD_OVERLAY5,
+        CONTROL_FIELD_OVERLAY6,
+        CONTROL_FIELD_OVERLAY7,
+        CONTROL_FIELD_OVERLAY8,
+        CONTROL_FIELD_STICKY_KEYS,
         CONTROL_FIELD_LATCH_TO_LOCK,
         CONTROL_FIELD_LATCH_SIMULTANEOUS,
         _NUM_CONTROL_FIELDS,
     };
 
     static const char * fields[] = {
+        [CONTROL_FIELD_OVERLAY1] = "overlay1",
+        [CONTROL_FIELD_OVERLAY2] = "overlay2",
+        [CONTROL_FIELD_OVERLAY3] = "overlay3",
+        [CONTROL_FIELD_OVERLAY4] = "overlay4",
+        [CONTROL_FIELD_OVERLAY5] = "overlay5",
+        [CONTROL_FIELD_OVERLAY6] = "overlay6",
+        [CONTROL_FIELD_OVERLAY7] = "overlay7",
+        [CONTROL_FIELD_OVERLAY8] = "overlay8",
         [CONTROL_FIELD_STICKY_KEYS] = "sticky-keys",
         [CONTROL_FIELD_LATCH_TO_LOCK] = "latch-to-lock",
         [CONTROL_FIELD_LATCH_SIMULTANEOUS]= "latch-simultaneous",
@@ -1004,6 +1028,38 @@ tools_parse_controls(const char *raw, struct xkb_state_machine_options *options,
             ok = true;
 
             switch (type) {
+            case CONTROL_FIELD_OVERLAY1:
+            case CONTROL_FIELD_OVERLAY2: {
+                static_assert(CONTROL_FIELD_OVERLAY1 == 0, "");
+                static_assert(XKB_KEYBOARD_CONTROL_OVERLAY2 ==
+                              (XKB_KEYBOARD_CONTROL_OVERLAY1 << 1), "");
+                const enum xkb_keyboard_control_flags flag =
+                    XKB_KEYBOARD_CONTROL_OVERLAY1 << type;
+                if (disable)
+                    *controls_values &= ~flag;
+                else
+                    *controls_values |= flag;
+                *controls_affect |= flag;
+                break;
+            }
+            case CONTROL_FIELD_OVERLAY3:
+            case CONTROL_FIELD_OVERLAY4:
+            case CONTROL_FIELD_OVERLAY5:
+            case CONTROL_FIELD_OVERLAY6:
+            case CONTROL_FIELD_OVERLAY7:
+            case CONTROL_FIELD_OVERLAY8: {
+                static_assert(CONTROL_FIELD_OVERLAY3 == 2, "");
+                static_assert(XKB_KEYBOARD_CONTROL_OVERLAY4 ==
+                              (XKB_KEYBOARD_CONTROL_OVERLAY3 << 1), "");
+                const enum xkb_keyboard_control_flags flag =
+                    XKB_KEYBOARD_CONTROL_OVERLAY3 << (type - CONTROL_FIELD_OVERLAY3);
+                if (disable)
+                    *controls_values &= ~flag;
+                else
+                    *controls_values |= flag;
+                *controls_affect |= flag;
+                break;
+            }
             case CONTROL_FIELD_STICKY_KEYS:
                 if (disable)
                     *controls_values &= ~XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
@@ -1026,7 +1082,7 @@ tools_parse_controls(const char *raw, struct xkb_state_machine_options *options,
             default:
                 {} /* Label followed by declaration requires C23 */
                 static_assert(
-                    CONTROL_FIELD_LATCH_SIMULTANEOUS == 2 &&
+                    CONTROL_FIELD_LATCH_SIMULTANEOUS == 10 &&
                     CONTROL_FIELD_LATCH_SIMULTANEOUS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );
