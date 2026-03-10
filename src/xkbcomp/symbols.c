@@ -53,8 +53,8 @@ enum key_field {
 };
 
 typedef struct {
-    enum group_field defined;
     darray(struct xkb_level) levels;
+    enum group_field defined;
     xkb_atom_t type;
 } GroupInfo;
 
@@ -69,8 +69,6 @@ typedef struct {
 
     xkb_atom_t name;
 
-    darray(GroupInfo) groups;
-
     enum key_repeat repeat;
     xkb_mod_mask_t vmodmap;
     xkb_atom_t default_type;
@@ -79,6 +77,7 @@ typedef struct {
         out_of_range_group_policy:(XKB_OUT_OF_RANGE_LAYOUT_POLICY_WIDTH - 1);
     bool out_of_range_pending_group:1;
     xkb_layout_index_t out_of_range_group_number;
+    darray(GroupInfo) groups;
 } KeyInfo;
 
 static void
@@ -179,6 +178,7 @@ typedef struct {
     int errorCount;
     unsigned int include_depth;
     xkb_layout_index_t explicit_group;
+    xkb_layout_index_t max_groups;
     darray(KeyInfo) keys;
     KeyInfo default_key;
     ActionsInfo default_actions;
@@ -186,7 +186,6 @@ typedef struct {
     darray(ModMapEntry) modmaps;
     struct xkb_mod_set mods;
 
-    xkb_layout_index_t max_groups;
     struct xkb_context *ctx;
     /* Needed for AddKeySymbols and parsing actions */
     const struct xkb_keymap_info *keymap_info;

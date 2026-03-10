@@ -283,9 +283,9 @@ typedef struct {
 typedef struct {
     ParseCommon common;
     enum merge_mode merge;
+    bool virtual;
     int64_t ndx;
     ExprDef *name;
-    bool virtual;
 } LedNameDef;
 
 typedef struct {
@@ -313,8 +313,8 @@ enum xkb_map_flags {
 
 typedef struct {
     ParseCommon common;
-    enum xkb_file_type file_type;
     char *name;
     ParseCommon *defs;
+    enum xkb_file_type file_type;
     enum xkb_map_flags flags;
 } XkbFile;
