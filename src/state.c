@@ -48,12 +48,12 @@ struct xkb_event_iterator {
 struct xkb_filter {
     union xkb_action action;
     const struct xkb_key *key;
-    uint32_t priv;
     bool (*func)(struct xkb_state *state,
                  struct xkb_event_iterator *events,
                  struct xkb_filter *filter,
                  const struct xkb_key *key,
                  enum xkb_key_direction direction);
+    uint32_t priv;
     int refcnt;
 };
 

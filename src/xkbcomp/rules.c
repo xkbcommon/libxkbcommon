@@ -267,8 +267,8 @@ enum wildcard_match_type {
 struct rule {
     struct sval mlvo_value_at_pos[_MLVO_NUM_ENTRIES];
     enum mlvo_match_type match_type_at_pos[_MLVO_NUM_ENTRIES];
-    mlvo_index_t num_mlvo_values;
     struct sval kccgst_value_at_pos[_KCCGST_NUM_ENTRIES];
+    mlvo_index_t num_mlvo_values;
     kccgst_index_t num_kccgst_values;
     bool skip;
 };
