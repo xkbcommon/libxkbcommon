@@ -211,6 +211,9 @@ typedef uint8_t xkb_overlay_index_t;
 #define XKB_OVERLAY_MAX 2
 #define XKB_OVERLAY_INVALID (UINT8_MAX)
 static_assert(XKB_OVERLAY_MAX < XKB_OVERLAY_INVALID, "");
+enum { XKB_OVERLAY_INDEX_MIN_WIDTH = 2 };
+static_assert(XKB_OVERLAY_MAX <= (1u << XKB_OVERLAY_INDEX_MIN_WIDTH) - 1,
+              "");
 
 /** Keyboard overlay mask */
 typedef uint8_t xkb_overlay_mask_t;
@@ -476,20 +479,37 @@ struct xkb_key {
     xkb_mod_mask_t vmodmap;
 
     xkb_overlay_mask_t overlays;
+    bool overlays_inline:1;
 
     bool repeats:1;
     /** Flag that indicates whether some group has implicit actions */
     bool implicit_actions:1;
 
     bool out_of_range_pending_group:1;
-    enum xkb_out_of_range_layout_policy out_of_range_group_policy:5;
+    enum xkb_out_of_range_layout_policy out_of_range_group_policy:4;
     xkb_layout_index_t out_of_range_group_number:8;
 
     xkb_layout_index_t num_groups:8;
     struct xkb_group *groups ATTR_COUNTED_BY(num_groups);
-
-    /** Target overlay key or NULL if no overlay is set */
-    const struct xkb_key *overlay_key;
+    /**
+     * Target overlays keys, if any.
+     *
+     * For 0 or 1 elements storage is inline in the struct; for 2 or more a
+     * heap sparse array is used.
+     */
+    union {
+        /** Inlined if at most one overlay is set (overlays_inline = true) */
+        const struct xkb_key *overlay_key;
+        /**
+         * Allocated if 2 or more overlays are defined (overlays_inline = false).
+         *
+         * A sparse array maps the set of sparse overlay indices in field
+         * `overlays` to contiguously stored values. Values are stored in
+         * ascending overlay order, and a value’s position in storage equals the
+         * popcount of all mask bits strictly below its overlay — its rank.
+         */
+        const struct xkb_key **overlays_keys;
+    };
 };
 
 struct xkb_mod {
@@ -884,6 +904,13 @@ isGroupLockOnReleaseSupported(enum xkb_keymap_format format)
 
 static inline bool
 isModsLatchOnPressSupported(enum xkb_keymap_format format)
+{
+    /* Lax bound */
+    return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
+}
+
+static inline bool
+areOverlappingOverlaysSupported(enum xkb_keymap_format format)
 {
     /* Lax bound */
     return format >= XKB_KEYMAP_FORMAT_TEXT_V2;

@@ -811,6 +811,8 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                 isModsUnLockOnPressSupported(keymap->format),
             .mods_latch_on_press =
                 isModsLatchOnPressSupported(keymap->format),
+            .overlapping_overlays =
+                areOverlappingOverlaysSupported(keymap->format),
         },
         /*
          * NOTE: `first` and `last` group constants are never used for

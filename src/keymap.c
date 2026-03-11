@@ -69,6 +69,9 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
                 }
                 free(key->groups);
             }
+            if (!key->overlays_inline && key->overlays_keys) {
+                free((void *)key->overlays_keys);
+            }
         }
         free(keymap->keys);
     }
