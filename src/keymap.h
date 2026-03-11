@@ -148,6 +148,8 @@ enum xkb_action_controls {
     CONTROL_AX_TIMEOUT = (1 << 7),
     CONTROL_AX_FEEDBACK = (1 << 8),
     CONTROL_BELL = (1 << 9),
+    CONTROL_OVERLAY1 = (1 << 10),
+    CONTROL_OVERLAY2 = (1 << 11),
     CONTROL_IGNORE_GROUP_LOCK = (1 << 12),
 
     /* Non-X11 encoding */
@@ -161,13 +163,15 @@ enum xkb_action_controls {
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
-         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK | CONTROL_GROUPS_WRAP),
+         CONTROL_BELL | CONTROL_OVERLAY1 | CONTROL_OVERLAY2 |
+         CONTROL_IGNORE_GROUP_LOCK | CONTROL_GROUPS_WRAP),
     /* All the boolean controls */
     CONTROL_ALL_BOOLEAN = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
-         CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK)
+         CONTROL_BELL | CONTROL_OVERLAY1 | CONTROL_OVERLAY2 | \
+         CONTROL_IGNORE_GROUP_LOCK),
 };
 
 static_assert(
@@ -213,6 +217,10 @@ typedef uint8_t xkb_overlay_mask_t;
 /** Mask of all valid overlays */
 #define XKB_OVERLAY_ALL 0x3
 static_assert(XKB_OVERLAY_ALL == ((UINT16_C(1) << XKB_OVERLAY_MAX) - 1), "");
+/** Offset in the controls mask */
+#define XKB_OVERLAY1_CONTROLS_OFFSET 10
+static_assert((UINT32_C(1) << XKB_OVERLAY1_CONTROLS_OFFSET) ==
+              CONTROL_OVERLAY1, "");
 
 struct xkb_controls_action {
     enum xkb_action_type type;

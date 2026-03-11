@@ -339,10 +339,11 @@ print_controls(struct xkb_state *state, bool verbose) {
         { CONTROL_IGNORE_GROUP_LOCK, "ignore-group-lock" },
     };
     static_assert(
-        CONTROL_ALL_BOOLEAN ==
-        (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
-         CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
-         CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
+        (CONTROL_ALL_BOOLEAN &
+         ~(CONTROL_OVERLAY1 | CONTROL_OVERLAY2)) ==
+        (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE |
+         CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL |
+         CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK |
          CONTROL_BELL | CONTROL_IGNORE_GROUP_LOCK),
         "missing controls names"
     );
