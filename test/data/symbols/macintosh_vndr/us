@@ -59,7 +59,7 @@ default xkb_symbols "extended" {
     key <SPCE> {	[  space			]	};
 
     include "eurosign(e)"
-    include "keypad(overlay)"
+    include "keypad(x11)"
 
     key <KPEQ> {	[  equal			]	};
 };

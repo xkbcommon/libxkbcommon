@@ -9,10 +9,11 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcomp-priv.h"
+#include "expr.h"
+#include "keymap.h"
+#include "keysym.h"
 #include "messages-codes.h"
 #include "text.h"
-#include "expr.h"
-#include "keysym.h"
 #include "xkbcomp/ast.h"
 #include "utils.h"
 #include "utils-numbers.h"
