@@ -1,0 +1,58 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<1>                  = 10;
+	<2>                  = 11;
+	<3>                  = 12;
+	<4>                  = 13;
+	<j>                  = 44;
+	<f1>                 = 67;
+	<f10>                = 76;
+	<kp1>                = 87;
+	<left>               = 113;
+};
+
+xkb_types {
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		action= NoAction();
+	};
+};
+
+xkb_symbols {
+	key <1>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ LockControls(controls=Overlay1) ]
+	};
+	key <2>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [ LockControls(controls=Overlay2) ]
+	};
+	key <3>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [    LockControls(controls=none) ]
+	};
+	key <4>                  {
+		repeat= No,
+		symbols[1]= [                       NoSymbol ],
+		actions[1]= [    LockControls(controls=none) ]
+	};
+	key <j>                  {	[               j ] };
+	key <f1>                 {	[              F1 ] };
+	key <f10>                {	[             F10 ] };
+	key <kp1>                {	[            KP_1 ] };
+	key <left>               {	[            Left ] };
+};
+
+};

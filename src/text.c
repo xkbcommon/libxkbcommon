@@ -52,10 +52,10 @@ const LookupEntry ctrlMaskNames[] = {
     { "AccessXFeedback", CONTROL_AX_FEEDBACK },
     { "AudibleBell", CONTROL_BELL },
     { "IgnoreGroupLock", CONTROL_IGNORE_GROUP_LOCK },
+    { "Overlay1", CONTROL_OVERLAY1 },
+    { "Overlay2", CONTROL_OVERLAY2 },
     { "all", CONTROL_ALL_BOOLEAN },
     { "none", 0 },
-    { "Overlay1", 0 },
-    { "Overlay2", 0 },
     { NULL, 0 }
 };
 

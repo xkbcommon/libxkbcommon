@@ -2822,6 +2822,40 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
             .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
             .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
         },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <1>    = 10;\n"
+                "    <2>    = 11;\n"
+                "    <3>    = 12;\n"
+                "    <4>    = 13;\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <f1>   = 67;\n"
+                "    <f10>  = 76;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <1>    { [LockControls(controls=Overlay1)] };\n"
+                "    key <2>    { [LockControls(controls=Overlay2)] };\n"
+                "    key <3>    { [LockControls(controls=none)] };\n"
+                "    key <4>    { [LockControls(controls=none)] };\n"
+                /* V1 will discard overlay2 */
+                "    key <j>    { [j] };\n"
+                "    key <kp1>  { [KP_1], overlay1 = none };\n"
+                "    key <left> { [Left], overlay1 = <kp1> };\n"
+                "    key <left> { overlay1 = none };\n"
+                "    key <f1>   { [F1]   };\n"
+                "    key <f10>  { [F10]  };\n"
+                "  };\n"
+                "};",
+            .lenient = true,
+            .expected_v1_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
+            .expected_v1_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
+        },
         /* Alternate array syntax is not supported (yet) */
         {
             .keymap =
