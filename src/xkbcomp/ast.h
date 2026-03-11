@@ -91,6 +91,9 @@ enum merge_mode {
     MERGE_REPLACE,
     _MERGE_MODE_NUM_ENTRIES,
 };
+enum { MERGE_MODE_MIN_WIDTH = 3 /* 2 bits + sign */ };
+static_assert(_MERGE_MODE_NUM_ENTRIES - 1 <= (1 << (MERGE_MODE_MIN_WIDTH - 1)) - 1,
+              "Cannot encode merge mode");
 
 const char *
 xkb_file_type_to_string(enum xkb_file_type type);

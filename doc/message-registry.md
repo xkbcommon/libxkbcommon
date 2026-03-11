@@ -87,7 +87,7 @@ There are currently 78 entries.
 | [XKB-893] | `conflicting-key-type-merging-groups` | Warn if there are conflicting key types while merging groups | Warning |
 | [XKB-901] | `conflicting-key-symbols-entry` | Conflicting symbols entry for a key | Error |
 | [XKB-903] | `missing-symbols-group-name-index` | Missing group index in a group name entry | Warning |
-| [XKB-935] | `conflicting-key-fields` | Warn if there are conflicting fields while merging keys | Warning |
+| [XKB-935] | `conflicting-key-fields` | Warn if there are conflicting fields in the key definition or while merging keys | Warning |
 | [XKB-949] | `invalid-identifier` | An identifier is used but is not built-in | Error |
 | [XKB-965] | `unresolved-keymap-symbol` | Warn if using a symbol not defined in the keymap | Warning |
 | [XKB-967] | `invalid-rules-syntax` | The rules syntax is invalid and the file cannot be parsed | Error |
@@ -434,6 +434,13 @@ as numbers and as identifiers `LevelN`, where `N` is in the range (1..8).
   <dt>Type</dt><dd>Error</dd>
   <dt>Summary</dt><dd>Overlapping overlays are not supported</dd>
 </dl>
+
+[Overlays] must be *disjoint* in target keymap format: a key can have
+*at most one* overlay. See “[overlapping overlay]” for further information.
+
+[Overlays]: @ref key-behavior-overlay
+[overlapping overlay]: @ref overlapping-overlays
+
 
 ### XKB-362 – Unsupported legacy action {#XKB-362}
 
@@ -931,7 +938,7 @@ See @ref key-actions "" for the list of supported actions.
 <dl>
   <dt>Since</dt><dd>1.0.0</dd>
   <dt>Type</dt><dd>Warning</dd>
-  <dt>Summary</dt><dd>Warn if there are conflicting fields while merging keys</dd>
+  <dt>Summary</dt><dd>Warn if there are conflicting fields in the key definition or while merging keys</dd>
 </dl>
 
 ### XKB-949 – Invalid identifier {#XKB-949}

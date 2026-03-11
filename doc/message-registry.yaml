@@ -241,6 +241,12 @@
   added: 1.14.0
   type: error
   description: "Overlapping overlays are not supported"
+  details: |
+    [Overlays] must be *disjoint* in target keymap format: a key can have
+    *at most one* overlay. See “[overlapping overlay]” for further information.
+
+    [Overlays]: @ref key-behavior-overlay
+    [overlapping overlay]: @ref overlapping-overlays
 - id: "unsupported-legacy-action"
   code: 362
   added: 1.10.0
@@ -564,7 +570,7 @@
   code: 935
   added: ALWAYS
   type: warning
-  description: "Warn if there are conflicting fields while merging keys"
+  description: "Warn if there are conflicting fields in the key definition or while merging keys"
 - id: "invalid-identifier"
   code: 949
   added: ALWAYS

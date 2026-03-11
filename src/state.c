@@ -2630,8 +2630,8 @@ cmp_mod_masks(const void *a, const void *b)
         return -1; /* m2 is a subset of m1 */
 
     /* Compare active modifiers numbers */
-    const int count1 = popcount32(m1);
-    const int count2 = popcount32(m2);
+    const unsigned int count1 = popcount32(m1);
+    const unsigned int count2 = popcount32(m2);
     if (count1 > count2)
         return -1;
     if (count1 < count2)

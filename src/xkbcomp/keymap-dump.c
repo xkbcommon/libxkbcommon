@@ -1421,33 +1421,69 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
 
     if (key->overlays) {
-        const xkb_overlay_index_t overlay = popcount32(key->overlays - 1u);
-        const xkb_atom_t overlay_key_name = (substitutions == NULL)
-            ? key->overlay_keys[0].name
-            : substitute_name(substitutions, key->overlay_keys[0].name);
-        write_buf(buf, "\n\t\toverlay%u= %s,",
-                  overlay + 1, KeyNameText(keymap->ctx, overlay_key_name));
-        simple = false;
+        xkb_overlay_mask_t remaining = key->overlays;
+        const struct xkb_key * const *overlays_keys = (key->overlays_inline)
+                                                    ? &key->overlay_key
+                                                    : key->overlays_keys;
+        if (!key->overlays_inline && !areOverlappingOverlaysSupported(format)) {
+            /* isolate lowest set bit */
+            const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
+                remaining &
+                (xkb_overlay_mask_t)(~remaining + 1u)
+            );
+            /* get its index */
+            const xkb_overlay_index_t overlay =
+                (xkb_overlay_index_t)popcount32(lsb - 1u);
+            log_warn(keymap->ctx, XKB_ERROR_OVERLAPPING_OVERLAY,
+                     "Overlapping overlays in %s require using "
+                     "keymap format >= v2; "
+                     "keep overlay %u and discard overlays 0x%x\n",
+                     KeyNameText(keymap->ctx, name), overlay, remaining & ~lsb);
+            remaining = lsb;
+        }
+
+        if (remaining)
+            simple = false;
+
+        while (remaining) {
+            /* isolate lowest set bit */
+            const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
+                remaining &
+                (xkb_overlay_mask_t)(~remaining + 1u)
+            );
+            /* get its index */
+            const xkb_overlay_index_t overlay =
+                (xkb_overlay_index_t)popcount32(lsb - 1u);
+            remaining = (remaining & ~lsb);
+
+            /* pop current value */
+            if (key->overlays_inline && remaining)
+                PANIC_UNREACHABLE();
+            const struct xkb_key *overlay_key = *(overlays_keys++);
+
+            const xkb_atom_t overlay_key_name = (substitutions == NULL)
+                ? overlay_key->name
+                : substitute_name(substitutions, overlay_key->name);
+            write_buf(buf, "\n\t\toverlay%u= %s,",
+                      overlay + 1, KeyNameText(keymap->ctx, overlay_key_name));
+        }
     }
 
     if (num_groups > 1 || explicit_actions || explicit)
         simple = false;
 
     if (simple) {
-        const bool only_symbols = key->explicit == EXPLICIT_SYMBOLS;
         if (num_groups == 0) {
             /* Remove trailing comma */
             if (buf->buf[buf->size - 1] == ',')
                 buf->size--;
         } else {
-	        if (!only_symbols)
-	            copy_to_buf(buf, "\n\t");
             copy_to_buf(buf, "\t[ ");
             if (!write_keysyms(keymap, buf, buf2, key, 0, pretty, false))
                 return false;
             copy_to_buf(buf, " ]");
         }
-        write_buf(buf, "%s", (only_symbols ? " };\n" : "\n\t};\n"));
+        copy_to_buf(buf, " };\n");
     }
     else {
         for (xkb_layout_index_t group = 0; group < num_groups; group++) {

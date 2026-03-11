@@ -402,3 +402,19 @@ asprintf_safe(const char *fmt, ...)
 
     return str;
 }
+
+#ifdef NDEBUG
+    #if defined(__GNUC__) || defined(__clang__)
+        #define PANIC_UNREACHABLE() __builtin_unreachable()
+    #elif defined(_MSC_VER)
+        #define PANIC_UNREACHABLE() __assume(0)
+    #else
+        #define PANIC_UNREACHABLE() abort()
+    #endif
+#else
+    #define PANIC_UNREACHABLE() \
+        do { \
+            fprintf(stderr, "Critical Error: Reached unreachable line in %s at %d\n", __FILE__, __LINE__); \
+            abort(); \
+        } while (0)
+#endif

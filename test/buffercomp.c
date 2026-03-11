@@ -2735,13 +2735,14 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    <left> = 113;\n"
                 "  };\n"
                 "  xkb_symbols {\n"
+                /* V1 does not support overlapping overlays */
                 "    key <j> { [j], overlay1 = <kp1>, overlay2 = <left> };\n"
                 "  };\n"
                 "};",
             .lenient = false,
             .no_output = true,
             .compiles_v1 = false,
-            .compiles_v2 = false,
+            .compiles_v2 = true,
         },
         {
             .keymap =
@@ -2751,6 +2752,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    <kp1>  = 87;\n"
                 "  };\n"
                 "  xkb_symbols {\n"
+                /* V1 does not support overlays > 2 */
                 "    key <j> { [j], overlay3 = <kp1> };\n"
                 "  };\n"
                 "};",
@@ -2767,6 +2769,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    <kp1>  = 87;\n"
                 "  };\n"
                 "  xkb_symbols {\n"
+                /* V1 does not support overlays > 2 */
                 "    key <j> { [j], overlay3 = none };\n"
                 "  };\n"
                 "};",
@@ -2853,7 +2856,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
             .lenient = true,
             .expected_v1_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
             .expected_v1_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
-            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v2-1.xkb",
             .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
         },
         /* Alternate array syntax is not supported (yet) */

@@ -80,6 +80,8 @@ struct xkb_keymap_info {
         bool group_lock_on_release;
         bool mods_unlock_on_press;
         bool mods_latch_on_press;
+        /* Overlays */
+        bool overlapping_overlays;
     } features;
 
     /* Non-static LUTs */
