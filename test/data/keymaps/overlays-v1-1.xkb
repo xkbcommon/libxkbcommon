@@ -22,7 +22,10 @@ xkb_compatibility {
 };
 
 xkb_symbols {
-	key <j>                  {	[               j ] };
+	key <j>                  {
+		overlay1= <kp1>,
+		symbols[1]= [               j ]
+	};
 	key <kp1>                {	[            KP_1 ] };
 	key <left>               {	[            Left ] };
 };

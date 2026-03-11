@@ -612,7 +612,6 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
                 copy_to_buf(buf, ";\n");
             }
 
-
         copy_to_buf(buf, "\t};\n");
     }
 
@@ -621,8 +620,8 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_led_map(struct xkb_keymap *keymap, bool explicit, struct buf *buf,
-              const struct xkb_led *led)
+write_led_map(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              bool explicit, struct buf *buf, const struct xkb_led *led)
 {
     copy_to_buf(buf, "\tindicator ");
     write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, led->name));
@@ -803,7 +802,9 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s%s)%s", prefix, type,
                   ControlMaskText(keymap->ctx, action->ctrls.ctrls),
-                  (action->type == ACTION_TYPE_CTRL_LOCK) ? affect_lock_text(action->ctrls.flags, false) : "",
+                  (action->type == ACTION_TYPE_CTRL_LOCK
+                    ? affect_lock_text(action->ctrls.flags, false)
+                    : ""),
                   suffix);
         break;
 
@@ -1219,7 +1220,7 @@ write_compat(struct xkb_keymap * restrict keymap,
     xkb_leds_foreach(led, keymap)
         if (led->which_groups || led->groups || led->which_mods ||
             led->mods.mods || led->ctrls)
-            if (!write_led_map(keymap, explicit, buf, led))
+            if (!write_led_map(keymap, format, explicit, buf, led))
                 return false;
 
     copy_to_buf(buf, "};\n\n");
@@ -1417,6 +1418,16 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     default:
         break;
+    }
+
+    if (key->overlays) {
+        const xkb_overlay_index_t overlay = popcount32(key->overlays - 1u);
+        const xkb_atom_t overlay_key_name = (substitutions == NULL)
+            ? key->overlay_keys[0].name
+            : substitute_name(substitutions, key->overlay_keys[0].name);
+        write_buf(buf, "\n\t\toverlay%u= %s,",
+                  overlay + 1, KeyNameText(keymap->ctx, overlay_key_name));
+        simple = false;
     }
 
     if (num_groups > 1 || explicit_actions || explicit)

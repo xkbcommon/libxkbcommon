@@ -2786,8 +2786,8 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "  xkb_symbols {\n"
                 "    key <j>    { [j], overlay2 = <left> };\n"
                 /* overlay2 is discarded, therefore there is no overlap */
-                "    key <j>    { overlay2 = none };\n"
-                "    key <kp1>  { [KP_1], overlay1 = none };\n"
+                "    key <j>    { overlay1 = <kp1>, overlay2 = none };\n"
+                "    key <kp1>  { [KP_1], overlay1 = none, overlay1 = <j> };\n"
                 "    key <left> { [Left], overlay1 = <kp1> };\n"
                 "    key <left> { overlay1 = none };\n"
                 "  };\n"
@@ -2808,7 +2808,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "  };\n"
                 "  xkb_symbols {\n"
                 /* conflicting entry ignored */
-                "    key <j>    { [j], overlay1 = none, overlay1 = <left> };\n"
+                "    key <j>    { [j], overlay1 = <kp1>, overlay1 = none };\n"
                 "    key <kp1>  { [KP_1], overlay1 = <j> };\n"
                 "    key <kp1>  { [KP_1], overlay2 = <left> };\n"
                 "    key <kp1>  { [KP_1], overlay1 = none, overlay2 = none };\n"
@@ -2842,7 +2842,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    key <3>    { [LockControls(controls=none)] };\n"
                 "    key <4>    { [LockControls(controls=none)] };\n"
                 /* V1 will discard overlay2 */
-                "    key <j>    { [j] };\n"
+                "    key <j>    { [j], overlay1 = <kp1>, overlay2 = <left> };\n"
                 "    key <kp1>  { [KP_1], overlay1 = none };\n"
                 "    key <left> { [Left], overlay1 = <kp1> };\n"
                 "    key <left> { overlay1 = none };\n"
