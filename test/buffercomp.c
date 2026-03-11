@@ -2691,23 +2691,251 @@ test_unsupported_legacy_x11_actions(struct xkb_context *ctx,
                                update_output_files));
 }
 
+struct keymap_multi_versions_test_data {
+    const char* keymap;
+    bool no_output;
+    bool lenient;
+    union {
+        struct { bool compiles_v1; bool compiles_v2; };
+        struct {
+            const char* expected_v1_1;
+            const char* expected_v1_2;
+            const char* expected_v2_2;
+            const char* expected_v2_1;
+        };
+    };
+};
+
+static void
+test_overlays(struct xkb_context *ctx, bool update_output_files)
+{
+    static const struct keymap_multi_versions_test_data tests[] = {
+        /* Legacy */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j> { [j], overlay1 = <xxx> };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = false,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j> { [j], overlay1 = <kp1>, overlay2 = <left> };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = false,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j> { [j], overlay3 = <kp1> };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = false,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j> { [j], overlay3 = none };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = false,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j>    { [j], overlay2 = <left> };\n"
+                /* overlay2 is discarded, therefore there is no overlap */
+                "    key <j>    { overlay2 = none };\n"
+                "    key <kp1>  { [KP_1], overlay1 = none };\n"
+                "    key <left> { [Left], overlay1 = <kp1> };\n"
+                "    key <left> { overlay1 = none };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .expected_v1_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v1_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                /* conflicting entry ignored */
+                "    key <j>    { [j], overlay1 = none, overlay1 = <left> };\n"
+                "    key <kp1>  { [KP_1], overlay1 = <j> };\n"
+                "    key <kp1>  { [KP_1], overlay2 = <left> };\n"
+                "    key <kp1>  { [KP_1], overlay1 = none, overlay2 = none };\n"
+                "    key <left> { [Left], overlay1 = none, overlay2 = none };\n"
+                "    augment key <left> { [Left], overlay1 = <j> };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .expected_v1_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v1_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-1.xkb",
+        },
+        /* Alternate array syntax is not supported (yet) */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <j>    { [j], overlay[1] = <kp1>, overlay[2] = <left> };\n"
+                "    key <kp1>  { [KP_1] };\n"
+                "    key <left> { [Left] };\n"
+                "  };\n"
+                "};",
+            .lenient = false,
+            .no_output = true,
+            .compiles_v1 = false,
+            .compiles_v2 = false,
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <1>    = 10;\n"
+                "    <2>    = 11;\n"
+                "    <3>    = 12;\n"
+                "    <4>    = 13;\n"
+                "    <j>    = 44;\n"
+                "    <kp1>  = 87;\n"
+                "    <f1>   = 67;\n"
+                "    <f10>  = 76;\n"
+                "    <left> = 113;\n"
+                "  };\n"
+                "  xkb_symbols {\n"
+                "    key <1> { [LockControls(controls=Overlay1)] };\n"
+                "    key <2> { [LockControls(controls=Overlay2)] };\n"
+                "    key <3> { [LockControls(controls=Overlay3)] };\n"
+                "    key <4> { [LockControls(controls=Overlay4)] };\n"
+                "    key <j> { [j] };\n"
+                "    key <j> {\n"
+                "      overlay1 = <left>, overlay2 = <left>,\n"
+                "      overlay6 = <j>, overlay7 = <kp1>\n"
+                "    };\n"
+                "    key <j> {\n"
+                "      overlay1 = <kp1>, overlay7 = none,\n"
+                "      overlay3 = <f1>, overlay4 = <f10>\n"
+                "    };\n"
+                "    augment key <j> { overlay4 = <f1> };\n"
+                "    key <kp1>  { [KP_1] };\n"
+                "    key <left> { [Left] };\n"
+                "    key <f1>   { [F1]   };\n"
+                "    key <f10>  { [F10]  };\n"
+                "  };\n"
+                "};",
+            .lenient = true,
+            .expected_v1_1 = NULL,
+            .expected_v1_2 = NULL,
+            .expected_v2_2 = NULL,
+            .expected_v2_1 = NULL,
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+        const enum xkb_keymap_compile_flags flags
+            = TEST_KEYMAP_COMPILE_FLAGS
+            & ~(tests[t].lenient ? XKB_KEYMAP_COMPILE_STRICT_MODE : 0);
+
+        if (tests[t].no_output) {
+            struct xkb_keymap *keymap =
+                test_compile_buffer2(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, flags,
+                                     tests[t].keymap, strlen(tests[t].keymap));
+            assert(!!keymap == tests[t].compiles_v1);
+            xkb_keymap_unref(keymap);
+            keymap =
+                test_compile_buffer2(ctx, XKB_KEYMAP_FORMAT_TEXT_V2, flags,
+                                     tests[t].keymap, strlen(tests[t].keymap));
+            assert(!!keymap == tests[t].compiles_v2);
+            xkb_keymap_unref(keymap);
+            continue;
+        }
+        /* v1 → v1 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, (void*)&flags, "v1 -> v1",
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected_v1_1, update_output_files));
+        /* v1 → v2 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   compile_buffer, (void*)&flags, "v1 -> v2",
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected_v1_2, update_output_files));
+        /* v2 → v2 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, (void*)&flags, "v2 -> v2",
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected_v2_2, update_output_files));
+        /* v2 → v1 */
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   compile_buffer, (void*)&flags, "v2 -> v1",
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected_v2_1, update_output_files));
+    }
+}
+
 static void
 test_extended_layout_indices(struct xkb_context *ctx,
                              bool update_output_files)
 {
-    const struct {
-        const char* keymap;
-        bool no_output;
-        union {
-            struct { bool compiles_v1; bool compiles_v2; };
-            struct {
-                const char* expected_v1;
-                const char* expected_v1_2;
-                const char* expected_v2;
-                const char* expected_v2_1;
-            };
-        };
-    } tests[] = {
+    static const struct keymap_multi_versions_test_data tests[] = {
         {
             .keymap =
                 "xkb_keymap {\n"
@@ -2768,9 +2996,9 @@ test_extended_layout_indices(struct xkb_context *ctx,
                 "    key <c> { [1], [2], [3], [4], [5], [6], [7], [8], [9] };\n"
                 "  };\n"
                 "};",
-            .expected_v1 = NULL,
+            .expected_v1_1 = NULL,
             .expected_v1_2 = NULL,
-            .expected_v2 = GOLDEN_TESTS_OUTPUTS "extended-layout-indices-v2.xkb",
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "extended-layout-indices-v2.xkb",
             .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "extended-layout-indices-v1.xkb",
         }
     };
@@ -2795,7 +3023,7 @@ test_extended_layout_indices(struct xkb_context *ctx,
                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                    compile_buffer, NULL, __func__,
                                    tests[k].keymap, strlen(tests[k].keymap),
-                                   tests[k].expected_v1, update_output_files));
+                                   tests[k].expected_v1_1, update_output_files));
         /* v1 → v2 */
         assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
                                    XKB_KEYMAP_FORMAT_TEXT_V2,
@@ -2807,7 +3035,7 @@ test_extended_layout_indices(struct xkb_context *ctx,
                                    XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                    compile_buffer, NULL, __func__,
                                    tests[k].keymap, strlen(tests[k].keymap),
-                                   tests[k].expected_v2, update_output_files));
+                                   tests[k].expected_v2_2, update_output_files));
         /* v2 → v1 */
         assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
                                    XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -2950,6 +3178,7 @@ main(int argc, char *argv[])
     test_keymap_from_rules(ctx);
     test_redirect_key(ctx, update_output_files);
     test_unsupported_legacy_x11_actions(ctx, update_output_files);
+    test_overlays(ctx, update_output_files);
     test_extended_layout_indices(ctx, update_output_files);
     test_compound_statement_errors(ctx);
 

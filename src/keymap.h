@@ -29,9 +29,10 @@
 
 #include "xkbcommon/xkbcommon.h"
 
+#include "atom.h"
+#include "context.h"
 #include "darray.h"
 #include "rmlvo.h"
-#include "context.h"
 #include "utils.h"
 
 /* Note: imposed by the size of the xkb_layout_mask_t type (32).
@@ -200,6 +201,19 @@ struct xkb_group_action {
     int32_t group;
 };
 
+/** Keyboard overlay index or count */
+typedef uint8_t xkb_overlay_index_t;
+/** Maximum number of overlays (X11 limit) */
+#define XKB_OVERLAY_MAX 2
+#define XKB_OVERLAY_INVALID (UINT8_MAX)
+static_assert(XKB_OVERLAY_MAX < XKB_OVERLAY_INVALID, "");
+
+/** Keyboard overlay mask */
+typedef uint8_t xkb_overlay_mask_t;
+/** Mask of all valid overlays */
+#define XKB_OVERLAY_ALL 0x3
+static_assert(XKB_OVERLAY_ALL == ((UINT16_C(1) << XKB_OVERLAY_MAX) - 1), "");
+
 struct xkb_controls_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
@@ -365,6 +379,7 @@ enum xkb_explicit_components {
     EXPLICIT_TYPES = (1 << 2),
     EXPLICIT_VMODMAP = (1 << 3),
     EXPLICIT_REPEAT = (1 << 4),
+    EXPLICIT_OVERLAY = (1 << 5),
 };
 
 typedef uint16_t xkb_keysym_count_t;
@@ -452,7 +467,7 @@ struct xkb_key {
     xkb_mod_mask_t modmap;
     xkb_mod_mask_t vmodmap;
 
-    uint8_t __padding;
+    xkb_overlay_mask_t overlays;
 
     bool repeats:1;
     /** Flag that indicates whether some group has implicit actions */
@@ -464,6 +479,9 @@ struct xkb_key {
 
     xkb_layout_index_t num_groups:8;
     struct xkb_group *groups ATTR_COUNTED_BY(num_groups);
+
+    /** Target overlay key or NULL if no overlay is set */
+    const struct xkb_key *overlay_key;
 };
 
 struct xkb_mod {

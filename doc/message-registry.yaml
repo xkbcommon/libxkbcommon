@@ -236,6 +236,11 @@
   added: ALWAYS
   type: error
   description: "Use of an operator that is unknown and thus unsupported"
+- id: "overlapping-overlay"
+  code: 355
+  added: 1.14.0
+  type: error
+  description: "Overlapping overlays are not supported"
 - id: "unsupported-legacy-action"
   code: 362
   added: 1.10.0
@@ -374,6 +379,11 @@
   added: ALWAYS
   type: error
   description: "Warn when a field has not the expected type"
+- id: "unsupported-overlay-index"
+  code: 588
+  added: 1.14.0
+  type: error
+  description: "Overlay index is not in the supported range"
 - id: "cannot-resolve-rmlvo"
   code: 595
   added: ALWAYS
