@@ -805,6 +805,8 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                 : PARSER_V2_LAX_FLAGS),
         .features = {
             .max_groups = format_max_groups(keymap->format),
+            .max_overlays = format_max_overlays(keymap->format),
+            .controls_name_offset = format_control_names_offset(keymap->format),
             .group_lock_on_release =
                 isGroupLockOnReleaseSupported(keymap->format),
             .mods_unlock_on_press =

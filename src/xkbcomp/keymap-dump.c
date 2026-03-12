@@ -650,7 +650,7 @@ write_led_map(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     if (led->ctrls) {
         write_buf(buf, "\t\tcontrols= %s;\n",
-                  ControlMaskText(keymap->ctx, led->ctrls));
+                  ControlMaskText(keymap->ctx, format, led->ctrls));
     }
 
     copy_to_buf(buf, "\t};\n");
@@ -801,7 +801,7 @@ write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_CTRL_SET:
     case ACTION_TYPE_CTRL_LOCK:
         write_buf(buf, "%s%s(controls=%s%s)%s", prefix, type,
-                  ControlMaskText(keymap->ctx, action->ctrls.ctrls),
+                  ControlMaskText(keymap->ctx, format, action->ctrls.ctrls),
                   (action->type == ACTION_TYPE_CTRL_LOCK
                     ? affect_lock_text(action->ctrls.flags, false)
                     : ""),
@@ -1422,10 +1422,23 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     if (key->overlays) {
         xkb_overlay_mask_t remaining = key->overlays;
-        const struct xkb_key * const *overlays_keys = (key->overlays_inline)
-                                                    ? &key->overlay_key
-                                                    : key->overlays_keys;
-        if (!key->overlays_inline && !areOverlappingOverlaysSupported(format)) {
+
+        const xkb_overlay_index_t overlay_max = format_max_overlays(format);
+        static_assert(XKB_OVERLAY_MAX == 8, "invalid right shift");
+        const xkb_overlay_mask_t valid =
+            (xkb_overlay_mask_t)((1u << overlay_max) - 1u);
+        remaining &= valid;
+        if (remaining != key->overlays) {
+            log_warn(keymap->ctx, XKB_ERROR_UNSUPPORTED_OVERLAY_INDEX,
+                     "Overlays indices > %u in %s require using "
+                     "keymap format >= v2; "
+                     "keep overlays 0x%08x and discard overlays 0x%08x\n",
+                     overlay_max, KeyNameText(keymap->ctx, name),
+                     remaining, key->overlays & ~valid);
+        }
+
+        if (remaining && !key->overlays_inline &&
+            !areOverlappingOverlaysSupported(format)) {
             /* isolate lowest set bit */
             const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                 remaining &
@@ -1445,6 +1458,9 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         if (remaining)
             simple = false;
 
+        const struct xkb_key * const *overlays_keys = (key->overlays_inline)
+                                                    ? &key->overlay_key
+                                                    : key->overlays_keys;
         while (remaining) {
             /* isolate lowest set bit */
             const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(

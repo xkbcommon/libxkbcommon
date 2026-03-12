@@ -2759,7 +2759,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
             .lenient = false,
             .no_output = true,
             .compiles_v1 = false,
-            .compiles_v2 = false,
+            .compiles_v2 = true,
         },
         {
             .keymap =
@@ -2776,7 +2776,7 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
             .lenient = false,
             .no_output = true,
             .compiles_v1 = false,
-            .compiles_v2 = false,
+            .compiles_v2 = true,
         },
         {
             .keymap =
@@ -2834,10 +2834,15 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    <3>    = 12;\n"
                 "    <4>    = 13;\n"
                 "    <j>    = 44;\n"
+                "    <k>    = 45;\n"
                 "    <kp1>  = 87;\n"
+                "    <kp2>  = 88;\n"
                 "    <f1>   = 67;\n"
+                "    <f2>   = 68;\n"
                 "    <f10>  = 76;\n"
+                "    <f11>  = 95;\n"
                 "    <left> = 113;\n"
+                "    <down> = 116;\n"
                 "  };\n"
                 "  xkb_symbols {\n"
                 "    key <1>    { [LockControls(controls=Overlay1)] };\n"
@@ -2846,11 +2851,16 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    key <4>    { [LockControls(controls=none)] };\n"
                 /* V1 will discard overlay2 */
                 "    key <j>    { [j], overlay1 = <kp1>, overlay2 = <left> };\n"
+                "    key <k>    { [k], overlay1 = <kp2>, overlay2 = <down> };\n"
                 "    key <kp1>  { [KP_1], overlay1 = none };\n"
+                "    key <kp2>  { [KP_2] };\n"
                 "    key <left> { [Left], overlay1 = <kp1> };\n"
                 "    key <left> { overlay1 = none };\n"
-                "    key <f1>   { [F1]   };\n"
-                "    key <f10>  { [F10]  };\n"
+                "    key <down> { [Down] };\n"
+                "    key <f1>   { [F1] };\n"
+                "    key <f2>   { [F2] };\n"
+                "    key <f10>  { [F10] };\n"
+                "    key <f11>  { [F11] };\n"
                 "  };\n"
                 "};",
             .lenient = true,
@@ -2888,10 +2898,15 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "    <3>    = 12;\n"
                 "    <4>    = 13;\n"
                 "    <j>    = 44;\n"
+                "    <k>    = 45;\n"
                 "    <kp1>  = 87;\n"
+                "    <kp2>  = 88;\n"
                 "    <f1>   = 67;\n"
+                "    <f2>   = 68;\n"
                 "    <f10>  = 76;\n"
+                "    <f11>  = 95;\n"
                 "    <left> = 113;\n"
+                "    <down> = 116;\n"
                 "  };\n"
                 "  xkb_symbols {\n"
                 "    key <1> { [LockControls(controls=Overlay1)] };\n"
@@ -2908,17 +2923,31 @@ test_overlays(struct xkb_context *ctx, bool update_output_files)
                 "      overlay3 = <f1>, overlay4 = <f10>\n"
                 "    };\n"
                 "    augment key <j> { overlay4 = <f1> };\n"
-                "    key <kp1>  { [KP_1] };\n"
-                "    key <left> { [Left] };\n"
-                "    key <f1>   { [F1]   };\n"
-                "    key <f10>  { [F10]  };\n"
+                "    key <k>    {\n"
+                "      [k],\n"
+                "      overlay1 = <kp2>,\n"
+                "      overlay2 = <down>,\n"
+                "      overlay3 = <f2>,\n"
+                "      overlay4 = <f11>\n"
+                "    };\n"
+                "    key <kp1>  { [KP_1], overlay2 = <j> };\n"
+                "    key <kp1>  { [KP_1], overlay1 = none, overlay2 = none, overlay3 = <f1> };\n"
+                "    key <kp1>  { [KP_1], overlay3 = none };\n"
+                "    key <kp2>  { [KP_2] };\n"
+                "    key <left> { [Left], overlay3 = <f1>, overlay4 = <f10> };\n"
+                "    key <down> { [Down] };\n"
+                "    key <f1>   { [F1] };\n"
+                "    key <f2>   { [F2] };\n"
+                "    key <f10>  { [F10] };\n"
+                "    key <f11>  { [F11] };\n"
                 "  };\n"
                 "};",
             .lenient = true,
             .expected_v1_1 = NULL,
             .expected_v1_2 = NULL,
-            .expected_v2_2 = NULL,
-            .expected_v2_1 = NULL,
+            .expected_v2_2 = GOLDEN_TESTS_OUTPUTS "overlays-v2-2.xkb",
+            /* Drop overlays 2-8 */
+            .expected_v2_1 = GOLDEN_TESTS_OUTPUTS "overlays-v1-2.xkb",
         },
     };
 

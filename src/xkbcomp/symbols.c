@@ -594,22 +594,37 @@ overlays_insert(KeyInfo *keyi, xkb_overlay_index_t bit,
         keyi->overlays |= mask;
         keyi->overlays_clear = !key;
     } else if (!keyi->overlays_alloc) {
-        /* 1 → 2 : promote inline element to heap */
-        const xkb_overlay_index_t alloc = 2;
-        const struct xkb_key ** const tmp =
-            malloc(alloc * sizeof(const struct xkb_key *));
+        /* Promote inline element to heap */
+        const xkb_overlay_mask_t overlays = keyi->overlays | mask;
+        const xkb_overlay_index_t alloc =
+            (xkb_overlay_index_t)popcount32(overlays);
+
+        /* Alloc sparse array */
+        const struct xkb_key ** const tmp = calloc(alloc, sizeof(*tmp));
         if (!tmp) return false;
-        const struct xkb_key * old = keyi->overlay_key;
-        if (mask < keyi->overlays) {
-            tmp[0] = key;
-            tmp[1] = old;
+
+        /* Copy previous entries to the buffer */
+        if (!keyi->overlays_clear) {
+            /* A previous single overlay was set */
+            const xkb_overlay_mask_t low = (xkb_overlay_mask_t)(
+                overlays & (xkb_overlay_mask_t)(keyi->overlays - 1u)
+            );
+            const xkb_overlay_index_t idx = (xkb_overlay_index_t)popcount32(low);
+            tmp[idx] = keyi->overlay_key;
         } else {
-            tmp[0] = old;
-            tmp[1] = key;
+            /* All previous overlays were set to none: set thanks to calloc */
         }
+
+        /* Insert new entry into the buffer */
+        const xkb_overlay_mask_t low = (xkb_overlay_mask_t)(
+            overlays & (xkb_overlay_mask_t)(mask - 1u)
+        );
+        const xkb_overlay_index_t idx = (xkb_overlay_index_t)popcount32(low);
+        tmp[idx] = key;
+
         keyi->overlays_keys = tmp;
         keyi->overlays_alloc = alloc;
-        keyi->overlays = (keyi->overlays | mask);
+        keyi->overlays = overlays;
         keyi->overlays_clear = false;
     } else {
         /* Allocated items: grow heap and shift if relevant */
@@ -1400,12 +1415,13 @@ ExprResolveOverlayEntry(const struct xkb_keymap_info *keymap_info,
     const size_t len = strlen(field + prefix);
     int64_t raw_overlay = XKB_OVERLAY_INVALID;
     if (parse_dec_to_uint64_t(field + prefix, len, (uint64_t *)&raw_overlay)
-        != (int)len || raw_overlay < 1 || raw_overlay > XKB_OVERLAY_MAX) {
+        != (int)len || raw_overlay < 1 ||
+        raw_overlay > (int64_t)keymap_info->features.max_overlays) {
         log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_OVERLAY_INDEX,
                 "Unsupported overlay index \"%s\" field for %s: "
                 "expected 1..%u, got: %"PRId64"; ignored\n",
                 field, KeyNameText(keymap_info->keymap.ctx, keyi->name),
-                XKB_OVERLAY_MAX, raw_overlay);
+                keymap_info->features.max_overlays, raw_overlay);
         return false;
     }
     *overlay_rtrn = (xkb_overlay_index_t)raw_overlay - 1;

@@ -64,7 +64,7 @@ struct pending_computation {
 };
 typedef darray(struct pending_computation) pending_computation_array;
 
-/** Keymap augmented with miscellanenous data used during compilation */
+/** Keymap augmented with miscellaneous data used during compilation */
 struct xkb_keymap_info {
     /** The keymap being compiled */
     struct xkb_keymap keymap;
@@ -76,6 +76,10 @@ struct xkb_keymap_info {
     struct {
         /** Maximum groups for the keymap format */
         xkb_layout_index_t max_groups;
+        /** Maximum overlays for the keymap format */
+        xkb_overlay_index_t max_overlays;
+        /** Offset of the Controls names LUT for the keymap format */
+        uint8_t controls_name_offset;
         /* Actions */
         bool group_lock_on_release;
         bool mods_unlock_on_press;

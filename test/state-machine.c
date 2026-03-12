@@ -2031,8 +2031,12 @@ test_overlays(struct xkb_context *context)
         { CONTROL_BELL, 0x0 },
         { CONTROL_OVERLAY1, 0x1 },
         { CONTROL_OVERLAY1 | CONTROL_OVERLAY2, 0x3 },
-        { CONTROL_ALL, 0x3 },
-        { CONTROL_ALL_BOOLEAN, 0x3 },
+        { CONTROL_OVERLAY3, (1u << 2) },
+        { CONTROL_OVERLAY8, (1u << 7) },
+        { CONTROL_ALL, 0xff },
+        { CONTROL_ALL_V1, 0x3 },
+        { CONTROL_ALL_BOOLEAN, 0xff },
+        { CONTROL_ALL_BOOLEAN_V1, 0x3 },
     };
 
     for (size_t t = 0; t < ARRAY_SIZE(controls_tests); t++) {
@@ -2045,7 +2049,7 @@ test_overlays(struct xkb_context *context)
     /* Check overlapping overlays */
     struct xkb_keymap * const keymap = test_compile_file(
         context, XKB_KEYMAP_FORMAT_TEXT_V2,
-        GOLDEN_TESTS_OUTPUTS "overlays-v2-1.xkb");
+        GOLDEN_TESTS_OUTPUTS "overlays-v2-2.xkb");
     assert(keymap);
 
     struct xkb_state_machine * const sm = xkb_state_machine_new(keymap, NULL);
@@ -2071,6 +2075,9 @@ test_overlays(struct xkb_context *context)
         /* Overlay enabled before key press and disable before release : effectual */
         { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
         { 0, KEY_KP1, XKB_KEY_UP },
+        /* Key does not belong to overlay: not effect */
+        { XKB_KEYBOARD_CONTROL_OVERLAY8, KEY_J, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY8, KEY_J, XKB_KEY_UP },
         /* Overlay activation order matters */
         { XKB_KEYBOARD_CONTROL_OVERLAY1, 0, 0 },
         { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
@@ -2085,10 +2092,40 @@ test_overlays(struct xkb_context *context)
           KEY_KP1, XKB_KEY_DOWN },
         { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2,
           KEY_KP1, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2,
-          KEY_LEFT, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2,
-          KEY_LEFT, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4 |
+          XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_F10, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4 |
+          XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_F10, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
+          XKB_KEYBOARD_CONTROL_OVERLAY4 | XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_F10, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
+          XKB_KEYBOARD_CONTROL_OVERLAY4 | XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_F10, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_KP1, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY8,
+          KEY_KP1, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3,
+          KEY_F1, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3,
+          KEY_F1, XKB_KEY_UP },
+        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
+          XKB_KEYBOARD_CONTROL_OVERLAY4, 0, 0},
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4,
+          KEY_KP1, XKB_KEY_DOWN },
+        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
+          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4,
+          KEY_KP1, XKB_KEY_UP },
         /* Multiple physical keys with same keycode */
         { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
         { 0, KEY_KP1, XKB_KEY_DOWN }, /* key still uses overlay 1 */
