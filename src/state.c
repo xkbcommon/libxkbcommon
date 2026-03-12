@@ -2855,8 +2855,9 @@ state_machine_update_overlays(struct xkb_state_machine *sm)
 
     /* Remove overlays no longer enabled and keep relative order */
     uint32_t order = sm->overlays.order;
-    static_assert(XKB_OVERLAY_MAX == 2, "");
-    for (uint8_t n = 0; n < (uint8_t)XKB_OVERLAY_MAX;) {
+    const xkb_overlay_index_t overlay_max =
+        format_max_overlays(sm->state.keymap->format);
+    for (uint8_t n = 0; n < overlay_max;) {
         xkb_overlay_index_t overlay_idx = (order >> (n * 4)) & 0xf;
         if (!overlay_idx)
             break;
@@ -3188,7 +3189,7 @@ process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key
         if (key->overlays & sm->overlays.enabled) {
             /* Some relevant overlay is active */
             for (uint32_t stack = sm->overlays.order; stack; stack >>= 4) {
-                static_assert(XKB_OVERLAY_MAX == 2, "");
+                static_assert(XKB_OVERLAY_MAX == 8, "");
                 const xkb_overlay_index_t overlay = (stack & 0xf) - 1;
                 const xkb_overlay_mask_t mask =
                     (xkb_overlay_mask_t)(1u << overlay);

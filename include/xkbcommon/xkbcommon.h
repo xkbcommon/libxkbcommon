@@ -2504,6 +2504,42 @@ enum xkb_keyboard_control_flags {
      * @since 1.14.0
      */
     XKB_KEYBOARD_CONTROL_OVERLAY2 = (1 << 11),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **3**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY3 = (1 << 13),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **4**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY4 = (1 << 14),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **5**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY5 = (1 << 15),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **6**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY6 = (1 << 16),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **7**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY7 = (1 << 17),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **8**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY8 = (1 << 18),
 };
 
 /**

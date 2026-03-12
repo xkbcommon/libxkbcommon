@@ -153,26 +153,50 @@ enum xkb_action_controls {
     CONTROL_IGNORE_GROUP_LOCK = (1 << 12),
 
     /* Non-X11 encoding */
-    CONTROL_GROUPS_WRAP = (1 << 13),
+    CONTROL_OVERLAY3 = (1 << 13),
+    CONTROL_OVERLAY4 = (1 << 14),
+    CONTROL_OVERLAY5 = (1 << 15),
+    CONTROL_OVERLAY6 = (1 << 16),
+    CONTROL_OVERLAY7 = (1 << 17),
+    CONTROL_OVERLAY8 = (1 << 18),
+    CONTROL_GROUPS_WRAP = (1 << 19),
 
     /**
      * All the XKB Controls. If we ever introduce *internal* controls, this mask
      * should not include them.
      */
-    CONTROL_ALL = \
+    CONTROL_ALL_V1 = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
          CONTROL_BELL | CONTROL_OVERLAY1 | CONTROL_OVERLAY2 |
          CONTROL_IGNORE_GROUP_LOCK | CONTROL_GROUPS_WRAP),
+    CONTROL_ALL = \
+        (CONTROL_ALL_V1 | CONTROL_OVERLAY3 |
+         CONTROL_OVERLAY4 | CONTROL_OVERLAY5 | CONTROL_OVERLAY6 |
+         CONTROL_OVERLAY7 | CONTROL_OVERLAY8),
     /* All the boolean controls */
-    CONTROL_ALL_BOOLEAN = \
+    CONTROL_ALL_BOOLEAN_V1 = \
         (CONTROL_REPEAT | CONTROL_SLOW | CONTROL_DEBOUNCE | \
          CONTROL_STICKY_KEYS | CONTROL_MOUSE_KEYS | CONTROL_MOUSE_KEYS_ACCEL | \
          CONTROL_AX | CONTROL_AX_TIMEOUT | CONTROL_AX_FEEDBACK | \
          CONTROL_BELL | CONTROL_OVERLAY1 | CONTROL_OVERLAY2 | \
          CONTROL_IGNORE_GROUP_LOCK),
+    CONTROL_ALL_BOOLEAN = \
+        (CONTROL_ALL_BOOLEAN_V1 | \
+         CONTROL_OVERLAY3 | CONTROL_OVERLAY4 | CONTROL_OVERLAY5 | \
+         CONTROL_OVERLAY6 | CONTROL_OVERLAY7 | CONTROL_OVERLAY8),
 };
+
+static_assert(sizeof(enum xkb_action_controls) >= 3, "truncated enum");
+
+static inline enum xkb_action_controls
+format_boolean_controls(enum xkb_keymap_format format)
+{
+    return (format == XKB_KEYMAP_FORMAT_TEXT_V1)
+        ? CONTROL_ALL_BOOLEAN_V1
+        : CONTROL_ALL_BOOLEAN;
+}
 
 static_assert(
     CONTROL_STICKY_KEYS ==
@@ -184,7 +208,19 @@ static_assert(
     CONTROL_OVERLAY1 ==
     (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY1 &&
     CONTROL_OVERLAY2 ==
-    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY2,
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY2 &&
+    CONTROL_OVERLAY3 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY3 &&
+    CONTROL_OVERLAY4 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY4 &&
+    CONTROL_OVERLAY5 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY5 &&
+    CONTROL_OVERLAY6 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY6 &&
+    CONTROL_OVERLAY7 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY7 &&
+    CONTROL_OVERLAY8 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY8,
     "Private value should match public API"
 );
 
@@ -216,27 +252,49 @@ struct xkb_group_action {
 
 /** Keyboard overlay index or count */
 typedef uint8_t xkb_overlay_index_t;
-/** Maximum number of overlays (X11 limit) */
-#define XKB_OVERLAY_MAX 2
+/** Maximum number of keymap v1 overlays (X11 limit) */
+#define XKB_OVERLAY_MAX_X11 2
+/** Maximum number of keymap v2+ overlays */
+#define XKB_OVERLAY_MAX (sizeof(xkb_overlay_mask_t) * CHAR_BIT)
 #define XKB_OVERLAY_INVALID (UINT8_MAX)
-static_assert(XKB_OVERLAY_MAX < XKB_OVERLAY_INVALID, "");
-enum { XKB_OVERLAY_INDEX_MIN_WIDTH = 2 };
-static_assert(XKB_OVERLAY_MAX <= (1u << XKB_OVERLAY_INDEX_MIN_WIDTH) - 1,
-              "");
 
 /** Keyboard overlay mask */
 typedef uint8_t xkb_overlay_mask_t;
-/** Mask of all valid overlays */
-#define XKB_OVERLAY_ALL 0x3
+/** Mask of all valid keymap v1 overlays (X11 limit) */
+#define XKB_OVERLAY_ALL_X11 0x3
+/** Mask of all valid keymap v2+ overlays */
+#define XKB_OVERLAY_ALL UINT8_MAX
+static_assert(XKB_OVERLAY_MAX < XKB_OVERLAY_INVALID, "");
 static_assert(XKB_OVERLAY_ALL == ((UINT16_C(1) << XKB_OVERLAY_MAX) - 1), "");
-/** Offset in the controls mask */
+enum { XKB_OVERLAY_INDEX_MIN_WIDTH = 4 };
+static_assert(XKB_OVERLAY_MAX <= (1u << XKB_OVERLAY_INDEX_MIN_WIDTH) - 1,
+              "Cannot encode overlay index or count");
+
+/** Offset of keymap v1 overlays in the controls mask */
 #define XKB_OVERLAY1_CONTROLS_OFFSET 10
 static_assert((UINT32_C(1) << XKB_OVERLAY1_CONTROLS_OFFSET) ==
               CONTROL_OVERLAY1, "");
+/** Offset of keymap v2+ overlays in the controls mask */
+#define XKB_OVERLAY3_CONTROLS_OFFSET 13
+static_assert((UINT32_C(1) << XKB_OVERLAY3_CONTROLS_OFFSET) ==
+              CONTROL_OVERLAY3, "");
+
+
 #define OVERLAYS_FROM_CONTROLS(mask) (                 \
     /* Overlays 1-2 */                                 \
-    (((mask) >> XKB_OVERLAY1_CONTROLS_OFFSET) & 0x3)   \
+    (((mask) >> XKB_OVERLAY1_CONTROLS_OFFSET) & 0x3) | \
+    /* Overlays 3-8 */                                 \
+    ((((mask) >> XKB_OVERLAY3_CONTROLS_OFFSET) << 2) & \
+     ((UINT32_C(1) << XKB_OVERLAY_MAX) - 1))           \
 )
+
+static inline xkb_overlay_index_t
+format_max_overlays(enum xkb_keymap_format format)
+{
+    return (format == XKB_KEYMAP_FORMAT_TEXT_V1)
+        ? XKB_OVERLAY_MAX_X11
+        : XKB_OVERLAY_MAX;
+}
 
 struct xkb_controls_action {
     enum xkb_action_type type;

@@ -46,19 +46,25 @@ xkb_symbols {
 	key <3>                  {
 		repeat= No,
 		symbols[1]= [                       NoSymbol ],
-		actions[1]= [    LockControls(controls=none) ]
+		actions[1]= [ LockControls(controls=Overlay3) ]
 	};
 	key <4>                  {
 		repeat= No,
 		symbols[1]= [                       NoSymbol ],
-		actions[1]= [    LockControls(controls=none) ]
+		actions[1]= [ LockControls(controls=Overlay4) ]
 	};
 	key <j>                  {
 		overlay1= <kp1>,
+		overlay2= <left>,
+		overlay3= <f1>,
+		overlay4= <f10>,
 		symbols[1]= [               j ]
 	};
 	key <k>                  {
 		overlay1= <kp2>,
+		overlay2= <down>,
+		overlay3= <f2>,
+		overlay4= <f11>,
 		symbols[1]= [               k ]
 	};
 	key <f1>                 {	[              F1 ] };
@@ -67,7 +73,11 @@ xkb_symbols {
 	key <kp1>                {	[            KP_1 ] };
 	key <kp2>                {	[            KP_2 ] };
 	key <f11>                {	[             F11 ] };
-	key <left>               {	[            Left ] };
+	key <left>               {
+		overlay3= <f1>,
+		overlay4= <f10>,
+		symbols[1]= [            Left ]
+	};
 	key <down>               {	[            Down ] };
 };
 

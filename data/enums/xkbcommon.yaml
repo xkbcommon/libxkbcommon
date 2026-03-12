@@ -100,6 +100,18 @@ xkb_keyboard_control_flags:
     value: 1024
   - name: XKB_KEYBOARD_CONTROL_OVERLAY2
     value: 2048
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY3
+    value: 8192
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY4
+    value: 16384
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY5
+    value: 32768
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY6
+    value: 65536
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY7
+    value: 131072
+  - name: XKB_KEYBOARD_CONTROL_OVERLAY8
+    value: 262144
 xkb_event_iterator_flags:
   - name: XKB_EVENT_ITERATOR_NO_FLAGS
     value: 0

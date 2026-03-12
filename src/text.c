@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
 #include "keysym.h"
 #include "text.h"
@@ -38,8 +39,17 @@ LookupValue(const LookupEntry tab[], unsigned int value)
     return NULL;
 }
 
-const LookupEntry ctrlMaskNames[] = {
-    { "RepeatKeys", CONTROL_REPEAT },
+const LookupEntry ctrlMaskNames[25] = {
+    /* v2 keymap format only */
+    { "Overlay3", CONTROL_OVERLAY3 },
+    { "Overlay4", CONTROL_OVERLAY4 },
+    { "Overlay5", CONTROL_OVERLAY5 },
+    { "Overlay6", CONTROL_OVERLAY6 },
+    { "Overlay7", CONTROL_OVERLAY7 },
+    { "Overlay8", CONTROL_OVERLAY8 },
+    { "all", CONTROL_ALL_BOOLEAN },
+    /* v1 + v2 keymap formats */
+    [CONTROL_NAMES_MIN_V1_INDEX] = { "RepeatKeys", CONTROL_REPEAT },
     { "Repeat", CONTROL_REPEAT },
     { "AutoRepeat", CONTROL_REPEAT },
     { "SlowKeys", CONTROL_SLOW },
@@ -54,7 +64,7 @@ const LookupEntry ctrlMaskNames[] = {
     { "IgnoreGroupLock", CONTROL_IGNORE_GROUP_LOCK },
     { "Overlay1", CONTROL_OVERLAY1 },
     { "Overlay2", CONTROL_OVERLAY2 },
-    { "all", CONTROL_ALL_BOOLEAN },
+    { "all", CONTROL_ALL_BOOLEAN_V1 }, /* duplicate, matches only v1 */
     { "none", 0 },
     { NULL, 0 }
 };
@@ -284,17 +294,22 @@ LedStateMaskText(struct xkb_context *ctx, const LookupEntry *lookup,
 }
 
 const char *
-ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
+ControlMaskText(struct xkb_context *ctx, enum xkb_keymap_format format,
+                enum xkb_action_controls mask)
 {
     char buf[1024];
     size_t pos = 0;
 
+    const enum xkb_action_controls all_ctrls = format_boolean_controls(format);
+    mask &= all_ctrls;
+
     if (mask == 0)
         return "none";
 
-    if (mask == CONTROL_ALL_BOOLEAN)
+    if (mask == all_ctrls)
         return "all";
 
+    const uint8_t control_names_offset = format_control_names_offset(format);
     for (unsigned int i = 0; mask; i++) {
         int ret;
 
@@ -303,8 +318,9 @@ ControlMaskText(struct xkb_context *ctx, enum xkb_action_controls mask)
 
         mask &= ~(1u << i);
 
-        const char* const maskText = LookupValue(ctrlMaskNames, 1u << i);
-        assert(maskText != NULL);
+        const char* const maskText =
+            LookupValue(ctrlMaskNames + control_names_offset, 1u << i);
+        assert(maskText);
         ret = snprintf(buf + pos, sizeof(buf) - pos, "%s%s",
                        pos == 0 ? "" : "+", maskText);
         if (ret <= 0 || pos + ret >= sizeof(buf))

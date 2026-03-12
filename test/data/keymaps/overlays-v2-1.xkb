@@ -7,10 +7,15 @@ xkb_keycodes {
 	<3>                  = 12;
 	<4>                  = 13;
 	<j>                  = 44;
+	<k>                  = 45;
 	<f1>                 = 67;
+	<f2>                 = 68;
 	<f10>                = 76;
 	<kp1>                = 87;
+	<kp2>                = 88;
+	<f11>                = 95;
 	<left>               = 113;
+	<down>               = 116;
 };
 
 xkb_types {
@@ -53,10 +58,19 @@ xkb_symbols {
 		overlay2= <left>,
 		symbols[1]= [               j ]
 	};
+	key <k>                  {
+		overlay1= <kp2>,
+		overlay2= <down>,
+		symbols[1]= [               k ]
+	};
 	key <f1>                 {	[              F1 ] };
+	key <f2>                 {	[              F2 ] };
 	key <f10>                {	[             F10 ] };
 	key <kp1>                {	[            KP_1 ] };
+	key <kp2>                {	[            KP_2 ] };
+	key <f11>                {	[             F11 ] };
 	key <left>               {	[            Left ] };
+	key <down>               {	[            Down ] };
 };
 
 };

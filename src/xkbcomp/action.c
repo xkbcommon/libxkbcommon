@@ -740,7 +740,8 @@ HandleSetLockControls(const struct xkb_keymap_info *keymap_info,
                                         keymap_info->strict);
 
         uint32_t mask = 0;
-        if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames))
+        const uint8_t offset = keymap_info->features.controls_name_offset;
+        if (!ExprResolveMask(ctx, value, &mask, ctrlMaskNames + offset))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "controls mask", keymap_info->strict);
 

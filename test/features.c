@@ -95,10 +95,10 @@ test_libxkbcommon_enums(void)
             assert(!xkb_has_feature(feature, -1));
             assert(!xkb_has_feature(feature, INT_MIN));
             /* No high positive values */
-            assert(max <= XKB_STATE_MATCH_NON_EXCLUSIVE);
+            assert(max <= XKB_KEYBOARD_CONTROL_OVERLAY8);
             /* Invalid mask */
-            static_assert(XKB_STATE_MATCH_NON_EXCLUSIVE < (INT_MAX >> 1), "");
-            assert(!xkb_has_feature(feature, (XKB_STATE_MATCH_NON_EXCLUSIVE << 1)));
+            static_assert(XKB_KEYBOARD_CONTROL_OVERLAY8 < (INT_MAX >> 1), "");
+            assert(!xkb_has_feature(feature, (XKB_KEYBOARD_CONTROL_OVERLAY8 << 1)));
             if (max > 0) {
                 assert(!xkb_has_feature(feature, (max << 1)));
                 assert(!xkb_has_feature(feature, max | (max << 1)));

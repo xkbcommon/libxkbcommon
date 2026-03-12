@@ -695,7 +695,8 @@ SetLedMapField(CompatInfo *info, LedInfo *ledi, const char *field,
         if (arrayNdx)
             return ReportLedNotArray(info, ledi, field);
 
-        if (!ExprResolveMask(info->ctx, value, &mask, ctrlMaskNames))
+        const uint8_t offset = info->keymap_info->features.controls_name_offset;
+        if (!ExprResolveMask(info->ctx, value, &mask, ctrlMaskNames + offset))
             return ReportLedBadType(info, ledi, field, "controls mask");
 
         ledi->led.ctrls = mask;
