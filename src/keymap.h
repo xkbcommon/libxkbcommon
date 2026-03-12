@@ -180,6 +180,15 @@ static_assert(
     "Private value should match public API"
 );
 
+static_assert(
+    CONTROL_OVERLAY1 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY1 &&
+    CONTROL_OVERLAY2 ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY2,
+    "Private value should match public API"
+);
+
+
 enum xkb_match_operation {
     MATCH_NONE,
     MATCH_ANY_OR_NONE,
@@ -224,6 +233,10 @@ static_assert(XKB_OVERLAY_ALL == ((UINT16_C(1) << XKB_OVERLAY_MAX) - 1), "");
 #define XKB_OVERLAY1_CONTROLS_OFFSET 10
 static_assert((UINT32_C(1) << XKB_OVERLAY1_CONTROLS_OFFSET) ==
               CONTROL_OVERLAY1, "");
+#define OVERLAYS_FROM_CONTROLS(mask) (                 \
+    /* Overlays 1-2 */                                 \
+    (((mask) >> XKB_OVERLAY1_CONTROLS_OFFSET) & 0x3)   \
+)
 
 struct xkb_controls_action {
     enum xkb_action_type type;

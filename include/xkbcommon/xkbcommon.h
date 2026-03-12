@@ -2492,6 +2492,18 @@ enum xkb_keyboard_control_flags {
      * [latch]: @ref latched-mod-def
      */
     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS = (1 << 3),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **1**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY1 = (1 << 10),
+    /**
+     * Enable the [keyboard overlay](@ref key-behavior-overlay) **2**.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYBOARD_CONTROL_OVERLAY2 = (1 << 11),
 };
 
 /**

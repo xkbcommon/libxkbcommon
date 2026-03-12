@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <xcb/xkb.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
@@ -140,6 +141,10 @@ translate_controls_mask(uint32_t wire)
         ret |= CONTROL_AX_FEEDBACK;
     if (wire & XCB_XKB_BOOL_CTRL_AUDIBLE_BELL_MASK)
         ret |= CONTROL_BELL;
+    if (wire & XCB_XKB_BOOL_CTRL_OVERLAY_1_MASK)
+        ret |= CONTROL_OVERLAY1;
+    if (wire & XCB_XKB_BOOL_CTRL_OVERLAY_2_MASK)
+        ret |= CONTROL_OVERLAY2;
     if (wire & XCB_XKB_BOOL_CTRL_IGNORE_GROUP_LOCK_MASK)
         ret |= CONTROL_IGNORE_GROUP_LOCK;
     /* Some controls are not supported and don't appear here. */
