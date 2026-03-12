@@ -136,6 +136,8 @@ enum xkb_enumerations_values {
     XKB_KEYBOARD_CONTROL_FLAGS_VALUES
         = XKB_KEYBOARD_CONTROL_NONE
         | XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
+        | XKB_KEYBOARD_CONTROL_OVERLAY1
+        | XKB_KEYBOARD_CONTROL_OVERLAY2
     ,
     XKB_EVENT_ITERATOR_FLAGS_VALUES
         = XKB_EVENT_ITERATOR_NO_FLAGS
@@ -285,6 +287,8 @@ static const int xkb_state_component_values[] = {
 static const int xkb_keyboard_control_flags_values[] = {
     XKB_KEYBOARD_CONTROL_NONE,
     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+    XKB_KEYBOARD_CONTROL_OVERLAY1,
+    XKB_KEYBOARD_CONTROL_OVERLAY2,
 };
 #endif
 

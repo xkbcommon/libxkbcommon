@@ -2395,6 +2395,16 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t kc)
  * State event API
  ******************************************************************************/
 
+/** Entry to keep track of the state of an overlaid key */
+struct xkb_overlaid_key {
+    /** The source key being overlaid */
+    const struct xkb_key *old;
+    /** The target key */
+    const struct xkb_key *new;
+    /** Counter of key currently down */
+    int refcnt;
+};
+
 /*
  * `xkb_state_machine` have a similar role as `xkb_state` and is indeed currently
  * only a simple wrapper. However, having a separate type:
@@ -2410,6 +2420,27 @@ struct xkb_state_machine {
     struct xkb_state state;
 
     /* Extra event API-specific state data */
+
+    /** Keyboard overlays handling */
+    struct {
+        /** Current enabled overlays mask */
+        xkb_overlay_mask_t enabled;
+        /**
+         * Activation order of the overlay
+         *
+         * Overlays indices are stored 1-indexed in nibbles: the lowest
+         * nibble corresponds to the latest activated index.
+         */
+        uint32_t order;
+        /**
+         * Current overlaid keys
+         *
+         * When a key is overlaid, it remained overlaid in this configuration
+         * until totally released, i.e. every key press was matched with the
+         * corresponding key release.
+         */
+        darray(struct xkb_overlaid_key) keys;
+    } overlays;
 
     /** Configuration */
     struct state_machine_config {
@@ -2765,6 +2796,8 @@ xkb_state_machine_new(struct xkb_keymap *keymap,
         !state_machine_set_shortcuts(sm, &options->shortcuts))
         goto error;
 
+    darray_init(sm->overlays.keys);
+
     return sm;
 
 error:
@@ -2788,6 +2821,7 @@ xkb_state_machine_unref(struct xkb_state_machine *sm)
         return;
 
     xkb_state_destroy(&sm->state);
+    darray_free(sm->overlays.keys);
     free(sm->config.shortcuts.targets);
     free(sm->config.modifiers.mappings);
     free(sm);
@@ -2807,6 +2841,50 @@ xkb_state_machine_get_state(struct xkb_state_machine *sm)
     return &sm->state;
 }
 
+static void
+state_machine_update_overlays(struct xkb_state_machine *sm)
+{
+    /*
+     * Overlays indices are stored 1-indexed in nibbles: the lowest
+     * nibble corresponds to the latest activated index.
+     */
+
+    const xkb_overlay_mask_t mask =
+        OVERLAYS_FROM_CONTROLS(sm->state.components.controls);
+    xkb_overlay_mask_t added = mask & ~sm->overlays.enabled;
+
+    /* Remove overlays no longer enabled and keep relative order */
+    uint32_t order = sm->overlays.order;
+    static_assert(XKB_OVERLAY_MAX == 2, "");
+    for (uint8_t n = 0; n < (uint8_t)XKB_OVERLAY_MAX;) {
+        xkb_overlay_index_t overlay_idx = (order >> (n * 4)) & 0xf;
+        if (!overlay_idx)
+            break;
+        const xkb_overlay_mask_t overlay_mask =
+            (UINT32_C(1) << (overlay_idx - 1u) /* k is 1-indexed */);
+        if (overlay_mask & mask) {
+            /* no duplicates */
+            added &= ~overlay_mask;
+            n++;
+        } else {
+            /* remove overlay */
+            const uint32_t head = (UINT32_C(1) << (n * 4)) - 1;
+            order = (order & head) | ((order >> 4) & ~head);
+        }
+    }
+
+    /* Add new overlays in ascending order */
+    for (xkb_overlay_index_t k = 0; added; k++, added >>= 1) {
+        if (added & 0x1) {
+            order <<= 4;
+            order |= k + 1u; /* k is 0-indexed */
+        }
+    }
+
+    sm->overlays.order = order;
+    sm->overlays.enabled = mask;
+}
+
 int
 xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
                                           struct xkb_event_iterator *events,
@@ -2824,6 +2902,9 @@ xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
     const enum xkb_state_component changed =
         get_state_component_changes(&previous_components, &state->components);
     if (changed) {
+        if (changed & XKB_STATE_CONTROLS)
+            state_machine_update_overlays(sm);
+
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
@@ -2902,6 +2983,10 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
     const enum xkb_state_component changed =
         get_state_component_changes(&previous_components, &state->components);
     if (changed) {
+        // TODO: latch controls
+        // if (changed & XKB_STATE_CONTROLS)
+        //     state_machine_update_overlays(sm);
+
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
@@ -3062,6 +3147,98 @@ undo_tweaks(const struct xkb_state *state,
     }
 }
 
+static const struct xkb_key *
+process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key,
+                    enum xkb_key_direction direction)
+{
+    /* Check if key is currently overlaid */
+    struct xkb_overlaid_key *entry = NULL;
+    struct xkb_overlaid_key *available_entry = NULL;
+    darray_foreach(entry, sm->overlays.keys) {
+        if (entry->old == key) {
+            /* Maintain the key overlaid */
+            switch (direction) {
+            case XKB_KEY_DOWN:
+                entry->refcnt++;
+                break;
+            case XKB_KEY_REPEATED:
+                break;
+            case XKB_KEY_UP:
+            default:
+                entry->refcnt--;
+                break;
+            }
+            if (entry->refcnt <= 0)
+                entry->old = NULL;
+            return entry->new;
+        } else if (!entry->old && !available_entry) {
+            /* First free spot */
+            available_entry = entry;
+        }
+    }
+    if (direction == XKB_KEY_DOWN) {
+        /* Enable key overlay */
+
+        /*
+         * Get overlay index: select the latest activated overlay
+         * containing the key.
+         */
+        const struct xkb_key *new = key;
+
+        if (key->overlays & sm->overlays.enabled) {
+            /* Some relevant overlay is active */
+            for (uint32_t stack = sm->overlays.order; stack; stack >>= 4) {
+                static_assert(XKB_OVERLAY_MAX == 2, "");
+                const xkb_overlay_index_t overlay = (stack & 0xf) - 1;
+                const xkb_overlay_mask_t mask =
+                    (xkb_overlay_mask_t)(1u << overlay);
+                if (key->overlays & mask) {
+                    /* Get new key */
+                    if (key->overlays_inline) {
+                        /* Stored inline */
+                        new = key->overlay_key;
+                    } else {
+                        /* Stored in sparse array */
+                        const xkb_overlay_mask_t low = (xkb_overlay_mask_t)(
+                            key->overlays & (xkb_overlay_mask_t)(mask - 1u)
+                        );
+                        /* index = number of set bits strictly below bit */
+                        const xkb_overlay_index_t index =
+                            (xkb_overlay_index_t)popcount32(low);
+                        new = key->overlays_keys[index];
+                    }
+                    break;
+                }
+            }
+        } else {
+            /*
+             * No relevant overlay is active: block future overlays while
+             * the key is pressed.
+             */
+        }
+
+        /* Get new entry */
+        if (available_entry) {
+            /* Re-use a free entry */
+            entry = available_entry;
+        } else {
+            /* Append a new entry */
+            const darray_size_t idx = darray_size(sm->overlays.keys);
+            darray_resize(sm->overlays.keys, idx + 1);
+            entry = &darray_item(sm->overlays.keys, idx);
+        }
+
+        /* Overlay the key */
+        entry->old = key;
+        entry->new = new;
+        entry->refcnt = 1;
+        return new;
+    }
+
+    /* No overlay */
+    return key;
+}
+
 int
 xkb_state_machine_update_key(struct xkb_state_machine *sm,
                              struct xkb_event_iterator *events,
@@ -3071,12 +3248,15 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     events->next = 0;
 
     struct xkb_state * restrict const state = &sm->state;
-    const struct xkb_key * const key = XkbKey(state->keymap, kc);
+    const struct xkb_key * key = XkbKey(state->keymap, kc);
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
 
     const struct state_components previous_components = state->components;
+
+    if (key->overlays)
+        key = process_overlayable_key(sm, key, direction);
 
     ssize_t remap_event = do_remap_modifiers(&sm->config.modifiers, state,
                                              events, key);
@@ -3087,9 +3267,7 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     state->set_mods = 0;
     state->clear_mods = 0;
 
-    /* Handle key behaviors*/
-    // TODO: overlays
-
+    /* Handle key actions */
     xkb_filter_apply_all(state, events, key, direction);
 
     xkb_mod_index_t i;
@@ -3140,7 +3318,7 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
                 : (direction == XKB_KEY_REPEATED)
                     ? XKB_EVENT_TYPE_KEY_REPEATED
                     : XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = kc
+            .keycode = key->keycode
         });
     }
 
@@ -3152,6 +3330,9 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
     const enum xkb_state_component changed =
         get_state_component_changes(&previous_components, &state->components);
     if (changed) {
+        if (changed & XKB_STATE_CONTROLS)
+            state_machine_update_overlays(sm);
+
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
