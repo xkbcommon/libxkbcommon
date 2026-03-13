@@ -672,7 +672,7 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 		virtualModifier= LevelFive;
 		action= LockMods(modifiers=LevelFive);
 	};
-	interpret Mode_switch+AnyOfOrNone(all) {
+	interpret ISO_Group_Shift+AnyOfOrNone(all) {
 		virtualModifier= AltGr;
 		useModMapMods=level1;
 		action= SetGroup(group=+1);
@@ -1109,7 +1109,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[1]= [               4,          dollar ],
 		symbols[2]= [               4,       semicolon ],
 		symbols[3]= [               4,          dollar,            cent,        NoSymbol,      onequarter,        currency,        NoSymbol,        NoSymbol ],
-		symbols[4]= [               4,  guillemotright,           U203A,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
+		symbols[4]= [               4,  guillemotright, rightsingleanglequotemark,    femalesymbol,        NoSymbol,        NoSymbol,           U22A5,        NoSymbol ]
 	};
 	key <AE05>               {
 		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1117,7 +1117,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[1]= [               5,         percent ],
 		symbols[2]= [               5,         percent ],
 		symbols[3]= [               5,         percent,        currency,        NoSymbol,         onehalf,    threeeighths,        NoSymbol,        NoSymbol ],
-		symbols[4]= [               5,   guillemotleft,           U2039,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
+		symbols[4]= [               5,   guillemotleft, leftsingleanglequotemark,      malesymbol,  periodcentered,        NoSymbol,           U2221,        NoSymbol ]
 	};
 	key <AE06>               {
 		type[3]= "EIGHT_LEVEL_SEMIALPHABETIC",
@@ -1290,7 +1290,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		symbols[1]= [     bracketleft,       braceleft ],
 		symbols[2]= [     Cyrillic_ha,     Cyrillic_HA ],
 		symbols[3]= [ dead_circumflex,  dead_diaeresis,      dead_grave,        NoSymbol,        NoSymbol,  dead_abovering,        NoSymbol,        NoSymbol ],
-		symbols[4]= [          ssharp,           U1E9E,           U017F, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
+		symbols[4]= [          ssharp,          SSHARP,           U017F, Greek_finalsmallsigma,           U2212,        NoSymbol,             jot,        NoSymbol ]
 	};
 	key <AD12>               {
 		type[2]= "ALPHABETIC",
@@ -1861,7 +1861,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 	key <FK21>               {	[ XF86TouchpadToggle ] };
 	key <FK22>               {	[  XF86TouchpadOn ] };
 	key <FK23>               {	[ XF86TouchpadOff ] };
-	key <MDSW>               {	[     Mode_switch ] };
+	key <MDSW>               {	[ ISO_Group_Shift ] };
 	key <ALT>                {	[        NoSymbol,           Alt_L ] };
 	key <META>               {	[        NoSymbol,          Meta_L ] };
 	key <SUPR>               {	[        NoSymbol,         Super_L ] };

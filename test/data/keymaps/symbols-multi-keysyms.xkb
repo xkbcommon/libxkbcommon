@@ -147,7 +147,7 @@ xkb_compatibility "basic" {
 		virtualModifier= NumLock;
 		action= LockMods(modifiers=NumLock);
 	};
-	interpret Mode_switch+AnyOfOrNone(all) {
+	interpret ISO_Group_Shift+AnyOfOrNone(all) {
 		virtualModifier= AltGr;
 		useModMapMods=level1;
 		action= SetGroup(group=+1);

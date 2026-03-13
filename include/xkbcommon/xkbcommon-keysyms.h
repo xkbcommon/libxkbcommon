@@ -282,8 +282,9 @@ SOFTWARE.
 #define XKB_KEY_Cancel                        0xff69  /* Cancel, stop, abort, exit */
 #define XKB_KEY_Help                          0xff6a  /* Help */
 #define XKB_KEY_Break                         0xff6b
-#define XKB_KEY_Mode_switch                   0xff7e  /* Character set switch */
-#define XKB_KEY_script_switch                 0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_ISO_Group_Shift               0xff7e
+#define XKB_KEY_Mode_switch                   0xff7e  /* non-deprecated alias for ISO_Group_Shift */
+#define XKB_KEY_script_switch                 0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 #define XKB_KEY_Num_Lock                      0xff7f
 
 /* Keypad functions, keypad numbers cleverly chosen to map to ASCII */
@@ -429,7 +430,7 @@ SOFTWARE.
 #define XKB_KEY_ISO_Level5_Shift              0xfe11
 #define XKB_KEY_ISO_Level5_Latch              0xfe12
 #define XKB_KEY_ISO_Level5_Lock               0xfe13
-#define XKB_KEY_ISO_Group_Shift               0xff7e  /* non-deprecated alias for Mode_switch */
+/*      XKB_KEY_ISO_Group_Shift               0xff7e (see above) */
 #define XKB_KEY_ISO_Group_Latch               0xfe06
 #define XKB_KEY_ISO_Group_Lock                0xfe07
 #define XKB_KEY_ISO_Next_Group                0xfe08
@@ -523,6 +524,7 @@ SOFTWARE.
 
 #define XKB_KEY_dead_greek                    0xfe8c
 #define XKB_KEY_dead_hamza                    0xfe8d
+#define XKB_KEY_dead_apostrophe               0xfe8e
 
 #define XKB_KEY_First_Virtual_Screen          0xfed0
 #define XKB_KEY_Prev_Virtual_Screen           0xfed1
@@ -1074,7 +1076,7 @@ SOFTWARE.
 #define XKB_KEY_kana_N                        0x04dd  /* U+30F3 KATAKANA LETTER N */
 #define XKB_KEY_voicedsound                   0x04de  /* U+309B KATAKANA-HIRAGANA VOICED SOUND MARK */
 #define XKB_KEY_semivoicedsound               0x04df  /* U+309C KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK */
-#define XKB_KEY_kana_switch                   0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_kana_switch                   0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 
 /*
  * Arabic
@@ -1171,7 +1173,7 @@ SOFTWARE.
 #define XKB_KEY_Arabic_farsi_yeh           0x10006cc  /* deprecated alias for Farsi_yeh */
 #define XKB_KEY_Arabic_yeh_baree           0x10006d2  /* U+06D2 ARABIC LETTER YEH BARREE */
 #define XKB_KEY_Arabic_heh_goal            0x10006c1  /* U+06C1 ARABIC LETTER HEH GOAL */
-#define XKB_KEY_Arabic_switch                 0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_Arabic_switch                 0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 
 /*
  * Cyrillic
@@ -1399,7 +1401,7 @@ SOFTWARE.
 #define XKB_KEY_Greek_chi                     0x07f7  /* U+03C7 GREEK SMALL LETTER CHI */
 #define XKB_KEY_Greek_psi                     0x07f8  /* U+03C8 GREEK SMALL LETTER PSI */
 #define XKB_KEY_Greek_omega                   0x07f9  /* U+03C9 GREEK SMALL LETTER OMEGA */
-#define XKB_KEY_Greek_switch                  0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_Greek_switch                  0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 
 /*
  * Technical
@@ -1649,7 +1651,7 @@ SOFTWARE.
 #define XKB_KEY_hebrew_shin                   0x0cf9  /* U+05E9 HEBREW LETTER SHIN */
 #define XKB_KEY_hebrew_taw                    0x0cfa  /* U+05EA HEBREW LETTER TAV */
 #define XKB_KEY_hebrew_taf                    0x0cfa  /* deprecated */
-#define XKB_KEY_Hebrew_switch                 0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_Hebrew_switch                 0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 
 /*
  * Thai
@@ -1762,7 +1764,7 @@ SOFTWARE.
 #define XKB_KEY_Hangul_MultipleCandidate      0xff3d  /* Multiple candidate */
 #define XKB_KEY_Hangul_PreviousCandidate      0xff3e  /* Previous candidate */
 #define XKB_KEY_Hangul_Special                0xff3f  /* Special symbols */
-#define XKB_KEY_Hangul_switch                 0xff7e  /* non-deprecated alias for Mode_switch */
+#define XKB_KEY_Hangul_switch                 0xff7e  /* non-deprecated alias for ISO_Group_Shift */
 
 /* Hangul Consonant Characters */
 #define XKB_KEY_Hangul_Kiyeog                 0x0ea1  /* U+3131 HANGUL LETTER KIYEOK */
@@ -2538,6 +2540,19 @@ SOFTWARE.
 #define XKB_KEY_Sinh_ruu2                  0x1000df2  /* U+0DF2 SINHALA VOWEL SIGN DIGA GAETTA-PILLA */
 #define XKB_KEY_Sinh_luu2                  0x1000df3  /* U+0DF3 SINHALA VOWEL SIGN DIGA GAYANUKITTA */
 #define XKB_KEY_Sinh_kunddaliya            0x1000df4  /* U+0DF4 SINHALA PUNCTUATION KUNDDALIYA */
+
+/*
+ * German
+ */
+
+#define XKB_KEY_SSHARP                     0x1001e9e  /* U+1E9E LATIN CAPITAL LETTER SHARP S */
+
+/*
+ * General punctuation
+ */
+
+#define XKB_KEY_leftsingleanglequotemark   0x1002039  /* U+2039 SINGLE LEFT-POINTING ANGLE QUOTATION MARK */
+#define XKB_KEY_rightsingleanglequotemark  0x100203a  /* U+203A SINGLE RIGHT-POINTING ANGLE QUOTATION MARK */
 
 /*
  * XFree86 vendor specific keysyms.

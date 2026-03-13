@@ -25,14 +25,6 @@
 #include "test.h"
 #include "utils.h"
 
-/* S sharp
- * • U+00DF ß: lower case
- * •       SS: upper case (special mapping, not handled by us)
- * • U+1E9E ẞ: upper case, only for capitals
- */
-#ifndef XKB_KEY_Ssharp
-#define XKB_KEY_Ssharp (XKB_KEYSYM_UNICODE_OFFSET + 0x1E9E)
-#endif
 
 /* Reference implementation from XkbAdjustGroup in Xorg xserver */
 static int32_t
@@ -2740,7 +2732,7 @@ test_caps_keysym_transformation(struct xkb_context *context)
     sym = xkb_state_key_get_one_sym(state, KEY_YEN + EVDEV_OFFSET);
     assert(sym == XKB_KEY_NoSymbol);
     nsyms = xkb_state_key_get_syms(state, KEY_YEN + EVDEV_OFFSET, &syms);
-    assert(nsyms == 2 && syms[0] == XKB_KEY_OE && syms[1] == XKB_KEY_Ssharp);
+    assert(nsyms == 2 && syms[0] == XKB_KEY_OE && syms[1] == XKB_KEY_SSHARP);
     assert(xkb_state_key_get_level(state, KEY_RO + EVDEV_OFFSET, 0) == 0);
     sym = xkb_state_key_get_one_sym(state, KEY_RO + EVDEV_OFFSET);
     assert(sym == XKB_KEY_NoSymbol);
