@@ -180,4 +180,5 @@ global:
     xkb_event_serialize_enabled_controls;
     xkb_event_serialize_mods;
     xkb_event_serialize_layout;
+    xkb_utf8_to_keysym;
 } V_1.12.0;

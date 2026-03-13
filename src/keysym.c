@@ -16,6 +16,7 @@
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
+#include "utf8-decoding.h"
 #include "utils.h"
 #include "utils-numbers.h"
 #include "keysym.h"
@@ -351,6 +352,20 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     }
 
     return XKB_KEY_NoSymbol;
+}
+
+xkb_keysym_t
+xkb_utf8_to_keysym(const char *buffer, size_t size)
+{
+    if (!buffer || !size)
+        return 0;
+
+    /* Try to parse the parameter as a single UTF-8 encoded character */
+    size_t length = 0;
+    const uint32_t codepoint = utf8_next_code_point(buffer, size, &length);
+    return (codepoint == INVALID_UTF8_CODE_POINT || length == 0)
+        ? XKB_KEY_NoSymbol
+        : xkb_utf32_to_keysym(codepoint);
 }
 
 /*

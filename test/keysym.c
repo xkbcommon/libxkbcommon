@@ -525,6 +525,18 @@ main(void)
         char utf8[7];
         int needed = xkb_keysym_to_utf8(ks, utf8, sizeof(utf8));
         assert(0 <= needed && needed <= XKB_KEYSYM_UTF8_MAX_SIZE);
+        if (needed) {
+            /* UTF-8 Roundtrip */
+            const xkb_keysym_t ks_from_utf8 =
+                xkb_utf8_to_keysym(utf8, (size_t)needed - 1);
+            if (ks_from_utf8 != ks) {
+                /* Non canonical mapping */
+                const uint32_t expected = xkb_keysym_to_utf32(ks);
+                const uint32_t got = xkb_keysym_to_utf32(ks_from_utf8);
+                assert_eq("UTF-8 roundtrip for 0x%04"PRIx32,
+                        expected, got, "0x%04"PRIx32, ks);
+            }
+        }
         /* Check maximum name length (`needed` does not include the ending NULL) */
         char name[XKB_KEYSYM_NAME_MAX_SIZE];
         needed = xkb_keysym_iterator_get_name(iter, name, sizeof(name));
@@ -827,6 +839,11 @@ main(void)
 
     assert(test_string("", XKB_KEY_NoSymbol));
     assert(test_casestring("", XKB_KEY_NoSymbol));
+
+    assert(xkb_utf8_to_keysym(NULL, 0) == XKB_KEY_NoSymbol);
+    assert(xkb_utf8_to_keysym("", 1) == XKB_KEY_NoSymbol);
+    assert(xkb_utf8_to_keysym("1", 2) == XKB_KEY_1);
+    assert(xkb_utf8_to_keysym("12", 2) == XKB_KEY_1); /* Only first codepoint */
 
     /* Latin-1 keysyms (1:1 mapping in UTF-32) */
     assert(test_utf8(0x0020, "\x20"));
