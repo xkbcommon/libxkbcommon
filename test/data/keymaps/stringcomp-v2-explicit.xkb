@@ -740,7 +740,7 @@ xkb_compatibility "complete_caps(caps_lock)_4_misc(assign_shift_left_action)_4_l
 		repeat= False;
 		action= LockMods(modifiers=LevelFive);
 	};
-	interpret Mode_switch+AnyOfOrNone(all) {
+	interpret ISO_Group_Shift+AnyOfOrNone(all) {
 		virtualModifier= AltGr;
 		useModMapMods=level1;
 		repeat= False;
@@ -1404,7 +1404,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[2]= [                     NoAction(),                     NoAction() ],
 		symbols[3]= [                              4,                         dollar,                           cent,                       NoSymbol,                     onequarter,                       currency,                       NoSymbol,                       NoSymbol ],
 		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
-		symbols[4]= [                              4,                 guillemotright,                          U203A,                   femalesymbol,                       NoSymbol,                       NoSymbol,                          U22A5,                       NoSymbol ],
+		symbols[4]= [                              4,                 guillemotright,      rightsingleanglequotemark,                   femalesymbol,                       NoSymbol,                       NoSymbol,                          U22A5,                       NoSymbol ],
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <AE05>               {
@@ -1420,7 +1420,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[2]= [                     NoAction(),                     NoAction() ],
 		symbols[3]= [                              5,                        percent,                       currency,                       NoSymbol,                        onehalf,                   threeeighths,                       NoSymbol,                       NoSymbol ],
 		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
-		symbols[4]= [                              5,                  guillemotleft,                          U2039,                     malesymbol,                 periodcentered,                       NoSymbol,                          U2221,                       NoSymbol ],
+		symbols[4]= [                              5,                  guillemotleft,       leftsingleanglequotemark,                     malesymbol,                 periodcentered,                       NoSymbol,                          U2221,                       NoSymbol ],
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <AE06>               {
@@ -1731,7 +1731,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[2]= [                     NoAction(),                     NoAction() ],
 		symbols[3]= [                dead_circumflex,                 dead_diaeresis,                     dead_grave,                       NoSymbol,                       NoSymbol,                 dead_abovering,                       NoSymbol,                       NoSymbol ],
 		actions[3]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ],
-		symbols[4]= [                         ssharp,                          U1E9E,                          U017F,          Greek_finalsmallsigma,                          U2212,                       NoSymbol,                            jot,                       NoSymbol ],
+		symbols[4]= [                         ssharp,                         SSHARP,                          U017F,          Greek_finalsmallsigma,                          U2212,                       NoSymbol,                            jot,                       NoSymbol ],
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <AD12>               {
@@ -2558,9 +2558,9 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= none,
-		symbols[1]= [                      Control_L, {                      Control_L,                    Mode_switch } ],
+		symbols[1]= [                      Control_L, {                      Control_L,                ISO_Group_Shift } ],
 		actions[1]= [     SetMods(modifiers=Control), {     SetMods(modifiers=Control),             SetGroup(group=+1) } ],
-		symbols[2]= [ {                      Control_L,                    Mode_switch },                      Control_L ],
+		symbols[2]= [ {                      Control_L,                ISO_Group_Shift },                      Control_L ],
 		actions[2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
 	};
 	key <KATA>               {
@@ -3251,7 +3251,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		type= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= AltGr,
-		symbols[1]= [                    Mode_switch ],
+		symbols[1]= [                ISO_Group_Shift ],
 		actions[1]= [             SetGroup(group=+1) ]
 	};
 	key <ALT>                {

@@ -560,7 +560,7 @@
 0x00df:
   name: ssharp
   code point: 0x00DF
-  upper: 0x1001e9e # U1E9E
+  upper: 0x1001e9e # SSHARP
 0x00e0:
   name: agrave
   code point: 0x00E0
@@ -3526,6 +3526,8 @@
   name: dead_greek
 0xfe8d:
   name: dead_hamza
+0xfe8e:
+  name: dead_apostrophe
 0xfe90:
   name: dead_lowline
 0xfe91:
@@ -3745,7 +3747,7 @@
 0xff6b:
   name: Break
 0xff7e:
-  name: Mode_switch
+  name: ISO_Group_Shift
 0xff7f:
   name: Num_Lock
 0xff80:
@@ -5124,6 +5126,10 @@
   name: xabovedot
   code point: 0x1E8B
   upper: 0x1001e8a # Xabovedot
+0x1001e9e:
+  name: SSHARP
+  code point: 0x1E9E
+  lower: 0x00df # ssharp
 0x1001ea0:
   name: Abelowdot
   code point: 0x1EA0
@@ -5484,6 +5490,12 @@
   name: ytilde
   code point: 0x1EF9
   upper: 0x1001ef8 # Ytilde
+0x1002039:
+  name: leftsingleanglequotemark
+  code point: 0x2039
+0x100203a:
+  name: rightsingleanglequotemark
+  code point: 0x203A
 0x1002070:
   name: zerosuperior
   code point: 0x2070
