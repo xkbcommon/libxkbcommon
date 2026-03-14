@@ -700,13 +700,13 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
 
 void
 tools_print_events(const char *prefix, struct xkb_state *state,
-                   struct xkb_event_iterator *events,
+                   struct xkb_events *events,
                    struct xkb_compose_state *compose_state,
                    enum xkb_consumed_mode consumed_mode,
                    enum print_state_options options, bool report_state_changes)
 {
     const struct xkb_event *event;
-    while ((event = xkb_event_iterator_next(events)) != NULL) {
+    while ((event = xkb_events_next(events)) != NULL) {
         const enum xkb_event_type event_type =
             xkb_event_get_type(event);
         switch (event_type) {

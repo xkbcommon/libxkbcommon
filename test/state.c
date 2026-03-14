@@ -514,8 +514,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
     struct xkb_server_state *sm = xkb_server_state_new(keymap, NULL);
-    struct xkb_event_iterator *events =
-        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     const xkb_keysym_t *syms;
     xkb_keysym_t one_sym;
@@ -1067,7 +1066,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         }
     );
 
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
     xkb_state_unref(state);
 

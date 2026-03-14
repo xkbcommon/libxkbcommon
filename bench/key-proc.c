@@ -43,7 +43,7 @@ bench_client_state_api(struct xkb_state *state)
 
 NOINLINE static void
 bench_server_state_api(struct xkb_server_state *sm,
-                       struct xkb_event_iterator *events,
+                       struct xkb_events *events,
                        struct xkb_state *state)
 {
     bool keys[256] = { 0 };
@@ -61,7 +61,7 @@ bench_server_state_api(struct xkb_server_state *sm,
         acc_ret += (unsigned long)ret;
 
         enum xkb_state_component changed = 0;
-        while ((event = xkb_event_iterator_next(events))) {
+        while ((event = xkb_events_next(events))) {
             changed |= xkb_state_update_from_event(state, event);
         }
         acc_changed += (unsigned long)changed;
@@ -139,8 +139,8 @@ main(void)
 
     struct xkb_server_state *sm = xkb_server_state_new(keymap, NULL);
     assert(sm);
-    struct xkb_event_iterator *events =
-        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events *events =
+        xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);
@@ -150,7 +150,7 @@ main(void)
     bench_stop2(&bench);
 
     xkb_state_unref(state);
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
 
     bench_elapsed(&bench, &elapsed);

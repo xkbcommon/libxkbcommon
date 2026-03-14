@@ -38,8 +38,8 @@
 #include "utils.h"
 #include "utils-numbers.h"
 
-struct xkb_event_iterator {
-    enum xkb_event_iterator_flags flags;
+struct xkb_events {
+    enum xkb_events_flags flags;
     darray_size_t next;
     darray(struct xkb_event) queue;
     struct xkb_context *ctx;
@@ -49,7 +49,7 @@ struct xkb_filter {
     union xkb_action action;
     const struct xkb_key *key;
     bool (*func)(struct xkb_state *state,
-                 struct xkb_event_iterator *events,
+                 struct xkb_events *events,
                  struct xkb_filter *filter,
                  const struct xkb_key *key,
                  enum xkb_key_direction direction);
@@ -242,7 +242,7 @@ enum xkb_filter_result {
 
 static void
 xkb_filter_group_set_new(struct xkb_state *state,
-                         struct xkb_event_iterator *events,
+                         struct xkb_events *events,
                          struct xkb_filter *filter)
 {
     static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
@@ -253,7 +253,7 @@ xkb_filter_group_set_new(struct xkb_state *state,
 
 static bool
 xkb_filter_group_set_func(struct xkb_state *state,
-                          struct xkb_event_iterator *events,
+                          struct xkb_events *events,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
                           enum xkb_key_direction direction)
@@ -317,7 +317,7 @@ get_state_component_changes(const struct state_components *a,
 
 static void
 xkb_filter_group_lock_new(struct xkb_state *state,
-                          struct xkb_event_iterator *events,
+                          struct xkb_events *events,
                           struct xkb_filter *filter)
 {
     if (filter->action.group.flags & ACTION_LOCK_ON_RELEASE) {
@@ -336,7 +336,7 @@ xkb_filter_group_lock_new(struct xkb_state *state,
 
 static bool
 xkb_filter_group_lock_func(struct xkb_state *state,
-                           struct xkb_event_iterator *events,
+                           struct xkb_events *events,
                            struct xkb_filter *filter,
                            const struct xkb_key *key,
                            enum xkb_key_direction direction)
@@ -437,7 +437,7 @@ union group_latch_priv {
 
 static void
 xkb_filter_group_latch_new(struct xkb_state *state,
-                           struct xkb_event_iterator *events,
+                           struct xkb_events *events,
                            struct xkb_filter *filter)
 {
     const union group_latch_priv priv = {
@@ -453,7 +453,7 @@ xkb_filter_group_latch_new(struct xkb_state *state,
 
 static bool
 xkb_filter_group_latch_func(struct xkb_state *state,
-                            struct xkb_event_iterator *events,
+                            struct xkb_events *events,
                             struct xkb_filter *filter,
                             const struct xkb_key *key,
                             enum xkb_key_direction direction)
@@ -593,7 +593,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
 
 static void
 xkb_filter_mod_set_new(struct xkb_state *state,
-                       struct xkb_event_iterator *events,
+                       struct xkb_events *events,
                        struct xkb_filter *filter)
 {
     const enum xkb_action_flags unlock = ACTION_UNLOCK_ON_PRESS
@@ -616,7 +616,7 @@ xkb_filter_mod_set_new(struct xkb_state *state,
 
 static bool
 xkb_filter_mod_set_func(struct xkb_state *state,
-                        struct xkb_event_iterator *events,
+                        struct xkb_events *events,
                         struct xkb_filter *filter,
                         const struct xkb_key *key,
                         enum xkb_key_direction direction)
@@ -650,7 +650,7 @@ xkb_filter_mod_set_func(struct xkb_state *state,
 
 static void
 xkb_filter_mod_lock_new(struct xkb_state *state,
-                        struct xkb_event_iterator *events,
+                        struct xkb_events *events,
                         struct xkb_filter *filter)
 {
     filter->priv = (state->components.locked_mods &
@@ -676,7 +676,7 @@ xkb_filter_mod_lock_new(struct xkb_state *state,
 
 static bool
 xkb_filter_mod_lock_func(struct xkb_state *state,
-                         struct xkb_event_iterator *events,
+                         struct xkb_events *events,
                          struct xkb_filter *filter,
                          const struct xkb_key *key,
                          enum xkb_key_direction direction)
@@ -705,7 +705,7 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 
 static void
 xkb_filter_mod_latch_new(struct xkb_state *state,
-                         struct xkb_event_iterator *events,
+                         struct xkb_events *events,
                          struct xkb_filter *filter)
 {
     /* Latch-on-press + clear-locks imply unlock-on-press */
@@ -741,7 +741,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
 
 static bool
 xkb_filter_mod_latch_func(struct xkb_state *state,
-                          struct xkb_event_iterator *events,
+                          struct xkb_events *events,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
                           enum xkb_key_direction direction)
@@ -886,11 +886,11 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
 static inline void
 clear_all_latches_and_locks(struct xkb_state *state,
-                            struct xkb_event_iterator *events);
+                            struct xkb_events *events);
 
 static void
 xkb_filter_ctrls_new(struct xkb_state *state,
-                     struct xkb_event_iterator *events,
+                     struct xkb_events *events,
                      struct xkb_filter *filter)
 {
     if (filter->action.type == ACTION_TYPE_CTRL_SET) {
@@ -914,7 +914,7 @@ xkb_filter_ctrls_new(struct xkb_state *state,
 
 static bool
 xkb_filter_ctrls_func(struct xkb_state *state,
-                      struct xkb_event_iterator *events,
+                      struct xkb_events *events,
                       struct xkb_filter *filter,
                       const struct xkb_key *key,
                       enum xkb_key_direction direction)
@@ -956,7 +956,7 @@ xkb_filter_ctrls_func(struct xkb_state *state,
 
 static bool
 append_redirect_key_events(struct xkb_state *state,
-                           struct xkb_event_iterator *events,
+                           struct xkb_events *events,
                            const struct xkb_redirect_key_action *redirect,
                            enum xkb_key_direction direction)
 {
@@ -1020,7 +1020,7 @@ append_redirect_key_events(struct xkb_state *state,
 
 static void
 xkb_filter_redirect_key_new(struct xkb_state *state,
-                            struct xkb_event_iterator *events,
+                            struct xkb_events *events,
                             struct xkb_filter *filter)
 {
     /* Action effectual only with the state event API and a valid keycode */
@@ -1034,7 +1034,7 @@ xkb_filter_redirect_key_new(struct xkb_state *state,
 
 static bool
 xkb_filter_redirect_key_func(struct xkb_state *state,
-                             struct xkb_event_iterator *events,
+                             struct xkb_events *events,
                              struct xkb_filter *filter,
                              const struct xkb_key *key,
                              enum xkb_key_direction direction)
@@ -1071,10 +1071,10 @@ xkb_filter_redirect_key_func(struct xkb_state *state,
 
 static const struct {
     void (*new)(struct xkb_state *state,
-                struct xkb_event_iterator *events,
+                struct xkb_events *events,
                 struct xkb_filter *filter);
     bool (*func)(struct xkb_state *state,
-                 struct xkb_event_iterator *events,
+                 struct xkb_events *events,
                  struct xkb_filter *filter,
                  const struct xkb_key *key, enum xkb_key_direction direction);
 } filter_action_funcs[_ACTION_TYPE_NUM_ENTRIES] = {
@@ -1105,7 +1105,7 @@ static const struct {
  */
 static void
 xkb_filter_apply_all(struct xkb_state *state,
-                     struct xkb_event_iterator *events,
+                     struct xkb_events *events,
                      const struct xkb_key *key,
                      enum xkb_key_direction direction)
 {
@@ -1418,7 +1418,7 @@ static const struct xkb_key synthetic_key = { 0 };
 /* Transcription from xserver: XkbLatchModifiers */
 static void
 update_latch_modifiers(struct xkb_state *state,
-                       struct xkb_event_iterator *events,
+                       struct xkb_events *events,
                        xkb_mod_mask_t mask, xkb_mod_mask_t latches)
 {
     /* Clear affected latched modifiers */
@@ -1471,7 +1471,7 @@ update_latch_modifiers(struct xkb_state *state,
 /* Transcription from xserver: XkbLatchGroup */
 static void
 update_latch_group(struct xkb_state *state,
-                   struct xkb_event_iterator *events, int32_t group)
+                   struct xkb_events *events, int32_t group)
 {
     /* Clear any pending latch to locks. */
     static struct xkb_level synthetic_key_level_break_group_latch = {
@@ -1538,7 +1538,7 @@ resolve_to_canonical_mods(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
 
 static void
 state_update_latched_locked(struct xkb_state *state,
-                            struct xkb_event_iterator *events,
+                            struct xkb_events *events,
                             xkb_mod_mask_t affect_latched_mods,
                             xkb_mod_mask_t latched_mods,
                             bool affect_latched_layout,
@@ -1602,7 +1602,7 @@ xkb_state_update_latched_locked(struct xkb_state *state,
 
 static inline void
 clear_all_latches_and_locks(struct xkb_state *state,
-                            struct xkb_event_iterator *events)
+                            struct xkb_events *events)
 {
     state_update_latched_locked(state, events,
                                 (xkb_mod_mask_t) XKB_MOD_ALL, 0, true, 0,
@@ -1611,7 +1611,7 @@ clear_all_latches_and_locks(struct xkb_state *state,
 
 static void
 state_update_enabled_controls(struct xkb_state *state,
-                              struct xkb_event_iterator *events,
+                              struct xkb_events *events,
                               enum xkb_keyboard_control_flags affect,
                               enum xkb_keyboard_control_flags controls)
 {
@@ -2888,7 +2888,7 @@ server_state_update_overlays(struct xkb_server_state *state)
 
 int
 xkb_server_state_update_enabled_controls(struct xkb_server_state *state,
-                                         struct xkb_event_iterator *events,
+                                         struct xkb_events *events,
                                          enum xkb_keyboard_control_flags affect,
                                          enum xkb_keyboard_control_flags controls)
 {
@@ -2951,7 +2951,7 @@ xkb_server_state_update_control(struct xkb_server_state *state,
 
 int
 xkb_server_state_update_latched_locked(struct xkb_server_state *state,
-                                       struct xkb_event_iterator *events,
+                                       struct xkb_events *events,
                                        xkb_mod_mask_t affect_latched_mods,
                                        xkb_mod_mask_t latched_mods,
                                        bool affect_latched_layout,
@@ -3006,7 +3006,7 @@ xkb_server_state_update_latched_locked(struct xkb_server_state *state,
 static ssize_t
 do_remap_modifiers(const struct server_state_modifiers_config *mappings,
                    struct xkb_state *state,
-                   struct xkb_event_iterator *events,
+                   struct xkb_events *events,
                    const struct xkb_key *key)
 {
     if (!(mappings->mask & state->components.mods))
@@ -3072,7 +3072,7 @@ static ssize_t
 do_shortcuts_tweak(const struct server_state_shortcuts_config *config,
                    struct xkb_state *state,
                    const struct state_components *previous_components,
-                   struct xkb_event_iterator *events, ssize_t remap_event)
+                   struct xkb_events *events, ssize_t remap_event)
 {
     if (config->targets &&
         (state->components.mods & config->mask) &&
@@ -3124,7 +3124,7 @@ do_shortcuts_tweak(const struct server_state_shortcuts_config *config,
 static void
 undo_tweaks(const struct xkb_state *state,
             const struct state_components *previous_components,
-            struct xkb_event_iterator *events)
+            struct xkb_events *events)
 {
     /* Get last component event */
     const struct xkb_event *event = NULL;
@@ -3245,7 +3245,7 @@ process_overlayable_key(struct xkb_server_state *state,
 
 int
 xkb_server_state_update_key(struct xkb_server_state *state,
-                            struct xkb_event_iterator *events,
+                            struct xkb_events *events,
                             xkb_keycode_t kc, enum xkb_key_direction direction)
 {
     darray_size(events->queue) = 0;
@@ -3349,24 +3349,22 @@ xkb_server_state_update_key(struct xkb_server_state *state,
     return 0;
 }
 
-struct xkb_event_iterator *
-xkb_event_iterator_new(struct xkb_context *context,
-                       enum xkb_event_iterator_flags flags)
+struct xkb_events *
+xkb_events_new(struct xkb_context *context, enum xkb_events_flags flags)
 {
-    static const enum xkb_event_iterator_flags XKB_EVENT_ITERATOR_FLAGS =
-        XKB_EVENT_ITERATOR_NO_FLAGS;
+    static const enum xkb_events_flags XKB_EVENTS_FLAGS = XKB_EVENTS_NO_FLAGS;
 
-    if (flags & ~XKB_EVENT_ITERATOR_FLAGS) {
+    if (flags & ~XKB_EVENTS_FLAGS) {
         log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized event iterator flags: %#x\n",
-                     (flags & ~XKB_EVENT_ITERATOR_FLAGS));
+                     "unrecognized events flags: %#x\n",
+                     (flags & ~XKB_EVENTS_FLAGS));
         return NULL;
     }
 
-    struct xkb_event_iterator *events = calloc(1, sizeof(*events));
+    struct xkb_events *events = calloc(1, sizeof(*events));
     if (events == NULL) {
         log_err(context, XKB_ERROR_ALLOCATION_ERROR,
-                "%s: cannot allocate state event iterator\n", __func__);
+                "%s: cannot allocate state events\n", __func__);
         return events;
     }
     darray_init(events->queue);
@@ -3377,7 +3375,7 @@ xkb_event_iterator_new(struct xkb_context *context,
 }
 
 void
-xkb_event_iterator_destroy(struct xkb_event_iterator *events)
+xkb_events_destroy(struct xkb_events *events)
 {
     if (events == NULL)
         return;
@@ -3387,7 +3385,7 @@ xkb_event_iterator_destroy(struct xkb_event_iterator *events)
 }
 
 const struct xkb_event *
-xkb_event_iterator_next(struct xkb_event_iterator *events)
+xkb_events_next(struct xkb_events *events)
 {
     if (events->next < darray_size(events->queue)) {
         const darray_size_t index = events->next++;
@@ -3460,7 +3458,7 @@ xkb_state_update_from_event(struct xkb_state *state,
         state->components = event->components.components;
         /*
          * Recompute the changes instead of using the event value, because we do
-         * not know if the event’s iterator and the state are synced.
+         * not know if the event’s queue and the state are synced.
          */
         return get_state_component_changes(&prev_components, &state->components);
     } else {

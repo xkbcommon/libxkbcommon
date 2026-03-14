@@ -49,7 +49,7 @@ struct keyboard {
     struct xkb_keymap *keymap;
     struct xkb_state *state;
     struct xkb_server_state *server_state;
-    struct xkb_event_iterator *state_events;
+    struct xkb_events *state_events;
     struct xkb_compose_state *compose_state;
     xkb_keycode_t repeated_key;
     int32_t device_id;
@@ -208,7 +208,7 @@ update_keymap(struct keyboard *kbd)
             }
             if (!kbd->state_events) {
                 kbd->state_events =
-                    xkb_event_iterator_new(kbd->ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+                    xkb_events_new(kbd->ctx, XKB_EVENTS_NO_FLAGS);
                 if (!kbd->state_events)
                     return -1;
             }
@@ -219,7 +219,7 @@ update_keymap(struct keyboard *kbd)
             if (ret)
                 return ret;
             const struct xkb_event *event;
-            while ((event = xkb_event_iterator_next(kbd->state_events))) {
+            while ((event = xkb_events_next(kbd->state_events))) {
                 xkb_state_update_from_event(kbd->state, event);
             }
         } else {
@@ -276,7 +276,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 err_state:
     xkb_state_unref(kbd->state);
     xkb_server_state_unref(kbd->server_state);
-    xkb_event_iterator_destroy(kbd->state_events);
+    xkb_events_destroy(kbd->state_events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 err_out:
@@ -288,7 +288,7 @@ deinit_kbd(struct keyboard *kbd)
 {
     xkb_state_unref(kbd->state);
     xkb_server_state_unref(kbd->server_state);
-    xkb_event_iterator_destroy(kbd->state_events);
+    xkb_events_destroy(kbd->state_events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 }

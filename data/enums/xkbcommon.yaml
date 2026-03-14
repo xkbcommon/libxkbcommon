@@ -112,8 +112,8 @@ xkb_keyboard_control_flags:
     value: 131072
   - name: XKB_KEYBOARD_CONTROL_OVERLAY8
     value: 262144
-xkb_event_iterator_flags:
-  - name: XKB_EVENT_ITERATOR_NO_FLAGS
+xkb_events_flags:
+  - name: XKB_EVENTS_NO_FLAGS
     value: 0
 xkb_keyboard_control_param:
   - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY

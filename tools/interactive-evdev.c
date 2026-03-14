@@ -33,7 +33,7 @@ struct keyboard {
     char *path;
     int fd;
     struct xkb_server_state *server_state;
-    struct xkb_event_iterator *state_events;
+    struct xkb_events *state_events;
     struct xkb_state *state;
     struct xkb_compose_state *compose_state;
     struct keyboard *next;
@@ -98,7 +98,7 @@ keyboard_new(struct dirent *ent,
     char *path;
     int fd;
     struct xkb_server_state *server_state = NULL;
-    struct xkb_event_iterator *state_events = NULL;
+    struct xkb_events *state_events = NULL;
     struct xkb_state *state = NULL;
     struct xkb_compose_state *compose_state = NULL;
     struct keyboard *kbd = NULL;
@@ -127,9 +127,9 @@ keyboard_new(struct dirent *ent,
             goto err_server_state;
         }
 
-        state_events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+        state_events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
         if (!state_events) {
-            fprintf(stderr, "Couldn't create xkb events iterator for %s\n", path);
+            fprintf(stderr, "Couldn't create xkb events for %s\n", path);
             ret = -EFAULT;
             goto err_state_events;
         }
@@ -147,7 +147,7 @@ keyboard_new(struct dirent *ent,
                                                  kbd_controls_affect,
                                                  kbd_controls_values);
         const struct xkb_event *event;
-        while ((event = xkb_event_iterator_next(state_events))) {
+        while ((event = xkb_events_next(state_events))) {
             xkb_state_update_from_event(state, event);
         }
     } else {
@@ -186,7 +186,7 @@ err_kbd:
 err_compose_state:
     xkb_state_unref(state);
 err_state:
-    xkb_event_iterator_destroy(state_events);
+    xkb_events_destroy(state_events);
 err_state_events:
     xkb_server_state_unref(server_state);
 err_server_state:
@@ -206,7 +206,7 @@ keyboard_free(struct keyboard *kbd)
         close(kbd->fd);
     free(kbd->path);
     xkb_server_state_unref(kbd->server_state);
-    xkb_event_iterator_destroy(kbd->state_events);
+    xkb_events_destroy(kbd->state_events);
     xkb_state_unref(kbd->state);
     xkb_compose_state_unref(kbd->compose_state);
     free(kbd);

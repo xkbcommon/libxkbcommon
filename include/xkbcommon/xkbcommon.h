@@ -2639,70 +2639,69 @@ xkb_event_serialize_layout(const struct xkb_event *event,
                            enum xkb_state_component components);
 
 /**
- * @struct xkb_event_iterator
+ * @struct xkb_events
  * Opaque iterator object over keyboard events.
  *
  * @since 1.14.0
  */
-struct xkb_event_iterator;
+struct xkb_events;
 
 /**
- * @enum xkb_event_iterator_flags
- * Flags for `xkb_event_iterator::xkb_event_iterator_new()`.
+ * @enum xkb_events_flags
+ * Flags for `xkb_events::xkb_events_new()`.
  *
  * @since 1.14.0
  */
-enum xkb_event_iterator_flags {
-    XKB_EVENT_ITERATOR_NO_FLAGS = 0
+enum xkb_events_flags {
+    XKB_EVENTS_NO_FLAGS = 0
 };
 
 /**
- * Create an event iterator object.
+ * Create an event queue object.
  *
  * @param context The context in which to create the iterator.
  * @param flags   Optional flags for the iterator, or 0.
  *
- * @returns A new event iterator object, or `NULL` on failure.
+ * @returns A new event queue object, or `NULL` on failure.
  *
  * @since 1.14.0
  *
- * @sa `xkb_event_iterator_destroy()`
+ * @sa `xkb_events_destroy()`
  *
- * @memberof xkb_event_iterator
+ * @memberof xkb_events
  */
-XKB_EXPORT struct xkb_event_iterator *
-xkb_event_iterator_new(struct xkb_context *context,
-                       enum xkb_event_iterator_flags flags);
+XKB_EXPORT struct xkb_events *
+xkb_events_new(struct xkb_context *context, enum xkb_events_flags flags);
 
 /**
- * Free an event iterator object.
+ * Free an event queue object.
  *
  * @param events
- *     The event iterator to free.
+ *     The event queue to free.
  *     If it is `NULL`, this function does nothing.
  *
  * @since 1.14.0
  *
- * @sa `xkb_event_iterator_new()`
+ * @sa `xkb_events_new()`
  *
- * @memberof xkb_event_iterator
+ * @memberof xkb_events
  */
 XKB_EXPORT void
-xkb_event_iterator_destroy(struct xkb_event_iterator *events);
+xkb_events_destroy(struct xkb_events *events);
 
 /**
- * Get the next event queued in an event iterator object.
+ * Get the next event queued in an event queue object.
  *
- * @param events The event iterator.
+ * @param events The event queue.
  *
  * @returns The next event, or `NULL` if the queue is empty.
  *
  * @since 1.14.0
  *
- * @memberof xkb_event_iterator
+ * @memberof xkb_events
  */
 XKB_EXPORT const struct xkb_event *
-xkb_event_iterator_next(struct xkb_event_iterator *events);
+xkb_events_next(struct xkb_events *events);
 
 /**
  * Create a new keyboard server state object.
@@ -2774,7 +2773,7 @@ xkb_server_state_get_keymap(const struct xkb_server_state *state);
  * [global keyboard controls].
  *
  * @param state  The keyboard server state object.
- * @param events The event iterator to store the events. It will be reset.
+ * @param events The event queue to store the events. It will be reset.
  * @param affect
        *Boolean* global keyboard controls to modify. @p controls contains the
        actual values.
@@ -2794,7 +2793,7 @@ xkb_server_state_get_keymap(const struct xkb_server_state *state);
  */
 XKB_EXPORT int
 xkb_server_state_update_enabled_controls(struct xkb_server_state *state,
-                                         struct xkb_event_iterator *events,
+                                         struct xkb_events *events,
                                          enum xkb_keyboard_control_flags affect,
                                          enum xkb_keyboard_control_flags controls);
 
@@ -2899,7 +2898,7 @@ enum xkb_key_direction {
  * to missed input events), situations like “stuck modifiers” may occur.
  *
  * @param state     The keyboard server state object.
- * @param events    The event iterator to store the events. It will be reset.
+ * @param events    The event queue to store the events. It will be reset.
  * @param key       The key being operated.
  * @param direction The direction of the key operation.
  *
@@ -2911,7 +2910,7 @@ enum xkb_key_direction {
  */
 XKB_EXPORT int
 xkb_server_state_update_key(struct xkb_server_state *state,
-                            struct xkb_event_iterator *events,
+                            struct xkb_events *events,
                             xkb_keycode_t key, enum xkb_key_direction direction);
 
 /**
@@ -2933,7 +2932,7 @@ xkb_server_state_update_key(struct xkb_server_state *state,
  * @endparblock
  *
  * @param state  The keyboard server state object.
- * @param events The event iterator to store the events. It will be reset.
+ * @param events The event queue to store the events. It will be reset.
  * @param affect_latched_mods See @p latched_mods.
  * @param latched_mods
  *     Modifiers to set as latched or unlatched. Only modifiers in
@@ -2959,7 +2958,7 @@ xkb_server_state_update_key(struct xkb_server_state *state,
  */
 XKB_EXPORT int
 xkb_server_state_update_latched_locked(struct xkb_server_state *state,
-                                       struct xkb_event_iterator *events,
+                                       struct xkb_events *events,
                                        xkb_mod_mask_t affect_latched_mods,
                                        xkb_mod_mask_t latched_mods,
                                        bool affect_latched_layout,

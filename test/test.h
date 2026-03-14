@@ -70,11 +70,11 @@ test_key_seq(struct xkb_keymap *keymap, ...);
 
 int
 test_key_seq2(struct xkb_keymap *keymap, struct xkb_server_state *sm,
-              struct xkb_event_iterator *events, ...);
+              struct xkb_events *events, ...);
 
 int
 test_key_seq_va(struct xkb_keymap *keymap, struct xkb_server_state * sm,
-                struct xkb_event_iterator *events, va_list args);
+                struct xkb_events *events, va_list args);
 
 char *
 test_makedir(const char *parent, const char *path);

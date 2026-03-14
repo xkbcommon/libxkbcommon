@@ -171,9 +171,9 @@ global:
     xkb_server_state_update_enabled_controls;
     xkb_server_state_update_control;
     xkb_server_state_update_key;
-    xkb_event_iterator_new;
-    xkb_event_iterator_destroy;
-    xkb_event_iterator_next;
+    xkb_events_new;
+    xkb_events_destroy;
+    xkb_events_next;
     xkb_event_get_type;
     xkb_event_get_keycode;
     xkb_event_get_changed_components;

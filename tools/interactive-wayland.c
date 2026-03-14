@@ -70,7 +70,7 @@ struct interactive_seat {
     struct xkb_keymap *keymap;
     struct xkb_state *state;
     struct xkb_server_state *server_state;
-    struct xkb_event_iterator *events;
+    struct xkb_events *events;
     struct xkb_compose_state *compose_state;
 
     struct wl_list link;
@@ -513,15 +513,14 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         }
         if (!seat->events) {
             /* Initialize the events queue */
-            seat->events = xkb_event_iterator_new(seat->inter->ctx,
-                                                  XKB_EVENT_ITERATOR_NO_FLAGS);
+            seat->events = xkb_events_new(seat->inter->ctx, XKB_EVENTS_NO_FLAGS);
             if (seat->events) {
                 xkb_server_state_update_enabled_controls(seat->server_state,
                                                          seat->events,
                                                          kbd_controls_affect,
                                                          kbd_controls_values);
                 const struct xkb_event *event;
-                while ((event = xkb_event_iterator_next(seat->events))) {
+                while ((event = xkb_events_next(seat->events))) {
                     xkb_state_update_from_event(seat->state, event);
                 }
             } else {
@@ -743,7 +742,7 @@ seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps)
         else
             wl_keyboard_destroy(seat->wl_kbd);
 
-        xkb_event_iterator_destroy(seat->events);
+        xkb_events_destroy(seat->events);
         xkb_state_unref(seat->state);
         xkb_server_state_unref(seat->server_state);
         xkb_keymap_unref(seat->keymap);
@@ -816,7 +815,7 @@ seat_destroy(struct interactive_seat *seat)
         else
             wl_keyboard_destroy(seat->wl_kbd);
 
-        xkb_event_iterator_destroy(seat->events);
+        xkb_events_destroy(seat->events);
         xkb_server_state_unref(seat->server_state);
         xkb_state_unref(seat->state);
         xkb_compose_state_unref(seat->compose_state);
