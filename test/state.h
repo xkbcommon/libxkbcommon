@@ -209,7 +209,7 @@ print_event(const char *prefix, const struct xkb_event *event)
 }
 
 static inline bool
-check_events(struct xkb_event_iterator *iter,
+check_events(struct xkb_events *iter,
              const struct xkb_event *events, size_t count)
 {
     const struct xkb_event *got = NULL;
@@ -217,7 +217,7 @@ check_events(struct xkb_event_iterator *iter,
     bool ok = true;
     if (count == 1 && events[0].type == XKB_EVENT_TYPE_NONE)
         count = 0;
-    while ((got = xkb_event_iterator_next(iter))) {
+    while ((got = xkb_events_next(iter))) {
         if (++got_count > count) {
             fprintf(stderr, "%s() error at event #%zu:\n", __func__, got_count);
             print_event("Unexpected event:\n", got);

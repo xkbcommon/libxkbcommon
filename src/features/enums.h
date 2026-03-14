@@ -145,8 +145,8 @@ enum xkb_enumerations_values {
         | XKB_KEYBOARD_CONTROL_OVERLAY7
         | XKB_KEYBOARD_CONTROL_OVERLAY8
     ,
-    XKB_EVENT_ITERATOR_FLAGS_VALUES
-        = XKB_EVENT_ITERATOR_NO_FLAGS
+    XKB_EVENTS_FLAGS_VALUES
+        = XKB_EVENTS_NO_FLAGS
     ,
     XKB_KEYBOARD_CONTROL_PARAM_VALUES
         = (1u << XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY)
@@ -305,8 +305,8 @@ static const int xkb_keyboard_control_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_event_iterator_flags_values[] = {
-    XKB_EVENT_ITERATOR_NO_FLAGS,
+static const int xkb_events_flags_values[] = {
+    XKB_EVENTS_NO_FLAGS,
 };
 #endif
 
@@ -398,7 +398,7 @@ static const int xkb_feature_values[] = {
     XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS,
     XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY,
     XKB_FEATURE_ENUM_EVENT_TYPE,
-    XKB_FEATURE_ENUM_EVENT_ITERATOR_FLAGS,
+    XKB_FEATURE_ENUM_EVENTS_FLAGS,
     XKB_FEATURE_ENUM_KEY_DIRECTION,
     XKB_FEATURE_ENUM_STATE_MATCH,
     XKB_FEATURE_ENUM_CONSUMED_MODE,

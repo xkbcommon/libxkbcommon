@@ -11,11 +11,11 @@ Added the **state event API:**
   - `xkb_server_state_options_new()`
   - `xkb_server_state_options_destroy()`
   - `xkb_server_state_options_update_a11y_flags()`
-- `struct xkb_event_iterator` (new):
-  - `enum xkb_event_iterator_flags`
-  - `xkb_event_iterator_new()`
-  - `xkb_event_iterator_destroy()`
-  - `xkb_event_iterator_next()`
+- `struct xkb_events` (new):
+  - `enum xkb_events_flags`
+  - `xkb_events_new()`
+  - `xkb_events_destroy()`
+  - `xkb_events_next()`
 - `struct xkb_event` (new):
   - `xkb_event_get_type()`
   - `xkb_event_get_keycode()`

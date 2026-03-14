@@ -82,13 +82,13 @@ enum events_consume_flags {
 
 static bool
 consume_events(struct xkb_server_state *sm,
-               struct xkb_event_iterator *events,
+               struct xkb_events *events,
                struct xkb_state *state,
                enum events_consume_flags flags,
                xkb_keycode_t *kc)
 {
     const struct xkb_event *event;
-    while ((event = xkb_event_iterator_next(events))) {
+    while ((event = xkb_events_next(events))) {
         switch (xkb_event_get_type(event)) {
         case XKB_EVENT_TYPE_KEY_DOWN:
         case XKB_EVENT_TYPE_KEY_REPEATED:
@@ -132,7 +132,7 @@ consume_events(struct xkb_server_state *sm,
  */
 int
 test_key_seq_va(struct xkb_keymap *keymap, struct xkb_server_state *sm,
-                struct xkb_event_iterator *events, va_list ap)
+                struct xkb_events *events, va_list ap)
 {
     assert(!(!sm ^ !events));
 
@@ -289,7 +289,7 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 
 int
 test_key_seq2(struct xkb_keymap *keymap, struct xkb_server_state *state,
-              struct xkb_event_iterator *events, ...)
+              struct xkb_events *events, ...)
 {
     va_list ap;
     int ret;

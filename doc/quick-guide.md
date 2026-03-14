@@ -285,9 +285,9 @@ int new_keyboard(…)
     server_state = xkb_server_state_new(keymap, NULL);
     if (!server_state) <error>
 
-    struct xkb_event_iterator *events;
+    struct xkb_events *events;
 
-    events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     if (!events) <error>
 
     char *keymap_string =
@@ -302,7 +302,7 @@ int new_keyboard(…)
 
 int destroy_keyboard(…)
 {
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(server_state);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
@@ -329,7 +329,7 @@ int handle_key(…)
      */
 
     const struct xkb_event *event;
-    while ((event = xkb_event_iterator_next(events)) != NULL) {
+    while ((event = xkb_events_next(events)) != NULL) {
         const enum xkb_event_type event_type =
             xkb_event_get_type(event);
         switch (event_type) {

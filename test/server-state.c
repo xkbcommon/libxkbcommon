@@ -75,7 +75,7 @@ test_initial_derived_values(struct xkb_context *ctx)
 
 static enum xkb_state_component
 update_key(struct xkb_server_state *sm,
-           struct xkb_event_iterator *events,
+           struct xkb_events *events,
            struct xkb_state *state,
            bool use_machine, xkb_keycode_t key,
            enum xkb_key_direction direction)
@@ -84,7 +84,7 @@ update_key(struct xkb_server_state *sm,
         assert(xkb_server_state_update_key(sm, events, key, direction) == 0);
         const struct xkb_event *event;
         enum xkb_state_component changed = 0;
-        while ((event = xkb_event_iterator_next(events))) {
+        while ((event = xkb_events_next(events))) {
             changed |= xkb_state_update_from_event(state, event);
         }
         return changed;
@@ -95,7 +95,7 @@ update_key(struct xkb_server_state *sm,
 
 static enum xkb_state_component
 update_controls(struct xkb_server_state *sm,
-                struct xkb_event_iterator *events,
+                struct xkb_events *events,
                 struct xkb_state *state,
                 bool use_machine,
                 enum xkb_keyboard_control_flags affect,
@@ -107,7 +107,7 @@ update_controls(struct xkb_server_state *sm,
                == 0);
         const struct xkb_event *event;
         enum xkb_state_component changed = 0;
-        while ((event = xkb_event_iterator_next(events))) {
+        while ((event = xkb_events_next(events))) {
             changed |= xkb_state_update_from_event(state, event);
         }
         return changed;
@@ -139,8 +139,7 @@ test_group_wrap(struct xkb_context *ctx)
     struct xkb_state * const state = xkb_state_new(keymap);
     assert(state);
 
-    struct xkb_event_iterator * const events =
-        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     const struct xkb_event *event;
@@ -228,14 +227,14 @@ test_group_wrap(struct xkb_context *ctx)
         assert(!xkb_server_state_update_latched_locked(
             sm, events, 0, 0, false, 0, 0, 0, true, tests[t].locked_group
         ));
-        while ((event = xkb_event_iterator_next(events)))
+        while ((event = xkb_events_next(events)))
             xkb_state_update_from_event(state, event);
         assert_eq("unexpected effective group", tests[t].expected_group,
                   xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
                   "%"PRIu32);
     }
 
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_state_unref(state);
     xkb_server_state_unref(sm);
     xkb_keymap_unref(keymap);
@@ -252,8 +251,7 @@ test_sticky_keys(struct xkb_context *ctx)
 
     struct xkb_server_state *sm = xkb_server_state_new(keymap, NULL);
     assert(sm);
-    struct xkb_event_iterator *events =
-        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -498,7 +496,7 @@ test_sticky_keys(struct xkb_context *ctx)
     }
 
     xkb_state_unref(state);
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
 
     /*
@@ -515,7 +513,7 @@ test_sticky_keys(struct xkb_context *ctx)
     sm = xkb_server_state_new(keymap, sm_options);
     assert(sm);
     xkb_server_state_options_destroy(sm_options);
-    events = xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);
@@ -566,7 +564,7 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(mods == 0);
 
     xkb_state_unref(state);
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
 
     xkb_keymap_unref(keymap);
@@ -586,8 +584,7 @@ test_redirect_key(struct xkb_context *ctx)
     static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
     static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
 
-    struct xkb_event_iterator *events =
-        xkb_event_iterator_new(ctx, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     assert(test_key_seq2(
@@ -772,7 +769,7 @@ test_redirect_key(struct xkb_context *ctx)
                             tests[t].up.events_count));
     }
 
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(state);
     xkb_keymap_unref(keymap);
 }
@@ -803,8 +800,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     struct xkb_server_state * sm = xkb_server_state_new(keymap, options);
     assert(sm);
 
-    struct xkb_event_iterator * const events =
-        xkb_event_iterator_new(context, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     /*
@@ -2014,7 +2010,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     );
 
     xkb_server_state_unref(sm);
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_options_destroy(options);
     xkb_keymap_unref(keymap);
 }
@@ -2054,8 +2050,7 @@ test_overlays(struct xkb_context *context)
 
     struct xkb_server_state * const sm = xkb_server_state_new(keymap, NULL);
     assert(sm);
-    struct xkb_event_iterator * events =
-        xkb_event_iterator_new(context, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events * events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     static const struct {
@@ -2154,7 +2149,7 @@ test_overlays(struct xkb_context *context)
             sm, events, EVDEV_OFFSET + KEY_J, keycode_tests[t].direction
         ));
         const struct xkb_event *event;
-        while ((event = xkb_event_iterator_next(events))) {
+        while ((event = xkb_events_next(events))) {
             switch (xkb_event_get_type(event)) {
             case XKB_EVENT_TYPE_KEY_DOWN:
             case XKB_EVENT_TYPE_KEY_UP:
@@ -2167,7 +2162,7 @@ test_overlays(struct xkb_context *context)
         }
     }
 
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -2209,8 +2204,7 @@ test_modifiers_tweak(struct xkb_context *context)
     assert(sm);
     xkb_server_state_options_destroy(options);
 
-    struct xkb_event_iterator * const events =
-        xkb_event_iterator_new(context, XKB_EVENT_ITERATOR_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
 #define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
@@ -2871,7 +2865,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
     );
 
-    xkb_event_iterator_destroy(events);
+    xkb_events_destroy(events);
     xkb_server_state_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -2890,12 +2884,12 @@ main(void)
     xkb_state_unref(NULL);
     xkb_server_state_unref(NULL);
     xkb_server_state_options_destroy(NULL);
-    xkb_event_iterator_destroy(NULL);
+    xkb_events_destroy(NULL);
 
     test_server_state_options(context);
     test_initial_derived_values(context);
 
-    assert(!xkb_event_iterator_new(context, -1));
+    assert(!xkb_events_new(context, -1));
 
     test_group_wrap(context);
     test_sticky_keys(context);
