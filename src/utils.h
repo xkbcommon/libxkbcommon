@@ -34,6 +34,9 @@
 # ifndef S_ISREG
 #  define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 # endif
+# ifndef STDIN_FILENO
+#  define STDIN_FILENO 0
+# endif
 #ifdef _MSC_VER
 typedef SSIZE_T ssize_t;
 #endif
@@ -417,4 +420,14 @@ asprintf_safe(const char *fmt, ...)
             fprintf(stderr, "Critical Error: Reached unreachable line in %s at %d\n", __FILE__, __LINE__); \
             abort(); \
         } while (0)
+#endif
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#  define NOINLINE [[noinline]]
+#elif defined(__GNUC__) || defined(__clang__)
+#  define NOINLINE __attribute__((noinline))
+#elif defined(_MSC_VER)
+#  define NOINLINE __declspec(noinline)
+#else
+#  define NOINLINE
 #endif
