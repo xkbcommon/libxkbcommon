@@ -81,7 +81,7 @@ enum events_consume_flags {
 };
 
 static bool
-consume_events(struct xkb_state_machine *sm,
+consume_events(struct xkb_server_state *sm,
                struct xkb_event_iterator *events,
                struct xkb_state *state,
                enum events_consume_flags flags,
@@ -131,7 +131,7 @@ consume_events(struct xkb_state_machine *sm,
  * See below for examples.
  */
 int
-test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
+test_key_seq_va(struct xkb_keymap *keymap, struct xkb_server_state *sm,
                 struct xkb_event_iterator *events, va_list ap)
 {
     assert(!(!sm ^ !events));
@@ -169,7 +169,7 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
         if (events) {
             /* State event API: consume until the first key event */
             if (op == DOWN || op == REPEAT || op == BOTH) {
-                assert(!xkb_state_machine_update_key(
+                assert(!xkb_server_state_update_key(
                     sm, events, kc, (op == REPEAT ? XKB_KEY_REPEATED : XKB_KEY_DOWN)
                 ));
                 assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
@@ -179,7 +179,7 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
                     /* Consume pending events */
                     assert(consume_events(sm, events, state, ALL_EVENTS, &kc_new));
                 }
-                assert(xkb_state_machine_update_key(sm, events, kc, XKB_KEY_UP)
+                assert(xkb_server_state_update_key(sm, events, kc, XKB_KEY_UP)
                        == 0);
                 assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
             }
@@ -288,14 +288,14 @@ test_key_seq(struct xkb_keymap *keymap, ...)
 }
 
 int
-test_key_seq2(struct xkb_keymap *keymap, struct xkb_state_machine *sm,
+test_key_seq2(struct xkb_keymap *keymap, struct xkb_server_state *state,
               struct xkb_event_iterator *events, ...)
 {
     va_list ap;
     int ret;
 
     va_start(ap, events);
-    ret = test_key_seq_va(keymap, sm, events, ap);
+    ret = test_key_seq_va(keymap, state, events, ap);
     va_end(ap);
 
     return ret;

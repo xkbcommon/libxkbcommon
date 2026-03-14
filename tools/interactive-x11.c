@@ -48,7 +48,7 @@ struct keyboard {
 
     struct xkb_keymap *keymap;
     struct xkb_state *state;
-    struct xkb_state_machine *state_machine;
+    struct xkb_server_state *server_state;
     struct xkb_event_iterator *state_events;
     struct xkb_compose_state *compose_state;
     xkb_keycode_t repeated_key;
@@ -71,7 +71,7 @@ static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
-static struct xkb_state_machine_options * state_machine_options = NULL;
+static struct xkb_server_state_options * server_state_options = NULL;
 static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
 static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static const char *raw_modifiers_mapping = NULL;
@@ -176,34 +176,34 @@ update_keymap(struct keyboard *kbd)
                 return -1;
         }
         if (use_events_api) {
-            if (!kbd->state_machine) {
+            if (!kbd->server_state) {
                 if (raw_modifiers_mapping) {
-                    xkb_state_machine_options_mods_set_mapping(
-                        state_machine_options, 0, 0
+                    xkb_server_state_options_mods_set_mapping(
+                        server_state_options, 0, 0
                     );
                     if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
                                                         kbd->keymap,
-                                                        state_machine_options)) {
+                                                        server_state_options)) {
                         fprintf(stderr,
                                 "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
                                 raw_modifiers_mapping);
                     }
                 }
                 if (raw_shortcuts_mask) {
-                    xkb_state_machine_options_shortcuts_update_mods(
-                        state_machine_options, XKB_MOD_ALL, 0
+                    xkb_server_state_options_shortcuts_update_mods(
+                        server_state_options, XKB_MOD_ALL, 0
                     );
                     if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, kbd->keymap,
-                                                    state_machine_options)) {
+                                                    server_state_options)) {
                         fprintf(stderr,
                                 "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                                 raw_shortcuts_mask);
                     }
                 }
 
-                kbd->state_machine =
-                    xkb_state_machine_new(kbd->keymap, state_machine_options);
-                if (!kbd->state_machine)
+                kbd->server_state =
+                    xkb_server_state_new(kbd->keymap, server_state_options);
+                if (!kbd->server_state)
                     return -1;
             }
             if (!kbd->state_events) {
@@ -212,8 +212,8 @@ update_keymap(struct keyboard *kbd)
                 if (!kbd->state_events)
                     return -1;
             }
-            const int ret = xkb_state_machine_update_enabled_controls(
-                kbd->state_machine, kbd->state_events,
+            const int ret = xkb_server_state_update_enabled_controls(
+                kbd->server_state, kbd->state_events,
                 kbd_controls_affect, kbd_controls_values
             );
             if (ret)
@@ -275,7 +275,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 
 err_state:
     xkb_state_unref(kbd->state);
-    xkb_state_machine_unref(kbd->state_machine);
+    xkb_server_state_unref(kbd->server_state);
     xkb_event_iterator_destroy(kbd->state_events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
@@ -287,7 +287,7 @@ static void
 deinit_kbd(struct keyboard *kbd)
 {
     xkb_state_unref(kbd->state);
-    xkb_state_machine_unref(kbd->state_machine);
+    xkb_server_state_unref(kbd->server_state);
     xkb_event_iterator_destroy(kbd->state_events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
@@ -370,9 +370,9 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
 
         if (use_local_state && use_events_api) {
             /* Run our local state machine with the event API */
-            const int ret = xkb_state_machine_update_key(kbd->state_machine,
-                                                         kbd->state_events,
-                                                         keycode, direction);
+            const int ret = xkb_server_state_update_key(kbd->server_state,
+                                                        kbd->state_events,
+                                                        keycode, direction);
             if (ret) {
                 fprintf(stderr, "ERROR: could not update the state machine\n");
                 // TODO: better error handling
@@ -423,9 +423,9 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
 
         if (use_local_state && use_events_api) {
             /* Run our local state machine */
-            const int ret = xkb_state_machine_update_key(kbd->state_machine,
-                                                         kbd->state_events,
-                                                         keycode, XKB_KEY_UP);
+            const int ret = xkb_server_state_update_key(kbd->server_state,
+                                                        kbd->state_events,
+                                                        keycode, XKB_KEY_UP);
             if (ret) {
                 fprintf(stderr, "ERROR: could not update the state machine\n");
                 // TODO: better error handling
@@ -625,10 +625,10 @@ main(int argc, char *argv[])
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
     }
-    state_machine_options = xkb_state_machine_options_new(core_kbd.ctx);
+    server_state_options = xkb_server_state_options_new(core_kbd.ctx);
     xkb_context_unref(core_kbd.ctx);
     core_kbd.ctx = NULL;
-    if (!state_machine_options) {
+    if (!server_state_options) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb state machine options\n");
         goto err_out;
@@ -747,7 +747,7 @@ local_state:
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, state_machine_options,
+            if (!tools_parse_controls(optarg, server_state_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 goto invalid_usage;
@@ -766,7 +766,7 @@ local_state:
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, state_machine_options))
+            if (!tools_parse_shortcuts_mappings(optarg, server_state_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
@@ -984,7 +984,7 @@ err_out:
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP
-    xkb_state_machine_options_destroy(state_machine_options);
+    xkb_server_state_options_destroy(server_state_options);
 #endif
     exit(ret);
 }
