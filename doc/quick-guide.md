@@ -240,7 +240,7 @@ And that’s it! Eventually, we should free the objects we’ve created:
 ## Code for a Wayland server {#quick-guide-wayland-server}
 
 The code is very similar to the evdev client presented hereinabove. The main
-difference is the use of the `xkb_state_machine` API instead of the `xkb_state`
+difference is the use of the `xkb_server_state` API instead of the `xkb_state`
 API.
 
 ```c
@@ -280,10 +280,10 @@ int new_keyboard(…)
     * Initialize the keymap
     */
 
-    struct xkb_state_machine *state_machine;
+    struct xkb_server_state *server_state;
 
-    state_machine = xkb_state_machine_new(keymap, NULL);
-    if (!state_machine) <error>
+    server_state = xkb_server_state_new(keymap, NULL);
+    if (!server_state) <error>
 
     struct xkb_event_iterator *events;
 
@@ -303,7 +303,7 @@ int new_keyboard(…)
 int destroy_keyboard(…)
 {
     xkb_event_iterator_destroy(events);
-    xkb_state_machine_unref(state_machine);
+    xkb_server_state_unref(server_state);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
     return EXIT_SUCCESS;
@@ -312,7 +312,7 @@ int destroy_keyboard(…)
 int handle_key(…)
 {
     /*
-     * Update the state machine with the key event
+     * Update the server state with the key event
      */
 
     enum xkb_key_direction direction = (<key release>)
@@ -321,7 +321,7 @@ int handle_key(…)
             ? XKB_KEY_REPEATED
             : XKB_KEY_DOWN;
     int ret =
-        xkb_state_machine_update_key(state_machine, events, keycode, direction);
+        xkb_server_state_update_key(server_state, events, keycode, direction);
     if (ret) <error>
 
     /*

@@ -69,11 +69,11 @@ int
 test_key_seq(struct xkb_keymap *keymap, ...);
 
 int
-test_key_seq2(struct xkb_keymap *keymap, struct xkb_state_machine *sm,
+test_key_seq2(struct xkb_keymap *keymap, struct xkb_server_state *sm,
               struct xkb_event_iterator *events, ...);
 
 int
-test_key_seq_va(struct xkb_keymap *keymap, struct xkb_state_machine * sm,
+test_key_seq_va(struct xkb_keymap *keymap, struct xkb_server_state * sm,
                 struct xkb_event_iterator *events, va_list args);
 
 char *

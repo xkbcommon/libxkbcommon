@@ -64,7 +64,7 @@ struct xkb_state {
      */
     struct state_components components;
 
-    struct state_machine_controls {
+    struct server_state_controls {
         struct {
             enum xkb_out_of_range_layout_policy policy;
             xkb_layout_index_t redirect_group;
@@ -2406,7 +2406,7 @@ struct xkb_overlaid_key {
 };
 
 /*
- * `xkb_state_machine` have a similar role as `xkb_state` and is indeed currently
+ * `xkb_server_state` have a similar role as `xkb_state` and is indeed currently
  * only a simple wrapper. However, having a separate type:
  *
  * - Ensures that there is no risk to mix the keyboard state at the *current*
@@ -2415,7 +2415,7 @@ struct xkb_overlaid_key {
  * - Add further features without modifying `xkb_state`, which is already
  *   bloated for *clients* applications.
  */
-struct xkb_state_machine {
+struct xkb_server_state {
     /** Internal state */
     struct xkb_state state;
 
@@ -2443,21 +2443,21 @@ struct xkb_state_machine {
     } overlays;
 
     /** Configuration */
-    struct state_machine_config {
+    struct server_state_config {
         /** Modifiers remapping */
-        struct state_machine_modifiers_config {
+        struct server_state_modifiers_config {
             /** Real modifier mask */
             xkb_mod_mask_t mask;
             /** Modifiers re-mappings */
             darray_size_t mappings_num;
-            struct state_machine_mods_mapping {
+            struct server_state_mods_mapping {
                 xkb_mod_mask_t source;
                 xkb_mod_mask_t target;
             } * mappings ATTR_COUNTED_BY(mappings_num);
         } modifiers;
 
         /** Shortcuts tweak */
-        struct state_machine_shortcuts_config {
+        struct server_state_shortcuts_config {
             /** Real modifier mask to trigger shortcuts tweaks */
             xkb_mod_mask_t mask;
             /** Layouts targets */
@@ -2466,15 +2466,15 @@ struct xkb_state_machine {
     } config;
 };
 
-typedef darray(struct state_machine_mods_mapping) state_machine_mods_mappings;
+typedef darray(struct server_state_mods_mapping) server_state_mods_mappings;
 
-struct xkb_state_machine_options {
+struct xkb_server_state_options {
     /** Accessibility flags */
     enum xkb_state_accessibility_flags a11y_affect;
     enum xkb_state_accessibility_flags a11y_flags;
 
     /** Modifiers re-mapping */
-    state_machine_mods_mappings mods;
+    server_state_mods_mappings mods;
 
     /** Shortcuts tweak */
     struct xkb_shortcuts_config_options {
@@ -2487,7 +2487,7 @@ struct xkb_state_machine_options {
     struct xkb_context *ctx;
 };
 
-#define state_machine_options_new(context) {\
+#define server_state_options_new(context) { \
     .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
     .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
     .shortcuts = {                          \
@@ -2498,24 +2498,24 @@ struct xkb_state_machine_options {
 }
 
 /* Default state options */
-static const struct xkb_state_machine_options default_machine_options =
-    state_machine_options_new(NULL /* unused */);
+static const struct xkb_server_state_options default_machine_options =
+    server_state_options_new(NULL /* unused */);
 
-struct xkb_state_machine_options *
-xkb_state_machine_options_new(struct xkb_context *context)
+struct xkb_server_state_options *
+xkb_server_state_options_new(struct xkb_context *context)
 {
-    struct xkb_state_machine_options* restrict const opt = calloc(1, sizeof(*opt));
+    struct xkb_server_state_options* restrict const opt = calloc(1, sizeof(*opt));
     if (!opt)
         return NULL;
 
-    *opt = (struct xkb_state_machine_options)
-           state_machine_options_new(xkb_context_ref(context));
+    *opt = (struct xkb_server_state_options)
+           server_state_options_new(xkb_context_ref(context));
 
     return opt;
 }
 
 void
-xkb_state_machine_options_destroy(struct xkb_state_machine_options *options)
+xkb_server_state_options_destroy(struct xkb_server_state_options *options)
 {
     if (options == NULL)
         return;
@@ -2527,8 +2527,8 @@ xkb_state_machine_options_destroy(struct xkb_state_machine_options *options)
 }
 
 int
-xkb_state_machine_options_update_a11y_flags(
-    struct xkb_state_machine_options *options,
+xkb_server_state_options_update_a11y_flags(
+    struct xkb_server_state_options *options,
     enum xkb_state_accessibility_flags affect,
     enum xkb_state_accessibility_flags flags)
 {
@@ -2551,8 +2551,8 @@ xkb_state_machine_options_update_a11y_flags(
 }
 
 int
-xkb_state_machine_options_mods_set_mapping(
-    struct xkb_state_machine_options *options,
+xkb_server_state_options_mods_set_mapping(
+    struct xkb_server_state_options *options,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
 )
@@ -2567,7 +2567,7 @@ xkb_state_machine_options_mods_set_mapping(
         }
     }
 
-    struct state_machine_mods_mapping *mapping = NULL;
+    struct server_state_mods_mapping *mapping = NULL;
     darray_size_t m = 0;
     darray_enumerate(m, mapping, options->mods) {
         if (mapping->source == source) {
@@ -2586,7 +2586,7 @@ xkb_state_machine_options_mods_set_mapping(
         /* Append new mapping */
         darray_append(
             options->mods,
-            (struct state_machine_mods_mapping) {
+            (struct server_state_mods_mapping) {
                 .source = source,
                 .target = target
             }
@@ -2599,8 +2599,8 @@ xkb_state_machine_options_mods_set_mapping(
 }
 
 int
-xkb_state_machine_options_shortcuts_update_mods(
-    struct xkb_state_machine_options* restrict options,
+xkb_server_state_options_shortcuts_update_mods(
+    struct xkb_server_state_options* restrict options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 )
 {
@@ -2610,8 +2610,8 @@ xkb_state_machine_options_shortcuts_update_mods(
 }
 
 int
-xkb_state_machine_options_shortcuts_set_mapping(
-    struct xkb_state_machine_options* options,
+xkb_server_state_options_shortcuts_set_mapping(
+    struct xkb_server_state_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 )
 {
@@ -2673,14 +2673,14 @@ cmp_mod_masks(const void *a, const void *b)
 }
 
 static bool
-state_machine_set_mods(struct xkb_state_machine *sm,
-                       const state_machine_mods_mappings *raw_mappings)
+server_state_set_mods(struct xkb_server_state *state,
+                      const server_state_mods_mappings *raw_mappings)
 {
     if (!darray_empty(*raw_mappings)) {
-        state_machine_mods_mappings mappings = darray_new();
+        server_state_mods_mappings mappings = darray_new();
         xkb_mod_mask_t mask = 0;
-        const struct state_machine_mods_mapping *mapping;
-        const xkb_mod_mask_t invalid = ~sm->state.keymap->canonical_state_mask;
+        const struct server_state_mods_mapping *mapping;
+        const xkb_mod_mask_t invalid = ~state->state.keymap->canonical_state_mask;
         darray_foreach(mapping, *raw_mappings) {
             if (!mapping->source || !mapping->target ||
                 (mapping->source & invalid) || (mapping->target & invalid))
@@ -2699,12 +2699,12 @@ state_machine_set_mods(struct xkb_state_machine *sm,
 
         darray_steal(
             mappings,
-            &sm->config.modifiers.mappings,
-            &sm->config.modifiers.mappings_num
+            &state->config.modifiers.mappings,
+            &state->config.modifiers.mappings_num
         );
-        sm->config.modifiers.mask = mask;
+        state->config.modifiers.mask = mask;
     } else {
-        sm->config.modifiers = (struct state_machine_modifiers_config) {
+        state->config.modifiers = (struct server_state_modifiers_config) {
             .mappings = NULL,
             .mappings_num = 0,
             .mask = 0
@@ -2715,18 +2715,18 @@ state_machine_set_mods(struct xkb_state_machine *sm,
 }
 
 static bool
-state_machine_set_shortcuts(struct xkb_state_machine *sm,
-                            const struct xkb_shortcuts_config_options *options)
+server_state_set_shortcuts(struct xkb_server_state *state,
+                           const struct xkb_shortcuts_config_options *options)
 {
     if (darray_empty(options->targets)) {
-        sm->config.shortcuts = (struct state_machine_shortcuts_config) {
+        state->config.shortcuts = (struct server_state_shortcuts_config) {
             .mask = 0,
             .targets = NULL
         };
         return true;
     }
 
-    struct xkb_keymap * const restrict keymap = sm->state.keymap;
+    struct xkb_keymap * const restrict keymap = state->state.keymap;
 
     /* Consider only defined layouts */
     xkb_layout_index_t count = MIN(
@@ -2771,78 +2771,78 @@ state_machine_set_shortcuts(struct xkb_state_machine *sm,
         targets[l] = XKB_LAYOUT_INVALID;
     }
 
-    sm->config.shortcuts = (struct state_machine_shortcuts_config) {
+    state->config.shortcuts = (struct server_state_shortcuts_config) {
         .mask = mask,
         .targets = targets
     };
     return true;
 }
 
-struct xkb_state_machine *
-xkb_state_machine_new(struct xkb_keymap *keymap,
-                      const struct xkb_state_machine_options *options)
+struct xkb_server_state *
+xkb_server_state_new(struct xkb_keymap *keymap,
+                     const struct xkb_server_state_options *options)
 {
-    struct xkb_state_machine * restrict const sm = calloc(1, sizeof(*sm));
-    if (!sm)
+    struct xkb_server_state * restrict const state = calloc(1, sizeof(*state));
+    if (!state)
         return NULL;
 
     if (!options)
         options = &default_machine_options;
 
-    xkb_state_init(&sm->state, keymap,
+    xkb_state_init(&state->state, keymap,
                    options->a11y_affect, options->a11y_flags);
 
-    if (!state_machine_set_mods(sm, &options->mods) ||
-        !state_machine_set_shortcuts(sm, &options->shortcuts))
+    if (!server_state_set_mods(state, &options->mods) ||
+        !server_state_set_shortcuts(state, &options->shortcuts))
         goto error;
 
-    darray_init(sm->overlays.keys);
+    darray_init(state->overlays.keys);
 
-    return sm;
+    return state;
 
 error:
-    xkb_state_machine_unref(sm);
+    xkb_server_state_unref(state);
     return NULL;
 }
 
-struct xkb_state_machine *
-xkb_state_machine_ref(struct xkb_state_machine *sm)
+struct xkb_server_state *
+xkb_server_state_ref(struct xkb_server_state *state)
 {
-    assert(sm->state.refcnt > 0);
-    sm->state.refcnt++;
-    return sm;
+    assert(state->state.refcnt > 0);
+    state->state.refcnt++;
+    return state;
 }
 
 void
-xkb_state_machine_unref(struct xkb_state_machine *sm)
+xkb_server_state_unref(struct xkb_server_state *state)
 {
-    assert(!sm || sm->state.refcnt > 0);
-    if (!sm || --sm->state.refcnt > 0)
+    assert(!state || state->state.refcnt > 0);
+    if (!state || --state->state.refcnt > 0)
         return;
 
-    xkb_state_destroy(&sm->state);
-    darray_free(sm->overlays.keys);
-    free(sm->config.shortcuts.targets);
-    free(sm->config.modifiers.mappings);
-    free(sm);
+    xkb_state_destroy(&state->state);
+    darray_free(state->overlays.keys);
+    free(state->config.shortcuts.targets);
+    free(state->config.modifiers.mappings);
+    free(state);
 }
 
 struct xkb_keymap *
-xkb_state_machine_get_keymap(const struct xkb_state_machine *sm)
+xkb_server_state_get_keymap(const struct xkb_server_state *state)
 {
     /* Reference count is not updated. See API doc. */
-    return sm->state.keymap;
+    return state->state.keymap;
 }
 
 struct xkb_state *
-xkb_state_machine_get_state(struct xkb_state_machine *sm)
+xkb_server_state_get_state(struct xkb_server_state *state)
 {
     /* Reference count is not updated. See API doc. */
-    return &sm->state;
+    return &state->state;
 }
 
 static void
-state_machine_update_overlays(struct xkb_state_machine *sm)
+server_state_update_overlays(struct xkb_server_state *state)
 {
     /*
      * Overlays indices are stored 1-indexed in nibbles: the lowest
@@ -2850,13 +2850,13 @@ state_machine_update_overlays(struct xkb_state_machine *sm)
      */
 
     const xkb_overlay_mask_t mask =
-        OVERLAYS_FROM_CONTROLS(sm->state.components.controls);
-    xkb_overlay_mask_t added = mask & ~sm->overlays.enabled;
+        OVERLAYS_FROM_CONTROLS(state->state.components.controls);
+    xkb_overlay_mask_t added = mask & ~state->overlays.enabled;
 
     /* Remove overlays no longer enabled and keep relative order */
-    uint32_t order = sm->overlays.order;
+    uint32_t order = state->overlays.order;
     const xkb_overlay_index_t overlay_max =
-        format_max_overlays(sm->state.keymap->format);
+        format_max_overlays(state->state.keymap->format);
     for (uint8_t n = 0; n < overlay_max;) {
         xkb_overlay_index_t overlay_idx = (order >> (n * 4)) & 0xf;
         if (!overlay_idx)
@@ -2882,36 +2882,37 @@ state_machine_update_overlays(struct xkb_state_machine *sm)
         }
     }
 
-    sm->overlays.order = order;
-    sm->overlays.enabled = mask;
+    state->overlays.order = order;
+    state->overlays.enabled = mask;
 }
 
 int
-xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
-                                          struct xkb_event_iterator *events,
-                                          enum xkb_keyboard_control_flags affect,
-                                          enum xkb_keyboard_control_flags controls)
+xkb_server_state_update_enabled_controls(struct xkb_server_state *state,
+                                         struct xkb_event_iterator *events,
+                                         enum xkb_keyboard_control_flags affect,
+                                         enum xkb_keyboard_control_flags controls)
 {
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    struct xkb_state * restrict const state = &sm->state;
-    const struct state_components previous_components = state->components;
+    struct xkb_state * restrict const client_state = &state->state;
+    const struct state_components previous_components = client_state->components;
 
-    state_update_enabled_controls(state, events, affect, controls);
+    state_update_enabled_controls(client_state, events, affect, controls);
 
-    const enum xkb_state_component changed =
-        get_state_component_changes(&previous_components, &state->components);
+    const enum xkb_state_component changed = get_state_component_changes(
+        &previous_components, &client_state->components
+    );
     if (changed) {
         if (changed & XKB_STATE_CONTROLS)
-            state_machine_update_overlays(sm);
+            server_state_update_overlays(state);
 
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
-                .components = state->components
+                .components = client_state->components
             }
         });
     }
@@ -2920,54 +2921,54 @@ xkb_state_machine_update_enabled_controls(struct xkb_state_machine *sm,
 }
 
 int
-xkb_state_machine_update_control(struct xkb_state_machine *sm,
-                                 enum xkb_keyboard_control_param control,
-                                 uint32_t value)
+xkb_server_state_update_control(struct xkb_server_state *state,
+                                enum xkb_keyboard_control_param control,
+                                uint32_t value)
 {
     switch (control) {
     case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY:
         if (!xkb_has_feature(XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY,
                              (int)value))
             break;
-        sm->state.controls.out_of_range_group.policy =
+        state->state.controls.out_of_range_group.policy =
             (enum xkb_out_of_range_layout_policy)value;
         return 0;
     case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT:
-        if (sm->state.controls.out_of_range_group.policy !=
+        if (state->state.controls.out_of_range_group.policy !=
             XKB_OUT_OF_RANGE_LAYOUT_REDIRECT ||
-            value >= sm->state.keymap->num_groups)
+            value >= state->state.keymap->num_groups)
             break;
-        sm->state.controls.out_of_range_group.redirect_group = value;
+        state->state.controls.out_of_range_group.redirect_group = value;
         return 0;
     default:
         ;
     }
-    log_warn_func(sm->state.keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+    log_warn_func(state->state.keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
                   "Unsupported control parameter %d with value 0x%"PRIx32"\n",
                   control, value);
     return -1;
 }
 
 int
-xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
-                                        struct xkb_event_iterator *events,
-                                        xkb_mod_mask_t affect_latched_mods,
-                                        xkb_mod_mask_t latched_mods,
-                                        bool affect_latched_layout,
-                                        int32_t latched_layout,
-                                        xkb_mod_mask_t affect_locked_mods,
-                                        xkb_mod_mask_t locked_mods,
-                                        bool affect_locked_layout,
-                                        int32_t locked_layout)
+xkb_server_state_update_latched_locked(struct xkb_server_state *state,
+                                       struct xkb_event_iterator *events,
+                                       xkb_mod_mask_t affect_latched_mods,
+                                       xkb_mod_mask_t latched_mods,
+                                       bool affect_latched_layout,
+                                       int32_t latched_layout,
+                                       xkb_mod_mask_t affect_locked_mods,
+                                       xkb_mod_mask_t locked_mods,
+                                       bool affect_locked_layout,
+                                       int32_t locked_layout)
 {
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    struct xkb_state * restrict const state = &sm->state;
-    const struct state_components previous_components = state->components;
+    struct xkb_state * restrict const client_state = &state->state;
+    const struct state_components previous_components = client_state->components;
 
     state_update_latched_locked(
-        state,
+        client_state,
         events,
         affect_latched_mods,
         latched_mods,
@@ -2979,21 +2980,22 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
         locked_layout
     );
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(client_state);
 
-    const enum xkb_state_component changed =
-        get_state_component_changes(&previous_components, &state->components);
+    const enum xkb_state_component changed = get_state_component_changes(
+        &previous_components, &client_state->components
+    );
     if (changed) {
         // TODO: latch controls
         // if (changed & XKB_STATE_CONTROLS)
-        //     state_machine_update_overlays(sm);
+        //     server_state_update_overlays(state);
 
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
-                .components = state->components
+                .components = client_state->components
             }
         });
     }
@@ -3002,7 +3004,7 @@ xkb_state_machine_update_latched_locked(struct xkb_state_machine *sm,
 }
 
 static ssize_t
-do_remap_modifiers(const struct state_machine_modifiers_config *mappings,
+do_remap_modifiers(const struct server_state_modifiers_config *mappings,
                    struct xkb_state *state,
                    struct xkb_event_iterator *events,
                    const struct xkb_key *key)
@@ -3019,7 +3021,7 @@ do_remap_modifiers(const struct state_machine_modifiers_config *mappings,
     xkb_mod_mask_t affect = 0;
     xkb_mod_mask_t mods = 0;
     for (darray_size_t m = 0; m < mappings->mappings_num; m++) {
-        const struct state_machine_mods_mapping * restrict const mapping =
+        const struct server_state_mods_mapping * restrict const mapping =
             &mappings->mappings[m];
         if (/* Skip not matching active mods */
             (mapping->source & state->components.mods) == mapping->source &&
@@ -3067,7 +3069,7 @@ do_remap_modifiers(const struct state_machine_modifiers_config *mappings,
  * layout is the corresponding target layout.
  */
 static ssize_t
-do_shortcuts_tweak(const struct state_machine_shortcuts_config *config,
+do_shortcuts_tweak(const struct server_state_shortcuts_config *config,
                    struct xkb_state *state,
                    const struct state_components *previous_components,
                    struct xkb_event_iterator *events, ssize_t remap_event)
@@ -3149,13 +3151,14 @@ undo_tweaks(const struct xkb_state *state,
 }
 
 static const struct xkb_key *
-process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key,
-                    enum xkb_key_direction direction)
+process_overlayable_key(struct xkb_server_state *state,
+                        const struct xkb_key * key,
+                        enum xkb_key_direction direction)
 {
     /* Check if key is currently overlaid */
     struct xkb_overlaid_key *entry = NULL;
     struct xkb_overlaid_key *available_entry = NULL;
-    darray_foreach(entry, sm->overlays.keys) {
+    darray_foreach(entry, state->overlays.keys) {
         if (entry->old == key) {
             /* Maintain the key overlaid */
             switch (direction) {
@@ -3186,9 +3189,9 @@ process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key
          */
         const struct xkb_key *new = key;
 
-        if (key->overlays & sm->overlays.enabled) {
+        if (key->overlays & state->overlays.enabled) {
             /* Some relevant overlay is active */
-            for (uint32_t stack = sm->overlays.order; stack; stack >>= 4) {
+            for (uint32_t stack = state->overlays.order; stack; stack >>= 4) {
                 static_assert(XKB_OVERLAY_MAX == 8, "");
                 const xkb_overlay_index_t overlay = (stack & 0xf) - 1;
                 const xkb_overlay_mask_t mask =
@@ -3224,9 +3227,9 @@ process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key
             entry = available_entry;
         } else {
             /* Append a new entry */
-            const darray_size_t idx = darray_size(sm->overlays.keys);
-            darray_resize(sm->overlays.keys, idx + 1);
-            entry = &darray_item(sm->overlays.keys, idx);
+            const darray_size_t idx = darray_size(state->overlays.keys);
+            darray_resize(state->overlays.keys, idx + 1);
+            entry = &darray_item(state->overlays.keys, idx);
         }
 
         /* Overlay the key */
@@ -3241,58 +3244,58 @@ process_overlayable_key(struct xkb_state_machine *sm, const struct xkb_key * key
 }
 
 int
-xkb_state_machine_update_key(struct xkb_state_machine *sm,
-                             struct xkb_event_iterator *events,
-                             xkb_keycode_t kc, enum xkb_key_direction direction)
+xkb_server_state_update_key(struct xkb_server_state *state,
+                            struct xkb_event_iterator *events,
+                            xkb_keycode_t kc, enum xkb_key_direction direction)
 {
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    struct xkb_state * restrict const state = &sm->state;
-    const struct xkb_key * key = XkbKey(state->keymap, kc);
+    struct xkb_state * restrict const client_state = &state->state;
+    const struct xkb_key * key = XkbKey(client_state->keymap, kc);
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
 
-    const struct state_components previous_components = state->components;
+    const struct state_components previous_components = client_state->components;
 
     if (key->overlays)
-        key = process_overlayable_key(sm, key, direction);
+        key = process_overlayable_key(state, key, direction);
 
-    ssize_t remap_event = do_remap_modifiers(&sm->config.modifiers, state,
-                                             events, key);
+    ssize_t remap_event = do_remap_modifiers(&state->config.modifiers,
+                                             client_state, events, key);
 
-    remap_event = do_shortcuts_tweak(&sm->config.shortcuts, state,
+    remap_event = do_shortcuts_tweak(&state->config.shortcuts, client_state,
                                      &previous_components, events, remap_event);
 
-    state->set_mods = 0;
-    state->clear_mods = 0;
+    client_state->set_mods = 0;
+    client_state->clear_mods = 0;
 
     /* Handle key actions */
-    xkb_filter_apply_all(state, events, key, direction);
+    xkb_filter_apply_all(client_state, events, key, direction);
 
     xkb_mod_index_t i;
     xkb_mod_mask_t bit;
-    for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
-        if (state->set_mods & bit) {
-            state->mod_key_count[i]++;
-            state->components.base_mods |= bit;
-            state->set_mods &= ~bit;
+    for (i = 0, bit = 1; client_state->set_mods; i++, bit <<= 1) {
+        if (client_state->set_mods & bit) {
+            client_state->mod_key_count[i]++;
+            client_state->components.base_mods |= bit;
+            client_state->set_mods &= ~bit;
         }
     }
 
-    for (i = 0, bit = 1; state->clear_mods; i++, bit <<= 1) {
-        if (state->clear_mods & bit) {
-            state->mod_key_count[i]--;
-            if (state->mod_key_count[i] <= 0) {
-                state->components.base_mods &= ~bit;
-                state->mod_key_count[i] = 0;
+    for (i = 0, bit = 1; client_state->clear_mods; i++, bit <<= 1) {
+        if (client_state->clear_mods & bit) {
+            client_state->mod_key_count[i]--;
+            if (client_state->mod_key_count[i] <= 0) {
+                client_state->components.base_mods &= ~bit;
+                client_state->mod_key_count[i] = 0;
             }
-            state->clear_mods &= ~bit;
+            client_state->clear_mods &= ~bit;
         }
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(client_state);
 
     bool has_key_event = false;
     const struct xkb_event *event;
@@ -3325,19 +3328,20 @@ xkb_state_machine_update_key(struct xkb_state_machine *sm,
 
     if (remap_event >= 0) {
         // FIXME: fragile if last state change does not restore the state to the remap event
-        undo_tweaks(state, &previous_components, events);
+        undo_tweaks(client_state, &previous_components, events);
     }
 
-    const enum xkb_state_component changed =
-        get_state_component_changes(&previous_components, &state->components);
+    const enum xkb_state_component changed = get_state_component_changes(
+        &previous_components, &client_state->components
+    );
     if (changed) {
         if (changed & XKB_STATE_CONTROLS)
-            state_machine_update_overlays(sm);
+            server_state_update_overlays(state);
 
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
-                .components = state->components,
+                .components = client_state->components,
                 .changed = changed
             }
         });

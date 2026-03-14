@@ -1247,10 +1247,10 @@ test(
     env: test_env,
 )
 test(
-    'state-machine',
+    'server-state',
     executable(
-        'test-state-machine',
-        'test/state-machine.c',
+        'test-server-state',
+        'test/server-state.c',
         'test/state.h',
         dependencies: test_dep
     ),

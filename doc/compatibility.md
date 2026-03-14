@@ -326,7 +326,7 @@ the [corresponding actions](@ref compatibility-key-actions).
 <summary>⚠️ Partial support (since 1.14)</summary>
 - libxkbcommon \< 1.14: Parsing overlays 1-2 only.
 - libxkbcommon ≥ 1.14: Supported. Note that the API support requires using
-  the `xkb_state_machine` API.
+  the `xkb_server_state` API.
   - Only **2** overlays
   - [Disjoint overlays][Overlapping overlays]
 </details>
@@ -336,7 +336,7 @@ the [corresponding actions](@ref compatibility-key-actions).
 <summary>✅ Full support (since 1.14)</summary>
 - libxkbcommon \< 1.14: Parsing overlays 1-2 only.
 - libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
-  the `xkb_state_machine` API.
+  the `xkb_server_state` API.
   - **8** overlays
   - [Overlapping overlays]
 </details>
@@ -580,7 +580,7 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <summary>✅ Full support (since 1.14)</summary>
 - libxkbcommon \< 1.14: Parsing only.
 - libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
-  the `xkb_state_machine` API.
+  the `xkb_server_state` API.
 </details>
 </td>
 </tr>
