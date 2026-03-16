@@ -492,7 +492,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             }
             if (raw_shortcuts_mask) {
                 /* No race condition when using wl_display_dispatch() */
-                xkb_server_options_shortcuts_update_mods(
+                xkb_server_options_update_shortcut_mods(
                     server_options, XKB_MOD_ALL, 0
                 );
                 if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, seat->keymap,

@@ -2264,7 +2264,7 @@ xkb_server_options_remap_mods(
  * @param mask    Modifiers to set, using their [encoding].
  * Only the modifiers in @p affect are considered.
  *
- * @sa `xkb_server_options_shortcuts_set_mapping()`
+ * @sa `xkb_server_options_remap_shortcut_layout()`
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
  * @since 1.14.0
  * @memberof xkb_server_options
@@ -2272,7 +2272,7 @@ xkb_server_options_remap_mods(
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT int
-xkb_server_options_shortcuts_update_mods(
+xkb_server_options_update_shortcut_mods(
     struct xkb_server_options* options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 );
@@ -2281,19 +2281,19 @@ xkb_server_options_shortcuts_update_mods(
  * Set layout mapping for keyboard shortcuts tweak.
  *
  * Enable tweaking keyboard shortcuts by switching the effective layout when
- * any modifier set by `xkb_server_options_shortcuts_update_mods()`
+ * any modifier set by `xkb_server_options_update_shortcut_mods()`
  * is active.
  *
  * @param options The state options object to modify.
  * @param source  Source layout.
  * @param target  Target layout.
  *
- * @sa `xkb_server_options_shortcuts_update_mods()`
+ * @sa `xkb_server_options_update_shortcut_mods()`
  * @since 1.14.0
  * @memberof xkb_server_options
  */
 XKB_EXPORT int
-xkb_server_options_shortcuts_set_mapping(
+xkb_server_options_remap_shortcut_layout(
     struct xkb_server_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 );

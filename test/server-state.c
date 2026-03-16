@@ -789,10 +789,10 @@ test_shortcuts_tweak(struct xkb_context *context)
     struct xkb_server_options * const options = xkb_server_options_new(context);
     assert(options);
 
-    assert(xkb_server_options_shortcuts_update_mods(options, ctrl, ctrl)
+    assert(xkb_server_options_update_shortcut_mods(options, ctrl, ctrl)
            == 0);
-    assert(xkb_server_options_shortcuts_set_mapping(options, 1, 2) == 0);
-    assert(xkb_server_options_shortcuts_set_mapping(options, 3, 0) == 0);
+    assert(xkb_server_options_remap_shortcut_layout(options, 1, 2) == 0);
+    assert(xkb_server_options_remap_shortcut_layout(options, 3, 0) == 0);
 
     struct xkb_server_state * sm = xkb_server_state_new(keymap, options);
     assert(sm);

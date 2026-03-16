@@ -188,7 +188,7 @@ update_keymap(struct keyboard *kbd)
                     }
                 }
                 if (raw_shortcuts_mask) {
-                    xkb_server_options_shortcuts_update_mods(
+                    xkb_server_options_update_shortcut_mods(
                         server_options, XKB_MOD_ALL, 0
                     );
                     if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, kbd->keymap,

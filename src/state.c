@@ -2599,7 +2599,7 @@ xkb_server_options_remap_mods(
 }
 
 int
-xkb_server_options_shortcuts_update_mods(
+xkb_server_options_update_shortcut_mods(
     struct xkb_server_options* restrict options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 )
@@ -2610,7 +2610,7 @@ xkb_server_options_shortcuts_update_mods(
 }
 
 int
-xkb_server_options_shortcuts_set_mapping(
+xkb_server_options_remap_shortcut_layout(
     struct xkb_server_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 )
