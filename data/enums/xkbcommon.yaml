@@ -95,23 +95,23 @@ xkb_keyboard_control_flags:
   - name: XKB_KEYBOARD_CONTROL_NONE
     value: 0
   - name: XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
-    value: 8
+    value: 1
   - name: XKB_KEYBOARD_CONTROL_OVERLAY1
-    value: 1024
+    value: 2
   - name: XKB_KEYBOARD_CONTROL_OVERLAY2
-    value: 2048
+    value: 4
   - name: XKB_KEYBOARD_CONTROL_OVERLAY3
-    value: 8192
+    value: 8
   - name: XKB_KEYBOARD_CONTROL_OVERLAY4
-    value: 16384
+    value: 16
   - name: XKB_KEYBOARD_CONTROL_OVERLAY5
-    value: 32768
+    value: 32
   - name: XKB_KEYBOARD_CONTROL_OVERLAY6
-    value: 65536
+    value: 64
   - name: XKB_KEYBOARD_CONTROL_OVERLAY7
-    value: 131072
+    value: 128
   - name: XKB_KEYBOARD_CONTROL_OVERLAY8
-    value: 262144
+    value: 256
 xkb_events_flags:
   - name: XKB_EVENTS_NO_FLAGS
     value: 0

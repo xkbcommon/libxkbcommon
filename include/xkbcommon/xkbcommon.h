@@ -2521,55 +2521,55 @@ enum xkb_keyboard_control_flags {
      * [set]:   @ref depressed-mod-def
      * [latch]: @ref latched-mod-def
      */
-    XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS = (1 << 3),
+    XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS = (1 << 0),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **1**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY1 = (1 << 10),
+    XKB_KEYBOARD_CONTROL_OVERLAY1 = (1 << 1),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **2**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY2 = (1 << 11),
+    XKB_KEYBOARD_CONTROL_OVERLAY2 = (1 << 2),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **3**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY3 = (1 << 13),
+    XKB_KEYBOARD_CONTROL_OVERLAY3 = (1 << 3),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **4**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY4 = (1 << 14),
+    XKB_KEYBOARD_CONTROL_OVERLAY4 = (1 << 4),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **5**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY5 = (1 << 15),
+    XKB_KEYBOARD_CONTROL_OVERLAY5 = (1 << 5),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **6**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY6 = (1 << 16),
+    XKB_KEYBOARD_CONTROL_OVERLAY6 = (1 << 6),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **7**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY7 = (1 << 17),
+    XKB_KEYBOARD_CONTROL_OVERLAY7 = (1 << 7),
     /**
      * Enable the [keyboard overlay](@ref key-behavior-overlay) **8**.
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_OVERLAY8 = (1 << 18),
+    XKB_KEYBOARD_CONTROL_OVERLAY8 = (1 << 8),
 };
 
 /**
