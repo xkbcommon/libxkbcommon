@@ -48,8 +48,8 @@ static_assert(XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT >= 0 &&
               XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT < INT_WIDTH, "");
 static_assert(XKB_OUT_OF_RANGE_LAYOUT_WRAP >= 0 &&
               XKB_OUT_OF_RANGE_LAYOUT_WRAP < INT_WIDTH, "");
-static_assert(XKB_OUT_OF_RANGE_LAYOUT_SATURATE >= 0 &&
-              XKB_OUT_OF_RANGE_LAYOUT_SATURATE < INT_WIDTH, "");
+static_assert(XKB_OUT_OF_RANGE_LAYOUT_CLAMP >= 0 &&
+              XKB_OUT_OF_RANGE_LAYOUT_CLAMP < INT_WIDTH, "");
 static_assert(XKB_OUT_OF_RANGE_LAYOUT_REDIRECT >= 0 &&
               XKB_OUT_OF_RANGE_LAYOUT_REDIRECT < INT_WIDTH, "");
 static_assert(XKB_KEY_UP >= 0 &&
@@ -154,7 +154,7 @@ enum xkb_enumerations_values {
     ,
     XKB_OUT_OF_RANGE_LAYOUT_POLICY_VALUES
         = (1u << XKB_OUT_OF_RANGE_LAYOUT_WRAP)
-        | (1u << XKB_OUT_OF_RANGE_LAYOUT_SATURATE)
+        | (1u << XKB_OUT_OF_RANGE_LAYOUT_CLAMP)
         | (1u << XKB_OUT_OF_RANGE_LAYOUT_REDIRECT)
     ,
     XKB_KEY_DIRECTION_VALUES
@@ -320,7 +320,7 @@ static const int xkb_keyboard_control_param_values[] = {
 #ifdef ENABLE_PRIVATE_APIS
 static const int xkb_out_of_range_layout_policy_values[] = {
     XKB_OUT_OF_RANGE_LAYOUT_WRAP,
-    XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+    XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
     XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
 };
 #endif

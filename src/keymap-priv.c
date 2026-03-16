@@ -221,7 +221,7 @@ XkbWrapGroupIntoRange(int32_t group,
             return 0;
         return out_of_range_group_number;
 
-    case XKB_OUT_OF_RANGE_LAYOUT_SATURATE:
+    case XKB_OUT_OF_RANGE_LAYOUT_CLAMP:
         if (group < 0)
             return 0;
         else

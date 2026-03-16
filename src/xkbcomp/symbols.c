@@ -81,8 +81,8 @@ enum {
     KEYINFO_REPEAT_BIT_FIELD = 8,
 };
 static_assert(
-    XKB_OUT_OF_RANGE_LAYOUT_WRAP < XKB_OUT_OF_RANGE_LAYOUT_SATURATE &&
-    XKB_OUT_OF_RANGE_LAYOUT_SATURATE < XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
+    XKB_OUT_OF_RANGE_LAYOUT_WRAP < XKB_OUT_OF_RANGE_LAYOUT_CLAMP &&
+    XKB_OUT_OF_RANGE_LAYOUT_CLAMP < XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
     "Enum values were changed!"
 );
 static_assert(XKB_OUT_OF_RANGE_LAYOUT_REDIRECT <=
@@ -1661,7 +1661,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
 
         keyi->out_of_range_group_policy = (set)
             ? XKB_OUT_OF_RANGE_LAYOUT_WRAP
-            : XKB_OUT_OF_RANGE_LAYOUT_SATURATE;
+            : XKB_OUT_OF_RANGE_LAYOUT_CLAMP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsclamp") ||
@@ -1677,7 +1677,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
 
         keyi->out_of_range_group_policy = (set)
-            ? XKB_OUT_OF_RANGE_LAYOUT_SATURATE
+            ? XKB_OUT_OF_RANGE_LAYOUT_CLAMP
             : XKB_OUT_OF_RANGE_LAYOUT_WRAP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }

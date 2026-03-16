@@ -488,7 +488,7 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
         FAIL_UNLESS(key->out_of_range_group_number <= key->num_groups);
 
         if (wire_sym_map->groupInfo & XCB_XKB_GROUPS_WRAP_CLAMP_INTO_RANGE)
-            key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_SATURATE;
+            key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP;
         else if (wire_sym_map->groupInfo & XCB_XKB_GROUPS_WRAP_REDIRECT_INTO_RANGE)
             key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT;
         else
