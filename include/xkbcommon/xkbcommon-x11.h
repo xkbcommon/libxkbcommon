@@ -35,7 +35,7 @@ extern "C" {
  * so, it queries the XKB X11 extension using the xcb-xkb library.  It
  * can be used as a replacement for Xlib’s keyboard handling.
  *
- * Following is an example workflow using xkbcommon-x11.  A complete
+ * Following is an example workflow using libxkbcommon-x11.  A complete
  * example may be found in the `tools/interactive-x11.c` file in the
  * xkbcommon source repository.  On startup:
  *
@@ -54,9 +54,9 @@ extern "C" {
  *    use either the `xcb_xkb_get_device_info()` request directly, or the
  *    `xkb_x11_get_core_keyboard_device_id()` helper function.
  * 4. Create an initial xkb_keymap for this device, using the
- *    `xkb_x11_keymap_new_from_device()` function.
+ *    `xkb_keymap::xkb_x11_keymap_new_from_device()` function.
  * 5. Create an initial xkb_state for this device, using the
- *    `xkb_x11_state_new_from_device()` function.
+ *    `xkb_state::xkb_x11_state_new_from_device()` function.
  *
  * @note At this point, you may consider setting various XKB controls and
  * XKB per-client flags.  For example, enabling detectable autorepeat: \n

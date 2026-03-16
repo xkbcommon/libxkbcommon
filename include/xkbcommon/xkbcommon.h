@@ -11,6 +11,7 @@
  * Copyright © 2009-2012 Daniel Stone
  * Copyright © 2012 Intel Corporation
  * Copyright © 2012 Ran Benita
+ * Copyright © 2023-2026 Pierre Le Marre
  *
  * SPDX-License-Identifier: MIT-open-group AND HPND AND MIT
  *
@@ -153,9 +154,9 @@ typedef uint32_t xkb_keycode_t;
  * xkbcommon/xkbcommon-keysyms.h header file.  Their name does not include
  * the `XKB_KEY_` prefix.
  *
- * Besides those, any Unicode/ISO&nbsp;10646 character in the range U+0100 to
- * U+10FFFF can be represented by a keysym value in the range 0x01000100 to
- * 0x0110FFFF.  The name of Unicode keysyms is `U<codepoint>`, e.g. `UA1B2`.
+ * Besides those, any Unicode/ISO&nbsp;10646 character in the range `U+0100` to
+ * `U+10FFFF` can be represented by a keysym value in the range `0x01000100` to
+ * `0x0110FFFF`.  The name of Unicode keysyms is `U<codepoint>`, e.g. `UA1B2`.
  *
  * The name of other unnamed keysyms is the hexadecimal representation of
  * their value, e.g. `0xabcd1234`.
@@ -284,9 +285,9 @@ typedef uint32_t xkb_mod_mask_t;
  * @warning A given keymap may specify an exact index for a given LED.
  * Therefore, LED indexing is not necessarily sequential, as opposed to
  * modifiers and layouts.  This means that when iterating over the LEDs
- * in a keymap using e.g. xkb_keymap::xkb_keymap_num_leds(), some indices might
+ * in a keymap using e.g. `xkb_keymap::xkb_keymap_num_leds()`, some indices might
  * be invalid.
- * Given such an index, functions like xkb_keymap::xkb_keymap_led_get_name()
+ * Given such an index, functions like `xkb_keymap::xkb_keymap_led_get_name()`
  * will return `NULL`, and `xkb_state::xkb_state_led_index_is_active()` will
  * return -1.
  *
@@ -386,7 +387,7 @@ enum xkb_rmlvo_builder_flags {
  *
  * @returns A `xkb_rmlvo_builder`, or `NULL` if the compilation failed.
  *
- * @see `xkb_rule_names` for a detailed description of `rules` and `model`.
+ * @see `xkb_rule_names` for a detailed description of @p rules and @p model.
  * @since 1.11.0
  * @memberof xkb_rmlvo_builder
  *
@@ -616,7 +617,8 @@ xkb_components_names_from_rules(struct xkb_context *context,
 
 /**
  * @defgroup keysyms Keysyms
- * Utility functions related to *keysyms* (short for “key symbols”).
+ * Utility functions related to [*keysyms*](@ref xkb_keysym_t) (short for
+ * “key symbols”).
  *
  * @{
  */
@@ -630,7 +632,7 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * <dl>
  * <dt>Capitalization transformation</dt>
  * <dd>
- * If the Caps Lock modifier is
+ * If the **Caps Lock** [modifier] is
  * active and was not consumed by the translation process, keysyms
  * are transformed to their upper-case form (if applicable).
  * Similarly, the UTF-8/UTF-32 string produced is capitalized.
@@ -640,10 +642,10 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * </dd>
  * <dt>Control transformation</dt>
  * <dd>
- * If the Control modifier is active and
+ * If the **Control** [modifier] is active and
  * was not consumed by the translation process, the string produced
- * is transformed to its matching ASCII control character (if
- * applicable).  Keysyms are not affected.
+ * is transformed to its matching [ASCII control character] (if applicable).
+ * Keysyms are not affected.
  *
  * This is described in:
  * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
@@ -654,6 +656,9 @@ xkb_components_names_from_rules(struct xkb_context *context,
  *
  * These transformations are not applicable when a key produces multiple
  * keysyms.
+ *
+ * [modifier]: @ref modifier-def
+ * [ASCII control character]: https://en.wikipedia.org/wiki/C0_and_C1_control_codes#ASCII
  */
 
 
@@ -664,7 +669,7 @@ xkb_components_names_from_rules(struct xkb_context *context,
  *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A string buffer to write the name into.
- * @param[in]  size   Size of the buffer.
+ * @param[in]  size   Capacity of the buffer.
  *
  * @warning If the buffer passed is too small, the string is truncated
  * (though still `NULL`-terminated); a size of at least 64 bytes is recommended.
@@ -701,9 +706,9 @@ enum xkb_keysym_flags {
  *
  * If you use the `::XKB_KEYSYM_CASE_INSENSITIVE` flag and two keysym names
  * differ only by case, then the lower-case keysym name is returned.  For
- * instance, for KEY_a and KEY_A, this function would return KEY_a for the
- * case-insensitive search.  If this functionality is needed, it is
- * recommended to first call this function without this flag; and if that
+ * instance, for `XKB_KEY_a` and `XKB_KEY_A`, this function would return
+ * `XKB_KEY_a` for the case-insensitive search.  If this functionality is needed,
+ * it is recommended to first call this function without this flag; and if that
  * fails, only then to try with this flag, while possibly warning the user
  * he had misspelled the name, and might get wrong results.
  *
@@ -713,8 +718,10 @@ enum xkb_keysym_flags {
  * @returns The keysym. If the name is invalid, returns `XKB_KEY_NoSymbol`.
  *
  * @sa xkb_keysym_t
- * @since 1.9.0: Enable support for C0 and C1 control characters in the Unicode
+ * @since 1.9.0: Enable support for [C0 and C1 control characters] in the Unicode
  * notation.
+ *
+ * [C0 and C1 control characters]: https://en.wikipedia.org/wiki/C0_and_C1_control_codes
  */
 XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
@@ -722,12 +729,12 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
 /**
  * Get the keysym corresponding to a *single* Unicode/UTF-8 encoded codepoint.
  *
- * @param buffer A buffer to read the UTF-8 encoded codepoint from.
- * @param size   The size of @p buffer.
+ * @param[in] buffer A buffer to read the UTF-8 encoded codepoint from.
+ * @param[in] size   Capacity of @p buffer.
  * @returns The keysym corresponding to the specified Unicode
  * codepoint, or `XKB_KEY_NoSymbol` if there is none.
  *
- * This function is the inverse of @ref xkb_keysym_to_utf8(). In cases
+ * This function is the inverse of `xkb_keysym_to_utf8()`. In cases
  * where a single codepoint corresponds to multiple keysyms, returns
  * the keysym with the lowest value.
  *
@@ -746,7 +753,7 @@ xkb_utf8_to_keysym(const char *buffer, size_t size);
  *
  * @param[in]  keysym The keysym.
  * @param[out] buffer A buffer to write the UTF-8 string into.
- * @param[in]  size   The size of @p buffer.  Must be at least 5.
+ * @param[in]  size   Capacity of @p buffer.  Must be at least 5.
  *
  * @returns The number of bytes written to the buffer (including the
  * terminating byte).  If the keysym does not have a Unicode
@@ -768,7 +775,7 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  * representation, returns 0.
  *
  * This function does not perform any @ref keysym-transformations.
- * Therefore, prefer to use xkb_state_key_get_utf32() if possible.
+ * Therefore, prefer to use `xkb_state_key_get_utf32()` if possible.
  *
  * @sa `xkb_state::xkb_state_key_get_utf32()`
  */
@@ -781,7 +788,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @returns The keysym corresponding to the specified Unicode
  * codepoint, or `XKB_KEY_NoSymbol` if there is none.
  *
- * This function is the inverse of @ref xkb_keysym_to_utf32(). In cases
+ * This function is the inverse of `xkb_keysym_to_utf32()`. In cases
  * where a single codepoint corresponds to multiple keysyms, returns
  * the keysym with the lowest value.
  *
@@ -794,10 +801,10 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @since 1.9.0: Enable support for all noncharacters.
  */
 XKB_EXPORT xkb_keysym_t
-xkb_utf32_to_keysym(uint32_t ucs);
+xkb_utf32_to_keysym(uint32_t codepoint);
 
 /**
- * Convert a keysym to its uppercase form.
+ * Convert a keysym to its *uppercase* form.
  *
  * If there is no such form, the keysym is returned unchanged.
  *
@@ -811,7 +818,7 @@ xkb_utf32_to_keysym(uint32_t ucs);
  *
  * | Lower keysym | Lower letter | Upper keysym | Upper letter | Comment |
  * | ------------ | ------------ | ------------ | ------------ | ------- |
- * | `ssharp`     | `U+00DF`: ß  | `U1E9E`      | `U+1E9E`: ẞ  | [Council for German Orthography] |
+ * | `ssharp`     | `U+00DF`: ß  | `SSHARP`     | `U+1E9E`: ẞ  | [Council for German Orthography] |
  *
  * [Council for German Orthography]: https://www.rechtschreibrat.com/regeln-und-woerterverzeichnis/
  *
@@ -820,10 +827,10 @@ xkb_utf32_to_keysym(uint32_t ucs);
  * @since 1.12.0: Update to Unicode 17.0.
  */
 XKB_EXPORT xkb_keysym_t
-xkb_keysym_to_upper(xkb_keysym_t ks);
+xkb_keysym_to_upper(xkb_keysym_t keysym);
 
 /**
- * Convert a keysym to its lowercase form.
+ * Convert a keysym to its *lowercase* form.
  *
  * If there is no such form, the keysym is returned unchanged.
  *
@@ -837,7 +844,7 @@ xkb_keysym_to_upper(xkb_keysym_t ks);
  * @since 1.12.0: Update to Unicode 17.0.
  */
 XKB_EXPORT xkb_keysym_t
-xkb_keysym_to_lower(xkb_keysym_t ks);
+xkb_keysym_to_lower(xkb_keysym_t keysym);
 
 /** @} */
 
@@ -1041,7 +1048,7 @@ xkb_context_num_include_paths(struct xkb_context *context);
  * Get a specific include path from the context’s include path.
  *
  * @returns The include path at the specified index.  If the index is
- * invalid, returns NULL.
+ * invalid, returns `NULL`.
  *
  * @memberof xkb_context
  */
@@ -1357,7 +1364,7 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * [RMLVO] \(Rules + Model + Layouts + Variants + Options) names.
  *
  * @param context The context in which to create the keymap.
- * @param names   The [RMLVO] names to use.  See xkb_rule_names.
+ * @param names   The [RMLVO] names to use.  See `xkb_rule_names`.
  * @param format  The text format of the keymap file to compile.
  * @param flags   Optional flags for the keymap, or 0.
  *
@@ -1421,8 +1428,8 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
 /**
  * Create a keymap from a memory buffer.
  *
- * This is just like `xkb_keymap_new_from_string()`, but takes a length argument
- * so the input string does not have to be zero-terminated.
+ * This is just like `xkb_keymap_new_from_string()`, but takes a @p length
+ * argument so the input string does not have to be zero-terminated.
  *
  * @since 0.3.0
  * @since 1.14.0 Parser is lenient by default.
@@ -1771,7 +1778,7 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
 /**
  * Get the encoding of a modifier by name.
  *
- * In X11 terminology it corresponds to the mapping to the *[real modifiers]*.
+ * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
  *
  * @returns The encoding of a modifier.  Note that it may be 0 if the name does
  * not exist or if the modifier is not mapped.
@@ -1788,7 +1795,7 @@ xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char *name);
 /**
  * Get the encoding of a modifier by index.
  *
- * In X11 terminology it corresponds to the mapping to the *[real modifiers]*.
+ * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
  *
  * @returns The encoding of a modifier.  Note that it may be 0 if the modifier is
  * not mapped.
@@ -1928,8 +1935,8 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
  * @param[out] masks_out  A buffer in which the requested masks should be
  * stored.
- * @param[out] masks_size The number of elements in the buffer pointed to by
- * masks_out.
+ * @param[in] masks_size The capacity of the buffer pointed to by
+ * @p masks_out.
  *
  * If @c layout is out of range for this key (that is, larger or equal to
  * the value returned by `xkb_keymap_num_layouts_for_key()`), it is brought
@@ -1938,7 +1945,7 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  *
  * @returns The number of modifier masks stored in the masks_out array.
  * If the key is not in the keymap or if the specified shift level cannot
- * be reached it returns 0 and does not modify the masks_out buffer.
+ * be reached it returns 0 and does not modify the @p masks_out buffer.
  *
  * @sa xkb_level_index_t
  * @sa xkb_mod_mask_t
@@ -2217,9 +2224,12 @@ xkb_server_state_options_update_a11y_flags(
  *   superset of this entry. E.g. `Control+Alt` has priority over `Control`.
  *
  * @param options The state options object to modify.
- * @param source  Modifiers combination to remap, using its [encoding].
- * @param target  Modifiers combination target, using their [encoding].
- * Use 0 to remove a previous entry of @p source.
+ * @param source  Modifier combination to remap, using their [encoding].
+ *                Must be non-zero, unless both @p source and @p target are 0
+ *                to clear all entries.
+ * @param target  Modifier combination to remap to, using their [encoding],
+ *                or 0 to remove the entry for @p source. If both @p source and
+ *                @p target are 0, all entries are cleared.
  *
  * Example:
  *
@@ -2232,8 +2242,6 @@ xkb_server_state_options_update_a11y_flags(
  *     // handle error
  *     …
  * ```
- *
- * Using 0 for both @p source and @p target removes all the entries.
  *
  * @since 1.14.0
  *
@@ -2775,8 +2783,8 @@ xkb_server_state_get_keymap(const struct xkb_server_state *state);
  * @param state  The keyboard server state object.
  * @param events The event queue to store the events. It will be reset.
  * @param affect
-       *Boolean* global keyboard controls to modify. @p controls contains the
-       actual values.
+ *     *Boolean* global keyboard controls to modify. @p controls contains the
+ *     actual values.
  * @param controls
  *     *Boolean* global keyboard controls to lock or unlock. Only controls in
  *     @p affect are considered.
@@ -2804,7 +2812,7 @@ xkb_server_state_update_enabled_controls(struct xkb_server_state *state,
  * @since 1.14.0
  */
 enum xkb_keyboard_control_param {
-    /*
+    /**
      * Select the policy to handle out-of-bound layout indices.
      *
      * Possible values are defined in the `xkb_out_of_range_layout_policy`
@@ -3230,7 +3238,7 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * @param[in]  state  The keyboard state object.
  * @param[in]  key    The keycode of the key.
  * @param[out] buffer A buffer to write the string into.
- * @param[in]  size   Size of the buffer.
+ * @param[in]  size   Capacity of the buffer.
  *
  * @warning If the buffer passed is too small, the string is truncated
  * (though still `NULL`-terminated).
@@ -3695,7 +3703,7 @@ xkb_state_mod_index_is_consumed2(struct xkb_state *state,
                                  enum xkb_consumed_mode mode);
 
 /**
- * Same as `xkb_state_mod_index_is_consumed2()` with mode `::XKB_CONSUMED_MOD_XKB`.
+ * Same as `xkb_state_mod_index_is_consumed2()` with mode `::XKB_CONSUMED_MODE_XKB`.
  *
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
