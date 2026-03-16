@@ -51,12 +51,12 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
 
 #if 0
 // TODO: currently unused
-static enum xkb_state_accessibility_flags
+static enum xkb_accessibility_flags
 translate_state_accessibility_flags(const xcb_xkb_get_controls_reply_t *reply)
 {
-    enum xkb_state_accessibility_flags flags = XKB_STATE_A11Y_NO_FLAGS;
+    enum xkb_accessibility_flags flags = XKB_A11Y_NO_FLAGS;
     if (reply->accessXOption & XCB_XKB_AX_OPTION_LATCH_TO_LOCK) {
-        flags |= XKB_STATE_A11Y_LATCH_TO_LOCK;
+        flags |= XKB_A11Y_LATCH_TO_LOCK;
     }
     return flags;
 }

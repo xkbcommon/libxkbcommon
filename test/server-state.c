@@ -37,9 +37,9 @@ test_server_state_options(struct xkb_context *ctx)
     assert(xkb_server_options_update_a11y_flags(options, 1000, 0) == 1);
 
     /* Valid flags */
-    static_assert(XKB_STATE_A11Y_NO_FLAGS == 0, "default flags");
+    static_assert(XKB_A11Y_NO_FLAGS == 0, "default flags");
     assert(xkb_server_options_update_a11y_flags(
-            options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
+            options, XKB_A11Y_NO_FLAGS, 1000) == 0);
 
     struct xkb_keymap *keymap =
         xkb_keymap_new_from_names(ctx, NULL, TEST_KEYMAP_COMPILE_FLAGS);
@@ -506,8 +506,8 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(sm_options);
     assert(xkb_server_options_update_a11y_flags(
                 sm_options,
-                XKB_STATE_A11Y_LATCH_TO_LOCK,
-                XKB_STATE_A11Y_LATCH_TO_LOCK) == 0);
+                XKB_A11Y_LATCH_TO_LOCK,
+                XKB_A11Y_LATCH_TO_LOCK) == 0);
     sm = xkb_server_state_new(keymap, sm_options);
     assert(sm);
     xkb_server_options_destroy(sm_options);

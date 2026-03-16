@@ -87,7 +87,7 @@ struct xkb_state {
     int16_t mod_key_count[XKB_MAX_MODS];
 
     /* NOTE: if we ever add other flags types, we could merge them internally */
-    enum xkb_state_accessibility_flags flags;
+    enum xkb_accessibility_flags flags;
     int refcnt;
     darray(struct xkb_filter) filters;
     struct xkb_keymap *keymap;
@@ -472,7 +472,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
              * held down.
              *
              * The exact behavior depends on the accessibility flag:
-             * XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS.
+             * XKB_A11Y_LATCH_SIMULTANEOUS_KEYS.
              *
              * It results in either:
              * • No change.
@@ -480,7 +480,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
              *   xkb_filter_group_latch_new(), until the latch key is
              *   released.
              */
-            if (state->flags & XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS) {
+            if (state->flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
                 /*
                  * Prevent the latch to trigger only if some of the pressed
                  * key’s actions breaks latches, mirroring the behavior in the
@@ -759,14 +759,14 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
              * held down.
              *
              * The exact behavior depends on the accessibility flag:
-             * XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS.
+             * XKB_A11Y_LATCH_SIMULTANEOUS_KEYS.
              *
              * It results in either:
              * • No change.
              * • Prevent the latch to trigger and keep the base modifiers set
              *   by xkb_filter_mod_latch_new(), until the latch key is released.
              */
-            if (state->flags & XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS) {
+            if (state->flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
                 /*
                  * Prevent the latch to trigger only if some of the pressed
                  * key’s actions breaks latches, mirroring the behavior in the
@@ -1157,13 +1157,13 @@ xkb_filter_apply_all(struct xkb_state *state,
             if (filter->action.type == ACTION_TYPE_MOD_SET) {
                 /* Convert modifier set action to a latch */
                 filter->action.type = ACTION_TYPE_MOD_LATCH;
-                if (state->flags & XKB_STATE_A11Y_LATCH_TO_LOCK) {
+                if (state->flags & XKB_A11Y_LATCH_TO_LOCK) {
                     filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
                 }
             } else if (filter->action.type == ACTION_TYPE_GROUP_SET) {
                 /* Convert group set action to a latch */
                 filter->action.type = ACTION_TYPE_GROUP_LATCH;
-                if (state->flags & XKB_STATE_A11Y_LATCH_TO_LOCK) {
+                if (state->flags & XKB_A11Y_LATCH_TO_LOCK) {
                     filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
                 }
             }
@@ -1187,14 +1187,14 @@ xkb_state_update_derived(struct xkb_state *state);
 
 static inline void
 xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
-               enum xkb_state_accessibility_flags a11y_affect,
-               enum xkb_state_accessibility_flags a11y_flags)
+               enum xkb_accessibility_flags a11y_affect,
+               enum xkb_accessibility_flags a11y_flags)
 {
     state->flags = a11y_flags;
     if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
-        !(a11y_affect & XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
+        !(a11y_affect & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
              /* Keymap v2+: enable extension to XKB if not manually disabled */
-             state->flags |= XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS;
+             state->flags |= XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
      }
     state->controls.out_of_range_group.policy =
         XKB_OUT_OF_RANGE_LAYOUT_WRAP;
@@ -2470,8 +2470,8 @@ typedef darray(struct server_state_mods_mapping) server_state_mods_mappings;
 
 struct xkb_server_options {
     /** Accessibility flags */
-    enum xkb_state_accessibility_flags a11y_affect;
-    enum xkb_state_accessibility_flags a11y_flags;
+    enum xkb_accessibility_flags a11y_affect;
+    enum xkb_accessibility_flags a11y_flags;
 
     /** Modifiers re-mapping */
     server_state_mods_mappings mods;
@@ -2488,8 +2488,8 @@ struct xkb_server_options {
 };
 
 #define server_state_options_new(context) { \
-    .a11y_affect = XKB_STATE_A11Y_NO_FLAGS, \
-    .a11y_flags  = XKB_STATE_A11Y_NO_FLAGS, \
+    .a11y_affect = XKB_A11Y_NO_FLAGS, \
+    .a11y_flags  = XKB_A11Y_NO_FLAGS, \
     .shortcuts = {                          \
         .mask = 0,                          \
         .targets = darray_new(),            \
@@ -2529,17 +2529,17 @@ xkb_server_options_destroy(struct xkb_server_options *options)
 int
 xkb_server_options_update_a11y_flags(
     struct xkb_server_options *options,
-    enum xkb_state_accessibility_flags affect,
-    enum xkb_state_accessibility_flags flags)
+    enum xkb_accessibility_flags affect,
+    enum xkb_accessibility_flags flags)
 {
-    static const enum xkb_state_accessibility_flags XKB_STATE_A11Y_FLAGS
-        = XKB_STATE_A11Y_LATCH_TO_LOCK
-        | XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS;
+    static const enum xkb_accessibility_flags XKB_A11Y_FLAGS
+        = XKB_A11Y_LATCH_TO_LOCK
+        | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
 
-    if (affect & ~XKB_STATE_A11Y_FLAGS) {
+    if (affect & ~XKB_A11Y_FLAGS) {
         log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized state flags: %#x\n",
-                     (flags & ~XKB_STATE_A11Y_FLAGS));
+                     (flags & ~XKB_A11Y_FLAGS));
         return 1;
     }
 
