@@ -2090,12 +2090,12 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
- * @struct xkb_server_state_options
+ * @struct xkb_server_options
  * Opaque options object to configure a keyboard state.
  *
  * @since 1.14.0
  */
-struct xkb_server_state_options;
+struct xkb_server_options;
 
 /**
  * Create a new keyboard server state options object.
@@ -2106,10 +2106,10 @@ struct xkb_server_state_options;
  *
  * @since 1.14.0
  *
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  */
-XKB_EXPORT struct xkb_server_state_options *
-xkb_server_state_options_new(struct xkb_context *context);
+XKB_EXPORT struct xkb_server_options *
+xkb_server_options_new(struct xkb_context *context);
 
 /**
  * Free a keyboard server state options object.
@@ -2119,15 +2119,15 @@ xkb_server_state_options_new(struct xkb_context *context);
  *
  * @since 1.14.0
  *
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  */
 XKB_EXPORT void
-xkb_server_state_options_destroy(struct xkb_server_state_options *options);
+xkb_server_options_destroy(struct xkb_server_options *options);
 
 /**
  * @enum xkb_state_accessibility_flags
  * Flags for
- * `xkb_server_state_options::xkb_server_state_options_update_a11y_flags()`.
+ * `xkb_server_options::xkb_server_options_update_a11y_flags()`.
  *
  * @since 1.14.0
  */
@@ -2200,11 +2200,11 @@ enum xkb_state_accessibility_flags {
  *
  * @since 1.14.0
  *
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  */
 XKB_EXPORT int
-xkb_server_state_options_update_a11y_flags(
-    struct xkb_server_state_options *options,
+xkb_server_options_update_a11y_flags(
+    struct xkb_server_options *options,
     enum xkb_state_accessibility_flags affect,
     enum xkb_state_accessibility_flags flags
 );
@@ -2238,20 +2238,20 @@ xkb_server_state_options_update_a11y_flags(
  * const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
  * const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
  * const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
- * if (xkb_server_state_options_mods_set_mapping(options, ctrl | alt, level3)) {
+ * if (xkb_server_options_mods_set_mapping(options, ctrl | alt, level3)) {
  *     // handle error
  *     …
  * ```
  *
  * @since 1.14.0
  *
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  *
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT int
-xkb_server_state_options_mods_set_mapping(
-    struct xkb_server_state_options *options,
+xkb_server_options_mods_set_mapping(
+    struct xkb_server_options *options,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
 );
@@ -2264,16 +2264,16 @@ xkb_server_state_options_mods_set_mapping(
  * @param mask    Modifiers to set, using their [encoding].
  * Only the modifiers in @p affect are considered.
  *
- * @sa `xkb_server_state_options_shortcuts_set_mapping()`
+ * @sa `xkb_server_options_shortcuts_set_mapping()`
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
  * @since 1.14.0
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  *
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT int
-xkb_server_state_options_shortcuts_update_mods(
-    struct xkb_server_state_options* options,
+xkb_server_options_shortcuts_update_mods(
+    struct xkb_server_options* options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 );
 
@@ -2281,20 +2281,20 @@ xkb_server_state_options_shortcuts_update_mods(
  * Set layout mapping for keyboard shortcuts tweak.
  *
  * Enable tweaking keyboard shortcuts by switching the effective layout when
- * any modifier set by `xkb_server_state_options_shortcuts_update_mods()`
+ * any modifier set by `xkb_server_options_shortcuts_update_mods()`
  * is active.
  *
  * @param options The state options object to modify.
  * @param source  Source layout.
  * @param target  Target layout.
  *
- * @sa `xkb_server_state_options_shortcuts_update_mods()`
+ * @sa `xkb_server_options_shortcuts_update_mods()`
  * @since 1.14.0
- * @memberof xkb_server_state_options
+ * @memberof xkb_server_options
  */
 XKB_EXPORT int
-xkb_server_state_options_shortcuts_set_mapping(
-    struct xkb_server_state_options* options,
+xkb_server_options_shortcuts_set_mapping(
+    struct xkb_server_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 );
 
@@ -2729,7 +2729,7 @@ xkb_events_next(struct xkb_events *events);
  */
 XKB_EXPORT struct xkb_server_state *
 xkb_server_state_new(struct xkb_keymap *keymap,
-                     const struct xkb_server_state_options *options);
+                     const struct xkb_server_options *options);
 
 /**
  * Take a new reference on a keyboard server state object.

@@ -89,7 +89,7 @@ is_keyboard(int fd)
 static int
 keyboard_new(struct dirent *ent,
              struct xkb_context *ctx, struct xkb_keymap *keymap,
-             const struct xkb_server_state_options *options,
+             const struct xkb_server_options *options,
              enum xkb_keyboard_control_flags kbd_controls_affect,
              enum xkb_keyboard_control_flags kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
@@ -220,7 +220,7 @@ filter_device_name(const struct dirent *ent)
 
 static struct keyboard *
 get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
-              const struct xkb_server_state_options *options,
+              const struct xkb_server_options *options,
               enum xkb_keyboard_control_flags kbd_controls_affect,
               enum xkb_keyboard_control_flags kbd_controls_values,
               struct xkb_compose_table *compose_table)
@@ -555,9 +555,8 @@ main(int argc, char *argv[])
 
     /* Initialize state options */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
-    struct xkb_server_state_options * const server_state_options =
-        xkb_server_state_options_new(ctx);
-    if (!server_state_options)
+    struct xkb_server_options * const server_options = xkb_server_options_new(ctx);
+    if (!server_options)
         goto error_state_options;
     xkb_context_unref(ctx);
     ctx = NULL;
@@ -691,7 +690,7 @@ main(int argc, char *argv[])
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, server_state_options,
+            if (!tools_parse_controls(optarg, server_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 usage(stderr, argv[0]);
@@ -712,7 +711,7 @@ main(int argc, char *argv[])
             use_events_api = true;
             break;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, server_state_options)) {
+            if (!tools_parse_shortcuts_mappings(optarg, server_options)) {
                 usage(stderr, argv[0]);
                 ret = EXIT_INVALID_USAGE;
                 goto error_parse_args;
@@ -830,15 +829,14 @@ too_much_arguments:
 
     if (raw_modifiers_mapping &&
         !tools_parse_modifiers_mappings(raw_modifiers_mapping, keymap,
-                                        server_state_options)) {
+                                        server_options)) {
         fprintf(stderr,
                 "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
                 raw_modifiers_mapping);
     }
 
     if (raw_shortcuts_mask &&
-        !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap,
-                                    server_state_options)) {
+        !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap, server_options)) {
         fprintf(stderr,
                 "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                 raw_shortcuts_mask);
@@ -855,7 +853,7 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(ctx, keymap, server_state_options, kbd_controls_affect,
+    kbds = get_keyboards(ctx, keymap, server_options, kbd_controls_affect,
                          kbd_controls_values, compose_table);
     if (!kbds) {
         goto out;
@@ -886,7 +884,7 @@ out:
     xkb_keymap_unref(keymap);
 error_parse_args:
 error_state_options:
-    xkb_server_state_options_destroy(server_state_options);
+    xkb_server_options_destroy(server_options);
     xkb_context_unref(ctx);
 
     return ret;
@@ -894,12 +892,12 @@ error_state_options:
 too_many_includes:
     fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
             ARRAY_SIZE(includes));
-    xkb_server_state_options_destroy(server_state_options);
+    xkb_server_options_destroy(server_options);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     usage(stderr, argv[0]);
-    xkb_server_state_options_destroy(server_state_options);
+    xkb_server_options_destroy(server_options);
     exit(EXIT_INVALID_USAGE);
 }

@@ -157,12 +157,12 @@ global:
     xkb_state_update_from_event;
     xkb_state_update_enabled_controls;
     xkb_state_serialize_enabled_controls;
-    xkb_server_state_options_new;
-    xkb_server_state_options_destroy;
-    xkb_server_state_options_update_a11y_flags;
-    xkb_server_state_options_mods_set_mapping;
-    xkb_server_state_options_shortcuts_update_mods;
-    xkb_server_state_options_shortcuts_set_mapping;
+    xkb_server_options_new;
+    xkb_server_options_destroy;
+    xkb_server_options_update_a11y_flags;
+    xkb_server_options_mods_set_mapping;
+    xkb_server_options_shortcuts_update_mods;
+    xkb_server_options_shortcuts_set_mapping;
     xkb_server_state_new;
     xkb_server_state_ref;
     xkb_server_state_unref;

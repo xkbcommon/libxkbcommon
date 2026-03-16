@@ -29,17 +29,16 @@
 static void
 test_server_state_options(struct xkb_context *ctx)
 {
-    struct xkb_server_state_options *options =
-        xkb_server_state_options_new(ctx);
+    struct xkb_server_options *options = xkb_server_options_new(ctx);
     assert(options);
 
     /* Invalid flags */
-    assert(xkb_server_state_options_update_a11y_flags(options, -1000, 0) == 1);
-    assert(xkb_server_state_options_update_a11y_flags(options, 1000, 0) == 1);
+    assert(xkb_server_options_update_a11y_flags(options, -1000, 0) == 1);
+    assert(xkb_server_options_update_a11y_flags(options, 1000, 0) == 1);
 
     /* Valid flags */
     static_assert(XKB_STATE_A11Y_NO_FLAGS == 0, "default flags");
-    assert(xkb_server_state_options_update_a11y_flags(
+    assert(xkb_server_options_update_a11y_flags(
             options, XKB_STATE_A11Y_NO_FLAGS, 1000) == 0);
 
     struct xkb_keymap *keymap =
@@ -51,7 +50,7 @@ test_server_state_options(struct xkb_context *ctx)
 
     xkb_server_state_unref(sm);
     xkb_keymap_unref(keymap);
-    xkb_server_state_options_destroy(options);
+    xkb_server_options_destroy(options);
 }
 
 /* Check that derived state is correctly initialized */
@@ -503,16 +502,15 @@ test_sticky_keys(struct xkb_context *ctx)
      * Test latch-to-lock
      */
 
-    struct xkb_server_state_options * const sm_options =
-        xkb_server_state_options_new(ctx);
+    struct xkb_server_options * const sm_options = xkb_server_options_new(ctx);
     assert(sm_options);
-    assert(xkb_server_state_options_update_a11y_flags(
+    assert(xkb_server_options_update_a11y_flags(
                 sm_options,
                 XKB_STATE_A11Y_LATCH_TO_LOCK,
                 XKB_STATE_A11Y_LATCH_TO_LOCK) == 0);
     sm = xkb_server_state_new(keymap, sm_options);
     assert(sm);
-    xkb_server_state_options_destroy(sm_options);
+    xkb_server_options_destroy(sm_options);
     events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
@@ -788,14 +786,13 @@ test_shortcuts_tweak(struct xkb_context *context)
     const xkb_mod_mask_t level3 = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
     const xkb_mod_mask_t level5 = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL5);
 
-    struct xkb_server_state_options * const options =
-        xkb_server_state_options_new(context);
+    struct xkb_server_options * const options = xkb_server_options_new(context);
     assert(options);
 
-    assert(xkb_server_state_options_shortcuts_update_mods(options, ctrl, ctrl)
+    assert(xkb_server_options_shortcuts_update_mods(options, ctrl, ctrl)
            == 0);
-    assert(xkb_server_state_options_shortcuts_set_mapping(options, 1, 2) == 0);
-    assert(xkb_server_state_options_shortcuts_set_mapping(options, 3, 0) == 0);
+    assert(xkb_server_options_shortcuts_set_mapping(options, 1, 2) == 0);
+    assert(xkb_server_options_shortcuts_set_mapping(options, 3, 0) == 0);
 
     struct xkb_server_state * sm = xkb_server_state_new(keymap, options);
     assert(sm);
@@ -1717,8 +1714,8 @@ test_shortcuts_tweak(struct xkb_context *context)
      * Use modifiers tweak in addition to the shortcuts tweak
      */
 
-    assert(!xkb_server_state_options_mods_set_mapping(options,
-                                                       ctrl | alt, level3));
+    assert(!xkb_server_options_mods_set_mapping(options,
+                                                ctrl | alt, level3));
 
     sm = xkb_server_state_new(keymap, options);
     assert(sm);
@@ -2011,7 +2008,7 @@ test_shortcuts_tweak(struct xkb_context *context)
 
     xkb_server_state_unref(sm);
     xkb_events_destroy(events);
-    xkb_server_state_options_destroy(options);
+    xkb_server_options_destroy(options);
     xkb_keymap_unref(keymap);
 }
 
@@ -2186,23 +2183,22 @@ test_modifiers_tweak(struct xkb_context *context)
     const xkb_mod_mask_t level5 = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL5);
     const xkb_mod_mask_t num = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_NUM);
 
-    struct xkb_server_state_options * const options =
-        xkb_server_state_options_new(context);
+    struct xkb_server_options * const options = xkb_server_options_new(context);
     assert(options);
 
-    assert(!xkb_server_state_options_mods_set_mapping(options, 0, 0));
-    assert(xkb_server_state_options_mods_set_mapping(options, 0, level3) == -1);
-    assert(!xkb_server_state_options_mods_set_mapping(options, scroll, alt));
-    assert(!xkb_server_state_options_mods_set_mapping(options, super, level3));
-    assert(!xkb_server_state_options_mods_set_mapping(options, alt, level5));
-    assert(!xkb_server_state_options_mods_set_mapping(options, ctrl | alt, level3));
+    assert(!xkb_server_options_mods_set_mapping(options, 0, 0));
+    assert(xkb_server_options_mods_set_mapping(options, 0, level3) == -1);
+    assert(!xkb_server_options_mods_set_mapping(options, scroll, alt));
+    assert(!xkb_server_options_mods_set_mapping(options, super, level3));
+    assert(!xkb_server_options_mods_set_mapping(options, alt, level5));
+    assert(!xkb_server_options_mods_set_mapping(options, ctrl | alt, level3));
 
-    assert(!xkb_server_state_options_mods_set_mapping(options, ctrl, shift));
-    assert(!xkb_server_state_options_mods_set_mapping(options, ctrl, 0));
+    assert(!xkb_server_options_mods_set_mapping(options, ctrl, shift));
+    assert(!xkb_server_options_mods_set_mapping(options, ctrl, 0));
 
     struct xkb_server_state * const sm = xkb_server_state_new(keymap, options);
     assert(sm);
-    xkb_server_state_options_destroy(options);
+    xkb_server_options_destroy(options);
 
     struct xkb_events * const events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
     assert(events);
@@ -2883,7 +2879,7 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
     xkb_server_state_unref(NULL);
-    xkb_server_state_options_destroy(NULL);
+    xkb_server_options_destroy(NULL);
     xkb_events_destroy(NULL);
 
     test_server_state_options(context);
