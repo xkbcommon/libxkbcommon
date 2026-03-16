@@ -7,7 +7,7 @@ following new API:
 - `enum xkb_out_of_range_layout_policy`, with values:
   - `XKB_OUT_OF_RANGE_LAYOUT_WRAP`: wrap into range using integer
     modulus (default, as before).
-  - `XKB_OUT_OF_RANGE_LAYOUT_SATURATE`: clamp into range, i.e.
+  - `XKB_OUT_OF_RANGE_LAYOUT_CLAMP`: clamp into range, i.e.
     invalid indices are corrected to the closest valid bound (0 or
     highest layout index).
   - `XKB_OUT_OF_RANGE_LAYOUT_REDIRECT`: redirect to a specific

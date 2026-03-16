@@ -180,16 +180,16 @@ test_group_wrap(struct xkb_context *ctx)
             .expected_group = 1,
         },
         /*
-         * Explicit: saturate
+         * Explicit: clamp
          */
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+            .policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
             .redirect_group = 0,
             .locked_group = -1,
             .expected_group = 0,
         },
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+            .policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
             .redirect_group = 0,
             .locked_group = num_layouts + 1,
             .expected_group = num_layouts - 1,

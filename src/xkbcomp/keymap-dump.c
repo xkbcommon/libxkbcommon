@@ -1402,7 +1402,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     #undef require_explicit
 
     switch (key->out_of_range_group_policy) {
-    case XKB_OUT_OF_RANGE_LAYOUT_SATURATE:
+    case XKB_OUT_OF_RANGE_LAYOUT_CLAMP:
         copy_to_buf(buf, "\n\t\tgroupsClamp,");
         simple = false;
         break;
@@ -1416,6 +1416,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
         break;
 
+    case XKB_OUT_OF_RANGE_LAYOUT_WRAP:
     default:
         break;
     }

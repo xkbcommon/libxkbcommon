@@ -122,11 +122,11 @@ xkb_keyboard_control_param:
     value: 1
 xkb_out_of_range_layout_policy:
   - name: XKB_OUT_OF_RANGE_LAYOUT_WRAP
+    value: 0
+  - name: XKB_OUT_OF_RANGE_LAYOUT_CLAMP
     value: 1
-  - name: XKB_OUT_OF_RANGE_LAYOUT_SATURATE
-    value: 2
   - name: XKB_OUT_OF_RANGE_LAYOUT_REDIRECT
-    value: 3
+    value: 2
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0

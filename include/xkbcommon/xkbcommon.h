@@ -2842,14 +2842,14 @@ enum xkb_out_of_range_layout_policy {
      *
      * @since 1.14.0
      */
-    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 1,
+    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 0,
     /**
      * Clamp into range, i.e. invalid indices are corrected to the closest
      * valid bound (0 or highest layout index).
      *
      * @since 1.14.0
      */
-    XKB_OUT_OF_RANGE_LAYOUT_SATURATE,
+    XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
     /**
      * Redirect to a specific [layout index](@ref xkb_layout_index_t).
      *
