@@ -7,10 +7,10 @@ Added the **state event API:**
   - `xkb_server_state_update_latched_locked()`
   - `xkb_server_state_update_enabled_controls()`
   - `xkb_server_state_update_key()`
-- `struct xkb_server_state_options` (new):
-  - `xkb_server_state_options_new()`
-  - `xkb_server_state_options_destroy()`
-  - `xkb_server_state_options_update_a11y_flags()`
+- `struct xkb_server_options` (new):
+  - `xkb_server_options_new()`
+  - `xkb_server_options_destroy()`
+  - `xkb_server_options_update_a11y_flags()`
 - `struct xkb_events` (new):
   - `enum xkb_events_flags`
   - `xkb_events_new()`

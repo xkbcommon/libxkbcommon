@@ -71,7 +71,7 @@ static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
-static struct xkb_server_state_options * server_state_options = NULL;
+static struct xkb_server_options * server_options = NULL;
 static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
 static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
 static const char *raw_modifiers_mapping = NULL;
@@ -178,23 +178,21 @@ update_keymap(struct keyboard *kbd)
         if (use_events_api) {
             if (!kbd->server_state) {
                 if (raw_modifiers_mapping) {
-                    xkb_server_state_options_mods_set_mapping(
-                        server_state_options, 0, 0
-                    );
+                    xkb_server_options_mods_set_mapping(server_options, 0, 0);
                     if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
                                                         kbd->keymap,
-                                                        server_state_options)) {
+                                                        server_options)) {
                         fprintf(stderr,
                                 "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
                                 raw_modifiers_mapping);
                     }
                 }
                 if (raw_shortcuts_mask) {
-                    xkb_server_state_options_shortcuts_update_mods(
-                        server_state_options, XKB_MOD_ALL, 0
+                    xkb_server_options_shortcuts_update_mods(
+                        server_options, XKB_MOD_ALL, 0
                     );
                     if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, kbd->keymap,
-                                                    server_state_options)) {
+                                                    server_options)) {
                         fprintf(stderr,
                                 "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                                 raw_shortcuts_mask);
@@ -202,7 +200,7 @@ update_keymap(struct keyboard *kbd)
                 }
 
                 kbd->server_state =
-                    xkb_server_state_new(kbd->keymap, server_state_options);
+                    xkb_server_state_new(kbd->keymap, server_options);
                 if (!kbd->server_state)
                     return -1;
             }
@@ -625,10 +623,10 @@ main(int argc, char *argv[])
         fprintf(stderr, "Couldn't create xkb context\n");
         goto err_out;
     }
-    server_state_options = xkb_server_state_options_new(core_kbd.ctx);
+    server_options = xkb_server_options_new(core_kbd.ctx);
     xkb_context_unref(core_kbd.ctx);
     core_kbd.ctx = NULL;
-    if (!server_state_options) {
+    if (!server_options) {
         ret = -1;
         fprintf(stderr, "Couldn't create xkb state machine options\n");
         goto err_out;
@@ -747,7 +745,7 @@ local_state:
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, server_state_options,
+            if (!tools_parse_controls(optarg, server_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 goto invalid_usage;
@@ -766,7 +764,7 @@ local_state:
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, server_state_options))
+            if (!tools_parse_shortcuts_mappings(optarg, server_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
@@ -984,7 +982,7 @@ err_out:
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP
-    xkb_server_state_options_destroy(server_state_options);
+    xkb_server_options_destroy(server_options);
 #endif
     exit(ret);
 }

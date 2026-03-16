@@ -2468,7 +2468,7 @@ struct xkb_server_state {
 
 typedef darray(struct server_state_mods_mapping) server_state_mods_mappings;
 
-struct xkb_server_state_options {
+struct xkb_server_options {
     /** Accessibility flags */
     enum xkb_state_accessibility_flags a11y_affect;
     enum xkb_state_accessibility_flags a11y_flags;
@@ -2498,24 +2498,24 @@ struct xkb_server_state_options {
 }
 
 /* Default state options */
-static const struct xkb_server_state_options default_machine_options =
+static const struct xkb_server_options default_server_options =
     server_state_options_new(NULL /* unused */);
 
-struct xkb_server_state_options *
-xkb_server_state_options_new(struct xkb_context *context)
+struct xkb_server_options *
+xkb_server_options_new(struct xkb_context *context)
 {
-    struct xkb_server_state_options* restrict const opt = calloc(1, sizeof(*opt));
+    struct xkb_server_options* restrict const opt = calloc(1, sizeof(*opt));
     if (!opt)
         return NULL;
 
-    *opt = (struct xkb_server_state_options)
+    *opt = (struct xkb_server_options)
            server_state_options_new(xkb_context_ref(context));
 
     return opt;
 }
 
 void
-xkb_server_state_options_destroy(struct xkb_server_state_options *options)
+xkb_server_options_destroy(struct xkb_server_options *options)
 {
     if (options == NULL)
         return;
@@ -2527,8 +2527,8 @@ xkb_server_state_options_destroy(struct xkb_server_state_options *options)
 }
 
 int
-xkb_server_state_options_update_a11y_flags(
-    struct xkb_server_state_options *options,
+xkb_server_options_update_a11y_flags(
+    struct xkb_server_options *options,
     enum xkb_state_accessibility_flags affect,
     enum xkb_state_accessibility_flags flags)
 {
@@ -2551,8 +2551,8 @@ xkb_server_state_options_update_a11y_flags(
 }
 
 int
-xkb_server_state_options_mods_set_mapping(
-    struct xkb_server_state_options *options,
+xkb_server_options_mods_set_mapping(
+    struct xkb_server_options *options,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
 )
@@ -2599,8 +2599,8 @@ xkb_server_state_options_mods_set_mapping(
 }
 
 int
-xkb_server_state_options_shortcuts_update_mods(
-    struct xkb_server_state_options* restrict options,
+xkb_server_options_shortcuts_update_mods(
+    struct xkb_server_options* restrict options,
     xkb_mod_mask_t affect, xkb_mod_mask_t mask
 )
 {
@@ -2610,8 +2610,8 @@ xkb_server_state_options_shortcuts_update_mods(
 }
 
 int
-xkb_server_state_options_shortcuts_set_mapping(
-    struct xkb_server_state_options* options,
+xkb_server_options_shortcuts_set_mapping(
+    struct xkb_server_options* options,
     xkb_layout_index_t source, xkb_layout_index_t target
 )
 {
@@ -2780,14 +2780,14 @@ server_state_set_shortcuts(struct xkb_server_state *state,
 
 struct xkb_server_state *
 xkb_server_state_new(struct xkb_keymap *keymap,
-                     const struct xkb_server_state_options *options)
+                     const struct xkb_server_options *options)
 {
     struct xkb_server_state * restrict const state = calloc(1, sizeof(*state));
     if (!state)
         return NULL;
 
     if (!options)
-        options = &default_machine_options;
+        options = &default_server_options;
 
     xkb_state_init(&state->state, keymap,
                    options->a11y_affect, options->a11y_flags);
