@@ -135,31 +135,33 @@ enum xkb_action_flags {
  * We do not expose the following enum, as it does not make sense to expose
  * controls whose effects we do not support.
  * However, we should enforce both enum to share the same values.
+ *
+ * @warning Encoding is different from X11.
  */
 enum xkb_action_controls {
-    /* X11 encoding */
-    CONTROL_REPEAT = (1 << 0),
-    CONTROL_SLOW = (1 << 1),
-    CONTROL_DEBOUNCE = (1 << 2),
-    CONTROL_STICKY_KEYS = (1 << 3),
-    CONTROL_MOUSE_KEYS = (1 << 4),
-    CONTROL_MOUSE_KEYS_ACCEL = (1 << 5),
-    CONTROL_AX = (1 << 6),
-    CONTROL_AX_TIMEOUT = (1 << 7),
-    CONTROL_AX_FEEDBACK = (1 << 8),
-    CONTROL_BELL = (1 << 9),
-    CONTROL_OVERLAY1 = (1 << 10),
-    CONTROL_OVERLAY2 = (1 << 11),
-    CONTROL_IGNORE_GROUP_LOCK = (1 << 12),
+    /* Public API */
+    CONTROL_STICKY_KEYS = (1 << 0),
+    CONTROL_OVERLAY1 = (1 << 1),
+    CONTROL_OVERLAY2 = (1 << 2),
+    CONTROL_OVERLAY3 = (1 << 3),
+    CONTROL_OVERLAY4 = (1 << 4),
+    CONTROL_OVERLAY5 = (1 << 5),
+    CONTROL_OVERLAY6 = (1 << 6),
+    CONTROL_OVERLAY7 = (1 << 7),
+    CONTROL_OVERLAY8 = (1 << 8),
 
-    /* Non-X11 encoding */
-    CONTROL_OVERLAY3 = (1 << 13),
-    CONTROL_OVERLAY4 = (1 << 14),
-    CONTROL_OVERLAY5 = (1 << 15),
-    CONTROL_OVERLAY6 = (1 << 16),
-    CONTROL_OVERLAY7 = (1 << 17),
-    CONTROL_OVERLAY8 = (1 << 18),
-    CONTROL_GROUPS_WRAP = (1 << 19),
+    /* Private API */
+    CONTROL_GROUPS_WRAP = (1 << 9),
+    CONTROL_REPEAT = (1 << 10),
+    CONTROL_SLOW = (1 << 11),
+    CONTROL_DEBOUNCE = (1 << 12),
+    CONTROL_MOUSE_KEYS = (1 << 14),
+    CONTROL_MOUSE_KEYS_ACCEL = (1 << 15),
+    CONTROL_AX = (1 << 16),
+    CONTROL_AX_TIMEOUT = (1 << 17),
+    CONTROL_AX_FEEDBACK = (1 << 18),
+    CONTROL_BELL = (1 << 19),
+    CONTROL_IGNORE_GROUP_LOCK = (1 << 20),
 
     /**
      * All the XKB Controls. If we ever introduce *internal* controls, this mask
@@ -271,21 +273,15 @@ static_assert(XKB_OVERLAY_MAX <= (1u << XKB_OVERLAY_INDEX_MIN_WIDTH) - 1,
               "Cannot encode overlay index or count");
 
 /** Offset of keymap v1 overlays in the controls mask */
-#define XKB_OVERLAY1_CONTROLS_OFFSET 10
+#define XKB_OVERLAY1_CONTROLS_OFFSET 1
 static_assert((UINT32_C(1) << XKB_OVERLAY1_CONTROLS_OFFSET) ==
               CONTROL_OVERLAY1, "");
-/** Offset of keymap v2+ overlays in the controls mask */
-#define XKB_OVERLAY3_CONTROLS_OFFSET 13
-static_assert((UINT32_C(1) << XKB_OVERLAY3_CONTROLS_OFFSET) ==
-              CONTROL_OVERLAY3, "");
+static_assert((UINT32_C(1) << (XKB_OVERLAY1_CONTROLS_OFFSET + 7)) ==
+              CONTROL_OVERLAY8, "");
 
-
-#define OVERLAYS_FROM_CONTROLS(mask) (                 \
-    /* Overlays 1-2 */                                 \
-    (((mask) >> XKB_OVERLAY1_CONTROLS_OFFSET) & 0x3) | \
-    /* Overlays 3-8 */                                 \
-    ((((mask) >> XKB_OVERLAY3_CONTROLS_OFFSET) << 2) & \
-     ((UINT32_C(1) << XKB_OVERLAY_MAX) - 1))           \
+#define OVERLAYS_FROM_CONTROLS(mask) (            \
+    ((((mask) >> XKB_OVERLAY1_CONTROLS_OFFSET)) & \
+     ((UINT32_C(1) << XKB_OVERLAY_MAX) - 1))      \
 )
 
 static inline xkb_overlay_index_t
