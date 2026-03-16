@@ -1714,8 +1714,8 @@ test_shortcuts_tweak(struct xkb_context *context)
      * Use modifiers tweak in addition to the shortcuts tweak
      */
 
-    assert(!xkb_server_options_mods_set_mapping(options,
-                                                ctrl | alt, level3));
+    assert(!xkb_server_options_remap_mods(options,
+                                          ctrl | alt, level3));
 
     sm = xkb_server_state_new(keymap, options);
     assert(sm);
@@ -2186,15 +2186,15 @@ test_modifiers_tweak(struct xkb_context *context)
     struct xkb_server_options * const options = xkb_server_options_new(context);
     assert(options);
 
-    assert(!xkb_server_options_mods_set_mapping(options, 0, 0));
-    assert(xkb_server_options_mods_set_mapping(options, 0, level3) == -1);
-    assert(!xkb_server_options_mods_set_mapping(options, scroll, alt));
-    assert(!xkb_server_options_mods_set_mapping(options, super, level3));
-    assert(!xkb_server_options_mods_set_mapping(options, alt, level5));
-    assert(!xkb_server_options_mods_set_mapping(options, ctrl | alt, level3));
+    assert(!xkb_server_options_remap_mods(options, 0, 0));
+    assert(xkb_server_options_remap_mods(options, 0, level3) == -1);
+    assert(!xkb_server_options_remap_mods(options, scroll, alt));
+    assert(!xkb_server_options_remap_mods(options, super, level3));
+    assert(!xkb_server_options_remap_mods(options, alt, level5));
+    assert(!xkb_server_options_remap_mods(options, ctrl | alt, level3));
 
-    assert(!xkb_server_options_mods_set_mapping(options, ctrl, shift));
-    assert(!xkb_server_options_mods_set_mapping(options, ctrl, 0));
+    assert(!xkb_server_options_remap_mods(options, ctrl, shift));
+    assert(!xkb_server_options_remap_mods(options, ctrl, 0));
 
     struct xkb_server_state * const sm = xkb_server_state_new(keymap, options);
     assert(sm);

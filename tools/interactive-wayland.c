@@ -482,7 +482,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         if (!seat->server_state) {
             if (raw_modifiers_mapping) {
                 /* No race condition when using wl_display_dispatch() */
-                xkb_server_options_mods_set_mapping(server_options, 0, 0);
+                xkb_server_options_remap_mods(server_options, 0, 0);
                 if (!tools_parse_modifiers_mappings(raw_modifiers_mapping, seat->keymap,
                                                     server_options)) {
                     fprintf(stderr,

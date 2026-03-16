@@ -178,7 +178,7 @@ update_keymap(struct keyboard *kbd)
         if (use_events_api) {
             if (!kbd->server_state) {
                 if (raw_modifiers_mapping) {
-                    xkb_server_options_mods_set_mapping(server_options, 0, 0);
+                    xkb_server_options_remap_mods(server_options, 0, 0);
                     if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
                                                         kbd->keymap,
                                                         server_options)) {

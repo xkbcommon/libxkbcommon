@@ -160,7 +160,7 @@ global:
     xkb_server_options_new;
     xkb_server_options_destroy;
     xkb_server_options_update_a11y_flags;
-    xkb_server_options_mods_set_mapping;
+    xkb_server_options_remap_mods;
     xkb_server_options_shortcuts_update_mods;
     xkb_server_options_shortcuts_set_mapping;
     xkb_server_state_new;

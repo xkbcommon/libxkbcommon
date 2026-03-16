@@ -2238,7 +2238,7 @@ xkb_server_options_update_a11y_flags(
  * const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
  * const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
  * const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
- * if (xkb_server_options_mods_set_mapping(options, ctrl | alt, level3)) {
+ * if (xkb_server_options_remap_mods(options, ctrl | alt, level3)) {
  *     // handle error
  *     …
  * ```
@@ -2250,7 +2250,7 @@ xkb_server_options_update_a11y_flags(
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT int
-xkb_server_options_mods_set_mapping(
+xkb_server_options_remap_mods(
     struct xkb_server_options *options,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
