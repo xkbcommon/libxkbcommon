@@ -2125,21 +2125,21 @@ XKB_EXPORT void
 xkb_server_options_destroy(struct xkb_server_options *options);
 
 /**
- * @enum xkb_state_accessibility_flags
+ * @enum xkb_accessibility_flags
  * Flags for
  * `xkb_server_options::xkb_server_options_update_a11y_flags()`.
  *
  * @since 1.14.0
  */
-enum xkb_state_accessibility_flags {
+enum xkb_accessibility_flags {
     /**
      * Do not apply any flags.
      *
      * @since 1.14.0
      */
-    XKB_STATE_A11Y_NO_FLAGS = 0,
+    XKB_A11Y_NO_FLAGS = 0,
     /**
-     * If both `::XKB_STATE_A11Y_LATCH_TO_LOCK` and
+     * If both `::XKB_A11Y_LATCH_TO_LOCK` and
      * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
      * users to [lock] modifier keys without requiring special locking keys.
      * The user can press a [latch] modifier twice in a row to lock it, and
@@ -2151,7 +2151,7 @@ enum xkb_state_accessibility_flags {
      * [latch]: @ref latched-mod-def
      * [lock]:  @ref locked-mod-def
      */
-    XKB_STATE_A11Y_LATCH_TO_LOCK = (1 << 0),
+    XKB_A11Y_LATCH_TO_LOCK = (1 << 0),
     /**
      * Without this option, the [latch] keys are only triggers if keys are
      * strictly *sequentially tapped*, e.g.:
@@ -2185,7 +2185,7 @@ enum xkb_state_accessibility_flags {
      *
      * [latch]: @ref latched-mod-def
      */
-    XKB_STATE_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
+    XKB_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
 };
 
 /**
@@ -2205,8 +2205,8 @@ enum xkb_state_accessibility_flags {
 XKB_EXPORT int
 xkb_server_options_update_a11y_flags(
     struct xkb_server_options *options,
-    enum xkb_state_accessibility_flags affect,
-    enum xkb_state_accessibility_flags flags
+    enum xkb_accessibility_flags affect,
+    enum xkb_accessibility_flags flags
 );
 
 /**
@@ -2515,7 +2515,7 @@ enum xkb_keyboard_control_flags {
      * e.g. the user can first press a modifier, release it, then press another
      * key.
      *
-     * @sa `::XKB_STATE_A11Y_LATCH_TO_LOCK`
+     * @sa `::XKB_A11Y_LATCH_TO_LOCK`
      * @since 1.14.0
      *
      * [set]:   @ref depressed-mod-def

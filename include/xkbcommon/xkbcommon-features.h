@@ -103,11 +103,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_PARAM = 3030,
     /**
-     * The enumeration @ref xkb_state_accessibility_flags
+     * The enumeration @ref xkb_accessibility_flags
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_STATE_ACCESSIBILITY_FLAGS = 3100,
+    XKB_FEATURE_ENUM_ACCESSIBILITY_FLAGS = 3100,
     /**
      * The enumeration @ref xkb_out_of_range_layout_policy
      *
