@@ -1232,7 +1232,7 @@ tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
 {
     xkb_mod_mask_t mask = 0;
     return tools_parse_mod_mask(raw, SIZE_MAX, keymap, &mask) &&
-           !xkb_server_options_shortcuts_update_mods(options, mask, mask);
+           !xkb_server_options_update_shortcut_mods(options, mask, mask);
 }
 
 static int
@@ -1300,7 +1300,7 @@ tools_parse_shortcuts_mappings(const char *raw,
             return false;
         }
 
-        if (xkb_server_options_shortcuts_set_mapping(options, source, target)) {
+        if (xkb_server_options_remap_shortcut_layout(options, source, target)) {
             fprintf(stderr,
                     "ERROR: cannot add shortcuts layout mapping: "
                     "%"PRIu32" -> %"PRIu32"\n", source, target);
