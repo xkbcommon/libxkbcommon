@@ -2551,7 +2551,7 @@ xkb_server_options_update_a11y_flags(
 }
 
 int
-xkb_server_options_mods_set_mapping(
+xkb_server_options_remap_mods(
     struct xkb_server_options *options,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target

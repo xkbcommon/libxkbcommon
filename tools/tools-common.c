@@ -1208,7 +1208,7 @@ tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
             return false;
         }
 
-        if (xkb_server_options_mods_set_mapping(options, source, target)) {
+        if (xkb_server_options_remap_mods(options, source, target)) {
             fprintf(stderr,
                     "ERROR: cannot add modifiers mapping: "
                     "0x%"PRIx32" -> 0x%"PRIx32"\n", source, target);
