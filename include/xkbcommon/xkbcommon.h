@@ -2749,6 +2749,7 @@ xkb_event_serialize_layout(const struct xkb_event *event,
  * @sa `xkb_events_next()`
  * @sa `xkb_events_destroy()`
  * @sa `xkb_machine::xkb_machine_process_key()`
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
  */
 struct xkb_events;
 
@@ -3205,7 +3206,8 @@ struct xkb_layout_policy_update {
  * Request to process an out-of-band atomic update through an `xkb_machine` or
  * `xkb_state`.
  *
- * Used with `xkb_machine::xkb_machine_process_synthetic()` to atomically
+ * Used with `xkb_state::xkb_state_update_synthetic()` and
+ * `xkb_machine::xkb_machine_process_synthetic()` to atomically
  * apply any combination of:
  * - Latched and locked modifier and layout changes (via `components`)
  * - Boolean keyboard control changes (via `components`)
@@ -3215,6 +3217,7 @@ struct xkb_layout_policy_update {
  *
  * @since 1.14.0
  *
+ * @sa `xkb_state::xkb_state_update_synthetic()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  * @sa `xkb_state_components_update`
  * @sa `xkb_layout_policy_update`
@@ -3415,6 +3418,8 @@ xkb_state_get_keymap(struct xkb_state *state);
  *
  * @since 1.14.0
  *
+ * @deprecated Use `xkb_state_update_synthetic()` instead.
+ *
  * @memberof xkb_state
  *
  * [global keyboard controls]: @ref xkb_keyboard_control_flags
@@ -3463,6 +3468,57 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
                      enum xkb_key_direction direction);
 
 /**
+ * Apply a *synthetic* (out-of-band) atomic update to the keyboard state.
+ *
+ * This entry point is intended for *server* applications and should not be used
+ * by *client* applications; see @ref server-client-state for details.
+ *
+ * - Use this function to update the keyboard state in response to
+ *   out-of-band (non-device) inputs, such as UI layout switchers or
+ *   accessibility settings changes.
+ * - Use `xkb_state_update_key()` instead for in-band (device) inputs.
+ * - Use `xkb_state_update_event()` instead when updating from an
+ *   [event](@ref xkb_event) produced by `xkb_machine`.
+ *
+ * Only latched, locked and control components can be updated out-of-band;
+ * depressed components can only change through key presses via
+ * `xkb_state_update_key()`.
+ *
+ * @par Layout out of range
+ * @parblock
+ * If the effective layout, after taking into account the depressed, latched
+ * and locked layout, is out of range (negative or greater than the maximum
+ * layout index), it is brought into range according to the current
+ * out-of-range layout policy (see `xkb_layout_out_of_range_policy`).
+ * @endparblock
+ *
+ * @param[in,out] state   The keyboard state object.
+ * @param[in]     update  The update to apply.
+ *                        Must have `xkb_state_update::size` set.
+ * @param[out]    changed A pointer to store the mask of state components that
+ *                        have changed as a result of the update, or `NULL` to
+ *                        ignore. Set to 0 if nothing in the state has changed.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @note This function returns an error code rather than a state component
+ * delta (unlike the other `xkb_state_update_*` functions), in order to align
+ * with the `xkb_machine::xkb_machine_process_synthetic()` API. The delta
+ * is optionally available via the @p changed parameter.
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_state_update`
+ * @sa `xkb_state_update_key()`
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
+ * @memberof xkb_state
+ */
+XKB_EXPORT int
+xkb_state_update_synthetic(struct xkb_state *state,
+                           const struct xkb_state_update *update,
+                           enum xkb_state_component *changed);
+
+/**
  * Update the keyboard state [components](@ref xkb_state_component) from an
  * [event](@ref xkb_event).
  *
@@ -3500,7 +3556,7 @@ xkb_state_update_event(struct xkb_state *state,
  * by *client* applications; see @ref server-client-state for details.
  *
  * Use this function to update the latched and locked state according to
- * “out of band” (non-device) inputs, such as UI layout switchers.
+ * out-of-band (non-device) inputs, such as UI layout switchers.
  *
  * @par Layout out of range
  * @parblock
@@ -3509,7 +3565,7 @@ xkb_state_update_event(struct xkb_state *state,
  * locked layout, is out of range (negative or greater than the maximum layout),
  * it is brought into range. Currently, the layout is wrapped using integer
  * modulus (with negative values wrapping from the end). The wrapping behavior
- * may be made configurable in the future.
+ * can be configured using `xkb_state_update_synthetic()`.
  *
  * @endparblock
  *
@@ -3534,9 +3590,11 @@ xkb_state_update_event(struct xkb_state *state,
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
+ * @deprecated Use `xkb_state_update_synthetic()` instead.
+ *
  * @memberof xkb_state
  *
- * @sa xkb_state_update_mask()
+ * @sa `xkb_state_update_mask()`
  */
 XKB_EXPORT enum xkb_state_component
 xkb_state_update_latched_locked(struct xkb_state *state,
