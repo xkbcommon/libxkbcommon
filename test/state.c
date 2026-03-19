@@ -513,7 +513,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
 {
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
-    struct xkb_server_state *sm = xkb_server_state_new(keymap, NULL);
+    struct xkb_machine *sm = xkb_machine_new(keymap, NULL);
     struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     const xkb_keysym_t *syms;
@@ -533,7 +533,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
 
 #define update_states(state1, sm, key, direction) do {                     \
     xkb_state_update_key((state1), (key), (direction));                    \
-    assert(xkb_server_state_update_key((sm), (events), (key), (direction))\
+    assert(xkb_machine_process_key((sm), (events), (key), (direction))\
            == 0);                                                          \
 } while (0)
 
@@ -1067,7 +1067,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     );
 
     xkb_events_destroy(events);
-    xkb_server_state_unref(sm);
+    xkb_machine_unref(sm);
     xkb_state_unref(state);
 
 #undef update_states

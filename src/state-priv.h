@@ -39,4 +39,4 @@ struct xkb_event {
 
 /** Reference count is not updated */
 XKB_EXPORT_PRIVATE struct xkb_state *
-xkb_server_state_get_state(struct xkb_server_state *state);
+xkb_machine_get_state(struct xkb_machine *machine);

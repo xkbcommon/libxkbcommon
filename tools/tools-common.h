@@ -106,24 +106,24 @@ bool
 tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out);
 
 bool
-tools_parse_controls(const char *s, struct xkb_server_options *options,
+tools_parse_controls(const char *s, struct xkb_machine_options *options,
                      enum xkb_keyboard_control_flags *controls_affect,
                      enum xkb_keyboard_control_flags *controls_values);
 
 void
-tools_reset_modifiers_mappings(struct xkb_server_options *options);
+tools_reset_modifiers_mappings(struct xkb_machine_options *options);
 
 bool
 tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
-                               struct xkb_server_options *options);
+                               struct xkb_machine_options *options);
 
 bool
 tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
-                           struct xkb_server_options *options);
+                           struct xkb_machine_options *options);
 
 bool
 tools_parse_shortcuts_mappings(const char *raw,
-                               struct xkb_server_options *options);
+                               struct xkb_machine_options *options);
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))
