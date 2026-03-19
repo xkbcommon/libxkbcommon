@@ -218,7 +218,7 @@ update_keymap(struct keyboard *kbd)
                 return ret;
             const struct xkb_event *event;
             while ((event = xkb_events_next(kbd->events))) {
-                xkb_state_update_from_event(kbd->state, event);
+                xkb_state_update_event(kbd->state, event);
             }
         } else {
             xkb_state_update_enabled_controls(kbd->state,

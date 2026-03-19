@@ -521,7 +521,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                                                     kbd_controls_values);
                 const struct xkb_event *event;
                 while ((event = xkb_events_next(seat->events))) {
-                    xkb_state_update_from_event(seat->state, event);
+                    xkb_state_update_event(seat->state, event);
                 }
             } else {
                 fprintf(stderr,

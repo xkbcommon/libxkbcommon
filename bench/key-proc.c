@@ -61,7 +61,7 @@ bench_modern_api(struct xkb_machine *sm,
 
         enum xkb_state_component changed = 0;
         while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_from_event(state, event);
+            changed |= xkb_state_update_event(state, event);
         }
         acc_changed += (unsigned long)changed;
 
