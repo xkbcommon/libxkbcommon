@@ -26,6 +26,7 @@ HEADERS_PATH = ROOT / "include" / "xkbcommon"
 LIBXKBCOMMON_HEADERS = (
     HEADERS_PATH / "xkbcommon.h",
     HEADERS_PATH / "xkbcommon-compose.h",
+    HEADERS_PATH / "xkbcommon-errors.h",
     HEADERS_PATH / "xkbcommon-features.h",
 )
 ALL_HEADERS = LIBXKBCOMMON_HEADERS
