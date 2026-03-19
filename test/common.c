@@ -170,7 +170,7 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_machine *sm,
             /* xkb_machine API: consume until the first key event */
             if (op == DOWN || op == REPEAT || op == BOTH) {
                 assert(!xkb_machine_process_key(
-                    sm, events, kc, (op == REPEAT ? XKB_KEY_REPEATED : XKB_KEY_DOWN)
+                    sm, kc, (op == REPEAT ? XKB_KEY_REPEATED : XKB_KEY_DOWN), events
                 ));
                 assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
             }
@@ -179,7 +179,7 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_machine *sm,
                     /* Consume pending events */
                     assert(consume_events(sm, events, state, ALL_EVENTS, &kc_new));
                 }
-                assert(xkb_machine_process_key(sm, events, kc, XKB_KEY_UP)
+                assert(xkb_machine_process_key(sm, kc, XKB_KEY_UP, events)
                        == 0);
                 assert(consume_events(sm, events, state, UNTIL_KEY_EVENT, &kc_new));
             }

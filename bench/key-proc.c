@@ -56,7 +56,7 @@ bench_modern_api(struct xkb_machine *sm,
         const xkb_keycode_t keycode = (rand() % (255 - 9)) + 9;
         const enum xkb_key_direction direction = (keys[keycode])
                                                ? XKB_KEY_UP : XKB_KEY_DOWN;
-        const int ret = xkb_machine_process_key(sm, events, keycode, direction);
+        const int ret = xkb_machine_process_key(sm, keycode, direction, events);
         acc_ret += (unsigned long)ret;
 
         enum xkb_state_component changed = 0;

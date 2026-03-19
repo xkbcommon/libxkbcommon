@@ -310,9 +310,8 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
 
     if (use_events_api) {
         /* Use the xkb_machine API */
-        const int ret = xkb_machine_process_key(kbd->machine,
-                                                kbd->events,
-                                                keycode, direction);
+        const int ret = xkb_machine_process_key(kbd->machine, keycode, direction,
+                                                kbd->events);
         if (ret) {
             fprintf(stderr, "ERROR: could not update the state machine\n");
             // TODO: better error handling

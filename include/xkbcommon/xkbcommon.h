@@ -2737,8 +2737,9 @@ xkb_event_serialize_layout(const struct xkb_event *event,
  *
  * An `xkb_events` object collects [keyboard events](@ref xkb_event)
  * produced atomically by a single call to an `process_*` function such as
- * `xkb_machine::xkb_machine_process_key()`. Events are consumed sequentially
- * via `xkb_events_next()`. The collection is reset on each `process_*` call.
+ * `xkb_machine::xkb_machine_process_key()`. Events are consumed
+ * sequentially via `xkb_events_next()`. The collection is reset on each
+ * `process_*` call.
  *
  * @since 1.14.0
  *
@@ -2928,7 +2929,7 @@ enum xkb_keyboard_control_param {
      */
     XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY = 0,
     /**
-     * Select the layout to redirect to if the policiy is
+     * Select the layout to redirect to if the policy is
      * `::XKB_OUT_OF_RANGE_LAYOUT_REDIRECT`.
      *
      * @since 1.14.0
@@ -3014,10 +3015,11 @@ enum xkb_key_direction {
  * key is pressed twice, it should be released twice; etc. Otherwise (e.g. due
  * to missed input events), situations like “stuck modifiers” may occur.
  *
- * @param machine   The keyboard state machine object.
- * @param events    The event collection to store the events. It will be reset.
- * @param key       The key being operated.
- * @param direction The direction of the key operation.
+ * @param[in,out] machine    The XKB [state machine] object.
+ * @param[in]     key        The keycode of the key being operated.
+ * @param[in]     direction  The direction of the key operation.
+ * @param[out]    events     The event batch to collect events into. It will be
+ *                           reset before collecting.
  *
  * @returns 0 on success, otherwise an error code.
  *
@@ -3033,8 +3035,8 @@ enum xkb_key_direction {
  */
 XKB_EXPORT int
 xkb_machine_process_key(struct xkb_machine *machine,
-                        struct xkb_events *events,
-                        xkb_keycode_t key, enum xkb_key_direction direction);
+                        xkb_keycode_t key, enum xkb_key_direction direction,
+                        struct xkb_events *events);
 
 /**
  * Update the keyboard state machine to change the latched and locked state of
@@ -3215,6 +3217,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * companion to an `xkb_machine`: feed each event produced by
  * `xkb_machine::xkb_machine_process_key()` into this
  * function to keep the observable state in sync.
+ *
  * @warning The given state object should not be updated by other means than
  * [events](@ref xkb_event), i.e. do not use `xkb_state_update_key()`.
  *

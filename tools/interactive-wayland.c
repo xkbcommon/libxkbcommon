@@ -566,8 +566,8 @@ kbd_key(void *data, struct wl_keyboard *wl_kbd, uint32_t serial, uint32_t time,
     if (use_local_state && use_events_api) {
         /* Run our local state machine with the xkb_machine API */
         const int ret = xkb_machine_process_key(seat->machine,
-                                                seat->events,
-                                                keycode, direction);
+                                                keycode, direction,
+                                                seat->events);
         if (ret) {
             fprintf(stderr, "%s: ERROR: could not update the state machine\n",
                     seat->name_str);
