@@ -1669,9 +1669,88 @@ xkb_state_update_enabled_controls(struct xkb_state *state,
                                   enum xkb_keyboard_control_flags affect,
                                   enum xkb_keyboard_control_flags controls)
 {
-    const struct state_components previous = state->components;
-    state_update_enabled_controls(state, affect, controls, NULL);
-    return get_state_component_changes(&previous, &state->components);
+    const struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = XKB_STATE_CONTROLS,
+        .affect_controls = affect,
+        .controls = controls,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components_update,
+    };
+    enum xkb_state_component changed = 0;
+    /* Note: no error handling */
+    xkb_state_update_synthetic(state, &update, &changed);
+    return changed;
+}
+
+static int
+state_update_layout_policy(struct xkb_state *state,
+                           const struct xkb_layout_policy_update *update)
+{
+    if (xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
+                        (int)update->policy)) {
+        if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
+            if (update->redirect < state->keymap->num_groups) {
+            state->controls.out_of_range_group.redirect_group =
+                update->redirect;
+            } else {
+                return XKB_ERROR_UNSUPPORTED_GROUP_INDEX;
+            }
+        }
+        state->controls.out_of_range_group.policy = update->policy;
+        return 0;
+    } else {
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
+    }
+}
+
+int
+xkb_state_update_synthetic(struct xkb_state *state,
+                           const struct xkb_state_update *update,
+                           enum xkb_state_component *changed)
+{
+    /* Check ABI compatibility */
+    if (!xkb_check_struct_size(update) ||
+        (update->components && !xkb_check_struct_size(update->components)) ||
+        (update->layout_policy && !xkb_check_struct_size(update->layout_policy))) {
+        log_err(state->keymap->ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
+                "%s: ABI version mismatch: cannot use newer fields.\n ",
+                __func__);
+        return XKB_ERROR_ABI_FORWARD_COMPAT;
+    }
+
+    const struct state_components previous_components = state->components;
+
+    // TODO: use a *transaction* mechanism: either the whole update succeeds
+    //       or rollback
+
+    /* Update parametrized controls first */
+    if (update->layout_policy) {
+        const int error = state_update_layout_policy(state, update->layout_policy);
+        if (error)
+            return error;
+    }
+
+    if (update->components) {
+        const struct xkb_state_components_update * restrict const components =
+            update->components;
+        /* Update boolean controls first */
+        state_update_enabled_controls(state,
+                                      components->affect_controls,
+                                      components->controls, NULL);
+
+        state_update_latched_locked(state, components, NULL);
+    }
+
+    xkb_state_update_derived(state);
+
+    if (changed) {
+        *changed = get_state_component_changes(&previous_components,
+                                               &state->components);
+    }
+    return 0;
 }
 
 /**
@@ -3002,27 +3081,6 @@ xkb_machine_update_latched_locked(struct xkb_machine *sm,
     return xkb_machine_process_synthetic(sm, &update, events);
 }
 
-static int
-state_update_layout_policy(struct xkb_state *state,
-                           const struct xkb_layout_policy_update *update)
-{
-    if (xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
-                        (int)update->policy)) {
-        if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
-            if (update->redirect < state->keymap->num_groups) {
-            state->controls.out_of_range_group.redirect_group =
-                update->redirect;
-            } else {
-                return XKB_ERROR_UNSUPPORTED_GROUP_INDEX;
-            }
-        }
-        state->controls.out_of_range_group.policy = update->policy;
-        return 0;
-    } else {
-        return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
-    }
-}
-
 int
 xkb_machine_process_synthetic(struct xkb_machine *sm,
                               const struct xkb_state_update *update,
@@ -3048,6 +3106,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 
     /* Update parametrized controls first */
     if (update->layout_policy) {
+        // FIXME: ret is not a mask
         ret |= state_update_layout_policy(state, update->layout_policy);
     }
 
