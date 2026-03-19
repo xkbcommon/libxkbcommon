@@ -87,9 +87,9 @@ xkb_has_feature(enum xkb_feature feature, int value)
         );
     case XKB_FEATURE_ENUM_KEYBOARD_CONTROL_PARAM:
         return is_supported_enum_value_mask(XKB_KEYBOARD_CONTROL_PARAM_VALUES, value);
-    case XKB_FEATURE_ENUM_ACCESSIBILITY_FLAGS:
+    case XKB_FEATURE_ENUM_A11Y_FLAGS:
         return is_supported_flag_value(
-            XKB_ACCESSIBILITY_FLAGS_VALUES, true, value
+            XKB_A11Y_FLAGS_VALUES, true, value
         );
     case XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY:
         return is_supported_enum_value_mask(XKB_OUT_OF_RANGE_LAYOUT_POLICY_VALUES, value);

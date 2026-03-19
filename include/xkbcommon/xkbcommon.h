@@ -2125,13 +2125,15 @@ XKB_EXPORT void
 xkb_server_options_destroy(struct xkb_server_options *options);
 
 /**
- * @enum xkb_accessibility_flags
+ * @enum xkb_a11y_flags
  * Flags for
  * `xkb_server_options::xkb_server_options_update_a11y_flags()`.
  *
+ * These flags configure the accessibility (*a11y*) features.
+ *
  * @since 1.14.0
  */
-enum xkb_accessibility_flags {
+enum xkb_a11y_flags {
     /**
      * Do not apply any flags.
      *
@@ -2205,8 +2207,8 @@ enum xkb_accessibility_flags {
 XKB_EXPORT int
 xkb_server_options_update_a11y_flags(
     struct xkb_server_options *options,
-    enum xkb_accessibility_flags affect,
-    enum xkb_accessibility_flags flags
+    enum xkb_a11y_flags affect,
+    enum xkb_a11y_flags flags
 );
 
 /**
