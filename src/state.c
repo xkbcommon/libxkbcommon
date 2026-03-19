@@ -2594,7 +2594,7 @@ static const struct xkb_machine_options default_machine_options =
 struct xkb_machine_options *
 xkb_machine_options_new(struct xkb_context *context)
 {
-    struct xkb_machine_options* restrict const opt = calloc(1, sizeof(*opt));
+    struct xkb_machine_options * restrict const opt = calloc(1, sizeof(*opt));
     if (!opt)
         return NULL;
 
@@ -2689,10 +2689,9 @@ xkb_machine_options_remap_mods(
 }
 
 int
-xkb_machine_options_update_shortcut_mods(
-    struct xkb_machine_options* restrict options,
-    xkb_mod_mask_t affect, xkb_mod_mask_t mask
-)
+xkb_machine_options_update_shortcut_mods(struct xkb_machine_options *options,
+                                         xkb_mod_mask_t affect,
+                                         xkb_mod_mask_t mask)
 {
     options->shortcuts.mask &= ~affect;
     options->shortcuts.mask |= (mask & affect);
@@ -2700,10 +2699,9 @@ xkb_machine_options_update_shortcut_mods(
 }
 
 int
-xkb_machine_options_remap_shortcut_layout(
-    struct xkb_machine_options* options,
-    xkb_layout_index_t source, xkb_layout_index_t target
-)
+xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
+                                          xkb_layout_index_t source,
+                                          xkb_layout_index_t target)
 {
     if (source >= XKB_MAX_GROUPS || target >= XKB_MAX_GROUPS)
         return 1;
