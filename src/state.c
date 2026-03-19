@@ -38,8 +38,26 @@
 #include "utils.h"
 #include "utils-numbers.h"
 
+/*
+ * @struct xkb_events
+ * Keyboard event collection object.
+ *
+ * Implements a dynamically-allocated array of [keyboard events](@ref xkb_event)
+ * that is reset and refilled atomically on each `process_*` call, then consumed
+ * sequentially by the caller via `xkb_events_next()`.
+ *
+ * The `queue` array is reused across calls to avoid repeated allocation:
+ * it grows as needed but never shrinks. The `next` index is reset to 0
+ * on each `process_*` call.
+ *
+ * @warning Not thread-safe. Must only be used from a single thread.
+ * For multi-threaded use, we need a future `xkb_events_new_queue()` will
+ * provide a thread-safe implementation (e.g. circular buffer).
+ */
 struct xkb_events {
-    enum xkb_events_flags flags;
+    /**
+     * Read cursor for `xkb_events_next()`. Reset to 0 on each `process_*` call.
+     */
     darray_size_t next;
     darray(struct xkb_event) queue;
     struct xkb_context *ctx;
@@ -3351,13 +3369,13 @@ xkb_machine_process_key(struct xkb_machine *sm,
 }
 
 struct xkb_events *
-xkb_events_new(struct xkb_context *context, enum xkb_events_flags flags)
+xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags)
 {
     static const enum xkb_events_flags XKB_EVENTS_FLAGS = XKB_EVENTS_NO_FLAGS;
 
     if (flags & ~XKB_EVENTS_FLAGS) {
         log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized events flags: %#x\n",
+                     "unrecognized events batch flags: %#x\n",
                      (flags & ~XKB_EVENTS_FLAGS));
         return NULL;
     }
@@ -3365,11 +3383,10 @@ xkb_events_new(struct xkb_context *context, enum xkb_events_flags flags)
     struct xkb_events *events = calloc(1, sizeof(*events));
     if (events == NULL) {
         log_err(context, XKB_ERROR_ALLOCATION_ERROR,
-                "%s: cannot allocate state events\n", __func__);
+                "%s: cannot allocate state events collection\n", __func__);
         return events;
     }
     darray_init(events->queue);
-    events->flags = flags;
     events->next = 0;
     events->ctx = xkb_context_ref(context);
     return events;

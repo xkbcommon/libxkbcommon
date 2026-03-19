@@ -127,7 +127,7 @@ keyboard_new(struct dirent *ent,
             goto err_machine;
         }
 
-        events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+        events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
         if (!events) {
             fprintf(stderr, "Couldn't create xkb events for %s\n", path);
             ret = -EFAULT;

@@ -138,7 +138,7 @@ main(void)
 
     struct xkb_machine *sm = xkb_machine_new(keymap, NULL);
     assert(sm);
-    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);

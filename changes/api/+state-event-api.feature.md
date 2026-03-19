@@ -11,9 +11,9 @@ Added the **server machine API:**
   - `xkb_machine_options_new()`
   - `xkb_machine_options_destroy()`
   - `xkb_machine_options_update_a11y_flags()`
+- `enum xkb_events_flags` (new)
 - `struct xkb_events` (new):
-  - `enum xkb_events_flags`
-  - `xkb_events_new()`
+  - `xkb_events_new_batch()`
   - `xkb_events_destroy()`
   - `xkb_events_next()`
 - `struct xkb_event` (new):
