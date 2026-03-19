@@ -84,7 +84,7 @@ update_key(struct xkb_machine *sm,
         const struct xkb_event *event;
         enum xkb_state_component changed = 0;
         while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_from_event(state, event);
+            changed |= xkb_state_update_event(state, event);
         }
         return changed;
     } else {
@@ -107,7 +107,7 @@ update_controls(struct xkb_machine *sm,
         const struct xkb_event *event;
         enum xkb_state_component changed = 0;
         while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_from_event(state, event);
+            changed |= xkb_state_update_event(state, event);
         }
         return changed;
     } else {
@@ -228,7 +228,7 @@ test_group_wrap(struct xkb_context *ctx)
             sm, events, 0, 0, false, 0, 0, 0, true, tests[t].locked_group
         ));
         while ((event = xkb_events_next(events)))
-            xkb_state_update_from_event(state, event);
+            xkb_state_update_event(state, event);
         assert_eq("unexpected effective group", tests[t].expected_group,
                   xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
                   "%"PRIu32);

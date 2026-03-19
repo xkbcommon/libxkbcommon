@@ -148,7 +148,7 @@ keyboard_new(struct dirent *ent,
                                             kbd_controls_values);
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
-            xkb_state_update_from_event(state, event);
+            xkb_state_update_event(state, event);
         }
     } else {
         xkb_state_update_enabled_controls(state,

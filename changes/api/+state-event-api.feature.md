@@ -21,7 +21,7 @@ Added the **server machine API:**
   - `xkb_event_get_keycode()`
   - `xkb_event_get_components()`
 - `struct xkb_state`:
-  - `xkb_state_update_from_event()`
+  - `xkb_state_update_event()`
 
 This is the recommended API for **server** applications. It enables the full
 feature set that libxkbcommon supports.

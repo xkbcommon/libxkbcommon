@@ -86,7 +86,7 @@ struct xkb_keymap;
  *
  * @note To query the resulting keyboard state (active modifiers, current
  * layout, LED states, etc.), pair this object with an `xkb_state` updated via
- * `xkb_state::xkb_state_update_from_event()`. The `xkb_state` object is the
+ * `xkb_state::xkb_state_update_event()`. The `xkb_state` object is the
  * *observable state* of the machine and provides the full query API.
  *
  * See @ref server-client-state for details.
@@ -124,7 +124,7 @@ struct xkb_machine;
  * </dd>
  * <dt>Server query companion</dt>
  * <dd>
- * Update via `xkb_state_update_from_event()` to expose the full query API
+ * Update via `xkb_state_update_event()` to expose the full query API
  * alongside an [`xkb_machine`](@ref xkb_machine): `xkb_machine` is the
  * [Mealy machine] that processes keyboard input; `xkb_state` is its
  * *observable state*, exposing the query API.
@@ -2105,7 +2105,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * stream of raw key events – a pair ([keycode], [direction]) – as input, and
  * produces a stream of atomic [XKB events](@ref xkb_event) as output. The
  * observable state of the machine is exposed via a companion `xkb_state`
- * object updated with `xkb_state::xkb_state_update_from_event()`.
+ * object updated with `xkb_state::xkb_state_update_event()`.
  *
  * Note that the `xkb_machine` API supports events other than state
  * components changes, such as key press/release events, so that it enables to
@@ -3229,8 +3229,8 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * @memberof xkb_state
  */
 XKB_EXPORT enum xkb_state_component
-xkb_state_update_from_event(struct xkb_state *state,
-                            const struct xkb_event *event);
+xkb_state_update_event(struct xkb_state *state,
+                       const struct xkb_event *event);
 
 /**
  * Update the keyboard state to change the latched and locked state of

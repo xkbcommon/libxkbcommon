@@ -100,7 +100,7 @@ consume_events(struct xkb_machine *sm,
             }
             break;
         case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
-            xkb_state_update_from_event(state, event);
+            xkb_state_update_event(state, event);
             break;
         default:
             {} /* Label followed by declaration requires C23 */

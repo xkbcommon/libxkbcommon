@@ -3468,8 +3468,8 @@ xkb_event_serialize_layout(const struct xkb_event *event,
 }
 
 enum xkb_state_component
-xkb_state_update_from_event(struct xkb_state *state,
-                            const struct xkb_event *event)
+xkb_state_update_event(struct xkb_state *state,
+                       const struct xkb_event *event)
 {
     if (event->type == XKB_EVENT_TYPE_COMPONENTS_CHANGE) {
         const struct state_components prev_components = state->components;
