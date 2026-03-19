@@ -1,9 +1,7 @@
 Enable the configuration of out-of-range layout handling using the
 following new API:
-- `xkb_machine::xkb_machine_update_control()`
-- `enum xkb_keyboard_control_param`, with values:
-  - `XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY`
-  - `XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT`
+- `xkb_state_update::layout_policy`
+- `struct xkb_layout_policy_update`
 - `enum xkb_layout_out_of_range_policy`, with values:
   - `XKB_LAYOUT_OUT_OF_RANGE_WRAP`: wrap into range using integer
     modulus (default, as before).

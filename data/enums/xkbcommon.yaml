@@ -115,11 +115,6 @@ xkb_keyboard_control_flags:
 xkb_events_flags:
   - name: XKB_EVENTS_NO_FLAGS
     value: 0
-xkb_keyboard_control_param:
-  - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY
-    value: 0
-  - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT
-    value: 1
 xkb_layout_out_of_range_policy:
   - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
     value: 0

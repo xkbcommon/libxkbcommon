@@ -473,9 +473,18 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             fprintf(stderr, "%s: ERROR: Failed to create XKB state!\n",
                     seat->name_str);
         } else if (use_local_state && !use_events_api) {
-            xkb_state_update_enabled_controls(seat->state,
-                                              kbd_controls_affect,
-                                              kbd_controls_values);
+            const struct xkb_state_components_update components = {
+                .size = sizeof(components),
+                .components = XKB_STATE_CONTROLS,
+                .affect_controls = kbd_controls_affect,
+                .controls = kbd_controls_values,
+            };
+            const struct xkb_state_update update = {
+                .size = sizeof(update),
+                .components = &components,
+            };
+            // FIXME: handle error
+            xkb_state_update_synthetic(seat->state, &update, NULL);
         }
     }
     if (use_local_state && use_events_api) {
@@ -504,8 +513,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 }
             }
 
-            seat->machine =
-                xkb_machine_new(seat->keymap, machine_options);
+            seat->machine = xkb_machine_new(seat->keymap, machine_options);
             if (!seat->machine)
                 fprintf(stderr, "%s: ERROR: Failed to create local XKB state!\n",
                         seat->name_str);
@@ -515,10 +523,19 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             seat->events = xkb_events_new_batch(seat->inter->ctx,
                                                 XKB_EVENTS_NO_FLAGS);
             if (seat->events) {
-                xkb_machine_update_enabled_controls(seat->machine,
-                                                    seat->events,
-                                                    kbd_controls_affect,
-                                                    kbd_controls_values);
+                const struct xkb_state_components_update components = {
+                    .size = sizeof(components),
+                    .components = XKB_STATE_CONTROLS,
+                    .affect_controls = kbd_controls_affect,
+                    .controls = kbd_controls_values,
+                };
+                const struct xkb_state_update update = {
+                    .size = sizeof(update),
+                    .components = &components,
+                };
+                // FIXME: handle error
+                xkb_machine_process_synthetic(seat->machine, &update,
+                                                 seat->events);
                 const struct xkb_event *event;
                 while ((event = xkb_events_next(seat->events))) {
                     xkb_state_update_event(seat->state, event);

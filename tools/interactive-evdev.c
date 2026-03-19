@@ -142,18 +142,26 @@ keyboard_new(struct dirent *ent,
         goto err_state;
     }
 
+    const struct xkb_state_components_update components = {
+        .size = sizeof(components),
+        .components = XKB_STATE_CONTROLS,
+        .affect_controls = kbd_controls_affect,
+        .controls = kbd_controls_values,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components,
+    };
     if (use_events_api) {
-        xkb_machine_update_enabled_controls(machine, events,
-                                            kbd_controls_affect,
-                                            kbd_controls_values);
+        // FIXME: handle error
+        xkb_machine_process_synthetic(machine, &update, events);
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
             xkb_state_update_event(state, event);
         }
     } else {
-        xkb_state_update_enabled_controls(state,
-                                          kbd_controls_affect,
-                                          kbd_controls_values);
+        // FIXME: handle error
+        xkb_state_update_synthetic(state, &update, NULL);
     }
 
     if (with_compose) {

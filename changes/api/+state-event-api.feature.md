@@ -4,8 +4,6 @@ Added the **server machine API:**
   - `xkb_machine_ref()`
   - `xkb_machine_unref()`
   - `xkb_machine_get_keymap()`
-  - `xkb_machine_update_latched_locked()`
-  - `xkb_machine_update_enabled_controls()`
   - `xkb_machine_process_key()`
   - `xkb_machine_process_synthetic()`
 - `struct xkb_machine_options` (new):

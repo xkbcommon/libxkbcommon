@@ -33,9 +33,19 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
         return false;
 
     /* NOTE: Use the public API with private enum values */
-    xkb_state_update_enabled_controls(state,
-                                      (enum xkb_keyboard_control_flags) controls,
-                                      (enum xkb_keyboard_control_flags) controls);
+    const struct xkb_state_components_update components = {
+        .size = sizeof(components),
+        .components = XKB_STATE_CONTROLS,
+        .affect_controls = (enum xkb_keyboard_control_flags) controls,
+        .controls = (enum xkb_keyboard_control_flags) controls,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components,
+    };
+    const int error = xkb_state_update_synthetic(state, &update, NULL);
+    if (error)
+        return false;
 
     xkb_state_update_mask(state,
                           reply->baseMods,

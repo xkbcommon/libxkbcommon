@@ -1664,27 +1664,6 @@ state_update_enabled_controls(struct xkb_state *state,
     xkb_state_update_derived(state);
 }
 
-enum xkb_state_component
-xkb_state_update_enabled_controls(struct xkb_state *state,
-                                  enum xkb_keyboard_control_flags affect,
-                                  enum xkb_keyboard_control_flags controls)
-{
-    const struct xkb_state_components_update components_update = {
-        .size = sizeof(components_update),
-        .components = XKB_STATE_CONTROLS,
-        .affect_controls = affect,
-        .controls = controls,
-    };
-    const struct xkb_state_update update = {
-        .size = sizeof(update),
-        .components = &components_update,
-    };
-    enum xkb_state_component changed = 0;
-    /* Note: no error handling */
-    xkb_state_update_synthetic(state, &update, &changed);
-    return changed;
-}
-
 static int
 state_update_layout_policy(struct xkb_state *state,
                            const struct xkb_layout_policy_update *update)
@@ -2995,90 +2974,6 @@ machine_update_overlays(struct xkb_machine *sm)
 
     sm->overlays.order = order;
     sm->overlays.enabled = mask;
-}
-
-int
-xkb_machine_update_enabled_controls(struct xkb_machine *sm,
-                                    struct xkb_events *events,
-                                    enum xkb_keyboard_control_flags affect,
-                                    enum xkb_keyboard_control_flags controls)
-{
-    const enum xkb_state_component components
-        = ((affect || controls) ? XKB_STATE_CONTROLS : 0);
-    const struct xkb_state_components_update components_update = {
-        .size = sizeof(components_update),
-        .components = components,
-        .affect_controls = affect,
-        .controls = controls,
-    };
-    const struct xkb_state_update update = {
-        .size = sizeof(update),
-        .components = &components_update,
-    };
-    return xkb_machine_process_synthetic(sm, &update, events);
-}
-
-int
-xkb_machine_update_control(struct xkb_machine *sm,
-                           enum xkb_keyboard_control_param control,
-                           uint32_t value)
-{
-    switch (control) {
-    case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY:
-        if (!xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
-                             (int)value))
-            break;
-        sm->state.controls.out_of_range_group.policy =
-            (enum xkb_layout_out_of_range_policy)value;
-        return 0;
-    case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT:
-        if (sm->state.controls.out_of_range_group.policy !=
-            XKB_LAYOUT_OUT_OF_RANGE_REDIRECT ||
-            value >= sm->state.keymap->num_groups)
-            break;
-        sm->state.controls.out_of_range_group.redirect_group = value;
-        return 0;
-    default:
-        ;
-    }
-    log_warn_func(sm->state.keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                  "Unsupported control parameter %d with value 0x%"PRIx32"\n",
-                  control, value);
-    return -1;
-}
-
-int
-xkb_machine_update_latched_locked(struct xkb_machine *sm,
-                                  struct xkb_events *events,
-                                  xkb_mod_mask_t affect_latched_mods,
-                                  xkb_mod_mask_t latched_mods,
-                                  bool affect_latched_layout,
-                                  int32_t latched_layout,
-                                  xkb_mod_mask_t affect_locked_mods,
-                                  xkb_mod_mask_t locked_mods,
-                                  bool affect_locked_layout,
-                                  int32_t locked_layout)
-{
-    const enum xkb_state_component components
-        = ((affect_latched_mods || latched_mods) ? XKB_STATE_MODS_LATCHED : 0)
-        | ((affect_locked_mods || locked_mods) ? XKB_STATE_MODS_LOCKED : 0)
-        | (affect_latched_layout ? XKB_STATE_LAYOUT_LATCHED : 0)
-        | (affect_locked_layout ? XKB_STATE_LAYOUT_LOCKED : 0);
-    const struct xkb_state_components_update components_update = {
-        .size = sizeof(components_update),
-        .components = components,
-        .affect_latched_mods = affect_latched_mods,
-        .latched_mods = latched_mods,
-        .latched_layout = latched_layout,
-        .affect_locked_mods = affect_locked_mods,
-        .locked_mods = locked_mods,
-        .locked_layout = locked_layout,
-    };
-    const struct xkb_state_update update = {
-        .size = sizeof(update),
-        .components = &components_update,
-    };
-    return xkb_machine_process_synthetic(sm, &update, events);
 }
 
 int

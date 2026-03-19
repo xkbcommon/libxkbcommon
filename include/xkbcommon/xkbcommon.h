@@ -2887,66 +2887,6 @@ XKB_EXPORT struct xkb_keymap *
 xkb_machine_get_keymap(const struct xkb_machine *machine);
 
 /**
- * Update the state machine to change the *boolean*
- * [global keyboard controls].
- *
- * @param machine The keyboard state machine object.
- * @param events  The event collection to store the events. It will be reset.
- * @param affect
- *     *Boolean* global keyboard controls to modify. @p controls contains the
- *     actual values.
- * @param controls
- *     *Boolean* global keyboard controls to lock or unlock. Only controls in
- *     @p affect are considered.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * Non-boolean controls are ignored.
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine
- *
- * [global keyboard controls]: @ref xkb_keyboard_control_flags
- */
-XKB_EXPORT int
-xkb_machine_update_enabled_controls(struct xkb_machine *machine,
-                                    struct xkb_events *events,
-                                    enum xkb_keyboard_control_flags affect,
-                                    enum xkb_keyboard_control_flags controls);
-
-/**
- * @enum xkb_keyboard_control_param
- * Parameterized global keyboard controls.
- *
- * Each value identifies a non-boolean keyboard control that takes a typed
- * parameter. These controls are set via `xkb_control_param` entries
- * in `xkb_state_update`.
- *
- * Boolean (on/off) controls are represented by `xkb_keyboard_control_flags`.
- *
- * @since 1.14.0
- */
-enum xkb_keyboard_control_param {
-    /**
-     * Select the policy to handle out-of-bound layout indices.
-     *
-     * Possible values are defined in the `xkb_out_of_range_layout_policy`
-     * enumeration.
-     *
-     * @since 1.14.0
-     */
-    XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY = 0,
-    /**
-     * Select the layout to redirect to if the policy is
-     * `::XKB_OUT_OF_RANGE_LAYOUT_REDIRECT`.
-     *
-     * @since 1.14.0
-     */
-    XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT
-};
-
-/**
  * @enum xkb_layout_out_of_range_policy
  * Policies defining how to bring out-of-range layout indices into range.
  *
@@ -2973,24 +2913,6 @@ enum xkb_layout_out_of_range_policy {
      */
     XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
 };
-
-/**
- * Update the value of a keyboard control parameter.
- *
- * @param machine The keyboard state machine object.
- * @param control Global keyboard control to modify.
- * @param value   Value to set.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine
- */
-XKB_EXPORT int
-xkb_machine_update_control(struct xkb_machine *machine,
-                           enum xkb_keyboard_control_param control,
-                           uint32_t value);
 
 /**
  * @enum xkb_key_direction
@@ -3189,7 +3111,7 @@ struct xkb_layout_policy_update {
      */
     size_t size;
     /**
-     * Policy to use for out-of-range layout indices.
+     * Policy to use to handle out-of-range layout indices.
      *
      * @sa `xkb_layout_out_of_range_policy`
      */
@@ -3298,61 +3220,6 @@ xkb_machine_process_synthetic(struct xkb_machine *machine,
                               struct xkb_events *events);
 
 /**
- * Update the keyboard state machine to change the latched and locked state of
- * the modifiers and layout.
- *
- * Use this function to update the latched and locked state according to
- * “out of band” (non-device) inputs, such as UI layout switchers.
- *
- * @par Layout out of range
- * @parblock
- *
- * If the effective layout, after taking into account the depressed, latched and
- * locked layout, is out of range (negative or greater than the maximum layout),
- * it is brought into range. Currently, the layout is wrapped using integer
- * modulus (with negative values wrapping from the end). The wrapping behavior
- * can be configured using `xkb_machine_process_synthetic()`.
- *
- * @endparblock
- *
- * @param machine The keyboard state machine object.
- * @param events  The event collection to store the events. It will be reset.
- * @param affect_latched_mods See @p latched_mods.
- * @param latched_mods
- *     Modifiers to set as latched or unlatched. Only modifiers in
- *     @p affect_latched_mods are considered.
- * @param affect_latched_layout See @p latched_layout.
- * @param latched_layout
- *     Layout to latch. Only considered if @p affect_latched_layout is true.
- *     Maybe be out of range (including negative) -- see note above.
- * @param affect_locked_mods See @p locked_mods.
- * @param locked_mods
- *     Modifiers to set as locked or unlocked. Only modifiers in
- *     @p affect_locked_mods are considered.
- * @param affect_locked_layout See @p locked_layout.
- * @param locked_layout
- *     Layout to lock. Only considered if @p affect_locked_layout is true.
- *     Maybe be out of range (including negative) -- see note above.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * @memberof xkb_machine
- *
- * @since 1.14.0
- */
-XKB_EXPORT int
-xkb_machine_update_latched_locked(struct xkb_machine *machine,
-                                  struct xkb_events *events,
-                                  xkb_mod_mask_t affect_latched_mods,
-                                  xkb_mod_mask_t latched_mods,
-                                  bool affect_latched_layout,
-                                  int32_t latched_layout,
-                                  xkb_mod_mask_t affect_locked_mods,
-                                  xkb_mod_mask_t locked_mods,
-                                  bool affect_locked_layout,
-                                  int32_t locked_layout);
-
-/**
  * Create a new keyboard state object.
  *
  * This entry point is intended for both server and client applications.
@@ -3400,34 +3267,6 @@ xkb_state_unref(struct xkb_state *state);
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);
-
-/**
- * Update the keyboard state to change the *boolean* [global keyboard controls].
- *
- * This entry point is intended for *server* applications and should not be used
- * by *client* applications; see @ref server-client-state for details.
- *
- * @param state The keyboard state object.
- * @param affect See @p controls.
- * @param controls
- *     *Boolean* [global keyboard controls] to lock or unlock. Only controls in
- *     @p affect are considered.
- *
- * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
- *
- * @since 1.14.0
- *
- * @deprecated Use `xkb_state_update_synthetic()` instead.
- *
- * @memberof xkb_state
- *
- * [global keyboard controls]: @ref xkb_keyboard_control_flags
- */
-XKB_EXPORT enum xkb_state_component
-xkb_state_update_enabled_controls(struct xkb_state *state,
-                                  enum xkb_keyboard_control_flags affect,
-                                  enum xkb_keyboard_control_flags controls);
 
 /**
  * Update the keyboard state to reflect a given key being pressed or
