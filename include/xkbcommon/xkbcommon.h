@@ -2373,15 +2373,17 @@ xkb_machine_options_remap_shortcut_layout(
  * Opaque keyboard state event object.
  *
  * Events are produced by `xkb_machine::xkb_machine_process_key()` and
- * collected into an `xkb_events` batch. Each event represents one atomic state
- * change or key action within a frame.
+ * `xkb_machine::xkb_machine_process_synthetic()` and collected into an
+ * `xkb_events` batch. Each event represents one atomic state change or key
+ * action within a frame.
  *
  * Inspect the event type with `xkb_event::xkb_event_get_type()`, then extract
  * data with the appropriate `xkb_event::xkb_event_get_*()` or
  * `xkb_event::xkb_event_serialize_*()` functions.
  *
  * @warning Event pointers are only valid until the next call to
- * `xkb_machine::xkb_machine_process_key()` on the
+ * `xkb_machine::xkb_machine_process_key()` or
+ * `xkb_machine::xkb_machine_process_synthetic()` on the
  * same state machine. Do not store them beyond that point.
  *
  * @since 1.14.0
@@ -2914,7 +2916,13 @@ xkb_machine_update_enabled_controls(struct xkb_machine *machine,
 
 /**
  * @enum xkb_keyboard_control_param
- * Specifies a keyboard control with a parameter.
+ * Parameterized global keyboard controls.
+ *
+ * Each value identifies a non-boolean keyboard control that takes a typed
+ * parameter. These controls are set via `xkb_control_param` entries
+ * in `xkb_state_update`.
+ *
+ * Boolean (on/off) controls are represented by `xkb_keyboard_control_flags`.
  *
  * @since 1.14.0
  */
@@ -2938,31 +2946,31 @@ enum xkb_keyboard_control_param {
 };
 
 /**
- * @enum xkb_out_of_range_layout_policy
- * Out-of-range layout policies
+ * @enum xkb_layout_out_of_range_policy
+ * Policies defining how to bring out-of-range layout indices into range.
  *
  * @since 1.14.0
  */
-enum xkb_out_of_range_layout_policy {
+enum xkb_layout_out_of_range_policy {
     /**
      * Wrap into range using integer modulus (default).
      *
      * @since 1.14.0
      */
-    XKB_OUT_OF_RANGE_LAYOUT_WRAP = 0,
+    XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
     /**
      * Clamp into range, i.e. invalid indices are corrected to the closest
      * valid bound (0 or highest layout index).
      *
      * @since 1.14.0
      */
-    XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
+    XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
     /**
      * Redirect to a specific [layout index](@ref xkb_layout_index_t).
      *
      * @since 1.14.0
      */
-    XKB_OUT_OF_RANGE_LAYOUT_REDIRECT
+    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
 };
 
 /**
@@ -3010,6 +3018,11 @@ enum xkb_key_direction {
  *
  * The produced events form a single *frame*.
  *
+ * Use this function for in-band (device) inputs.
+ * Use `xkb_machine_update_synthetic()` instead to update the state machine in
+ * response to out-of-band (non-device) inputs, such as UI layout switchers or
+ * accessibility settings changes.
+ *
  * A series of calls to this function should be consistent; that is, a call
  * with `::XKB_KEY_DOWN` for a key should be matched by an `::XKB_KEY_UP`; if a
  * key is pressed twice, it should be released twice; etc. Otherwise (e.g. due
@@ -3025,6 +3038,8 @@ enum xkb_key_direction {
  *
  * @since 1.14.0
  *
+ * @sa `xkb_machine_update_synthetic()`
+ *
  * @memberof xkb_machine
  *
  * [keycode]: @ref xkb_keycode_t
@@ -3037,6 +3052,247 @@ XKB_EXPORT int
 xkb_machine_process_key(struct xkb_machine *machine,
                         xkb_keycode_t key, enum xkb_key_direction direction,
                         struct xkb_events *events);
+
+/**
+ * @struct xkb_state_components_update
+ * Latched and locked state components for an out-of-band state update.
+ *
+ * Carries the modifier, layout and boolean controls assignments for
+ * `xkb_state_update`.
+ * Used to update latched and locked modifiers and layouts atomically via
+ * `xkb_machine::xkb_machine_process_synthetic()`.
+ *
+ * Which fields are considered is determined by `components`:
+ * - `::XKB_STATE_MODS_LATCHED`   → `affect_latched_mods`, `latched_mods`
+ * - `::XKB_STATE_MODS_LOCKED`    → `affect_locked_mods`, `locked_mods`
+ * - `::XKB_STATE_LAYOUT_LATCHED` → `latched_layout`
+ * - `::XKB_STATE_LAYOUT_LOCKED`  → `locked_layout`
+ * - `::XKB_STATE_CONTROLS`       → `affect_controls`, `controls`
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_state_update`
+ */
+struct xkb_state_components_update {
+    /**
+     * Size of this structure, for forward-compatibility.
+     *
+     * Must be set to `sizeof(struct xkb_state_components_update)`.
+     * If the caller’s size exceeds the library’s (e.g. version mismatch),
+     * an error is returned unless all extra bytes are zero.
+     */
+    size_t size;
+    /**
+     * Mask of [state components](@ref xkb_state_component) to update.
+     *
+     * The following components are meaningful:
+     * - `::XKB_STATE_MODS_LATCHED`
+     * - `::XKB_STATE_MODS_LOCKED`
+     * - `::XKB_STATE_LAYOUT_LATCHED`
+     * - `::XKB_STATE_LAYOUT_LOCKED`
+     * - `::XKB_STATE_CONTROLS`
+     *
+     * Other components are ignored.
+     */
+    enum xkb_state_component components;
+    /**
+     * Mask of latched modifiers to affect.
+     *
+     * Only modifiers present in this mask are considered when updating
+     * `latched_mods`. Only considered if `::XKB_STATE_MODS_LATCHED` is
+     * set in `components`.
+     */
+    xkb_mod_mask_t affect_latched_mods;
+    /**
+     * Modifiers to set as latched or unlatched.
+     *
+     * Only modifiers in `affect_latched_mods` are considered. Only
+     * considered if `::XKB_STATE_MODS_LATCHED` is set in `components`.
+     */
+    xkb_mod_mask_t latched_mods;
+    /**
+     * Mask of locked modifiers to affect.
+     *
+     * Only modifiers present in this mask are considered when updating
+     * `locked_mods`. Only considered if `::XKB_STATE_MODS_LOCKED` is
+     * set in `components`.
+     */
+    xkb_mod_mask_t affect_locked_mods;
+    /**
+     * Modifiers to set as locked or unlocked.
+     *
+     * Only modifiers in `affect_locked_mods` are considered. Only
+     * considered if `::XKB_STATE_MODS_LOCKED` is set in `components`.
+     */
+    xkb_mod_mask_t locked_mods;
+    /**
+     * Layout to latch.
+     *
+     * May be out of range (including negative); the layout is brought into
+     * range according to the current out-of-range layout policy. Only
+     * considered if `::XKB_STATE_LAYOUT_LATCHED` is set in `components`.
+     *
+     * @sa xkb_layout_index_t
+     */
+    int32_t latched_layout;
+    /**
+     * Layout to lock.
+     *
+     * May be out of range (including negative); the layout is brought into
+     * range according to the current out-of-range layout policy. Only
+     * considered if `::XKB_STATE_LAYOUT_LOCKED` is set in `components`.
+     *
+     * @sa xkb_layout_index_t
+     */
+    int32_t locked_layout;
+    /**
+     * Boolean keyboard controls to affect.
+     *
+     * Only controls present in this mask are considered when updating
+     * `controls`. Only considered if `::XKB_STATE_CONTROLS` is set in
+     * `components`.
+     *
+     * @sa `xkb_keyboard_control_flags`
+     */
+    enum xkb_keyboard_control_flags affect_controls;
+    /**
+     * Boolean keyboard controls to enable or disable.
+     *
+     * Only controls in `affect_controls` are considered. Only considered
+     * if `::XKB_STATE_CONTROLS` is set in `components`.
+     *
+     * @sa `xkb_keyboard_control_flags`
+     */
+    enum xkb_keyboard_control_flags controls;
+};
+
+/**
+ * @struct xkb_layout_policy_update
+ * Configures the policy used to bring out-of-range layout indices into range.
+ *
+ * If `policy` is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
+ * the target layout index; otherwise `redirect` is ignored.
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_layout_out_of_range_policy`
+ * @sa `xkb_state_update::layout_policy`
+ */
+struct xkb_layout_policy_update {
+    /**
+     * Size of this structure, for forward-compatibility.
+     *
+     * Must be set to `sizeof(struct xkb_layout_policy_update)`.
+     * If the caller’s size exceeds the library’s (e.g. version mismatch),
+     * an error is returned unless all extra bytes are zero.
+     */
+    size_t size;
+    /**
+     * Policy to use for out-of-range layout indices.
+     *
+     * @sa `xkb_layout_out_of_range_policy`
+     */
+    enum xkb_layout_out_of_range_policy policy;
+    /**
+     * Layout index to redirect to when `policy` is
+     * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
+     */
+    xkb_layout_index_t redirect;
+};
+
+/**
+ * @struct xkb_state_update
+ * Request to process an out-of-band atomic update through an `xkb_machine` or
+ * `xkb_state`.
+ *
+ * Used with `xkb_machine::xkb_machine_process_synthetic()` to atomically
+ * apply any combination of:
+ * - Latched and locked modifier and layout changes (via `components`)
+ * - Boolean keyboard control changes (via `components`)
+ * - Parameterized keyboard control changes (via `layout_policy`)
+ *
+ * A `NULL` pointer means “not set / no change”.
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
+ * @sa `xkb_state_components_update`
+ * @sa `xkb_layout_policy_update`
+ */
+struct xkb_state_update {
+    /**
+     * Size of this structure, for forward-compatibility.
+     *
+     * Must be set to `sizeof(struct xkb_state_update)`.
+     * If the caller’s size exceeds the library’s (e.g. version mismatch),
+     * an error is returned unless all extra bytes are zero.
+     */
+    size_t size;
+    /**
+     * Components updates, or `NULL` for no change.
+     *
+     * @sa `xkb_state_component`
+     */
+    const struct xkb_state_components_update *components;
+    /**
+     * Out-of-range layout policy update, or `NULL` for no change.
+     *
+     * @sa `xkb_layout_out_of_range_policy`
+     */
+    const struct xkb_layout_policy_update *layout_policy;
+};
+
+/**
+ * Process a *synthetic* (out-of-band) atomic update through the XKB
+ * [state machine], and collect the resulting [keyboard events] into an
+ * [event batch].
+ *
+ * Use this function to update the state machine in response to
+ * out-of-band (non-device) inputs, such as UI layout switchers or
+ * accessibility settings changes.
+ * Use `xkb_machine_process_key()` instead for in-band (device) inputs.
+ *
+ * All changes specified in @p update are applied atomically as a single
+ * *frame*: the resulting events reflect the **net** state change at the
+ * end of the frame, not intermediate steps. In particular, a
+ * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE` event in the batch represents the
+ * cumulative state change for the entire frame — individual intermediate
+ * state transitions are not observable.
+ *
+ * Only latched, locked and control components can be updated out-of-band;
+ * depressed components can only change through key presses via
+ * `xkb_machine_process_key()`.
+ *
+ * @par Layout out of range
+ * @parblock
+ * If the effective layout, after taking into account the depressed, latched
+ * and locked layout, is out of range (negative or greater than the maximum
+ * layout index), it is brought into range according to the current
+ * out-of-range layout policy (see `xkb_layout_out_of_range_policy`).
+ * @endparblock
+ *
+ * @param[in,out] machine The XKB [state machine] object.
+ * @param[in]     update  The update to apply.
+ *                        Must have `xkb_state_update::size` set.
+ * @param[out]    events  The event batch to collect events into. It will be
+ *                        reset before collecting.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_state_update`
+ * @sa `xkb_machine_process_key()`
+ * @memberof xkb_machine
+ *
+ * [state machine]: @ref xkb_machine
+ * [keyboard events]: @ref xkb_event
+ * [event batch]: @ref xkb_events
+ */
+XKB_EXPORT int
+xkb_machine_process_synthetic(struct xkb_machine *machine,
+                              const struct xkb_state_update *update,
+                              struct xkb_events *events);
 
 /**
  * Update the keyboard state machine to change the latched and locked state of
@@ -3052,7 +3308,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * locked layout, is out of range (negative or greater than the maximum layout),
  * it is brought into range. Currently, the layout is wrapped using integer
  * modulus (with negative values wrapping from the end). The wrapping behavior
- * may be made configurable in the future.
+ * can be configured using `xkb_machine_process_synthetic()`.
  *
  * @endparblock
  *
@@ -3215,7 +3471,8 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *
  * It enables servers applications to use `xkb_state` as the observable state
  * companion to an `xkb_machine`: feed each event produced by
- * `xkb_machine::xkb_machine_process_key()` into this
+ * `xkb_machine::xkb_machine_process_key()` or
+ * `xkb_machine::xkb_machine_process_synthetic()` into this
  * function to keep the observable state in sync.
  *
  * @warning The given state object should not be updated by other means than

@@ -94,6 +94,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_INCLUDE_STATEMENT = 203,
     /** A modmap entry is invalid */
     XKB_ERROR_INVALID_MODMAP_ENTRY = 206,
+    /** The given layout out-of-range policy is not supported */
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY = 214,
     /** The statement is unknown */
     XKB_ERROR_UNKNOWN_STATEMENT = 222,
     /** Warn when a group index is not supported */
@@ -196,6 +198,8 @@ enum xkb_message_code {
     XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
     /** Unknown action type */
     XKB_ERROR_UNKNOWN_ACTION_TYPE = 844,
+    /** ABI forward-compatibility check failed */
+    XKB_ERROR_ABI_FORWARD_COMPAT = 876,
     /** Warn if there are conflicting actions while merging keys */
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */

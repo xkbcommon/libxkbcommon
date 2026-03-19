@@ -91,8 +91,8 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_flag_value(
             XKB_A11Y_FLAGS_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY:
-        return is_supported_enum_value_mask(XKB_OUT_OF_RANGE_LAYOUT_POLICY_VALUES, value);
+    case XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY:
+        return is_supported_enum_value_mask(XKB_LAYOUT_OUT_OF_RANGE_POLICY_VALUES, value);
     case XKB_FEATURE_ENUM_EVENT_TYPE:
         return is_supported_enum_value_mask(XKB_EVENT_TYPE_VALUES, value);
     case XKB_FEATURE_ENUM_EVENTS_FLAGS:

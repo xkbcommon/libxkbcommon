@@ -1402,12 +1402,12 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     #undef require_explicit
 
     switch (key->out_of_range_group_policy) {
-    case XKB_OUT_OF_RANGE_LAYOUT_CLAMP:
+    case XKB_LAYOUT_OUT_OF_RANGE_CLAMP:
         copy_to_buf(buf, "\n\t\tgroupsClamp,");
         simple = false;
         break;
 
-    case XKB_OUT_OF_RANGE_LAYOUT_REDIRECT:
+    case XKB_LAYOUT_OUT_OF_RANGE_REDIRECT:
         if (key->out_of_range_group_number < num_groups) {
             /* TODO: Fallback or warning if condition fails? */
             write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",",
@@ -1416,7 +1416,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
         break;
 
-    case XKB_OUT_OF_RANGE_LAYOUT_WRAP:
+    case XKB_LAYOUT_OUT_OF_RANGE_WRAP:
     default:
         break;
     }

@@ -7,6 +7,7 @@ Added the **server machine API:**
   - `xkb_machine_update_latched_locked()`
   - `xkb_machine_update_enabled_controls()`
   - `xkb_machine_process_key()`
+  - `xkb_machine_process_synthetic()`
 - `struct xkb_machine_options` (new):
   - `xkb_machine_options_new()`
   - `xkb_machine_options_destroy()`

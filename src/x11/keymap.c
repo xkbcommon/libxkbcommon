@@ -488,11 +488,11 @@ get_sym_maps(struct xkb_keymap *keymap, xcb_connection_t *conn,
         FAIL_UNLESS(key->out_of_range_group_number <= key->num_groups);
 
         if (wire_sym_map->groupInfo & XCB_XKB_GROUPS_WRAP_CLAMP_INTO_RANGE)
-            key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP;
+            key->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP;
         else if (wire_sym_map->groupInfo & XCB_XKB_GROUPS_WRAP_REDIRECT_INTO_RANGE)
-            key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT;
+            key->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT;
         else
-            key->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_WRAP;
+            key->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
 
         {
             int syms_length = xcb_xkb_key_sym_map_syms_length(wire_sym_map);
