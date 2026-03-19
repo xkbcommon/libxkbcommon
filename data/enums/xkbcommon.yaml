@@ -54,7 +54,7 @@ xkb_keymap_key_iterator_flags:
     value: 1
   - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     value: 2
-xkb_accessibility_flags:
+xkb_a11y_flags:
   - name: XKB_A11Y_NO_FLAGS
     value: 0
   - name: XKB_A11Y_LATCH_TO_LOCK

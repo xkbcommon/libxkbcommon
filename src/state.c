@@ -87,7 +87,7 @@ struct xkb_state {
     int16_t mod_key_count[XKB_MAX_MODS];
 
     /* NOTE: if we ever add other flags types, we could merge them internally */
-    enum xkb_accessibility_flags flags;
+    enum xkb_a11y_flags flags;
     int refcnt;
     darray(struct xkb_filter) filters;
     struct xkb_keymap *keymap;
@@ -1187,8 +1187,8 @@ xkb_state_update_derived(struct xkb_state *state);
 
 static inline void
 xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
-               enum xkb_accessibility_flags a11y_affect,
-               enum xkb_accessibility_flags a11y_flags)
+               enum xkb_a11y_flags a11y_affect,
+               enum xkb_a11y_flags a11y_flags)
 {
     state->flags = a11y_flags;
     if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
@@ -2470,8 +2470,8 @@ typedef darray(struct server_state_mods_mapping) server_state_mods_mappings;
 
 struct xkb_server_options {
     /** Accessibility flags */
-    enum xkb_accessibility_flags a11y_affect;
-    enum xkb_accessibility_flags a11y_flags;
+    enum xkb_a11y_flags a11y_affect;
+    enum xkb_a11y_flags a11y_flags;
 
     /** Modifiers re-mapping */
     server_state_mods_mappings mods;
@@ -2529,10 +2529,10 @@ xkb_server_options_destroy(struct xkb_server_options *options)
 int
 xkb_server_options_update_a11y_flags(
     struct xkb_server_options *options,
-    enum xkb_accessibility_flags affect,
-    enum xkb_accessibility_flags flags)
+    enum xkb_a11y_flags affect,
+    enum xkb_a11y_flags flags)
 {
-    static const enum xkb_accessibility_flags XKB_A11Y_FLAGS
+    static const enum xkb_a11y_flags XKB_A11Y_FLAGS
         = XKB_A11Y_LATCH_TO_LOCK
         | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
 

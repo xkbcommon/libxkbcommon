@@ -110,7 +110,7 @@ enum xkb_enumerations_values {
         | XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
         | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     ,
-    XKB_ACCESSIBILITY_FLAGS_VALUES
+    XKB_A11Y_FLAGS_VALUES
         = XKB_A11Y_NO_FLAGS
         | XKB_A11Y_LATCH_TO_LOCK
         | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
@@ -258,7 +258,7 @@ static const int xkb_keymap_key_iterator_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_accessibility_flags_values[] = {
+static const int xkb_a11y_flags_values[] = {
     XKB_A11Y_NO_FLAGS,
     XKB_A11Y_LATCH_TO_LOCK,
     XKB_A11Y_LATCH_SIMULTANEOUS_KEYS,
@@ -395,7 +395,7 @@ static const int xkb_feature_values[] = {
     XKB_FEATURE_ENUM_STATE_COMPONENT,
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS,
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_PARAM,
-    XKB_FEATURE_ENUM_ACCESSIBILITY_FLAGS,
+    XKB_FEATURE_ENUM_A11Y_FLAGS,
     XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY,
     XKB_FEATURE_ENUM_EVENT_TYPE,
     XKB_FEATURE_ENUM_EVENTS_FLAGS,
