@@ -3264,8 +3264,8 @@ process_overlayable_key(struct xkb_machine *sm,
 
 int
 xkb_machine_process_key(struct xkb_machine *sm,
-                        struct xkb_events *events,
-                        xkb_keycode_t kc, enum xkb_key_direction direction)
+                        xkb_keycode_t kc, enum xkb_key_direction direction,
+                        struct xkb_events *events)
 {
     darray_size(events->queue) = 0;
     events->next = 0;

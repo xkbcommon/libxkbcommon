@@ -369,8 +369,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         if (use_local_state && use_events_api) {
             /* Run our local state machine with the event API */
             const int ret = xkb_machine_process_key(kbd->machine,
-                                                    kbd->events,
-                                                    keycode, direction);
+                                                    keycode, direction,
+                                                    kbd->events);
             if (ret) {
                 fprintf(stderr, "ERROR: could not update the state machine\n");
                 // TODO: better error handling
@@ -422,8 +422,8 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         if (use_local_state && use_events_api) {
             /* Run our local state machine */
             const int ret = xkb_machine_process_key(kbd->machine,
-                                                    kbd->events,
-                                                    keycode, XKB_KEY_UP);
+                                                    keycode, XKB_KEY_UP,
+                                                    kbd->events);
             if (ret) {
                 fprintf(stderr, "ERROR: could not update the state machine\n");
                 // TODO: better error handling

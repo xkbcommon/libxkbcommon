@@ -531,10 +531,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     assert(xkb_state_mod_indices_are_active(state, XKB_STATE_MODS_EFFECTIVE, 0x4,
                                             ctrl) == -2);
 
-#define update_states(state1, sm, key, direction) do {                     \
-    xkb_state_update_key((state1), (key), (direction));                    \
-    assert(xkb_machine_process_key((sm), (events), (key), (direction))\
-           == 0);                                                          \
+#define update_states(state1, sm, key, direction) do {                \
+    xkb_state_update_key((state1), (key), (direction));               \
+    assert(xkb_machine_process_key((sm), (key), (direction), (events))\
+           == 0);                                                     \
 } while (0)
 
     /* LCtrl down */
@@ -3155,7 +3155,7 @@ test_extended_layout_indices(struct xkb_context *ctx)
     for (int32_t l = -num_layouts - 1; l < num_layouts + 1; l++) {
         const xkb_layout_index_t expected_layout = (xkb_layout_index_t)
                                                    group_wrap(l, num_layouts);
-        /* Out-of-bounds latches update */
+        /* Out-of-band latches update */
         enum xkb_state_component expected_changes =
             (XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE) |
             ((l == 0) ? 0 : XKB_STATE_LAYOUT_LATCHED) |
@@ -3186,7 +3186,7 @@ test_extended_layout_indices(struct xkb_context *ctx)
         assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == 0);
         assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == 0);
 
-        /* Out-of-bounds locks update */
+        /* Out-of-band locks update */
         got_changes = xkb_state_update_latched_locked(
             state, 0, 0, false, 0, 0x2, 0x2, true, l
         );
@@ -3203,7 +3203,7 @@ test_extended_layout_indices(struct xkb_context *ctx)
         assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == 0x2);
         assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == 0x2);
 
-        /* Out-of-bounds locks reset */
+        /* Out-of-band locks reset */
         assert(got_changes == xkb_state_update_latched_locked(
             state, 0, 0, false, 0, 0x2, 0, true, 0
         ));

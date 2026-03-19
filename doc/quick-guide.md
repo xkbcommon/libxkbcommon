@@ -320,7 +320,7 @@ int handle_key(…)
         : (<key repeated>)
             ? XKB_KEY_REPEATED
             : XKB_KEY_DOWN;
-    int ret = xkb_machine_process_key(machine, events, keycode, direction);
+    int ret = xkb_machine_process_key(machine, keycode, direction, events);
     if (ret) <error>
 
     /*
