@@ -92,7 +92,7 @@ xkb_state_component:
   - name: XKB_STATE_CONTROLS
     value: 512
 xkb_keyboard_control_flags:
-  - name: XKB_KEYBOARD_CONTROL_NONE
+  - name: XKB_KEYBOARD_CONTROL_NO_FLAGS
     value: 0
   - name: XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
     value: 1

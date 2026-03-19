@@ -2590,7 +2590,7 @@ enum xkb_keyboard_control_flags {
      *
      * @since 1.14.0
      */
-    XKB_KEYBOARD_CONTROL_NONE = 0,
+    XKB_KEYBOARD_CONTROL_NO_FLAGS = 0,
     /**
      * **Sticky keys** is an accessibility feature primarily aimed at helping
      * people that find it difficult or impossible to press two keys at once.

@@ -567,8 +567,8 @@ main(int argc, char *argv[])
         goto error_machine_options;
     xkb_context_unref(ctx);
     ctx = NULL;
-    enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
-    enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NONE;
+    enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NO_FLAGS;
+    enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NO_FLAGS;
     const char *raw_modifiers_mapping = NULL;
     const char *raw_shortcuts_mask = NULL;
 
