@@ -512,7 +512,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         }
         if (!seat->events) {
             /* Initialize the events queue */
-            seat->events = xkb_events_new(seat->inter->ctx, XKB_EVENTS_NO_FLAGS);
+            seat->events = xkb_events_new_batch(seat->inter->ctx,
+                                                XKB_EVENTS_NO_FLAGS);
             if (seat->events) {
                 xkb_machine_update_enabled_controls(seat->machine,
                                                     seat->events,

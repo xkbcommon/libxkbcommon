@@ -2385,6 +2385,9 @@ xkb_machine_options_remap_shortcut_layout(
  * same state machine. Do not store them beyond that point.
  *
  * @since 1.14.0
+ *
+ * @sa `xkb_event_type`
+ * @sa `xkb_events`
  */
 struct xkb_event;
 
@@ -2730,49 +2733,67 @@ xkb_event_serialize_layout(const struct xkb_event *event,
 
 /**
  * @struct xkb_events
- * Opaque iterator object over keyboard events.
+ * Opaque keyboard event collection object.
+ *
+ * An `xkb_events` object collects [keyboard events](@ref xkb_event)
+ * produced atomically by a single call to an `process_*` function such as
+ * `xkb_machine::xkb_machine_process_key()`. Events are consumed sequentially
+ * via `xkb_events_next()`. The collection is reset on each `process_*` call.
  *
  * @since 1.14.0
+ *
+ * @sa `xkb_events_new_batch()`
+ * @sa `xkb_events_next()`
+ * @sa `xkb_events_destroy()`
+ * @sa `xkb_machine::xkb_machine_process_key()`
  */
 struct xkb_events;
 
 /**
  * @enum xkb_events_flags
- * Flags for `xkb_events::xkb_events_new()`.
+ *
+ * Flags for `xkb_events::xkb_events_new_batch()`.
  *
  * @since 1.14.0
  */
 enum xkb_events_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
     XKB_EVENTS_NO_FLAGS = 0
 };
 
 /**
- * Create an event queue object.
+ * Create a new [event](@ref xkb_event) batch.
  *
- * @param context The context in which to create the iterator.
- * @param flags   Optional flags for the iterator, or 0.
+ * @param context The context in which to create the batch.
+ * @param flags   Optional flags for the batch, or 0.
  *
- * @returns A new event queue object, or `NULL` on failure.
+ * @returns A new event batch, or `NULL` on failure.
  *
  * @since 1.14.0
  *
  * @sa `xkb_events_destroy()`
+ * @sa `xkb_events_next()`
+ * @sa `xkb_machine::xkb_machine_process_key()`
  *
  * @memberof xkb_events
  */
 XKB_EXPORT struct xkb_events *
-xkb_events_new(struct xkb_context *context, enum xkb_events_flags flags);
+xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags);
 
 /**
- * Free an event queue object.
+ * Free an event collection.
  *
  * @param events
- *     The event queue to free.
+ *     The event collection to free.
  *     If it is `NULL`, this function does nothing.
  *
  * @since 1.14.0
  *
- * @sa `xkb_events_new()`
+ * @sa `xkb_events_new_batch()`
  *
  * @memberof xkb_events
  */
@@ -2780,11 +2801,11 @@ XKB_EXPORT void
 xkb_events_destroy(struct xkb_events *events);
 
 /**
- * Get the next event queued in an event queue object.
+ * Get the next event from an event collection.
  *
- * @param events The event queue.
+ * @param events The event collection.
  *
- * @returns The next event, or `NULL` if the queue is empty.
+ * @returns The next event, or `NULL` if there are no more events to read.
  *
  * @since 1.14.0
  *
@@ -2866,7 +2887,7 @@ xkb_machine_get_keymap(const struct xkb_machine *machine);
  * [global keyboard controls].
  *
  * @param machine The keyboard state machine object.
- * @param events  The event queue to store the events. It will be reset.
+ * @param events  The event collection to store the events. It will be reset.
  * @param affect
  *     *Boolean* global keyboard controls to modify. @p controls contains the
  *     actual values.
@@ -2994,7 +3015,7 @@ enum xkb_key_direction {
  * to missed input events), situations like “stuck modifiers” may occur.
  *
  * @param machine   The keyboard state machine object.
- * @param events    The event queue to store the events. It will be reset.
+ * @param events    The event collection to store the events. It will be reset.
  * @param key       The key being operated.
  * @param direction The direction of the key operation.
  *
@@ -3034,7 +3055,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * @endparblock
  *
  * @param machine The keyboard state machine object.
- * @param events  The event queue to store the events. It will be reset.
+ * @param events  The event collection to store the events. It will be reset.
  * @param affect_latched_mods See @p latched_mods.
  * @param latched_mods
  *     Modifiers to set as latched or unlatched. Only modifiers in

@@ -171,7 +171,7 @@ global:
     xkb_machine_update_enabled_controls;
     xkb_machine_update_control;
     xkb_machine_process_key;
-    xkb_events_new;
+    xkb_events_new_batch;
     xkb_events_destroy;
     xkb_events_next;
     xkb_event_get_type;

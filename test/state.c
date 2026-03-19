@@ -514,7 +514,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
     struct xkb_machine *sm = xkb_machine_new(keymap, NULL);
-    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     const xkb_keysym_t *syms;
     xkb_keysym_t one_sym;

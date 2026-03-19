@@ -138,7 +138,8 @@ test_group_wrap(struct xkb_context *ctx)
     struct xkb_state * const state = xkb_state_new(keymap);
     assert(state);
 
-    struct xkb_events * const events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new_batch(ctx,
+                                                            XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     const struct xkb_event *event;
@@ -250,7 +251,7 @@ test_sticky_keys(struct xkb_context *ctx)
 
     struct xkb_machine *sm = xkb_machine_new(keymap, NULL);
     assert(sm);
-    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -511,7 +512,7 @@ test_sticky_keys(struct xkb_context *ctx)
     sm = xkb_machine_new(keymap, sm_options);
     assert(sm);
     xkb_machine_options_destroy(sm_options);
-    events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);
@@ -582,7 +583,7 @@ test_redirect_key(struct xkb_context *ctx)
     static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
     static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
 
-    struct xkb_events *events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     assert(test_key_seq2(
@@ -797,7 +798,8 @@ test_shortcuts_tweak(struct xkb_context *context)
     struct xkb_machine * sm = xkb_machine_new(keymap, options);
     assert(sm);
 
-    struct xkb_events * const events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new_batch(context,
+                                                            XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     /*
@@ -2047,7 +2049,8 @@ test_overlays(struct xkb_context *context)
 
     struct xkb_machine * const sm = xkb_machine_new(keymap, NULL);
     assert(sm);
-    struct xkb_events * events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * events = xkb_events_new_batch(context,
+                                                      XKB_EVENTS_NO_FLAGS);
     assert(events);
 
     static const struct {
@@ -2200,7 +2203,8 @@ test_modifiers_tweak(struct xkb_context *context)
     assert(sm);
     xkb_machine_options_destroy(options);
 
-    struct xkb_events * const events = xkb_events_new(context, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new_batch(context,
+                                                            XKB_EVENTS_NO_FLAGS);
     assert(events);
 
 #define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
@@ -2885,7 +2889,7 @@ main(void)
     test_machine_options(context);
     test_initial_derived_values(context);
 
-    assert(!xkb_events_new(context, -1));
+    assert(!xkb_events_new_batch(context, -1));
 
     test_group_wrap(context);
     test_sticky_keys(context);
