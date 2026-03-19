@@ -7,6 +7,8 @@ xkb_feature:
     value: 1100
   - name: XKB_FEATURE_ENUM_LOG_LEVEL
     value: 1110
+  - name: XKB_FEATURE_ENUM_ERROR_CODE
+    value: 1200
   - name: XKB_FEATURE_ENUM_KEYMAP_FORMAT
     value: 2000
   - name: XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS

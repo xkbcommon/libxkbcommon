@@ -55,6 +55,10 @@ xkb_has_feature(enum xkb_feature feature, int value)
         return is_supported_enum_value_array(
             xkb_log_level_values, ARRAY_SIZE(xkb_log_level_values), value
         );
+    case XKB_FEATURE_ENUM_ERROR_CODE:
+        return is_supported_enum_value_array(
+            xkb_error_code_values, ARRAY_SIZE(xkb_error_code_values), value
+        );
     case XKB_FEATURE_ENUM_KEYMAP_FORMAT:
         return is_supported_enum_value_mask(XKB_KEYMAP_FORMAT_VALUES, value);
     case XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS:

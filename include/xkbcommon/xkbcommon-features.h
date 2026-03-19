@@ -49,6 +49,12 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_LOG_LEVEL = 1110,
     /**
+     * The enumeration @ref xkb_error_code
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_ERROR_CODE = 1200,
+    /**
      * The enumeration @ref xkb_keymap_format
      *
      * @since 1.14.0

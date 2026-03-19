@@ -38,6 +38,7 @@ test_libxkbcommon_enums(void)
         ENUM(XKB_FEATURE_ENUM_FEATURE, xkb_feature_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_CONTEXT_FLAGS, xkb_context_flags_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_LOG_LEVEL, xkb_log_level_values, ENUM_NONE),
+        ENUM(XKB_FEATURE_ENUM_ERROR_CODE, xkb_error_code_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_KEYMAP_FORMAT, xkb_keymap_format_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_KEYMAP_COMPILE_FLAGS, xkb_keymap_compile_flags_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_RMLVO_BUILDER_FLAGS, xkb_rmlvo_builder_flags_values, ENUM_FLAG),
