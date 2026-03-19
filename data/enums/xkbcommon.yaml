@@ -54,13 +54,6 @@ xkb_keymap_key_iterator_flags:
     value: 1
   - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     value: 2
-xkb_a11y_flags:
-  - name: XKB_A11Y_NO_FLAGS
-    value: 0
-  - name: XKB_A11Y_LATCH_TO_LOCK
-    value: 1
-  - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
-    value: 2
 xkb_event_type:
   - name: XKB_EVENT_TYPE_KEY_DOWN
     value: 1
@@ -115,12 +108,12 @@ xkb_keyboard_control_flags:
 xkb_events_flags:
   - name: XKB_EVENTS_NO_FLAGS
     value: 0
-xkb_layout_out_of_range_policy:
-  - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
+xkb_a11y_flags:
+  - name: XKB_A11Y_NO_FLAGS
     value: 0
-  - name: XKB_LAYOUT_OUT_OF_RANGE_CLAMP
+  - name: XKB_A11Y_LATCH_TO_LOCK
     value: 1
-  - name: XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
+  - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
     value: 2
 xkb_key_direction:
   - name: XKB_KEY_UP
@@ -128,6 +121,13 @@ xkb_key_direction:
   - name: XKB_KEY_DOWN
     value: 1
   - name: XKB_KEY_REPEATED
+    value: 2
+xkb_layout_out_of_range_policy:
+  - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
+    value: 0
+  - name: XKB_LAYOUT_OUT_OF_RANGE_CLAMP
+    value: 1
+  - name: XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
     value: 2
 xkb_state_match:
   - name: XKB_STATE_MATCH_ANY

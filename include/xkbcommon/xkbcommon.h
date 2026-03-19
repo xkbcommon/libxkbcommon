@@ -48,6 +48,7 @@ extern "C" {
 
 /**
  * @struct xkb_context
+ * @ingroup context
  * Opaque top level library context object.
  *
  * The context contains various general library data and state, like
@@ -61,6 +62,7 @@ struct xkb_context;
 
 /**
  * @struct xkb_keymap
+ * @ingroup keymap
  * Opaque compiled keymap object.
  *
  * The keymap object holds all of the static keyboard information obtained
@@ -1016,8 +1018,8 @@ xkb_context_get_user_data(struct xkb_context *context);
  *
  * The default include paths are, in that lookup order:
  * - The path `$XDG_CONFIG_HOME/xkb`, where `$XDG_CONFIG_HOME` is the value of
-     the environment variable `XDG_CONFIG_HOME`, with the usual fallback to
-     `$HOME/.config/` if unset.
+ *   the environment variable `XDG_CONFIG_HOME`, with the usual fallback to
+ *   `$HOME/.config/` if unset.
  * - The path `$HOME/.xkb`, where `$HOME` is the value of the environment
  *   variable `HOME`.
  * - The `XKB_CONFIG_EXTRA_PATH` environment variable, if defined, otherwise the
@@ -2144,231 +2146,6 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  */
 
 /**
- * @struct xkb_machine_options
- * Opaque options object to configure an `xkb_machine`.
- *
- * Create with `xkb_machine_options_new()`, configure with the
- * `xkb_machine_options_*` functions, then pass to `xkb_machine_new()`.
- * The options object may be destroyed immediately after
- * `xkb_machine_new()` returns.
- *
- * @since 1.14.0
- *
- * @sa `xkb_machine_options::xkb_machine_options_new()`
- * @sa `xkb_machine::xkb_machine_new()`
- */
-struct xkb_machine_options;
-
-/**
- * Create a new `xkb_machine` options object.
- *
- * @param context The context in which to create the options.
- *
- * @returns A new `xkb_machine` options object, or `NULL` on failure.
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine_options
- */
-XKB_EXPORT struct xkb_machine_options *
-xkb_machine_options_new(struct xkb_context *context);
-
-/**
- * Free a `xkb_machine` options object.
- *
- * @param options The `xkb_machine` options. If it is `NULL`, this function does
- * nothing.
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine_options
- */
-XKB_EXPORT void
-xkb_machine_options_destroy(struct xkb_machine_options *options);
-
-/**
- * @enum xkb_a11y_flags
- * Flags for
- * `xkb_machine_options::xkb_machine_options_update_a11y_flags()`.
- *
- * These flags configure the accessibility (*a11y*) features.
- *
- * @since 1.14.0
- */
-enum xkb_a11y_flags {
-    /**
-     * Do not apply any flags.
-     *
-     * @since 1.14.0
-     */
-    XKB_A11Y_NO_FLAGS = 0,
-    /**
-     * If both `::XKB_A11Y_LATCH_TO_LOCK` and
-     * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
-     * users to [lock] modifier keys without requiring special locking keys.
-     * The user can press a [latch] modifier twice in a row to lock it, and
-     * then unlock it by pressing it one more time.
-     *
-     * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
-     * @since 1.14.0
-     *
-     * [latch]: @ref latched-mod-def
-     * [lock]:  @ref locked-mod-def
-     */
-    XKB_A11Y_LATCH_TO_LOCK = (1 << 0),
-    /**
-     * Without this option, the [latch] keys are only triggers if keys are
-     * strictly *sequentially tapped*, e.g.:
-     * 1. `ISO_Level2_Latch` ↓
-     * 2. `ISO_Level2_Latch` ↑
-     * 3. `A` ↓
-     * 4. `A` ↑
-     *
-     * If one wants *multiple* active latches, they must be tapped in sequence:
-     * e.g.:
-     * 1. `ISO_Level2_Latch` ↓
-     * 2. `ISO_Level2_Latch` ↑
-     * 3. `ISO_Level3_Latch` ↓
-     * 4. `ISO_Level3_Latch` ↑
-     * 5. `A` ↓
-     * 6. `A` ↑
-     *
-     * This option relaxes the strict sequence requirement and enable to operate
-     * keys that do not break latches *simultaneously* with a [latch] key, e.g.:
-     * 1. `ISO_Level2_Latch` ↓
-     * 2. `ISO_Level3_Latch` ↓
-     * 3. `ISO_Level2_Latch` ↑
-     * 4. `ISO_Level3_Latch` ↑
-     * 5. `A` ↓
-     * 6. `A` ↑
-     *
-     * This is an extension to the X11 XKB protocol and is enabled by default
-     * when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
-     *
-     * @since 1.14.0
-     *
-     * [latch]: @ref latched-mod-def
-     */
-    XKB_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
-};
-
-/**
- * Update the accessibility flags of a `state_machine_options` object.
- *
- * @param options The `state_machine` options object to modify.
- * @param affect  Accessibility flags to modify.
- * @param flags   Accessibility flags to set or unset. Only the flags in
- * @p affect are considered.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine_options
- */
-XKB_EXPORT int
-xkb_machine_options_update_a11y_flags(
-    struct xkb_machine_options *options,
-    enum xkb_a11y_flags affect,
-    enum xkb_a11y_flags flags
-);
-
-/**
- * Remap a modifier combination, e.g. to make `Control+Alt` act as
- * `LevelThree` (`AltGr`). This help improving *compatibility* across platforms.
- *
- * The remapping takes effect only using
- * `xkb_machine::xkb_machine_process_key()` and under certain
- * conditions:
- *
- * - The corresponding *effective* modifiers are active.
- * - The key being processed has a type that does *not* use any of the *source*
- *   modifiers.
- * - There is no other remapping entry with the source modifiers being a
- *   superset of this entry. E.g. `Control+Alt` has priority over `Control`.
- *
- * @param options The `state_machine` options object to modify.
- * @param source  Modifier combination to remap, using their [encoding].
- *                Must be non-zero, unless both @p source and @p target are 0
- *                to clear all entries.
- * @param target  Modifier combination to remap to, using their [encoding],
- *                or 0 to remove the entry for @p source. If both @p source and
- *                @p target are 0, all entries are cleared.
- *
- * Example:
- *
- * ```c
- * // Remap Control+Alt to LevelThree (AltGr)
- * const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
- * const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
- * const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
- * if (xkb_machine_options_remap_mods(options, ctrl | alt, level3)) {
- *     // handle error
- *     …
- * ```
- *
- * @since 1.14.0
- *
- * @memberof xkb_machine_options
- *
- * [encoding]: @ref modifiers-encoding
- */
-XKB_EXPORT int
-xkb_machine_options_remap_mods(
-    struct xkb_machine_options *options,
-    xkb_mod_mask_t source,
-    xkb_mod_mask_t target
-);
-
-/**
- * Set the modifiers that trigger keyboard shortcuts tweak.
- *
- * @param[in,out] options The `state_machine` options object to modify.
- * @param[in]     affect  Modifiers to consider, using their [encoding].
- *                        Only modifiers present in this mask are modified
- *                        by @p mask.
- * @param[in]     mask    Modifiers to set, using their [encoding].
- *                        Only the modifiers in @p affect are considered.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * @sa `xkb_machine_options_remap_shortcut_layout()`
- * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
- * @since 1.14.0
- * @memberof xkb_machine_options
- *
- * [encoding]: @ref modifiers-encoding
- */
-XKB_EXPORT int
-xkb_machine_options_update_shortcut_mods(
-    struct xkb_machine_options* options,
-    xkb_mod_mask_t affect, xkb_mod_mask_t mask
-);
-
-/**
- * Set layout mapping for keyboard shortcuts tweak.
- *
- * Enable tweaking keyboard shortcuts by switching the effective layout when
- * any modifier set by `xkb_machine_options_update_shortcut_mods()`
- * is active.
- *
- * @param[in,out] options The `state_machine` options object to modify.
- * @param[in]     source  Source layout to substitute.
- * @param[in]     target  Target layout to use instead of @p source.
- *
- * @returns 0 on success, otherwise an error code.
- *
- * @sa `xkb_machine_options_update_shortcut_mods()`
- * @since 1.14.0
- * @memberof xkb_machine_options
- */
-XKB_EXPORT int
-xkb_machine_options_remap_shortcut_layout(
-    struct xkb_machine_options* options,
-    xkb_layout_index_t source, xkb_layout_index_t target
-);
-
-/**
  * @struct xkb_event
  * Opaque keyboard state event object.
  *
@@ -2428,6 +2205,9 @@ enum xkb_event_type {
 
 /**
  * Get the [type](@ref xkb_event_type) of an event.
+ *
+ * @param event The event to process.
+ * @returns     The event’s type
  *
  * @since 1.14.0
  *
@@ -2500,7 +2280,7 @@ enum xkb_state_component {
      * lock has been pressed again.
      * @endparblock
      *
-     * [Locked modifiers]: @ref latched-mod-def
+     * [Locked modifiers]: @ref locked-mod-def
      */
     XKB_STATE_MODS_LOCKED = (1 << 2),
     /**
@@ -2515,22 +2295,28 @@ enum xkb_state_component {
     XKB_STATE_MODS_EFFECTIVE = (1 << 3),
     /**
      * @parblock
-     * Depressed layout, i.e. a key is physically holding it.
+     * [Depressed layout], i.e. a key is physically holding it.
      * @endparblock
+     *
+     * [Depressed layout]: @ref depressed-group-def
      */
     XKB_STATE_LAYOUT_DEPRESSED = (1 << 4),
     /**
      * @parblock
-     * Latched layout, i.e. will be unset after the next non-modifier
+     * [Latched layout], i.e. will be unset after the next non-modifier
      * key press.
      * @endparblock
+     *
+     * [Latched layout]: @ref latched-group-def
      */
     XKB_STATE_LAYOUT_LATCHED = (1 << 5),
     /**
      * @parblock
-     * Locked layout, i.e. will be unset after the key provoking the lock
+     * [Locked layout], i.e. will be unset after the key provoking the lock
      * has been pressed again.
      * @endparblock
+     *
+     * [Locked layout]: @ref locked-group-def
      */
     XKB_STATE_LAYOUT_LOCKED = (1 << 6),
     /**
@@ -2550,6 +2336,8 @@ enum xkb_state_component {
     /**
      * Effective [keyboard controls]
      *
+     * @since 1.14.0
+     *
      * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
     XKB_STATE_CONTROLS = (1 << 9)
@@ -2563,8 +2351,8 @@ enum xkb_state_component {
  * @param event The event to process.
  *
  * @returns For an event of type `::XKB_EVENT_TYPE_COMPONENTS_CHANGE`,
- * returns the corresponding mask of state components that have changed as a
- * result of the event.  If nothing in the state has changed, returns 0.
+ * returns the corresponding mask of state components that have changed.
+ * If nothing in the state has changed, returns 0.
  * @returns
  * The result is *undefined* if the given event has another type.
  *
@@ -2737,7 +2525,7 @@ xkb_event_serialize_layout(const struct xkb_event *event,
  * @struct xkb_events
  * Opaque keyboard event collection object.
  *
- * An `xkb_events` object collects [keyboard events](@ref xkb_event)
+ * An `xkb_events` batch collects [keyboard events](@ref xkb_event)
  * produced atomically by a single call to an `process_*` function such as
  * `xkb_machine::xkb_machine_process_key()`. Events are consumed
  * sequentially via `xkb_events_next()`. The collection is reset on each
@@ -2819,6 +2607,241 @@ XKB_EXPORT const struct xkb_event *
 xkb_events_next(struct xkb_events *events);
 
 /**
+ * @struct xkb_machine_options
+ * Opaque options object to configure an `xkb_machine`.
+ *
+ * Create with `xkb_machine_options_new()`, configure with the
+ * `xkb_machine_options_*` functions, then pass to
+ * `xkb_machine::xkb_machine_new()`.
+ * The options object may be destroyed immediately after
+ * `xkb_machine::xkb_machine_new()` returns.
+ *
+ * @since 1.14.0
+ *
+ * @sa `xkb_machine_options::xkb_machine_options_new()`
+ * @sa `xkb_machine::xkb_machine_new()`
+ */
+struct xkb_machine_options;
+
+/**
+ * Create a new `xkb_machine` options object.
+ *
+ * @param context The context in which to create the options.
+ *
+ * @returns A new `xkb_machine` options object, or `NULL` on failure.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine_options
+ */
+XKB_EXPORT struct xkb_machine_options *
+xkb_machine_options_new(struct xkb_context *context);
+
+/**
+ * Free a `xkb_machine` options object.
+ *
+ * @param options The `xkb_machine` options. If it is `NULL`, this function does
+ * nothing.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine_options
+ */
+XKB_EXPORT void
+xkb_machine_options_destroy(struct xkb_machine_options *options);
+
+/**
+ * @enum xkb_a11y_flags
+ * Flags for
+ * `xkb_machine_options::xkb_machine_options_update_a11y_flags()`.
+ *
+ * These flags configure the accessibility (*a11y*) features.
+ *
+ * @since 1.14.0
+ */
+enum xkb_a11y_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_A11Y_NO_FLAGS = 0,
+    /**
+     * If both `::XKB_A11Y_LATCH_TO_LOCK` and
+     * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
+     * users to [lock] modifier keys without requiring special locking keys.
+     * The user can press a [latch] modifier twice in a row to lock it, and
+     * then unlock it by pressing it one more time.
+     *
+     * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
+     * @since 1.14.0
+     *
+     * [latch]: @ref latched-mod-def
+     * [lock]:  @ref locked-mod-def
+     */
+    XKB_A11Y_LATCH_TO_LOCK = (1 << 0),
+    /**
+     * Without this option, the [latch] keys are only triggers if keys are
+     * strictly *sequentially tapped*, e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level2_Latch` ↑
+     * 3. `A` ↓
+     * 4. `A` ↑
+     *
+     * If one wants *multiple* active latches, they must be tapped in sequence:
+     * e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level2_Latch` ↑
+     * 3. `ISO_Level3_Latch` ↓
+     * 4. `ISO_Level3_Latch` ↑
+     * 5. `A` ↓
+     * 6. `A` ↑
+     *
+     * This option relaxes the strict sequence requirement and enable to operate
+     * keys that do not break latches *simultaneously* with a [latch] key, e.g.:
+     * 1. `ISO_Level2_Latch` ↓
+     * 2. `ISO_Level3_Latch` ↓
+     * 3. `ISO_Level2_Latch` ↑
+     * 4. `ISO_Level3_Latch` ↑
+     * 5. `A` ↓
+     * 6. `A` ↑
+     *
+     * This is an extension to the X11 XKB protocol and is enabled by default
+     * when using `::XKB_KEYMAP_FORMAT_TEXT_V2`.
+     *
+     * @since 1.14.0
+     *
+     * [latch]: @ref latched-mod-def
+     */
+    XKB_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
+};
+
+/**
+ * Update the accessibility flags of an `xkb_machine_options` object.
+ *
+ * @param options The `state_machine` options object to modify.
+ * @param affect  Accessibility flags to modify.
+ * @param flags   Accessibility flags to set or unset. Only the flags in
+ * @p affect are considered.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine_options
+ */
+XKB_EXPORT int
+xkb_machine_options_update_a11y_flags(
+    struct xkb_machine_options *options,
+    enum xkb_a11y_flags affect,
+    enum xkb_a11y_flags flags
+);
+
+/**
+ * Remap a modifier combination, e.g. to make `Control+Alt` act as
+ * `LevelThree` (`AltGr`). This help improving *compatibility* across platforms.
+ *
+ * The remapping takes effect only using
+ * `xkb_machine::xkb_machine_process_key()` and under certain
+ * conditions:
+ *
+ * - The corresponding *effective* modifiers are active.
+ * - The key being processed has a type that does *not* use any of the *source*
+ *   modifiers.
+ * - There is no other remapping entry with the source modifiers being a
+ *   superset of this entry. E.g. `Control+Alt` has priority over `Control`.
+ *
+ * @param options The `state_machine` options object to modify.
+ * @param source  Modifier combination to remap, using their [encoding].
+ *                Must be non-zero, unless both @p source and @p target are 0
+ *                to clear all entries.
+ * @param target  Modifier combination to remap to, using their [encoding],
+ *                or 0 to remove the entry for @p source. If both @p source and
+ *                @p target are 0, all entries are cleared.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * Example:
+ *
+ * ```c
+ * // Remap Control+Alt to LevelThree (AltGr)
+ * const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+ * const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+ * const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
+ * if (xkb_machine_options_remap_mods(options, ctrl | alt, level3)) {
+ *     // handle error
+ *     …
+ * }
+ * ```
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine_options
+ *
+ * [encoding]: @ref modifiers-encoding
+ */
+XKB_EXPORT int
+xkb_machine_options_remap_mods(
+    struct xkb_machine_options *options,
+    xkb_mod_mask_t source,
+    xkb_mod_mask_t target
+);
+
+/**
+ * Set the modifiers that trigger shortcuts keyboard layout override.
+ *
+ * When any of the specified modifiers is active, the effective layout
+ * is substituted according to the mapping set by
+ * `xkb_machine_options_remap_shortcut_layout()`.
+ * This ensures a consistent user experience with keyboard shortcuts
+ * across the layouts.
+ *
+ * @param[in,out] options The `state_machine` options object to modify.
+ * @param[in]     affect  Modifiers to consider, using their [encoding].
+ *                        Only modifiers present in this mask are modified
+ *                        by @p mask.
+ * @param[in]     mask    Modifiers to set, using their [encoding].
+ *                        Only the modifiers in @p affect are considered.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @sa `xkb_machine_options_remap_shortcut_layout()`
+ * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
+ * @since 1.14.0
+ * @memberof xkb_machine_options
+ *
+ * [encoding]: @ref modifiers-encoding
+ */
+XKB_EXPORT int
+xkb_machine_options_update_shortcut_mods(struct xkb_machine_options *options,
+                                         xkb_mod_mask_t affect,
+                                         xkb_mod_mask_t mask);
+
+/**
+ * Set a layout substitution for the shortcut layout override.
+ *
+ * When any modifier set via `xkb_machine_options_update_shortcut_mods()` is
+ * active, the effective layout @p source is substituted with layout @p target
+ * in key processing. This allows shortcuts defined in layout @p target
+ * (typically a Latin layout) to remain reachable when layout @p source is
+ * active.
+ *
+ * @param[in,out] options The `state_machine` options object to modify.
+ * @param[in]     source  Source layout to substitute.
+ * @param[in]     target  Target layout to use instead of @p source.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @sa `xkb_machine_options_update_shortcut_mods()`
+ * @since 1.14.0
+ * @memberof xkb_machine_options
+ */
+XKB_EXPORT int
+xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
+                                          xkb_layout_index_t source,
+                                          xkb_layout_index_t target);
+
+/**
  * Create a new keyboard state machine object.
  *
  * This entry point is intended for *server* applications; *client* applications
@@ -2885,34 +2908,6 @@ xkb_machine_unref(struct xkb_machine *machine);
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_machine_get_keymap(const struct xkb_machine *machine);
-
-/**
- * @enum xkb_layout_out_of_range_policy
- * Policies defining how to bring out-of-range layout indices into range.
- *
- * @since 1.14.0
- */
-enum xkb_layout_out_of_range_policy {
-    /**
-     * Wrap into range using integer modulus (default).
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
-    /**
-     * Clamp into range, i.e. invalid indices are corrected to the closest
-     * valid bound (0 or highest layout index).
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
-    /**
-     * Redirect to a specific [layout index](@ref xkb_layout_index_t).
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
-};
 
 /**
  * @enum xkb_key_direction
@@ -3087,6 +3082,34 @@ struct xkb_state_components_update {
      * @sa `xkb_keyboard_control_flags`
      */
     enum xkb_keyboard_control_flags controls;
+};
+
+/**
+ * @enum xkb_layout_out_of_range_policy
+ * Policies defining how to bring out-of-range layout indices into range.
+ *
+ * @since 1.14.0
+ */
+enum xkb_layout_out_of_range_policy {
+    /**
+     * Wrap into range using integer modulus (default).
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
+    /**
+     * Clamp into range, i.e. invalid indices are corrected to the closest
+     * valid bound (0 or highest layout index).
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+    /**
+     * Redirect to a specific [layout index](@ref xkb_layout_index_t).
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
 };
 
 /**
@@ -3364,17 +3387,17 @@ xkb_state_update_synthetic(struct xkb_state *state,
  * This entry point is intended for *server* applications and should not be used
  * by *client* applications; see @ref server-client-state for details.
  *
- * It enables servers applications to use `xkb_state` as the observable state
+ * It enables server applications to use `xkb_state` as the observable state
  * companion to an `xkb_machine`: feed each event produced by
  * `xkb_machine::xkb_machine_process_key()` or
  * `xkb_machine::xkb_machine_process_synthetic()` into this
  * function to keep the observable state in sync.
  *
  * @warning The given state object should not be updated by other means than
- * [events](@ref xkb_event), i.e. do not use `xkb_state_update_key()`.
+ * [events](@ref xkb_event), i.e. do not mix with `xkb_state_update_key()`.
  *
- * @param state The keyboard state object.
- * @param event The state event to update from.
+ * @param[in,out] state The keyboard state object.
+ * @param[in]     event The state event to update from.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -3416,7 +3439,7 @@ xkb_state_update_event(struct xkb_state *state,
  * @param affect_latched_layout See @p latched_layout.
  * @param latched_layout
  *     Layout to latch. Only considered if @p affect_latched_layout is true.
- *     Maybe be out of range (including negative) -- see note above.
+ *     May be out of range (including negative) -- see note above.
  * @param affect_locked_mods See @p locked_mods.
  * @param locked_mods
  *     Modifiers to set as locked or unlocked. Only modifiers in
@@ -3424,7 +3447,7 @@ xkb_state_update_event(struct xkb_state *state,
  * @param affect_locked_layout See @p locked_layout.
  * @param locked_layout
  *     Layout to lock. Only considered if @p affect_locked_layout is true.
- *     Maybe be out of range (including negative) -- see note above.
+ *     May be out of range (including negative) -- see note above.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
