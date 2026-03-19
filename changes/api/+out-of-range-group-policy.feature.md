@@ -1,6 +1,6 @@
 Enable the configuration of out-of-range layout handling using the
 following new API:
-- `xkb_server_state::xkb_server_state_update_control()`
+- `xkb_machine::xkb_machine_update_control()`
 - `enum xkb_keyboard_control_param`, with values:
   - `XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY`
   - `XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT`

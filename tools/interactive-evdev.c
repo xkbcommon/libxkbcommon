@@ -32,8 +32,8 @@
 struct keyboard {
     char *path;
     int fd;
-    struct xkb_server_state *server_state;
-    struct xkb_events *state_events;
+    struct xkb_machine *machine;
+    struct xkb_events *events;
     struct xkb_state *state;
     struct xkb_compose_state *compose_state;
     struct keyboard *next;
@@ -89,7 +89,7 @@ is_keyboard(int fd)
 static int
 keyboard_new(struct dirent *ent,
              struct xkb_context *ctx, struct xkb_keymap *keymap,
-             const struct xkb_server_options *options,
+             const struct xkb_machine_options *options,
              enum xkb_keyboard_control_flags kbd_controls_affect,
              enum xkb_keyboard_control_flags kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
@@ -97,8 +97,8 @@ keyboard_new(struct dirent *ent,
     int ret;
     char *path;
     int fd;
-    struct xkb_server_state *server_state = NULL;
-    struct xkb_events *state_events = NULL;
+    struct xkb_machine *machine = NULL;
+    struct xkb_events *events = NULL;
     struct xkb_state *state = NULL;
     struct xkb_compose_state *compose_state = NULL;
     struct keyboard *kbd = NULL;
@@ -120,18 +120,18 @@ keyboard_new(struct dirent *ent,
     }
 
     if (use_events_api) {
-        server_state = xkb_server_state_new(keymap, options);
-        if (!server_state) {
-            fprintf(stderr, "Couldn't create xkb server state for %s\n", path);
+        machine = xkb_machine_new(keymap, options);
+        if (!machine) {
+            fprintf(stderr, "Couldn't create xkb state machine for %s\n", path);
             ret = -EFAULT;
-            goto err_server_state;
+            goto err_machine;
         }
 
-        state_events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
-        if (!state_events) {
+        events = xkb_events_new(ctx, XKB_EVENTS_NO_FLAGS);
+        if (!events) {
             fprintf(stderr, "Couldn't create xkb events for %s\n", path);
             ret = -EFAULT;
-            goto err_state_events;
+            goto err_xkb_events;
         }
     }
 
@@ -143,11 +143,11 @@ keyboard_new(struct dirent *ent,
     }
 
     if (use_events_api) {
-        xkb_server_state_update_enabled_controls(server_state, state_events,
-                                                 kbd_controls_affect,
-                                                 kbd_controls_values);
+        xkb_machine_update_enabled_controls(machine, events,
+                                            kbd_controls_affect,
+                                            kbd_controls_values);
         const struct xkb_event *event;
-        while ((event = xkb_events_next(state_events))) {
+        while ((event = xkb_events_next(events))) {
             xkb_state_update_from_event(state, event);
         }
     } else {
@@ -174,8 +174,8 @@ keyboard_new(struct dirent *ent,
 
     kbd->path = path;
     kbd->fd = fd;
-    kbd->server_state = server_state;
-    kbd->state_events = state_events;
+    kbd->machine = machine;
+    kbd->events = events;
     kbd->state = state;
     kbd->compose_state = compose_state;
     *out = kbd;
@@ -186,10 +186,10 @@ err_kbd:
 err_compose_state:
     xkb_state_unref(state);
 err_state:
-    xkb_events_destroy(state_events);
-err_state_events:
-    xkb_server_state_unref(server_state);
-err_server_state:
+    xkb_events_destroy(events);
+err_xkb_events:
+    xkb_machine_unref(machine);
+err_machine:
 err_fd:
     close(fd);
 err_path:
@@ -205,8 +205,8 @@ keyboard_free(struct keyboard *kbd)
     if (kbd->fd >= 0)
         close(kbd->fd);
     free(kbd->path);
-    xkb_server_state_unref(kbd->server_state);
-    xkb_events_destroy(kbd->state_events);
+    xkb_machine_unref(kbd->machine);
+    xkb_events_destroy(kbd->events);
     xkb_state_unref(kbd->state);
     xkb_compose_state_unref(kbd->compose_state);
     free(kbd);
@@ -220,7 +220,7 @@ filter_device_name(const struct dirent *ent)
 
 static struct keyboard *
 get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
-              const struct xkb_server_options *options,
+              const struct xkb_machine_options *options,
               enum xkb_keyboard_control_flags kbd_controls_affect,
               enum xkb_keyboard_control_flags kbd_controls_values,
               struct xkb_compose_table *compose_table)
@@ -309,15 +309,15 @@ process_event(struct keyboard *kbd, uint16_t type, uint16_t code, int32_t value)
             : XKB_KEY_DOWN;
 
     if (use_events_api) {
-        /* Use the state event API */
-        const int ret = xkb_server_state_update_key(kbd->server_state,
-                                                    kbd->state_events,
-                                                    keycode, direction);
+        /* Use the xkb_machine API */
+        const int ret = xkb_machine_process_key(kbd->machine,
+                                                kbd->events,
+                                                keycode, direction);
         if (ret) {
-            fprintf(stderr, "ERROR: could not update the server state\n");
+            fprintf(stderr, "ERROR: could not update the state machine\n");
             // TODO: better error handling
         } else {
-            tools_print_events(NULL, kbd->state, kbd->state_events,
+            tools_print_events(NULL, kbd->state, kbd->events,
                                kbd->compose_state, consumed_mode,
                                print_options, report_state_changes);
         }
@@ -555,9 +555,9 @@ main(int argc, char *argv[])
 
     /* Initialize state options */
     ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
-    struct xkb_server_options * const server_options = xkb_server_options_new(ctx);
-    if (!server_options)
-        goto error_state_options;
+    struct xkb_machine_options * const machine_options = xkb_machine_options_new(ctx);
+    if (!machine_options)
+        goto error_machine_options;
     xkb_context_unref(ctx);
     ctx = NULL;
     enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NONE;
@@ -690,7 +690,7 @@ main(int argc, char *argv[])
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, server_options,
+            if (!tools_parse_controls(optarg, machine_options,
                                       &kbd_controls_affect,
                                       &kbd_controls_values)) {
                 usage(stderr, argv[0]);
@@ -711,7 +711,7 @@ main(int argc, char *argv[])
             use_events_api = true;
             break;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, server_options)) {
+            if (!tools_parse_shortcuts_mappings(optarg, machine_options)) {
                 usage(stderr, argv[0]);
                 ret = EXIT_INVALID_USAGE;
                 goto error_parse_args;
@@ -829,14 +829,14 @@ too_much_arguments:
 
     if (raw_modifiers_mapping &&
         !tools_parse_modifiers_mappings(raw_modifiers_mapping, keymap,
-                                        server_options)) {
+                                        machine_options)) {
         fprintf(stderr,
                 "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
                 raw_modifiers_mapping);
     }
 
     if (raw_shortcuts_mask &&
-        !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap, server_options)) {
+        !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap, machine_options)) {
         fprintf(stderr,
                 "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
                 raw_shortcuts_mask);
@@ -853,7 +853,7 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(ctx, keymap, server_options, kbd_controls_affect,
+    kbds = get_keyboards(ctx, keymap, machine_options, kbd_controls_affect,
                          kbd_controls_values, compose_table);
     if (!kbds) {
         goto out;
@@ -883,8 +883,8 @@ out:
     xkb_compose_table_unref(compose_table);
     xkb_keymap_unref(keymap);
 error_parse_args:
-error_state_options:
-    xkb_server_options_destroy(server_options);
+error_machine_options:
+    xkb_machine_options_destroy(machine_options);
     xkb_context_unref(ctx);
 
     return ret;
@@ -892,12 +892,12 @@ error_state_options:
 too_many_includes:
     fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
             ARRAY_SIZE(includes));
-    xkb_server_options_destroy(server_options);
+    xkb_machine_options_destroy(machine_options);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     usage(stderr, argv[0]);
-    xkb_server_options_destroy(server_options);
+    xkb_machine_options_destroy(machine_options);
     exit(EXIT_INVALID_USAGE);
 }

@@ -124,7 +124,7 @@ local -a interactive_common=(
 	'--format=[use the given keymap format]:xkb format:(v1 v2)'
 	'--strict[parse using the strict mode]'
 	'--enable-compose[enable Compose]'
-	'--legacy-state-api=[use the legacy state API instead of state event API]:state:(true false)'
+	'--legacy-state-api=[use the legacy state API instead of server machine API]:state:(true false)'
 	'(--local-state --legacy-state-api)--modifiers-mapping=[use the given modifiers mapping]:modifiers mapping:_xkbcli_modifiers_mapping' \
 	'(--local-state --legacy-state-api)--shortcuts-mask=[modifier mask to enable selecting a specific layout]:modifiers mask:_xkbcli_modifiers_mask' \
 	'(--local-state --legacy-state-api)--shortcuts-mapping=[layout indices mapping to enable selective a specific layout]:layout mapping:_xkbcli_layout_mapping' \
