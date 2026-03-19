@@ -74,22 +74,22 @@ typedef struct {
 } GroupInfo;
 
 enum {
-    XKB_OUT_OF_RANGE_LAYOUT_POLICY_MIN_WIDTH = 4 /* 3 bits + sign */,
+    XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH = 4 /* 3 bits + sign */,
     KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD = 8,
     KEYINFO_DEFINED_BIT_FIELD = 16,
     KEYINFO_MERGE_BIT_FIELD = 8,
     KEYINFO_REPEAT_BIT_FIELD = 8,
 };
 static_assert(
-    XKB_OUT_OF_RANGE_LAYOUT_WRAP < XKB_OUT_OF_RANGE_LAYOUT_CLAMP &&
-    XKB_OUT_OF_RANGE_LAYOUT_CLAMP < XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
+    XKB_LAYOUT_OUT_OF_RANGE_WRAP < XKB_LAYOUT_OUT_OF_RANGE_CLAMP &&
+    XKB_LAYOUT_OUT_OF_RANGE_CLAMP < XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
     "Enum values were changed!"
 );
-static_assert(XKB_OUT_OF_RANGE_LAYOUT_REDIRECT <=
-              (1 << XKB_OUT_OF_RANGE_LAYOUT_POLICY_MIN_WIDTH) - 1,
+static_assert(XKB_LAYOUT_OUT_OF_RANGE_REDIRECT <=
+              (1 << XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH) - 1,
               "Cannot encode out of range redirect");
 static_assert(KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD >=
-              XKB_OUT_OF_RANGE_LAYOUT_POLICY_MIN_WIDTH, "");
+              XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH, "");
 static_assert((unsigned)KEYINFO_DEFINED_BIT_FIELD >=
               (unsigned)KEY_FIELD_MIN_WIDTH, "Cannot encode KeyInfo field");
 static_assert((unsigned)KEYINFO_MERGE_BIT_FIELD >=
@@ -105,7 +105,7 @@ typedef struct {
 
     xkb_layout_index_t out_of_range_group_number;
     darray(GroupInfo) groups;
-    enum xkb_out_of_range_layout_policy
+    enum xkb_layout_out_of_range_policy
         out_of_range_group_policy:KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD;
 
     /* NOTE: this bitfield could be reduce to 1 byte, should we need it */
@@ -209,7 +209,7 @@ InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
     static_assert(!DEFAULT_KEY_REPEAT, "key repeat not initialized properly");
     static_assert(!DEFAULT_KEY_VMODMAP, "key vmodmap not initialized properly");
     keyi->name = xkb_atom_intern_literal(ctx, "*");
-    keyi->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_WRAP;
+    keyi->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
     darray_init(keyi->groups);
     keyi->overlay_key = NULL;
 }
@@ -1660,8 +1660,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
 
         keyi->out_of_range_group_policy = (set)
-            ? XKB_OUT_OF_RANGE_LAYOUT_WRAP
-            : XKB_OUT_OF_RANGE_LAYOUT_CLAMP;
+            ? XKB_LAYOUT_OUT_OF_RANGE_WRAP
+            : XKB_LAYOUT_OUT_OF_RANGE_CLAMP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsclamp") ||
@@ -1677,8 +1677,8 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
 
         keyi->out_of_range_group_policy = (set)
-            ? XKB_OUT_OF_RANGE_LAYOUT_CLAMP
-            : XKB_OUT_OF_RANGE_LAYOUT_WRAP;
+            ? XKB_LAYOUT_OUT_OF_RANGE_CLAMP
+            : XKB_LAYOUT_OUT_OF_RANGE_WRAP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else if (istreq(field, "groupsredirect") ||
@@ -1718,7 +1718,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->out_of_range_group_number = grp - 1;
         }
 
-        keyi->out_of_range_group_policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT;
+        keyi->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {

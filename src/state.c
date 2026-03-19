@@ -36,6 +36,7 @@
 #include "state-priv.h"
 #include "utf8.h"
 #include "utils.h"
+#include "util-mem.h"
 #include "utils-numbers.h"
 
 /*
@@ -84,7 +85,7 @@ struct xkb_state {
 
     struct machine_controls {
         struct {
-            enum xkb_out_of_range_layout_policy policy;
+            enum xkb_layout_out_of_range_policy policy;
             xkb_layout_index_t redirect_group;
         } out_of_range_group;
     } controls;
@@ -1215,7 +1216,7 @@ xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
              state->flags |= XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
      }
     state->controls.out_of_range_group.policy =
-        XKB_OUT_OF_RANGE_LAYOUT_WRAP;
+        XKB_LAYOUT_OUT_OF_RANGE_WRAP;
 
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
@@ -1555,38 +1556,35 @@ resolve_to_canonical_mods(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
 }
 
 static void
-state_update_latched_locked(struct xkb_state *state,
-                            struct xkb_events *events,
-                            xkb_mod_mask_t affect_latched_mods,
-                            xkb_mod_mask_t latched_mods,
-                            bool affect_latched_layout,
-                            int32_t latched_layout,
-                            xkb_mod_mask_t affect_locked_mods,
-                            xkb_mod_mask_t locked_mods,
-                            bool affect_locked_layout,
-                            int32_t locked_layout)
+state_update_latched_locked(
+    struct xkb_state * restrict state,
+    const struct xkb_state_components_update * restrict update,
+    struct xkb_events *events
+)
 {
     /* Update locks */
-    affect_locked_mods =
-        resolve_to_canonical_mods(state->keymap, affect_locked_mods);
+    const xkb_mod_mask_t affect_locked_mods =
+        resolve_to_canonical_mods(state->keymap, update->affect_locked_mods);
     if (affect_locked_mods) {
-        locked_mods = resolve_to_canonical_mods(state->keymap, locked_mods);
+        const xkb_mod_mask_t locked_mods =
+            resolve_to_canonical_mods(state->keymap, update->locked_mods);
         state->components.locked_mods &= ~affect_locked_mods;
         state->components.locked_mods |= locked_mods & affect_locked_mods;
     }
-    if (affect_locked_layout) {
-        state->components.locked_group = locked_layout;
+    if (update->components & XKB_STATE_LAYOUT_LOCKED) {
+        state->components.locked_group = update->locked_layout;
     }
 
     /* Update latches */
-    affect_latched_mods =
-        resolve_to_canonical_mods(state->keymap, affect_latched_mods);
+    const xkb_mod_mask_t affect_latched_mods =
+        resolve_to_canonical_mods(state->keymap, update->affect_latched_mods);
     if (affect_latched_mods) {
-        latched_mods = resolve_to_canonical_mods(state->keymap, latched_mods);
+        const xkb_mod_mask_t latched_mods =
+            resolve_to_canonical_mods(state->keymap, update->latched_mods);
         update_latch_modifiers(state, events, affect_latched_mods, latched_mods);
     }
-    if (affect_latched_layout) {
-        update_latch_group(state, events, latched_layout);
+    if (update->components & XKB_STATE_LAYOUT_LATCHED) {
+        update_latch_group(state, events, update->latched_layout);
     }
 }
 
@@ -1602,18 +1600,22 @@ xkb_state_update_latched_locked(struct xkb_state *state,
                                 int32_t locked_layout)
 {
     const struct state_components previous_components = state->components;
-    state_update_latched_locked(
-        state,
-        NULL,
-        affect_latched_mods,
-        latched_mods,
-        affect_latched_layout,
-        latched_layout,
-        affect_locked_mods,
-        locked_mods,
-        affect_locked_layout,
-        locked_layout
-    );
+    const enum xkb_state_component components
+        = ((affect_latched_mods || latched_mods) ? XKB_STATE_MODS_LATCHED : 0)
+        | ((affect_locked_mods || locked_mods) ? XKB_STATE_MODS_LOCKED : 0)
+        | (affect_latched_layout ? XKB_STATE_LAYOUT_LATCHED : 0)
+        | (affect_locked_layout ? XKB_STATE_LAYOUT_LOCKED : 0);
+    const struct xkb_state_components_update update = {
+        .size = sizeof(update),
+        .components = components,
+        .affect_latched_mods = affect_latched_mods,
+        .latched_mods = latched_mods,
+        .latched_layout = latched_layout,
+        .affect_locked_mods = affect_locked_mods,
+        .locked_mods = locked_mods,
+        .locked_layout = locked_layout
+    };
+    state_update_latched_locked(state, &update, NULL);
     xkb_state_update_derived(state);
     return get_state_component_changes(&previous_components, &state->components);
 }
@@ -1622,16 +1624,27 @@ static inline void
 clear_all_latches_and_locks(struct xkb_state *state,
                             struct xkb_events *events)
 {
-    state_update_latched_locked(state, events,
-                                (xkb_mod_mask_t) XKB_MOD_ALL, 0, true, 0,
-                                (xkb_mod_mask_t) XKB_MOD_ALL, 0, true, 0);
+    static const enum xkb_state_component components
+        = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_LOCKED
+        | XKB_STATE_LAYOUT_LATCHED | XKB_STATE_LAYOUT_LOCKED;
+    const struct xkb_state_components_update update = {
+        .size = sizeof(update),
+        .components = components,
+        .affect_latched_mods = XKB_MOD_ALL,
+        .latched_mods = 0,
+        .latched_layout = 0,
+        .affect_locked_mods = XKB_MOD_ALL,
+        .locked_mods = 0,
+        .locked_layout = 0
+    };
+    state_update_latched_locked(state, &update, events);
 }
 
 static void
 state_update_enabled_controls(struct xkb_state *state,
-                              struct xkb_events *events,
                               enum xkb_keyboard_control_flags affect,
-                              enum xkb_keyboard_control_flags controls)
+                              enum xkb_keyboard_control_flags controls,
+                              struct xkb_events *events)
 {
     const bool had_sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
 
@@ -1657,7 +1670,7 @@ xkb_state_update_enabled_controls(struct xkb_state *state,
                                   enum xkb_keyboard_control_flags controls)
 {
     const struct state_components previous = state->components;
-    state_update_enabled_controls(state, NULL, affect, controls);
+    state_update_enabled_controls(state, affect, controls, NULL);
     return get_state_component_changes(&previous, &state->components);
 }
 
@@ -2911,32 +2924,19 @@ xkb_machine_update_enabled_controls(struct xkb_machine *sm,
                                     enum xkb_keyboard_control_flags affect,
                                     enum xkb_keyboard_control_flags controls)
 {
-    darray_size(events->queue) = 0;
-    events->next = 0;
-
-    struct xkb_state * restrict const state = &sm->state;
-    const struct state_components previous_components = state->components;
-
-    state_update_enabled_controls(state, events, affect, controls);
-
-    const enum xkb_state_component changed = get_state_component_changes(
-        &previous_components, &state->components
-    );
-    if (changed) {
-        if (changed & XKB_STATE_CONTROLS)
-            machine_update_overlays(sm);
-
-        /* Create event only if some component actually changed */
-        darray_append(events->queue, (struct xkb_event) {
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
-            .components = {
-                .changed = changed,
-                .components = state->components
-            }
-        });
-    }
-
-    return 0;
+    const enum xkb_state_component components
+        = ((affect || controls) ? XKB_STATE_CONTROLS : 0);
+    const struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = components,
+        .affect_controls = affect,
+        .controls = controls,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components_update,
+    };
+    return xkb_machine_process_synthetic(sm, &update, events);
 }
 
 int
@@ -2946,15 +2946,15 @@ xkb_machine_update_control(struct xkb_machine *sm,
 {
     switch (control) {
     case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY:
-        if (!xkb_has_feature(XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY,
+        if (!xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
                              (int)value))
             break;
         sm->state.controls.out_of_range_group.policy =
-            (enum xkb_out_of_range_layout_policy)value;
+            (enum xkb_layout_out_of_range_policy)value;
         return 0;
     case XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT:
         if (sm->state.controls.out_of_range_group.policy !=
-            XKB_OUT_OF_RANGE_LAYOUT_REDIRECT ||
+            XKB_LAYOUT_OUT_OF_RANGE_REDIRECT ||
             value >= sm->state.keymap->num_groups)
             break;
         sm->state.controls.out_of_range_group.redirect_group = value;
@@ -2980,24 +2980,87 @@ xkb_machine_update_latched_locked(struct xkb_machine *sm,
                                   bool affect_locked_layout,
                                   int32_t locked_layout)
 {
-    darray_size(events->queue) = 0;
-    events->next = 0;
+    const enum xkb_state_component components
+        = ((affect_latched_mods || latched_mods) ? XKB_STATE_MODS_LATCHED : 0)
+        | ((affect_locked_mods || locked_mods) ? XKB_STATE_MODS_LOCKED : 0)
+        | (affect_latched_layout ? XKB_STATE_LAYOUT_LATCHED : 0)
+        | (affect_locked_layout ? XKB_STATE_LAYOUT_LOCKED : 0);
+    const struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = components,
+        .affect_latched_mods = affect_latched_mods,
+        .latched_mods = latched_mods,
+        .latched_layout = latched_layout,
+        .affect_locked_mods = affect_locked_mods,
+        .locked_mods = locked_mods,
+        .locked_layout = locked_layout,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components_update,
+    };
+    return xkb_machine_process_synthetic(sm, &update, events);
+}
+
+static int
+state_update_layout_policy(struct xkb_state *state,
+                           const struct xkb_layout_policy_update *update)
+{
+    if (xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
+                        (int)update->policy)) {
+        if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
+            if (update->redirect < state->keymap->num_groups) {
+            state->controls.out_of_range_group.redirect_group =
+                update->redirect;
+            } else {
+                return XKB_ERROR_UNSUPPORTED_GROUP_INDEX;
+            }
+        }
+        state->controls.out_of_range_group.policy = update->policy;
+        return 0;
+    } else {
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
+    }
+}
+
+int
+xkb_machine_process_synthetic(struct xkb_machine *sm,
+                              const struct xkb_state_update *update,
+                              struct xkb_events *events)
+{
+    int ret = 0;
+
+    /* Check ABI compatibility */
+    if (!xkb_check_struct_size(update) ||
+        (update->components && !xkb_check_struct_size(update->components)) ||
+        (update->layout_policy && !xkb_check_struct_size(update->layout_policy))) {
+        log_err(sm->state.keymap->ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
+                "%s: ABI version mismatch: cannot use newer fields.\n ",
+                __func__);
+        return XKB_ERROR_ABI_FORWARD_COMPAT;
+    }
 
     struct xkb_state * restrict const state = &sm->state;
     const struct state_components previous_components = state->components;
 
-    state_update_latched_locked(
-        state,
-        events,
-        affect_latched_mods,
-        latched_mods,
-        affect_latched_layout,
-        latched_layout,
-        affect_locked_mods,
-        locked_mods,
-        affect_locked_layout,
-        locked_layout
-    );
+    // TODO: use a *transaction* mechanism: either the whole update succeeds
+    //       or rollback
+
+    /* Update parametrized controls first */
+    if (update->layout_policy) {
+        ret |= state_update_layout_policy(state, update->layout_policy);
+    }
+
+    if (update->components) {
+        const struct xkb_state_components_update * restrict const components =
+            update->components;
+        /* Update boolean controls first */
+        state_update_enabled_controls(state,
+                                      components->affect_controls,
+                                      components->controls, events);
+
+        state_update_latched_locked(state, components, events);
+    }
 
     xkb_state_update_derived(state);
 
@@ -3006,8 +3069,8 @@ xkb_machine_update_latched_locked(struct xkb_machine *sm,
     );
     if (changed) {
         // TODO: latch controls
-        // if (changed & XKB_STATE_CONTROLS)
-        //     machine_update_overlays(state);
+        if (changed & XKB_STATE_CONTROLS)
+            machine_update_overlays(sm);
 
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
@@ -3019,7 +3082,7 @@ xkb_machine_update_latched_locked(struct xkb_machine *sm,
         });
     }
 
-    return 0;
+    return ret;
 }
 
 static ssize_t

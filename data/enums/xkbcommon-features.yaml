@@ -27,7 +27,7 @@ xkb_feature:
     value: 3030
   - name: XKB_FEATURE_ENUM_A11Y_FLAGS
     value: 3100
-  - name: XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY
+  - name: XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY
     value: 3110
   - name: XKB_FEATURE_ENUM_EVENT_TYPE
     value: 3200

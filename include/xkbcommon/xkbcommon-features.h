@@ -109,11 +109,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_A11Y_FLAGS = 3100,
     /**
-     * The enumeration @ref xkb_out_of_range_layout_policy
+     * The enumeration @ref xkb_layout_out_of_range_policy
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_OUT_OF_RANGE_LAYOUT_POLICY = 3110,
+    XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY = 3110,
     /**
      * The enumeration @ref xkb_event_type
      *

@@ -145,7 +145,7 @@ test_group_wrap(struct xkb_context *ctx)
     const struct xkb_event *event;
 
     struct {
-        enum xkb_out_of_range_layout_policy policy;
+        enum xkb_layout_out_of_range_policy policy;
         xkb_layout_index_t redirect_group;
         xkb_layout_index_t locked_group;
         xkb_layout_index_t expected_group;
@@ -169,13 +169,13 @@ test_group_wrap(struct xkb_context *ctx)
          * Explicit: wrap
          */
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_WRAP,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
             .redirect_group = 0,
             .locked_group = -1,
             .expected_group = num_layouts - 1,
         },
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_WRAP,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
             .redirect_group = 0,
             .locked_group = num_layouts + 1,
             .expected_group = 1,
@@ -184,13 +184,13 @@ test_group_wrap(struct xkb_context *ctx)
          * Explicit: clamp
          */
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
             .redirect_group = 0,
             .locked_group = -1,
             .expected_group = 0,
         },
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_CLAMP,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
             .redirect_group = 0,
             .locked_group = num_layouts + 1,
             .expected_group = num_layouts - 1,
@@ -199,13 +199,13 @@ test_group_wrap(struct xkb_context *ctx)
          * Explicit: redirect
          */
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
             .redirect_group = 2,
             .locked_group = -1,
             .expected_group = 2,
         },
         {
-            .policy = XKB_OUT_OF_RANGE_LAYOUT_REDIRECT,
+            .policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
             .redirect_group = 2,
             .locked_group = num_layouts + 1,
             .expected_group = 2,
@@ -223,7 +223,7 @@ test_group_wrap(struct xkb_context *ctx)
         assert(!xkb_machine_update_control(
             sm, XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT,
             tests[t].redirect_group
-        ) ^ (tests[t].policy != XKB_OUT_OF_RANGE_LAYOUT_REDIRECT));
+        ) ^ (tests[t].policy != XKB_LAYOUT_OUT_OF_RANGE_REDIRECT));
         assert(!xkb_machine_update_latched_locked(
             sm, events, 0, 0, false, 0, 0, 0, true, tests[t].locked_group
         ));

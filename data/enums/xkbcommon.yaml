@@ -120,12 +120,12 @@ xkb_keyboard_control_param:
     value: 0
   - name: XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT
     value: 1
-xkb_out_of_range_layout_policy:
-  - name: XKB_OUT_OF_RANGE_LAYOUT_WRAP
+xkb_layout_out_of_range_policy:
+  - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
     value: 0
-  - name: XKB_OUT_OF_RANGE_LAYOUT_CLAMP
+  - name: XKB_LAYOUT_OUT_OF_RANGE_CLAMP
     value: 1
-  - name: XKB_OUT_OF_RANGE_LAYOUT_REDIRECT
+  - name: XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
     value: 2
 xkb_key_direction:
   - name: XKB_KEY_UP
