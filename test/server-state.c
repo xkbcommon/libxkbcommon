@@ -26,6 +26,146 @@
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
+static enum xkb_state_component
+xkb_state_update_enabled_controls(struct xkb_state *state,
+                                  enum xkb_keyboard_control_flags affect,
+                                  enum xkb_keyboard_control_flags controls)
+{
+    const struct xkb_state_components_update components = {
+        .size = sizeof(components),
+        .components = XKB_STATE_CONTROLS,
+        .affect_controls = affect,
+        .controls = controls,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components,
+    };
+    enum xkb_state_component changed = 0;
+    /* Note: no error handling */
+    xkb_state_update_synthetic(state, &update, &changed);
+    return changed;
+}
+
+/**
+ * Update the keyboard server state to change the *boolean*
+ * [global keyboard controls].
+ *
+ * @param machine The keyboard server state object.
+ * @param events  The event collection to store the events. It will be reset.
+ * @param affect
+ *     *Boolean* global keyboard controls to modify. @p controls contains the
+ *     actual values.
+ * @param controls
+ *     *Boolean* global keyboard controls to lock or unlock. Only controls in
+ *     @p affect are considered.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * Non-boolean controls are ignored.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine
+ *
+ * [global keyboard controls]: @ref xkb_keyboard_control_flags
+ */
+static int
+xkb_machine_update_enabled_controls(struct xkb_machine *machine,
+                                    struct xkb_events *events,
+                                    enum xkb_keyboard_control_flags affect,
+                                    enum xkb_keyboard_control_flags controls)
+{
+    const enum xkb_state_component components
+        = ((affect || controls) ? XKB_STATE_CONTROLS : 0);
+    const struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = components,
+        .affect_controls = affect,
+        .controls = controls,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components_update
+    };
+    return xkb_machine_process_synthetic(machine, &update, events);
+}
+
+/**
+ * Update the keyboard server state to change the latched and locked state of
+ * the modifiers and layout.
+ *
+ * Use this function to update the latched and locked state according to
+ * out-of-band (non-device) inputs, such as UI layout switchers.
+ *
+ * @par Layout out of range
+ * @parblock
+ *
+ * If the effective layout, after taking into account the depressed, latched and
+ * locked layout, is out of range (negative or greater than the maximum layout),
+ * it is brought into range. Currently, the layout is wrapped using integer
+ * modulus (with negative values wrapping from the end). The wrapping behavior
+ * may be made configurable in the future.
+ *
+ * @endparblock
+ *
+ * @param machine The keyboard server state object.
+ * @param events  The event collection to store the events. It will be reset.
+ * @param affect_latched_mods See @p latched_mods.
+ * @param latched_mods
+ *     Modifiers to set as latched or unlatched. Only modifiers in
+ *     @p affect_latched_mods are considered.
+ * @param affect_latched_layout See @p latched_layout.
+ * @param latched_layout
+ *     Layout to latch. Only considered if @p affect_latched_layout is true.
+ *     Maybe be out of range (including negative) -- see note above.
+ * @param affect_locked_mods See @p locked_mods.
+ * @param locked_mods
+ *     Modifiers to set as locked or unlocked. Only modifiers in
+ *     @p affect_locked_mods are considered.
+ * @param affect_locked_layout See @p locked_layout.
+ * @param locked_layout
+ *     Layout to lock. Only considered if @p affect_locked_layout is true.
+ *     Maybe be out of range (including negative) -- see note above.
+ *
+ * @returns 0 on success, otherwise an error code.
+ *
+ * @memberof xkb_machine
+ */
+static int
+xkb_machine_update_latched_locked(struct xkb_machine *machine,
+                                  struct xkb_events *events,
+                                  xkb_mod_mask_t affect_latched_mods,
+                                  xkb_mod_mask_t latched_mods,
+                                  bool affect_latched_layout,
+                                  int32_t latched_layout,
+                                  xkb_mod_mask_t affect_locked_mods,
+                                  xkb_mod_mask_t locked_mods,
+                                  bool affect_locked_layout,
+                                  int32_t locked_layout)
+{
+    const enum xkb_state_component components
+        = ((affect_latched_mods || latched_mods) ? XKB_STATE_MODS_LATCHED : 0)
+        | ((affect_locked_mods || locked_mods) ? XKB_STATE_MODS_LOCKED : 0)
+        | (affect_latched_layout ? XKB_STATE_LAYOUT_LATCHED : 0)
+        | (affect_locked_layout ? XKB_STATE_LAYOUT_LOCKED : 0);
+    const struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = components,
+        .affect_latched_mods = affect_latched_mods,
+        .latched_mods = latched_mods,
+        .latched_layout = latched_layout,
+        .affect_locked_mods = affect_locked_mods,
+        .locked_mods = locked_mods,
+        .locked_layout = locked_layout,
+    };
+    const struct xkb_state_update update = {
+        .size = sizeof(update),
+        .components = &components_update,
+    };
+    return xkb_machine_process_synthetic(machine, &update, events);
+}
+
 static void
 test_machine_options(struct xkb_context *ctx)
 {
@@ -151,21 +291,6 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_layout_index_t expected_group;
     } tests[] = {
         /*
-         * Default: wrap
-         */
-        {
-            .policy = 0,
-            .redirect_group = 0,
-            .locked_group = -1,
-            .expected_group = num_layouts - 1,
-        },
-        {
-            .policy = 0,
-            .redirect_group = 0,
-            .locked_group = num_layouts + 1,
-            .expected_group = 1,
-        },
-        /*
          * Explicit: wrap
          */
         {
@@ -214,19 +339,22 @@ test_group_wrap(struct xkb_context *ctx)
 
     for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests); t++) {
         fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
-        if (tests[t].policy) {
-            assert(!xkb_machine_update_control(
-                sm, XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_POLICY,
-                tests[t].policy
-            ));
-        }
-        assert(!xkb_machine_update_control(
-            sm, XKB_KEYBOARD_CONTROL_OUT_OF_RANGE_LAYOUT_REDIRECT,
-            tests[t].redirect_group
-        ) ^ (tests[t].policy != XKB_LAYOUT_OUT_OF_RANGE_REDIRECT));
-        assert(!xkb_machine_update_latched_locked(
-            sm, events, 0, 0, false, 0, 0, 0, true, tests[t].locked_group
-        ));
+        struct xkb_layout_policy_update layout_policy = {
+            .size = sizeof(layout_policy),
+            .policy = tests[t].policy,
+            .redirect = tests[t].redirect_group,
+        };
+        const struct xkb_state_components_update components = {
+            .size = sizeof(components),
+            .components = XKB_STATE_LAYOUT_LOCKED,
+            .locked_layout = (int32_t)tests[t].locked_group
+        };
+        const struct xkb_state_update req = {
+            .size = sizeof(req),
+            .layout_policy = &layout_policy,
+            .components = &components,
+        };
+        assert(!xkb_machine_process_synthetic(sm, &req, events));
         while ((event = xkb_events_next(events)))
             xkb_state_update_event(state, event);
         assert_eq("unexpected effective group", tests[t].expected_group,

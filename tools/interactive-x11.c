@@ -175,6 +175,16 @@ update_keymap(struct keyboard *kbd)
             if (!kbd->state)
                 return -1;
         }
+        const struct xkb_state_components_update components_update = {
+            .size = sizeof(components_update),
+            .components = XKB_STATE_CONTROLS,
+            .affect_controls = kbd_controls_affect,
+            .controls = kbd_controls_values,
+        };
+        const struct xkb_state_update update = {
+            .size = sizeof(update),
+            .components = &components_update,
+        };
         if (use_events_api) {
             if (!kbd->machine) {
                 if (raw_modifiers_mapping) {
@@ -210,10 +220,9 @@ update_keymap(struct keyboard *kbd)
                 if (!kbd->events)
                     return -1;
             }
-            const int ret = xkb_machine_update_enabled_controls(
-                kbd->machine, kbd->events,
-                kbd_controls_affect, kbd_controls_values
-            );
+            const int ret = xkb_machine_process_synthetic(kbd->machine,
+                                                             &update,
+                                                             kbd->events);
             if (ret)
                 return ret;
             const struct xkb_event *event;
@@ -221,9 +230,7 @@ update_keymap(struct keyboard *kbd)
                 xkb_state_update_event(kbd->state, event);
             }
         } else {
-            xkb_state_update_enabled_controls(kbd->state,
-                                              kbd_controls_affect,
-                                              kbd_controls_values);
+            return xkb_state_update_synthetic(kbd->state, &update, NULL);
         }
     }
 #endif

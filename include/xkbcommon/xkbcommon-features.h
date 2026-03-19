@@ -97,12 +97,6 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS = 3020,
     /**
-     * The enumeration @ref xkb_keyboard_control_param
-     *
-     * @since 1.14.0
-     */
-    XKB_FEATURE_ENUM_KEYBOARD_CONTROL_PARAM = 3030,
-    /**
      * The enumeration @ref xkb_a11y_flags
      *
      * @since 1.14.0
