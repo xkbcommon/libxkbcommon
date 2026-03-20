@@ -594,6 +594,7 @@
     See @ref key-actions "" for the list of supported actions.
 - id: "abi-forward-compat"
   code: 876
+  visibility: public
   added: 1.14.0
   visibility: public
   type: error
