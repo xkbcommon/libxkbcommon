@@ -3,14 +3,41 @@
 from __future__ import annotations
 
 import argparse
-import random
+from enum import StrEnum, auto, unique
 import re
+import secrets
 from dataclasses import astuple, dataclass
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Generic, Sequence, TypeAlias, TypeVar
+from typing import Any, Callable, ClassVar, Generic, Sequence, Self, TypeAlias, TypeVar
 
 import jinja2
 import yaml
+
+
+@unique
+class Type(StrEnum):
+    Warning = auto()
+    Error = auto()
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        for t in cls:
+            if raw == t:
+                return t
+        raise ValueError(raw)
+
+
+@unique
+class Visibility(StrEnum):
+    Internal = auto()
+    Public = auto()
+
+    @classmethod
+    def parse(cls, raw: str) -> Self:
+        for v in cls:
+            if raw == v:
+                return v
+        raise ValueError(raw)
 
 
 @dataclass(order=True)
@@ -19,6 +46,7 @@ class Version:
 
     UNKNOWN_VERSION: ClassVar[str] = "ALWAYS"
     DEFAULT_VERSION: ClassVar[str] = "1.0.0"
+    MIN_PUBLIC_VERSION: ClassVar[Self]
 
     major: int
     minor: int
@@ -36,6 +64,10 @@ class Version:
             raw_version
         )
         return Version(*map(int, version))
+
+
+Version.MIN_PUBLIC_VERSION = Version(1, 14, 0)
+"""The minimum version that exposed public error codes via `xkb_error_code` enum."""
 
 
 @dataclass
@@ -67,20 +99,22 @@ class Example:
 class Entry:
     """An xkbcommon message entry in the message registry"""
 
-    VALID_TYPES = ("warning", "error")
-
     code: int
     """A unique strictly positive integer identifier"""
     id: str
     """A unique short human-readable string identifier"""
-    type: str
+    type: Type
+    """Visibility in the API"""
+    visibility: Visibility
     """Log level of the message"""
     description: str
     """A short description of the meaning of the message"""
     details: str
     """A long description of the meaning of the message"""
     added: Version
-    """Version of xkbcommon the message has been added"""
+    """Version of xkbcommon the message has been added in xkb_message_code"""
+    added_public: Version | None
+    """Version of xkbcommon the message has been added in xkb_error_code"""
     removed: Version | None
     """Version of xkbcommon the message has been removed"""
     examples: tuple[Example, ...]
@@ -97,8 +131,11 @@ class Entry:
         id = entry.get("id")
         assert id is not None, entry
 
-        type_ = entry.get("type")
-        assert type_ in cls.VALID_TYPES, entry
+        raw_type = entry.get("type")
+        type_ = Type.parse(raw_type)
+
+        raw_visibility = entry.get("visibility", Visibility.Internal)
+        visibility = Visibility.parse(raw_visibility)
 
         description = entry.get("description")
         assert description is not None, entry
@@ -108,8 +145,23 @@ class Entry:
         raw_added = entry.get("added", "")
         assert raw_added, entry
 
-        added = Version.parse(raw_added)
+        added_public = None
+        if isinstance(raw_added, str):
+            added = Version.parse(raw_added)
+        else:
+            # Internal and public variants where released in different versions
+            for _raw_visibility, _raw_added in raw_added.items():
+                _visibility = Visibility.parse(_raw_visibility)
+                _added = Version.parse(_raw_added)
+                match _visibility:
+                    case Visibility.Internal:
+                        added = _added
+                    case Visibility.Public:
+                        added_public = _added
         assert added, entry
+        if added_public is None and visibility is Visibility.Public:
+            # Internal and public variants where release in the same version
+            added_public = added
 
         if removed := entry.get("removed"):
             removed = Version.parse(removed)
@@ -122,8 +174,10 @@ class Entry:
             code=code,
             id=id,
             type=type_,
+            visibility=visibility,
             description=description,
             added=added,
+            added_public=added_public,
             removed=removed,
             details=details,
             examples=examples,
@@ -134,14 +188,19 @@ class Entry:
         """Format the message code for display"""
         return f"XKB-{self.code:0>3}"
 
-    @property
-    def message_code_constant(self: Entry) -> str:
+    def message_code_constant(self, visibility: Visibility) -> str:
         """Returns the C enumeration member denoting the message code"""
         id = self.id.replace("-", "_").upper()
-        return f"XKB_{self.type.upper()}_{id}"
+        suffix = (
+            "_"
+            if self.visibility is Visibility.Public
+            and visibility is not self.visibility
+            else ""
+        )
+        return f"XKB_{self.type.upper()}_{id}{suffix}"
 
     @property
-    def message_name(self: Entry) -> str:
+    def message_name(self) -> str:
         """Format the message string identifier for display"""
         return self.id.replace("-", " ").capitalize()
 
@@ -187,6 +246,7 @@ def generate_file(
     env: jinja2.Environment,
     root: Path,
     file: Path,
+    visibility: Visibility | None = None,
     skip_removed: bool = False,
 ) -> None:
     """Generate a file from its Jinja2 template and the message registry"""
@@ -194,13 +254,16 @@ def generate_file(
     template = env.get_template(str(template_path))
     path = root / file
     script = Path(__file__).name
+    entries_iter = registry
+    if skip_removed:
+        entries_iter = filter(lambda e: e.removed is None, entries_iter)
+    if visibility is Visibility.Public:
+        entries_iter = filter(lambda e: e.visibility is visibility, entries_iter)
+    entries = tuple(entries_iter)
     with path.open("wt", encoding="utf-8") as fd:
-        entries = (
-            tuple(filter(lambda e: e.removed is None, registry))
-            if skip_removed
-            else registry
+        fd.writelines(
+            template.generate(visibility=visibility, entries=entries, script=script)
         )
-        fd.writelines(template.generate(entries=entries, script=script))
 
 
 T = TypeVar("T")
@@ -243,13 +306,34 @@ def generate(
         registry,
         jinja_env,
         args.root,
-        Path("src/messages-codes.h"),
+        Path("include/xkbcommon/xkbcommon-errors.h"),
+        visibility=Visibility.Public,
         skip_removed=True,
     )
     generate_file(
-        registry, jinja_env, args.root, Path("tools/messages.c"), skip_removed=True
+        registry,
+        jinja_env,
+        args.root,
+        Path("src/messages-codes.h"),
+        visibility=Visibility.Internal,
+        skip_removed=True,
     )
-    generate_file(registry, jinja_env, args.root, Path("doc/message-registry.md"))
+    generate_file(
+        registry,
+        jinja_env,
+        args.root,
+        Path("tools/messages.c"),
+        visibility=Visibility.Internal,
+        skip_removed=True,
+    )
+    generate_file(
+        registry,
+        jinja_env,
+        args.root,
+        Path("doc/message-registry.md"),
+        visibility=Visibility.Internal,
+        skip_removed=False,
+    )
 
 
 def get_new_code(
@@ -262,7 +346,7 @@ def get_new_code(
     codes = frozenset(entry.code for entry in registry)
     # Filter free ones
     free = tuple(code for code in range(args.min, args.max + 1) if code not in codes)
-    print(*random.sample(free, k=args.count))
+    print(*sorted(secrets.choice(free) for _ in range(args.count)))
 
 
 # Root of the project

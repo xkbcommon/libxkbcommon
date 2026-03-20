@@ -60,7 +60,7 @@ enum xkb_message_code {
     _XKB_LOG_MESSAGE_MIN_CODE = {{ entries[0].code }},
     {% for entry in entries %}
     /** {{ entry.description }} */
-    {{ entry.message_code_constant }} = {{ entry.code }},
+    {{ entry.message_code_constant(visibility) }} = {{ entry.code }},
     {% endfor %}
     _XKB_LOG_MESSAGE_MAX_CODE = {{ entries[-1].code }}
 };
