@@ -1743,7 +1743,7 @@ check_state_update_abi_(struct xkb_context *restrict ctx,
 #define check_state_update_abi(ctx, update) \
     check_state_update_abi_(ctx, __func__, update)
 
-int
+enum xkb_error_code
 xkb_state_update_synthetic(struct xkb_state *state,
                            const struct xkb_state_update *update,
                            enum xkb_state_component *changed)
@@ -1783,7 +1783,7 @@ xkb_state_update_synthetic(struct xkb_state *state,
         *changed = get_state_component_changes(&previous_components,
                                                &state->components);
     }
-    return 0;
+    return XKB_SUCCESS;
 }
 
 /**
