@@ -215,6 +215,252 @@ test_initial_derived_values(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+/* ABI checks */
+static void
+test_state_update(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_rules(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+        "empty", "empty", NULL, NULL
+    );
+    assert(keymap);
+
+    struct xkb_state * const state = xkb_state_new(keymap);
+    assert(state);
+    struct xkb_machine * const sm = xkb_machine_new(keymap, NULL);
+    assert(sm);
+    struct xkb_events * const events = xkb_events_new_batch(ctx,
+                                                            XKB_EVENTS_NO_FLAGS);
+    assert(events);
+
+    /* Simulate a new version with some new fields */
+    struct xkb_state_update_newer {
+        union {
+            size_t size;
+            struct xkb_state_update current;
+        };
+        uint64_t extra;
+    };
+
+    /* Simulate a new version with some new fields */
+    struct xkb_state_components_update_newer {
+        union {
+            size_t size;
+            struct xkb_state_components_update current;
+        };
+        uint64_t extra;
+    };
+
+    /* Simulate a new version with some new fields */
+    struct xkb_layout_policy_update_newer {
+        union {
+            size_t size;
+            struct xkb_layout_policy_update current;
+        };
+        uint64_t extra;
+    };
+
+    static const struct {
+        struct params {
+            size_t size;
+            uint64_t extra;
+            bool enabled;
+        } root;
+        struct params components;
+        struct params layout_policy;
+        enum xkb_error_code error;
+    } tests[] = {
+        /*
+         * Too small
+         */
+
+        {
+            .root = { 0, 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+        {
+            .root = { 1, 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .size = 0, .enabled = true },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .size = 1, .enabled = true },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .size = 0, .enabled = true },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .size = 1, .enabled = true },
+            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+        },
+
+        /*
+         * OK: current size
+         */
+
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_SUCCESS,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = {
+                .size = sizeof(struct xkb_state_components_update),
+                .enabled = true
+            },
+            .layout_policy = { .enabled = false },
+            .error = XKB_SUCCESS,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = {
+                .size = sizeof(struct xkb_layout_policy_update),
+                .enabled = true
+            },
+            .error = XKB_SUCCESS,
+        },
+
+        /*
+         * OK: too big, but no new field is set
+         */
+
+        {
+            .root = { sizeof(struct xkb_state_update_newer), 0 },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_SUCCESS,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = {
+                .size = sizeof(struct xkb_state_components_update_newer),
+                .enabled = true
+            },
+            .layout_policy = { .enabled = false },
+            .error = XKB_SUCCESS,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = {
+                .size = sizeof(struct xkb_layout_policy_update_newer),
+                .enabled = true
+            },
+            .error = XKB_SUCCESS,
+        },
+
+        /*
+         * Too big
+         */
+
+        {
+            .root = {
+                sizeof(struct xkb_state_update_newer),
+                (UINT64_C(1) << 0)
+            },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+        },
+        {
+            .root = {
+                sizeof(struct xkb_state_update_newer),
+                (UINT64_C(1) << 63)
+            },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = {
+                .enabled = true,
+                .size = sizeof(struct xkb_state_components_update_newer),
+                .extra = (UINT64_C(1) << 63),
+            },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+        },
+        {
+            .root = { sizeof(struct xkb_state_update), 0 },
+            .components = { .enabled = false },
+            .layout_policy = {
+                .enabled = true,
+                .size = sizeof(struct xkb_layout_policy_update_newer),
+                .extra = (UINT64_C(1) << 63),
+            },
+            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+        },
+    };
+
+    for (size_t s = 0; s < ARRAY_SIZE(tests); s++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, s);
+        const struct xkb_state_components_update_newer components = {
+            .current = {
+                .size = tests[s].components.size,
+            },
+            .extra = tests[s].components.extra
+        };
+        const struct xkb_layout_policy_update_newer layout_policy = {
+            .current = {
+                .size = tests[s].layout_policy.size,
+            },
+            .extra = tests[s].layout_policy.extra
+        };
+        const struct xkb_state_update_newer update = {
+            .current = {
+                .size = tests[s].root.size,
+                .components = (tests[s].components.enabled)
+                    ? (struct xkb_state_components_update*)&components
+                    : NULL,
+                .layout_policy = (tests[s].layout_policy.enabled)
+                    ? (struct xkb_layout_policy_update*)&layout_policy
+                    : NULL,
+            },
+            .extra = tests[s].root.extra
+        };
+        assert_eq(
+            "xkb_state_update_synthetic",
+            tests[s].error,
+            xkb_state_update_synthetic(state, (struct xkb_state_update *)&update,
+                                       NULL),
+            "%d"
+        );
+        assert_eq(
+            "xkb_machine_process_synthetic",
+            tests[s].error,
+            xkb_machine_process_synthetic(sm, (struct xkb_state_update *)&update,
+                                          events),
+            "%d"
+        );
+    }
+
+    xkb_events_destroy(events);
+    xkb_machine_unref(sm);
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
 static enum xkb_state_component
 update_key(struct xkb_machine *sm,
            struct xkb_events *events,
@@ -3023,6 +3269,7 @@ main(void)
 
     assert(!xkb_events_new_batch(context, -1));
 
+    test_state_update(context);
     test_group_wrap(context);
     test_sticky_keys(context);
     test_redirect_key(context);

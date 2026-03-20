@@ -107,6 +107,38 @@ enum xkb_error_code {
      * @since 1.14.0
      */
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS = 371,
+    /**
+     * ABI struct size check failed
+     *
+     * The `size` field of a versioned structure does not match any known
+     * version of that structure. This typically indicates the caller failed
+     * to initialize the struct correctly, e.g. by omitting:
+     *
+     * ```c
+     * .size = sizeof(struct xkb_foo)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_ABI_INVALID_STRUCT_SIZE = 450,
+    /**
+     * ABI forward-compatibility check failed
+     *
+     * The caller was compiled against a newer version of the library and is
+     * using fields unknown to this version.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_ABI_FORWARD_COMPAT = 876,
+    /**
+     * ABI backward-compatibility check failed
+     *
+     * The caller was compiled against an older version of the library and is
+     * missing fields that are mandatory in this version.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_ABI_BACKWARD_COMPAT = 914,
 };
 
 /** @} */
