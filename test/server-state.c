@@ -11,9 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
-#include "xkbcommon/xkbcommon.h"
 
 #include "context.h"
 #include "evdev-scancodes.h"
@@ -173,8 +174,10 @@ test_machine_options(struct xkb_context *ctx)
     assert(options);
 
     /* Invalid flags */
-    assert(xkb_machine_options_update_a11y_flags(options, -1000, 0) == 1);
-    assert(xkb_machine_options_update_a11y_flags(options, 1000, 0) == 1);
+    assert(xkb_machine_options_update_a11y_flags(options, -1000, 0) ==
+           XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
+    assert(xkb_machine_options_update_a11y_flags(options, 1000, 0) ==
+           XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
 
     /* Valid flags */
     static_assert(XKB_A11Y_NO_FLAGS == 0, "default flags");
@@ -2318,7 +2321,8 @@ test_modifiers_tweak(struct xkb_context *context)
     assert(options);
 
     assert(!xkb_machine_options_remap_mods(options, 0, 0));
-    assert(xkb_machine_options_remap_mods(options, 0, level3) == -1);
+    assert(xkb_machine_options_remap_mods(options, 0, level3) ==
+           XKB_ERROR_UNSUPPORTED_MODIFIER_MASK);
     assert(!xkb_machine_options_remap_mods(options, scroll, alt));
     assert(!xkb_machine_options_remap_mods(options, super, level3));
     assert(!xkb_machine_options_remap_mods(options, alt, level5));

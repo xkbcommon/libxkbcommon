@@ -68,7 +68,7 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
                                    darray_size(rmlvo->layouts);
 
     if (idx >= XKB_MAX_GROUPS) {
-        log_err(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+        log_err(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                 "Maximum layout count reached: %u; "
                 "cannot add layout \"%s(%s)\" to the RMLVO builder.\n",
                 XKB_MAX_GROUPS, layout, (variant) ? variant : "");

@@ -371,6 +371,10 @@ static const int xkb_compose_feed_result_values[] = {
 static const int xkb_error_code_values[] = {
     XKB_ERROR_INVALID,
     XKB_SUCCESS,
+    XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,
+    XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+    XKB_ERROR_UNSUPPORTED_A11Y_FLAGS,
 };
 
 static const int xkb_feature_values[] = {

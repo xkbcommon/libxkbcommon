@@ -64,8 +64,8 @@ enum xkb_message_code {
     XKB_WARNING_CONFLICTING_KEY_TYPE_PRESERVE_ENTRIES = 43,
     /** The result of the operation is not mathematically correct */
     XKB_ERROR_INTEGER_OVERFLOW = 52,
-    /** Warn on unsupported modifier mask */
-    XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
+    /** Unsupported modifier mask */
+    XKB_ERROR_UNSUPPORTED_MODIFIER_MASK_ = 60,
     /** Expected an array entry, but the index is missing */
     XKB_ERROR_EXPECTED_ARRAY_ENTRY = 77,
     /** Invalid numeric keysym */
@@ -95,11 +95,11 @@ enum xkb_message_code {
     /** A modmap entry is invalid */
     XKB_ERROR_INVALID_MODMAP_ENTRY = 206,
     /** The given layout out-of-range policy is not supported */
-    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY = 214,
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY_ = 214,
     /** The statement is unknown */
     XKB_ERROR_UNKNOWN_STATEMENT = 222,
-    /** Warn when a group index is not supported */
-    XKB_ERROR_UNSUPPORTED_GROUP_INDEX = 237,
+    /** Layout index is not supported */
+    XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_ = 237,
     /** The name of a key type level is defined multiple times. */
     XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES = 239,
     /** Invalid statement setting default values */
@@ -124,6 +124,8 @@ enum xkb_message_code {
     XKB_ERROR_OVERLAPPING_OVERLAY = 355,
     /** Use of a legacy X11 action that is not supported */
     XKB_WARNING_UNSUPPORTED_LEGACY_ACTION = 362,
+    /** Unsupported `xkb_a11y_flags` value */
+    XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_ = 371,
     /** An entry is duplicated and will be ignored */
     XKB_WARNING_DUPLICATE_ENTRY = 378,
     /** Included files form cycle */

@@ -391,7 +391,7 @@ CheckGroupField(const struct xkb_keymap_info *keymap_info,
         ExprResolveGroup(keymap_info, spec, absolute, &idx, &pending);
     if (ret != PARSER_SUCCESS && !pending) {
         ReportMismatch(keymap_info->keymap.ctx,
-                       XKB_ERROR_UNSUPPORTED_GROUP_INDEX, action,
+                       XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_, action,
                        ACTION_FIELD_GROUP, "integer", keymap_info->strict);
         return ret;
     }

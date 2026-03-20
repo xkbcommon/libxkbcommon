@@ -45,9 +45,14 @@
     datatype and overflowed.
 - id: "unsupported-modifier-mask"
   code: 60
-  added: ALWAYS
+  added:
+    internal: ALWAYS
+    public: 1.14.0
   type: error
-  description: "Warn on unsupported modifier mask"
+  visibility: public
+  description: "Unsupported modifier mask"
+  details: |
+    The modifier mask does not represent valid modifiers.
 - id: "expected-array-entry"
   code: 77
   added: ALWAYS
@@ -154,9 +159,16 @@
   description: "A modmap entry is invalid"
 - id: "unsupported-layout-out-of-range-policy"
   code: 214
+  visibility: public
   added: 1.14.0
   type: error
   description: The given layout out-of-range policy is not supported
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+    ```
 - id: "unknown-statement"
   code: 222
   added: "1.14.0"
@@ -171,13 +183,16 @@
     - it is a typo;
     - the [keymap format](@ref xkb_keymap_format) used for parsing is correct;
     - the statement is supported in a [newer version of libxkbcommon](release-notes.md).
-- id: "unsupported-group-index"
+- id: "unsupported-layout-index"
   code: 237
-  added: ALWAYS
   type: error
-  description: "Warn when a group index is not supported"
+  visibility: public
+  added:
+    internal: ALWAYS
+    public: 1.14.0
+  description: "Layout index is not supported"
   details: |
-    libxkbcommon supports different *group index* ranges, depending of the target
+    libxkbcommon supports different *layout index* ranges, depending on the target
     *keymap format*:
     - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..{{XKB_MAX_GROUPS_X11}}
     - `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..{{XKB_MAX_GROUPS}}
@@ -260,6 +275,18 @@
   details: |
     This action will be treated as `NoAction()`. See @ref unsupported-legacy-x11-actions ""
     for further information.
+- id: "unsupported-a11y-flags"
+  code: 371
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_a11y_flags` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_has_feature(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
+    ```
 - id: "duplicate-entry"
   code: 378
   added: ALWAYS

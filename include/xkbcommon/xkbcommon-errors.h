@@ -61,6 +61,52 @@ enum xkb_error_code {
      * @since 1.14.0
      */
     XKB_SUCCESS = 0,
+    /**
+     * Unsupported modifier mask
+     *
+     * The modifier mask does not represent valid modifiers.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
+    /**
+     * The given layout out-of-range policy is not supported
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY = 214,
+    /**
+     * Layout index is not supported
+     *
+     * libxkbcommon supports different *layout index* ranges, depending on the
+     * target
+     * *keymap format*:
+     * - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..4
+     * - `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..32
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX = 237,
+    /**
+     * Unsupported `xkb_a11y_flags` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_has_feature(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_A11Y_FLAGS = 371,
 };
 
 /** @} */

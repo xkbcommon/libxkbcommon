@@ -371,7 +371,7 @@ update_pending_key_fields(struct xkb_keymap_info *info, struct xkb_key *key)
                 pc->value = group - 1;
                 break;
             case PARSER_FATAL_ERROR:
-                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                         "Invalid key redirect group index\n");
                 return (info->strict & PARSER_NO_FIELD_TYPE_MISMATCH);
             default:
@@ -401,7 +401,7 @@ update_pending_action_fields(struct xkb_keymap_info *info,
                     (act->group.flags & ACTION_ABSOLUTE_SWITCH);
                 switch (ExprResolveGroup(info, pc->expr, absolute, &group, NULL)) {
                 case PARSER_FATAL_ERROR:
-                    log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                    log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                             "Invalid action group index\n");
                     return false;
                 case PARSER_RECOVERABLE_ERROR:
@@ -450,7 +450,7 @@ update_pending_led_fields(struct xkb_keymap_info *info, struct xkb_led *led)
         if (!pc->computed) {
             xkb_layout_mask_t mask = 0;
             if (!ExprResolveGroupMask(info, pc->expr, &mask, NULL)) {
-                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                log_err(info->keymap.ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                         "Invalid LED group mask\n");
                 return false;
             }
