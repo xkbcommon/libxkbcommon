@@ -3362,7 +3362,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *                        have changed as a result of the update, or `NULL` to
  *                        ignore. Set to 0 if nothing in the state has changed.
  *
- * @returns 0 on success, otherwise an error code.
+ * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
  * @note This function returns an error code rather than a state component
  * delta (unlike the other `xkb_state_update_*` functions), in order to align
@@ -3376,7 +3376,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  * @memberof xkb_state
  */
-XKB_EXPORT int
+XKB_EXPORT enum xkb_error_code
 xkb_state_update_synthetic(struct xkb_state *state,
                            const struct xkb_state_update *update,
                            enum xkb_state_component *changed);
