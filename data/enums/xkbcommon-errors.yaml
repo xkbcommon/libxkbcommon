@@ -5,3 +5,11 @@ xkb_error_code:
     value: -1
   - name: XKB_SUCCESS
     value: 0
+  - name: XKB_ERROR_UNSUPPORTED_MODIFIER_MASK
+    value: 60
+  - name: XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY
+    value: 214
+  - name: XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX
+    value: 237
+  - name: XKB_ERROR_UNSUPPORTED_A11Y_FLAGS
+    value: 371

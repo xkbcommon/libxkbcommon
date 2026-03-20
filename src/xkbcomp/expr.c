@@ -411,7 +411,7 @@ ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
         .is_mask = false,
         .entries = keymap_info->lookup.groupIndexNames,
         .pending_entries = pendingGroupIndexNames,
-        .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+        .error_id = XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
     };
 
     int64_t result = 0;
@@ -422,7 +422,7 @@ ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
             : PARSER_RECOVERABLE_ERROR;
 
     if (result < !!absolute || result > keymap_info->features.max_groups) {
-        log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+        log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                 "Group index %"PRId64" is out of range (%u..%"PRIu32")\n",
                 result, !!absolute, keymap_info->features.max_groups);
         return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
@@ -752,7 +752,7 @@ ExprResolveGroupMask(const struct xkb_keymap_info *keymap_info,
         .is_mask = true,
         .entries = keymap_info->lookup.groupMaskNames,
         .pending_entries = pendingGroupMaskNames,
-        .error_id = XKB_ERROR_UNSUPPORTED_GROUP_INDEX
+        .error_id = XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_
     };
 
     return ExprResolveMaskLookup(keymap_info->keymap.ctx, expr, group_rtrn,

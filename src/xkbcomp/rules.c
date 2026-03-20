@@ -365,7 +365,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
                 /* Note: 1-indexed layout */
                 s += count;
                 if (layout == 0 || layout > XKB_MAX_GROUPS) {
-                    log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                    log_err(ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                             "Invalid layout index %"PRIu32" "
                             "for the RMVLO component: \"%.*s\"\n", layout,
                             (unsigned int) val.sval.len, val.sval.start);
@@ -383,7 +383,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
             const char* const layout_index_end = s;
             while (*s != '\0' && *s != ',') { s++; }
             if (count <= 0 || layout_index_end != s) {
-                log_err(ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+                log_err(ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                         "Invalid layout index \"%.*s\" for the RMLVO "
                         "component \"%.*s\"; discarding specifier.\n",
                         (unsigned int) (s - layout_start), layout_start,

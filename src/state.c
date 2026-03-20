@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-features.h"
 #include "darray.h"
 #include "keymap.h"
@@ -1675,7 +1676,7 @@ state_update_layout_policy(struct xkb_state *state,
             state->controls.out_of_range_group.redirect_group =
                 update->redirect;
             } else {
-                return XKB_ERROR_UNSUPPORTED_GROUP_INDEX;
+                return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
             }
         }
         state->controls.out_of_range_group.policy = update->policy;
@@ -2616,7 +2617,7 @@ xkb_machine_options_destroy(struct xkb_machine_options *options)
     free(options);
 }
 
-int
+enum xkb_error_code
 xkb_machine_options_update_a11y_flags(
     struct xkb_machine_options *options,
     enum xkb_a11y_flags affect,
@@ -2630,17 +2631,17 @@ xkb_machine_options_update_a11y_flags(
         log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized state flags: %#x\n",
                      (flags & ~XKB_A11Y_FLAGS));
-        return 1;
+        return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
 
     options->a11y_affect |= affect;
     options->a11y_flags &= ~affect;
     options->a11y_flags |= (flags & affect);
 
-    return 0;
+    return XKB_SUCCESS;
 }
 
-int
+enum xkb_error_code
 xkb_machine_options_remap_mods(
     struct xkb_machine_options *options,
     xkb_mod_mask_t source,
@@ -2651,9 +2652,9 @@ xkb_machine_options_remap_mods(
         if (!target) {
             /* Reset mappings */
             darray_resize(options->mods, 0);
-            return 0;
+            return XKB_SUCCESS;
         } else {
-            return -1;
+            return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
         }
     }
 
@@ -2668,7 +2669,7 @@ xkb_machine_options_remap_mods(
                 /* Update mapping */
                 mapping->target = target;
             }
-            return 0;
+            return XKB_SUCCESS;
         }
     }
 
@@ -2685,30 +2686,30 @@ xkb_machine_options_remap_mods(
         /* Ignore missing mapping */
     }
 
-    return 0;
+    return XKB_SUCCESS;
 }
 
-int
+enum xkb_error_code
 xkb_machine_options_update_shortcut_mods(struct xkb_machine_options *options,
                                          xkb_mod_mask_t affect,
                                          xkb_mod_mask_t mask)
 {
     options->shortcuts.mask &= ~affect;
     options->shortcuts.mask |= (mask & affect);
-    return 0;
+    return XKB_SUCCESS;
 }
 
-int
+enum xkb_error_code
 xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
                                           xkb_layout_index_t source,
                                           xkb_layout_index_t target)
 {
     if (source >= XKB_MAX_GROUPS || target >= XKB_MAX_GROUPS)
-        return 1;
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
 
     if (target == source) {
         /* Skip default setting */
-        return 0;
+        return XKB_SUCCESS;
     }
 
     struct xkb_shortcuts_config_options * restrict config = &options->shortcuts;
@@ -2725,7 +2726,7 @@ xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
     darray_item(config->targets, source) = (source == target)
         ? XKB_LAYOUT_INVALID
         : target;
-    return 0;
+    return XKB_SUCCESS;
 }
 
 /** Compare 2 modifiers combinations */

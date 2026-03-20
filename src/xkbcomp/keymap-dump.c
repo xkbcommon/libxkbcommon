@@ -1625,7 +1625,7 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 {
     const xkb_layout_index_t max_groups = format_max_groups(format);
     if (keymap->num_groups > max_groups) {
-        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_GROUP_INDEX,
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                 "Cannot serialize %"PRIu32" groups in keymap format %d: "
                 "maximum is %"PRIu32"; discarding unsupported groups\n",
                 keymap->num_groups, format, max_groups);

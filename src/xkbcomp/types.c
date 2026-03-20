@@ -8,6 +8,7 @@
 #include <limits.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "vmod.h"
@@ -348,7 +349,7 @@ SetMapEntry(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
     if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods,
                             &entry.mods.mods))
-        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK_,
                                  type, "map entry", "modifier mask");
 
     if (entry.mods.mods & (~type->mods)) {
@@ -442,7 +443,7 @@ SetPreserve(KeyTypesInfo *info, KeyTypeInfo *type, ExprDef *arrayNdx,
 
     xkb_mod_mask_t mods = 0;
     if (!ExprResolveModMask(info->ctx, arrayNdx, MOD_BOTH, &info->mods, &mods))
-        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+        return ReportTypeBadType(info, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK_,
                                  type, "preserve entry", "modifier mask");
 
     if (mods & ~type->mods) {
