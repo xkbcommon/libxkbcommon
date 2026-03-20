@@ -136,6 +136,8 @@ enum xkb_message_code {
     XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE = 428,
     /** Missing default section in included file */
     XKB_WARNING_MISSING_DEFAULT_SECTION = 433,
+    /** ABI struct size check failed */
+    XKB_ERROR_ABI_INVALID_STRUCT_SIZE_ = 450,
     /** Warn if there are conflicting keysyms while merging keys */
     XKB_WARNING_CONFLICTING_KEY_SYMBOL = 461,
     /** The operation is invalid in the context */
@@ -201,7 +203,7 @@ enum xkb_message_code {
     /** Unknown action type */
     XKB_ERROR_UNKNOWN_ACTION_TYPE = 844,
     /** ABI forward-compatibility check failed */
-    XKB_ERROR_ABI_FORWARD_COMPAT = 876,
+    XKB_ERROR_ABI_FORWARD_COMPAT_ = 876,
     /** Warn if there are conflicting actions while merging keys */
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */
@@ -210,6 +212,8 @@ enum xkb_message_code {
     XKB_ERROR_CONFLICTING_KEY_SYMBOLS_ENTRY = 901,
     /** Missing group index in a group name entry */
     XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX = 903,
+    /** ABI backward-compatibility check failed */
+    XKB_ERROR_ABI_BACKWARD_COMPAT_ = 914,
     /** Warn if there are conflicting fields in the key definition or while merging keys */
     XKB_WARNING_CONFLICTING_KEY_FIELDS = 935,
     /** An identifier is used but is not built-in */

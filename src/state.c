@@ -1665,7 +1665,7 @@ state_update_enabled_controls(struct xkb_state *state,
     xkb_state_update_derived(state);
 }
 
-static int
+static enum xkb_error_code
 state_update_layout_policy(struct xkb_state *state,
                            const struct xkb_layout_policy_update *update)
 {
@@ -1673,18 +1673,68 @@ state_update_layout_policy(struct xkb_state *state,
                         (int)update->policy)) {
         if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
             if (update->redirect < state->keymap->num_groups) {
-            state->controls.out_of_range_group.redirect_group =
-                update->redirect;
+                state->controls.out_of_range_group.redirect_group =
+                    update->redirect;
             } else {
                 return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
             }
         }
         state->controls.out_of_range_group.policy = update->policy;
-        return 0;
+        return XKB_SUCCESS;
     } else {
         return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
     }
 }
+
+static void
+log_abi_error(struct xkb_context * restrict ctx,
+              const char * restrict func, enum xkb_error_code error)
+{
+    switch (error) {
+    case XKB_ERROR_ABI_INVALID_STRUCT_SIZE:
+        log_err(ctx, XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+                "%s: ABI error: unsupported versioned struct\n", func);
+        break;
+    case XKB_ERROR_ABI_BACKWARD_COMPAT:
+        log_err(ctx, XKB_ERROR_ABI_BACKWARD_COMPAT,
+                "%s: ABI version mismatch: missing newer required fields\n",
+                func);
+        break;
+    case XKB_ERROR_ABI_FORWARD_COMPAT:
+        log_err(ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
+                "%s: ABI version mismatch: cannot use newer fields\n", func);
+        break;
+    default:
+        /* unreachable */
+        assert(false);
+    }
+}
+
+#define xkb_check_state_update_size(x) xkb_check_versioned_struct_size( \
+    xkb_versioned_struct_size_v1(x),                                    \
+    xkb_versioned_struct_size_min(x),                                   \
+    (x)                                                                 \
+)
+
+/* Check ABI compatibility */
+static enum xkb_error_code
+check_state_update_abi_(struct xkb_context *restrict ctx,
+                        const char *restrict func,
+                        const struct xkb_state_update *restrict update)
+{
+    enum xkb_error_code error = XKB_SUCCESS;
+    if ((error = xkb_check_state_update_size(update)) ||
+        (update->components &&
+         (error = xkb_check_state_update_size(update->components))) ||
+        (update->layout_policy &&
+         (error = xkb_check_state_update_size(update->layout_policy)))) {
+        log_abi_error(ctx, func, error);
+    }
+    return error;
+}
+
+#define check_state_update_abi(ctx, update) \
+    check_state_update_abi_(ctx, __func__, update)
 
 int
 xkb_state_update_synthetic(struct xkb_state *state,
@@ -1692,14 +1742,10 @@ xkb_state_update_synthetic(struct xkb_state *state,
                            enum xkb_state_component *changed)
 {
     /* Check ABI compatibility */
-    if (!xkb_check_struct_size(update) ||
-        (update->components && !xkb_check_struct_size(update->components)) ||
-        (update->layout_policy && !xkb_check_struct_size(update->layout_policy))) {
-        log_err(state->keymap->ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
-                "%s: ABI version mismatch: cannot use newer fields.\n ",
-                __func__);
-        return XKB_ERROR_ABI_FORWARD_COMPAT;
-    }
+    enum xkb_error_code error = check_state_update_abi(state->keymap->ctx,
+                                                       update);
+    if (error)
+        return error;
 
     const struct state_components previous_components = state->components;
 
@@ -1708,7 +1754,7 @@ xkb_state_update_synthetic(struct xkb_state *state,
 
     /* Update parametrized controls first */
     if (update->layout_policy) {
-        const int error = state_update_layout_policy(state, update->layout_policy);
+        error = state_update_layout_policy(state, update->layout_policy);
         if (error)
             return error;
     }
@@ -2980,17 +3026,11 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
                               const struct xkb_state_update *update,
                               struct xkb_events *events)
 {
-    int ret = 0;
-
     /* Check ABI compatibility */
-    if (!xkb_check_struct_size(update) ||
-        (update->components && !xkb_check_struct_size(update->components)) ||
-        (update->layout_policy && !xkb_check_struct_size(update->layout_policy))) {
-        log_err(sm->state.keymap->ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
-                "%s: ABI version mismatch: cannot use newer fields.\n ",
-                __func__);
-        return XKB_ERROR_ABI_FORWARD_COMPAT;
-    }
+    enum xkb_error_code error = check_state_update_abi(sm->state.keymap->ctx,
+                                                       update);
+    if (error)
+        return error;
 
     struct xkb_state * restrict const state = &sm->state;
     const struct state_components previous_components = state->components;
@@ -3000,8 +3040,9 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 
     /* Update parametrized controls first */
     if (update->layout_policy) {
-        // FIXME: ret is not a mask
-        ret |= state_update_layout_policy(state, update->layout_policy);
+        error = state_update_layout_policy(state, update->layout_policy);
+        if (error)
+            return error;
     }
 
     if (update->components) {
@@ -3035,7 +3076,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
         });
     }
 
-    return ret;
+    return 0;
 }
 
 static ssize_t
