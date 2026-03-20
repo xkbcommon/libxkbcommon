@@ -21,7 +21,7 @@
 
 static const struct xkb_message_entry xkb_messages[] = {
     {% for entry in entries %}
-    { {#--#}{{ entry.message_code_constant}}, "{{entry.message_name}}"}{{ "" if loop.last else "," }}
+    { {#--#}{{ entry.message_code_constant(visibility)}}, "{{entry.message_name}}"}{{ "" if loop.last else "," }}
     {% endfor %}
 };
 
