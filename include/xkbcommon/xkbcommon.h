@@ -2953,7 +2953,7 @@ enum xkb_key_direction {
  * @param[out]    events     The event batch to collect events into. It will be
  *                           reset before collecting.
  *
- * @returns 0 on success, otherwise an error code.
+ * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
  * @since 1.14.0
  *
@@ -2967,7 +2967,7 @@ enum xkb_key_direction {
  * [keyboard events]: @ref xkb_event
  * [event batch]: @ref xkb_events
  */
-XKB_EXPORT int
+XKB_EXPORT enum xkb_error_code
 xkb_machine_process_key(struct xkb_machine *machine,
                         xkb_keycode_t key, enum xkb_key_direction direction,
                         struct xkb_events *events);
@@ -3226,7 +3226,7 @@ struct xkb_state_update {
  * @param[out]    events  The event batch to collect events into. It will be
  *                        reset before collecting.
  *
- * @returns 0 on success, otherwise an error code.
+ * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
  * @since 1.14.0
  *
@@ -3238,7 +3238,7 @@ struct xkb_state_update {
  * [keyboard events]: @ref xkb_event
  * [event batch]: @ref xkb_events
  */
-XKB_EXPORT int
+XKB_EXPORT enum xkb_error_code
 xkb_machine_process_synthetic(struct xkb_machine *machine,
                               const struct xkb_state_update *update,
                               struct xkb_events *events);

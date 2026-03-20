@@ -1676,12 +1676,19 @@ state_update_layout_policy(struct xkb_state *state,
                 state->controls.out_of_range_group.redirect_group =
                     update->redirect;
             } else {
+                log_err(state->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                        "Layout policy: "
+                        "unsupported layout index %"PRIu32" > %"PRIu32"\n",
+                        update->redirect + 1, state->keymap->num_groups);
                 return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
             }
         }
         state->controls.out_of_range_group.policy = update->policy;
         return XKB_SUCCESS;
     } else {
+        log_err(state->keymap->ctx,
+                XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,
+                "Unsupported layout policy: %d\n", update->policy);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
     }
 }
@@ -3021,7 +3028,7 @@ machine_update_overlays(struct xkb_machine *sm)
     sm->overlays.enabled = mask;
 }
 
-int
+enum xkb_error_code
 xkb_machine_process_synthetic(struct xkb_machine *sm,
                               const struct xkb_state_update *update,
                               struct xkb_events *events)
@@ -3076,7 +3083,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
         });
     }
 
-    return 0;
+    return XKB_SUCCESS;
 }
 
 static ssize_t
@@ -3319,7 +3326,7 @@ process_overlayable_key(struct xkb_machine *sm,
     return key;
 }
 
-int
+enum xkb_error_code
 xkb_machine_process_key(struct xkb_machine *sm,
                         xkb_keycode_t kc, enum xkb_key_direction direction,
                         struct xkb_events *events)
@@ -3331,7 +3338,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
     const struct xkb_key * key = XkbKey(state->keymap, kc);
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
-        return 0;
+        return XKB_SUCCESS;
 
     const struct state_components previous_components = state->components;
 
@@ -3422,7 +3429,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
             }
         });
     }
-    return 0;
+    return XKB_SUCCESS;
 }
 
 struct xkb_events *
