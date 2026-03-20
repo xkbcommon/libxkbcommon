@@ -7,6 +7,7 @@ import concurrent.futures
 import itertools
 import logging
 import os
+import re
 import resource
 import subprocess
 import sys
@@ -39,6 +40,10 @@ except KeyError:
     )
 
 TIMEOUT = 10.0  # seconds
+INVALID_OPTION_ERROR_RE = re.compile(
+    r"(unrecognized|unknown|illegal|invalid) option|usage|try --help",
+    re.IGNORECASE,
+)
 
 # Unset some environment variables, so that testing --enable-environment-names
 # does not actually depend on the current environment.
@@ -244,7 +249,13 @@ class XkbcliTool:
         rc, stdout, stderr = self.run_command(args)
         assert rc == 2, (rc, stdout, stderr)
         assert stdout.startswith("Usage") or stdout == ""
-        assert "unrecognized option" in stderr
+        # getopt/argument parsing diagnostics vary across libc/platforms
+        # (for example GNU/Linux vs. Solaris), even when the option is rejected.
+        assert INVALID_OPTION_ERROR_RE.search(f"{stdout}\n{stderr}"), (
+            rc,
+            stdout,
+            stderr,
+        )
 
     def run_command_missing_arg(self, args):
         rc, stdout, stderr = self.run_command(args)
