@@ -3217,36 +3217,46 @@ struct xkb_state_components_update {
      * - `::XKB_STATE_CONTROLS`
      *
      * Other components are ignored.
+     *
+     * @sa `xkb_state_component`
      */
-    enum xkb_state_component components;
+    uint32_t components;
     /**
-     * Mask of latched modifiers to affect.
+     * Mask of [latched modifiers] to affect.
      *
      * Only modifiers present in this mask are considered when updating
      * `latched_mods`. Only considered if `::XKB_STATE_MODS_LATCHED` is
      * set in `components`.
+     *
+     * [latched modifiers]: @ref latched-mod-def
      */
     xkb_mod_mask_t affect_latched_mods;
     /**
-     * Modifiers to set as latched or unlatched.
+     * Modifiers to set as [latched] or unlatched.
      *
      * Only modifiers in `affect_latched_mods` are considered. Only
      * considered if `::XKB_STATE_MODS_LATCHED` is set in `components`.
+     *
+     * [latched]: @ref latched-mod-def
      */
     xkb_mod_mask_t latched_mods;
     /**
-     * Mask of locked modifiers to affect.
+     * Mask of [locked modifiers] to affect.
      *
      * Only modifiers present in this mask are considered when updating
      * `locked_mods`. Only considered if `::XKB_STATE_MODS_LOCKED` is
      * set in `components`.
+     *
+     * [locked modifiers]: @ref locked-mod-def
      */
     xkb_mod_mask_t affect_locked_mods;
     /**
-     * Modifiers to set as locked or unlocked.
+     * Modifiers to set as [locked] or unlocked.
      *
      * Only modifiers in `affect_locked_mods` are considered. Only
      * considered if `::XKB_STATE_MODS_LOCKED` is set in `components`.
+     *
+     * [locked]: @ref locked-mod-def
      */
     xkb_mod_mask_t locked_mods;
     /**
@@ -3256,7 +3266,7 @@ struct xkb_state_components_update {
      * range according to the current out-of-range layout policy. Only
      * considered if `::XKB_STATE_LAYOUT_LATCHED` is set in `components`.
      *
-     * @sa xkb_layout_index_t
+     * @sa `xkb_layout_index_t`
      */
     int32_t latched_layout;
     /**
@@ -3266,32 +3276,36 @@ struct xkb_state_components_update {
      * range according to the current out-of-range layout policy. Only
      * considered if `::XKB_STATE_LAYOUT_LOCKED` is set in `components`.
      *
-     * @sa xkb_layout_index_t
+     * @sa `xkb_layout_index_t`
      */
     int32_t locked_layout;
     /**
-     * Boolean keyboard controls to affect.
+     * Mask of boolean [keyboard controls] to affect.
      *
      * Only controls present in this mask are considered when updating
      * `controls`. Only considered if `::XKB_STATE_CONTROLS` is set in
      * `components`.
      *
      * @sa `xkb_keyboard_control_flags`
+     *
+     * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
-    enum xkb_keyboard_control_flags affect_controls;
+    uint32_t affect_controls;
     /**
-     * Boolean keyboard controls to enable or disable.
+     * Mask of boolean [keyboard controls] to enable or disable.
      *
      * Only controls in `affect_controls` are considered. Only considered
      * if `::XKB_STATE_CONTROLS` is set in `components`.
      *
      * @sa `xkb_keyboard_control_flags`
+     *
+     * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
-    enum xkb_keyboard_control_flags controls;
+    uint32_t controls;
 
 #if SIZE_MAX > UINT32_MAX
     /** @private Reserved for ABI alignment. Must be zero. */
-    uint32_t _reserved;
+    uint32_t reserved;
 #endif
 };
 
@@ -3372,11 +3386,13 @@ struct xkb_layout_policy_update {
      */
     size_t size;
     /**
-     * Policy to use to handle out-of-range layout indices.
+     * [Policy] to use to handle out-of-range layout indices.
      *
      * @sa `xkb_layout_out_of_range_policy`
+     *
+     * [Policy]: @ref xkb_layout_out_of_range_policy
      */
-    enum xkb_layout_out_of_range_policy policy;
+    uint32_t policy;
     /**
      * Layout index to redirect to when `policy` is
      * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
