@@ -1875,6 +1875,7 @@ state_update_layout_policy(struct xkb_server_state *state,
 #define xkb_check_state_update_size(x) xkb_check_versioned_struct_size( \
     xkb_versioned_struct_size_v1(x),                                    \
     xkb_versioned_struct_size_min(x),                                   \
+    xkb_versioned_struct_reserved_offset(x),                            \
     (x)                                                                 \
 )
 
