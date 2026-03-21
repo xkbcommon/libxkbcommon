@@ -1848,7 +1848,7 @@ state_update_layout_policy(struct xkb_server_state *state,
                            const struct xkb_layout_policy_update *update)
 {
     if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
-                              (uint32_t)update->policy)) {
+                              update->policy)) {
         if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
             if (update->redirect < state->base.keymap->num_groups) {
                 state->base.out_of_range_group.redirect_group =

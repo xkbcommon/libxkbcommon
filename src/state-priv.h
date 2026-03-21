@@ -46,36 +46,36 @@ struct xkb_event {
  */
 struct xkb_state_components_update_v1 {
     size_t size;
-    enum xkb_state_component components;
+    uint32_t components;
     xkb_mod_mask_t affect_latched_mods;
     xkb_mod_mask_t latched_mods;
     xkb_mod_mask_t affect_locked_mods;
     xkb_mod_mask_t locked_mods;
     int32_t latched_layout;
     int32_t locked_layout;
-    enum xkb_keyboard_control_flags affect_controls;
-    enum xkb_keyboard_control_flags controls;
+    uint32_t affect_controls;
+    uint32_t controls;
 
 #if SIZE_MAX > UINT32_MAX
     /* Reserved for ABI alignment. Must be zero. */
-    uint32_t _reserved;
+    uint32_t reserved;
 #endif
 };
 
 /* Ensure there is no implicit padding */
 static_assert(sizeof(struct xkb_state_components_update_v1) ==
               sizeof(size_t)                          /* size                */
-            + sizeof(enum xkb_state_component)        /* components          */
+            + sizeof(uint32_t)                        /* components          */
             + sizeof(xkb_mod_mask_t)                  /* affect_latched_mods */
             + sizeof(xkb_mod_mask_t)                  /* latched_mods        */
             + sizeof(xkb_mod_mask_t)                  /* affect_locked_mods  */
             + sizeof(xkb_mod_mask_t)                  /* locked_mods         */
             + sizeof(int32_t)                         /* latched_layout      */
             + sizeof(int32_t)                         /* locked_layout       */
-            + sizeof(enum xkb_keyboard_control_flags) /* affect_controls     */
-            + sizeof(enum xkb_keyboard_control_flags) /* controls            */
+            + sizeof(uint32_t)                        /* affect_controls     */
+            + sizeof(uint32_t)                        /* controls            */
 #if SIZE_MAX > UINT32_MAX
-            + sizeof(uint32_t)                        /* _reserved           */
+            + sizeof(uint32_t)                        /* reserved            */
 #endif
             , "struct xkb_state_components_update_v1 has implicit padding");
 
@@ -94,14 +94,14 @@ static_assert(sizeof(struct xkb_state_components_update) * 30 <=
  */
 struct xkb_layout_policy_update_v1 {
     size_t size;
-    enum xkb_layout_out_of_range_policy policy;
+    uint32_t policy;
     xkb_layout_index_t redirect;
 };
 
 /* Ensure there is no implicit padding */
 static_assert(sizeof(struct xkb_layout_policy_update_v1) ==
               sizeof(size_t)                               /* size     */
-            + sizeof(enum xkb_layout_out_of_range_policy)  /* policy   */
+            + sizeof(uint32_t)                             /* policy   */
             + sizeof(xkb_layout_index_t),                  /* redirect */
               "struct xkb_layout_policy_update_v1 has implicit padding");
 
