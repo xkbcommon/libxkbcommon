@@ -97,7 +97,7 @@ xkb_context_include_path_get_extra_path(struct xkb_context *ctx)
     return extra ? extra : DFLT_XKB_CONFIG_EXTRA_PATH;
 }
 
-#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+#if HAVE_XKB_EXTENSIONS_DIRECTORIES
 const char *
 xkb_context_include_path_get_unversioned_extensions_path(struct xkb_context *ctx)
 {
@@ -279,7 +279,7 @@ xkb_context_include_path_append_default(struct xkb_context *ctx)
     const char * const extra = xkb_context_include_path_get_extra_path(ctx);
     ret |= context_include_path_append(ctx, extra);
 
-#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+#if HAVE_XKB_EXTENSIONS_DIRECTORIES
     darray_string extensions = darray_new();
 
     /* Versioned extensions directory */

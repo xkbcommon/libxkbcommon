@@ -381,7 +381,7 @@ print_dot(struct xkb_context *ctx,
             return false;
         }
     } else {
-#ifdef HAVE_REAL_PATH
+#if HAVE_REAL_PATH
         if (!realpath(path, root)) {
             return false;
         }

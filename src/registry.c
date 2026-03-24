@@ -616,7 +616,7 @@ error:
     return false;
 }
 
-#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+#if HAVE_XKB_EXTENSIONS_DIRECTORIES
 
 static int
 compare_str(const void *a, const void *b)
@@ -755,7 +755,7 @@ rxkb_context_include_path_append_default(struct rxkb_context *ctx)
         ctx, ((extra != NULL) ? extra : DFLT_XKB_CONFIG_EXTRA_PATH)
     );
 
-#ifdef HAVE_XKB_EXTENSIONS_DIRECTORIES
+#if HAVE_XKB_EXTENSIONS_DIRECTORIES
     darray_string extensions = darray_new();
 
     /* Versioned extensions directory */
@@ -1364,7 +1364,7 @@ xml_error_func(void *ctx, const char *msg, ...)
     }
 }
 
-#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+#if HAVE_XML_CTXT_SET_ERRORHANDLER
 static void
 xml_structured_error_func(void *userData, const xmlError * error)
 {
@@ -1417,7 +1417,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
         "<!ELEMENT hwList (hwId+)>\n"
         "<!ELEMENT hwId (#PCDATA)>\n";
 
-#ifdef HAVE_XML_CTXT_PARSE_DTD
+#if HAVE_XML_CTXT_PARSE_DTD
     /* Use safer function with context if available, and set
      * the contextual error handler. */
     xmlParserCtxtPtr xmlCtxt = xmlNewParserCtxt();
@@ -1449,7 +1449,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
         goto dtd_error;
     }
 
-#ifdef HAVE_XML_CTXT_PARSE_DTD
+#if HAVE_XML_CTXT_PARSE_DTD
     success = xmlCtxtValidateDtd(xmlCtxt, doc, dtd);
 #else
     xmlValidCtxt *dtdvalid = xmlNewValidCtxt();
@@ -1461,7 +1461,7 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     xmlFreeDtd(dtd);
 
 dtd_error:
-#ifdef HAVE_XML_CTXT_PARSE_DTD
+#if HAVE_XML_CTXT_PARSE_DTD
     xmlFreeParserCtxt(xmlCtxt);
 #endif
     return success;
@@ -1491,12 +1491,12 @@ parse(struct rxkb_context *ctx, const char *path,
 #endif
     xmlCtxtUseOptions(xmlCtxt, _XML_OPTIONS);
 
-#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+#if HAVE_XML_CTXT_SET_ERRORHANDLER
     /* Prefer contextual handler whenever possible. It takes precedence over
      * the global generic handler. */
     xmlCtxtSetErrorHandler(xmlCtxt, xml_structured_error_func, ctx);
 #endif
-#ifndef HAVE_XML_CTXT_PARSE_DTD
+#if !HAVE_XML_CTXT_PARSE_DTD
     /* This is needed for the DTD validation */
     xmlSetGenericErrorFunc(ctx, xml_error_func);
 #endif
@@ -1519,7 +1519,7 @@ validate_error:
     xmlFreeDoc(doc);
 parse_error:
 
-#ifndef HAVE_XML_CTXT_PARSE_DTD
+#if !HAVE_XML_CTXT_PARSE_DTD
     /*
      * Reset the default libxml2 error handler to default, because this handler
      * is global and may be used on an invalid rxkb_context, e.g. *after* the
@@ -1531,7 +1531,7 @@ parse_error:
      */
     xmlSetGenericErrorFunc(NULL, NULL);
 #endif
-#ifdef HAVE_XML_CTXT_SET_ERRORHANDLER
+#if HAVE_XML_CTXT_SET_ERRORHANDLER
     xmlCtxtSetErrorHandler(xmlCtxt, NULL, NULL);
 #endif
     xmlFreeParserCtxt(xmlCtxt);
