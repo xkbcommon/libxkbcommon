@@ -36,6 +36,8 @@ See [contributing to xkeyboard-config] for further information.
 They are usually located at `/usr/share/xkeyboard-config-2`, or
 `/usr/share/X11/xkb` on older setups.
 
+Alternatively, use `xkbcli info` and check the `XKB_CONFIG_ROOT` entry.
+
 @note Do not modify system files! See @ref how-do-i-customize-my-layout "" for
 further instructions.
 
@@ -156,6 +158,10 @@ the [compatibility](./compatibility.md) page for the supported features.
 ### How do I test my custom layout without installing it?
 
 Use our [debugging tools].
+
+### How can I create a package for my layout?
+
+See @ref packaging-keyboard-layouts.
 
 ### How do I swap some keys?
 
