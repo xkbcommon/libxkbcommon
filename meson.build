@@ -1042,7 +1042,12 @@ test_shared_lib = static_library(
     link_with: [libxkbcommon_test_internal, tools_shared_lib],
 )
 test_dep = declare_dependency(
-    include_directories: include_directories('src', 'include', 'test'),
+    include_directories: include_directories(
+        'src',
+        'include',
+        'test',
+        '.',  # required to #include "config.h" in subdirs
+    ),
     link_with: [libxkbcommon_test_internal, test_shared_lib],
     dependencies: [m_dep],
 )
@@ -1434,96 +1439,12 @@ else
     message('valgrind not found, disabling valgrind test setup')
 endif
 
-
 # Fuzzing target programs.
 executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
 executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
 
-
 # Benchmarks.
-bench_env = environment()
-bench_env.set('top_srcdir', meson.current_source_dir())
-benchmark(
-    'key-proc',
-    executable('bench-key-proc', 'bench/key-proc.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
-    'keysym-case-mappings',
-    executable(
-        'bench-keysym-case-mappings',
-        'bench/keysym-case-mappings.c',
-        dependencies: test_dep,
-        c_args: ['-DENABLE_PRIVATE_APIS'],
-    ),
-)
-benchmark(
-    'rulescomp',
-    executable('bench-rulescomp', 'bench/rulescomp.c', dependencies: test_dep),
-    env: bench_env,
-)
-if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
-    benchmark(
-        'rules',
-        executable('bench-rules', 'bench/rules.c', dependencies: test_dep),
-        env: bench_env,
-    )
-    benchmark(
-        'compile-keymap',
-        executable(
-            'bench-compile-keymap',
-            'bench/compile-keymap.c',
-            dependencies: test_dep,
-        ),
-        env: bench_env,
-    )
-    benchmark(
-        'dump-keymap',
-        executable(
-            'bench-dump-keymap',
-            'bench/compile-keymap.c',
-            dependencies: test_dep,
-            c_args: ['-DKEYMAP_DUMP'],
-        ),
-        env: bench_env,
-    )
-    benchmark(
-        'custom-parsers',
-        executable(
-            'bench-custom-parsers',
-            'bench/custom-parsers.c',
-            dependencies: test_dep,
-        ),
-        env: bench_env,
-    )
-endif
-benchmark(
-    'compose',
-    executable('bench-compose', 'bench/compose.c', dependencies: test_dep),
-    env: bench_env,
-)
-benchmark(
-    'compose-traversal',
-    executable(
-        'bench-compose-traversal',
-        'bench/compose-traversal.c',
-        dependencies: test_dep,
-    ),
-    env: bench_env,
-)
-benchmark(
-    'atom',
-    executable('bench-atom', 'bench/atom.c', dependencies: test_dep),
-    env: bench_env,
-)
-if get_option('enable-x11')
-    benchmark(
-        'x11',
-        executable('bench-x11', 'bench/x11.c', dependencies: x11_test_dep),
-        env: bench_env,
-    )
-endif
-
+subdir('bench')
 
 # Documentation.
 if get_option('enable-docs')
