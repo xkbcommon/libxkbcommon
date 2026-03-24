@@ -594,7 +594,7 @@ if build_tools
             'tools/tools-common.c',
             'src/utf8-decoding.c',
         ],
-        include_directories: [include_directories('tools', 'include')],
+        include_directories: include_directories('tools', 'include', 'src'),
         dependencies: dep_libxkbcommon,
     )
     configh_data.set10('HAVE_TOOLS', true)
@@ -609,7 +609,6 @@ if build_tools
                libxkbcommon_sources,
                dependencies: export_keysym_dep,
                c_args: ['-DENABLE_PRIVATE_APIS'],
-               include_directories: [include_directories('src', 'include')],
                install: false)
 
     # Tool: xkbcli
@@ -839,7 +838,6 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
                'tools/check-messages.c',
                'tools/messages.c',
                dependencies: [tools_dep],
-               include_directories: include_directories('src', 'include', 'tools'),
                install: false)
 else
     tools_dep = declare_dependency()
@@ -915,7 +913,7 @@ test_dep = declare_dependency(
         'test/common.c',
         'tools/tools-common.c',
     ],
-    include_directories: include_directories('src', 'include'),
+    include_directories: include_directories('src', 'include', 'test'),
     link_with: libxkbcommon_test_internal,
     dependencies: [m_dep],
 )
@@ -928,7 +926,6 @@ if build_tools
         'src/utils.c',
         'src/keymap-formats.c',
         dependencies: test_dep,
-        include_directories: include_directories('src', 'src/xkbcomp', 'include'),
         install: false
     )
 
@@ -1121,7 +1118,6 @@ if has_merge_modes_tests
                 f'test-merge-modes@suffix@',
                 merge_modes_c,
                 dependencies: test_dep,
-                include_directories: ['test'],
             ),
             env: test_env,
         )
@@ -1215,7 +1211,7 @@ test(
         'test-messages',
         'test/messages.c',
         'tools/messages.c',
-        include_directories: include_directories('src', 'include', 'tools'),
+        include_directories: include_directories('tools'),
         dependencies: test_dep),
     env: test_env,
 )
@@ -1254,7 +1250,6 @@ if get_option('enable-xkbregistry')
     test(
         'registry',
         executable('test-registry', 'test/registry.c',
-                   include_directories: include_directories('src'),
                    dependencies: [dep_libxkbregistry, dep_libxml, test_dep]),
         env: test_env,
     )
