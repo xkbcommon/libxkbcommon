@@ -26,12 +26,12 @@ option(
 option(
     'bash-completion-path',
     type: 'string',
-    description: 'Directory for bash completion scripts'
+    description: 'Directory for bash completion scripts',
 )
 option(
     'zsh-completion-path',
     type: 'string',
-    description: 'Directory for zsh completion scripts'
+    description: 'Directory for zsh completion scripts',
 )
 option(
     'default-rules',
