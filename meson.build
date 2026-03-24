@@ -673,8 +673,7 @@ endif
 subdir('test')
 
 # Fuzzing target programs.
-executable('fuzz-keymap', 'fuzz/keymap/target.c', dependencies: test_dep)
-executable('fuzz-compose', 'fuzz/compose/target.c', dependencies: test_dep)
+subdir('fuzz')
 
 # Benchmarks.
 subdir('bench')
