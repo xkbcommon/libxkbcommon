@@ -88,6 +88,8 @@ Libxkbcommon has a fair set of <abbr title="Command-Line Interface">CLI</abbr>
 <dd>Dump a XKB keymap from a X server</dd>
 <dt><code>xkbcli list</code></dt>
 <dd>List available layouts and more</dd>
+<dt><code>xkbcli info</code></dt>
+<dd>Print information about libxkbcommon configuration, for debugging purposes.</dd>
 </dl>
 
 It may require the installation of the package `libxkbcommon-tools` or similar

@@ -29,6 +29,7 @@ xkbcommon provides multiple tools for debugging. Please consult the manual pages
   configuration. Use the option `--explicit-values` to force all values to be
   explicit. This is especially useful to debug [compatibility interpretations].
 - `xkbcli compile-compose`: to check the resulting Compose file.
+- `xkbcli info`: to print information about libxkbcommon configuration.
 
 [compatibility interpretations]: @ref interpret-statements
 
