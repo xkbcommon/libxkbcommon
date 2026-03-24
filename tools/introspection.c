@@ -17,12 +17,12 @@
 
 #include "xkbcommon/xkbcommon.h"
 
-#include "ast.h"
 #include "tools-common.h"
 #include "src/darray.h"
 #include "src/utils.h"
 #include "src/utils-paths.h"
 #include "src/keymap-formats.h"
+#include "src/xkbcomp/ast.h"
 #include "src/xkbcomp/keymap-file-iterator.h"
 
 /*
