@@ -589,13 +589,19 @@ icu_dep = dependency('icu-uc', required: false)
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
 if build_tools
     # Common resources
-    tools_dep = declare_dependency(
+    tools_shared_lib = static_library(
+        'tools-shared',
         sources: [
             'tools/tools-common.c',
+            'src/keymap-formats.c',
             'src/utf8-decoding.c',
         ],
         include_directories: include_directories('tools', 'include', 'src'),
-        dependencies: dep_libxkbcommon,
+    )
+    tools_dep = declare_dependency(
+         include_directories: include_directories('tools', 'include', 'src'),
+         link_with: tools_shared_lib,
+         dependencies: dep_libxkbcommon
     )
     configh_data.set10('HAVE_TOOLS', true)
 
@@ -667,7 +673,6 @@ if build_tools
     # Tool: compile-keymap
     xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
                                        'tools/compile-keymap.c',
-                                       'src/keymap-formats.c',
                                        dependencies: tools_dep,
                                        install: true,
                                        install_dir: dir_libexec)
@@ -687,7 +692,6 @@ if build_tools
     # Tool: how-to-type
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
-               'src/keymap-formats.c',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -698,7 +702,6 @@ if build_tools
     if cc.has_header('linux/input.h')
         executable('xkbcli-interactive-evdev',
                    'tools/interactive-evdev.c',
-                   'src/keymap-formats.c',
                    dependencies: tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -718,7 +721,6 @@ if build_tools
         )
         executable('xkbcli-interactive-x11',
                    'tools/interactive-x11.c',
-                   'src/keymap-formats.c',
                    dependencies: x11_tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -727,7 +729,6 @@ if build_tools
 
         executable('xkbcli-dump-keymap-x11',
                    'tools/interactive-x11.c',
-                   'src/keymap-formats.c',
                    dependencies: x11_tools_dep,
                    c_args: ['-DKEYMAP_DUMP'],
                    install: true,
@@ -776,7 +777,6 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         ]
         executable('xkbcli-interactive-wayland',
                    'tools/interactive-wayland.c',
-                   'src/keymap-formats.c',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
@@ -787,7 +787,6 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
 
         executable('xkbcli-dump-keymap-wayland',
                    'tools/interactive-wayland.c',
-                   'src/keymap-formats.c',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
