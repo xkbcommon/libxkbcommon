@@ -61,7 +61,7 @@ git commit: <git commit sha>
 
 - [ ] Pull the latest [website repository](https://github.com/xkbcommon/website).
 
-- [ ] Add the doc for the release: `cp -r <xkbommon>/build/html doc/<MAJOR.MINOR.PATCH>`.
+- [ ] Add the doc for the release: `cp -r <xkbommon>/build/doc/html doc/<MAJOR.MINOR.PATCH>`.
   Check carefully that there is no warning during generation with Doxygen.
   It may be necessary to use another version of Doxygen to get a clean build.
   Building from source using the main branch is also a good option.
