@@ -206,7 +206,7 @@ def run_command(args, input: str | None = None) -> tuple[int, str, str]:
 @dataclass
 class XkbcliTool:
     xkbcli_tool: ClassVar[str] = "xkbcli"
-    tool_path: ClassVar[Path] = top_builddir
+    tool_path: ClassVar[Path] = top_builddir / "tools"
 
     subtool: str | None = None
     skipIf: tuple[tuple[bool, str], ...] = ()

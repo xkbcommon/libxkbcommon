@@ -4,7 +4,7 @@
 
 > [!IMPORTANT]
 > The tools are not yet public, so it is required to build libxkbcommon
-> locally and run them with e.g. `meson devenv -C …`.
+> locally and run them with e.g. `meson devenv -C tools/…`.
 
 The Python dependencies ares:
 - `PyYAML`
