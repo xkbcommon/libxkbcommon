@@ -19,7 +19,9 @@ libxkbregistry can be disabled with -Denable-xkbregistry=false (see
 Dependencies for libxkbcommon:
 - C compiler, meson, pkg-config, libc.
 
-- (build) bison (preferred) or win_bison
+- (build optional) bison (preferred) or win_bison
+  To disable, use -Denable-parser-auto-generation=false. In this case, build
+  will use the pre-generated parser files includes in git repository and tarball.
 
 - (build optional, runtime required) xkeyboard-config.
   During build, for automatically detecting the value of

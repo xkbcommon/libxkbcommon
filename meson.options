@@ -64,6 +64,14 @@ option(
     description: 'Default XKB options',
 )
 option(
+    'enable-parser-auto-generation',
+    type: 'boolean',
+    value: true,
+    description:
+        'Generate parser files from `.y` grammar files (requires bison); ' +
+        'if false, use pregenerated files shipped in the source tree',
+)
+option(
     'enable-tools',
     type: 'boolean',
     value: true,
