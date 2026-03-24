@@ -6,12 +6,12 @@
 
 #include "config.h"
 
-#include "src/darray.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include "xkbcommon/xkbcommon-compose.h"
+#include "darray.h"
 #include "parser.h"
 #include "escape.h"
 #include "dump.h"
