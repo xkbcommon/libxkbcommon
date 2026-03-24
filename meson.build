@@ -427,7 +427,7 @@ if have_version_script
 elif cc.get_argument_syntax() == 'msvc'
     libxkbcommon_def = custom_target(
         'xkbcommon.def',
-        command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+        command: [map_to_def, '@INPUT@', soname_version, '@OUTPUT@'],
         input: 'xkbcommon.map',
         output: 'xkbcommon.def',
     )
@@ -520,7 +520,7 @@ You can disable X11 support with -Denable-x11=false.''',
     elif cc.get_argument_syntax() == 'msvc'
         libxkbcommon_x11_def = custom_target(
             'xkbcommon-x11.def',
-            command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+            command: [map_to_def, '@INPUT@', soname_version, '@OUTPUT@'],
             input: 'xkbcommon-x11.map',
             output: 'xkbcommon-x11.def',
         )
@@ -610,7 +610,7 @@ if get_option('enable-xkbregistry')
     elif cc.get_argument_syntax() == 'msvc'
         libxkbregistry_def = custom_target(
             'xkbregistry.def',
-            command: [map_to_def, '@INPUT@', '@OUTPUT@'],
+            command: [map_to_def, '@INPUT@', soname_version, '@OUTPUT@'],
             input: 'xkbregistry.map',
             output: 'xkbregistry.def',
         )
