@@ -605,7 +605,7 @@ test_from_locale(struct xkb_context *ctx)
     assert(table);
     xkb_compose_table_unref(table);
 
-#ifdef HAVE_NEWLOCALE
+#if HAVE_NEWLOCALE
     /* Test custom locale. Require installing it system-wide */
     /* NOTE: Keep the locale name in sync with the localedef call in our CI */
     static const char * const custom_locale = "xx_YY.UTF-8";

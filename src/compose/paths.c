@@ -189,7 +189,7 @@ get_locale_compose_file_path(struct xkb_context *ctx, const char *locale)
 
     resolved = resolve_name(ctx, registry, RIGHT_TO_LEFT, locale);
     if (!resolved) {
-#ifdef HAVE_NEWLOCALE
+#if HAVE_NEWLOCALE
         /*
          * There is no extension mechanism for X11 Compose locales.
          * Instead of failing, we just use `en_US.UTF-8` as a fallback because

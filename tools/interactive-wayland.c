@@ -116,7 +116,7 @@ static const struct xdg_surface_listener surface_listener = {
     surface_configure,
 };
 
-#ifdef HAVE_MKOSTEMP
+#if HAVE_MKOSTEMP
 static int
 create_tmpfile_cloexec(char *tmpname)
 {
@@ -172,7 +172,7 @@ static int
 os_resize_anonymous_file(int fd, off_t size)
 {
     int ret;
-#ifdef HAVE_POSIX_FALLOCATE
+#if HAVE_POSIX_FALLOCATE
     ret = posix_fallocate(fd, 0, size);
     if (ret == 0)
         return 0;

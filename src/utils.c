@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include "utils.h"
 
-#ifdef HAVE_MMAP
+#if HAVE_MMAP
 
 #include <unistd.h>
 #include <sys/mman.h>

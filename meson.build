@@ -205,20 +205,14 @@ if get_option('default-options') != ''
 else
     configh_data.set('DEFAULT_XKB_OPTIONS', 'NULL')
 endif
-if cc.has_header('unistd.h')
-    configh_data.set10('HAVE_UNISTD_H', true)
-endif
-if cc.has_header('dirent.h')
-    configh_data.set10('HAVE_DIRENT_H', true)
-endif
-if configh_data.get('HAVE_UNISTD_H', 0) == 1 and configh_data.get('HAVE_DIRENT_H', 0) == 1
-    configh_data.set10('HAVE_XKB_EXTENSIONS_DIRECTORIES', true)
-    has_extensions_directories = true
-else
-    has_extensions_directories = false
-endif
+have_unistd_h = cc.has_header('unistd.h')
+configh_data.set10('HAVE_UNISTD_H', have_unistd_h)
+have_dirent_h = cc.has_header('dirent.h')
+configh_data.set10('HAVE_DIRENT_H', have_dirent_h)
+has_extensions_directories = have_unistd_h and have_dirent_h
+configh_data.set10('HAVE_XKB_EXTENSIONS_DIRECTORIES', has_extensions_directories)
 if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
-    configh_data.set('HAVE___BUILTIN_EXPECT', 1)
+    configh_data.set10('HAVE___BUILTIN_EXPECT', true)
 endif
 # Test if counted_by attribute is available, and supported on pointer fields
 # (not just flexible array fields).
@@ -235,43 +229,43 @@ if cc.compiles('''
         args: cc.get_supported_arguments('-Werror=attributes'),
         name: 'counted_by attribute for pointers'
     )
-    configh_data.set('HAVE_ATTR_COUNTED_BY', 1)
+    configh_data.set10('HAVE_ATTR_COUNTED_BY', true)
 endif
 if cc.has_header_symbol('unistd.h', 'eaccess', prefix: system_ext_define)
-    configh_data.set('HAVE_EACCESS', 1)
+    configh_data.set10('HAVE_EACCESS', true)
 endif
 if cc.has_header_symbol('unistd.h', 'euidaccess', prefix: system_ext_define)
-    configh_data.set('HAVE_EUIDACCESS', 1)
+    configh_data.set10('HAVE_EUIDACCESS', true)
 endif
 if cc.has_header_symbol('sys/mman.h', 'mmap')
-    configh_data.set('HAVE_MMAP', 1)
+    configh_data.set10('HAVE_MMAP', true)
 endif
 if cc.has_header_symbol('stdlib.h', 'mkostemp', prefix: system_ext_define)
-    configh_data.set('HAVE_MKOSTEMP', 1)
+    configh_data.set10('HAVE_MKOSTEMP', true)
 endif
 if cc.has_header_symbol('fcntl.h', 'posix_fallocate', prefix: system_ext_define)
-    configh_data.set('HAVE_POSIX_FALLOCATE', 1)
+    configh_data.set10('HAVE_POSIX_FALLOCATE', true)
 endif
 if cc.has_header_symbol('string.h', 'strndup', prefix: system_ext_define)
-    configh_data.set('HAVE_STRNDUP', 1)
+    configh_data.set10('HAVE_STRNDUP', true)
 endif
 if cc.has_header_symbol('stdio.h', 'asprintf', prefix: system_ext_define)
-    configh_data.set('HAVE_ASPRINTF', 1)
+    configh_data.set10('HAVE_ASPRINTF', true)
 elif cc.has_header_symbol('stdio.h', 'vasprintf', prefix: system_ext_define)
-    configh_data.set('HAVE_VASPRINTF', 1)
+    configh_data.set10('HAVE_VASPRINTF', true)
 endif
 if cc.has_header_symbol('stdio.h', 'open_memstream', prefix: system_ext_define)
-    configh_data.set('HAVE_OPEN_MEMSTREAM', 1)
+    configh_data.set10('HAVE_OPEN_MEMSTREAM', true)
 endif
 if cc.has_header_symbol('stdlib.h', 'secure_getenv', prefix: system_ext_define)
-    configh_data.set('HAVE_SECURE_GETENV', 1)
+    configh_data.set10('HAVE_SECURE_GETENV', true)
 elif cc.has_header_symbol('stdlib.h', '__secure_getenv', prefix: system_ext_define)
-    configh_data.set('HAVE___SECURE_GETENV', 1)
+    configh_data.set10('HAVE___SECURE_GETENV', true)
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
 if cc.has_header_symbol('stdlib.h', 'realpath', prefix: system_ext_define)
-    configh_data.set('HAVE_REAL_PATH', 1)
+    configh_data.set10('HAVE_REAL_PATH', true)
 endif
 if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
     if host_machine.system() == 'windows'
@@ -282,13 +276,13 @@ if not cc.has_header_symbol('limits.h', 'PATH_MAX', prefix: system_ext_define)
     endif
 endif
 if cc.has_header_symbol('time.h', 'CLOCK_PROCESS_CPUTIME_ID', prefix: system_ext_define)
-    configh_data.set('HAVE_CLOCK_PROCESS_CPUTIME_ID', 1)
+    configh_data.set10('HAVE_CLOCK_PROCESS_CPUTIME_ID', true)
 endif
 if cc.has_header_symbol('time.h', 'CLOCK_MONOTONIC', prefix: system_ext_define)
-    configh_data.set('HAVE_CLOCK_MONOTONIC', 1)
+    configh_data.set10('HAVE_CLOCK_MONOTONIC', true)
 endif
 if cc.has_header_symbol('termios.h', 'tcsetattr', prefix: system_ext_define)
-    configh_data.set('HAVE_TERMIOS', 1)
+    configh_data.set10('HAVE_TERMIOS', true)
 endif
 has_glibc = cc.has_function(
     'gnu_get_libc_version',
@@ -318,18 +312,18 @@ if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
         has_compose_locale_fallback = true
     endif
     if has_compose_locale_fallback
-        configh_data.set('HAVE_NEWLOCALE', 1)
+        configh_data.set10('HAVE_NEWLOCALE', true)
     endif
 endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
 # https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-3-c4996?view=vs-2019
-configh_data.set('_CRT_SECURE_NO_WARNINGS', 1)
-configh_data.set('_CRT_NONSTDC_NO_WARNINGS', 1)
-configh_data.set('_CRT_NONSTDC_NO_DEPRECATE', 1)
+configh_data.set10('_CRT_SECURE_NO_WARNINGS', true)
+configh_data.set10('_CRT_NONSTDC_NO_WARNINGS', true)
+configh_data.set10('_CRT_NONSTDC_NO_DEPRECATE', true)
 # Reduce unnecessary includes on MSVC.
-configh_data.set('WIN32_LEAN_AND_MEAN', 1)
+configh_data.set10('WIN32_LEAN_AND_MEAN', true)
 
 xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
 
