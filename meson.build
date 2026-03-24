@@ -328,7 +328,7 @@ configh_data.set10('WIN32_LEAN_AND_MEAN', true)
 xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
 
 # Supports -Wl,--version-script?
-meson_test_map = meson.current_source_dir() / 'test/meson_test.map'
+meson_test_map = meson.current_source_dir() / 'test' / 'meson_test.map'
 have_version_script = cc.links(
     'int main() { return 0; }',
     args: f'-Wl,--version-script=@meson_test_map@',
@@ -582,8 +582,6 @@ if get_option('enable-xkbregistry')
     meson.override_dependency('xkbregistry', dep_libxkbregistry)
 endif
 
-man_pages = []
-
 # Tools
 icu_dep = dependency('icu-uc', required: false)
 build_tools = get_option('enable-tools') and cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
@@ -629,7 +627,7 @@ if build_tools
             if bash_completion.found()
                 bash_completion_path = bash_completion.get_variable(pkgconfig: 'completionsdir')
             else
-                bash_completion_path = get_option('datadir') / 'bash-completion/completions'
+                bash_completion_path = get_option('datadir') / 'bash-completion' / 'completions'
             endif
         endif
         install_data('tools/xkbcli-bash-completion.sh',
@@ -640,7 +638,7 @@ if build_tools
     if get_option('enable-zsh-completion')
         zsh_completion_path = get_option('zsh-completion-path')
         if zsh_completion_path == ''
-            zsh_completion_path = get_option('datadir') / 'zsh/site-functions'
+            zsh_completion_path = get_option('datadir') / 'zsh' / 'site-functions'
         endif
         install_data('tools/xkbcli-zsh-completion.zsh',
                      rename: '_xkbcli',
@@ -660,7 +658,7 @@ if build_tools
     endif
 
     # Tool: info
-    xkbcli_info = executable(
+    executable(
         'xkbcli-info',
         'tools/info.c',
         dependencies: tools_dep,
@@ -765,12 +763,12 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
             arguments: ['client-header', '@INPUT@', '@OUTPUT@'],
         )
         wayland_protocols_datadir = wayland_protocols_dep.get_variable(pkgconfig: 'pkgdatadir')
-        xdg_shell_xml = wayland_protocols_datadir/'stable/xdg-shell/xdg-shell.xml'
+        xdg_shell_xml = wayland_protocols_datadir/'stable'/'xdg-shell'/'xdg-shell.xml'
         xdg_shell_sources = [
             wayland_scanner_code_gen.process(xdg_shell_xml),
             wayland_scanner_client_header_gen.process(xdg_shell_xml),
         ]
-        xdg_decoration_xml = wayland_protocols_datadir/'unstable/xdg-decoration/xdg-decoration-unstable-v1.xml'
+        xdg_decoration_xml = wayland_protocols_datadir/'unstable'/'xdg-decoration'/'xdg-decoration-unstable-v1.xml'
         xdg_decoration_sources = [
             wayland_scanner_code_gen.process(xdg_decoration_xml),
             wayland_scanner_client_header_gen.process(xdg_decoration_xml),
@@ -871,7 +869,6 @@ configure_file(output: 'test-config.h', configuration: test_configh_data)
 # Exclude MSVC because it does not handle mixing C and C++ well
 if build_machine.system() != 'windows' and \
    add_languages('cpp', required: false, native: false)
-    cpp = meson.get_compiler('cpp')
     cpp_compat_test_deps = []
     cpp_compat_test_cpp_args = []
     if get_option('enable-x11')
