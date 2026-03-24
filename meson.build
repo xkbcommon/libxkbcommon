@@ -905,15 +905,21 @@ libxkbcommon_test_internal = library(
     c_args: ['-DENABLE_PRIVATE_APIS'],
     gnu_symbol_visibility: 'hidden',
 )
-test_dep = declare_dependency(
+test_shared_lib = static_library(
+    'test-shared',
     sources: [
         'bench/bench.c',
-        'src/utf8-decoding.c',
+        'src/utils.c',
         'test/common.c',
-        'tools/tools-common.c',
+        'test/compose-iter.c',
+        'test/utils-text.c',
     ],
     include_directories: include_directories('src', 'include', 'test'),
-    link_with: libxkbcommon_test_internal,
+    link_with: [libxkbcommon_test_internal, tools_shared_lib],
+)
+test_dep = declare_dependency(
+    include_directories: include_directories('src', 'include', 'test'),
+    link_with: [libxkbcommon_test_internal, test_shared_lib],
     dependencies: [m_dep],
 )
 
@@ -922,8 +928,6 @@ if build_tools
     executable(
         'introspection',
         'tools/introspection.c',
-        'src/utils.c',
-        'src/keymap-formats.c',
         dependencies: test_dep,
         install: false
     )
@@ -962,10 +966,15 @@ if get_option('enable-x11')
             xcb_dep,
         ],
     )
-    x11_xvfb_test_dep = declare_dependency(
+    x11_xvfb_test_shared_lib = static_library(
+        'x11-xvfb-test-shared',
         sources: [
             'test/xvfb-wrapper.c',
         ],
+        dependencies: x11_test_dep,
+    )
+    x11_xvfb_test_dep = declare_dependency(
+        link_with: x11_xvfb_test_shared_lib,
         dependencies: [x11_test_dep],
     )
 endif
@@ -1005,7 +1014,6 @@ test(
     executable(
         'test-keymap',
         'test/keymap.c',
-        'src/keymap-formats.c',
         dependencies: test_dep),
     env: test_env,
 )
@@ -1034,7 +1042,6 @@ test(
     executable(
         'test-stringcomp',
         'test/stringcomp.c',
-        'test/utils-text.c',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1059,7 +1066,7 @@ if has_extensions_directories
     test(
         'extensions-directories',
         executable(
-            'extensions-directories',
+            'test-extensions-directories',
             'test/extensions-directories.c',
             dependencies: extensions_test_deps,
             c_args: extensions_test_c_args,
@@ -1138,7 +1145,6 @@ test(
     executable(
         'test-utf8',
         'test/utf8.c',
-        'src/utf8-decoding.c',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1176,8 +1182,6 @@ test(
     executable(
         'test-compose',
         'test/compose.c',
-        'test/compose-iter.c',
-        'test/utils-text.c',
         'src/compose/dump.c',
         dependencies: test_dep
     ),
@@ -1188,7 +1192,6 @@ test(
     executable(
         'test-utils',
         'test/utils.c',
-        'test/utils-text.c',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1237,7 +1240,6 @@ if get_option('enable-x11')
         executable(
             'test-x11comp',
             'test/x11comp.c',
-            'test/utils-text.c',
             dependencies: x11_xvfb_test_dep
         ),
         suite: ['x11', 'flaky'],
@@ -1330,8 +1332,6 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         executable(
             'bench-compile-keymap',
             'bench/compile-keymap.c',
-            'src/keymap-formats.c',
-            'src/utils.c',
             dependencies: test_dep
         ),
         env: bench_env,
@@ -1341,7 +1341,6 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         executable(
             'bench-dump-keymap',
             'bench/compile-keymap.c',
-            'src/keymap-formats.c',
             dependencies: test_dep,
             c_args: ['-DKEYMAP_DUMP'],
         ),
@@ -1352,7 +1351,6 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
         executable(
             'bench-custom-parsers',
             'bench/custom-parsers.c',
-            'src/utils.c',
             dependencies: test_dep,
         ),
         env: bench_env,
@@ -1368,7 +1366,6 @@ benchmark(
     executable(
         'bench-compose-traversal',
         'bench/compose-traversal.c',
-        'test/compose-iter.c',
         dependencies: test_dep
     ),
     env: bench_env,
