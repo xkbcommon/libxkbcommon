@@ -51,7 +51,7 @@ meson compile -C build
 
 <details>
 <summary>Complete list of user options</summary>
-@include meson_options.txt
+@include meson.options
 </details>
 
 ## API
