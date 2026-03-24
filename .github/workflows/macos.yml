@@ -70,5 +70,5 @@ jobs:
       - name: Test
         run: |
           source venv/bin/activate
-          # FIXME: deactivate x11comp test for now
-          meson test -C build --print-errorlogs --no-suite flaky
+          # FIXME: deactivate x11 tests for now
+          meson test -C build --print-errorlogs --no-suite x11
