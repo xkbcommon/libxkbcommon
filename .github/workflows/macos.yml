@@ -25,12 +25,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install MacPorts
-        run: |
-            curl -LO https://github.com/macports/macports-base/releases/download/v2.12.2/MacPorts-2.12.2-14-Sonoma.pkg
-            sudo installer -pkg MacPorts-2.12.2-14-Sonoma.pkg -target /
-            echo "/opt/local/bin" >> $GITHUB_PATH
-            echo "/opt/local/sbin" >> $GITHUB_PATH
+      # Do not install setxkbmap from this source. Unfortunately it is not
+      # on available in Homebrew anymore
+      # - name: Install MacPorts
+      #   run: |
+      #       curl -LO https://github.com/macports/macports-base/releases/download/v2.12.2/MacPorts-2.12.2-14-Sonoma.pkg
+      #       sudo installer -pkg MacPorts-2.12.2-14-Sonoma.pkg -target /
+      #       echo "/opt/local/bin" >> $GITHUB_PATH
+      #       echo "/opt/local/sbin" >> $GITHUB_PATH
       - name: Install dependencies
         run: |
           sudo mkdir -p /tmp/.X11-unix
@@ -38,7 +40,10 @@ jobs:
           brew install bison libxml2 meson ninja xkeyboard-config xorg-server
           brew link bison --force
           brew link libxml2 --force
-          sudo port install setxkbmap
+
+          # TODO: fix installing setxkbmap
+          # sudo port install setxkbmap
+
           # https://docs.brew.sh/Homebrew-and-Python#pep-668-python312-and-virtual-environments
           python3 -m venv venv
           source venv/bin/activate
