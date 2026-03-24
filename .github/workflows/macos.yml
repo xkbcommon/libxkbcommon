@@ -33,6 +33,8 @@ jobs:
             echo "/opt/local/sbin" >> $GITHUB_PATH
       - name: Install dependencies
         run: |
+          sudo mkdir -p /tmp/.X11-unix
+          sudo chmod 1777 /tmp/.X11-unix
           brew install bison libxml2 meson ninja xkeyboard-config xorg-server
           brew link bison --force
           brew link libxml2 --force
