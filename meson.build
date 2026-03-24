@@ -352,77 +352,44 @@ yacc_gen = generator(
     arguments: ['--defines=@OUTPUT1@', '-o', '@OUTPUT0@', '-p', '_xkbcommon_', '@INPUT@'],
 )
 libxkbcommon_sources = [
-    'src/compose/constants.h',
     'src/compose/parser.c',
-    'src/compose/parser.h',
     'src/compose/paths.c',
-    'src/compose/paths.h',
     'src/compose/state.c',
     'src/compose/table.c',
-    'src/compose/table.h',
     'src/xkbcomp/action.c',
-    'src/xkbcomp/action.h',
-    'src/xkbcomp/ast.h',
     'src/xkbcomp/ast-build.c',
-    'src/xkbcomp/ast-build.h',
     'src/xkbcomp/compat.c',
     'src/xkbcomp/expr.c',
-    'src/xkbcomp/expr.h',
     'src/xkbcomp/include.c',
-    'src/xkbcomp/include.h',
     'src/xkbcomp/keycodes.c',
     'src/xkbcomp/keymap.c',
     'src/xkbcomp/keymap-dump.c',
     'src/xkbcomp/keywords.c',
     yacc_gen.process('src/xkbcomp/parser.y'),
-    'src/xkbcomp/parser-priv.h',
     'src/xkbcomp/rules.c',
-    'src/xkbcomp/rules.h',
     'src/xkbcomp/scanner.c',
     'src/xkbcomp/symbols.c',
     'src/xkbcomp/types.c',
     'src/xkbcomp/vmod.c',
-    'src/xkbcomp/vmod.h',
     'src/xkbcomp/xkbcomp.c',
-    'src/xkbcomp/xkbcomp-priv.h',
     'src/atom.c',
-    'src/atom.h',
     'src/context.c',
-    'src/context.h',
     'src/context-priv.c',
-    'src/darray.h',
     'src/features.c',
-    'src/features/enums.h',
     'src/keysym.c',
-    'src/keysym.h',
     'src/keysym-case-mappings.c',
     'src/keysym-utf.c',
-    'src/keysym-names.h',
     'src/keymap.c',
-    'src/keymap.h',
     'src/keymap-compare.c',
-    'src/keymap-compare.h',
     'src/keymap-priv.c',
-    'src/messages-codes.h',
     'src/rmlvo.c',
-    'src/rmlvo.h',
     'src/scanner-utils.c',
-    'src/scanner-utils.h',
     'src/state.c',
-    'src/state-priv.h',
     'src/text.c',
-    'src/text.h',
     'src/utf8.c',
-    'src/utf8.h',
     'src/utf8-decoding.c',
-    'src/utf8-decoding.h',
     'src/utils.c',
-    'src/utils.h',
-    'src/util-mem.h',
-    'src/utils-checked-arithmetic.h',
-    'src/utils-numbers.h',
     'src/utils-paths.c',
-    'src/utils-paths.h',
 ]
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []
@@ -440,7 +407,6 @@ elif cc.get_argument_syntax() == 'msvc'
 endif
 libxkbcommon = library(
     'xkbcommon',
-    'include/xkbcommon/xkbcommon.h',
     libxkbcommon_sources,
     link_args: libxkbcommon_link_args,
     link_depends: libxkbcommon_link_deps,
@@ -498,16 +464,11 @@ You can disable X11 support with -Denable-x11=false.''')
         'src/x11/keymap.c',
         'src/x11/state.c',
         'src/x11/util.c',
-        'src/x11/x11-priv.h',
         'src/context.c',
-        'src/context.h',
         'src/context-priv.c',
-        'src/keymap.h',
         'src/keymap-priv.c',
-        'src/atom.h',
         'src/atom.c',
         'src/utils.c',
-        'src/utils.h',
     ]
     libxkbcommon_x11_link_args = []
     libxkbcommon_x11_link_deps = []
@@ -525,7 +486,6 @@ You can disable X11 support with -Denable-x11=false.''')
     endif
     libxkbcommon_x11 = library(
         'xkbcommon-x11',
-        'include/xkbcommon/xkbcommon-x11.h',
         libxkbcommon_x11_sources,
         link_args: libxkbcommon_x11_link_args,
         link_depends: libxkbcommon_x11_link_deps,
@@ -581,12 +541,8 @@ if get_option('enable-xkbregistry')
     deps_libxkbregistry = [dep_libxml]
     libxkbregistry_sources = [
         'src/registry.c',
-        'src/messages-codes.h',
-        'src/utils.h',
         'src/utils.c',
-        'src/util-list.h',
         'src/util-list.c',
-        'src/util-mem.h',
     ]
     libxkbregistry_link_args = []
     libxkbregistry_link_deps = []
@@ -604,7 +560,6 @@ if get_option('enable-xkbregistry')
     endif
     libxkbregistry = library(
         'xkbregistry',
-        'include/xkbcommon/xkbregistry.h',
         libxkbregistry_sources,
         link_args: libxkbregistry_link_args,
         link_depends: libxkbregistry_link_deps,
@@ -642,11 +597,8 @@ if build_tools
     # Common resources
     tools_dep = declare_dependency(
         sources: [
-            'tools/tools-common.h',
             'tools/tools-common.c',
-            'src/compose/constants.h',
             'src/utf8-decoding.c',
-            'src/utf8-decoding.h',
         ],
         include_directories: [include_directories('tools', 'include')],
         dependencies: dep_libxkbcommon,
@@ -723,7 +675,6 @@ if build_tools
     xkbcli_compile_keymap = executable('xkbcli-compile-keymap',
                                        'tools/compile-keymap.c',
                                        'src/keymap-formats.c',
-                                       'src/keymap-formats.h',
                                        dependencies: tools_dep,
                                        install: true,
                                        install_dir: dir_libexec)
@@ -734,8 +685,6 @@ if build_tools
     executable('xkbcli-compile-compose',
                'tools/compile-compose.c',
                'src/compose/dump.c',
-               'src/compose/dump.h',
-               'src/compose/escape.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -746,7 +695,6 @@ if build_tools
     executable('xkbcli-how-to-type',
                'tools/how-to-type.c',
                'src/keymap-formats.c',
-               'src/keymap-formats.h',
                dependencies: tools_dep,
                install: true,
                install_dir: dir_libexec)
@@ -758,7 +706,6 @@ if build_tools
         executable('xkbcli-interactive-evdev',
                    'tools/interactive-evdev.c',
                    'src/keymap-formats.c',
-                   'src/keymap-formats.h',
                    dependencies: tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -779,8 +726,6 @@ if build_tools
         executable('xkbcli-interactive-x11',
                    'tools/interactive-x11.c',
                    'src/keymap-formats.c',
-                   'src/keymap-formats.h',
-                   'src/utils.h',
                    dependencies: x11_tools_dep,
                    install: true,
                    install_dir: dir_libexec)
@@ -790,8 +735,6 @@ if build_tools
         executable('xkbcli-dump-keymap-x11',
                    'tools/interactive-x11.c',
                    'src/keymap-formats.c',
-                   'src/keymap-formats.h',
-                   'src/utils.h',
                    dependencies: x11_tools_dep,
                    c_args: ['-DKEYMAP_DUMP'],
                    install: true,
@@ -841,8 +784,6 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         executable('xkbcli-interactive-wayland',
                    'tools/interactive-wayland.c',
                    'src/keymap-formats.c',
-                   'src/keymap-formats.h',
-                   'src/utils.h',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
@@ -854,8 +795,6 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
         executable('xkbcli-dump-keymap-wayland',
                    'tools/interactive-wayland.c',
                    'src/keymap-formats.c',
-                   'src/keymap-formats.h',
-                   'src/utils.h',
                    xdg_shell_sources,
                    xdg_decoration_sources,
                    dependencies: [tools_dep, wayland_client_dep],
@@ -905,10 +844,8 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''')
     executable('xkb-check-messages',
                'tools/check-messages.c',
                'tools/messages.c',
-               'tools/messages.h',
-               'src/messages-codes.h',
                dependencies: [tools_dep],
-               include_directories: [include_directories('src', 'include', 'tools')],
+               include_directories: include_directories('src', 'include', 'tools'),
                install: false)
 else
     tools_dep = declare_dependency()
@@ -973,7 +910,6 @@ libxkbcommon_test_internal = library(
     'xkbcommon-test-internal',
     libxkbcommon_sources,
     'src/xkbcomp/keymap-file-iterator.c',
-    'src/xkbcomp/keymap-file-iterator.h',
     include_directories: include_directories('src', 'include'),
     c_args: ['-DENABLE_PRIVATE_APIS'],
     gnu_symbol_visibility: 'hidden',
@@ -981,15 +917,9 @@ libxkbcommon_test_internal = library(
 test_dep = declare_dependency(
     sources: [
         'bench/bench.c',
-        'bench/bench.h',
-        'src/utils-numbers.h',
         'src/utf8-decoding.c',
-        'src/utf8-decoding.h',
         'test/common.c',
-        'test/evdev-scancodes.h',
-        'test/test.h',
         'tools/tools-common.c',
-        'tools/tools-common.h',
     ],
     include_directories: include_directories('src', 'include'),
     link_with: libxkbcommon_test_internal,
@@ -1002,10 +932,7 @@ if build_tools
         'introspection',
         'tools/introspection.c',
         'src/utils.c',
-        'src/utils.h',
         'src/keymap-formats.c',
-        'src/keymap-formats.h',
-        'src/xkbcomp/keymap-file-iterator.h',
         dependencies: test_dep,
         include_directories: include_directories('src', 'src/xkbcomp', 'include'),
         install: false
@@ -1048,7 +975,6 @@ if get_option('enable-x11')
     x11_xvfb_test_dep = declare_dependency(
         sources: [
             'test/xvfb-wrapper.c',
-            'test/xvfb-wrapper.h',
         ],
         dependencies: [x11_test_dep],
     )
@@ -1058,7 +984,6 @@ test(
     executable(
         'test-features',
         'test/features.c',
-        'src/features/enums.h',
         dependencies: test_dep,
         c_args: ['-DENABLE_PRIVATE_APIS'],
     ),
@@ -1073,7 +998,7 @@ if icu_dep.found()
 endif
 test(
     'keysym',
-    executable('test-keysym', 'test/keysym.c', 'test/keysym.h',
+    executable('test-keysym', 'test/keysym.c',
                dependencies: keysyms_test_dep,
                c_args: keysyms_test_c_args),
     env: test_env,
@@ -1090,10 +1015,7 @@ test(
     executable(
         'test-keymap',
         'test/keymap.c',
-        'test/keysym.h',
-        'test/keysym-case-mapping.h',
         'src/keymap-formats.c',
-        'src/keymap-formats.h',
         dependencies: test_dep),
     env: test_env,
 )
@@ -1123,7 +1045,6 @@ test(
         'test-stringcomp',
         'test/stringcomp.c',
         'test/utils-text.c',
-        'test/utils-text.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1181,11 +1102,9 @@ if has_merge_modes_tests
         if xkb_compiler == meson.project_name()
             suffix = ''
             extra_args = []
-            extra_source_files = []
         else
             suffix = '-' + xkb_compiler
             extra_args = [xkb_compiler]
-            extra_source_files = ['test/external_xkb_compilers.h']
         endif
         filename = f'merge-modes@suffix@.c'
         merge_modes_c = custom_target(
@@ -1207,7 +1126,6 @@ if has_merge_modes_tests
             executable(
                 f'test-merge-modes@suffix@',
                 merge_modes_c,
-                extra_source_files,
                 dependencies: test_dep,
                 include_directories: ['test'],
             ),
@@ -1232,7 +1150,6 @@ test(
         'test-utf8',
         'test/utf8.c',
         'src/utf8-decoding.c',
-        'src/utf8-decoding.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1242,7 +1159,6 @@ test(
     executable(
         'test-state',
         'test/state.c',
-        'test/state.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1252,7 +1168,6 @@ test(
     executable(
         'test-server-state',
         'test/server-state.c',
-        'test/state.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1273,15 +1188,8 @@ test(
         'test-compose',
         'test/compose.c',
         'test/compose-iter.c',
-        'test/compose-iter.h',
         'test/utils-text.c',
-        'test/utils-text.h',
-        'src/compose/constants.h',
         'src/compose/dump.c',
-        'src/compose/dump.h',
-        'src/compose/escape.h',
-        'src/compose/escape.h',
-        'src/compose/parser.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1290,12 +1198,8 @@ test(
     'utils',
     executable(
         'test-utils',
-        'src/utils.h',
-        'src/utils-numbers.h',
-        'src/utils-paths.h',
         'test/utils.c',
         'test/utils-text.c',
-        'test/utils-text.h',
         dependencies: test_dep
     ),
     env: test_env,
@@ -1317,7 +1221,6 @@ test(
         'test-messages',
         'test/messages.c',
         'tools/messages.c',
-        'tools/messages.h',
         include_directories: include_directories('src', 'include', 'tools'),
         dependencies: test_dep),
     env: test_env,
@@ -1346,7 +1249,6 @@ if get_option('enable-x11')
             'test-x11comp',
             'test/x11comp.c',
             'test/utils-text.c',
-            'test/utils-text.h',
             dependencies: x11_xvfb_test_dep
         ),
         suite: ['x11', 'flaky'],
@@ -1441,9 +1343,7 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
             'bench-compile-keymap',
             'bench/compile-keymap.c',
             'src/keymap-formats.c',
-            'src/keymap-formats.h',
             'src/utils.c',
-            'src/utils.h',
             dependencies: test_dep
         ),
         env: bench_env,
@@ -1454,7 +1354,6 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
             'bench-dump-keymap',
             'bench/compile-keymap.c',
             'src/keymap-formats.c',
-            'src/keymap-formats.h',
             dependencies: test_dep,
             c_args: ['-DKEYMAP_DUMP'],
         ),
@@ -1466,8 +1365,6 @@ if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE'
             'bench-custom-parsers',
             'bench/custom-parsers.c',
             'src/utils.c',
-            'src/utils.h',
-            'src/utils-numbers.h',
             dependencies: test_dep,
         ),
         env: bench_env,
@@ -1483,11 +1380,7 @@ benchmark(
     executable(
         'bench-compose-traversal',
         'bench/compose-traversal.c',
-        'bench/bench.h',
-        'src/compose/constants.h',
         'test/compose-iter.c',
-        'test/compose-iter.h',
-        'test/test.h',
         dependencies: test_dep
     ),
     env: bench_env,
