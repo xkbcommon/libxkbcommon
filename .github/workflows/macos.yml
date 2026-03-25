@@ -37,8 +37,7 @@ jobs:
         run: |
           sudo mkdir -p /tmp/.X11-unix
           sudo chmod 1777 /tmp/.X11-unix
-          brew install bison libxml2 meson ninja xkeyboard-config xorg-server
-          brew link bison --force
+          brew install libxml2 meson ninja xkeyboard-config xorg-server
           brew link libxml2 --force
 
           # TODO: fix installing setxkbmap
@@ -55,18 +54,17 @@ jobs:
       - name: Setup
         run: |
           source venv/bin/activate
-          PATH="/usr/local/opt/bison/bin:${PATH}" \
-            meson setup \
-              -Dbuildtype=debugoptimized \
-              -Denable-wayland=false \
-              -Denable-x11=true \
-              -Dxkb-config-root="$(brew --prefix xkeyboard-config)/share/X11/xkb" \
-              -Dx-locale-root="$(brew --prefix xorg-server)/share/X11/locale" \
-              build
+          meson setup \
+            -Dbuildtype=debugoptimized \
+            -Denable-wayland=false \
+            -Denable-x11=true \
+            -Dxkb-config-root="$(brew --prefix xkeyboard-config)/share/X11/xkb" \
+            -Dx-locale-root="$(brew --prefix xorg-server)/share/X11/locale" \
+            build
       - name: Build
         run: |
           source venv/bin/activate
-          PATH="/usr/local/opt/bison/bin:${PATH}" meson compile -C build
+          meson compile -C build
       - name: Test
         run: |
           source venv/bin/activate
