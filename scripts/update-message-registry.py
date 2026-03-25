@@ -97,7 +97,7 @@ class Example:
 
 @dataclass
 class Entry:
-    """An xkbcommon message entry in the message registry"""
+    """A libxkbcommon message entry in the message registry"""
 
     code: int
     """A unique strictly positive integer identifier"""
@@ -112,11 +112,11 @@ class Entry:
     details: str
     """A long description of the meaning of the message"""
     added: Version
-    """Version of xkbcommon the message has been added in xkb_message_code"""
+    """Version of libxkbcommon the message has been added in xkb_message_code"""
     added_public: Version | None
-    """Version of xkbcommon the message has been added in xkb_error_code"""
+    """Version of libxkbcommon the message has been added in xkb_error_code"""
     removed: Version | None
-    """Version of xkbcommon the message has been removed"""
+    """Version of libxkbcommon the message has been removed"""
     examples: tuple[Example, ...]
     """
     Optional examples of situations in which the message occurs.

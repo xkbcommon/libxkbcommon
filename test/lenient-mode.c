@@ -44,7 +44,7 @@ static const struct {
     },
 };
 
-/* Our keymap compiler is the xkbcommon buffer compiler */
+/* Our keymap compiler is the libxkbcommon buffer compiler */
 static struct xkb_keymap *
 compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
                const char *buf, size_t len, void *private)

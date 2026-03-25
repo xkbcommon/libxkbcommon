@@ -65,7 +65,7 @@ See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
 ## Tools
 
 <!--! @rawHtml -->
-Libxkbcommon has a fair set of <abbr title="Command-Line Interface">CLI</abbr>
+libxkbcommon has a fair set of <abbr title="Command-Line Interface">CLI</abbr>
 <code>tools</code>, grouped under the <code>xkbcli</code> application:
 <!--! @endRawHtml -->
 
@@ -118,7 +118,7 @@ See [Compatibility](doc/compatibility.md) notes.
 
 An project’s homepage can be found at https://xkbcommon.org.
 
-xkbcommon is maintained in git at: https://github.com/xkbcommon/libxkbcommon
+libxkbcommon is maintained in git at: https://github.com/xkbcommon/libxkbcommon
 
 Patches are always welcome, and may be sent to either
 <xorg-devel@lists.x.org> or <wayland-devel@lists.freedesktop.org>

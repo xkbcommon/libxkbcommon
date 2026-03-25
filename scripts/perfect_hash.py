@@ -201,7 +201,7 @@ class StrSaltHash:
         self.salt = ""
 
     def __call__(self, key: Sequence[str]) -> int:
-        # XXX: xkbcommon modification: make the salt length a power of 2
+        # XXX: libxkbcommon modification: make the salt length a power of 2
         #      so that the % operation in the hash is fast.
         while len(self.salt) < max(len(key), 32):  # add more salt as necessary
             self.salt += random.choice(self.chars)

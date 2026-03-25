@@ -35,7 +35,7 @@ See @ref packaging-keyboard-layouts "" for further details.
   relevant to include paths between the call to `xkb_context_new()` and any
   function requiring the default path initialization — e.g.
   `xkb_keymap_new_from_names()` — will have a different behavior than previous
-  xkbcommon versions. However this situation is deemed unlikely.
+  libxkbcommon versions. However this situation is deemed unlikely.
 
 ### New
 
@@ -1119,7 +1119,7 @@ API
   \(commit: `cd33097fc779f280925c6d6bbfbd5150f93ca5bc`):
 
   For the sake of compatibility, this reintroduces some deleted keysyms and
-  postpones the effective deprecation of others, that landed in xkbcommon 1.6.0.
+  postpones the effective deprecation of others, that landed in libxkbcommon 1.6.0.
 
   - Additions (reverted removal):
 
@@ -1129,7 +1129,7 @@ API
     - `XKB_KEY_dead_longsolidusoverlay`
 
   - The following keysyms names remain deprecated, but are set again (i.e. as
-    before xkbcommon 1.6.0) as the reference names for their respective keysyms,
+    before libxkbcommon 1.6.0) as the reference names for their respective keysyms,
     in order to ensure the transition to the newer names that replace them. This
     affects functions such as `xkb_keymap_key_get_name` and `xkb_keymap_get_as_string`.
 
@@ -1379,8 +1379,8 @@ libxkbcommon 1.5.0 – 2023-01-02
 - Add `xkb_context` flag `XKB_CONTEXT_NO_SECURE_GETENV` and `rxkb_context` flag
   `RXKB_CONTEXT_NO_SECURE_GETENV`.
 
-  xkbcommon uses `getenv_secure()` to obtain environment variables. This flag
-  makes xkbcommon use `getenv()` instead.
+  libxkbcommon uses `getenv_secure()` to obtain environment variables. This flag
+  makes libxkbcommon use `getenv()` instead.
 
   This is useful for some clients that have relatively benign capabilities set,
   like `CAP_SYS_NICE`, that also want to use e.g. the XKB configuration from the
@@ -1395,7 +1395,7 @@ libxkbcommon 1.5.0 – 2023-01-02
 
 - Fix some MSVC build issues.
 
-- Fix some issues when including xkbcommon as a meson subproject.
+- Fix some issues when including libxkbcommon as a meson subproject.
 
 - meson\>=0.51 is now required.
 
@@ -1719,7 +1719,7 @@ libxkbcommon 0.10.0 – 2020-01-18
   rules directory (usually `/usr/share/X11/xkb/rules`).
 
   See commit message ca033a29d2ca910fd17b1ae287cb420205bdddc8 and
-  doc/rules-format.txt in the xkbcommon source code for more information.
+  doc/rules-format.txt in the libxkbcommon source code for more information.
 
   Contributed by Peter Hutterer <\@who-t.net>.
 
@@ -1814,7 +1814,7 @@ libxkbcommon 0.8.3 – 2019-02-08
 ==================
 
 - Fix build of static libraries with meson.
-  (Future note: xkbcommon-x11 was *not* fixed in this release.)
+  (Future note: libxkbcommon-x11 was *not* fixed in this release.)
 
 - New API:
   `XKB_KEY_XF86MonBrightnessCycle`
@@ -2065,7 +2065,7 @@ libxkbcommon 0.4.3 – 2014-08-19
   considering virtual modifier mappings.
   Note: this only affects non-standard uses of `xkb_state_update_mask()`.
 
-- Added a test for xkbcommon-x11, `x11comp`. The test uses the system’s
+- Added a test for libxkbcommon-x11, `x11comp`. The test uses the system’s
   Xvfb server and xkbcomp. If they do not exist or fail, the test is
   skipped.
 
@@ -2121,7 +2121,7 @@ libxkbcommon 0.4.1 – 2014-03-27
   to libX11. The previous behavior caused a bug where Shift would
   not cancel an active Caps Lock.
 
-- Make xkbcommon-x11 work with the keymap reported by the XQuartz
+- Make libxkbcommon-x11 work with the keymap reported by the XQuartz
   X server.
 
   https://bugs.freedesktop.org/show_bug.cgi?id=75798

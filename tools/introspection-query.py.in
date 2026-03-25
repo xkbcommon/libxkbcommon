@@ -706,7 +706,7 @@ def run_process_rules(args: argparse.Namespace):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         # FIXME: description
-        description="Tool to process the RDF output of xkbcommon introspection"
+        description="Tool to process the RDF output of libxkbcommon introspection"
     )
     parser.add_argument("--debug", action="store_true", help="Debug mode")
     subparsers = parser.add_subparsers()

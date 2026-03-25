@@ -5,12 +5,12 @@
 This page presents the differences between the [XKB 1.0 specification][XKB Protocol]
 implemented in current X servers and its implementation in libxkbcommon.
 
-xkbcommon has *removed* support for some parts of the specification which
+libxkbcommon has *removed* support for some parts of the specification which
 introduced unnecessary complications.  Many of these removals were in fact
 not implemented, or half-implemented at best, as well as being totally
 unused in the standard keyboard layout database, [xkeyboard-config].
 
-On the other hand, xkbcommon has notable additions that lift hard-coded
+On the other hand, libxkbcommon has notable additions that lift hard-coded
 limitation of the [X11 Protocol].
 
 @todo This page is work in progress. It aims to be exhaustive.
@@ -30,8 +30,8 @@ Please [report any issue](https://github.com/xkbcommon/libxkbcommon/issues).
 <tr>
 <th colspan="2">Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -388,7 +388,7 @@ Unused in [xkeyboard-config] layouts.
 
 Rational:
 - There were very few geometry definitions available in [xkeyboard-config], and
-  while xkbcommon was responsible for parsing this insanely complex format,
+  while libxkbcommon was responsible for parsing this insanely complex format,
   it never actually did anything with it.
 - Hopefully someone will develop a companion library which supports keyboard
   geometries in a more useful format, e.g. SVG.
@@ -414,8 +414,8 @@ Rational:
 <th>Type</th>
 <th>Action</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -660,8 +660,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <tr>
 <th>Feature</th>
 <th>X11 (xkbcomp)</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -856,8 +856,8 @@ Multiple groups per symbol section is supported when parsing a [KcCGST] keymap.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -913,8 +913,8 @@ Obsolete legacy file format tied to X11 ecosystem.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>

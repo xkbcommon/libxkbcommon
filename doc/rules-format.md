@@ -18,7 +18,7 @@ appropriate [sections] \(called [KcCGST] for short):
 
 - [key codes],
 - [compatibility],
-- geometry ([not supported](@ref geometry-support) by xkbcommon),
+- geometry ([not supported](@ref geometry-support) by libxkbcommon),
 - [symbols],
 - [types].
 

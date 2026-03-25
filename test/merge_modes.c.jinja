@@ -33,7 +33,7 @@ enum update_files {
 
 {% if compiler.is_default %}
 
-/* xkbcommon buffer compiler */
+/* libxkbcommon buffer compiler */
 static struct xkb_keymap *
 compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
                const char *buf, size_t len, void *private)
