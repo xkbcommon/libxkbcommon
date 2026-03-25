@@ -10,14 +10,14 @@ __XKB__ stands for “X Keyboard Extension”. It may refer to either:
 
 A __protocol__ for the [X Windows System], that extends the core protocol.
 
-_xkbcommon’s_ API is somehow derived from this API, but has been
+_libxkbcommon’s_ API is somehow derived from this API, but has been
 substantially reworked to function as a library instead of a protocol,
 and exposes fewer internal details to clients.
 
-_xkbcommon_ does not depend on a particular windows system; for instance
+_libxkbcommon_ does not depend on a particular windows system; for instance
 it is used by the [Wayland] protocol.
 
-_xkbcommon_ provides the <code>[xkbcommon-x11]</code> module to interface
+_libxkbcommon_ provides the <code>[xkbcommon-x11]</code> module to interface
 a client with an X server using the XKB protocol. Relevant links:
 
 - [The X Window System Protocol][X Protocol]
@@ -173,11 +173,11 @@ same applies when if using a [Compose key].
 ## XKB the text format {#xkb-the-text-format}
 
 A __text format__ to define keyboard keymaps. XKB 1.0 is the specification
-implemented in current X servers. The format supported by _xkbcommon_
+implemented in current X servers. The format supported by _libxkbcommon_
 is very close to XKB 1.0, with some removals and additions. See the
 [compatibility] page for further details.
 
-The format supported by _xkbcommon_ is documented at the page
+The format supported by _libxkbcommon_ is documented at the page
 “[The XKB keymap text format, V1][keymap-text-format-v1-v2]”.
 
 The documentation of the _original_ XKB 1.0 format is much more scarce than

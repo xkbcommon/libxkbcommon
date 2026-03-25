@@ -1,6 +1,6 @@
 # Packaging keyboard layouts {#packaging-keyboard-layouts}
 
-Since version **1.13** xkbcommon facilitates installing keyboard layout packages
+Since version **1.13** libxkbcommon facilitates installing keyboard layout packages
 using a new mechanism: the XKB **extensions directories**. It provides a proper
 way for keyboard layout packages to install their files, which otherwise resorted
 to hacking the xkeyboard-config system directory.

@@ -25,7 +25,7 @@
   type: error
   description: "Warn on malformed number literals"
   details: |
-    xkbcommon can parse the following number literal formats:
+    libxkbcommon can parse the following number literal formats:
 
     - *decimal integer:* 1, 123, etc.
     - *decimal floating-point number:* 1.23, etc.
@@ -83,7 +83,7 @@
   type: warning
   description: "Warn on unrecognized keysyms"
   details: |
-    xkbcommon replaces keysyms it does not recognize by the keysym `NoSymbol`.
+    libxkbcommon replaces keysyms it does not recognize by the keysym `NoSymbol`.
 
     You may find the list of supported keysyms in
     `include/xkbcommon/xkbcommon-keysyms.h`.
@@ -96,7 +96,7 @@
         xkbcommon: WARNING: [XKB-107] de:31:20: unrecognized keysym "coma"
         ```
 
-        xkbcommon does not recognize the keysym “`coma`”. It is most probably
+        libxkbcommon does not recognize the keysym “`coma`”. It is most probably
         a typo for “<code>com<em>m</em>a</code>”.
         See: `XKB_KEY_comma` in `include/xkbcommon/xkbcommon-keysyms.h`.
       before: |
@@ -244,7 +244,7 @@
   type: error
   description: "Warn when a shift level is not supported"
   details: |
-    Shift levels are _one_-indexed. xkbcommon supports two formats of shift levels:
+    Shift levels are _one_-indexed. libxkbcommon supports two formats of shift levels:
     as numbers and as identifiers `LevelN`, where `N` is in the range (1..8).
 - id: "included-file-not-found"
   code: 338
@@ -447,7 +447,7 @@
   type: warning
   description: "Invalid Unicode escape sequence"
   details: |
-    xkbcommon support the Unicode sequence `\u{NNNN}`, where `NNNN` denotes a
+    libxkbcommon support the Unicode sequence `\u{NNNN}`, where `NNNN` denotes a
     Unicode code point in hexadecimal format in the range `1‥0x10ffff`.
 - id: "invalid-real-modifier"
   code: 623
@@ -460,7 +460,7 @@
   type: error
   description: "Unable to add any default include path"
   details: |
-    xkbcommon requires to define at least one include path in order to look up
+    libxkbcommon requires to define at least one include path in order to look up
     XKB files. See @ref include-path "" for further details.
 - id: "unknown-default-field"
   code: 639
@@ -473,7 +473,7 @@
   type: warning
   description: "Warn on unknown escape sequence in string literal"
   details: |
-    xkbcommon support the following escape sequences in string literals:
+    libxkbcommon support the following escape sequences in string literals:
 
     | Escape sequence | Corresponding character                                    |
     | --------------- | ---------------------------------------------------------- |
@@ -594,10 +594,9 @@
     See @ref key-actions "" for the list of supported actions.
 - id: "abi-forward-compat"
   code: 876
-  visibility: public
   added: 1.14.0
-  visibility: public
   type: error
+  visibility: public
   description: ABI forward-compatibility check failed
   details: |
     The caller was compiled against a newer version of the library and is

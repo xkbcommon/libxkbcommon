@@ -30,7 +30,7 @@ def diff(map_path, src_paths):
 
 exit = 0
 
-# xkbcommon symbols
+# libxkbcommon symbols
 left, right = diff(
     top_srcdir / "xkbcommon.map",
     [
@@ -40,13 +40,13 @@ left, right = diff(
     ],
 )
 if left:
-    print("xkbcommon map has extra symbols:", " ".join(left))
+    print("libxkbcommon map has extra symbols:", " ".join(left))
     exit = 1
 if right:
-    print("xkbcommon src has extra symbols:", " ".join(right))
+    print("libxkbcommon src has extra symbols:", " ".join(right))
     exit = 1
 
-# xkbcommon-x11 symbols
+# libxkbcommon-x11 symbols
 left, right = diff(
     top_srcdir / "xkbcommon-x11.map",
     [
@@ -54,10 +54,10 @@ left, right = diff(
     ],
 )
 if left:
-    print("xkbcommon-x11 map has extra symbols:", " ".join(left))
+    print("libxkbcommon-x11 map has extra symbols:", " ".join(left))
     exit = 1
 if right:
-    print("xkbcommon-x11 src has extra symbols:", " ".join(right))
+    print("libxkbcommon-x11 src has extra symbols:", " ".join(right))
     exit = 1
 
 sys.exit(exit)

@@ -35,7 +35,7 @@ struct xkb_context {
 
     struct atom_table *atom_table;
 
-    /* Used and allocated by xkbcommon-x11, free()d with the context. */
+    /* Used and allocated by libxkbcommon-x11, free()d with the context. */
     void *x11_atom_cache;
 
     /* Buffer for the *Text() functions. */

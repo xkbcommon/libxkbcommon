@@ -27,7 +27,7 @@ See @ref xkbcommon-compatibility "" for further information.
 </dt>
 <dd>
 
-Xkbcommon extensions of the classic XKB text format, **incompatible with X11**.
+xkbcommon extensions of the classic XKB text format, **incompatible with X11**.
 See @ref xkbcommon-compatibility "" for further information.
 </dd>
 </dl>
@@ -132,7 +132,7 @@ Some additional resources are:
 
     Real modifiers ensure backward compatibility: indeed
     they are the actual bits used to compute the [levels][level]
-    and are communicated via the API of xkbcommon.
+    and are communicated via the API of libxkbcommon.
 
     Some are generic modifiers (`Mod[1-5]`) that do not have a
     conventional interpretation and are the motivation of the
@@ -539,7 +539,7 @@ They are grouped in [keymap component files][keymap component file] to form a
     A description of the physical layout of a keyboard.
 
     @attention This legacy feature is [not supported](@ref geometry-support)
-    by _xkbcommon_.
+    by _libxkbcommon_.
 
     </td>
   </tr>
@@ -973,11 +973,11 @@ override "<PATH_1>|<PATH_2>(<SECTION_NAME>)
 
 #### Processing
 
-@important Since xkbcommon 1.9.0 the included files are processed in *isolation*
+@important Since libxkbcommon 1.9.0 the included files are processed in *isolation*
 and are not affected by the parent file (e.g. defaults), except for the virtual
 modifiers indices.
 
-@important Since xkbcommon 1.9.0 local merge modes are *not* propagated outside
+@important Since libxkbcommon 1.9.0 local merge modes are *not* propagated outside
 the section scope, i.e. an included file does not leaks its local merge modes to
 its parent.
 
@@ -1338,7 +1338,7 @@ correspond to the ones above. Similar definitions appear in the
 xf86-input-keyboard driver. Note that in all current keymaps there’s a
 constant offset of 8 (for historical reasons).
 
-Note that contrary to xkbcommon, the X11 protocol supports keycodes
+Note that contrary to libxkbcommon, the X11 protocol supports keycodes
 only up to `255`. Therefore, when interfacing with X11, keymaps and applications
 using keycodes beyond `255` should expect warnings.
 

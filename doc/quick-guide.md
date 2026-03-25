@@ -29,7 +29,7 @@ can find complete and more complex examples in the [source directory]:
 Also, the library contains many more functions for examining and using
 the library context, the keymap and the keyboard state. See the
 hyper-linked reference documentation or go through the header files in
-xkbcommon/ for more details.
+the `xkbcommon` directory for more details.
 
 [source directory]: https://github.com/xkbcommon/libxkbcommon
 

@@ -1333,7 +1333,7 @@ enum xkb_keymap_format {
      */
     XKB_KEYMAP_FORMAT_TEXT_V1 = 1,
     /**
-     * Xkbcommon extensions of the classic XKB text format, **incompatible with
+     * xkbcommon extensions of the classic XKB text format, **incompatible with
      * X11**.
      *
      * @important Do *not* use when *serializing* a keymap for **X11**
