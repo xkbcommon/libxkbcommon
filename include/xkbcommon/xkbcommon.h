@@ -3442,10 +3442,11 @@ xkb_state_get_keymap(struct xkb_state *state);
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_CLIENT` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_CLIENT` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @memberof xkb_state
  *
@@ -3484,10 +3485,11 @@ xkb_state_update_mask(struct xkb_state *state,
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER_QUERY` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER_QUERY`
+ * or `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @since 1.14.0
  *
@@ -3527,10 +3529,11 @@ xkb_state_update_event(struct xkb_state *state,
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @memberof xkb_state
  *
@@ -3572,7 +3575,11 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *                        have changed as a result of the update, or `NULL` to
  *                        ignore. Set to 0 if nothing in the state has changed.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @returns
+ * - `::XKB_SUCCESS` on success;
+ * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
+ *   was not created with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`.
+ * - Otherwise another [error code](@ref xkb_error_code).
  *
  * @note This function returns an error code rather than a state component
  * delta (unlike the other `xkb_state_update_*` functions), in order to align
@@ -3635,10 +3642,11 @@ xkb_state_update_synthetic(struct xkb_state *state,
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @memberof xkb_state
  *

@@ -45,11 +45,11 @@
     datatype and overflowed.
 - id: "unsupported-modifier-mask"
   code: 60
+  type: error
+  visibility: public
   added:
     internal: ALWAYS
     public: 1.14.0
-  type: error
-  visibility: public
   description: "Unsupported modifier mask"
   details: |
     The modifier mask does not represent valid modifiers.
@@ -159,9 +159,9 @@
   description: "A modmap entry is invalid"
 - id: "unsupported-layout-out-of-range-policy"
   code: 214
+  type: error
   visibility: public
   added: 1.14.0
-  type: error
   description: The given layout out-of-range policy is not supported
   details: |
     Use the following to check if the linked libxkbcommon library supports a given flag:
@@ -297,6 +297,12 @@
   added: 1.7.0
   type: error
   description: "Included files form cycle"
+- id: "unexpected-state-mode"
+  code: 399
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: "A `xkb_state` object has an unexpected `xkb_state_mode`"
 - id: "conflicting-key-type-definitions"
   code: 407
   added: ALWAYS
@@ -352,9 +358,9 @@
     include, or declare a default section in the included file.
 - id: "abi-invalid-struct-size"
   code: 450
-  added: 1.14.0
-  visibility: public
   type: error
+  visibility: public
+  added: 1.14.0
   description: ABI struct size check failed
   details: |
     The `size` field of a versioned structure does not match any known
@@ -623,9 +629,9 @@
   description: "Missing group index in a group name entry"
 - id: "abi-backward-compat"
   code: 914
-  added: 1.14.0
-  visibility: public
   type: error
+  visibility: public
+  added: 1.14.0
   description: ABI backward-compatibility check failed
   details: |
     The caller was compiled against an older version of the library and is
