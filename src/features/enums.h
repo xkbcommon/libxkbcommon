@@ -15,16 +15,15 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-features.h"
 
-#ifndef INT_WIDTH
-enum {
-    INT_WIDTH = sizeof(int) * CHAR_BIT
-};
+#ifndef UINT32_WIDTH
+enum { UINT32_WIDTH = sizeof(uint32_t) * CHAR_BIT };
 #endif
 
 /*
@@ -32,47 +31,47 @@ enum {
  */
 
 static_assert(XKB_KEYMAP_FORMAT_TEXT_V1 >= 0 &&
-              XKB_KEYMAP_FORMAT_TEXT_V1 < INT_WIDTH, "");
+              XKB_KEYMAP_FORMAT_TEXT_V1 < UINT32_WIDTH, "");
 static_assert(XKB_KEYMAP_FORMAT_TEXT_V2 >= 0 &&
-              XKB_KEYMAP_FORMAT_TEXT_V2 < INT_WIDTH, "");
+              XKB_KEYMAP_FORMAT_TEXT_V2 < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY_DOWN >= 0 &&
-              XKB_EVENT_TYPE_KEY_DOWN < INT_WIDTH, "");
+              XKB_EVENT_TYPE_KEY_DOWN < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY_REPEATED >= 0 &&
-              XKB_EVENT_TYPE_KEY_REPEATED < INT_WIDTH, "");
+              XKB_EVENT_TYPE_KEY_REPEATED < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY_UP >= 0 &&
-              XKB_EVENT_TYPE_KEY_UP < INT_WIDTH, "");
+              XKB_EVENT_TYPE_KEY_UP < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE >= 0 &&
-              XKB_EVENT_TYPE_COMPONENTS_CHANGE < INT_WIDTH, "");
+              XKB_EVENT_TYPE_COMPONENTS_CHANGE < UINT32_WIDTH, "");
 static_assert(XKB_KEY_UP >= 0 &&
-              XKB_KEY_UP < INT_WIDTH, "");
+              XKB_KEY_UP < UINT32_WIDTH, "");
 static_assert(XKB_KEY_DOWN >= 0 &&
-              XKB_KEY_DOWN < INT_WIDTH, "");
+              XKB_KEY_DOWN < UINT32_WIDTH, "");
 static_assert(XKB_KEY_REPEATED >= 0 &&
-              XKB_KEY_REPEATED < INT_WIDTH, "");
+              XKB_KEY_REPEATED < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_WRAP >= 0 &&
-              XKB_LAYOUT_OUT_OF_RANGE_WRAP < INT_WIDTH, "");
+              XKB_LAYOUT_OUT_OF_RANGE_WRAP < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_CLAMP >= 0 &&
-              XKB_LAYOUT_OUT_OF_RANGE_CLAMP < INT_WIDTH, "");
+              XKB_LAYOUT_OUT_OF_RANGE_CLAMP < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_REDIRECT >= 0 &&
-              XKB_LAYOUT_OUT_OF_RANGE_REDIRECT < INT_WIDTH, "");
+              XKB_LAYOUT_OUT_OF_RANGE_REDIRECT < UINT32_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_XKB >= 0 &&
-              XKB_CONSUMED_MODE_XKB < INT_WIDTH, "");
+              XKB_CONSUMED_MODE_XKB < UINT32_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_GTK >= 0 &&
-              XKB_CONSUMED_MODE_GTK < INT_WIDTH, "");
+              XKB_CONSUMED_MODE_GTK < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_FORMAT_TEXT_V1 >= 0 &&
-              XKB_COMPOSE_FORMAT_TEXT_V1 < INT_WIDTH, "");
+              XKB_COMPOSE_FORMAT_TEXT_V1 < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_NOTHING >= 0 &&
-              XKB_COMPOSE_NOTHING < INT_WIDTH, "");
+              XKB_COMPOSE_NOTHING < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_COMPOSING >= 0 &&
-              XKB_COMPOSE_COMPOSING < INT_WIDTH, "");
+              XKB_COMPOSE_COMPOSING < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_COMPOSED >= 0 &&
-              XKB_COMPOSE_COMPOSED < INT_WIDTH, "");
+              XKB_COMPOSE_COMPOSED < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_CANCELLED >= 0 &&
-              XKB_COMPOSE_CANCELLED < INT_WIDTH, "");
+              XKB_COMPOSE_CANCELLED < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_FEED_IGNORED >= 0 &&
-              XKB_COMPOSE_FEED_IGNORED < INT_WIDTH, "");
+              XKB_COMPOSE_FEED_IGNORED < UINT32_WIDTH, "");
 static_assert(XKB_COMPOSE_FEED_ACCEPTED >= 0 &&
-              XKB_COMPOSE_FEED_ACCEPTED < INT_WIDTH, "");
+              XKB_COMPOSE_FEED_ACCEPTED < UINT32_WIDTH, "");
 
 enum xkb_enumerations_values {
     XKB_RMLVO_BUILDER_FLAGS_VALUES
@@ -190,20 +189,20 @@ enum xkb_enumerations_values {
  */
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_rmlvo_builder_flags_values[] = {
+static const uint32_t xkb_rmlvo_builder_flags_values[] = {
     XKB_RMLVO_BUILDER_NO_FLAGS,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keysym_flags_values[] = {
+static const uint32_t xkb_keysym_flags_values[] = {
     XKB_KEYSYM_NO_FLAGS,
     XKB_KEYSYM_CASE_INSENSITIVE,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_context_flags_values[] = {
+static const uint32_t xkb_context_flags_values[] = {
     XKB_CONTEXT_NO_FLAGS,
     XKB_CONTEXT_NO_DEFAULT_INCLUDES,
     XKB_CONTEXT_NO_ENVIRONMENT_NAMES,
@@ -211,7 +210,7 @@ static const int xkb_context_flags_values[] = {
 };
 #endif
 
-static const int xkb_log_level_values[] = {
+static const uint32_t xkb_log_level_values[] = {
     XKB_LOG_LEVEL_CRITICAL,
     XKB_LOG_LEVEL_ERROR,
     XKB_LOG_LEVEL_WARNING,
@@ -220,21 +219,21 @@ static const int xkb_log_level_values[] = {
 };
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keymap_compile_flags_values[] = {
+static const uint32_t xkb_keymap_compile_flags_values[] = {
     XKB_KEYMAP_COMPILE_NO_FLAGS,
     XKB_KEYMAP_COMPILE_STRICT_MODE,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keymap_format_values[] = {
+static const uint32_t xkb_keymap_format_values[] = {
     XKB_KEYMAP_FORMAT_TEXT_V1,
     XKB_KEYMAP_FORMAT_TEXT_V2,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keymap_serialize_flags_values[] = {
+static const uint32_t xkb_keymap_serialize_flags_values[] = {
     XKB_KEYMAP_SERIALIZE_NO_FLAGS,
     XKB_KEYMAP_SERIALIZE_PRETTY,
     XKB_KEYMAP_SERIALIZE_KEEP_UNUSED,
@@ -243,7 +242,7 @@ static const int xkb_keymap_serialize_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keymap_key_iterator_flags_values[] = {
+static const uint32_t xkb_keymap_key_iterator_flags_values[] = {
     XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
     XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER,
     XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND,
@@ -251,7 +250,7 @@ static const int xkb_keymap_key_iterator_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_event_type_values[] = {
+static const uint32_t xkb_event_type_values[] = {
     XKB_EVENT_TYPE_KEY_DOWN,
     XKB_EVENT_TYPE_KEY_REPEATED,
     XKB_EVENT_TYPE_KEY_UP,
@@ -260,7 +259,7 @@ static const int xkb_event_type_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_state_component_values[] = {
+static const uint32_t xkb_state_component_values[] = {
     XKB_STATE_MODS_DEPRESSED,
     XKB_STATE_MODS_LATCHED,
     XKB_STATE_MODS_LOCKED,
@@ -275,7 +274,7 @@ static const int xkb_state_component_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_keyboard_control_flags_values[] = {
+static const uint32_t xkb_keyboard_control_flags_values[] = {
     XKB_KEYBOARD_CONTROL_NO_FLAGS,
     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
     XKB_KEYBOARD_CONTROL_OVERLAY1,
@@ -290,13 +289,13 @@ static const int xkb_keyboard_control_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_events_flags_values[] = {
+static const uint32_t xkb_events_flags_values[] = {
     XKB_EVENTS_NO_FLAGS,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_a11y_flags_values[] = {
+static const uint32_t xkb_a11y_flags_values[] = {
     XKB_A11Y_NO_FLAGS,
     XKB_A11Y_LATCH_TO_LOCK,
     XKB_A11Y_LATCH_SIMULTANEOUS_KEYS,
@@ -304,7 +303,7 @@ static const int xkb_a11y_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_key_direction_values[] = {
+static const uint32_t xkb_key_direction_values[] = {
     XKB_KEY_UP,
     XKB_KEY_DOWN,
     XKB_KEY_REPEATED,
@@ -312,7 +311,7 @@ static const int xkb_key_direction_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_layout_out_of_range_policy_values[] = {
+static const uint32_t xkb_layout_out_of_range_policy_values[] = {
     XKB_LAYOUT_OUT_OF_RANGE_WRAP,
     XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
     XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
@@ -320,7 +319,7 @@ static const int xkb_layout_out_of_range_policy_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_state_match_values[] = {
+static const uint32_t xkb_state_match_values[] = {
     XKB_STATE_MATCH_ANY,
     XKB_STATE_MATCH_ALL,
     XKB_STATE_MATCH_NON_EXCLUSIVE,
@@ -328,32 +327,32 @@ static const int xkb_state_match_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_consumed_mode_values[] = {
+static const uint32_t xkb_consumed_mode_values[] = {
     XKB_CONSUMED_MODE_XKB,
     XKB_CONSUMED_MODE_GTK,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_compose_compile_flags_values[] = {
+static const uint32_t xkb_compose_compile_flags_values[] = {
     XKB_COMPOSE_COMPILE_NO_FLAGS,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_compose_format_values[] = {
+static const uint32_t xkb_compose_format_values[] = {
     XKB_COMPOSE_FORMAT_TEXT_V1,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_compose_state_flags_values[] = {
+static const uint32_t xkb_compose_state_flags_values[] = {
     XKB_COMPOSE_STATE_NO_FLAGS,
 };
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_compose_status_values[] = {
+static const uint32_t xkb_compose_status_values[] = {
     XKB_COMPOSE_NOTHING,
     XKB_COMPOSE_COMPOSING,
     XKB_COMPOSE_COMPOSED,
@@ -362,13 +361,13 @@ static const int xkb_compose_status_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const int xkb_compose_feed_result_values[] = {
+static const uint32_t xkb_compose_feed_result_values[] = {
     XKB_COMPOSE_FEED_IGNORED,
     XKB_COMPOSE_FEED_ACCEPTED,
 };
 #endif
 
-static const int xkb_error_code_values[] = {
+static const uint32_t xkb_error_code_values[] = {
     XKB_ERROR_INVALID,
     XKB_SUCCESS,
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
@@ -380,7 +379,7 @@ static const int xkb_error_code_values[] = {
     XKB_ERROR_ABI_BACKWARD_COMPAT,
 };
 
-static const int xkb_feature_values[] = {
+static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_FEATURE,
     XKB_FEATURE_ENUM_ERROR_CODE,
     XKB_FEATURE_ENUM_CONTEXT_FLAGS,

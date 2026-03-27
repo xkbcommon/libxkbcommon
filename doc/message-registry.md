@@ -321,7 +321,7 @@ key <AB08> {[ comma, semicolon, periodcentered, multiply ]};
 Use the following to check if the linked libxkbcommon library supports a given flag:
 
 ```c
-xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
 ```
 
 
@@ -488,7 +488,7 @@ for further information.
 Use the following to check if the linked libxkbcommon library supports a given flag:
 
 ```c
-xkb_has_feature(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
+xkb_feature_supported(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
 ```
 
 

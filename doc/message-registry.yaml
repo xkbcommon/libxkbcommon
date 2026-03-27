@@ -167,7 +167,7 @@
     Use the following to check if the linked libxkbcommon library supports a given flag:
 
     ```c
-    xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+    xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
     ```
 - id: "unknown-statement"
   code: 222
@@ -285,7 +285,7 @@
     Use the following to check if the linked libxkbcommon library supports a given flag:
 
     ```c
-    xkb_has_feature(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
+    xkb_feature_supported(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
     ```
 - id: "duplicate-entry"
   code: 378
@@ -594,10 +594,9 @@
     See @ref key-actions "" for the list of supported actions.
 - id: "abi-forward-compat"
   code: 876
+  type: error
   visibility: public
   added: 1.14.0
-  visibility: public
-  type: error
   description: ABI forward-compatibility check failed
   details: |
     The caller was compiled against a newer version of the library and is

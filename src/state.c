@@ -1669,7 +1669,7 @@ static enum xkb_error_code
 state_update_layout_policy(struct xkb_state *state,
                            const struct xkb_layout_policy_update *update)
 {
-    if (xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
+    if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
                         (int)update->policy)) {
         if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
             if (update->redirect < state->keymap->num_groups) {

@@ -11,18 +11,20 @@
 
 #include "config.h"
 
+#include <stdint.h>
+
 #include "xkbcommon/xkbcommon-features.h"
 #include "features/enums.h"
 #include "utils.h"
 
 static bool
-is_supported_enum_value_mask(enum xkb_enumerations_values values, int value)
+is_supported_enum_value_mask(enum xkb_enumerations_values values, uint32_t value)
 {
-    return (value >= 0 && value < INT_WIDTH && (values & (1u << value)));
+    return (value < UINT32_WIDTH && (values & (UINT32_C(1) << value)));
 }
 
 static bool
-is_supported_enum_value_array(const int *values, size_t size, int value)
+is_supported_enum_value_array(const uint32_t *values, size_t size, uint32_t value)
 {
     for (size_t v = 0; v < size; v++) {
         if (values[v] == value) {
@@ -34,13 +36,13 @@ is_supported_enum_value_array(const int *values, size_t size, int value)
 
 static inline bool
 is_supported_flag_value(enum xkb_enumerations_values values,
-                        bool accept_zero, int value)
+                        bool accept_zero, uint32_t value)
 {
-    return (accept_zero || value) && ((int) values & value) == value;
+    return (accept_zero || value) && ((uint32_t) values & value) == value;
 }
 
 bool
-xkb_has_feature(enum xkb_feature feature, int value)
+xkb_feature_supported(enum xkb_feature feature, uint32_t value)
 {
     switch (feature) {
     {# TODO: Non-enumeration features #}
