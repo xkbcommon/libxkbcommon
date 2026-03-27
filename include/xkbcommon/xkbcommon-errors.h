@@ -76,7 +76,7 @@ enum xkb_error_code {
      * given flag:
      *
      * ```c
-     * xkb_has_feature(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+     * xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
      * ```
      *
      * @since 1.14.0
@@ -101,7 +101,7 @@ enum xkb_error_code {
      * given flag:
      *
      * ```c
-     * xkb_has_feature(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
+     * xkb_feature_supported(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
      * ```
      *
      * @since 1.14.0

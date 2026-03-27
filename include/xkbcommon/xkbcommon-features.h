@@ -9,6 +9,8 @@
 #ifndef _XKBCOMMON_FEATURES_H_
 #define _XKBCOMMON_FEATURES_H_
 
+#include <stdint.h>
+
 #include <xkbcommon/xkbcommon.h>
 
 #ifdef __cplusplus
@@ -84,7 +86,7 @@ extern "C" {
 /**
  * @enum xkb_feature
  *
- * Enumerate all the features testable with `xkb_has_feature()`.
+ * Enumerate all the features testable with `xkb_feature_supported()`.
  *
  * @since 1.14.0
  */
@@ -236,20 +238,20 @@ enum xkb_feature {
 };
 
 /**
- * Test feature availability.
+ * Test feature support.
  *
  * This is useful when the library is dynamically linked.
  *
  * @param feature  The feature to check
- * @param value    The value to check if @p feature denotes an enumeration,
- * otherwise this argument is ignored.
+ * @param value    The value to check. Ignored if @p feature does not use
+ *                 a value parameter; refer to the feature’s description.
  *
  * @returns `true` if the feature is supported, false otherwise.
  *
  * @since 1.14.0
  */
 XKB_EXPORT bool
-xkb_has_feature(enum xkb_feature feature, int value);
+xkb_feature_supported(enum xkb_feature feature, uint32_t value);
 
 /** @} */
 
