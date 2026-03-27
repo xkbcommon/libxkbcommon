@@ -29,6 +29,8 @@ xkb_feature:
     value: 24040
   - name: XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS
     value: 24060
+  - name: XKB_FEATURE_ENUM_STATE_MODE
+    value: 24200
   - name: XKB_FEATURE_ENUM_STATE_MATCH
     value: 24820
   - name: XKB_FEATURE_ENUM_CONSUMED_MODE
