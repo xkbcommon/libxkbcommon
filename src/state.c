@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,10 +66,12 @@ struct xkb_events {
     struct xkb_context *ctx;
 };
 
+struct xkb_state_legacy;
+
 struct xkb_filter {
     union xkb_action action;
     const struct xkb_key *key;
-    bool (*func)(struct xkb_state *state,
+    bool (*func)(struct xkb_state_legacy *state,
                  struct xkb_events *events,
                  struct xkb_filter *filter,
                  const struct xkb_key *key,
@@ -77,19 +80,64 @@ struct xkb_filter {
     int refcnt;
 };
 
+enum xkb_state_type {
+    /** `xkb_state`: Client-only state (server API raises errors) */
+    CLIENT_STATE = 0,
+    /** `xkb_state`: Server companion */
+    SERVER_COMPANION,
+    /** `xkb_state`: Legacy unsafe client + server state */
+    LEGACY_MIXED_STATE,
+    /** `xkb_state`: Legacy server-only state (client-only API raises errors) */
+    LEGACY_SERVER_STATE,
+    /** `xkb_machine`: Server-only state */
+    SERVER_STATE,
+    _XKB_STATE_TYPE_NUM_ENTRIES
+};
+
+static_assert(CLIENT_STATE == 0 &&
+              CLIENT_STATE < SERVER_COMPANION &&
+              SERVER_COMPANION < LEGACY_MIXED_STATE &&
+              LEGACY_MIXED_STATE < LEGACY_SERVER_STATE &&
+              LEGACY_SERVER_STATE < SERVER_STATE,
+              "Order is used to guard client/server -only APIs: do not change");
+
+enum { XKB_LAYOUT_INDEX_T_MIN_WIDTH = 6 };
+static_assert(XKB_MAX_GROUPS < (1 << XKB_LAYOUT_INDEX_T_MIN_WIDTH),
+              "Cannot encode out_of_range_group::redirect_group");
+
+struct out_of_range_group {
+    enum xkb_layout_out_of_range_policy policy :
+        (sizeof(enum xkb_layout_out_of_range_policy) * CHAR_BIT -
+         XKB_LAYOUT_INDEX_T_MIN_WIDTH);
+    xkb_layout_index_t redirect_group : XKB_LAYOUT_INDEX_T_MIN_WIDTH;
+};
+
+enum { XKB_STATE_TYPE_MIN_WIDTH = 4 /* 3 bits + sign */ };
+static_assert(_XKB_STATE_TYPE_NUM_ENTRIES < (1 << XKB_STATE_TYPE_MIN_WIDTH),
+              "Cannot encode xkb_state::type");
+
 struct xkb_state {
+    struct xkb_keymap *keymap;
     /*
      * Before updating the state, we keep a copy of just this struct. This
      * allows us to report which components of the state have changed.
      */
     struct state_components components;
+    struct out_of_range_group out_of_range_group;
 
-    struct machine_controls {
-        struct {
-            enum xkb_layout_out_of_range_policy policy;
-            xkb_layout_index_t redirect_group;
-        } out_of_range_group;
-    } controls;
+    enum xkb_state_type type : XKB_STATE_TYPE_MIN_WIDTH;
+    int refcnt : (sizeof(int) * CHAR_BIT - XKB_STATE_TYPE_MIN_WIDTH);
+};
+
+struct xkb_state_legacy {
+    struct xkb_state base;
+
+    darray(struct xkb_filter) filters;
+
+    // struct parametrized_controls {} controls;
+
+    /* NOTE: if we ever add other flags types, we could merge them internally */
+    enum xkb_a11y_flags flags;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -105,12 +153,6 @@ struct xkb_state {
      * the modifier should still be set. This keeps the count.
      */
     int16_t mod_key_count[XKB_MAX_MODS];
-
-    /* NOTE: if we ever add other flags types, we could merge them internally */
-    enum xkb_a11y_flags flags;
-    int refcnt;
-    darray(struct xkb_filter) filters;
-    struct xkb_keymap *keymap;
 };
 
 static const struct xkb_key_type_entry *
@@ -214,7 +256,7 @@ err:
 }
 
 static struct xkb_filter *
-xkb_filter_new(struct xkb_state *state)
+xkb_filter_new(struct xkb_state_legacy *state)
 {
     struct xkb_filter *filter = NULL, *iter;
 
@@ -261,18 +303,19 @@ enum xkb_filter_result {
         (state_)->components.component_ += (filter_)->action.group.group
 
 static void
-xkb_filter_group_set_new(struct xkb_state *state,
+xkb_filter_group_set_new(struct xkb_state_legacy *state,
                          struct xkb_events *events,
                          struct xkb_filter *filter)
 {
-    static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
+    static_assert(sizeof(state->base.components.base_group) ==
+                  sizeof(filter->priv),
                   "Max groups don't fit");
-    filter->priv = state->components.base_group;
-    apply_group_delta(filter, state, base_group);
+    filter->priv = state->base.components.base_group;
+    apply_group_delta(filter, &state->base, base_group);
 }
 
 static bool
-xkb_filter_group_set_func(struct xkb_state *state,
+xkb_filter_group_set_func(struct xkb_state_legacy *state,
                           struct xkb_events *events,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
@@ -294,12 +337,12 @@ xkb_filter_group_set_func(struct xkb_state *state,
             return XKB_FILTER_CONSUME;
     }
 
-    static_assert(sizeof(state->components.base_group) == sizeof(filter->priv),
+    static_assert(sizeof(state->base.components.base_group) == sizeof(filter->priv),
                   "Max groups don't fit");
-    state->components.base_group = (int32_t) filter->priv;
+    state->base.components.base_group = (int32_t) filter->priv;
 
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
-        state->components.locked_group = 0;
+        state->base.components.locked_group = 0;
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
@@ -336,7 +379,7 @@ get_state_component_changes(const struct state_components *a,
 }
 
 static void
-xkb_filter_group_lock_new(struct xkb_state *state,
+xkb_filter_group_lock_new(struct xkb_state_legacy *state,
                           struct xkb_events *events,
                           struct xkb_filter *filter)
 {
@@ -349,13 +392,13 @@ xkb_filter_group_lock_new(struct xkb_state *state,
         return;
     } else {
         /* Lock on key press */
-        apply_group_delta(filter, state, locked_group);
+        apply_group_delta(filter, &state->base, locked_group);
     }
 
 }
 
 static bool
-xkb_filter_group_lock_func(struct xkb_state *state,
+xkb_filter_group_lock_func(struct xkb_state_legacy *state,
                            struct xkb_events *events,
                            struct xkb_filter *filter,
                            const struct xkb_key *key,
@@ -392,7 +435,7 @@ xkb_filter_group_lock_func(struct xkb_state *state,
          *
          * This is a keymap v2 extension.
          */
-        apply_group_delta(filter, state, locked_group);
+        apply_group_delta(filter, &state->base, locked_group);
     } else {
         /* Lock on key press: do nothing on key release. */
     }
@@ -456,23 +499,23 @@ union group_latch_priv {
 };
 
 static void
-xkb_filter_group_latch_new(struct xkb_state *state,
+xkb_filter_group_latch_new(struct xkb_state_legacy *state,
                            struct xkb_events *events,
                            struct xkb_filter *filter)
 {
     const union group_latch_priv priv = {
         .latch = LATCH_KEY_DOWN,
         .group_delta = (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
-            ? filter->action.group.group - state->components.base_group
+            ? filter->action.group.group - state->base.components.base_group
             : filter->action.group.group
     };
     filter->priv = priv.priv;
     /* Like group set */
-    apply_group_delta(filter, state, base_group);
+    apply_group_delta(filter, &state->base, base_group);
 }
 
 static bool
-xkb_filter_group_latch_func(struct xkb_state *state,
+xkb_filter_group_latch_func(struct xkb_state_legacy *state,
                             struct xkb_events *events,
                             struct xkb_filter *filter,
                             const struct xkb_key *key,
@@ -483,7 +526,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
 
     if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
-        const xkb_action_count_t count = xkb_key_get_actions(state, key,
+        const xkb_action_count_t count = xkb_key_get_actions(&state->base, key,
                                                              &actions);
 
         if (latch == LATCH_KEY_DOWN) {
@@ -526,7 +569,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
              * keypress, then either break the latch if any random key is
              * pressed, or promote it to a lock if it's the same group delta &
              * flags and latchToLock option is enabled. */
-            const bool sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
+            const bool sticky_keys = state->base.components.controls
+                                   & CONTROL_STICKY_KEYS;
             const enum xkb_action_flags flags = filter->action.group.flags &
                                                 ~ACTION_LATCH_TO_LOCK;
             for (xkb_action_count_t k = 0; k < count; k++) {
@@ -541,7 +585,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                         filter->action.type = ACTION_TYPE_GROUP_LOCK;
                         filter->func = xkb_filter_group_lock_func;
                         xkb_filter_group_lock_new(state, events, filter);
-                        state->components.latched_group -= priv.group_delta;
+                        state->base.components.latched_group -= priv.group_delta;
                         filter->key = key;
                         /* XXX beep beep! */
                         return XKB_FILTER_CONSUME;
@@ -557,7 +601,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
                                                  INTERNAL_BREAKS_GROUP_LATCH,
                                                  0)) {
                     /* Breaks the latch */
-                    state->components.latched_group -= priv.group_delta;
+                    state->base.components.latched_group -= priv.group_delta;
                     filter->func = NULL;
                     return XKB_FILTER_CONTINUE;
                 }
@@ -581,17 +625,17 @@ xkb_filter_group_latch_func(struct xkb_state *state,
          * stage, so set PENDING and move our group from base to
          * latched. */
         if ((filter->action.group.flags & ACTION_LOCK_CLEAR) &&
-             state->components.locked_group) {
+             state->base.components.locked_group) {
             if (latch == LATCH_PENDING)
-                state->components.latched_group -= priv.group_delta;
+                state->base.components.latched_group -= priv.group_delta;
             else
-                state->components.base_group -= priv.group_delta;
-            state->components.locked_group = 0;
+                state->base.components.base_group -= priv.group_delta;
+            state->base.components.locked_group = 0;
             filter->func = NULL;
         }
         /* Broken latch */
         else if (latch == NO_LATCH) {
-            state->components.base_group -= priv.group_delta;
+            state->base.components.base_group -= priv.group_delta;
             filter->func = NULL;
         }
         /* We may already have reached the latch state if pressing the
@@ -599,8 +643,8 @@ xkb_filter_group_latch_func(struct xkb_state *state,
         else if (latch == LATCH_KEY_DOWN) {
             latch = LATCH_PENDING;
             /* Switch from set to latch */
-            state->components.base_group -= priv.group_delta;
-            state->components.latched_group += priv.group_delta;
+            state->base.components.base_group -= priv.group_delta;
+            state->base.components.latched_group += priv.group_delta;
             /* XXX beep beep! */
         }
     }
@@ -612,7 +656,7 @@ xkb_filter_group_latch_func(struct xkb_state *state,
 }
 
 static void
-xkb_filter_mod_set_new(struct xkb_state *state,
+xkb_filter_mod_set_new(struct xkb_state_legacy *state,
                        struct xkb_events *events,
                        struct xkb_filter *filter)
 {
@@ -625,8 +669,8 @@ xkb_filter_mod_set_new(struct xkb_state *state,
          * This is a keymap v2 extension.
          */
         filter->priv = filter->action.mods.mods.mask
-                     & ~state->components.locked_mods;
-        state->components.locked_mods &= ~filter->action.mods.mods.mask;
+                     & ~state->base.components.locked_mods;
+        state->base.components.locked_mods &= ~filter->action.mods.mods.mask;
     } else {
         filter->priv = filter->action.mods.mods.mask;
     }
@@ -635,7 +679,7 @@ xkb_filter_mod_set_new(struct xkb_state *state,
 }
 
 static bool
-xkb_filter_mod_set_func(struct xkb_state *state,
+xkb_filter_mod_set_func(struct xkb_state_legacy *state,
                         struct xkb_events *events,
                         struct xkb_filter *filter,
                         const struct xkb_key *key,
@@ -662,18 +706,18 @@ xkb_filter_mod_set_func(struct xkb_state *state,
     const enum xkb_action_flags unlock = ACTION_UNLOCK_ON_PRESS
                                        | ACTION_LOCK_CLEAR;
     if ((filter->action.mods.flags & unlock) == ACTION_LOCK_CLEAR)
-        state->components.locked_mods &= ~filter->action.mods.mods.mask;
+        state->base.components.locked_mods &= ~filter->action.mods.mods.mask;
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
 }
 
 static void
-xkb_filter_mod_lock_new(struct xkb_state *state,
+xkb_filter_mod_lock_new(struct xkb_state_legacy *state,
                         struct xkb_events *events,
                         struct xkb_filter *filter)
 {
-    filter->priv = (state->components.locked_mods &
+    filter->priv = (state->base.components.locked_mods &
                     filter->action.mods.mods.mask);
 
     if (filter->priv && (filter->action.mods.flags & ACTION_UNLOCK_ON_PRESS)) {
@@ -683,19 +727,19 @@ xkb_filter_mod_lock_new(struct xkb_state *state,
          * This is a keymap v2 extension: unlock-on-press.
          */
         if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
-            state->components.locked_mods &= ~filter->priv;
+            state->base.components.locked_mods &= ~filter->priv;
         /* No further action: cancel filter */
         filter->func = NULL;
     } else {
         /* Set base mods; lock mods if relevant (XKB 1.0 spec) */
         state->set_mods |= filter->action.mods.mods.mask;
         if (!(filter->action.mods.flags & ACTION_LOCK_NO_LOCK))
-            state->components.locked_mods |= filter->action.mods.mods.mask;
+            state->base.components.locked_mods |= filter->action.mods.mods.mask;
     }
 }
 
 static bool
-xkb_filter_mod_lock_func(struct xkb_state *state,
+xkb_filter_mod_lock_func(struct xkb_state_legacy *state,
                          struct xkb_events *events,
                          struct xkb_filter *filter,
                          const struct xkb_key *key,
@@ -717,14 +761,14 @@ xkb_filter_mod_lock_func(struct xkb_state *state,
 
     state->clear_mods |= filter->action.mods.mods.mask;
     if (!(filter->action.mods.flags & ACTION_LOCK_NO_UNLOCK))
-        state->components.locked_mods &= ~filter->priv;
+        state->base.components.locked_mods &= ~filter->priv;
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
 }
 
 static void
-xkb_filter_mod_latch_new(struct xkb_state *state,
+xkb_filter_mod_latch_new(struct xkb_state_legacy *state,
                          struct xkb_events *events,
                          struct xkb_filter *filter)
 {
@@ -734,14 +778,14 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
 
     if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
         (filter->action.mods.flags & unlockOnPress) &&
-        (state->components.locked_mods & filter->action.mods.mods.mask) ==
+        (state->base.components.locked_mods & filter->action.mods.mods.mask) ==
          filter->action.mods.mods.mask) {
         /*
          * Unlock on press
          *
          * This is a keymap v2 extension: clear locks and do not latch.
          */
-        state->components.locked_mods &= ~filter->action.mods.mods.mask;
+        state->base.components.locked_mods &= ~filter->action.mods.mods.mask;
         filter->func = NULL;
     } else if (filter->action.mods.flags & ACTION_LATCH_ON_PRESS) {
         /*
@@ -750,7 +794,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
          * This is a keymap format v2 extension.
          */
         filter->priv = LATCH_PENDING;
-        state->components.latched_mods |= filter->action.mods.mods.mask;
+        state->base.components.latched_mods |= filter->action.mods.mods.mask;
         /* XXX beep beep! */
     } else {
         /* XKB standard latch action */
@@ -760,7 +804,7 @@ xkb_filter_mod_latch_new(struct xkb_state *state,
 }
 
 static bool
-xkb_filter_mod_latch_func(struct xkb_state *state,
+xkb_filter_mod_latch_func(struct xkb_state_legacy *state,
                           struct xkb_events *events,
                           struct xkb_filter *filter,
                           const struct xkb_key *key,
@@ -770,7 +814,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
     if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
-        const xkb_action_count_t count = xkb_key_get_actions(state, key,
+        const xkb_action_count_t count = xkb_key_get_actions(&state->base, key,
                                                              &actions);
 
         if (latch == LATCH_KEY_DOWN) {
@@ -812,7 +856,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
              * keypress, then either break the latch if any random key is pressed,
              * or promote it to a lock or plain base set if it's the same
              * modifier. */
-            const bool sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
+            const bool sticky_keys = state->base.components.controls
+                                   & CONTROL_STICKY_KEYS;
             const enum xkb_action_flags flags = filter->action.mods.flags &
                                                 ~ACTION_LATCH_TO_LOCK;
             for (xkb_action_count_t k = 0; k < count; k++) {
@@ -835,7 +880,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                     }
                     filter->key = key;
                     /* Clear latches */
-                    state->components.latched_mods &= ~filter->action.mods.mods.mask;
+                    state->base.components.latched_mods &=
+                        ~filter->action.mods.mods.mask;
                     /* XXX beep beep! */
                     return XKB_FILTER_CONSUME;
                 }
@@ -844,7 +890,8 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
                                                  filter->action.mods.mods.mask)) {
                     /* XXX: This may be totally broken, we might need to break the
                      *      latch in the next run after this press? */
-                    state->components.latched_mods &= ~filter->action.mods.mods.mask;
+                    state->base.components.latched_mods &=
+                        ~filter->action.mods.mods.mask;
                     filter->func = NULL;
                     return XKB_FILTER_CONTINUE;
                 }
@@ -874,16 +921,16 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 
         if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
             !(filter->action.mods.flags & unlockOnPress) &&
-            (state->components.locked_mods & filter->action.mods.mods.mask) ==
-             filter->action.mods.mods.mask) {
+            (state->base.components.locked_mods &
+             filter->action.mods.mods.mask) == filter->action.mods.mods.mask) {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
-                state->components.latched_mods &=
+                state->base.components.latched_mods &=
                     ~filter->action.mods.mods.mask;
             else
                 state->clear_mods |= filter->action.mods.mods.mask;
-            state->components.locked_mods &= ~filter->action.mods.mods.mask;
+            state->base.components.locked_mods &= ~filter->action.mods.mods.mask;
             filter->func = NULL;
         }
         else if (latch == NO_LATCH) {
@@ -894,7 +941,7 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
         else if (!(filter->action.mods.flags & ACTION_LATCH_ON_PRESS)) {
             latch = LATCH_PENDING;
             state->clear_mods |= filter->action.mods.mods.mask;
-            state->components.latched_mods |= filter->action.mods.mods.mask;
+            state->base.components.latched_mods |= filter->action.mods.mods.mask;
             /* XXX beep beep! */
         }
     }
@@ -905,35 +952,35 @@ xkb_filter_mod_latch_func(struct xkb_state *state,
 }
 
 static inline void
-clear_all_latches_and_locks(struct xkb_state *state,
+clear_all_latches_and_locks(struct xkb_state_legacy *state,
                             struct xkb_events *events);
 
 static void
-xkb_filter_ctrls_new(struct xkb_state *state,
+xkb_filter_ctrls_new(struct xkb_state_legacy *state,
                      struct xkb_events *events,
                      struct xkb_filter *filter)
 {
     if (filter->action.type == ACTION_TYPE_CTRL_SET) {
         /* Set: save the specified controls that are *not* already enabled */
         filter->priv = (uint32_t) (
-            (~state->components.controls) & filter->action.ctrls.ctrls
+            (~state->base.components.controls) & filter->action.ctrls.ctrls
         );
     } else {
         /* Lock: save the specified controls that *are* already enabled */
         filter->priv = (uint32_t) (
-            state->components.controls & filter->action.ctrls.ctrls
+            state->base.components.controls & filter->action.ctrls.ctrls
         );
     }
 
     if (filter->action.type == ACTION_TYPE_CTRL_SET ||
         !(filter->action.ctrls.flags & ACTION_LOCK_NO_LOCK)) {
         /* Enable the specified controls that are not already enabled */
-        state->components.controls |= filter->action.ctrls.ctrls;
+        state->base.components.controls |= filter->action.ctrls.ctrls;
     }
 }
 
 static bool
-xkb_filter_ctrls_func(struct xkb_state *state,
+xkb_filter_ctrls_func(struct xkb_state_legacy *state,
                       struct xkb_events *events,
                       struct xkb_filter *filter,
                       const struct xkb_key *key,
@@ -955,16 +1002,16 @@ xkb_filter_ctrls_func(struct xkb_state *state,
 
     if (filter->action.type == ACTION_TYPE_CTRL_SET ||
         !(filter->action.ctrls.flags & ACTION_LOCK_NO_UNLOCK)) {
-        const enum xkb_action_controls old = state->components.controls;
+        const enum xkb_action_controls old = state->base.components.controls;
 
         /*
          * Set: Disable specified controls that were *not* enabled at key press.
          * Lock: Disable specified controls that *were* enabled at key press.
          */
-        state->components.controls &= ~(enum xkb_action_controls) filter->priv;
+        state->base.components.controls &= ~(enum xkb_action_controls) filter->priv;
 
         if ((old & CONTROL_STICKY_KEYS) &&
-            !(state->components.controls & CONTROL_STICKY_KEYS)) {
+            !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
             /* Sticky keys were disabled: clear all locks and latches */
             clear_all_latches_and_locks(state, events);
         }
@@ -1039,7 +1086,7 @@ append_redirect_key_events(struct xkb_state *state,
 }
 
 static void
-xkb_filter_redirect_key_new(struct xkb_state *state,
+xkb_filter_redirect_key_new(struct xkb_state_legacy *state,
                             struct xkb_events *events,
                             struct xkb_filter *filter)
 {
@@ -1048,12 +1095,12 @@ xkb_filter_redirect_key_new(struct xkb_state *state,
         filter->func = NULL;
         return;
     }
-    append_redirect_key_events(state, events, &filter->action.redirect,
+    append_redirect_key_events(&state->base, events, &filter->action.redirect,
                                XKB_KEY_DOWN);
 }
 
 static bool
-xkb_filter_redirect_key_func(struct xkb_state *state,
+xkb_filter_redirect_key_func(struct xkb_state_legacy *state,
                              struct xkb_events *events,
                              struct xkb_filter *filter,
                              const struct xkb_key *key,
@@ -1063,19 +1110,20 @@ xkb_filter_redirect_key_func(struct xkb_state *state,
         return XKB_FILTER_CONTINUE;
 
     if (direction == XKB_KEY_UP) {
-        append_redirect_key_events(state, events, &filter->action.redirect,
-                                   XKB_KEY_UP);
+        append_redirect_key_events(&state->base, events,
+                                   &filter->action.redirect, XKB_KEY_UP);
         filter->func = NULL;
         return XKB_FILTER_CONSUME;
      } else if (direction == XKB_KEY_DOWN) {
         const union xkb_action *actions = NULL;
-        const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
+        const xkb_action_count_t count =
+            xkb_key_get_actions(&state->base, key, &actions);
 
         for (xkb_action_count_t a = 0; a < count; a++) {
             if (actions[a].type == ACTION_TYPE_REDIRECT_KEY &&
                 actions[a].redirect.keycode != filter->action.redirect.keycode) {
                     /* One action redirects to a different key: release first */
-                    append_redirect_key_events(state, events,
+                    append_redirect_key_events(&state->base, events,
                                                &filter->action.redirect,
                                                XKB_KEY_UP);
                 filter->func = NULL;
@@ -1084,16 +1132,16 @@ xkb_filter_redirect_key_func(struct xkb_state *state,
         }
     }
 
-    append_redirect_key_events(state, events, &filter->action.redirect,
+    append_redirect_key_events(&state->base, events, &filter->action.redirect,
                                direction);
     return XKB_FILTER_CONSUME;
 }
 
 static const struct {
-    void (*new)(struct xkb_state *state,
+    void (*new)(struct xkb_state_legacy *state,
                 struct xkb_events *events,
                 struct xkb_filter *filter);
-    bool (*func)(struct xkb_state *state,
+    bool (*func)(struct xkb_state_legacy *state,
                  struct xkb_events *events,
                  struct xkb_filter *filter,
                  const struct xkb_key *key, enum xkb_key_direction direction);
@@ -1124,7 +1172,7 @@ static const struct {
  * apply a new filter from the key action.
  */
 static void
-xkb_filter_apply_all(struct xkb_state *state,
+xkb_filter_apply_all(struct xkb_state_legacy *state,
                      struct xkb_events *events,
                      const struct xkb_key *key,
                      enum xkb_key_direction direction)
@@ -1145,7 +1193,8 @@ xkb_filter_apply_all(struct xkb_state *state,
 
     /* No filter consumed this event, so proceed with the key actions */
     const union xkb_action *actions = NULL;
-    const xkb_action_count_t count = xkb_key_get_actions(state, key, &actions);
+    const xkb_action_count_t count = xkb_key_get_actions(&state->base, key,
+                                                         &actions);
 
     /*
      * Process actions sequentially.
@@ -1173,7 +1222,7 @@ xkb_filter_apply_all(struct xkb_state *state,
         filter = xkb_filter_new(state);
         filter->key = key;
         filter->action = actions[k];
-        if (state->components.controls & CONTROL_STICKY_KEYS) {
+        if (state->base.components.controls & CONTROL_STICKY_KEYS) {
             if (filter->action.type == ACTION_TYPE_MOD_SET) {
                 /* Convert modifier set action to a latch */
                 filter->action.type = ACTION_TYPE_MOD_LATCH;
@@ -1191,10 +1240,10 @@ xkb_filter_apply_all(struct xkb_state *state,
         if (filter->action.type == ACTION_TYPE_REDIRECT_KEY) {
             // FIXME: this is not efficient to resolve mods here each time
             filter->action.redirect.affect = mod_mask_get_effective(
-                state->keymap, filter->action.redirect.affect
+                state->base.keymap, filter->action.redirect.affect
             );
             filter->action.redirect.mods = mod_mask_get_effective(
-                state->keymap, filter->action.redirect.mods
+                state->base.keymap, filter->action.redirect.mods
             );
         }
         filter->func = filter_action_funcs[filter->action.type].func;
@@ -1207,34 +1256,78 @@ xkb_state_update_derived(struct xkb_state *state);
 
 static inline void
 xkb_state_init(struct xkb_state *state, struct xkb_keymap *keymap,
-               enum xkb_a11y_flags a11y_affect,
-               enum xkb_a11y_flags a11y_flags)
+               enum xkb_state_type type)
 {
+    state->type = type;
+    state->refcnt = 1;
+    state->keymap = xkb_keymap_ref(keymap);
+    state->out_of_range_group.policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
+
+    /* Ensure that derived state is correctly initialized */
+    xkb_state_update_derived(state);
+}
+
+static inline void
+xkb_state_legacy_init(struct xkb_state_legacy *state, struct xkb_keymap *keymap,
+                      enum xkb_state_type type,
+                      enum xkb_a11y_flags a11y_affect,
+                      enum xkb_a11y_flags a11y_flags)
+{
+    xkb_state_init(&state->base, keymap, type);
+
     state->flags = a11y_flags;
     if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
         !(a11y_affect & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
              /* Keymap v2+: enable extension to XKB if not manually disabled */
              state->flags |= XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
-     }
-    state->controls.out_of_range_group.policy =
-        XKB_LAYOUT_OUT_OF_RANGE_WRAP;
-
-    state->refcnt = 1;
-    state->keymap = xkb_keymap_ref(keymap);
-    /* Ensure that derived state is correctly initialized */
-    xkb_state_update_derived(state);
+    }
 }
 
 struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap)
 {
-    struct xkb_state* restrict const state = calloc(1, sizeof(*state));
+    struct xkb_state_legacy* restrict const state = calloc(1, sizeof(*state));
     if (!state)
         return NULL;
 
-    xkb_state_init(state, keymap, 0, 0);
+    xkb_state_legacy_init(state, keymap, LEGACY_MIXED_STATE, 0, 0);
 
-    return state;
+    return (struct xkb_state *)state;
+}
+
+struct xkb_state *
+xkb_state_new_with_mode(struct xkb_keymap *keymap, enum xkb_state_mode mode)
+{
+    switch (mode) {
+    case XKB_STATE_MODE_CLIENT:
+    case XKB_STATE_MODE_SERVER_QUERY: {
+        struct xkb_state* restrict const state = calloc(1, sizeof(*state));
+        if (!state)
+            return NULL;
+
+        const enum xkb_state_type type = (mode == XKB_STATE_MODE_CLIENT)
+            ? CLIENT_STATE
+            : SERVER_COMPANION;
+        xkb_state_init(state, keymap, type);
+
+        return state;
+    }
+    case XKB_STATE_MODE_SERVER: {
+        struct xkb_state_legacy* restrict const state = calloc(1, sizeof(*state));
+        if (!state)
+            return NULL;
+
+        xkb_state_legacy_init(state, keymap, LEGACY_SERVER_STATE, 0, 0);
+
+        return (struct xkb_state *)state;
+    }
+    default:
+        /*
+         * No error message: caller should check mode availability with the
+         * `xkb_feature_supported()`.
+         */
+        return NULL;
+    }
 }
 
 struct xkb_state *
@@ -1249,7 +1342,8 @@ static inline void
 xkb_state_destroy(struct xkb_state *state)
 {
     xkb_keymap_unref(state->keymap);
-    darray_free(state->filters);
+    if (state->type > SERVER_COMPANION)
+        darray_free(((struct xkb_state_legacy *)state)->filters);
 }
 
 void
@@ -1260,7 +1354,20 @@ xkb_state_unref(struct xkb_state *state)
         return;
 
     xkb_state_destroy(state);
-    free(state);
+
+    switch (state->type) {
+    case CLIENT_STATE:
+    case SERVER_COMPANION:
+        free(state);
+        break;
+    case LEGACY_MIXED_STATE:
+    case LEGACY_SERVER_STATE:
+        free((struct xkb_state_legacy *)state);
+        break;
+    case SERVER_STATE: /* handled by xkb_machine_unref() */
+    default:
+        PANIC_UNREACHABLE();
+    }
 }
 
 struct xkb_keymap *
@@ -1358,8 +1465,8 @@ xkb_state_update_derived(struct xkb_state *state)
     /* Lock group must be adjusted, but not base nor latched groups */
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    state->controls.out_of_range_group.policy,
-                                    state->controls.out_of_range_group.redirect_group);
+                                    state->out_of_range_group.policy,
+                                    state->out_of_range_group.redirect_group);
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.locked_group =
         (int32_t) (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
@@ -1369,8 +1476,8 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    state->controls.out_of_range_group.policy,
-                                    state->controls.out_of_range_group.redirect_group);
+                                    state->out_of_range_group.policy,
+                                    state->out_of_range_group.redirect_group);
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
 
@@ -1382,15 +1489,26 @@ xkb_state_update_derived(struct xkb_state *state)
  * new modifiers.
  */
 enum xkb_state_component
-xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
+xkb_state_update_key(struct xkb_state *base_state, xkb_keycode_t kc,
                      enum xkb_key_direction direction)
 {
-    const struct xkb_key* const key = XkbKey(state->keymap, kc);
+    /* Guard against client-only state */
+    assert(base_state->type > SERVER_COMPANION);
+    if (base_state->type <= SERVER_COMPANION) {
+        log_err(base_state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+                "%s: Unexpected state type %d\n", __func__, base_state->type);
+        return 0;
+    }
+
+    struct xkb_state_legacy * restrict const state =
+        (struct xkb_state_legacy *)base_state;
+
+    const struct xkb_key* const key = XkbKey(state->base.keymap, kc);
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
 
-    const struct state_components prev_components = state->components;
+    const struct state_components prev_components = state->base.components;
 
     state->set_mods = 0;
     state->clear_mods = 0;
@@ -1402,7 +1520,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
     for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
         if (state->set_mods & bit) {
             state->mod_key_count[i]++;
-            state->components.base_mods |= bit;
+            state->base.components.base_mods |= bit;
             state->set_mods &= ~bit;
         }
     }
@@ -1411,16 +1529,16 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t kc,
         if (state->clear_mods & bit) {
             state->mod_key_count[i]--;
             if (state->mod_key_count[i] <= 0) {
-                state->components.base_mods &= ~bit;
+                state->base.components.base_mods &= ~bit;
                 state->mod_key_count[i] = 0;
             }
             state->clear_mods &= ~bit;
         }
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(&state->base);
 
-    return get_state_component_changes(&prev_components, &state->components);
+    return get_state_component_changes(&prev_components, &state->base.components);
 }
 
 /* We need fake keys for `update_latch_modifiers` and `update_latch_group`.
@@ -1437,13 +1555,13 @@ static const struct xkb_key synthetic_key = { 0 };
 
 /* Transcription from xserver: XkbLatchModifiers */
 static void
-update_latch_modifiers(struct xkb_state *state,
+update_latch_modifiers(struct xkb_state_legacy *state,
                        struct xkb_events *events,
                        xkb_mod_mask_t mask, xkb_mod_mask_t latches)
 {
     /* Clear affected latched modifiers */
     const xkb_mod_mask_t clear = mask & ~latches;
-    state->components.latched_mods &= ~clear;
+    state->base.components.latched_mods &= ~clear;
 
     /* Clear any pending latch to locks using ad hoc action:
      * only affect corresponding modifier latches and no group latch. */
@@ -1490,7 +1608,7 @@ update_latch_modifiers(struct xkb_state *state,
 
 /* Transcription from xserver: XkbLatchGroup */
 static void
-update_latch_group(struct xkb_state *state,
+update_latch_group(struct xkb_state_legacy *state,
                    struct xkb_events *events, int32_t group)
 {
     /* Clear any pending latch to locks. */
@@ -1558,30 +1676,30 @@ resolve_to_canonical_mods(struct xkb_keymap *keymap, xkb_mod_mask_t mods)
 
 static void
 state_update_latched_locked(
-    struct xkb_state * restrict state,
+    struct xkb_state_legacy * restrict state,
     const struct xkb_state_components_update * restrict update,
     struct xkb_events *events
 )
 {
     /* Update locks */
     const xkb_mod_mask_t affect_locked_mods =
-        resolve_to_canonical_mods(state->keymap, update->affect_locked_mods);
+        resolve_to_canonical_mods(state->base.keymap, update->affect_locked_mods);
     if (affect_locked_mods) {
         const xkb_mod_mask_t locked_mods =
-            resolve_to_canonical_mods(state->keymap, update->locked_mods);
-        state->components.locked_mods &= ~affect_locked_mods;
-        state->components.locked_mods |= locked_mods & affect_locked_mods;
+            resolve_to_canonical_mods(state->base.keymap, update->locked_mods);
+        state->base.components.locked_mods &= ~affect_locked_mods;
+        state->base.components.locked_mods |= locked_mods & affect_locked_mods;
     }
     if (update->components & XKB_STATE_LAYOUT_LOCKED) {
-        state->components.locked_group = update->locked_layout;
+        state->base.components.locked_group = update->locked_layout;
     }
 
     /* Update latches */
     const xkb_mod_mask_t affect_latched_mods =
-        resolve_to_canonical_mods(state->keymap, update->affect_latched_mods);
+        resolve_to_canonical_mods(state->base.keymap, update->affect_latched_mods);
     if (affect_latched_mods) {
         const xkb_mod_mask_t latched_mods =
-            resolve_to_canonical_mods(state->keymap, update->latched_mods);
+            resolve_to_canonical_mods(state->base.keymap, update->latched_mods);
         update_latch_modifiers(state, events, affect_latched_mods, latched_mods);
     }
     if (update->components & XKB_STATE_LAYOUT_LATCHED) {
@@ -1590,7 +1708,7 @@ state_update_latched_locked(
 }
 
 enum xkb_state_component
-xkb_state_update_latched_locked(struct xkb_state *state,
+xkb_state_update_latched_locked(struct xkb_state *base_state,
                                 xkb_mod_mask_t affect_latched_mods,
                                 xkb_mod_mask_t latched_mods,
                                 bool affect_latched_layout,
@@ -1600,7 +1718,18 @@ xkb_state_update_latched_locked(struct xkb_state *state,
                                 bool affect_locked_layout,
                                 int32_t locked_layout)
 {
-    const struct state_components previous_components = state->components;
+    /* Guard against client-only state */
+    assert(base_state->type > SERVER_COMPANION);
+    if (base_state->type <= SERVER_COMPANION) {
+        log_err(base_state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+                "%s: Unexpected state type %d\n", __func__, base_state->type);
+        return 0;
+    }
+
+    struct xkb_state_legacy * restrict const state =
+        (struct xkb_state_legacy *)base_state;
+
+    const struct state_components previous_components = state->base.components;
     const enum xkb_state_component components
         = ((affect_latched_mods || latched_mods) ? XKB_STATE_MODS_LATCHED : 0)
         | ((affect_locked_mods || locked_mods) ? XKB_STATE_MODS_LOCKED : 0)
@@ -1617,12 +1746,13 @@ xkb_state_update_latched_locked(struct xkb_state *state,
         .locked_layout = locked_layout
     };
     state_update_latched_locked(state, &update, NULL);
-    xkb_state_update_derived(state);
-    return get_state_component_changes(&previous_components, &state->components);
+    xkb_state_update_derived(&state->base);
+    return get_state_component_changes(&previous_components,
+                                       &state->base.components);
 }
 
 static inline void
-clear_all_latches_and_locks(struct xkb_state *state,
+clear_all_latches_and_locks(struct xkb_state_legacy *state,
                             struct xkb_events *events)
 {
     static const enum xkb_state_component components
@@ -1642,51 +1772,55 @@ clear_all_latches_and_locks(struct xkb_state *state,
 }
 
 static void
-state_update_enabled_controls(struct xkb_state *state,
+state_update_enabled_controls(struct xkb_state_legacy *state,
                               enum xkb_keyboard_control_flags affect,
                               enum xkb_keyboard_control_flags controls,
                               struct xkb_events *events)
 {
-    const bool had_sticky_keys = state->components.controls & CONTROL_STICKY_KEYS;
+    const bool had_sticky_keys = state->base.components.controls
+                               & CONTROL_STICKY_KEYS;
 
     /*
      * Enable to use the public API with the all the Control values, except
      * the internal ones, if any.
      */
     affect = (enum xkb_action_controls) affect & CONTROL_ALL_BOOLEAN;
-    state->components.controls &= ~affect;
-    state->components.controls |= (enum xkb_action_controls) controls & affect;
+    state->base.components.controls &= ~affect;
+    state->base.components.controls |=
+        (enum xkb_action_controls) controls & affect;
 
-    if (had_sticky_keys && !(state->components.controls & CONTROL_STICKY_KEYS)) {
+    if (had_sticky_keys &&
+        !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
         /* Sticky keys were disabled: clear all locks and latches */
         clear_all_latches_and_locks(state, events);
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(&state->base);
 }
 
 static enum xkb_error_code
-state_update_layout_policy(struct xkb_state *state,
+state_update_layout_policy(struct xkb_state_legacy *state,
                            const struct xkb_layout_policy_update *update)
 {
     if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
                         (int)update->policy)) {
         if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
-            if (update->redirect < state->keymap->num_groups) {
-                state->controls.out_of_range_group.redirect_group =
+            if (update->redirect < state->base.keymap->num_groups) {
+                state->base.out_of_range_group.redirect_group =
                     update->redirect;
             } else {
-                log_err(state->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                log_err(state->base.keymap->ctx,
+                        XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                         "Layout policy: "
                         "unsupported layout index %"PRIu32" > %"PRIu32"\n",
-                        update->redirect + 1, state->keymap->num_groups);
+                        update->redirect + 1, state->base.keymap->num_groups);
                 return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
             }
         }
-        state->controls.out_of_range_group.policy = update->policy;
+        state->base.out_of_range_group.policy = update->policy;
         return XKB_SUCCESS;
     } else {
-        log_err(state->keymap->ctx,
+        log_err(state->base.keymap->ctx,
                 XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,
                 "Unsupported layout policy: %d\n", update->policy);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
@@ -1744,17 +1878,27 @@ check_state_update_abi_(struct xkb_context *restrict ctx,
     check_state_update_abi_(ctx, __func__, update)
 
 enum xkb_error_code
-xkb_state_update_synthetic(struct xkb_state *state,
+xkb_state_update_synthetic(struct xkb_state *base_state,
                            const struct xkb_state_update *update,
                            enum xkb_state_component *changed)
 {
+    /* Guard against client-only state */
+    if (base_state->type <= SERVER_COMPANION) {
+        log_err(base_state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+                "%s: Unexpected state type %d\n", __func__, base_state->type);
+        return XKB_ERROR_UNEXPECTED_STATE_MODE;
+    }
+
+    struct xkb_state_legacy * restrict const state =
+        (struct xkb_state_legacy *)base_state;
+
     /* Check ABI compatibility */
-    enum xkb_error_code error = check_state_update_abi(state->keymap->ctx,
+    enum xkb_error_code error = check_state_update_abi(state->base.keymap->ctx,
                                                        update);
     if (error)
         return error;
 
-    const struct state_components previous_components = state->components;
+    const struct state_components previous_components = state->base.components;
 
     // TODO: use a *transaction* mechanism: either the whole update succeeds
     //       or rollback
@@ -1777,11 +1921,11 @@ xkb_state_update_synthetic(struct xkb_state *state,
         state_update_latched_locked(state, components, NULL);
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(&state->base);
 
     if (changed) {
         *changed = get_state_component_changes(&previous_components,
-                                               &state->components);
+                                               &state->base.components);
     }
     return XKB_SUCCESS;
 }
@@ -1802,6 +1946,14 @@ xkb_state_update_mask(struct xkb_state *state,
                       xkb_layout_index_t latched_group,
                       xkb_layout_index_t locked_group)
 {
+    /* Guard against server-only and server companion state */
+    assert(state->type == CLIENT_STATE || state->type == LEGACY_MIXED_STATE);
+    if (state->type != CLIENT_STATE && state->type != LEGACY_MIXED_STATE) {
+        log_err(state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+                "%s: Unexpected state type %d\n", __func__, state->type);
+        return 0;
+    }
+
     const struct state_components prev_components = state->components;
 
     /*
@@ -2153,8 +2305,8 @@ serialize_controls(const struct state_components *components,
          * Enable to use the public API with the all the Controls values, except
          * the internal ones, if any.
          */
-        ? (enum xkb_keyboard_control_flags) (components->controls &
-                                        CONTROL_ALL_BOOLEAN)
+        ? (enum xkb_keyboard_control_flags)
+          (components->controls & CONTROL_ALL_BOOLEAN)
         : 0;
 }
 
@@ -2561,7 +2713,7 @@ struct xkb_overlaid_key {
  */
 struct xkb_machine {
     /** Internal state */
-    struct xkb_state state;
+    struct xkb_state_legacy base;
 
     /* Extra server-specific state data */
 
@@ -2822,7 +2974,8 @@ machine_set_mods(struct xkb_machine *sm,
         machine_mods_mappings mappings = darray_new();
         xkb_mod_mask_t mask = 0;
         const struct machine_mods_mapping *mapping;
-        const xkb_mod_mask_t invalid = ~sm->state.keymap->canonical_state_mask;
+        const xkb_mod_mask_t invalid =
+            ~sm->base.base.keymap->canonical_state_mask;
         darray_foreach(mapping, *raw_mappings) {
             if (!mapping->source || !mapping->target ||
                 (mapping->source & invalid) || (mapping->target & invalid))
@@ -2868,7 +3021,7 @@ machine_set_shortcuts(struct xkb_machine *sm,
         return true;
     }
 
-    struct xkb_keymap * const restrict keymap = sm->state.keymap;
+    struct xkb_keymap * const restrict keymap = sm->base.base.keymap;
 
     /* Consider only defined layouts */
     xkb_layout_index_t count = MIN(
@@ -2931,8 +3084,8 @@ xkb_machine_new(struct xkb_keymap *keymap,
     if (!options)
         options = &default_machine_options;
 
-    xkb_state_init(&machine->state, keymap,
-                   options->a11y_affect, options->a11y_flags);
+    xkb_state_legacy_init(&machine->base, keymap, SERVER_STATE,
+                          options->a11y_affect, options->a11y_flags);
 
     if (!machine_set_mods(machine, &options->mods) ||
         !machine_set_shortcuts(machine, &options->shortcuts))
@@ -2950,19 +3103,19 @@ error:
 struct xkb_machine *
 xkb_machine_ref(struct xkb_machine *sm)
 {
-    assert(sm->state.refcnt > 0);
-    sm->state.refcnt++;
+    assert(sm->base.base.refcnt > 0);
+    sm->base.base.refcnt++;
     return sm;
 }
 
 void
 xkb_machine_unref(struct xkb_machine *sm)
 {
-    assert(!sm || sm->state.refcnt > 0);
-    if (!sm || --sm->state.refcnt > 0)
+    assert(!sm || sm->base.base.refcnt > 0);
+    if (!sm || --sm->base.base.refcnt > 0)
         return;
 
-    xkb_state_destroy(&sm->state);
+    xkb_state_destroy(&sm->base.base);
     darray_free(sm->overlays.keys);
     free(sm->config.shortcuts.targets);
     free(sm->config.modifiers.mappings);
@@ -2973,14 +3126,14 @@ struct xkb_keymap *
 xkb_machine_get_keymap(const struct xkb_machine *sm)
 {
     /* Reference count is not updated. See API doc. */
-    return sm->state.keymap;
+    return sm->base.base.keymap;
 }
 
 struct xkb_state *
 xkb_machine_get_state(struct xkb_machine *sm)
 {
     /* Reference count is not updated. See API doc. */
-    return &sm->state;
+    return (struct xkb_state *)sm;
 }
 
 static void
@@ -2992,13 +3145,13 @@ machine_update_overlays(struct xkb_machine *sm)
      */
 
     const xkb_overlay_mask_t mask =
-        OVERLAYS_FROM_CONTROLS(sm->state.components.controls);
+        OVERLAYS_FROM_CONTROLS(sm->base.base.components.controls);
     xkb_overlay_mask_t added = mask & ~sm->overlays.enabled;
 
     /* Remove overlays no longer enabled and keep relative order */
     uint32_t order = sm->overlays.order;
     const xkb_overlay_index_t overlay_max =
-        format_max_overlays(sm->state.keymap->format);
+        format_max_overlays(sm->base.base.keymap->format);
     for (uint8_t n = 0; n < overlay_max;) {
         xkb_overlay_index_t overlay_idx = (order >> (n * 4)) & 0xf;
         if (!overlay_idx)
@@ -3034,13 +3187,13 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
                               struct xkb_events *events)
 {
     /* Check ABI compatibility */
-    enum xkb_error_code error = check_state_update_abi(sm->state.keymap->ctx,
-                                                       update);
+    enum xkb_error_code error =
+        check_state_update_abi(sm->base.base.keymap->ctx, update);
     if (error)
         return error;
 
-    struct xkb_state * restrict const state = &sm->state;
-    const struct state_components previous_components = state->components;
+    struct xkb_state_legacy * const state = &sm->base;
+    const struct state_components previous_components = state->base.components;
 
     // TODO: use a *transaction* mechanism: either the whole update succeeds
     //       or rollback
@@ -3063,10 +3216,10 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
         state_update_latched_locked(state, components, events);
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(&state->base);
 
     const enum xkb_state_component changed = get_state_component_changes(
-        &previous_components, &state->components
+        &previous_components, &state->base.components
     );
     if (changed) {
         // TODO: latch controls
@@ -3078,7 +3231,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
-                .components = state->components
+                .components = state->base.components
             }
         });
     }
@@ -3334,21 +3487,21 @@ xkb_machine_process_key(struct xkb_machine *sm,
     darray_size(events->queue) = 0;
     events->next = 0;
 
-    struct xkb_state * restrict const state = &sm->state;
-    const struct xkb_key * key = XkbKey(state->keymap, kc);
+    struct xkb_state_legacy * const state = &sm->base;
+    const struct xkb_key * key = XkbKey(state->base.keymap, kc);
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return XKB_SUCCESS;
 
-    const struct state_components previous_components = state->components;
+    const struct state_components previous_components = state->base.components;
 
     if (key->overlays)
         key = process_overlayable_key(sm, key, direction);
 
     ssize_t remap_event = do_remap_modifiers(&sm->config.modifiers,
-                                             state, events, key);
+                                             &state->base, events, key);
 
-    remap_event = do_shortcuts_tweak(&sm->config.shortcuts, state,
+    remap_event = do_shortcuts_tweak(&sm->config.shortcuts, &state->base,
                                      &previous_components, events, remap_event);
 
     state->set_mods = 0;
@@ -3362,7 +3515,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
     for (i = 0, bit = 1; state->set_mods; i++, bit <<= 1) {
         if (state->set_mods & bit) {
             state->mod_key_count[i]++;
-            state->components.base_mods |= bit;
+            state->base.components.base_mods |= bit;
             state->set_mods &= ~bit;
         }
     }
@@ -3371,14 +3524,14 @@ xkb_machine_process_key(struct xkb_machine *sm,
         if (state->clear_mods & bit) {
             state->mod_key_count[i]--;
             if (state->mod_key_count[i] <= 0) {
-                state->components.base_mods &= ~bit;
+                state->base.components.base_mods &= ~bit;
                 state->mod_key_count[i] = 0;
             }
             state->clear_mods &= ~bit;
         }
     }
 
-    xkb_state_update_derived(state);
+    xkb_state_update_derived(&state->base);
 
     bool has_key_event = false;
     const struct xkb_event *event;
@@ -3411,11 +3564,11 @@ xkb_machine_process_key(struct xkb_machine *sm,
 
     if (remap_event >= 0) {
         // FIXME: fragile if last state change does not restore the state to the remap event
-        undo_tweaks(state, &previous_components, events);
+        undo_tweaks(&state->base, &previous_components, events);
     }
 
     const enum xkb_state_component changed = get_state_component_changes(
-        &previous_components, &state->components
+        &previous_components, &state->base.components
     );
     if (changed) {
         if (changed & XKB_STATE_CONTROLS)
@@ -3424,7 +3577,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
         darray_append(events->queue, (struct xkb_event) {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
-                .components = state->components,
+                .components = state->base.components,
                 .changed = changed
             }
         });
@@ -3535,6 +3688,14 @@ enum xkb_state_component
 xkb_state_update_event(struct xkb_state *state,
                        const struct xkb_event *event)
 {
+    /* Guard against server-only state */
+    assert(state->type == SERVER_COMPANION || state->type == LEGACY_MIXED_STATE);
+    if (state->type != SERVER_COMPANION && state->type != LEGACY_MIXED_STATE) {
+        log_err(state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+                "%s: Unexpected state type %d\n", __func__, state->type);
+        return 0;
+    }
+
     if (event->type == XKB_EVENT_TYPE_COMPONENTS_CHANGE) {
         const struct state_components prev_components = state->components;
         state->components = event->components.components;

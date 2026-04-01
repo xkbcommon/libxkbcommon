@@ -54,6 +54,12 @@ static_assert(XKB_LAYOUT_OUT_OF_RANGE_CLAMP >= 0 &&
               XKB_LAYOUT_OUT_OF_RANGE_CLAMP < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_REDIRECT >= 0 &&
               XKB_LAYOUT_OUT_OF_RANGE_REDIRECT < UINT32_WIDTH, "");
+static_assert(XKB_STATE_MODE_CLIENT >= 0 &&
+              XKB_STATE_MODE_CLIENT < UINT32_WIDTH, "");
+static_assert(XKB_STATE_MODE_SERVER_QUERY >= 0 &&
+              XKB_STATE_MODE_SERVER_QUERY < UINT32_WIDTH, "");
+static_assert(XKB_STATE_MODE_SERVER >= 0 &&
+              XKB_STATE_MODE_SERVER < UINT32_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_XKB >= 0 &&
               XKB_CONSUMED_MODE_XKB < UINT32_WIDTH, "");
 static_assert(XKB_CONSUMED_MODE_GTK >= 0 &&
@@ -153,6 +159,11 @@ enum xkb_enumerations_values {
         = (1u << XKB_LAYOUT_OUT_OF_RANGE_WRAP)
         | (1u << XKB_LAYOUT_OUT_OF_RANGE_CLAMP)
         | (1u << XKB_LAYOUT_OUT_OF_RANGE_REDIRECT)
+    ,
+    XKB_STATE_MODE_VALUES
+        = (1u << XKB_STATE_MODE_CLIENT)
+        | (1u << XKB_STATE_MODE_SERVER_QUERY)
+        | (1u << XKB_STATE_MODE_SERVER)
     ,
     XKB_STATE_MATCH_VALUES
         = XKB_STATE_MATCH_ANY
@@ -319,6 +330,14 @@ static const uint32_t xkb_layout_out_of_range_policy_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
+static const uint32_t xkb_state_mode_values[] = {
+    XKB_STATE_MODE_CLIENT,
+    XKB_STATE_MODE_SERVER_QUERY,
+    XKB_STATE_MODE_SERVER,
+};
+#endif
+
+#ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_state_match_values[] = {
     XKB_STATE_MATCH_ANY,
     XKB_STATE_MATCH_ALL,
@@ -374,6 +393,7 @@ static const uint32_t xkb_error_code_values[] = {
     XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,
     XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS,
+    XKB_ERROR_UNEXPECTED_STATE_MODE,
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
     XKB_ERROR_ABI_FORWARD_COMPAT,
     XKB_ERROR_ABI_BACKWARD_COMPAT,
@@ -394,6 +414,7 @@ static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
     XKB_FEATURE_ENUM_A11Y_FLAGS,
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS,
+    XKB_FEATURE_ENUM_STATE_MODE,
     XKB_FEATURE_ENUM_STATE_MATCH,
     XKB_FEATURE_ENUM_CONSUMED_MODE,
     XKB_FEATURE_ENUM_EVENT_TYPE,

@@ -50,6 +50,7 @@ test_libxkbcommon_enums(void)
         ENUM(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, xkb_layout_out_of_range_policy_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_A11Y_FLAGS, xkb_a11y_flags_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS, xkb_keyboard_control_flags_values, ENUM_FLAG),
+        ENUM(XKB_FEATURE_ENUM_STATE_MODE, xkb_state_mode_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_STATE_MATCH, xkb_state_match_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_CONSUMED_MODE, xkb_consumed_mode_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_EVENT_TYPE, xkb_event_type_values, ENUM_NONE),

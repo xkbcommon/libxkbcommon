@@ -13,6 +13,8 @@ xkb_error_code:
     value: 237
   - name: XKB_ERROR_UNSUPPORTED_A11Y_FLAGS
     value: 371
+  - name: XKB_ERROR_UNEXPECTED_STATE_MODE
+    value: 399
   - name: XKB_ERROR_ABI_INVALID_STRUCT_SIZE
     value: 450
   - name: XKB_ERROR_ABI_FORWARD_COMPAT

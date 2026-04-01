@@ -108,6 +108,12 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS = 371,
     /**
+     * A `xkb_state` object has an unexpected `xkb_state_mode`
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNEXPECTED_STATE_MODE = 399,
+    /**
      * ABI struct size check failed
      *
      * The `size` field of a versioned structure does not match any known
