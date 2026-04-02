@@ -364,21 +364,14 @@ have_version_script = cc.links(
 
 map_to_def = find_program('scripts/map-to-def')
 
-# libxkbcommon.
-bison = find_program('bison', 'win_bison', required: true, version: '>= 3.6')
+# Parser utils
+bison = find_program('bison', 'win_bison', required: false, version: '>= 3.6')
 yacc = bison
-yacc_gen = generator(
-    bison,
-    output: ['@BASENAME@.c', '@BASENAME@.h'],
-    arguments: [
-        '--defines=@OUTPUT1@',
-        '-o',
-        '@OUTPUT0@',
-        '-p',
-        '_xkbcommon_',
-        '@INPUT@',
-    ],
-)
+if bison.found()
+    subdir('src/xkbcomp')
+endif
+
+# libxkbcommon.
 libxkbcommon_sources = [
     'src/compose/parser.c',
     'src/compose/paths.c',
@@ -393,7 +386,8 @@ libxkbcommon_sources = [
     'src/xkbcomp/keymap.c',
     'src/xkbcomp/keymap-dump.c',
     'src/xkbcomp/keywords.c',
-    yacc_gen.process('src/xkbcomp/parser.y'),
+    # NOTE: Regenerate the parser manually using the target: src/xkbcomp/regenerate
+    'src/xkbcomp/parser.c',
     'src/xkbcomp/rules.c',
     'src/xkbcomp/scanner.c',
     'src/xkbcomp/symbols.c',
@@ -703,7 +697,7 @@ summary(
         'id': cc.get_id(),
         'c_args': get_option('c_args'),
         'c_link_args': get_option('c_link_args'),
-        'yacc': yacc.full_path() + ' ' + yacc.version(),
+        'yacc': yacc.found() ? yacc.full_path() + ' ' + yacc.version() : '(not found)',
         'glibc': has_glibc,
     },
     section: 'Compiler',

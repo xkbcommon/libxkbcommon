@@ -80,6 +80,11 @@ jobs:
           CFLAGS_EXTRA: ${{ matrix.sanitizers != 'sanitizers' && '-Wp,-D_FORTIFY_SOURCE=3' || '' }}
           # Use sanitizers only if not using Valgrind
           MESON_EXTRA_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined,leak' || '' }}
+      - name: Regenerate parser files
+        # Ensure some setup use the pre-generated files
+        if: matrix.sanitizers != 'sanitizers'
+        run: |
+          meson compile -C build src/xkbcomp/regenerate
       - name: Build
         run: |
           meson compile -C build
