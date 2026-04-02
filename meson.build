@@ -227,7 +227,7 @@ configh_data.set10('HAVE_DIRENT_H', have_dirent_h)
 has_extensions_directories = have_unistd_h and have_dirent_h
 configh_data.set10('HAVE_XKB_EXTENSIONS_DIRECTORIES', has_extensions_directories)
 if cc.links(
-    'int main(){if(__builtin_expect(1<0,0)){}}',
+    'int main(void){if(__builtin_expect(1<0,0)){}}',
     name: '__builtin_expect',
 )
     configh_data.set10('HAVE___BUILTIN_EXPECT', true)
@@ -357,7 +357,7 @@ xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
 # Supports -Wl,--version-script?
 meson_test_map = meson.current_source_dir() / 'test' / 'meson_test.map'
 have_version_script = cc.links(
-    'int main() { return 0; }',
+    'int main(void) { return 0; }',
     args: f'-Wl,--version-script=@meson_test_map@',
     name: '-Wl,--version-script',
 )
