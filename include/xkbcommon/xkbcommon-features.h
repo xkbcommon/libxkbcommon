@@ -18,6 +18,11 @@ extern "C" {
 #endif
 
 /**
+ * @file
+ * @brief Test features availability
+ */
+
+/**
  * @defgroup test-api Features availability
  * Test features availability
  *
@@ -248,11 +253,11 @@ enum xkb_feature {
  *
  * This is useful when the library is dynamically linked.
  *
- * @param feature  The feature to check
+ * @param feature  The [feature](@ref xkb_feature) to check
  * @param value    The value to check. Ignored if @p feature does not use
  *                 a value parameter; refer to the feature’s description.
  *
- * @returns `true` if the feature is supported, false otherwise.
+ * @returns `true` if the feature is supported, `false` otherwise.
  *
  * @since 1.14.0
  */

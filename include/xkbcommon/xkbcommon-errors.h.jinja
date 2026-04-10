@@ -16,8 +16,13 @@ extern "C" {
 #endif
 
 /**
+ * @file
+ * @brief Error-handling related features
+ */
+
+/**
  * @defgroup error-api Error handling
- * Error-handling related features.
+ * Error-handling related features
  *
  * @{
  */
