@@ -45,6 +45,11 @@ extern "C" {
 /**
  * @file
  * Main libxkbcommon API.
+ *
+ * @brief Core API for keyboard keymap compilation and state processing.
+ *
+ * This header provides the primary public API for libxkbcommon. It exposes
+ * facilities for:
  */
 
 /**
