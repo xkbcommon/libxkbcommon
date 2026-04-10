@@ -1238,6 +1238,13 @@ xkb_state_new(struct xkb_keymap *keymap)
 }
 
 struct xkb_state *
+xkb_state_new_with_mode(struct xkb_keymap *keymap, enum xkb_state_mode mode)
+{
+    // TODO: implement the various state modes
+    return NULL;
+}
+
+struct xkb_state *
 xkb_state_ref(struct xkb_state *state)
 {
     assert(state->refcnt > 0);

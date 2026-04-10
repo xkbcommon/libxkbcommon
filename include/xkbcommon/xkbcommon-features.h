@@ -176,6 +176,12 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_KEYBOARD_CONTROL_FLAGS = 24060,
     /**
+     * The enumeration @ref xkb_state_mode
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_STATE_MODE = 24200,
+    /**
      * The enumeration @ref xkb_state_match
      *
      * @since 1.14.0

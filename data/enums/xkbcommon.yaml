@@ -129,6 +129,13 @@ xkb_layout_out_of_range_policy:
     value: 1
   - name: XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
     value: 2
+xkb_state_mode:
+  - name: XKB_STATE_MODE_CLIENT
+    value: 0
+  - name: XKB_STATE_MODE_SERVER_QUERY
+    value: 1
+  - name: XKB_STATE_MODE_SERVER
+    value: 2
 xkb_state_match:
   - name: XKB_STATE_MATCH_ANY
     value: 1
