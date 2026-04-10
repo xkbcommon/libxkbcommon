@@ -24,7 +24,7 @@ struct state_components {
 
     xkb_led_mask_t leds;
 
-    enum xkb_action_controls controls;
+    enum xkb_action_controls controls; /**< effective */
 };
 
 struct xkb_event {
