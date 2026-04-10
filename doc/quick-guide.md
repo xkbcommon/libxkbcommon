@@ -118,7 +118,7 @@ keyboard modifiers and LEDs are active:
 ~~~{.c}
     struct xkb_state *state;
 
-    state = xkb_state_new(keymap);
+    state = xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT);
     if (!state) <error>
 ~~~
 
@@ -370,3 +370,5 @@ int handle_key(…)
     }
 }
 ```
+
+Synthetic updates are handled using `xkb_machine::xkb_machine_process_synthetic()`.

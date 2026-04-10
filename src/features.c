@@ -97,6 +97,8 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         return is_supported_flag_value(
             XKB_KEYBOARD_CONTROL_FLAGS_VALUES, true, value
         );
+    case XKB_FEATURE_ENUM_STATE_MODE:
+        return is_supported_enum_value_mask(XKB_STATE_MODE_VALUES, value);
     case XKB_FEATURE_ENUM_STATE_MATCH:
         return is_supported_flag_value(
             XKB_STATE_MATCH_VALUES, false, value
