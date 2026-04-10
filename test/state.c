@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
 #include "xkbcommon/xkbcommon.h"
@@ -419,6 +420,257 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_state_unref(state);
         xkb_keymap_unref(keymap);
     }}
+}
+
+static void
+test_state_modes(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_rules(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+        "pc104", "us", NULL, NULL
+    );
+    assert(keymap);
+
+    enum { LEGACY_STATE_MODE = 0xff };
+
+    const xkb_mod_mask_t shift =
+        _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_SHIFT);
+    const xkb_mod_mask_t caps =
+        _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CAPS);
+    const xkb_mod_mask_t ctrl =
+        _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+    const xkb_mod_mask_t num =
+        _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_NUM);
+
+    const struct {
+        enum xkb_state_mode mode;
+        struct components_entry {
+            struct state_components components;
+            enum xkb_state_component changed;
+            enum xkb_error_code error;
+        } update_mask;
+        struct components_entry update_event;
+        enum xkb_state_component update_key;
+        struct components_entry update_latch_locked;
+        struct components_entry update_synthetic;
+    } tests[] = {
+        {
+            .mode = (enum xkb_state_mode)LEGACY_STATE_MODE,
+            .update_mask = {
+                .components = { .base_mods = shift },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            },
+            .update_event = {
+                .components = { .base_mods = ctrl, .mods = ctrl },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            },
+            .update_key = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            .update_latch_locked = {
+                .components = { .locked_mods = caps },
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+                         | XKB_STATE_LEDS,
+            },
+            .update_synthetic = {
+                .components = { .locked_mods = num },
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+                         | XKB_STATE_LEDS,
+                .error = 0,
+            },
+        },
+        {
+            .mode = XKB_STATE_MODE_CLIENT,
+            .update_mask = {
+                .components = { .base_mods = shift },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            },
+            .update_event = {
+                .components = { .base_mods = ctrl, .mods = ctrl },
+                .changed = 0, /* wrong mode */
+            },
+            .update_key = 0, /* wrong mode */
+            .update_latch_locked = {
+                .components = { .locked_mods = caps },
+                .changed = 0, /* wrong mode */
+            },
+            .update_synthetic = {
+                .components = { .locked_mods = num },
+                /* wrong mode */
+                .changed = 0,
+                .error = XKB_ERROR_UNEXPECTED_STATE_MODE,
+            },
+        },
+        {
+            .mode = XKB_STATE_MODE_SERVER_QUERY,
+            .update_mask = {
+                .components = { .base_mods = shift },
+                .changed = 0, /* wrong mode */
+            },
+            .update_event = {
+                .components = { .base_mods = ctrl, .mods = ctrl },
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            },
+            .update_key = 0, /* wrong mode */
+            .update_latch_locked = {
+                .components = { .locked_mods = caps },
+                .changed = 0, /* wrong mode */
+            },
+            .update_synthetic = {
+                .components = { .locked_mods = num },
+                /* wrong mode */
+                .changed = 0,
+                .error = XKB_ERROR_UNEXPECTED_STATE_MODE,
+            },
+        },
+        {
+            .mode = XKB_STATE_MODE_SERVER,
+            .update_mask = {
+                .components = { .base_mods = shift },
+                .changed = 0, /* wrong mode */
+            },
+            .update_event = {
+                .components = { .base_mods = ctrl, .mods = ctrl },
+                .changed = 0, /* wrong mode */
+            },
+            .update_key = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+            .update_latch_locked = {
+                .components = { .locked_mods = caps },
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+                         | XKB_STATE_LEDS,
+            },
+            .update_synthetic = {
+                .components = { .locked_mods = num },
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
+                         | XKB_STATE_LEDS,
+                .error = 0,
+            },
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu (mode: %d) ***\n",
+                __func__, t, tests[t].mode);
+
+        struct xkb_state * const state =
+            (tests[t].mode == (enum xkb_state_mode)LEGACY_STATE_MODE)
+                ? xkb_state_new(keymap)
+                : xkb_state_new_with_mode(keymap, tests[t].mode);
+        assert(state);
+
+        enum xkb_state_component changed = 0;
+        int code = EXIT_SUCCESS;
+        #define expected_code(x) ((x) ? EXIT_SUCCESS : TEST_ASSERT_FAILURE)
+
+        RUN_ISOLATED(code, changed,
+            changed = xkb_state_update_mask(
+                state,
+                tests[t].update_mask.components.base_mods,
+                tests[t].update_mask.components.latched_mods,
+                tests[t].update_mask.components.locked_mods,
+                tests[t].update_mask.components.base_group,
+                tests[t].update_mask.components.latched_group,
+                tests[t].update_mask.components.locked_group
+            );
+            /* Avoid Valgrind false positive */
+            xkb_state_unref(state);
+            xkb_keymap_unref(keymap);
+        );
+        if (code != SKIP_TEST) {
+            assert_eq("update_mask: code",
+                      expected_code(tests[t].update_mask.changed), code, "%d");
+            assert_eq("update_mask: changed",
+                      tests[t].update_mask.changed, changed, "%d");
+        }
+
+        const struct xkb_event event = {
+            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .components = {
+                .changed = tests[t].update_event.changed,
+                .components = tests[t].update_event.components,
+            }
+        };
+        RUN_ISOLATED(code, changed,
+            changed = xkb_state_update_event(state, &event);
+            /* Avoid Valgrind false positive */
+            xkb_state_unref(state);
+            xkb_keymap_unref(keymap);
+        );
+        if (code != SKIP_TEST) {
+            assert_eq("update_event: code",
+                      expected_code(tests[t].update_event.changed), code, "%d");
+            assert_eq("update_event: changed",
+                      tests[t].update_event.changed, changed, "%d");
+        }
+
+        RUN_ISOLATED(code, changed,
+            changed = xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET,
+                                           XKB_KEY_DOWN);
+            xkb_state_unref(state)
+        );
+        if (code != SKIP_TEST) {
+            assert_eq("update_key: code",
+                      expected_code(tests[t].update_key), code, "%d");
+            assert_eq("update_key: changed", tests[t].update_key, changed, "%d");
+        }
+
+        RUN_ISOLATED(code, changed,
+            changed = xkb_state_update_latched_locked(
+                state,
+                tests[t].update_latch_locked.components.latched_mods,
+                tests[t].update_latch_locked.components.latched_mods,
+                false, 0,
+                tests[t].update_latch_locked.components.locked_mods,
+                tests[t].update_latch_locked.components.locked_mods,
+                false, 0
+            );
+            /* Avoid Valgrind false positive */
+            xkb_state_unref(state);
+            xkb_keymap_unref(keymap);
+        );
+        if (code != SKIP_TEST) {
+            assert_eq("update_latched_locked: code",
+                      expected_code(tests[t].update_latch_locked.changed),
+                      code, "%d");
+            assert_eq("update_latched_locked: changed",
+                      tests[t].update_latch_locked.changed, changed, "%d");
+        }
+
+        const struct xkb_state_components_update components_update = {
+            .size = sizeof(components_update),
+            .components = tests[t].update_synthetic.changed,
+            .affect_latched_mods = tests[t].update_synthetic.components.latched_mods,
+            .latched_mods = tests[t].update_synthetic.components.latched_mods,
+            .affect_locked_mods = tests[t].update_synthetic.components.locked_mods,
+            .locked_mods = tests[t].update_synthetic.components.locked_mods,
+        };
+        const struct xkb_state_update update = {
+            .size = sizeof(update),
+            .components = &components_update
+        };
+
+        struct result {
+            enum xkb_state_component changed;
+            enum xkb_error_code error;
+        } r = { 0 };
+        RUN_ISOLATED(code, r,
+            r.error = xkb_state_update_synthetic(state, &update, &r.changed);
+            /* Avoid Valgrind false positive */
+            xkb_state_unref(state);
+            xkb_keymap_unref(keymap);
+        );
+        if (code != SKIP_TEST) {
+            assert_eq("update_synthetic: code", EXIT_SUCCESS, code, "%d");
+            assert_eq("update_synthetic: error",
+                      tests[t].update_synthetic.error, r.error, "%d");
+            assert_eq("update_synthetic: changed",
+                      tests[t].update_synthetic.changed, r.changed, "%d");
+        }
+
+        xkb_state_unref(state);
+    }
+
+    #undef expected_code
+
+    xkb_keymap_unref(keymap);
 }
 
 /* Check that derived state is correctly initialized */
@@ -3404,6 +3656,7 @@ main(void)
     xkb_state_unref(NULL);
 
     test_group_wrap(context);
+    test_state_modes(context);
     test_initial_derived_values(context);
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};

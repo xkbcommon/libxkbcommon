@@ -130,6 +130,8 @@ enum xkb_message_code {
     XKB_WARNING_DUPLICATE_ENTRY = 378,
     /** Included files form cycle */
     XKB_ERROR_RECURSIVE_INCLUDE = 386,
+    /** A `xkb_state` object has an unexpected `xkb_state_mode` */
+    XKB_ERROR_UNEXPECTED_STATE_MODE_ = 399,
     /** Conflicting definitions of a key type */
     XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS = 407,
     /** A global defaults statement is in a wrong scope and should be moved */

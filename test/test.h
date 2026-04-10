@@ -22,6 +22,7 @@
  * See: https://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html */
 #define SKIP_TEST 77
 #define TEST_SETUP_FAILURE 99
+#define TEST_ASSERT_FAILURE -1
 
 #define assert_printf(cond, ...) do {                      \
     const bool __cond = (cond);                            \
@@ -38,6 +39,56 @@
     assert_printf(expected == got, \
                   test_name ". Expected " format ", got: " format "\n", \
                   ##__VA_ARGS__, expected, got)
+
+/* Enable to test assertion failures */
+#if defined(__unix__) || defined(__APPLE__)
+    #include <sys/wait.h>
+    #include <sys/mman.h>
+    #include <unistd.h>
+    #define RUN_ISOLATED(code, ret, ...) do {           \
+        memset(&(ret), 0, sizeof(ret));                 \
+        __typeof__(ret) *_result = mmap(                \
+            NULL, sizeof(ret),                          \
+            PROT_READ | PROT_WRITE,                     \
+            MAP_SHARED | MAP_ANONYMOUS, -1, 0           \
+        );                                              \
+        if (_result == MAP_FAILED) {                    \
+            (code) = TEST_SETUP_FAILURE;                \
+            break;                                      \
+        }                                               \
+        pid_t _pid = fork();                            \
+        if (_pid == -1) {                               \
+            (code) = TEST_SETUP_FAILURE;                \
+            munmap(_result, sizeof(ret));               \
+        } else if (_pid == 0) {                         \
+            __VA_ARGS__;                                \
+            *_result = (ret);                           \
+            _exit(EXIT_SUCCESS);                        \
+        } else {                                        \
+            int _status;                                \
+            waitpid(_pid, &_status, 0);                 \
+            if (WIFSIGNALED(_status) &&                 \
+                WTERMSIG(_status) == SIGABRT) {         \
+                /* assert failure */                    \
+                (code) = TEST_ASSERT_FAILURE;           \
+            } else if (WIFEXITED(_status)) {            \
+                (code) = WEXITSTATUS(_status);          \
+                /* propagate child's own return code */ \
+                (ret) = *_result;                       \
+            } else {                                    \
+                /* killed by other signal */            \
+                (code) = EXIT_FAILURE;                  \
+            }                                           \
+            munmap(_result, sizeof(ret));               \
+        }                                               \
+    } while (0)
+#else
+    /* Skip assert-death tests or use a stub */
+    #define RUN_ISOLATED(code, ret, ...) do { \
+        (code) = SKIP_TEST;                   \
+        memset(&(ret), 0, sizeof(ret));       \
+    } while (0)
+#endif
 
 #define TEST_KEYMAP_COMPILE_FLAGS XKB_KEYMAP_COMPILE_STRICT_MODE
 

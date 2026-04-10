@@ -2163,7 +2163,8 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * @warning Some entry points in the `xkb_state` API are only meant for servers
  * and some are only meant for clients. Thus it is recommended to use
  * `xkb_state::xkb_state_new_with_mode()` because it enforces correct usage at
- * runtime, while `xkb_state::xkb_state_new()` does not and mixing the entry
+ * runtime and logs misuse as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * Using `xkb_state::xkb_state_new()` does not enforce this: mixing entry
  * points may lead to *incorrect state*.
  *
  * @note Since version 1.14.0, *server* applications should use the
@@ -3450,10 +3451,11 @@ xkb_state_get_keymap(struct xkb_state *state);
  * should be used for @p locked_layout, while @p depressed_layout and
  * @p latched_layout are both set to `0`.
  *
- * @important Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_CLIENT` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_CLIENT` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -3486,17 +3488,14 @@ xkb_state_update_mask(struct xkb_state *state,
  * `xkb_machine::xkb_machine_process_synthetic()` into this
  * function to keep the observable state in sync.
  *
- * @warning The given state object must not be updated by other means than
- * [events](@ref xkb_event), i.e. do not mix with `xkb_state_update_key()`. This
- * is enforced if the object was created with `::XKB_STATE_MODE_SERVER_QUERY`.
- *
  * @param[in,out] state The keyboard state object.
  * @param[in]     event The state event to update from.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER_QUERY` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER_QUERY`
+ * or `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -3536,10 +3535,11 @@ xkb_state_update_event(struct xkb_state *state,
  * @param key       The key being operated.
  * @param direction The direction of the key operation.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
@@ -3588,7 +3588,11 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *                        have changed as a result of the update, or `NULL` to
  *                        ignore. Set to 0 if nothing in the state has changed.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @returns
+ * - `::XKB_SUCCESS` on success;
+ * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
+ *   was not created with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`.
+ * - Otherwise another [error code](@ref xkb_error_code).
  *
  * @note This function returns an error code rather than a state component
  * delta (unlike the other `xkb_state_update_*` functions), in order to align
@@ -3646,10 +3650,11 @@ xkb_state_update_synthetic(struct xkb_state *state,
  *     Layout to lock. Only considered if @p affect_locked_layout is true.
  *     May be out of range (including negative) -- see note above.
  *
- * @note Returns 0 without updating the state if @p state was not created
- * with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`. Since 0 is
- * also returned when nothing has changed, misuse is not distinguishable
- * from a no-op update.
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
  * the update.  If nothing in the state has changed, returns 0.
