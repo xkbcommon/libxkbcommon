@@ -62,8 +62,8 @@ extern "C" {
  *     21    Keymap
  *  22-23    (reserved for keymap and state -related objects)
  *     24    Keyboard state components
- *     25    Keyboard state machine (reserved)
- *     26    (reserved for state-related object)
+ *     25    Keyboard state machine builder
+ *     26    Keyboard state machine (reserved)
  *     27    Keyboard events / input
  *  28-29    (spare)
  *     30    Compose table
@@ -198,6 +198,12 @@ enum xkb_feature {
      * @since 1.14.0
      */
     XKB_FEATURE_ENUM_CONSUMED_MODE = 24840,
+    /**
+     * The enumeration @ref xkb_machine_builder_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS = 25200,
     /**
      * The enumeration @ref xkb_event_type
      *

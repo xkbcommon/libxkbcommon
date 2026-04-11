@@ -105,6 +105,10 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         );
     case XKB_FEATURE_ENUM_CONSUMED_MODE:
         return is_supported_enum_value_mask(XKB_CONSUMED_MODE_VALUES, value);
+    case XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS:
+        return is_supported_flag_value(
+            XKB_MACHINE_BUILDER_FLAGS_VALUES, true, value
+        );
     case XKB_FEATURE_ENUM_EVENT_TYPE:
         return is_supported_enum_value_mask(XKB_EVENT_TYPE_VALUES, value);
     case XKB_FEATURE_ENUM_KEY_DIRECTION:

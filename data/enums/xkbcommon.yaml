@@ -108,6 +108,9 @@ xkb_keyboard_control_flags:
 xkb_events_flags:
   - name: XKB_EVENTS_NO_FLAGS
     value: 0
+xkb_machine_builder_flags:
+  - name: XKB_MACHINE_BUILDER_NO_FLAGS
+    value: 0
 xkb_a11y_flags:
   - name: XKB_A11Y_NO_FLAGS
     value: 0

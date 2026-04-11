@@ -6,10 +6,11 @@ Added the **server machine API:**
   - `xkb_machine_get_keymap()`
   - `xkb_machine_process_key()`
   - `xkb_machine_process_synthetic()`
-- `struct xkb_machine_options` (new):
-  - `xkb_machine_options_new()`
-  - `xkb_machine_options_destroy()`
-  - `xkb_machine_options_update_a11y_flags()`
+- `struct xkb_machine_builder` (new):
+  - `xkb_machine_builder_new()`
+  - `xkb_machine_builder_destroy()`
+  - `xkb_machine_builder_update_a11y_flags()`
+- `enum xkb_machine_builder_flags` (new)
 - `enum xkb_events_flags` (new)
 - `struct xkb_events` (new):
   - `xkb_events_new_batch()`

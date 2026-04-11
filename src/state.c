@@ -32,6 +32,7 @@
 #include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-features.h"
 #include "darray.h"
+#include "features/enums.h"
 #include "keymap.h"
 #include "keysym.h"
 #include "messages-codes.h"
@@ -1895,9 +1896,9 @@ log_abi_error(struct xkb_context * restrict ctx,
 
 /* Check ABI compatibility */
 static enum xkb_error_code
-check_state_update_abi_(struct xkb_context *restrict ctx,
-                        const char *restrict func,
-                        const struct xkb_state_update *restrict update)
+check_state_update_abi_(struct xkb_context * restrict ctx,
+                        const char * restrict func,
+                        const struct xkb_state_update * restrict update)
 {
     enum xkb_error_code error = XKB_SUCCESS;
     if ((error = xkb_check_state_update_size(update)) ||
@@ -1914,8 +1915,8 @@ check_state_update_abi_(struct xkb_context *restrict ctx,
     check_state_update_abi_(ctx, __func__, update)
 
 enum xkb_error_code
-xkb_state_update_synthetic(struct xkb_state *base_state,
-                           const struct xkb_state_update *update,
+xkb_state_update_synthetic(struct xkb_state * base_state,
+                           const struct xkb_state_update * update,
                            enum xkb_state_component *changed)
 {
     /* Guard against client-only state */
@@ -1947,7 +1948,7 @@ xkb_state_update_synthetic(struct xkb_state *base_state,
     }
 
     if (update->components) {
-        const struct xkb_state_components_update * restrict const components =
+        const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
         state_update_enabled_controls(state,
@@ -2805,10 +2806,17 @@ struct xkb_machine {
 
 typedef darray(struct machine_mods_mapping) machine_mods_mappings;
 
-struct xkb_machine_options {
-    /** Accessibility flags */
-    enum xkb_a11y_flags a11y_affect;
-    enum xkb_a11y_flags a11y_flags;
+struct xkb_machine_builder {
+    struct xkb_keymap *keymap;
+
+    /** Controls */
+    struct {
+        /** Accessibility flags */
+        struct {
+            enum xkb_a11y_flags affect;
+            enum xkb_a11y_flags flags;
+        } a11y;
+    } controls;
 
     /** Modifiers re-mapping */
     machine_mods_mappings mods;
@@ -2821,75 +2829,90 @@ struct xkb_machine_options {
         darray(xkb_layout_index_t) targets;
     } shortcuts;
 
-    struct xkb_context *ctx;
+    enum xkb_machine_builder_flags flags;
 };
 
-#define machine_options_new(context) { \
-    .a11y_affect = XKB_A11Y_NO_FLAGS, \
-    .a11y_flags  = XKB_A11Y_NO_FLAGS, \
-    .shortcuts = {                          \
-        .mask = 0,                          \
-        .targets = darray_new(),            \
-    },                                      \
-    .ctx = (context),                       \
-}
-
-/* Default state options */
-static const struct xkb_machine_options default_machine_options =
-    machine_options_new(NULL /* unused */);
-
-struct xkb_machine_options *
-xkb_machine_options_new(struct xkb_context *context)
+struct xkb_machine_builder *
+xkb_machine_builder_new(struct xkb_keymap *keymap,
+                        enum xkb_machine_builder_flags flags)
 {
-    struct xkb_machine_options * restrict const opt = calloc(1, sizeof(*opt));
+    const enum xkb_machine_builder_flags invalid_flags
+        = flags
+        & ~(enum xkb_machine_builder_flags)XKB_MACHINE_BUILDER_FLAGS_VALUES;
+    if (invalid_flags) {
+        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized keymap compilation flags: 0x%x\n",
+                __func__, invalid_flags);
+        return NULL;
+    }
+
+    struct xkb_machine_builder * const opt = calloc(1, sizeof(*opt));
     if (!opt)
         return NULL;
 
-    *opt = (struct xkb_machine_options)
-           machine_options_new(xkb_context_ref(context));
+    *opt = (struct xkb_machine_builder) {
+        .keymap = xkb_keymap_ref(keymap),
+        .flags = flags,
+        .controls = {
+            .a11y = {
+                .affect = XKB_A11Y_NO_FLAGS,
+                .flags = XKB_A11Y_NO_FLAGS,
+            },
+        },
+        .mods = darray_new(),
+        .shortcuts = {
+            .mask = 0,
+            .targets = darray_new(),
+        },
+    };
 
     return opt;
 }
 
 void
-xkb_machine_options_destroy(struct xkb_machine_options *options)
+xkb_machine_builder_destroy(struct xkb_machine_builder *builder)
 {
-    if (options == NULL)
+    if (builder == NULL)
         return;
 
-    darray_free(options->shortcuts.targets);
-    darray_free(options->mods);
-    xkb_context_unref(options->ctx);
-    free(options);
+    darray_free(builder->shortcuts.targets);
+    darray_free(builder->mods);
+    xkb_keymap_unref(builder->keymap);
+    free(builder);
 }
 
 enum xkb_error_code
-xkb_machine_options_update_a11y_flags(
-    struct xkb_machine_options *options,
+xkb_machine_builder_update_a11y_flags(
+    struct xkb_machine_builder *builder,
     enum xkb_a11y_flags affect,
     enum xkb_a11y_flags flags)
 {
-    static const enum xkb_a11y_flags XKB_A11Y_FLAGS
-        = XKB_A11Y_LATCH_TO_LOCK
-        | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
+    const enum xkb_a11y_flags invalid_flags =
+        ~(enum xkb_a11y_flags)XKB_A11Y_FLAGS_VALUES;
 
-    if (affect & ~XKB_A11Y_FLAGS) {
-        log_err_func(options->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "unrecognized state flags: %#x\n",
-                     (flags & ~XKB_A11Y_FLAGS));
+    if (affect & invalid_flags) {
+        log_err_func(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "%s: unrecognized A11Y affected flags: %#x\n",
+                     __func__, affect & invalid_flags);
+        return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
+    }
+    if (flags & invalid_flags) {
+        log_err_func(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "%s: unrecognized A11Y flags: %#x\n",
+                     __func__, flags & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
 
-    options->a11y_affect |= affect;
-    options->a11y_flags &= ~affect;
-    options->a11y_flags |= (flags & affect);
+    builder->controls.a11y.affect |= affect;
+    builder->controls.a11y.flags &= ~affect;
+    builder->controls.a11y.flags |= (flags & affect);
 
     return XKB_SUCCESS;
 }
 
 enum xkb_error_code
-xkb_machine_options_remap_mods(
-    struct xkb_machine_options *options,
+xkb_machine_builder_remap_mods(
+    struct xkb_machine_builder *builder,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
 )
@@ -2897,20 +2920,35 @@ xkb_machine_options_remap_mods(
     if (!source) {
         if (!target) {
             /* Reset mappings */
-            darray_resize(options->mods, 0);
+            darray_resize(builder->mods, 0);
             return XKB_SUCCESS;
         } else {
             return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
         }
     }
 
+    /* Check the modifiers against the keymap */
+    const xkb_mod_mask_t invalid = ~builder->keymap->canonical_state_mask;
+    if ((source & invalid)) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                "%s: Invalid source modifiers: 0x%"PRIx32"\n",
+                __func__, source);
+        return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
+    }
+    if ((target & invalid)) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                "%s: Invalid target modifiers: 0x%"PRIx32"\n",
+                __func__, target);
+        return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
+    }
+
     struct machine_mods_mapping *mapping = NULL;
     darray_size_t m = 0;
-    darray_enumerate(m, mapping, options->mods) {
+    darray_enumerate(m, mapping, builder->mods) {
         if (mapping->source == source) {
             if (!target) {
                 /* Remove mapping */
-                darray_remove(options->mods, m);
+                darray_remove(builder->mods, m);
             } else {
                 /* Update mapping */
                 mapping->target = target;
@@ -2922,7 +2960,7 @@ xkb_machine_options_remap_mods(
     if (target) {
         /* Append new mapping */
         darray_append(
-            options->mods,
+            builder->mods,
             (struct machine_mods_mapping) {
                 .source = source,
                 .target = target
@@ -2936,37 +2974,58 @@ xkb_machine_options_remap_mods(
 }
 
 enum xkb_error_code
-xkb_machine_options_update_shortcut_mods(struct xkb_machine_options *options,
+xkb_machine_builder_update_shortcut_mods(struct xkb_machine_builder *builder,
                                          xkb_mod_mask_t affect,
                                          xkb_mod_mask_t mask)
 {
-    options->shortcuts.mask &= ~affect;
-    options->shortcuts.mask |= (mask & affect);
+    /* Check the modifiers against the keymap */
+    const xkb_mod_mask_t invalid = ~builder->keymap->canonical_state_mask;
+    if ((affect & invalid)) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                "%s: Invalid affected modifiers: 0x%"PRIx32"\n",
+                __func__, affect);
+        return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
+    }
+    if ((mask & invalid)) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+                "%s: Invalid modifiers: 0x%"PRIx32"\n",
+                __func__, mask);
+        return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
+    }
+
+    builder->shortcuts.mask &= ~affect;
+    builder->shortcuts.mask |= (mask & affect);
     return XKB_SUCCESS;
 }
 
 enum xkb_error_code
-xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
+xkb_machine_builder_remap_shortcut_layout(struct xkb_machine_builder *builder,
                                           xkb_layout_index_t source,
                                           xkb_layout_index_t target)
 {
-    if (source >= XKB_MAX_GROUPS || target >= XKB_MAX_GROUPS)
+    if (source >= builder->keymap->num_groups) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                "%s: Invalid source layout: %"PRIu32"\n", __func__, source);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
-
-    if (target == source) {
-        /* Skip default setting */
-        return XKB_SUCCESS;
+    }
+    if (target >= builder->keymap->num_groups) {
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                "%s: Invalid target layout: %"PRIu32"\n", __func__, target);
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
     }
 
-    struct xkb_shortcuts_config_options * restrict config = &options->shortcuts;
+    struct xkb_shortcuts_config_options * const config = &builder->shortcuts;
 
     /* Resize array & initialize new entries, if relevant */
     if (source >= darray_size(config->targets)) {
+        if (target == source) {
+            /* Skip default setting */
+            return XKB_SUCCESS;
+        }
         xkb_layout_index_t new = darray_size(config->targets);
         darray_resize(config->targets, source + 1);
         for (; new < source; new++)
-            darray_item(config->targets, new) =
-                XKB_LAYOUT_INVALID;
+            darray_item(config->targets, new) = XKB_LAYOUT_INVALID;
     }
 
     darray_item(config->targets, source) = (source == target)
@@ -3031,7 +3090,7 @@ machine_set_mods(struct xkb_machine *sm,
          * For other type of overlaps, see the sorting function.
          */
         qsort(darray_items(mappings), darray_size(mappings),
-            sizeof(*darray_items(mappings)), &cmp_mod_masks);
+              sizeof(*darray_items(mappings)), &cmp_mod_masks);
 
         darray_steal(
             mappings,
@@ -3051,8 +3110,8 @@ machine_set_mods(struct xkb_machine *sm,
 }
 
 static bool
-machine_set_shortcuts(struct xkb_machine *sm,
-                      const struct xkb_shortcuts_config_options *options)
+machine_set_shortcuts(struct xkb_machine * restrict sm,
+                      const struct xkb_shortcuts_config_options * restrict options)
 {
     if (darray_empty(options->targets)) {
         sm->config.shortcuts = (struct machine_shortcuts_config) {
@@ -3062,7 +3121,7 @@ machine_set_shortcuts(struct xkb_machine *sm,
         return true;
     }
 
-    struct xkb_keymap * const restrict keymap = sm->base.base.keymap;
+    struct xkb_keymap * const keymap = sm->base.base.keymap;
 
     /* Consider only defined layouts */
     xkb_layout_index_t count = MIN(
@@ -3081,13 +3140,8 @@ machine_set_shortcuts(struct xkb_machine *sm,
         return true;
 
     xkb_mod_mask_t mask = options->mask;
-    if (mask) {
-        /* Sanitize mask */
-        mask &= (xkb_mod_mask_t)
-                ((UINT64_C(1) << xkb_keymap_num_mods(keymap)) - 1);
-    } else {
-        /* No default mask */
-    }
+    /* Sanitize mask */
+    mask &= sm->base.base.keymap->canonical_state_mask;
     if (!mask)
         return true;
 
@@ -3115,21 +3169,18 @@ machine_set_shortcuts(struct xkb_machine *sm,
 }
 
 struct xkb_machine *
-xkb_machine_new(struct xkb_keymap *keymap,
-                const struct xkb_machine_options *options)
+xkb_machine_new(const struct xkb_machine_builder *builder)
 {
     struct xkb_machine * const machine = calloc(1, sizeof(*machine));
     if (!machine)
         return NULL;
 
-    if (!options)
-        options = &default_machine_options;
+    xkb_server_state_init(&machine->base, builder->keymap, SERVER_STATE,
+                          builder->controls.a11y.affect,
+                          builder->controls.a11y.flags);
 
-    xkb_server_state_init(&machine->base, keymap, SERVER_STATE,
-                          options->a11y_affect, options->a11y_flags);
-
-    if (!machine_set_mods(machine, &options->mods) ||
-        !machine_set_shortcuts(machine, &options->shortcuts))
+    if (!machine_set_mods(machine, &builder->mods) ||
+        !machine_set_shortcuts(machine, &builder->shortcuts))
         goto error;
 
     darray_init(machine->overlays.keys);
@@ -3247,7 +3298,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
     }
 
     if (update->components) {
-        const struct xkb_state_components_update * restrict const components =
+        const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
         state_update_enabled_controls(state,
@@ -3281,10 +3332,10 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 }
 
 static ssize_t
-do_remap_modifiers(const struct machine_modifiers_config *mappings,
-                   struct xkb_state *state,
-                   struct xkb_events *events,
-                   const struct xkb_key *key)
+do_remap_modifiers(const struct machine_modifiers_config * restrict mappings,
+                   struct xkb_state * restrict state,
+                   struct xkb_events * restrict events,
+                   const struct xkb_key * restrict key)
 {
     if (!(mappings->mask & state->components.mods))
         return -1;
@@ -3293,12 +3344,11 @@ do_remap_modifiers(const struct machine_modifiers_config *mappings,
     if (layout >= key->num_groups)
         return -1;
 
-    const struct xkb_key_type * restrict const type =
-        key->groups[layout].type;
+    const struct xkb_key_type * const type = key->groups[layout].type;
     xkb_mod_mask_t affect = 0;
     xkb_mod_mask_t mods = 0;
     for (darray_size_t m = 0; m < mappings->mappings_num; m++) {
-        const struct machine_mods_mapping * restrict const mapping =
+        const struct machine_mods_mapping * const mapping =
             &mappings->mappings[m];
         if (/* Skip not matching active mods */
             (mapping->source & state->components.mods) == mapping->source &&
