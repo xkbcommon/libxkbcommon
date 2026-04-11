@@ -2881,6 +2881,13 @@ xkb_machine_builder_destroy(struct xkb_machine_builder *builder)
     free(builder);
 }
 
+struct xkb_keymap *
+xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder)
+{
+    /* Reference count is not updated. See API doc. */
+    return builder->keymap;
+}
+
 enum xkb_error_code
 xkb_machine_builder_update_a11y_flags(
     struct xkb_machine_builder *builder,

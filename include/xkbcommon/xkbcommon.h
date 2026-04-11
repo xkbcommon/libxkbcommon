@@ -2714,6 +2714,25 @@ XKB_EXPORT void
 xkb_machine_builder_destroy(struct xkb_machine_builder *builder);
 
 /**
+ * Get the keymap which a `xkb_machine_builder` object is using.
+ *
+ * @param builder The state machine builder.
+ *
+ * @returns The keymap which was passed to `xkb_machine_builder_new()` when
+ * creating this `xkb_machine` object.
+ *
+ * @warning This function does not take a new reference on the keymap; you must
+ * explicitly reference it yourself if you plan to use it beyond the
+ * lifetime of the `xkb_machine_builder` object.
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_machine_builder
+ */
+XKB_EXPORT struct xkb_keymap *
+xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder);
+
+/**
  * @enum xkb_a11y_flags
  * Flags for
  * `xkb_machine_builder::xkb_machine_builder_update_a11y_flags()`.
