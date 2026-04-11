@@ -468,6 +468,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         if (!seat->state) {
             fprintf(stderr, "%s: ERROR: Failed to create XKB state!\n",
                     seat->name_str);
+            terminate = true;
         } else if (use_local_state && !use_events_api) {
             const struct xkb_state_components_update components = {
                 .size = sizeof(components),
@@ -489,16 +490,19 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 xkb_machine_builder_new_from_options(seat->keymap, &machine_options);
             if (!machine_builder) {
                 fprintf(stderr, "ERROR: Couldn't create xkb state machine builder\n");
+                terminate = true;
                 return;
             }
 
             seat->machine = xkb_machine_new(machine_builder);
             xkb_machine_builder_destroy(machine_builder);
-            if (!seat->machine)
+            if (!seat->machine) {
                 fprintf(stderr, "%s: ERROR: Failed to create local XKB state!\n",
                         seat->name_str);
+                terminate = true;
+            }
         }
-        if (!seat->events) {
+        if (!seat->events && seat->machine) {
             /* Initialize the events queue */
             seat->events = xkb_events_new_batch(seat->inter->ctx,
                                                 XKB_EVENTS_NO_FLAGS);
@@ -515,7 +519,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 };
                 // FIXME: handle error
                 xkb_machine_process_synthetic(seat->machine, &update,
-                                                 seat->events);
+                                              seat->events);
                 const struct xkb_event *event;
                 while ((event = xkb_events_next(seat->events))) {
                     xkb_state_update_event(seat->state, event);

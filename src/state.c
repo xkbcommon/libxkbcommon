@@ -3012,12 +3012,16 @@ xkb_machine_builder_remap_shortcut_layout(struct xkb_machine_builder *builder,
 {
     if (source >= builder->keymap->num_groups) {
         log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
-                "%s: Invalid source layout: %"PRIu32"\n", __func__, source);
+                "%s: Invalid source layout: "
+                "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
+                __func__, builder->keymap->num_groups, source + 1);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
     }
     if (target >= builder->keymap->num_groups) {
         log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
-                "%s: Invalid target layout: %"PRIu32"\n", __func__, target);
+                "%s: Invalid target layout: "
+                "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
+                __func__, builder->keymap->num_groups, target + 1);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
     }
 
