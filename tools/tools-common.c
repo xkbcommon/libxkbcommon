@@ -1373,16 +1373,21 @@ tools_set_shortcuts_mask(const struct xkb_machine_options *options,
 static int
 tools_parse_layout_index1(const char *raw, size_t len, xkb_layout_index_t *out)
 {
-    int consumed = parse_dec_to_uint32_t(raw, len, out);
-    if (consumed > 0 && *out == 0) {
+    xkb_layout_index_t idx = XKB_LAYOUT_INVALID;
+    int consumed = parse_dec_to_uint32_t(raw, len, &idx);
+    if (consumed > 0 && idx == XKB_LAYOUT_INVALID) {
         consumed = -1;
     }
-    if (consumed < 0 || *out == 0 || *out > XKB_MAX_GROUPS) {
-        fprintf(stderr, "ERROR: invalid layout index: \"%.*s\"\n",
-                (unsigned int) len, raw);
+    /* 1-indexed */
+    if (consumed < 0 || idx == 0 || idx > XKB_MAX_GROUPS) {
+        fprintf(stderr,
+                "ERROR: invalid layout index: "
+                "expected value in range 1..%"PRIu32", but got \"%.*s\"\n",
+                XKB_MAX_GROUPS, (unsigned int) len, raw);
+        consumed = -1;
     } else {
-        /* 1-indexed */
-        (*out)--;
+        /* Convert to 0-indexed */
+        *out = idx - 1;
     }
     return consumed;
 }
@@ -1411,10 +1416,11 @@ tools_parse_shortcuts_mappings(const char *raw,
             }
         }
 
-        xkb_layout_index_t source = 0;
+        xkb_layout_index_t source = XKB_LAYOUT_INVALID;
         int consumed = tools_parse_layout_index1(start, len, &source);
         if (consumed <= 0) {
-            fprintf(stderr, "ERROR: invalid shortcuts layout source\n");
+            fprintf(stderr, "ERROR: invalid shortcuts layout source: \"%s\"\n",
+                    start);
             return false;
         }
 
@@ -1427,7 +1433,7 @@ tools_parse_shortcuts_mappings(const char *raw,
         start += consumed + 1;
         len -= (size_t) consumed + 1;
 
-        xkb_layout_index_t target = 0;
+        xkb_layout_index_t target = XKB_LAYOUT_INVALID;
         consumed = tools_parse_layout_index1(start, len, &target);
         if ((size_t) consumed != len) {
             fprintf(stderr, "ERROR: invalid shortcuts layout target: \"%s\"\n",
@@ -1475,7 +1481,7 @@ tools_set_shortcuts_mappings(const struct xkb_machine_options *options,
         if (error != XKB_SUCCESS) {
             fprintf(stderr,
                     "ERROR %d: cannot add shortcuts layout mapping: "
-                    "%"PRIu32" -> %"PRIu32"\n", error, source, *target);
+                    "%"PRIu32" -> %"PRIu32"\n", error, source + 1, *target + 1);
             ret = false;
         }
     }
