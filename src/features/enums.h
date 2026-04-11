@@ -145,6 +145,9 @@ enum xkb_enumerations_values {
     XKB_EVENTS_FLAGS_VALUES
         = XKB_EVENTS_NO_FLAGS
     ,
+    XKB_MACHINE_BUILDER_FLAGS_VALUES
+        = XKB_MACHINE_BUILDER_NO_FLAGS
+    ,
     XKB_A11Y_FLAGS_VALUES
         = XKB_A11Y_NO_FLAGS
         | XKB_A11Y_LATCH_TO_LOCK
@@ -306,6 +309,12 @@ static const uint32_t xkb_events_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
+static const uint32_t xkb_machine_builder_flags_values[] = {
+    XKB_MACHINE_BUILDER_NO_FLAGS,
+};
+#endif
+
+#ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_a11y_flags_values[] = {
     XKB_A11Y_NO_FLAGS,
     XKB_A11Y_LATCH_TO_LOCK,
@@ -417,6 +426,7 @@ static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_STATE_MODE,
     XKB_FEATURE_ENUM_STATE_MATCH,
     XKB_FEATURE_ENUM_CONSUMED_MODE,
+    XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS,
     XKB_FEATURE_ENUM_EVENT_TYPE,
     XKB_FEATURE_ENUM_KEY_DIRECTION,
     XKB_FEATURE_ENUM_EVENTS_FLAGS,

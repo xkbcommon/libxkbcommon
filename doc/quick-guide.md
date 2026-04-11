@@ -280,9 +280,11 @@ int new_keyboard(…)
     * Initialize the keymap
     */
 
-    struct xkb_machine *machine;
-
-    machine = xkb_machine_new(keymap, NULL);
+    struct xkb_machine_builder *machine_builder =
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
+    if (!machine_builder) <error>
+    struct xkb_machine *machine = xkb_machine_new(machine_builder);
+    xkb_machine_builder_destroy(machine_builder);
     if (!machine) <error>
 
     struct xkb_events *events;

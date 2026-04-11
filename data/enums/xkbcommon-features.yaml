@@ -35,6 +35,8 @@ xkb_feature:
     value: 24820
   - name: XKB_FEATURE_ENUM_CONSUMED_MODE
     value: 24840
+  - name: XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS
+    value: 25200
   - name: XKB_FEATURE_ENUM_EVENT_TYPE
     value: 27000
   - name: XKB_FEATURE_ENUM_KEY_DIRECTION

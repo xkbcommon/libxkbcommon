@@ -2653,53 +2653,70 @@ XKB_EXPORT const struct xkb_event *
 xkb_events_next(struct xkb_events *events);
 
 /**
- * @struct xkb_machine_options
- * Opaque options object to configure an `xkb_machine`.
+ * @struct xkb_machine_builder
+ * Opaque builder object to configure an `xkb_machine`.
  *
- * Create with `xkb_machine_options_new()`, configure with the
- * `xkb_machine_options_*` functions, then pass to
+ * Create with `xkb_machine_builder_new()`, configure with the
+ * `xkb_machine_builder_*` functions, then pass to
  * `xkb_machine::xkb_machine_new()`.
- * The options object may be destroyed immediately after
+ * The builder object may be destroyed immediately after
  * `xkb_machine::xkb_machine_new()` returns.
  *
  * @since 1.14.0
  *
- * @sa `xkb_machine_options::xkb_machine_options_new()`
+ * @sa `xkb_machine_builder::xkb_machine_builder_new()`
  * @sa `xkb_machine::xkb_machine_new()`
  */
-struct xkb_machine_options;
+struct xkb_machine_builder;
 
 /**
- * Create a new `xkb_machine` options object.
+ * @enum xkb_machine_builder_flags
+ * Flags for `xkb_machine_builder::xkb_machine_builder_new()`
  *
- * @param context The context in which to create the options.
+ * @since 1.14.0
+ */
+enum xkb_machine_builder_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_MACHINE_BUILDER_NO_FLAGS = 0,
+};
+
+/**
+ * Create a new `xkb_machine` builder object.
  *
- * @returns A new `xkb_machine` options object, or `NULL` on failure.
+ * @param[in] keymap  The keymap which the state machine will use.
+ * @param[in] flags   Flags to control the builder behavior, or 0.
+ *
+ * @returns A new `xkb_machine` builder object, or `NULL` on failure.
  *
  * @since 1.14.0
  *
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  */
-XKB_EXPORT struct xkb_machine_options *
-xkb_machine_options_new(struct xkb_context *context);
+XKB_EXPORT struct xkb_machine_builder *
+xkb_machine_builder_new(struct xkb_keymap *keymap,
+                        enum xkb_machine_builder_flags flags);
 
 /**
- * Free a `xkb_machine` options object.
+ * Free a `xkb_machine` builder object.
  *
- * @param options The `xkb_machine` options. If it is `NULL`, this function does
+ * @param builder The `xkb_machine` builder. If it is `NULL`, this function does
  * nothing.
  *
  * @since 1.14.0
  *
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  */
 XKB_EXPORT void
-xkb_machine_options_destroy(struct xkb_machine_options *options);
+xkb_machine_builder_destroy(struct xkb_machine_builder *builder);
 
 /**
  * @enum xkb_a11y_flags
  * Flags for
- * `xkb_machine_options::xkb_machine_options_update_a11y_flags()`.
+ * `xkb_machine_builder::xkb_machine_builder_update_a11y_flags()`.
  *
  * These flags configure the accessibility (*a11y*) features.
  *
@@ -2763,22 +2780,22 @@ enum xkb_a11y_flags {
 };
 
 /**
- * Update the accessibility flags of an `xkb_machine_options` object.
+ * Update the accessibility flags of an `xkb_machine_builder` object.
  *
- * @param options The `state_machine` options object to modify.
- * @param affect  Accessibility flags to modify.
- * @param flags   Accessibility flags to set or unset. Only the flags in
- * @p affect are considered.
+ * @param[in,out] builder The `state_machine` builder object to modify.
+ * @param[in]     affect  Accessibility flags to modify.
+ * @param[in]     flags   Accessibility flags to set or unset. Only the flags in
+ *                        @p affect are considered.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
  * @since 1.14.0
  *
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_options_update_a11y_flags(
-    struct xkb_machine_options *options,
+xkb_machine_builder_update_a11y_flags(
+    struct xkb_machine_builder *builder,
     enum xkb_a11y_flags affect,
     enum xkb_a11y_flags flags
 );
@@ -2797,13 +2814,14 @@ xkb_machine_options_update_a11y_flags(
  * - There is no other remapping entry with the source modifiers being a
  *   superset of this entry. E.g. `Control+Alt` has priority over `Control`.
  *
- * @param options The `state_machine` options object to modify.
- * @param source  Modifier combination to remap, using their [encoding].
- *                Must be non-zero, unless both @p source and @p target are 0
- *                to clear all entries.
- * @param target  Modifier combination to remap to, using their [encoding],
- *                or 0 to remove the entry for @p source. If both @p source and
- *                @p target are 0, all entries are cleared.
+ * @param[in,out] builder The `state_machine` builder object to modify.
+ * @param[in]     source  Modifier combination to remap, using their [encoding].
+ *                        Must be non-zero, unless both @p source and @p target
+ *                        are 0 to clear all entries.
+ * @param[in]     target  Modifier combination to remap to, using their
+ *                        [encoding], or 0 to remove the entry for @p source.
+ *                        If both @p source and @p target are 0, all entries are
+ *                        cleared.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
@@ -2814,7 +2832,7 @@ xkb_machine_options_update_a11y_flags(
  * const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
  * const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
  * const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
- * if (xkb_machine_options_remap_mods(options, ctrl | alt, level3)) {
+ * if (xkb_machine_builder_remap_mods(builder, ctrl | alt, level3)) {
  *     // handle error
  *     …
  * }
@@ -2822,13 +2840,13 @@ xkb_machine_options_update_a11y_flags(
  *
  * @since 1.14.0
  *
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  *
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_options_remap_mods(
-    struct xkb_machine_options *options,
+xkb_machine_builder_remap_mods(
+    struct xkb_machine_builder *builder,
     xkb_mod_mask_t source,
     xkb_mod_mask_t target
 );
@@ -2838,11 +2856,11 @@ xkb_machine_options_remap_mods(
  *
  * When any of the specified modifiers is active, the effective layout
  * is substituted according to the mapping set by
- * `xkb_machine_options_remap_shortcut_layout()`.
+ * `xkb_machine_builder_remap_shortcut_layout()`.
  * This ensures a consistent user experience with keyboard shortcuts
  * across the layouts.
  *
- * @param[in,out] options The `state_machine` options object to modify.
+ * @param[in,out] builder The `state_machine` builder object to modify.
  * @param[in]     affect  Modifiers to consider, using their [encoding].
  *                        Only modifiers present in this mask are modified
  *                        by @p mask.
@@ -2851,39 +2869,39 @@ xkb_machine_options_remap_mods(
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
- * @sa `xkb_machine_options_remap_shortcut_layout()`
+ * @sa `xkb_machine_builder_remap_shortcut_layout()`
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
  * @since 1.14.0
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  *
  * [encoding]: @ref modifiers-encoding
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_options_update_shortcut_mods(struct xkb_machine_options *options,
+xkb_machine_builder_update_shortcut_mods(struct xkb_machine_builder *builder,
                                          xkb_mod_mask_t affect,
                                          xkb_mod_mask_t mask);
 
 /**
  * Set a layout substitution for the shortcut layout override.
  *
- * When any modifier set via `xkb_machine_options_update_shortcut_mods()` is
+ * When any modifier set via `xkb_machine_builder_update_shortcut_mods()` is
  * active, the effective layout @p source is substituted with layout @p target
  * in key processing. This allows shortcuts defined in layout @p target
  * (typically a Latin layout) to remain reachable when layout @p source is
  * active.
  *
- * @param[in,out] options The `state_machine` options object to modify.
+ * @param[in,out] builder The `state_machine` builder object to modify.
  * @param[in]     source  Source layout to substitute.
  * @param[in]     target  Target layout to use instead of @p source.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
- * @sa `xkb_machine_options_update_shortcut_mods()`
+ * @sa `xkb_machine_builder_update_shortcut_mods()`
  * @since 1.14.0
- * @memberof xkb_machine_options
+ * @memberof xkb_machine_builder
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
+xkb_machine_builder_remap_shortcut_layout(struct xkb_machine_builder *builder,
                                           xkb_layout_index_t source,
                                           xkb_layout_index_t target);
 
@@ -2896,9 +2914,7 @@ xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
  * `xkb_state::xkb_state_update_mask()`.
  * See @ref server-client-state for  further information.
  *
- * @param keymap  The keymap which the state machine will use.
- * @param options The options to configure the state machine, or `NULL` to use
- * the defaults.
+ * @param builder The builder object to configure the state machine.
  *
  * @returns A new keyboard state machine object, or `NULL` on failure.
  *
@@ -2907,8 +2923,7 @@ xkb_machine_options_remap_shortcut_layout(struct xkb_machine_options *options,
  * @memberof xkb_machine
  */
 XKB_EXPORT struct xkb_machine *
-xkb_machine_new(struct xkb_keymap *keymap,
-                const struct xkb_machine_options *options);
+xkb_machine_new(const struct xkb_machine_builder *builder);
 
 /**
  * Take a new reference on a `xkb_machine` object.

@@ -136,8 +136,12 @@ main(void)
      * Full server state machine API
      */
 
-    struct xkb_machine *sm = xkb_machine_new(keymap, NULL);
+    struct xkb_machine_builder *builder =
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
+    assert(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder);
     assert(sm);
+    xkb_machine_builder_destroy(builder);
     struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
     assert(events);
     state = xkb_state_new(keymap);
