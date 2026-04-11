@@ -4311,7 +4311,7 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
  * Test whether a layout is active in a given keyboard state by index.
  *
  * @param[in] state The keyboard state.
- * @param[in] name  The layout index to test.
+ * @param[in] idx   The layout index to test.
  * @param[in] type  The component of the state against which to match the
  * given layout.
  *
@@ -4331,8 +4331,6 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
  *
  * @param[in] state The keyboard state.
  * @param[in] name  The LED name to test (`NULL`-terminated string).
- * @param[in] type  The component of the state against which to match the
- * given LED.
  *
  * @returns 1 if the LED is active, 0 if it not.  If no LED with this name
  * exists in the keymap, returns -1.
@@ -4348,8 +4346,6 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
  *
  * @param[in] state The keyboard state.
  * @param[in] idx   The LED index to test.
- * @param[in] type  The component of the state against which to match the
- * given LED.
  *
  * @returns 1 if the LED is active, 0 if it not.  If the LED index is not
  * valid in the keymap, returns -1.
