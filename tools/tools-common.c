@@ -10,6 +10,7 @@
  */
 
 #include "config.h"
+#include "darray.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -952,10 +953,60 @@ tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out)
     }
 }
 
+static void
+xkb_raw_modifiers_free(struct xkb_raw_mod_mask *raw_mods)
+{
+    darray_free(raw_mods->names);
+    darray_free(raw_mods->indices);
+}
+
+static void
+xkb_machine_mods_raw_mapping_free(struct xkb_machine_mods_raw_mapping *mapping)
+{
+    xkb_raw_modifiers_free(&mapping->source);
+    xkb_raw_modifiers_free(&mapping->target);
+}
+
+void
+xkb_machine_options_free(struct xkb_machine_options *options)
+{
+    xkb_raw_modifiers_free(&options->shortcuts.mask);
+    darray_free(options->shortcuts.mappings);
+
+    struct xkb_machine_mods_raw_mapping *mapping;
+    darray_foreach(mapping, options->modifiers)
+        xkb_machine_mods_raw_mapping_free(mapping);
+    darray_free(options->modifiers);
+}
+
+static bool
+xkb_machine_options_update_boolean_ctrls(struct xkb_machine_options *options,
+                                         enum xkb_keyboard_control_flags flags,
+                                         bool disable)
+{
+    if (disable)
+        options->controls.boolean.flags &= ~flags;
+    else
+        options->controls.boolean.flags |= flags;
+    options->controls.boolean.affect |= flags;
+    return true;
+}
+
+static bool
+xkb_machine_options_update_a11y_flags(struct xkb_machine_options *options,
+                                      enum xkb_a11y_flags flags,
+                                      bool disable)
+{
+    if (disable)
+        options->controls.a11y.flags &= ~flags;
+    else
+        options->controls.a11y.flags |= flags;
+    options->controls.a11y.affect |= flags;
+    return true;
+}
+
 bool
-tools_parse_controls(const char *raw, struct xkb_machine_options *options,
-                     enum xkb_keyboard_control_flags *controls_affect,
-                     enum xkb_keyboard_control_flags *controls_values)
+tools_parse_controls(const char *raw, struct xkb_machine_options *options)
 {
     if (isempty(raw))
         return true;
@@ -992,7 +1043,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options,
     const char *start = raw;
     const char *s = start;
 
-    bool ok = true;
+    bool ret = true;
 
     /* Parse comma-separated list of options */
     while (true) {
@@ -1017,67 +1068,71 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options,
             }
         }
 
-        ok = false;
+        bool ok = false;
         for (enum control_field type = 0;
              type < (enum control_field) ARRAY_SIZE(fields);
              type++) {
             if (strncmp(start, fields[type], len) != 0 ||
-                fields[type][len] != '\0')
+                fields[type][len] != '\0') {
                 continue;
+            }
 
             ok = true;
 
             switch (type) {
             case CONTROL_FIELD_OVERLAY1:
-            case CONTROL_FIELD_OVERLAY2: {
-                static_assert(CONTROL_FIELD_OVERLAY1 == 0, "");
-                static_assert(XKB_KEYBOARD_CONTROL_OVERLAY2 ==
-                              (XKB_KEYBOARD_CONTROL_OVERLAY1 << 1), "");
-                const enum xkb_keyboard_control_flags flag =
-                    XKB_KEYBOARD_CONTROL_OVERLAY1 << type;
-                if (disable)
-                    *controls_values &= ~flag;
-                else
-                    *controls_values |= flag;
-                *controls_affect |= flag;
-                break;
-            }
+            case CONTROL_FIELD_OVERLAY2:
             case CONTROL_FIELD_OVERLAY3:
             case CONTROL_FIELD_OVERLAY4:
             case CONTROL_FIELD_OVERLAY5:
             case CONTROL_FIELD_OVERLAY6:
             case CONTROL_FIELD_OVERLAY7:
             case CONTROL_FIELD_OVERLAY8: {
+                static_assert(CONTROL_FIELD_OVERLAY1 == 0, "");
+                static_assert(
+                    XKB_KEYBOARD_CONTROL_OVERLAY1 ==
+                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY1),
+                    ""
+                );
+                static_assert(CONTROL_FIELD_OVERLAY2 == 1, "");
+                static_assert(
+                    XKB_KEYBOARD_CONTROL_OVERLAY2 ==
+                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY2),
+                    ""
+                );
                 static_assert(CONTROL_FIELD_OVERLAY3 == 2, "");
-                static_assert(XKB_KEYBOARD_CONTROL_OVERLAY4 ==
-                              (XKB_KEYBOARD_CONTROL_OVERLAY3 << 1), "");
+                static_assert(
+                    XKB_KEYBOARD_CONTROL_OVERLAY3 ==
+                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY3),
+                    ""
+                );
+                static_assert(CONTROL_FIELD_OVERLAY8 == 7, "");
+                static_assert(
+                    XKB_KEYBOARD_CONTROL_OVERLAY8 ==
+                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY8),
+                    ""
+                );
                 const enum xkb_keyboard_control_flags flag =
-                    XKB_KEYBOARD_CONTROL_OVERLAY3 << (type - CONTROL_FIELD_OVERLAY3);
-                if (disable)
-                    *controls_values &= ~flag;
-                else
-                    *controls_values |= flag;
-                *controls_affect |= flag;
+                    XKB_KEYBOARD_CONTROL_OVERLAY1 << type;
+                ok = xkb_machine_options_update_boolean_ctrls(
+                    options, flag, disable
+                );
                 break;
             }
             case CONTROL_FIELD_STICKY_KEYS:
-                if (disable)
-                    *controls_values &= ~XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
-                else
-                    *controls_values |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
-                *controls_affect |= XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS;
+                ok = xkb_machine_options_update_boolean_ctrls(
+                    options, XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS, disable
+                );
                 break;
             case CONTROL_FIELD_LATCH_TO_LOCK:
                 ok = xkb_machine_options_update_a11y_flags(
-                    options, XKB_A11Y_LATCH_TO_LOCK,
-                    (disable ? 0 : XKB_A11Y_LATCH_TO_LOCK)
-                ) == 0;
+                    options, XKB_A11Y_LATCH_TO_LOCK, disable
+                );
                 break;
             case CONTROL_FIELD_LATCH_SIMULTANEOUS:
                 ok = xkb_machine_options_update_a11y_flags(
-                    options, XKB_A11Y_LATCH_SIMULTANEOUS_KEYS,
-                    (disable ? 0 : XKB_A11Y_LATCH_SIMULTANEOUS_KEYS)
-                ) == 0;
+                    options, XKB_A11Y_LATCH_SIMULTANEOUS_KEYS, disable
+                );
                 break;
             default:
                 {} /* Label followed by declaration requires C23 */
@@ -1086,12 +1141,14 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options,
                     CONTROL_FIELD_LATCH_SIMULTANEOUS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );
+                ret = false;
             }
         }
 
         if (!ok) {
             fprintf(stderr, "ERROR: cannot parse control entry: \"%.*s\"\n",
                     (unsigned int) len, start);
+            ret = false;
             break;
         }
 
@@ -1103,12 +1160,12 @@ next:
         start = s;
     }
 
-    return ok;
+    return ret;
 }
 
 static size_t
-tools_parse_mod_mask(const char *raw, size_t length, struct xkb_keymap *keymap,
-                     xkb_mod_mask_t *out)
+tools_parse_raw_mod_mask(const char *raw, size_t length,
+                         struct xkb_raw_mod_mask *raw_mask)
 {
     const char *start = raw;
     const char *s = start;
@@ -1134,15 +1191,10 @@ tools_parse_mod_mask(const char *raw, size_t length, struct xkb_keymap *keymap,
 
         if (len >= ARRAY_SIZE(buf) || !memcpy(buf, start, len))
             return 0;
-        buf[len] = '\0';
-
-        const xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, buf);
-        if (idx == XKB_MOD_INVALID) {
-            fprintf(stderr, "ERROR: cannot parse modifier: \"%s\"\n", buf);
-            return 0;
-        }
-
-        *out |= xkb_keymap_mod_get_mask2(keymap, idx);
+        const darray_size_t idx = darray_size(raw_mask->names);
+        darray_append_items(raw_mask->names, buf, len);
+        darray_append(raw_mask->names, '\0');
+        darray_append(raw_mask->indices, idx);
 
 next:
         if (count >= length || s[0] == '\0')
@@ -1156,8 +1208,32 @@ next:
     return count;
 }
 
+static bool
+tools_parse_mod_mask(struct xkb_keymap *keymap,
+                     const struct xkb_raw_mod_mask *raw_mask, const char *field,
+                     xkb_mod_mask_t *out)
+{
+    bool ret = true;
+    darray_size_t *name_idx;
+
+    darray_foreach(name_idx, raw_mask->indices) {
+        const char *name = &darray_item(raw_mask->names, *name_idx);
+        const xkb_mod_index_t idx = xkb_keymap_mod_get_index(keymap, name);
+        if (idx == XKB_MOD_INVALID) {
+            fprintf(stderr,
+                    "ERROR: unknown modifier in %s: \"%s\"\n",
+                    field, name);
+            ret = false;
+        } else {
+            *out |= xkb_keymap_mod_get_mask2(keymap, idx);
+        }
+    }
+
+    return ret;
+}
+
 bool
-tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
+tools_parse_modifiers_mappings(const char *raw,
                                struct xkb_machine_options *options)
 {
     const char *start = raw;
@@ -1184,36 +1260,35 @@ tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
         while (source_len < len && start[source_len] != mods_sep)
             source_len++;
 
-        xkb_mod_mask_t source = 0;
-        size_t consumed = tools_parse_mod_mask(start, source_len, keymap, &source);
+        struct xkb_machine_mods_raw_mapping mapping = {0};
+        size_t consumed = tools_parse_raw_mod_mask(start, source_len,
+                                                   &mapping.source);
         if (consumed != source_len) {
             fprintf(stderr, "ERROR: invalid modifiers mapping source\n");
+            xkb_machine_mods_raw_mapping_free(&mapping);
             return false;
         }
 
         if (start[consumed] != mods_sep) {
             fprintf(stderr, "ERROR: invalid modifiers mapping: \"%s\"\n",
                     start);
+            xkb_machine_mods_raw_mapping_free(&mapping);
             return false;
         }
 
         start += consumed + 1;
         len -= consumed + 1;
 
-        xkb_mod_mask_t target = 0;
-        consumed = tools_parse_mod_mask(start, len, keymap, &target);
+        consumed = tools_parse_raw_mod_mask(start, len, &mapping.target);
         if (consumed != len) {
             fprintf(stderr, "ERROR: invalid modifiers mapping target: \"%s\"\n",
                     start);
+            xkb_machine_mods_raw_mapping_free(&mapping);
             return false;
         }
 
-        if (xkb_machine_options_remap_mods(options, source, target)) {
-            fprintf(stderr,
-                    "ERROR: cannot add modifiers mapping: "
-                    "0x%"PRIx32" -> 0x%"PRIx32"\n", source, target);
-            return false;
-        }
+        /* Steal */
+        darray_append(options->modifiers, mapping);
 
 next:
         if (s[0] == '\0')
@@ -1226,13 +1301,73 @@ next:
     return true;
 }
 
-bool
-tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
-                           struct xkb_machine_options *options)
+static bool
+tools_set_modifiers_mappings(const struct xkb_machine_options *options,
+                             struct xkb_machine_builder *builder)
 {
+    bool ret = true;
+    struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+
+    struct xkb_machine_mods_raw_mapping *mapping;
+    darray_foreach(mapping, options->modifiers) {
+        bool ok;
+
+        xkb_mod_mask_t source = 0;
+        ok = tools_parse_mod_mask(keymap, &mapping->source,
+                                  "mapping source", &source);
+
+        xkb_mod_mask_t target = 0;
+        ok = tools_parse_mod_mask(keymap, &mapping->target,
+                                  "mapping target", &target) && ok;
+
+        if (!ok) {
+            ret = false;
+            continue;
+        }
+
+        if (xkb_machine_builder_remap_mods(builder, source, target) !=
+            XKB_SUCCESS) {
+            fprintf(stderr,
+                    "ERROR: cannot add modifiers mapping: "
+                    "0x%"PRIx32" -> 0x%"PRIx32"\n", source, target);
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
+bool
+tools_parse_shortcuts_mask(const char *raw, struct xkb_machine_options *options)
+{
+    const size_t len = strlen_safe(raw);
+
+    struct xkb_raw_mod_mask raw_mask = {0};
+    const size_t consumed = tools_parse_raw_mod_mask(raw, len, &raw_mask);
+
+    if (consumed != len) {
+        fprintf(stderr, "ERROR: invalid shortcut modifiers mask: %s\n", raw);
+        xkb_raw_modifiers_free(&raw_mask);
+        return false;
+    }
+
+    /* Steal */
+    options->shortcuts.mask = raw_mask;
+    return true;
+}
+
+static bool
+tools_set_shortcuts_mask(const struct xkb_machine_options *options,
+                         struct xkb_machine_builder *builder)
+{
+    struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
     xkb_mod_mask_t mask = 0;
-    return tools_parse_mod_mask(raw, SIZE_MAX, keymap, &mask) &&
-           !xkb_machine_options_update_shortcut_mods(options, mask, mask);
+
+    return (
+        tools_parse_mod_mask(keymap, &options->shortcuts.mask,
+                             "shortcut modifier mask", &mask) &&
+        !xkb_machine_builder_update_shortcut_mods(builder, mask, mask)
+    );
 }
 
 static int
@@ -1242,7 +1377,7 @@ tools_parse_layout_index1(const char *raw, size_t len, xkb_layout_index_t *out)
     if (consumed > 0 && *out == 0) {
         consumed = -1;
     }
-    if (consumed < 0) {
+    if (consumed < 0 || *out == 0 || *out > XKB_MAX_GROUPS) {
         fprintf(stderr, "ERROR: invalid layout index: \"%.*s\"\n",
                 (unsigned int) len, raw);
     } else {
@@ -1300,12 +1435,19 @@ tools_parse_shortcuts_mappings(const char *raw,
             return false;
         }
 
-        if (xkb_machine_options_remap_shortcut_layout(options, source, target)) {
-            fprintf(stderr,
-                    "ERROR: cannot add shortcuts layout mapping: "
-                    "%"PRIu32" -> %"PRIu32"\n", source, target);
-            return false;
+        if (source >= darray_size(options->shortcuts.mappings)) {
+            if (target == source) {
+                /* Skip default setting */
+                goto next;
+            }
+            xkb_layout_index_t new =
+                (xkb_layout_index_t)darray_size(options->shortcuts.mappings);
+            darray_resize(options->shortcuts.mappings, source + 1);
+            for (; new < source; new++)
+                darray_item(options->shortcuts.mappings, new) = XKB_LAYOUT_INVALID;
         }
+
+        darray_item(options->shortcuts.mappings, source) = target;
 
 next:
         if (s[0] == '\0')
@@ -1316,4 +1458,49 @@ next:
     }
 
     return true;
+}
+
+static bool
+tools_set_shortcuts_mappings(const struct xkb_machine_options *options,
+                             struct xkb_machine_builder *builder)
+{
+    bool ret = true;
+    xkb_layout_index_t source;
+    xkb_layout_index_t *target;
+    darray_enumerate(source, target, options->shortcuts.mappings) {
+        if (*target == XKB_LAYOUT_INVALID)
+            continue;
+        const enum xkb_error_code error =
+            xkb_machine_builder_remap_shortcut_layout(builder, source, *target);
+        if (error != XKB_SUCCESS) {
+            fprintf(stderr,
+                    "ERROR %d: cannot add shortcuts layout mapping: "
+                    "%"PRIu32" -> %"PRIu32"\n", error, source, *target);
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
+struct xkb_machine_builder *
+xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
+                                     const struct xkb_machine_options *options)
+{
+    struct xkb_machine_builder * const builder =
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
+    if (!builder)
+        return NULL;
+
+    if ((unsigned)(xkb_machine_builder_update_a11y_flags(
+            builder, options->controls.a11y.affect, options->controls.a11y.flags
+        ) != XKB_SUCCESS) |
+        (unsigned)!tools_set_modifiers_mappings(options, builder) |
+        (unsigned)!tools_set_shortcuts_mask(options, builder) |
+        (unsigned)!tools_set_shortcuts_mappings(options, builder)) {
+            xkb_machine_builder_destroy(builder);
+            return NULL;
+    }
+
+    return builder;
 }
