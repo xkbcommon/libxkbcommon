@@ -9,7 +9,11 @@ Added the **server machine API:**
 - `struct xkb_machine_builder` (new):
   - `xkb_machine_builder_new()`
   - `xkb_machine_builder_destroy()`
+  - `xkb_machine_builder_get_keymap()`
   - `xkb_machine_builder_update_a11y_flags()`
+  - `xkb_machine_builder_remap_mods()`
+  - `xkb_machine_builder_update_shortcut_mods()`
+  - `xkb_machine_builder_remap_shortcut_layout()`
 - `enum xkb_machine_builder_flags` (new)
 - `enum xkb_events_flags` (new)
 - `struct xkb_events` (new):
