@@ -8,6 +8,7 @@
 #pragma once
 
 #include "config.h"
+#include "darray.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -105,25 +106,74 @@ enum tools_arg_optionality {
 bool
 tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out);
 
-bool
-tools_parse_controls(const char *s, struct xkb_machine_options *options,
-                     enum xkb_keyboard_control_flags *controls_affect,
-                     enum xkb_keyboard_control_flags *controls_values);
+/** Raw modifier masks: plus-separated list of modifier names */
+struct xkb_raw_mod_mask {
+    darray_char names;
+    darray(darray_size_t) indices;
+};
+
+#define xkb_raw_mod_mask_new() { \
+    .names = darray_new(),       \
+    .indices = darray_new(),     \
+}
+
+/** Raw modifier mapping */
+struct xkb_machine_mods_raw_mapping {
+    struct xkb_raw_mod_mask source;
+    struct xkb_raw_mod_mask target;
+};
+
+/** Precursor of xkb_machine_builder, to handle tools args parsing */
+struct xkb_machine_options {
+    struct {
+        struct {
+            enum xkb_keyboard_control_flags affect;
+            enum xkb_keyboard_control_flags flags;
+        } boolean; /**< Initial boolean controls */
+        struct {
+            enum xkb_a11y_flags affect;
+            enum xkb_a11y_flags flags;
+        } a11y; /**< Initial A11Y flags */
+    } controls;
+
+    struct {
+        struct xkb_raw_mod_mask mask;
+        darray(xkb_layout_index_t) mappings;
+    } shortcuts; /**< Shortcut tweak */
+
+    /** Modifiers tweak */
+    darray(struct xkb_machine_mods_raw_mapping) modifiers;
+};
+
+#define xkb_machine_options_new() {     \
+    .controls = {0},                    \
+    .shortcuts = {                      \
+        .mask = xkb_raw_mod_mask_new(), \
+        .mappings = darray_new(),       \
+    },                                  \
+    .modifiers = darray_new(),          \
+}
 
 void
-tools_reset_modifiers_mappings(struct xkb_machine_options *options);
+xkb_machine_options_free(struct xkb_machine_options *options);
 
 bool
-tools_parse_modifiers_mappings(const char *raw, struct xkb_keymap *keymap,
+tools_parse_controls(const char *s, struct xkb_machine_options *options);
+
+bool
+tools_parse_modifiers_mappings(const char *raw,
                                struct xkb_machine_options *options);
 
 bool
-tools_parse_shortcuts_mask(const char *raw, struct xkb_keymap *keymap,
-                           struct xkb_machine_options *options);
+tools_parse_shortcuts_mask(const char *raw, struct xkb_machine_options *options);
 
 bool
 tools_parse_shortcuts_mappings(const char *raw,
                                struct xkb_machine_options *options);
+
+struct xkb_machine_builder *
+xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
+                                     const struct xkb_machine_options *options);
 
 #ifdef _WIN32
 #define setenv(varname, value, overwrite) _putenv_s((varname), (value))

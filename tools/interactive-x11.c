@@ -71,11 +71,7 @@ static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
-static struct xkb_machine_options * machine_options = NULL;
-static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-static const char *raw_modifiers_mapping = NULL;
-static const char *raw_shortcuts_mask = NULL;
+static struct xkb_machine_options machine_options = xkb_machine_options_new();
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
@@ -178,8 +174,8 @@ update_keymap(struct keyboard *kbd)
         const struct xkb_state_components_update components_update = {
             .size = sizeof(components_update),
             .components = XKB_STATE_CONTROLS,
-            .affect_controls = kbd_controls_affect,
-            .controls = kbd_controls_values,
+            .affect_controls = machine_options.controls.boolean.affect,
+            .controls = machine_options.controls.boolean.flags,
         };
         const struct xkb_state_update update = {
             .size = sizeof(update),
@@ -187,30 +183,15 @@ update_keymap(struct keyboard *kbd)
         };
         if (use_events_api) {
             if (!kbd->machine) {
-                if (raw_modifiers_mapping) {
-                    xkb_machine_options_remap_mods(machine_options, 0, 0);
-                    if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
-                                                        kbd->keymap,
-                                                        machine_options)) {
-                        fprintf(stderr,
-                                "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
-                                raw_modifiers_mapping);
-                    }
-                }
-                if (raw_shortcuts_mask) {
-                    xkb_machine_options_update_shortcut_mods(
-                        machine_options, XKB_MOD_ALL, 0
-                    );
-                    if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, kbd->keymap,
-                                                    machine_options)) {
-                        fprintf(stderr,
-                                "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
-                                raw_shortcuts_mask);
-                    }
+                struct xkb_machine_builder * machine_builder =
+                    xkb_machine_builder_new_from_options(kbd->keymap, &machine_options);
+                if (!machine_builder) {
+                    fprintf(stderr, "ERROR: Couldn't create xkb state machine builder\n");
+                    return - 1;
                 }
 
-                kbd->machine =
-                    xkb_machine_new(kbd->keymap, machine_options);
+                kbd->machine = xkb_machine_new(machine_builder);
+                xkb_machine_builder_destroy(machine_builder);
                 if (!kbd->machine)
                     return -1;
             }
@@ -221,8 +202,7 @@ update_keymap(struct keyboard *kbd)
                     return -1;
             }
             const int ret = xkb_machine_process_synthetic(kbd->machine,
-                                                             &update,
-                                                             kbd->events);
+                                                          &update, kbd->events);
             if (ret)
                 return ret;
             const struct xkb_event *event;
@@ -622,23 +602,6 @@ main(int argc, char *argv[])
     bool with_keymap_file = false;
     enum xkb_keymap_format keymap_format = DEFAULT_INPUT_KEYMAP_FORMAT;
     const char *keymap_path = NULL;
-
-    /* Only used for state options */
-    core_kbd.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    if (!core_kbd.ctx) {
-        ret = -1;
-        fprintf(stderr, "Couldn't create xkb context\n");
-        goto err_out;
-    }
-    machine_options = xkb_machine_options_new(core_kbd.ctx);
-    xkb_context_unref(core_kbd.ctx);
-    core_kbd.ctx = NULL;
-    if (!machine_options) {
-        ret = -1;
-        fprintf(stderr, "Couldn't create xkb state machine options\n");
-        goto err_out;
-    }
-
     bool with_compose = false;
     const char *locale;
 #endif
@@ -752,26 +715,25 @@ local_state:
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, machine_options,
-                                      &kbd_controls_affect,
-                                      &kbd_controls_values)) {
+            if (!tools_parse_controls(optarg, &machine_options))
                 goto invalid_usage;
-            }
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_MODIFIERS_TWEAK_MAPPING:
-            raw_modifiers_mapping = optarg;
+            if (!tools_parse_modifiers_mappings(optarg, &machine_options))
+                goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MASK:
-            raw_shortcuts_mask = optarg;
+            if (!tools_parse_shortcuts_mask(optarg, &machine_options))
+                goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, machine_options))
+            if (!tools_parse_shortcuts_mappings(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
@@ -989,7 +951,7 @@ err_out:
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP
-    xkb_machine_options_destroy(machine_options);
+    xkb_machine_options_free(&machine_options);
 #endif
     exit(ret);
 }

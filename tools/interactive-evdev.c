@@ -89,9 +89,8 @@ is_keyboard(int fd)
 static int
 keyboard_new(struct dirent *ent,
              struct xkb_context *ctx, struct xkb_keymap *keymap,
+             const struct xkb_machine_builder *builder,
              const struct xkb_machine_options *options,
-             enum xkb_keyboard_control_flags kbd_controls_affect,
-             enum xkb_keyboard_control_flags kbd_controls_values,
              struct xkb_compose_table *compose_table, struct keyboard **out)
 {
     int ret;
@@ -120,7 +119,7 @@ keyboard_new(struct dirent *ent,
     }
 
     if (use_events_api) {
-        machine = xkb_machine_new(keymap, options);
+        machine = xkb_machine_new(builder);
         if (!machine) {
             fprintf(stderr, "Couldn't create xkb state machine for %s\n", path);
             ret = -EFAULT;
@@ -145,8 +144,8 @@ keyboard_new(struct dirent *ent,
     const struct xkb_state_components_update components = {
         .size = sizeof(components),
         .components = XKB_STATE_CONTROLS,
-        .affect_controls = kbd_controls_affect,
-        .controls = kbd_controls_values,
+        .affect_controls = options->controls.boolean.affect,
+        .controls = options->controls.boolean.flags,
     };
     const struct xkb_state_update update = {
         .size = sizeof(update),
@@ -228,9 +227,8 @@ filter_device_name(const struct dirent *ent)
 
 static struct keyboard *
 get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
+              const struct xkb_machine_builder *builder,
               const struct xkb_machine_options *options,
-              enum xkb_keyboard_control_flags kbd_controls_affect,
-              enum xkb_keyboard_control_flags kbd_controls_values,
               struct xkb_compose_table *compose_table)
 {
     int ret, i, nents;
@@ -244,8 +242,8 @@ get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
     }
 
     for (i = 0; i < nents; i++) {
-        ret = keyboard_new(ents[i], ctx, keymap, options, kbd_controls_values,
-                           kbd_controls_affect, compose_table, &kbd);
+        ret = keyboard_new(ents[i], ctx, keymap, builder, options,
+                           compose_table, &kbd);
         if (ret) {
             if (ret == -EACCES) {
                 fprintf(stderr, "Couldn't open /dev/input/%s: %s. "
@@ -455,7 +453,7 @@ usage(FILE *fp, char *progname)
             " --legacy-state-api[=true|false]\n"
             "    Use legacy state API instead of event API\n"
             " --controls\n"
-            "    Sticky-keys, latch-to-lock, latch-simultaneous, overlay{1-8}\n"
+            "    Keyboard controls: sticky-keys, latch-to-lock, latch-simultaneous, overlay{1-8}\n"
             " --modifiers-mapping <MAPPING>\n"
             "    Remap the modifiers\n"
             " --shortcuts-mask <MASK>\n"
@@ -484,6 +482,7 @@ main(int argc, char *argv[])
     struct xkb_context *ctx = NULL;
     struct xkb_keymap *keymap = NULL;
     struct xkb_compose_table *compose_table = NULL;
+    struct xkb_machine_builder *machine_builder = NULL;
     const char *includes[64];
     size_t num_includes = 0;
     bool use_env_names = false;
@@ -560,17 +559,8 @@ main(int argc, char *argv[])
 
     bool has_rmlvo_options = false;
 
-    /* Initialize state options */
-    ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS); /* Only used for state options */
-    struct xkb_machine_options * const machine_options = xkb_machine_options_new(ctx);
-    if (!machine_options)
-        goto error_machine_options;
-    xkb_context_unref(ctx);
-    ctx = NULL;
-    enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-    enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-    const char *raw_modifiers_mapping = NULL;
-    const char *raw_shortcuts_mask = NULL;
+    /* Initialize machine options */
+    struct xkb_machine_options machine_options = xkb_machine_options_new();
 
     /* Ensure synced with usage() and man page */
     assert(consumed_mode == XKB_CONSUMED_MODE_XKB);
@@ -697,9 +687,7 @@ main(int argc, char *argv[])
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, machine_options,
-                                      &kbd_controls_affect,
-                                      &kbd_controls_values)) {
+            if (!tools_parse_controls(optarg, &machine_options)) {
                 usage(stderr, argv[0]);
                 ret = EXIT_INVALID_USAGE;
                 goto error_parse_args;
@@ -708,17 +696,25 @@ main(int argc, char *argv[])
             use_events_api = true;
             break;
         case OPT_MODIFIERS_TWEAK_MAPPING:
-            raw_modifiers_mapping = optarg;
+            if (!tools_parse_modifiers_mappings(optarg, &machine_options)) {
+                usage(stderr, argv[0]);
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
+            }
             /* --legacy-state-api=false is implied */
             use_events_api = true;
             break;
         case OPT_SHORTCUTS_TWEAK_MASK:
-            raw_shortcuts_mask = optarg;
+            if (!tools_parse_shortcuts_mask(optarg, &machine_options)) {
+                usage(stderr, argv[0]);
+                ret = EXIT_INVALID_USAGE;
+                goto error_parse_args;
+            }
             /* --legacy-state-api=false is implied */
             use_events_api = true;
             break;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, machine_options)) {
+            if (!tools_parse_shortcuts_mappings(optarg, &machine_options)) {
                 usage(stderr, argv[0]);
                 ret = EXIT_INVALID_USAGE;
                 goto error_parse_args;
@@ -834,19 +830,12 @@ too_much_arguments:
         goto out;
     }
 
-    if (raw_modifiers_mapping &&
-        !tools_parse_modifiers_mappings(raw_modifiers_mapping, keymap,
-                                        machine_options)) {
-        fprintf(stderr,
-                "ERROR: Failed to parse modifiers mapping: \"%s\"\n",
-                raw_modifiers_mapping);
-    }
-
-    if (raw_shortcuts_mask &&
-        !tools_parse_shortcuts_mask(raw_shortcuts_mask, keymap, machine_options)) {
-        fprintf(stderr,
-                "ERROR: Failed to parse shortcuts mask: \"%s\"\n",
-                raw_shortcuts_mask);
+    machine_builder = xkb_machine_builder_new_from_options(keymap,
+                                                           &machine_options);
+    if (!machine_builder) {
+        fprintf(stderr, "ERROR: Failed to create state machine builder\n");
+        ret = EXIT_FAILURE;
+        goto out;
     }
 
     if (with_compose) {
@@ -860,8 +849,8 @@ too_much_arguments:
         }
     }
 
-    kbds = get_keyboards(ctx, keymap, machine_options, kbd_controls_affect,
-                         kbd_controls_values, compose_table);
+    kbds = get_keyboards(ctx, keymap, machine_builder, &machine_options,
+                         compose_table);
     if (!kbds) {
         goto out;
     }
@@ -888,10 +877,10 @@ too_much_arguments:
     free_keyboards(kbds);
 out:
     xkb_compose_table_unref(compose_table);
+    xkb_machine_builder_destroy(machine_builder);
     xkb_keymap_unref(keymap);
 error_parse_args:
-error_machine_options:
-    xkb_machine_options_destroy(machine_options);
+    xkb_machine_options_free(&machine_options);
     xkb_context_unref(ctx);
 
     return ret;
@@ -899,12 +888,12 @@ error_machine_options:
 too_many_includes:
     fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
             ARRAY_SIZE(includes));
-    xkb_machine_options_destroy(machine_options);
+    xkb_machine_options_free(&machine_options);
     exit(EXIT_INVALID_USAGE);
 
 input_format_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     usage(stderr, argv[0]);
-    xkb_machine_options_destroy(machine_options);
+    xkb_machine_options_free(&machine_options);
     exit(EXIT_INVALID_USAGE);
 }

@@ -93,11 +93,7 @@ static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 static bool report_state_changes = true;
 static bool use_local_state = false;
-static struct xkb_machine_options * machine_options = NULL;
-static enum xkb_keyboard_control_flags kbd_controls_affect = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-static enum xkb_keyboard_control_flags kbd_controls_values = XKB_KEYBOARD_CONTROL_NO_FLAGS;
-static const char *raw_modifiers_mapping = NULL;
-static const char *raw_shortcuts_mask = NULL;
+static struct xkb_machine_options machine_options = xkb_machine_options_new();
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
 
@@ -476,8 +472,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             const struct xkb_state_components_update components = {
                 .size = sizeof(components),
                 .components = XKB_STATE_CONTROLS,
-                .affect_controls = kbd_controls_affect,
-                .controls = kbd_controls_values,
+                .affect_controls = machine_options.controls.boolean.affect,
+                .controls = machine_options.controls.boolean.flags,
             };
             const struct xkb_state_update update = {
                 .size = sizeof(update),
@@ -489,31 +485,15 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
     }
     if (use_local_state && use_events_api) {
         if (!seat->machine) {
-            if (raw_modifiers_mapping) {
-                /* No race condition when using wl_display_dispatch() */
-                xkb_machine_options_remap_mods(machine_options, 0, 0);
-                if (!tools_parse_modifiers_mappings(raw_modifiers_mapping,
-                                                    seat->keymap,
-                                                    machine_options)) {
-                    fprintf(stderr,
-                            "%s: ERROR: Failed to parse modifiers mapping: \"%s\"\n",
-                            seat->name_str, raw_modifiers_mapping);
-                }
-            }
-            if (raw_shortcuts_mask) {
-                /* No race condition when using wl_display_dispatch() */
-                xkb_machine_options_update_shortcut_mods(
-                    machine_options, XKB_MOD_ALL, 0
-                );
-                if (!tools_parse_shortcuts_mask(raw_shortcuts_mask, seat->keymap,
-                                                machine_options)) {
-                    fprintf(stderr,
-                            "%s: ERROR: Failed to parse shortcuts mask: \"%s\"\n",
-                            seat->name_str, raw_shortcuts_mask);
-                }
+            struct xkb_machine_builder * machine_builder =
+                xkb_machine_builder_new_from_options(seat->keymap, &machine_options);
+            if (!machine_builder) {
+                fprintf(stderr, "ERROR: Couldn't create xkb state machine builder\n");
+                return;
             }
 
-            seat->machine = xkb_machine_new(seat->keymap, machine_options);
+            seat->machine = xkb_machine_new(machine_builder);
+            xkb_machine_builder_destroy(machine_builder);
             if (!seat->machine)
                 fprintf(stderr, "%s: ERROR: Failed to create local XKB state!\n",
                         seat->name_str);
@@ -526,8 +506,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 const struct xkb_state_components_update components = {
                     .size = sizeof(components),
                     .components = XKB_STATE_CONTROLS,
-                    .affect_controls = kbd_controls_affect,
-                    .controls = kbd_controls_values,
+                    .affect_controls = machine_options.controls.boolean.affect,
+                    .controls = machine_options.controls.boolean.flags,
                 };
                 const struct xkb_state_update update = {
                     .size = sizeof(update),
@@ -1029,23 +1009,6 @@ main(int argc, char *argv[])
 #ifndef KEYMAP_DUMP
     bool with_keymap_file = false;
     const char *keymap_path = NULL;
-
-    /* Only used for state options */
-    inter.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    if (!inter.ctx) {
-        ret = -1;
-        fprintf(stderr, "ERROR: Couldn't create xkb context\n");
-        goto err_out;
-    }
-    machine_options = xkb_machine_options_new(inter.ctx);
-    xkb_context_unref(inter.ctx);
-    inter.ctx = NULL;
-    if (!machine_options) {
-        ret = -1;
-        fprintf(stderr, "ERROR: Couldn't create xkb state machine options\n");
-        goto err_out;
-    }
-
     bool with_compose = false;
     struct xkb_compose_table *compose_table = NULL;
 #endif
@@ -1198,26 +1161,25 @@ local_state:
             break;
         }
         case OPT_CONTROLS:
-            if (!tools_parse_controls(optarg, machine_options,
-                                      &kbd_controls_affect,
-                                      &kbd_controls_values)) {
+            if (!tools_parse_controls(optarg, &machine_options))
                 goto invalid_usage;
-            }
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_MODIFIERS_TWEAK_MAPPING:
-            raw_modifiers_mapping = optarg;
+            if (!tools_parse_modifiers_mappings(optarg, &machine_options))
+                goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MASK:
-            raw_shortcuts_mask = optarg;
+            if (!tools_parse_shortcuts_mask(optarg, &machine_options))
+                goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
-            if (!tools_parse_shortcuts_mappings(optarg, machine_options))
+            if (!tools_parse_shortcuts_mappings(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
             use_events_api = true;
@@ -1389,7 +1351,7 @@ err_out:
     ret = (ret >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 error_parse_args:
 #ifndef KEYMAP_DUMP
-    xkb_machine_options_destroy(machine_options);
+    xkb_machine_options_free(&machine_options);
 #endif
     exit(ret);
 }
