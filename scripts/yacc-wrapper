@@ -1,0 +1,35 @@
+#!/bin/sh
+# Run yacc such that the working directory is the source root.
+# This is needed for various reasons (e.g. #line references).
+# Do not use directly.
+
+set -eu
+
+YACC="$1"
+PARSER="$2"
+IMPLEMENTATION="$3"
+HEADER="$4"
+ABS_TOP_SRCDIR="$5"
+
+[ $# -eq 5 ] || {
+    echo "Usage: $0 YACC PARSER IMPLEMENTATION HEADER ABS_TOP_SRCDIR" >&2;
+    exit 1;
+}
+
+cd "$ABS_TOP_SRCDIR" || exit 1
+
+# Generate the parser
+"$YACC" --defines="$HEADER" \
+        --output="$IMPLEMENTATION" \
+        --name-prefix=_xkbcommon_ \
+        "$PARSER"
+
+# Add the license of the .y file
+PARSER_HEADER=$(awk '/^\/\*/{found=1} found{print} /\*\//{if(found) exit}' "$PARSER")
+DO_NOT_EDIT="/* DO NOT EDIT DIRECTLY: This file is generated from $PARSER. */"
+for f in "$IMPLEMENTATION" "$HEADER"; do
+    [ -f "$f" ] || continue
+    content=$(cat "$f"; echo x)
+    content=${content%x}
+    printf '%s\n\n%s\n\n%s' "$PARSER_HEADER" "$DO_NOT_EDIT" "$content" > "$f"
+done
