@@ -23,7 +23,7 @@
 #include "xkbcommon/xkbcommon-features.h"
 
 #ifndef UINT32_WIDTH
-enum { UINT32_WIDTH = sizeof(uint32_t) * CHAR_BIT };
+#define UINT32_WIDTH (sizeof(uint32_t) * CHAR_BIT)
 #endif
 
 /*
@@ -63,7 +63,7 @@ enum xkb_enumerations_values {
 {% endif %}
 static const uint32_t {{ enum }}_values[] = {
     {% for entry in entries %}
-    {{ entry['name'] }},
+    {{ '(uint32_t)' if entry['value'] < 0 else '' }}{{ entry['name'] }},
     {% endfor %}
 };
 {% if require_private_api %}

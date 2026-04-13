@@ -747,7 +747,7 @@ merge_overlays(SymbolsInfo *info, KeyInfo *into, KeyInfo *from,
                 /* isolate lowest set bit */
                 const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                     remaining &
-                    (xkb_overlay_mask_t)(~remaining + 1u)
+                    (xkb_overlay_mask_t)((unsigned)~remaining + 1u)
                 );
                 /* get its index */
                 const xkb_overlay_index_t bit =
@@ -1067,7 +1067,8 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         InitSymbolsInfo(&next_incl, info->keymap_info, info->include_depth + 1,
                         &included.mods);
         if (stmt->modifier) {
-            next_incl.explicit_group = atoi(stmt->modifier) - 1;
+            next_incl.explicit_group =
+                (xkb_layout_index_t)(atoi(stmt->modifier) - 1);
             if (next_incl.explicit_group >= info->max_groups) {
                 log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                         "Cannot set explicit group to %"PRIu32" - "
@@ -2431,7 +2432,7 @@ key_fields:
                 /* isolate lowest set bit */
                 const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                     remaining &
-                    (xkb_overlay_mask_t)(~remaining + 1u)
+                    (xkb_overlay_mask_t)((unsigned)~remaining + 1u)
                 );
                 remaining = (remaining & ~lsb);
                 if (*overlays_keys) {

@@ -140,10 +140,8 @@ test_is_valid_utf8(void)
 
 static void
 check_utf32_to_utf8(uint32_t unichar, int expected_length, const char *expected) {
-    char buffer[XKB_KEYSYM_UTF8_MAX_SIZE];
-    int length;
-
-    length = utf32_to_utf8(unichar, buffer);
+    char buffer[XKB_KEYSYM_UTF8_MAX_SIZE] = {0};
+    const uint8_t length = utf32_to_utf8(unichar, buffer);
 
     assert(length == expected_length);
     assert(streq(buffer, expected));
@@ -169,7 +167,7 @@ test_utf8_to_utf32(void)
 {
     char buffer[XKB_KEYSYM_UTF8_MAX_SIZE];
     for (uint32_t cp = 0; cp < 0x10ffff; cp++) {
-        int length = utf32_to_utf8(cp, buffer) - 1;
+        const int8_t length = (int8_t)((int)utf32_to_utf8(cp, buffer) - 1);
         /* Check surrogates */
         if (is_surrogate(cp)) {
             assert(length == -1);

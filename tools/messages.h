@@ -6,6 +6,8 @@
 
 #include "config.h"
 
+#include <stddef.h>
+
 #include "messages-codes.h"
 
 struct xkb_message_entry {
@@ -13,7 +15,7 @@ struct xkb_message_entry {
     const char *label;
 };
 
-int
+size_t
 xkb_message_get_all(const struct xkb_message_entry **xkb_messages);
 
 const struct xkb_message_entry*

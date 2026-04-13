@@ -41,7 +41,7 @@ struct keyboard {
 
 static bool verbose = false;
 static bool terminate = false;
-static int evdev_offset = 8;
+static xkb_keycode_t evdev_offset = 8;
 static bool use_events_api = true;
 static bool report_state_changes = true;
 static bool with_compose = false;

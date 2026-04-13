@@ -453,13 +453,11 @@ default_log_fn(struct xkb_context *ctx, enum xkb_log_level level,
 
 static enum xkb_log_level
 log_level(const char *level) {
-    char *endptr;
-    enum xkb_log_level lvl;
-
     errno = 0;
-    lvl = strtol(level, &endptr, 10);
+    char *endptr = NULL;
+    const long lvl = strtol(level, &endptr, 10);
     if (errno == 0 && (endptr[0] == '\0' || is_space(endptr[0])))
-        return lvl;
+        return (enum xkb_log_level)lvl;
     if (istreq_prefix("crit", level))
         return XKB_LOG_LEVEL_CRITICAL;
     if (istreq_prefix("err", level))

@@ -30,12 +30,12 @@ map_file(FILE *file, char **string_out, size_t *size_out)
     if (fstat(fd, &stat_buf) != 0)
         return false;
 
-    string = mmap(NULL, stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    string = mmap(NULL, (size_t)stat_buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (string == MAP_FAILED)
         return false;
 
     *string_out = string;
-    *size_out = stat_buf.st_size;
+    *size_out = (size_t)stat_buf.st_size;
     return true;
 }
 

@@ -966,7 +966,7 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size)
     if (codepoint == NO_KEYSYM_UNICODE_CONVERSION)
         return 0;
 
-    return utf32_to_utf8(codepoint, buffer);
+    return (int)utf32_to_utf8(codepoint, buffer);
 }
 
 /* SPDX-SnippetEnd */

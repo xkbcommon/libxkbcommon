@@ -12,15 +12,17 @@
 
 #include "messages-codes.h"
 #include "messages.h"
+#include "utils.h"
+
+#define XKB_PREFIX "XKB-"
 
 static enum xkb_message_code
 parse_message_code(char *raw_code) {
-    const enum xkb_message_code code = atoi(raw_code);
-    if (!code && strstr(raw_code, "XKB-")) {
-        return atoi(&(raw_code[4]));
-    } else {
-        return code;
+    int code = atoi(raw_code);
+    if (!code && istreq_prefix(XKB_PREFIX, raw_code)) {
+        code = atoi(&(raw_code[sizeof(XKB_PREFIX) - 1]));
     }
+    return (enum xkb_message_code)code;
 }
 
 static void

@@ -74,9 +74,9 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
     if (printed < 0) {
         /* Some error */
         goto err;
-    } else if ((size_t) printed >= available) {
+    } else if ((size_t)printed >= available) {
         /* Not enough space: need to realloc */
-        if (!do_realloc(buf, printed + 1))
+        if (!do_realloc(buf, (size_t)printed + 1))
             goto err;
 
         /* The buffer has enough space now. */
@@ -90,7 +90,7 @@ check_write_buf(struct buf *buf, const char *fmt, ...)
             goto err;
     }
 
-    buf->size += printed;
+    buf->size += (size_t)printed;
     return true;
 
 err:
@@ -1443,7 +1443,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             /* isolate lowest set bit */
             const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                 remaining &
-                (xkb_overlay_mask_t)(~remaining + 1u)
+                (xkb_overlay_mask_t)((unsigned)~remaining + 1u)
             );
             /* get its index */
             const xkb_overlay_index_t overlay =
@@ -1466,7 +1466,7 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             /* isolate lowest set bit */
             const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                 remaining &
-                (xkb_overlay_mask_t)(~remaining + 1u)
+                (xkb_overlay_mask_t)((unsigned)~remaining + 1u)
             );
             /* get its index */
             const xkb_overlay_index_t overlay =

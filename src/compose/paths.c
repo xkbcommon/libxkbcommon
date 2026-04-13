@@ -85,7 +85,7 @@ resolve_name(struct xkb_context *ctx, const char *filename,
         left = s;
         while (s < end && !is_space(*s) && *s != ':')
             s++;
-        left_len = s - left;
+        left_len = (size_t)(s - left);
 
         /* There's an optional colon between left and right. */
         if (s < end && *s == ':')
@@ -99,7 +99,7 @@ resolve_name(struct xkb_context *ctx, const char *filename,
         right = s;
         while (s < end && !is_space(*s))
             s++;
-        right_len = s - right;
+        right_len = (size_t)(s - right);
 
         /* Discard rest of line. */
         while (s < end && *s != '\n')

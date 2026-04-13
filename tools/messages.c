@@ -106,7 +106,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_UNDECLARED_MODIFIERS_IN_KEY_TYPE, "Undeclared modifiers in key type"}
 };
 
-int
+size_t
 xkb_message_get_all(const struct xkb_message_entry **messages)
 {
     *messages = xkb_messages;

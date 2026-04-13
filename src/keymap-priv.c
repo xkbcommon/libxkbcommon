@@ -93,7 +93,7 @@ XkbEscapeMapName(char *name)
         return;
 
     while (*name) {
-        unsigned char c = *name;
+        unsigned char c = (unsigned char)*name;
         if (!(legal[c / 8] & (1u << (c % 8))))
             *name = '_';
         name++;
@@ -212,8 +212,8 @@ XkbWrapGroupIntoRange(int32_t group,
     if (num_groups == 0)
         return XKB_LAYOUT_INVALID;
 
-    if (group >= 0 && (xkb_layout_index_t) group < num_groups)
-        return group;
+    if (group >= 0 && (xkb_layout_index_t)group < num_groups)
+        return (xkb_layout_index_t)group;
 
     switch (out_of_range_group_policy) {
     case XKB_LAYOUT_OUT_OF_RANGE_REDIRECT:
@@ -246,7 +246,9 @@ XkbWrapGroupIntoRange(int32_t group,
          * to get the modulus.
          */
         const int32_t rem = group % (int32_t) num_groups;
-        return (rem >= 0) ? rem : rem + (int32_t) num_groups;
+        return (rem >= 0)
+            ? (xkb_layout_index_t)rem
+            : (xkb_layout_index_t)(rem + (int32_t)num_groups);
     }
     }
 }

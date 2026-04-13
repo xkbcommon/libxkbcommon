@@ -371,7 +371,7 @@ print_controls(struct xkb_state *state, bool verbose) {
 
     unsigned int count = 0;
     for (uint8_t c = 0; c < (uint8_t) ARRAY_SIZE(controls); c++) {
-        if (!(controls[c].control & ctrls))
+        if (!(controls[c].control & (enum xkb_action_controls)ctrls))
             continue;
         if (count > 0)
             printf(", ");
@@ -1058,7 +1058,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         if (disable || start[0] == '+')
             start++;
 
-        const size_t len = s - start;
+        const size_t len = (size_t)(s - start);
         if (!len) {
             if (s[0] == ',') {
                 /* Accept empty entry */
@@ -1179,7 +1179,7 @@ tools_parse_raw_mod_mask(const char *raw, size_t length,
         /* Consume until reaching next item or end of string */
         while (count < length && *s != '\0' && *s != sep) { s++; count++; }
 
-        const size_t len = s - start;
+        const size_t len = (size_t)(s - start);
         if (!len) {
             if (s[0] == sep) {
                 /* Accept empty entry */
@@ -1192,7 +1192,7 @@ tools_parse_raw_mod_mask(const char *raw, size_t length,
         if (len >= ARRAY_SIZE(buf) || !memcpy(buf, start, len))
             return 0;
         const darray_size_t idx = darray_size(raw_mask->names);
-        darray_append_items(raw_mask->names, buf, len);
+        darray_append_items(raw_mask->names, buf, (darray_size_t)len);
         darray_append(raw_mask->names, '\0');
         darray_append(raw_mask->indices, idx);
 

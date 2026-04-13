@@ -305,6 +305,7 @@ executable(
     'xkb-check-messages',
     'check-messages.c',
     'messages.c',
+    '../src/utils.c',
     dependencies: [tools_dep],
     install: false,
 )

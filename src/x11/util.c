@@ -250,7 +250,7 @@ x11_atom_interner_round_trip(struct x11_atom_interner *interner) {
             length = xcb_get_atom_name_name_length(reply);
             name = xcb_get_atom_name_name(reply);
 
-            *out = strndup(name, length);
+            *out = strndup(name, (size_t)length);
             free(reply);
             if (*out == NULL) {
                 interner->had_error = true;

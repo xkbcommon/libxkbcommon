@@ -207,7 +207,8 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                         key->repeats = true;
 
                 if ((group == 0 && level == 0) || !interp->level_one_only) {
-                    static_assert(DEFAULT_INTERPRET_VMOD == XKB_MOD_INVALID, "");
+                    static_assert((uint32_t)DEFAULT_INTERPRET_VMOD ==
+                                  (uint32_t)XKB_MOD_INVALID, "");
                     static_assert(!DEFAULT_INTERPRET_VMODMAP, "");
                     if (interp->virtual_mod != XKB_MOD_INVALID)
                         vmodmap |= (UINT32_C(1) << interp->virtual_mod);
@@ -410,7 +411,7 @@ update_pending_action_fields(struct xkb_keymap_info *info,
                 default:
                     pc->computed = true;
                     if (absolute) {
-                        pc->value = (int32_t) (group - 1);
+                        pc->value = group - 1;
                     } else {
                         pc->value = group;
                         if (pc->expr->common.type == STMT_EXPR_NEGATE)
