@@ -146,7 +146,7 @@ skip_more_whitespace_and_comments:
                     scanner_buf_append(s, '"');
                 }
                 else if (scanner_chr(s, 'x') || scanner_chr(s, 'X')) {
-                    if (scanner_hex(s, &o) && is_valid_char((char) o)) {
+                    if (scanner_hex(s, &o) && is_valid_char((uint32_t) o)) {
                         scanner_buf_append(s, (char) o);
                     } else {
                         scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
@@ -156,7 +156,7 @@ skip_more_whitespace_and_comments:
                                      &s->s[start_pos - 1]);
                     }
                 }
-                else if (scanner_oct(s, &o) && is_valid_char((char) o)) {
+                else if (scanner_oct(s, &o) && is_valid_char((uint32_t) o)) {
                     scanner_buf_append(s, (char) o);
                 }
                 else if (s->pos > start_pos) {

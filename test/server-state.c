@@ -565,7 +565,7 @@ test_group_wrap(struct xkb_context *ctx)
         {
             .policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
             .redirect_group = 0,
-            .locked_group = -1,
+            .locked_group = (xkb_layout_index_t)-1,
             .expected_group = num_layouts - 1,
         },
         {
@@ -580,7 +580,7 @@ test_group_wrap(struct xkb_context *ctx)
         {
             .policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
             .redirect_group = 0,
-            .locked_group = -1,
+            .locked_group = (xkb_layout_index_t)-1,
             .expected_group = 0,
         },
         {
@@ -595,7 +595,7 @@ test_group_wrap(struct xkb_context *ctx)
         {
             .policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
             .redirect_group = 2,
-            .locked_group = -1,
+            .locked_group = (xkb_layout_index_t)-1,
             .expected_group = 2,
         },
         {

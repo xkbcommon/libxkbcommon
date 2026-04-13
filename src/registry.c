@@ -472,13 +472,12 @@ default_log_fn(struct rxkb_context *ctx, enum rxkb_log_level level,
 
 static enum rxkb_log_level
 log_level(const char *level) {
-    char *endptr;
-    enum rxkb_log_level lvl;
-
     errno = 0;
-    lvl = strtol(level, &endptr, 10);
+    char *endptr;
+    const long lvl = strtol(level, &endptr, 10);
     if (errno == 0 && (endptr[0] == '\0' || is_space(endptr[0])))
-        return lvl;
+        return (enum rxkb_log_level)lvl;
+
     if (istreq_prefix("crit", level))
         return RXKB_LOG_LEVEL_CRITICAL;
     if (istreq_prefix("err", level))
@@ -1327,7 +1326,7 @@ ATTR_PRINTF(2, 0)
 xml_error_func(void *ctx, const char *msg, ...)
 {
     static char buf[PATH_MAX];
-    static int slen = 0;
+    static size_t slen = 0;
     va_list args;
     int rc;
 
@@ -1349,8 +1348,8 @@ xml_error_func(void *ctx, const char *msg, ...)
         return;
     }
 
-    slen += rc;
-    if (slen >= (int)sizeof(buf)) {
+    slen += (size_t)rc;
+    if (slen >= sizeof(buf)) {
         /* truncated, let's flush this */
         buf[sizeof(buf) - 1] = '\n';
         slen = sizeof(buf);

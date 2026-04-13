@@ -827,7 +827,7 @@ test_key_iterator(void)
                 !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
             const bool skip_unbound =
                 (flags[f] & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
-            xkb_keycode_t expected_count = (skip_unbound)
+            size_t expected_count = (skip_unbound)
                 ? tests[t].num_keys_bound
                 : tests[t].num_keys_all;
             const xkb_keycode_t * const keycodes = (skip_unbound)

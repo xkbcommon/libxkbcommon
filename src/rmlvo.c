@@ -197,9 +197,9 @@ xkb_rmlvo_builder_to_rules_names(const struct xkb_rmlvo_builder *builder,
     darray_enumerate(k, layout, builder->layouts) {
         int count = snprintf(start, buf_size, "%s%s",
                              (k > 0 ? "," : ""), layout->layout);
-        if (count < 0 || (size_t) count >= buf_size)
+        if (count < 0 || (size_t)count >= buf_size)
             return false;
-        buf_size -= count;
+        buf_size -= (size_t)count;
         start += count;
     }
     if (buf_size <= 1)
@@ -215,7 +215,7 @@ xkb_rmlvo_builder_to_rules_names(const struct xkb_rmlvo_builder *builder,
                              (layout->variant ? layout->variant : ""));
         if (count < 0 || (size_t) count >= buf_size)
             return false;
-        buf_size -= count;
+        buf_size -= (size_t)count;
         start += count;
     }
     if (buf_size <= 1)
@@ -231,14 +231,14 @@ xkb_rmlvo_builder_to_rules_names(const struct xkb_rmlvo_builder *builder,
                              (k > 0 ? "," : ""), option->option);
         if (count < 0 || (size_t) count >= buf_size)
             return false;
-        buf_size -= count;
+        buf_size -= (size_t)count;
         start += count;
         if (option->layout != XKB_LAYOUT_INVALID) {
             count = snprintf(start, buf_size, "%c%"PRIu32,
                              OPTIONS_GROUP_SPECIFIER_PREFIX, option->layout);
             if (count < 0 || (size_t) count >= buf_size)
                 return false;
-            buf_size -= count;
+            buf_size -= (size_t)count;
             start += count;
         }
     }

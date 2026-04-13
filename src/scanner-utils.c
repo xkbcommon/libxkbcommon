@@ -29,10 +29,10 @@ scanner_token_location(struct scanner *s)
     line = s->cached_loc.line;
     const char *ptr = s->s + s->cached_pos;
     const char *last = s->s + s->token_pos;
-    while ((ptr = memchr(ptr, '\n', last - ptr))) {
+    while ((ptr = memchr(ptr, '\n', (size_t)(last - ptr)))) {
         line++;
         ptr++;
-        line_pos = ptr - s->s;
+        line_pos = (size_t)(ptr - s->s);
     }
     if (line == s->cached_loc.line) {
         column = s->cached_loc.column + (s->token_pos - s->cached_pos);

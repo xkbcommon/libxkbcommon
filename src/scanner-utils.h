@@ -185,11 +185,12 @@ scanner_buf_append(struct scanner *s, char ch)
 static inline bool
 scanner_buf_appends(struct scanner *s, const char *str)
 {
-    int ret;
-    ret = snprintf(s->buf + s->buf_pos, sizeof(s->buf) - s->buf_pos, "%s", str);
-    if (ret < 0 || (size_t) ret >= sizeof(s->buf) - s->buf_pos)
+    const int ret = snprintf(s->buf + s->buf_pos,
+                             sizeof(s->buf) - s->buf_pos,
+                             "%s", str);
+    if (ret < 0 || (size_t)ret >= sizeof(s->buf) - s->buf_pos)
         return false;
-    s->buf_pos += ret;
+    s->buf_pos += (size_t)ret;
     return true;
 }
 
@@ -198,7 +199,7 @@ scanner_buf_appends_code_point(struct scanner *s, uint32_t c)
 {
     /* Up to 4 bytes + NULL */
     if (s->buf_pos + 5 <= sizeof(s->buf)) {
-        int count = utf32_to_utf8(c, s->buf + s->buf_pos);
+        uint8_t count = utf32_to_utf8(c, s->buf + s->buf_pos);
         if (count == 0) {
             /* Handle encoding failure with U+FFFD REPLACEMENT CHARACTER */
             count = utf32_to_utf8(0xfffd, s->buf + s->buf_pos);
@@ -206,7 +207,7 @@ scanner_buf_appends_code_point(struct scanner *s, uint32_t c)
         if (count == 0)
             return false;
         /* `count` counts the NULL byte */
-        s->buf_pos += count - 1;
+        s->buf_pos += (size_t)count - 1;
         return true;
     } else {
         return false;
@@ -221,7 +222,7 @@ scanner_oct(struct scanner *s, uint8_t *out)
     for (; scanner_peek(s) >= '0' && scanner_peek(s) <= '7' && i < 4; i++) {
         /* Test overflow */
         if (c < 040) {
-            c = c * 8 + scanner_next(s) - '0';
+            c = c * 8 + (uint8_t)(scanner_next(s) - '0');
         } else {
             /* Consume valid digit, but mark result as invalid */
             scanner_next(s);
@@ -242,7 +243,7 @@ scanner_hex(struct scanner *s, uint8_t *out)
         const char offset = (char) (c >= '0' && c <= '9' ? '0' :
                                     c >= 'a' && c <= 'f' ? 'a' - 10
                                                          : 'A' - 10);
-        *out = *out * 16 + c - offset;
+        *out = *out * 16 + (uint8_t)(c - offset);
     }
     return i > 0;
 }
@@ -265,8 +266,8 @@ scanner_dec_int64(struct scanner *s, int64_t *out)
          */
         if (val > INT64_MAX)
             return -1;
-        s->pos += count;
-        *out = (int64_t) val;
+        s->pos += (size_t)count;
+        *out = (int64_t)val;
     }
     return count;
 }
@@ -281,7 +282,7 @@ scanner_hex_int64(struct scanner *s, int64_t *out)
         /* See comment in `scanner_dec_int64()` above */
         if (val > INT64_MAX)
             return -1;
-        s->pos += count;
+        s->pos += (size_t)count;
         *out = (int64_t) val;
     }
     return count;
@@ -298,7 +299,7 @@ scanner_unicode_code_point(struct scanner *s, uint32_t *out)
     const int count =
         parse_hex_to_uint32_t(s->s + s->pos, s->len - s->pos, &cp);
     if (count > 0)
-        s->pos += count;
+        s->pos += (size_t)count;
 
     /* Try to consume everything within the string until the next `}` */
     const size_t last_valid = s->pos;

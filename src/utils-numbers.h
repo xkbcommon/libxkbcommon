@@ -33,7 +33,7 @@ parse_dec_to_##type(const char *s, size_t len, type (*out))  \
          result <= (max) / 10 &&                             \
          result * 10 <= (max) - (unsigned char) (s[i] - '0');\
          i++) {                                              \
-        result = result * 10 + (s[i] - '0');                 \
+        result = result * 10 + (type)(s[i] - '0');           \
     }                                                        \
     *out = result;                                           \
     /* Check if there is more to parse */                    \
@@ -119,12 +119,12 @@ static inline unsigned int
 popcount32(uint32_t x)
 {
 #if defined(__GNUC__) || defined(__clang__)
-    return __builtin_popcountl(x);
+    return (unsigned int)__builtin_popcountl(x);
 #elif defined(_MSC_VER)
     return __popcnt(x);
 #else
     /* Fallback (Brian Kernighan’s method) */
-    int count = 0;
+    unsigned int count = 0;
     while (x) {
         x &= x - 1;
         count++;
@@ -138,11 +138,11 @@ next_pow2(unsigned int x)
 {
 #if defined(__GNUC__) || defined(__clang__)
     if (x <= 1) return 1u;
-    return 1u << (sizeof(unsigned) * CHAR_BIT - __builtin_clz(x - 1));
+    return 1u << ((int)sizeof(unsigned) * CHAR_BIT - __builtin_clz(x - 1));
 #else
-    if (x <= 1u) return 1;
+    if (x <= 1u) return 1u;
     x--;
-    for (unsigned s = 1; s < sizeof(x)*CHAR_BIT; s <<= 1)
+    for (unsigned s = 1; s < (unsigned)sizeof(x)*CHAR_BIT; s <<= 1)
         x |= x >> s;
     return x + 1u;
 #endif

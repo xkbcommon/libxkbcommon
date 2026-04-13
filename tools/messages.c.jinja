@@ -25,7 +25,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {% endfor %}
 };
 
-int
+size_t
 xkb_message_get_all(const struct xkb_message_entry **messages)
 {
     *messages = xkb_messages;

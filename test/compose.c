@@ -1025,13 +1025,13 @@ test_encode_escape_sequences(struct xkb_context *ctx)
             size_t length = 1 + (rand() % MAX_CODE_POINTS_COUNT);
             size_t c = 0;
             for (size_t idx = 0; idx < length; idx++) {
-                int nbytes;
+                uint8_t nbytes = 0;
                 /* Get a random Unicode code point and encode it in UTF-8 */
                 do {
                     const uint32_t cp = random_non_null_unicode_char(ascii);
                     nbytes = utf32_to_utf8(cp, &buf[c]);
                 } while (!nbytes); /* Handle invalid code point in UTF-8 */
-                c += nbytes - 1;
+                c += (size_t)nbytes - 1;
                 assert(c <= sizeof(buf) - 1);
             }
             assert_printf(buf[c] == '\0', "NULL-terminated string\n");

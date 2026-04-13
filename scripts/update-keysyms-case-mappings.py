@@ -1738,11 +1738,11 @@ xkb_keysym_to_lower(xkb_keysym_t ks)
 {{
     if (ks <= 0x{max_non_unicode:0>4x}) {{
         const struct CaseMappings *m = get_legacy_keysym_entry(ks);
-        return (m->lower) ? ks + m->offset : ks;
+        return (m->lower) ? ks + (xkb_keysym_t)m->offset : ks;
     }} else if ({min_unicode} <= ks && ks <= 0x{max_unicode:0>8x}) {{
         const struct CaseMappings *m = get_unicode_entry(ks - XKB_KEYSYM_UNICODE_OFFSET);
         if (m->lower) {{
-            ks = ks + m->offset;
+            ks = ks + (xkb_keysym_t)m->offset;
             return (ks < {min_unicode}) ? ks - XKB_KEYSYM_UNICODE_OFFSET : ks;
         }} else {{
             return ks;
@@ -1757,11 +1757,11 @@ xkb_keysym_to_upper(xkb_keysym_t ks)
 {{
     if (ks <= 0x{max_non_unicode:0>4x}) {{
         const struct CaseMappings *m = get_legacy_keysym_entry(ks);
-        return (m->upper) ? ks - m->offset : ks;
+        return (m->upper) ? ks - (xkb_keysym_t)m->offset : ks;
     }} else if ({min_unicode} <= ks && ks <= 0x{max_unicode:0>8x}) {{
         const struct CaseMappings *m = get_unicode_entry(ks - XKB_KEYSYM_UNICODE_OFFSET);
         if (m->upper) {{
-            ks = ks - m->offset;
+            ks -= (xkb_keysym_t)m->offset;
             return (ks < {min_unicode}) ? ks - XKB_KEYSYM_UNICODE_OFFSET : ks;
         }} else {{
             return ks;

@@ -222,7 +222,7 @@ main(int argc, char **argv)
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
             for (size_t n = 0; n < size; n++) {
-                dummy64 += strtol(content + n, NULL, 10);
+                dummy64 += (uint64_t)strtol(content + n, NULL, 10);
             }
         );
     bench_stop2(&bench);
@@ -246,7 +246,7 @@ main(int argc, char **argv)
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
             for (size_t n = 0; n < size; n++) {
-                dummy64 += strtol(content + n, NULL, 16);
+                dummy64 += (uint64_t)strtol(content + n, NULL, 16);
             }
         );
     bench_stop2(&bench);

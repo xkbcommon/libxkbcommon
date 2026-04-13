@@ -337,7 +337,7 @@ xkb_filter_group_set_new(struct xkb_server_state *state,
     static_assert(sizeof(state->base.components.base_group) ==
                   sizeof(filter->priv),
                   "Max groups don't fit");
-    filter->priv = state->base.components.base_group;
+    filter->priv = (uint32_t)state->base.components.base_group;
     apply_group_delta(filter, &state->base, base_group);
 }
 
@@ -1799,10 +1799,10 @@ clear_all_latches_and_locks(struct xkb_server_state *state,
     const struct xkb_state_components_update update = {
         .size = sizeof(update),
         .components = components,
-        .affect_latched_mods = XKB_MOD_ALL,
+        .affect_latched_mods = (xkb_mod_mask_t)XKB_MOD_ALL,
         .latched_mods = 0,
         .latched_layout = 0,
-        .affect_locked_mods = XKB_MOD_ALL,
+        .affect_locked_mods = (xkb_mod_mask_t)XKB_MOD_ALL,
         .locked_mods = 0,
         .locked_layout = 0
     };
@@ -1822,10 +1822,10 @@ state_update_enabled_controls(struct xkb_server_state *state,
      * Enable to use the public API with the all the Control values, except
      * the internal ones, if any.
      */
-    affect = (enum xkb_action_controls) affect & CONTROL_ALL_BOOLEAN;
-    state->base.components.controls &= ~affect;
+    affect = affect & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN;
+    state->base.components.controls &= (enum xkb_action_controls)~affect;
     state->base.components.controls |=
-        (enum xkb_action_controls) controls & affect;
+        (enum xkb_action_controls)(controls & affect);
 
     if (had_sticky_keys &&
         !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
@@ -1841,7 +1841,7 @@ state_update_layout_policy(struct xkb_server_state *state,
                            const struct xkb_layout_policy_update *update)
 {
     if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
-                        (int)update->policy)) {
+                              (uint32_t)update->policy)) {
         if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
             if (update->redirect < state->base.keymap->num_groups) {
                 state->base.out_of_range_group.redirect_group =
@@ -2238,16 +2238,16 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t kc,
             goto err_bad;
 
         ret--;
-        if ((size_t) offset + ret <= size)
-            memcpy(buffer + offset, tmp, ret);
+        if ((size_t)offset + (size_t)ret <= size)
+            memcpy(buffer + offset, tmp, (size_t)ret);
         offset += ret;
     }
 
-    if ((size_t) offset >= size)
+    if ((size_t)offset >= size)
         goto err_trunc;
     buffer[offset] = '\0';
 
-    if (!is_valid_utf8(buffer, offset))
+    if (!is_valid_utf8(buffer, (size_t)offset))
         goto err_bad;
 
     if (offset == 1 && (unsigned int) buffer[0] <= 127u &&
@@ -2317,11 +2317,10 @@ static inline xkb_layout_index_t
 serialize_layout(const struct state_components *components,
                  enum xkb_state_component type)
 {
-    xkb_layout_index_t ret = 0;
-
     if (type & XKB_STATE_LAYOUT_EFFECTIVE)
         return components->group;
 
+    int32_t ret = 0;
     if (type & XKB_STATE_LAYOUT_DEPRESSED)
         ret += components->base_group;
     if (type & XKB_STATE_LAYOUT_LATCHED)
@@ -2329,7 +2328,7 @@ serialize_layout(const struct state_components *components,
     if (type & XKB_STATE_LAYOUT_LOCKED)
         ret += components->locked_group;
 
-    return ret;
+    return (xkb_layout_index_t)ret;
 }
 
 xkb_layout_index_t
@@ -3261,7 +3260,7 @@ machine_update_overlays(struct xkb_machine *sm)
         if (!overlay_idx)
             break;
         const xkb_overlay_mask_t overlay_mask =
-            (UINT32_C(1) << (overlay_idx - 1u) /* k is 1-indexed */);
+            (xkb_overlay_mask_t)(1u << (overlay_idx - 1u) /* k is 1-indexed */);
         if (overlay_mask & mask) {
             /* no duplicates */
             added &= ~overlay_mask;

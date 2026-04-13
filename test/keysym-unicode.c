@@ -145,7 +145,7 @@ main(int argc, char *argv[])
         pid_t pid = fork();
         if (pid == 0) {
             /* Child */
-            const uint32_t start = i * chunk;
+            const uint32_t start = (uint32_t)i * chunk;
             const uint32_t end = (i == NUM_PROCESSES - 1)
                                ? max_codepoint
                                : start + chunk;

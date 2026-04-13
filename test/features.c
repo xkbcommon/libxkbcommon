@@ -95,9 +95,9 @@ test_libxkbcommon_enums(void)
             assert(has_zero ^ !xkb_feature_supported(feature, 0));
             /* No negative values */
             assert(min >= 0);
-            assert(!xkb_feature_supported(feature, -1));
-            assert(!xkb_feature_supported(feature, INT_MIN));
-            assert(!xkb_feature_supported(feature, INT32_MIN));
+            assert(!xkb_feature_supported(feature, (uint32_t)-1));
+            assert(!xkb_feature_supported(feature, (uint32_t)INT_MIN));
+            assert(!xkb_feature_supported(feature, (uint32_t)INT32_MIN));
             /* No high positive values */
             #define ENUM_HIGHEST_VALUE XKB_STATE_MATCH_NON_EXCLUSIVE
             assert(max <= ENUM_HIGHEST_VALUE);
@@ -116,7 +116,7 @@ test_libxkbcommon_enums(void)
             assert(has_zero ^ !xkb_feature_supported(feature, 0));
             /* No high values */
             assert(min > -2);
-            assert(!xkb_feature_supported(feature, -2));
+            assert(!xkb_feature_supported(feature, (uint32_t)-2));
             assert(!xkb_feature_supported(feature, min - 1));
             assert(max < 0xf000);
             assert(!xkb_feature_supported(feature, 0xf000));
@@ -132,7 +132,7 @@ test_libxkbcommon_enums(void)
     assert(!xkb_feature_supported(-1, 0));
     assert(!xkb_feature_supported(0xffff, 0));
     /* Invalid enum value */
-    assert(!xkb_feature_supported(XKB_FEATURE_ENUM_FEATURE, -1));
+    assert(!xkb_feature_supported(XKB_FEATURE_ENUM_FEATURE, (uint32_t)-1));
     assert(!xkb_feature_supported(XKB_FEATURE_ENUM_FEATURE, 0xffff));
 
     /*
@@ -140,7 +140,7 @@ test_libxkbcommon_enums(void)
      */
 
     assert(!xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_FORMAT,
-                            XKB_KEYMAP_USE_ORIGINAL_FORMAT));
+                                  XKB_KEYMAP_USE_ORIGINAL_FORMAT));
     assert(!xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_FORMAT, 0));
     assert(!xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_FORMAT, 3));
 }

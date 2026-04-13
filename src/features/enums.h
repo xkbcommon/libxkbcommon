@@ -23,7 +23,7 @@
 #include "xkbcommon/xkbcommon-features.h"
 
 #ifndef UINT32_WIDTH
-enum { UINT32_WIDTH = sizeof(uint32_t) * CHAR_BIT };
+#define UINT32_WIDTH (sizeof(uint32_t) * CHAR_BIT)
 #endif
 
 /*
@@ -396,7 +396,7 @@ static const uint32_t xkb_compose_feed_result_values[] = {
 #endif
 
 static const uint32_t xkb_error_code_values[] = {
-    XKB_ERROR_INVALID,
+    (uint32_t)XKB_ERROR_INVALID,
     XKB_SUCCESS,
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
     XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,

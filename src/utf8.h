@@ -15,7 +15,7 @@
 
 #include "utils.h"
 
-XKB_EXPORT_PRIVATE int
+XKB_EXPORT_PRIVATE uint8_t
 utf32_to_utf8(uint32_t unichar, char *buffer);
 
 XKB_EXPORT_PRIVATE bool

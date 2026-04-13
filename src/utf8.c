@@ -16,11 +16,10 @@
  * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
  * for further details.
 */
-int
+uint8_t
 utf32_to_utf8(uint32_t unichar, char *buffer)
 {
-    int count, shift, length;
-    uint8_t head;
+    uint8_t length, head;
 
     /* NOLINTBEGIN(bugprone-branch-clone) */
     if (unichar <= 0x007f) {
@@ -49,7 +48,8 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
     }
     /* NOLINTEND(bugprone-branch-clone) */
 
-    for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
+    uint8_t shift = 0;
+    for (unsigned int count = length - 1; count > 0; count--, shift += 6)
         buffer[count] = (char)(0x80 | ((unichar >> shift) & 0x3f));
 
     buffer[0] = (char)(head | ((unichar >> shift) & 0x3f));

@@ -581,6 +581,7 @@ test_state_modes(struct xkb_context *ctx)
                       tests[t].update_mask.changed, changed, "%d");
         }
 
+        #ifndef _WIN32
         const struct xkb_event event = {
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
@@ -588,6 +589,7 @@ test_state_modes(struct xkb_context *ctx)
                 .components = tests[t].update_event.components,
             }
         };
+        #endif
         RUN_ISOLATED(code, changed,
             changed = xkb_state_update_event(state, &event);
             /* Avoid Valgrind false positive */

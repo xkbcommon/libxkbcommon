@@ -752,7 +752,7 @@ extract_mapping_layout_index(const char *s, size_t max_len,
 {
     static const struct {
         const char* name;
-        int length;
+        uint8_t length;
         enum layout_index_ranges range;
     } names[] = {
         { "single]", 7, LAYOUT_INDEX_SINGLE },
@@ -1191,9 +1191,10 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         }
         (*i)++;
         char index_str[MAX_LAYOUT_INDEX_STR_LENGTH + 1];
-        int count = snprintf(index_str, sizeof(index_str), "%"PRIu32,
-                             layout_idx + 1);
-        darray_appends_nullterminate(*expanded, index_str, count);
+        const int count = snprintf(index_str, sizeof(index_str), "%"PRIu32,
+                                   layout_idx + 1);
+        assert(count > 0); /* See MAX_LAYOUT_INDEX_STR_LENGTH */
+        darray_appends_nullterminate(*expanded, index_str, (darray_size_t)count);
         return true;
     }
 
@@ -1228,14 +1229,14 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         }
 
         int consumed = extract_layout_index(str + (*i), value.len - (*i), &idx);
-        if (consumed == -1) goto error;
+        if (consumed <= 0) goto error;
         if (idx == XKB_LAYOUT_INVALID) {
             /* %i encountered */
             assert(layout_idx != XKB_LAYOUT_INVALID);
             idx = layout_idx;
             expanded_index = true;
         }
-        *i += consumed;
+        *i += (size_t)consumed;
     }
 
     /* Check for suffix, if there supposed to be one. */
@@ -1335,9 +1336,11 @@ expand_qualifier_in_kccgst_value(
                                              &darray_item(*expanded, prefix_idx),
                                              prefix_length);
                 /* Append index */
-                int count = snprintf(layout_index, sizeof(layout_index),
-                                     "%"PRIu32, l + 1);
-                darray_appends_nullterminate(*expanded, layout_index, count);
+                const int count = snprintf(layout_index, sizeof(layout_index),
+                                           "%"PRIu32, l + 1);
+                assert(count > 0); /* See MAX_LAYOUT_INDEX_STR_LENGTH */
+                darray_appends_nullterminate(*expanded, layout_index,
+                                             (darray_size_t)count);
             }
         }
         *i += 3;
