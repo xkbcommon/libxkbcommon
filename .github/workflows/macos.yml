@@ -1,14 +1,17 @@
 name: macos
 
+# FIXME
 on:
-  push:
-    branches:
-      - master
-      - 'releases/**'
-  pull_request:
-    branches:
-      - master
-      - 'releases/**'
+  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - master
+#       - 'releases/**'
+#   pull_request:
+#     branches:
+#       - master
+#       - 'releases/**'
 
 # Set permissions at the job level.
 permissions: {}
