@@ -34,7 +34,7 @@ jobs:
         shell: cmd
         run: |
           :: Jinja2 is needed for merge-modes tests
-          python -m pip install --upgrade meson Jinja2
+          python -m pip install --upgrade "meson<1.11" Jinja2
           choco install -y winflexbison3
       - name: Setup
         shell: cmd
