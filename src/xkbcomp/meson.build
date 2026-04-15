@@ -21,7 +21,7 @@ if yacc.found()
             'target': 'update-parser',
             'parser_implementation': parser_implementation,
             'parser_header': parser_header,
-            'build_by_default': false,
+            'build_by_default': true,
         },
     ]
 else
