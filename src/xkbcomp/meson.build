@@ -22,6 +22,7 @@ if yacc.found()
             'parser_implementation': parser_implementation,
             'parser_header': parser_header,
             'build_by_default': true,
+            'build_always_stale': true,
         },
     ]
 else
@@ -40,6 +41,7 @@ if enable_parser_generation
             parser_header,
         ),
         'build_by_default': true,
+        'build_always_stale': false,
     }
     # Will be set in the following foreach loop
     parser_files = []
@@ -66,8 +68,8 @@ foreach p : parser_target_configs
         ],
         build_by_default: p['build_by_default'],
         install: false,
-    ).to_list()
-    if p['build_by_default']
-        parser_files = t
+    )
+    if not p['build_always_stale']
+        parser_files = t.to_list()
     endif
 endforeach
