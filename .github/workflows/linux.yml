@@ -1,14 +1,17 @@
 name: linux
 
+# FIXME
 on:
-  push:
-    branches:
-      - master
-      - 'releases/**'
-  pull_request:
-    branches:
-      - master
-      - 'releases/**'
+  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - master
+#       - 'releases/**'
+#   pull_request:
+#     branches:
+#       - master
+#       - 'releases/**'
 
 # Set permissions at the job level.
 permissions: {}
@@ -71,15 +74,25 @@ jobs:
         run: |
           # -gdwarf-4 - see https://github.com/llvm/llvm-project/issues/56550.
           CFLAGS="-gdwarf-4 -fno-omit-frame-pointer $CFLAGS_EXTRA" \
-              meson setup -Dbuildtype=debugoptimized -Denable-docs=true -Denable-cool-uris=true \
-                          $MESON_EXTRA_FLAGS \
+              meson setup -Dbuildtype=debugoptimized \
+                          -Denable-docs=true \
+                          -Denable-cool-uris=true \
+                          -Denable-parser-generation=$MESON_PARSER_GENERATION \
+                          $MESON_SANITIZE_FLAGS \
                           build
         env:
           CC: ${{ matrix.compiler }}
           # Use _FORTIFY_SOURCE only if not using sanitizers
           CFLAGS_EXTRA: ${{ matrix.sanitizers != 'sanitizers' && '-Wp,-D_FORTIFY_SOURCE=3' || '' }}
           # Use sanitizers only if not using Valgrind
-          MESON_EXTRA_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined,leak' || '' }}
+          MESON_SANITIZE_FLAGS: ${{ matrix.sanitizers == 'sanitizers' && '-Db_sanitize=address,undefined,leak' || '' }}
+          # Ensure some setups use the pre-generated files
+          MESON_PARSER_GENERATION: ${{ matrix.sanitizers == 'sanitizers' && 'false' || 'true' }}
+      - name: Regenerate parser files
+        # Ensure some setups update the pre-generated files
+        if: matrix.sanitizers == 'sanitizers'
+        run: |
+          meson compile -C build src/xkbcomp/update-parser
       - name: Build
         run: |
           meson compile -C build
@@ -93,7 +106,8 @@ jobs:
         if: matrix.sanitizers != 'sanitizers'
         # Use a specific non-US locale
         run: |
-          LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs --setup=valgrind \
+          LC_ALL=fr_FR.UTF-8 meson test -C build --print-errorlogs \
+                                                 --setup=valgrind \
                                                  --no-suite python-tests
       - name: Upload test logs
         uses: actions/upload-artifact@v7

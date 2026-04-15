@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: read
     strategy:
+      fail-fast: false
       matrix:
         cc: ['cl', 'clang-cl']
     env:
@@ -34,13 +35,35 @@ jobs:
         shell: cmd
         run: |
           :: Jinja2 is needed for merge-modes tests
-          python -m pip install --upgrade meson Jinja2
+          python -m pip install --upgrade "%MESON_VERSION%" Jinja2
           choco install -y winflexbison3
+        env:
+          MESON_VERSION:
+            ${{ matrix.cc == 'cl' && 'meson<1.11' || 'git+https://github.com/mesonbuild/meson.git@master' }}
       - name: Setup
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
-          meson setup --backend=vs -Denable-wayland=false -Denable-x11=false -Denable-docs=false -Denable-xkbregistry=false build
+          meson setup --backend=vs -Denable-wayland=false ^
+                                   -Denable-x11=false ^
+                                   -Denable-docs=false ^
+                                   -Denable-xkbregistry=false ^
+                                   -Denable-parser-generation=%MESON_PARSER_GENERATION% ^
+                                   build
+        env:
+          # Ensure some setups use the pre-generated files
+          MESON_PARSER_GENERATION:
+            ${{ matrix.cc == 'cl' && 'false' || 'true' }}
+      - name: Regenerate parser files
+        # Ensure some setups update the pre-generated files
+        if: matrix.cc == 'cl'
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+
+          :: meson compile -C build debug-update-parser
+
+          meson compile -C build src/xkbcomp/update-parser
       - name: Build
         shell: cmd
         run: |
