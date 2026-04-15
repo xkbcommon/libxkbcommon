@@ -39,7 +39,7 @@ jobs:
           choco install -y winflexbison3
         env:
           MESON_VERSION:
-            ${{ matrix.cc == 'cl' && 'meson==1.9' || 'git+https://github.com/mesonbuild/meson.git@master' }}
+            ${{ matrix.cc == 'cl' && 'meson==1.8' || 'git+https://github.com/mesonbuild/meson.git@master' }}
       - name: Setup
         shell: cmd
         run: |
