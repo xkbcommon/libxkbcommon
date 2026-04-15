@@ -375,6 +375,45 @@ bison = find_program(
 yacc = bison
 subdir('src/xkbcomp')
 
+#####################################
+# DEBUG
+
+fs = import('fs')
+yacc_wrapper = host_machine.system() == 'windows' ? 'yacc-wrapper.bat' : 'yacc-wrapper'
+yacc_wrapper = find_program(
+    meson.project_source_root() / 'scripts' / yacc_wrapper,
+)
+
+# Paths relative to the project root so that the #line references are relative.
+parser_source = fs.relative_to(
+    files('src/xkbcomp/parser.y'),
+    meson.project_source_root(),
+)
+parser_implementation = fs.replace_suffix(parser_source, '.c')
+parser_header = fs.replace_suffix(parser_implementation, '.h')
+
+custom_target(
+    'debug-update-parser',
+    input: parser_source,
+    output: [
+        fs.name(parser_implementation),
+        fs.name(parser_header),
+    ],
+    depend_files: parser_source,
+    command: [
+        yacc_wrapper,
+        yacc,
+        parser_source,
+        parser_implementation,
+        parser_header,
+        meson.project_source_root(),
+    ],
+    build_by_default: false,
+    install: false,
+)
+
+#####################################
+
 # libxkbcommon.
 libxkbcommon_sources = [
     'src/compose/parser.c',

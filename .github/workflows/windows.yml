@@ -39,7 +39,7 @@ jobs:
           choco install -y winflexbison3
         env:
           MESON_VERSION:
-            ${{ matrix.cc == 'cl' && 'meson==1.8' || 'git+https://github.com/mesonbuild/meson.git@master' }}
+            ${{ matrix.cc == 'cl' && 'meson<1.11' || 'git+https://github.com/mesonbuild/meson.git@master' }}
       - name: Setup
         shell: cmd
         run: |
@@ -60,6 +60,9 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+
+          meson compile -C build debug-update-parser
+
           meson compile -C build src/xkbcomp/update-parser
       - name: Build
         shell: cmd
