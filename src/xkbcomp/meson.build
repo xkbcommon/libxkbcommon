@@ -52,8 +52,8 @@ foreach p : parser_target_configs
         p['target'],
         input: fs.name(parser_source),
         output: [
-            fs.name(p['parser_implementation']),
-            fs.name(p['parser_header']),
+            '_' + fs.name(p['parser_implementation']),
+            '_' + fs.name(p['parser_header']),
         ],
         depend_files: files(fs.name(parser_source)),
         command: [
