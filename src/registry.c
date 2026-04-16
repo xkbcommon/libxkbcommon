@@ -1423,6 +1423,9 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     xmlParserCtxtPtr xmlCtxt = xmlNewParserCtxt();
     if (!xmlCtxt)
         return false;
+    static_assert(HAVE_XML_CTXT_SET_ERRORHANDLER,
+                  "xmlCtxtSetErrorHandler (2.13) introduced before "
+                  "xmlCtxtParseDtd (2.14)");
     xmlCtxtSetErrorHandler(xmlCtxt, xml_structured_error_func, ctx);
     xmlCtxtSetOptions(xmlCtxt, _XML_OPTIONS | XML_PARSE_DTDLOAD);
 
@@ -1453,11 +1456,17 @@ validate(struct rxkb_context *ctx, xmlDoc *doc)
     success = xmlCtxtValidateDtd(xmlCtxt, doc, dtd);
 #else
     xmlValidCtxt *dtdvalid = xmlNewValidCtxt();
+    if (!dtdvalid) {
+        success = false;
+        goto ctx_error;
+    }
+    dtdvalid->error = &xml_error_func;
+    dtdvalid->userData = ctx;
     success = xmlValidateDtd(dtdvalid, doc, dtd);
-    if (dtdvalid)
-        xmlFreeValidCtxt(dtdvalid);
-#endif
+    xmlFreeValidCtxt(dtdvalid);
 
+ctx_error:
+#endif
     xmlFreeDtd(dtd);
 
 dtd_error:
