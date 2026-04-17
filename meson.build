@@ -535,6 +535,7 @@ if get_option('enable-xkbregistry')
         'libxml/parser.h',
         'xmlCtxtSetErrorHandler',
         prefix: system_ext_define,
+        dependencies: dep_libxml,
     )
         configh_data.set10('HAVE_XML_CTXT_SET_ERRORHANDLER', true)
     endif
@@ -543,6 +544,7 @@ if get_option('enable-xkbregistry')
         'libxml/parser.h',
         'xmlCtxtParseDtd',
         prefix: system_ext_define,
+        dependencies: dep_libxml,
     )
         configh_data.set10('HAVE_XML_CTXT_PARSE_DTD', true)
     endif
