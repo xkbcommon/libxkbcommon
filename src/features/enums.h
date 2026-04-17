@@ -150,7 +150,8 @@ enum xkb_enumerations_values {
     ,
     XKB_A11Y_FLAGS_VALUES
         = XKB_A11Y_NO_FLAGS
-        | XKB_A11Y_LATCH_TO_LOCK
+        | XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS
+        | XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK
         | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
     ,
     XKB_KEY_DIRECTION_VALUES
@@ -317,7 +318,8 @@ static const uint32_t xkb_machine_builder_flags_values[] = {
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_a11y_flags_values[] = {
     XKB_A11Y_NO_FLAGS,
-    XKB_A11Y_LATCH_TO_LOCK,
+    XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS,
+    XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
     XKB_A11Y_LATCH_SIMULTANEOUS_KEYS,
 };
 #endif

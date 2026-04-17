@@ -1253,13 +1253,13 @@ xkb_filter_apply_all(struct xkb_server_state *state,
             if (filter->action.type == ACTION_TYPE_MOD_SET) {
                 /* Convert modifier set action to a latch */
                 filter->action.type = ACTION_TYPE_MOD_LATCH;
-                if (state->flags & XKB_A11Y_LATCH_TO_LOCK) {
+                if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                     filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
                 }
             } else if (filter->action.type == ACTION_TYPE_GROUP_SET) {
                 /* Convert group set action to a latch */
                 filter->action.type = ACTION_TYPE_GROUP_LATCH;
-                if (state->flags & XKB_A11Y_LATCH_TO_LOCK) {
+                if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                     filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
                 }
             }
@@ -1522,6 +1522,33 @@ xkb_state_update_derived(struct xkb_state *state)
     xkb_state_led_update_all(state);
 }
 
+static void
+state_update_enabled_controls(struct xkb_server_state *state,
+                              enum xkb_keyboard_control_flags affect,
+                              enum xkb_keyboard_control_flags controls,
+                              struct xkb_events *events)
+{
+    const bool had_sticky_keys = state->base.components.controls
+                               & CONTROL_STICKY_KEYS;
+
+    /*
+     * Enable to use the public API with the all the Control values, except
+     * the internal ones, if any.
+     */
+    affect = affect & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN;
+    state->base.components.controls &= (enum xkb_action_controls)~affect;
+    state->base.components.controls |=
+        (enum xkb_action_controls)(controls & affect);
+
+    if (had_sticky_keys &&
+        !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
+        /* Sticky keys were disabled: clear all locks and latches */
+        clear_all_latches_and_locks(state, events);
+    }
+
+    xkb_state_update_derived(&state->base);
+}
+
 /**
  * Given a particular key event, updates the state structure to reflect the
  * new modifiers.
@@ -1545,6 +1572,16 @@ xkb_state_update_key(struct xkb_state *base_state, xkb_keycode_t kc,
     /* Ignore unknown key and repeat state for non-repeating key */
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return 0;
+
+    if (direction == XKB_KEY_DOWN &&
+        (state->base.components.controls & XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) &&
+        (state->flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
+        state->base.components.base_mods) {
+        /* Deactivate sticky keys if a modifier was already held down*/
+        state_update_enabled_controls(state,
+                                      XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+                                      0, NULL);
+    }
 
     const struct state_components prev_components = state->base.components;
 
@@ -1807,33 +1844,6 @@ clear_all_latches_and_locks(struct xkb_server_state *state,
         .locked_layout = 0
     };
     state_update_latched_locked(state, &update, events);
-}
-
-static void
-state_update_enabled_controls(struct xkb_server_state *state,
-                              enum xkb_keyboard_control_flags affect,
-                              enum xkb_keyboard_control_flags controls,
-                              struct xkb_events *events)
-{
-    const bool had_sticky_keys = state->base.components.controls
-                               & CONTROL_STICKY_KEYS;
-
-    /*
-     * Enable to use the public API with the all the Control values, except
-     * the internal ones, if any.
-     */
-    affect = affect & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN;
-    state->base.components.controls &= (enum xkb_action_controls)~affect;
-    state->base.components.controls |=
-        (enum xkb_action_controls)(controls & affect);
-
-    if (had_sticky_keys &&
-        !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
-        /* Sticky keys were disabled: clear all locks and latches */
-        clear_all_latches_and_locks(state, events);
-    }
-
-    xkb_state_update_derived(&state->base);
 }
 
 static enum xkb_error_code
@@ -3596,6 +3606,16 @@ xkb_machine_process_key(struct xkb_machine *sm,
         return XKB_SUCCESS;
 
     const struct state_components previous_components = state->base.components;
+
+    if (direction == XKB_KEY_DOWN &&
+        (sm->base.base.components.controls & XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) &&
+        (sm->base.flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
+        state->base.components.base_mods) {
+        /* Deactivate sticky keys if a modifier was already held down*/
+        state_update_enabled_controls(state,
+                                      XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+                                      0, events);
+    }
 
     if (key->overlays)
         key = process_overlayable_key(sm, key, direction);

@@ -909,8 +909,8 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(sm_builder);
     assert(xkb_machine_builder_update_a11y_flags(
                 sm_builder,
-                XKB_A11Y_LATCH_TO_LOCK,
-                XKB_A11Y_LATCH_TO_LOCK) == XKB_SUCCESS);
+                XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
+                XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) == XKB_SUCCESS);
     sm = xkb_machine_new(sm_builder);
     assert(sm);
     xkb_machine_builder_destroy(sm_builder);

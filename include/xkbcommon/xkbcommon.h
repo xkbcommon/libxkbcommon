@@ -2471,7 +2471,7 @@ enum xkb_keyboard_control_flags {
      * e.g. the user can first press a modifier, release it, then press another
      * key.
      *
-     * @sa `::XKB_A11Y_LATCH_TO_LOCK`
+     * @sa `::XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK`
      * @since 1.14.0
      *
      * [set]:   @ref depressed-mod-def
@@ -2794,7 +2794,20 @@ enum xkb_a11y_flags {
      */
     XKB_A11Y_NO_FLAGS = 0,
     /**
-     * If both `::XKB_A11Y_LATCH_TO_LOCK` and
+     * If both `::XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS` and
+     * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
+     * users to deactivate [sticky keys] whenever two keys or more are pressed
+     * simultaneously.
+     *
+     * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
+     * @since 1.14.0
+     *
+     * [sticky keys]: @ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
+     * @since 1.14.0
+     */
+    XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS = (1 << 0),
+    /**
+     * If both `::XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK` and
      * `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS` are activated, they enable
      * users to [lock] modifier keys without requiring special locking keys.
      * The user can press a [latch] modifier twice in a row to lock it, and
@@ -2806,7 +2819,7 @@ enum xkb_a11y_flags {
      * [latch]: @ref latched-mod-def
      * [lock]:  @ref locked-mod-def
      */
-    XKB_A11Y_LATCH_TO_LOCK = (1 << 0),
+    XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK = (1 << 1),
     /**
      * Without this option, the [latch] keys are only triggers if keys are
      * strictly *sequentially tapped*, e.g.:
@@ -2840,7 +2853,7 @@ enum xkb_a11y_flags {
      *
      * [latch]: @ref latched-mod-def
      */
-    XKB_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 1),
+    XKB_A11Y_LATCH_SIMULTANEOUS_KEYS = (1 << 2),
 };
 
 /**
