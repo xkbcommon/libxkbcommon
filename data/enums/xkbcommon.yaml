@@ -114,10 +114,12 @@ xkb_machine_builder_flags:
 xkb_a11y_flags:
   - name: XKB_A11Y_NO_FLAGS
     value: 0
-  - name: XKB_A11Y_LATCH_TO_LOCK
+  - name: XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS
     value: 1
-  - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
+  - name: XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK
     value: 2
+  - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
+    value: 4
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0

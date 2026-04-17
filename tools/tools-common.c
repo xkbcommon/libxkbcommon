@@ -1139,7 +1139,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
                 break;
             case CONTROL_FIELD_LATCH_TO_LOCK:
                 ok = xkb_machine_options_update_a11y_flags(
-                    options, XKB_A11Y_LATCH_TO_LOCK, disable
+                    options, XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK, disable
                 );
                 break;
             case CONTROL_FIELD_LATCH_SIMULTANEOUS:
