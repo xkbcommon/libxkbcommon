@@ -12,13 +12,12 @@
 #include <string.h>
 #include <time.h>
 
+#include "xkbcommon/xkbcommon.h"
 #include "keymap.h"
 #include "src/keysym.h"
 #include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
-#include "xkbcommon/xkbcommon.h"
-#include "test-config.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 

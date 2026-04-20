@@ -87,20 +87,21 @@ enum xkb_state_mode_internal {
     /** `xkb_state`: Server query companion */
     SERVER_COMPANION = XKB_STATE_MODE_SERVER_QUERY,
     /** `xkb_state`: Legacy unsafe client + server state */
-    LEGACY_MIXED_STATE,
+    LEGACY_MIXED_STATE = 2,
     /** `xkb_state`: Legacy server-only state (client-only API raises errors) */
-    LEGACY_SERVER_STATE,
+    LEGACY_SERVER_STATE = 3,
     /** `xkb_machine`: Server-only state */
-    SERVER_STATE,
-    _XKB_STATE_TYPE_NUM_ENTRIES
+    SERVER_STATE = 4,
+    _XKB_STATE_TYPE_NUM_ENTRIES = 5
 };
 
 static_assert(CLIENT_STATE == 0 &&
-              CLIENT_STATE < SERVER_COMPANION &&
-              SERVER_COMPANION < LEGACY_MIXED_STATE &&
-              LEGACY_MIXED_STATE < LEGACY_SERVER_STATE &&
-              LEGACY_SERVER_STATE < SERVER_STATE &&
-              SERVER_STATE == 4,
+              CLIENT_STATE == SERVER_COMPANION - 1 &&
+              SERVER_COMPANION == LEGACY_MIXED_STATE - 1 &&
+              LEGACY_MIXED_STATE == LEGACY_SERVER_STATE - 1 &&
+              LEGACY_SERVER_STATE == SERVER_STATE - 1 &&
+              SERVER_STATE == _XKB_STATE_TYPE_NUM_ENTRIES - 1 &&
+              _XKB_STATE_TYPE_NUM_ENTRIES == 5,
               "Order is used to guard client/server -only APIs: do not change");
 
 enum { XKB_LAYOUT_INDEX_T_MIN_WIDTH = 6 };

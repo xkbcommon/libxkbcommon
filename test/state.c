@@ -2287,9 +2287,9 @@ test_serialisation(struct xkb_keymap *keymap, bool pure_vmods)
 }
 
 static inline xkb_mod_mask_t
-canonical_mask(bool is_pure, xkb_mod_mask_t vmod, xkb_mod_mask_t real)
+canonical_mask(bool is_pure, xkb_mod_mask_t virtual, xkb_mod_mask_t real)
 {
-    return is_pure ? vmod : real;
+    return is_pure ? virtual : real;
 }
 
 static void

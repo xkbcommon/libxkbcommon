@@ -14,11 +14,24 @@ Checks:
   - -modernize-use-nullptr
   - -modernize-macro-to-enum
   - performance-*
+  - readability-*
+  - -readability-identifier-length
+  - -readability-function-cognitive-complexity
+  - -readability-braces-around-statements
+  - -readability-else-after-return
+  - -readability-avoid-nested-conditional-operator
+  - -readability-magic-numbers
+  - -readability-uppercase-literal-suffix
+  - -readability-isolate-declaration
+  - -readability-inconsistent-declaration-parameter-name
+  - -readability-math-missing-parentheses
   - google-*
   - -google-readability-braces-around-statements
   - -google-readability-todo
-  # - misc-*
-  # - -misc-include-cleaner
+  - misc-*
+  - -misc-include-cleaner
+  - -misc-no-recursion
+  - -misc-unused-parameters
 # ExtraArgs:
 # - '-std=c11'
 ExtraArgsBefore:

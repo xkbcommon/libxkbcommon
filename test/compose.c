@@ -1091,7 +1091,6 @@ test_roundtrip(struct xkb_context *ctx)
 
     ok = xkb_compose_table_dump(output_file, ref_table);
     fclose(output_file);
-    assert(input);
 
     if (!ok) {
         free(output);

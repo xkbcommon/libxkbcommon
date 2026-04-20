@@ -146,7 +146,10 @@ struct xkb_machine_options {
 };
 
 #define xkb_machine_options_new() {     \
-    .controls = {0},                    \
+    .controls = {                       \
+        .boolean = {0},                 \
+        .a11y = {0},                    \
+    },                                  \
     .shortcuts = {                      \
         .mask = xkb_raw_mod_mask_new(), \
         .mappings = darray_new(),       \

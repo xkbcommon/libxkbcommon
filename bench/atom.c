@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -20,6 +21,7 @@
 int
 main(void)
 {
+    int ret = EXIT_SUCCESS;
     FILE *file;
     char wordbuf[1024];
     darray(char *) words;
@@ -40,7 +42,13 @@ main(void)
         size_t len = strlen(wordbuf);
         if (len > 0 && wordbuf[len - 1] == '\n')
             wordbuf[len - 1] = '\0';
-        darray_append(words, strdup(wordbuf));
+        char *word = strdup(wordbuf);
+        if (!word) {
+            fclose(file);
+            ret = EXIT_FAILURE;
+            goto out;
+        }
+        darray_append(words, word);
     }
     fclose(file);
 
@@ -66,10 +74,11 @@ main(void)
             BENCHMARK_ITERATIONS, elapsed);
     free(elapsed);
 
+out:
     darray_foreach(worditer, words) {
         free(*worditer);
     }
     darray_free(words);
 
-    return 0;
+    return ret;
 }

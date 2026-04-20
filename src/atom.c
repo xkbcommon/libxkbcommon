@@ -93,7 +93,11 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
     /* len(string) > 0.8 * index_size */
     if (darray_size(table->strings) > (table->index_size / 5) * 4) {
         table->index_size *= 2;
-        table->index = realloc(table->index, table->index_size * sizeof(*table->index));
+        xkb_atom_t *tmp = realloc(table->index,
+                                  table->index_size * sizeof(*table->index));
+        if (!tmp)
+            return XKB_ATOM_NONE;
+        table->index = tmp;
         memset(table->index, 0, table->index_size * sizeof(*table->index));
         for (darray_size_t j = 1; j < darray_size(table->strings); j++) {
             const char *s = darray_item(table->strings, j);
@@ -122,7 +126,10 @@ atom_intern(struct atom_table *table, const char *string, size_t len, bool add)
         if (existing_atom == XKB_ATOM_NONE) {
             if (add) {
                 xkb_atom_t new_atom = darray_size(table->strings);
-                darray_append(table->strings, strndup(string, len));
+                char *s = strndup(string, len);
+                if (!s)
+                    return XKB_ATOM_NONE;
+                darray_append(table->strings, s);
                 table->index[index_pos] = new_atom;
                 return new_atom;
             } else {

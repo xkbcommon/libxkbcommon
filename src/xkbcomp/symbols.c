@@ -40,8 +40,8 @@
 
 enum key_repeat {
     KEY_REPEAT_UNDEFINED = 0,
-    KEY_REPEAT_YES = 1,
-    KEY_REPEAT_NO = 2,
+    KEY_REPEAT_YES,
+    KEY_REPEAT_NO,
     _KEY_REPEAT_NUM_ENTRIES,
 };
 enum { KEY_REPEAT_MIN_WIDTH = 3 /* 2 bits + sign */ };
@@ -698,7 +698,7 @@ merge_overlays(SymbolsInfo *info, KeyInfo *into, KeyInfo *from,
             /*
              * Pick the best buffer to write. Prefer the larger one to avoid
              * future realloc; only realloc if both are too small. The unchosen
-             * buffer will be freed.
+             * buffer may be freed.
              */
 
             KeyInfo *dest = into;
@@ -728,7 +728,8 @@ merge_overlays(SymbolsInfo *info, KeyInfo *into, KeyInfo *from,
                     dest->overlays_alloc = count;
                 } else {
                     const struct xkb_key **tmp =
-                        realloc(dest->overlays_keys, count * sizeof(*tmp));
+                        realloc(dest->overlays_keys,
+                                count * sizeof(*dest->overlays_keys));
                     if (!tmp)
                         return false;
                     dest->overlays_keys = tmp;
@@ -774,7 +775,8 @@ merge_overlays(SymbolsInfo *info, KeyInfo *into, KeyInfo *from,
                     return false;
             }
 
-            if (into != dest) {
+            if (dest == from) {
+                /* `from` buffer was used; clone it into `into` then clear it */
                 if (into->overlays_alloc)
                     free(into->overlays_keys);
                 into->overlays = from->overlays;
@@ -1819,8 +1821,9 @@ HandleGlobalVar(SymbolsInfo *info, VarDef *stmt)
         temp.merge = (temp.merge == MERGE_REPLACE)
             ? MERGE_OVERRIDE
             : stmt->merge;
-        ret = SetSymbolsField(info, &temp, field, arrayNdx, &stmt->value);
-        MergeKeys(info, &info->default_key, &temp, true);
+        ret = SetSymbolsField(info, &temp, field, arrayNdx, &stmt->value) &&
+              MergeKeys(info, &info->default_key, &temp, true);
+        ClearKeyInfo(&temp);
     }
     else if (!elem && (istreq(field, "name") ||
                        istreq(field, "groupname"))) {

@@ -135,6 +135,8 @@ struct xkb_keysym_iterator*
 xkb_keysym_iterator_new(bool iterate_only_explicit_keysyms)
 {
     struct xkb_keysym_iterator* iter = calloc(1, sizeof(*iter));
+    if (!iter)
+        return NULL;
     iter->explicit = iterate_only_explicit_keysyms;
     iter->index = -1;
     iter->keysym = XKB_KEYSYM_UNICODE_MAX;

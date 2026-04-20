@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
 #if HAVE_ICU
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -20,12 +21,11 @@
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
-#include "test.h"
-#include "utils.h"
-#include "utils-numbers.h"
 #include "src/keysym.h" /* For unexported is_lower/upper/keypad() */
+#include "test.h"
 #include "test/keysym.h"
 #include "utils.h"
+#include "utils-numbers.h"
 
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {
@@ -419,20 +419,21 @@ main(void)
 #endif
 
     /* Bounds */
-    assert(XKB_KEYSYM_MIN == 0);
-    assert(XKB_KEYSYM_MIN < XKB_KEYSYM_MAX);
-    assert(XKB_KEYSYM_MAX <= UINT32_MAX); /* Ensure it fits in xkb_keysym_t */
-    assert(XKB_KEYSYM_MAX <= INT32_MAX); /* Ensure correct cast to int32_t */
-    assert(XKB_KEYSYM_MIN_ASSIGNED == XKB_KEYSYM_MIN);
-    assert(XKB_KEYSYM_MIN_ASSIGNED < XKB_KEYSYM_MAX_ASSIGNED);
-    assert(XKB_KEYSYM_MAX_ASSIGNED <= XKB_KEYSYM_MAX);
-    assert(XKB_KEYSYM_MIN_EXPLICIT == XKB_KEYSYM_MIN_ASSIGNED);
-    assert(XKB_KEYSYM_MIN_EXPLICIT < XKB_KEYSYM_MAX_EXPLICIT);
-    assert(XKB_KEYSYM_MAX_EXPLICIT <= XKB_KEYSYM_MAX_ASSIGNED);
-    assert(XKB_KEYSYM_COUNT_EXPLICIT <= XKB_KEYSYM_MAX_EXPLICIT - XKB_KEYSYM_MIN_EXPLICIT + 1);
-    assert(XKB_KEYSYM_UNICODE_MIN >= XKB_KEYSYM_MIN_EXPLICIT);
-    assert(XKB_KEYSYM_UNICODE_MIN < XKB_KEYSYM_UNICODE_MAX);
-    assert(XKB_KEYSYM_UNICODE_MAX <= XKB_KEYSYM_MAX_EXPLICIT);
+    static_assert(XKB_KEYSYM_MIN == 0, "");
+    static_assert(XKB_KEYSYM_MIN < XKB_KEYSYM_MAX, "");
+    static_assert(XKB_KEYSYM_MAX <= UINT32_MAX, ""); /* Ensure it fits in xkb_keysym_t */
+    static_assert(XKB_KEYSYM_MAX <= INT32_MAX, ""); /* Ensure correct cast to int32_t */
+    static_assert(XKB_KEYSYM_MIN_ASSIGNED == XKB_KEYSYM_MIN, "");
+    static_assert(XKB_KEYSYM_MIN_ASSIGNED < XKB_KEYSYM_MAX_ASSIGNED, "");
+    static_assert(XKB_KEYSYM_MAX_ASSIGNED <= XKB_KEYSYM_MAX, "");
+    static_assert(XKB_KEYSYM_MIN_EXPLICIT == XKB_KEYSYM_MIN_ASSIGNED, "");
+    static_assert(XKB_KEYSYM_MIN_EXPLICIT < XKB_KEYSYM_MAX_EXPLICIT, "");
+    static_assert(XKB_KEYSYM_MAX_EXPLICIT <= XKB_KEYSYM_MAX_ASSIGNED, "");
+    static_assert(XKB_KEYSYM_COUNT_EXPLICIT <=
+                  XKB_KEYSYM_MAX_EXPLICIT - XKB_KEYSYM_MIN_EXPLICIT + 1, "");
+    static_assert(XKB_KEYSYM_UNICODE_MIN >= XKB_KEYSYM_MIN_EXPLICIT, "");
+    static_assert(XKB_KEYSYM_UNICODE_MIN < XKB_KEYSYM_UNICODE_MAX, "");
+    static_assert(XKB_KEYSYM_UNICODE_MAX <= XKB_KEYSYM_MAX_EXPLICIT, "");
 
     /* Assigned keysyms */
     assert(xkb_keysym_is_assigned(XKB_KEYSYM_MIN));
