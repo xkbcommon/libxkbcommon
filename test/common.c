@@ -436,10 +436,9 @@ test_read_file(const char *path_rel)
         goto out;
 
     ret = read_file(path, file);
+    fclose(file);
 
 out:
-    if (file)
-        fclose(file);
     free(path);
     return ret;
 }

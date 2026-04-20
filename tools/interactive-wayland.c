@@ -791,6 +791,10 @@ seat_create(struct interactive_dpy *inter, struct wl_registry *registry,
 {
     int ret;
     struct interactive_seat *seat = calloc(1, sizeof(*seat));
+    if (!seat) {
+        fprintf(stderr, "ERROR: cannot allocate seat\n");
+        return;
+    }
 
     seat->global_name = name;
     seat->inter = inter;

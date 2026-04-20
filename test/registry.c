@@ -826,8 +826,8 @@ test_load_invalid_languages(void)
 static void
 test_popularity(void)
 {
-    assert(POPULARITY_UNDEFINED != POPULARITY_STANDARD);
-    assert(POPULARITY_UNDEFINED != POPULARITY_EXOTIC);
+    static_assert(POPULARITY_UNDEFINED != POPULARITY_STANDARD, "");
+    static_assert(POPULARITY_UNDEFINED != POPULARITY_EXOTIC, "");
 
     struct test_layout system_layouts[] = {
         {.name = "l1", .variant = NO_VARIANT }, /* Default popularity */

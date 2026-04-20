@@ -342,6 +342,7 @@ test_numeric_keysyms(void)
     assert(keysyms_count == 1);
     assert(keysyms[0] == 0x1ffffffd);
     key = XkbKey(keymap, kc);
+    assert(key);
     assert(key->modmap == Mod1Mask);
 
     kc = xkb_keymap_key_by_name(keymap, "AD02");
@@ -349,6 +350,7 @@ test_numeric_keysyms(void)
     assert(keysyms_count == 1);
     assert(keysyms[0] == 0x1ffffffe);
     key = XkbKey(keymap, kc);
+    assert(key);
     assert(key->modmap == Mod2Mask);
 
     kc = xkb_keymap_key_by_name(keymap, "AD03");
@@ -359,6 +361,7 @@ test_numeric_keysyms(void)
     keysyms_count = xkb_keymap_key_get_syms_by_level(keymap, kc, first_layout, 1, &keysyms);
     assert(keysyms_count == 0);
     key = XkbKey(keymap, kc);
+    assert(key);
     assert(key->modmap == Mod3Mask);
 
     xkb_keymap_unref(keymap);

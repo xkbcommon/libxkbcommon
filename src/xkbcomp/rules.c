@@ -19,7 +19,6 @@
 #include "context.h"
 #include "keymap.h"
 #include "messages-codes.h"
-#include "context.h"
 #include "rules.h"
 #include "rmlvo.h"
 #include "include.h"

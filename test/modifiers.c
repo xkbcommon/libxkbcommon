@@ -113,100 +113,40 @@ test_modmap_none(struct xkb_context *context)
     );
     assert(keymap);
 
-    keycode = xkb_keymap_key_by_name(keymap, "LVL3");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == NoModifier);
+    static const struct {
+        const char *key_name;
+        enum real_mod_mask modmap;
+    } tests[] = {
+        { "LVL3", NoModifier },
+        { "LFSH", NoModifier },
+        { "RTSH", NoModifier },
+        { "LWIN", Mod4Mask },
+        { "RWIN", Mod4Mask },
+        { "LCTL", ControlMask },
+        { "RCTL", ControlMask },
+        { "LALT", Mod1Mask },
+        { "RALT", (Mod2Mask | Mod5Mask) },
+        { "CAPS", LockMask },
+        { "AD01", Mod1Mask },
+        { "AD02", NoModifier },
+        { "AD03", NoModifier },
+        { "AD04", Mod1Mask },
+        { "AD05", Mod2Mask },
+        { "AD06", Mod3Mask },
+        { "AD07", Mod1Mask },
+        { "AD08", Mod2Mask },
+        { "AD09", Mod3Mask },
+    };
 
-    keycode = xkb_keymap_key_by_name(keymap, "LFSH");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == NoModifier);
-
-    keycode = xkb_keymap_key_by_name(keymap, "RTSH");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == NoModifier);
-
-    keycode = xkb_keymap_key_by_name(keymap, "LWIN");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod4Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "RWIN");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod4Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "LCTL");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == ControlMask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "RCTL");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == ControlMask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "LALT");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod1Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "RALT");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == (Mod2Mask | Mod5Mask));
-
-    keycode = xkb_keymap_key_by_name(keymap, "CAPS");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == LockMask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD01");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod1Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD02");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == NoModifier);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD03");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == NoModifier);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD04");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod1Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD05");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod2Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD06");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod3Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD07");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod1Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD08");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod2Mask);
-
-    keycode = xkb_keymap_key_by_name(keymap, "AD09");
-    assert(keycode != XKB_KEYCODE_INVALID);
-    key = XkbKey(keymap, keycode);
-    assert(key->modmap == Mod3Mask);
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s #%zu: key %s ***\n",
+                __func__, t, tests[t].key_name);
+        keycode = xkb_keymap_key_by_name(keymap, tests[t].key_name);
+        assert(keycode != XKB_KEYCODE_INVALID);
+        key = XkbKey(keymap, keycode);
+        assert(key);
+        assert(key->modmap == (xkb_mod_mask_t)tests[t].modmap);
+    }
 
     xkb_keymap_unref(keymap);
 }

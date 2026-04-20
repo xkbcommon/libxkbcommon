@@ -383,7 +383,6 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
             xkb_mod_mask_t mods, xkb_mod_mask_t preserve_mods)
 {
     struct xkb_key_type_entry *entry;
-    struct xkb_key_type_entry new;
 
     darray_foreach(entry, type->entries) {
         if (entry->mods.mods != mods)
@@ -426,9 +425,11 @@ AddPreserve(KeyTypesInfo *info, KeyTypeInfo *type,
      * Create a map with the specified mask mapping to Level1. The level
      * may be overridden later with an explicit map[] statement.
      */
-    new.level = 0;
-    new.mods.mods = mods;
-    new.preserve.mods = preserve_mods;
+    const struct xkb_key_type_entry new = {
+        .level = 0,
+        .mods = { .mods = mods },
+        .preserve = { .mods = preserve_mods },
+    };
     darray_append(type->entries, new);
     return true;
 }

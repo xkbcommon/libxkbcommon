@@ -40,8 +40,6 @@ parse_char_or_codepoint(const char *raw) {
     /* If parsing failed or did not consume all the string, then try other formats */
     if (codepoint == INVALID_UTF8_CODE_POINT ||
         length == 0 || length != raw_length) {
-        char *endp;
-        long val;
         int base = 10;
         /* Detect U+NNNN format standard Unicode code point format */
         if (raw_length >= 2 && raw[0] == 'U' && raw[1] == '+') {
@@ -50,8 +48,10 @@ parse_char_or_codepoint(const char *raw) {
         }
         /* Use strtol with explicit bases instead of `0` in order to avoid
          * unexpected parsing as octal. */
+        long val = -1;
         for (; base <= 16; base += 6) {
             errno = 0;
+            char *endp;
             val = strtol(raw, &endp, base);
             if (errno != 0 || !isempty(endp) || val < 0 || val > 0x10FFFF) {
                 val = -1;
