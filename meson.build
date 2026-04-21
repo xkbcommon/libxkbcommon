@@ -50,6 +50,7 @@ cflags = [
     '-Wno-pedantic',
     '/utf-8',
     '/wd4100',  # Disable MSVC C4100: unreferenced formal parameter
+    '/wd4127',  # Disable MSVC C4127: conditional expression is constant
 ]
 add_project_arguments(cc.get_supported_arguments(cflags), language: 'c')
 
