@@ -6848,6 +6848,12 @@
   name: XF86ElectronicPrivacyScreenOn
 0x10081253:
   name: XF86ElectronicPrivacyScreenOff
+0x10081254:
+  name: XF86ActionOnSelection
+0x10081255:
+  name: XF86ContextualInsert
+0x10081256:
+  name: XF86ContextualQuery
 0x10081260:
   name: XF86KbdInputAssistPrev
 0x10081261:
