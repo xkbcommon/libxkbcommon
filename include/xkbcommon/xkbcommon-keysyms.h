@@ -3125,6 +3125,9 @@ SOFTWARE.
 #define XKB_KEY_XF86BrightnessMax            0x10081251      /* v3.16   KEY_BRIGHTNESS_MAX */
 #define XKB_KEY_XF86ElectronicPrivacyScreenOn  0x10081252      /* v6.18   KEY_EPRIVACY_SCREEN_ON */
 #define XKB_KEY_XF86ElectronicPrivacyScreenOff 0x10081253      /* v6.18   KEY_EPRIVACY_SCREEN_OFF */
+#define XKB_KEY_XF86ActionOnSelection        0x10081254      /* v7.0    KEY_ACTION_ON_SELECTION */
+#define XKB_KEY_XF86ContextualInsert         0x10081255      /* v7.0    KEY_CONTEXTUAL_INSERT */
+#define XKB_KEY_XF86ContextualQuery          0x10081256      /* v7.0    KEY_CONTEXTUAL_QUERY */
 #define XKB_KEY_XF86KbdInputAssistPrev       0x10081260      /* v3.18   KEY_KBDINPUTASSIST_PREV */
 #define XKB_KEY_XF86KbdInputAssistNext       0x10081261      /* v3.18   KEY_KBDINPUTASSIST_NEXT */
 #define XKB_KEY_XF86KbdInputAssistPrevgroup  0x10081262      /* v3.18   KEY_KBDINPUTASSIST_PREVGROUP */

@@ -40,13 +40,13 @@ See @ref packaging-keyboard-layouts "" for further details.
 ### New
 
 - Added keysyms from latest [xorgproto]
-      \(commit: `f973f7db89571f61e96cb0a55f416d3e67a75663`, [xorproto-102]):
+      \(commit: `f973f7db89571f61e96cb0a55f416d3e67a75663`, [xorgproto-102]):
 
   - `XKB_KEY_XF86MediaPlayPause`
   - `XKB_KEY_XF86Exit`
   - `XKB_KEY_XF86AudioBassBoost`
 
-  [xorproto-102]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/102
+  [xorgproto-102]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/102
 - Added the XKB **extensions directories**, a new mechanism to facilitate
   keyboard layout packaging and distribution.
 
@@ -223,18 +223,18 @@ The highlight of this release is the performance improvements for keymap handlin
 ### Deprecated
 
 - Deprecated keysyms from latest [xorgproto]
-    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorproto-103]):
+    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorgproto-103]):
 
   - `XKB_KEY_XF86BrightnessAuto` (use `XKB_KEY_XF86MonBrightnessAuto` instead)
 
-[xorproto-103]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/103
+[xorgproto-103]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/103
 
 ### New
 
 - Added `xkb_keymap::xkb_keymap_get_as_string2()`, which enables to configure
   the serialization.
 - Added keysyms from latest [xorgproto]
-    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorproto-103]):
+    \(commit: `81931cc0fd4761b42603f7da7d4f50fc282cecc6`, [xorgproto-103]):
 
   - `XKB_KEY_XF86Sport`
   - `XKB_KEY_XF86MonBrightnessAuto` (alias for `XKB_KEY_XF86BrightnessAuto`)
