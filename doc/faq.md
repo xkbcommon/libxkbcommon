@@ -33,13 +33,39 @@ See [contributing to xkeyboard-config] for further information.
 
 ### Where are the system keyboard layouts located?
 
-They are usually located at `/usr/share/xkeyboard-config-2`, or
+They are usually located at `/usr/share/xkeyboard-config-<VERSION>`, or
 `/usr/share/X11/xkb` on older setups.
 
 Alternatively, use `xkbcli info` and check the `XKB_CONFIG_ROOT` entry.
 
 @note Do not modify system files! See @ref how-do-i-customize-my-layout "" for
 further instructions.
+
+### How do I customize my layout?
+
+This project does not provide any keyboard layout database:
+- If you want to modify only your *user* keyboard configuration,
+  see: [User-configuration](./user-configuration.md).
+- If you want to modify the *system-wide* keyboard configuration,
+  follow the [User-configuration](./user-configuration.md) but
+  *replace `$XDG_CONFIG_HOME` with `<sysconfdir>` (usually `/etc`) in the
+  file locations*.
+- If you want to modify the *standard keyboard layout database*, please first
+  try it *locally* (see our [debugging tools]) and then file an issue or a merge
+  request at the [xkeyboard-config] project.
+
+See also the [keymap text format][text format] documentation for the syntax and
+the [compatibility](./compatibility.md) page for the supported features.
+
+[text format]: ./keymap-text-format-v1-v2.md
+
+### How do I test my custom layout without installing it?
+
+Use our [debugging tools].
+
+### How can I create a package for my layout?
+
+See @ref packaging-keyboard-layouts.
 
 ### Why does my key combination to switch between layouts not work?
 
@@ -140,28 +166,6 @@ log, expected/got results) and file a [bug report]!
 [debugging tools]: ./debugging.md
 [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
 [bug report]: https://github.com/xkbcommon/libxkbcommon/issues/new
-
-### How do I customize my layout?
-
-This project does not provide any keyboard layout database:
-- If you want to modify only your *local* keyboard configuration,
-  see: [User-configuration](./user-configuration.md).
-- If you want to modify the standard keyboard layout database, please first try
-  it *locally* (see our [debugging tools]) and then file an issue or a merge
-  request at the [xkeyboard-config] project.
-
-See also the [keymap text format][text format] documentation for the syntax and
-the [compatibility](./compatibility.md) page for the supported features.
-
-[text format]: ./keymap-text-format-v1-v2.md
-
-### How do I test my custom layout without installing it?
-
-Use our [debugging tools].
-
-### How can I create a package for my layout?
-
-See @ref packaging-keyboard-layouts.
 
 ### How do I swap some keys?
 

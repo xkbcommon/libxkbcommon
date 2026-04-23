@@ -1043,14 +1043,29 @@ xkb_context_get_user_data(struct xkb_context *context);
  * include statement is encountered during keymap compilation.
  *
  * The default include paths are, in that lookup order:
+ *
+ * <dl>
+ * <dt>User</dt>
+ * <dd>
  * - The path `$XDG_CONFIG_HOME/xkb`, where `$XDG_CONFIG_HOME` is the value of
  *   the environment variable `XDG_CONFIG_HOME`, with the usual fallback to
  *   `$HOME/.config/` if unset.
- * - The path `$HOME/.xkb`, where `$HOME` is the value of the environment
- *   variable `HOME`.
+ *
+ *   See @ref user-configuration "" for further information.
+ * - @deprecated The *legacy* path `$HOME/.xkb`, where `$HOME` is the value of
+ *   the environment variable `HOME`.
+ *   <!-- [HACK] blank required by Doxygen -->
+ *
+ * </dd>
+ * <dt>System</dt>
+ * <dd>
  * - The `XKB_CONFIG_EXTRA_PATH` environment variable, if defined, otherwise the
  *   system configuration directory, defined at library configuration time
  *   (usually `/etc/xkb`).
+ *
+ *   One can adapt the @ref user-configuration "" instructions by replacing
+ *   `$XDG_CONFIG_HOME` with the system configuration directory in the
+ *   file locations.
  * - Each subdirectory of each XKB extensions directory (versioned, then
  *   unversioned if no corresponding versioned subdirectory), listed in
  *   lexicographic order. The extensions directories are defined by the
@@ -1059,9 +1074,20 @@ xkb_context_get_user_data(struct xkb_context *context);
  *   root extensions directories, defined at library configuration time (usually
  *   `/usr/share/xkeyboard-config-<VERSION>.d` and
  *   `/usr/share/xkeyboard-config.d`).
+ *
+ *   See @ref packaging-keyboard-layouts "" for further information.
  * - The `XKB_CONFIG_ROOT` environment variable, if defined, otherwise
  *   the system XKB root, defined at library configuration time
  *   (usually `/usr/share/xkeyboard-config-<VERSION>` or `/usr/share/X11/xkb`).
+ *
+ *   @warning Do not modify the system XKB root files, because they will be
+ *   overwritten by any update of the `xkeyboard-config`/`xkb-data` package.
+ * - Since 1.12.2: if the previous path failed, it fallbacks to the *legacy X11
+ *   path* defined at compilation time (usually `/usr/share/X11/xkb`). This
+ *   fallback is skipped is `XKB_CONFIG_ROOT` is explicitly set to an empty
+ *   string.
+ * </dd>
+ * </dl>
  *
  * @{
  */
