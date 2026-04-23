@@ -8,6 +8,11 @@ will be parsed by libxkbcommon.
 
 @note For *distributing* keyboard layouts, see @ref packaging-keyboard-layouts "".
 
+@note The following instructions focus on a *user-configuration*; it can be
+extended to a *system-wide* configuration by replacing `$XDG_CONFIG_HOME` with
+`<sysconfdir>` in the file locations. See @ref xkb-data-locations "" for further
+details.
+
 @warning The below requires libxkbcommon as keymap compiler and
 **does not work in _X11_** sessions, because X servers have hard-coded paths.
 
@@ -19,20 +24,68 @@ see [debugging] for further details.
 
 @tableofcontents{html:2}
 
-## Data locations {#user-config-locations}
+## XKB data locations
 
 libxkbcommon searches the following paths for XKB configuration files:
-1. `$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
-   environment variable is not defined. See the [XDG Base Directory Specification]
-   for further details.
-2. <div><!-- [HACK] Doxygen requires this extra div -->
-   @deprecated `$HOME/.xkb/` as a *legacy* alternative to the previous XDG option.
-   </div>
-3. `$XKB_CONFIG_EXTRA_PATH` if set, otherwise `<sysconfdir>/xkb` (on most
-   distributions this is `/etc/xkb`).
-4. `$XKB_CONFIG_ROOT` if set, otherwise `<datadir>/X11/xkb/` (path defined by
-   the `xkeyboard-config` package, on most distributions this is
-   `/usr/share/X11/xkb`).
+
+<table>
+<caption>XKB lookup paths</caption>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Rank</th>
+<th>Name</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="2">User</th>
+<th>1</th>
+<th>*User* configuration</th>
+<td>
+`$XDG_CONFIG_HOME/xkb/`, or `$HOME/.config/xkb/` if the `$XDG_CONFIG_HOME`
+environment variable is not defined. See the [XDG Base Directory Specification]
+for further details.
+</td>
+</tr>
+<tr>
+<th>2</th>
+<th>**Legacy** *user* configuration</th>
+<td>
+@deprecated `$HOME/.xkb/` as a *legacy* alternative to the previous XDG option.
+</td>
+</tr>
+<tr>
+<th rowspan="3">System</th>
+<th>3</th>
+<th>*System*-wide configuration</th>
+<td>
+`$XKB_CONFIG_EXTRA_PATH` if set, otherwise `<sysconfdir>/xkb` (on most
+distributions this is `/etc/xkb`).
+</td>
+</tr>
+<tr>
+<th>4</th>
+<th>XKB extension packages data</th>
+<td>
+See @ref packaging-keyboard-layouts "".
+</td>
+</tr>
+<tr>
+<th>5</th>
+<th>Canonical XKB root</th>
+<td>
+`$XKB_CONFIG_ROOT` if set, otherwise `<datadir>/X11/xkb/` (path defined by
+the `xkeyboard-config` package, on most distributions this is
+`/usr/share/xkeyboard-config-<VERSION>`, or `/usr/share/X11/xkb` on older setups).
+
+@warning Do not modify the system XKB root files, because they will be
+overwritten by any update of the `xkeyboard-config`/`xkb-data` package.
+</td>
+</tr>
+</tbody>
+</table>
 
 [XDG Base Directory Specification]: https://specifications.freedesktop.org/basedir-spec/latest/
 
@@ -41,6 +94,10 @@ those paths in order until the required data is found.
 
 @note Where libxkbcommon runs in a privileged context, only the system
 (`<datadir>`) path is available.
+
+@note The rest of the page assumes configuring a *user-configuration*; it can
+be extended to a *system-wide* configuration by replacing `$XDG_CONFIG_HOME`
+with `<sysconfdir>` in the file locations (see in the table above).
 
 Each directory should have one or more of the following subdirectories:
 - `compat`
