@@ -73,4 +73,4 @@ it is advised to try custom configurations safely with the following workflow:
 
 Happy hacking!
 
-[user-configuration locations]: @ref user-config-locations
+[user-configuration locations]: @ref xkb-data-locations
