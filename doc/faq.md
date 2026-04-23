@@ -99,7 +99,11 @@ log, expected/got results) and file a [bug report]!
 This project does not provide any keyboard layout database:
 - If you want to modify only your *local* keyboard configuration,
   see: [User-configuration](./user-configuration.md).
-- If you want to modify the standard keyboard layout database, please first try
+- If you want to modify the *system-wide* keyboard configuration,
+  follow the [User-configuration](./user-configuration.md) instructions but
+  *replace `$XDG_CONFIG_HOME` with `<sysconfdir>` (usually `/etc`) in the
+  file locations*.
+- If you want to modify the *standard keyboard layout database*, please first try
   it *locally* (see our [debugging tools]) and then file an issue or a merge
   request at the [xkeyboard-config] project.
 
