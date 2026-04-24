@@ -888,7 +888,7 @@ If no section name is provided, the [default map] is looked up.
 
 [default map]: @ref default-map-def
 
-The path is usually relative to its corresponding directory in a XKB
+The path is usually relative to its corresponding directory in an XKB
 configuration: e.g. given the configuration directory `<XKB>`, files of
 section type `xkb_symbols` are looked up in `<XKB>/symbols`. Since 1.11,
 the paths can also be absolute or use **%-expansion**:

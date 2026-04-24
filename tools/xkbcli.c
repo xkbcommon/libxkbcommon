@@ -57,17 +57,17 @@ usage(void)
 #endif
 #if HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND || HAVE_XKBCLI_DUMP_KEYMAP_X11
            "  dump-keymap\n"
-           "    Dump a XKB keymap from a Wayland or X11 compositor\n"
+           "    Dump an XKB keymap from a Wayland or X11 compositor\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_DUMP_KEYMAP_WAYLAND
            "  dump-keymap-wayland\n"
-           "    Dump a XKB keymap from a Wayland compositor\n"
+           "    Dump an XKB keymap from a Wayland compositor\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_DUMP_KEYMAP_X11
            "  dump-keymap-x11\n"
-           "    Dump a XKB keymap from an X server\n"
+           "    Dump an XKB keymap from an X server\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_COMPILE_KEYMAP

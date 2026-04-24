@@ -74,10 +74,10 @@ xkb_parse_file_type(const char *raw)
 }
 
 /**
- * Try to get the relative path of a file in a XKB hierarchy
+ * Try to get the relative path of a file in an XKB hierarchy
  *
  * This is a fragile! We could improve it by using the context include paths,
- * but the analyzed path may be in a XKB hierarchy but not in the include paths.
+ * but the analyzed path may be in an XKB hierarchy but not in the include paths.
  */
 static const char*
 xkb_relative_path(const char *path)
@@ -849,7 +849,7 @@ print_sections(struct xkb_context *ctx,
             }
         } else {
             /*
-             * Relative path: interpret as a file in a XKB tree of the given
+             * Relative path: interpret as a file in an XKB tree of the given
              * file type
              */
             // TODO: this is currently a bit silly, since we are parsing the
@@ -944,7 +944,7 @@ usage(FILE *file, const char *progname)
     fprintf(file,
            "Usage: %s [OPTIONS] [FILES]\n"
            "\n"
-           "Introspect a XKB file\n"
+           "Introspect an XKB file\n"
            "\n"
            "General options:\n"
            " --help\n"
