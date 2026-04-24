@@ -173,7 +173,7 @@ Real and virtual modifiers have been collapsed into the same namespace, with a
 “significant” flag that largely parallels the core/virtual split.
 
 Real modifiers are predefined modifiers with fixed encoding and considered merely
-as a X11 compatibility feature.
+as an X11 compatibility feature.
 </details>
 </td>
 </tr>

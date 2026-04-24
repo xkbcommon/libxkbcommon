@@ -722,7 +722,7 @@ if __name__ == "__main__":
         "-i", "--include", type=Path, action="append", default=[], help="XKB root path"
     )
     parser_deps.add_argument("-f", "--file", type=Path, help="XKB file")
-    parser_deps.add_argument("-s", "--section", type=str, help="Section in a XKB file")
+    parser_deps.add_argument("-s", "--section", type=str, help="Section in an XKB file")
     parser_deps.add_argument(
         "-t", "--type", type=Component.parse, help="Component type"
     )
@@ -744,7 +744,7 @@ if __name__ == "__main__":
     )
     parser_use.add_argument("-r", "--rules", type=str, help="XKB ruleset")
     parser_use.add_argument("-f", "--file", type=Path, help="XKB file")
-    parser_use.add_argument("-s", "--section", type=str, help="Section in a XKB file")
+    parser_use.add_argument("-s", "--section", type=str, help="Section in an XKB file")
     parser_use.add_argument("-t", "--type", type=Component.parse, help="Component type")
     parser_use.set_defaults(run=run_use)
 
@@ -776,7 +776,7 @@ if __name__ == "__main__":
         "path",
         nargs="*",
         type=Path,
-        help="Path to a XKB tree",
+        help="Path to an XKB tree",
     )
     parser_tree.add_argument(
         "-t",
@@ -799,7 +799,7 @@ if __name__ == "__main__":
         "path",
         nargs="*",
         type=Path,
-        help="Path to a XKB tree",
+        help="Path to an XKB tree",
     )
     parser_rules.add_argument(
         "-j",
