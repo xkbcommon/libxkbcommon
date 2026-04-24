@@ -34,7 +34,7 @@ See @ref xkbcommon-compatibility "" for further information.
 
 @see For an overview of the role of this format, please see “@ref xkb-the-config ""”.
 
-@see For examples of keymaps in this format, please see “@ref user-configuration ""”.
+@see For examples of keymaps in this format, please see “@ref custom-configuration ""”.
 For further examples see [xkeyboard-config], the standard database of keyboard
 configuration data.
 
@@ -333,7 +333,7 @@ Some additional resources are:
   <dd>
     A database that provides the [keymap components](@ref keymap-components-intro).
     \*nix OSs uses the _standard_ database [xkeyboard-config]. One may extend
-    this database with _custom_ layouts: see “@ref user-configuration ""” for
+    this database with _custom_ layouts: see “@ref custom-configuration ""” for
     further details.
   </dd>
 </dl>
@@ -380,7 +380,7 @@ illustrated in the [diagram hereinafter](@ref xkb-keymap-components-diagram):
   @see [xkeyboard-config] for the implementation of the *standard* keymap
   configuration database.
 
-  @see “@ref user-configuration ""” to add a *custom* layout or option.
+  @see “@ref custom-configuration ""” to add a *custom* layout or option.
 - __Client:__ Load the active keymap from the server, then handle update events
   sent by the server. The <strong>[complete keymap]</strong> is directly
   available in a _self-contained_ file.
@@ -877,7 +877,7 @@ or %%H seems to do the job though.
 The *main* system-installed XKB directory of the corresponding [component]
 \(usually `/usr/share/X11/xkb/<component>`).
 
-This enables e.g. to override a system file using @ref user-configuration ""
+This enables e.g. to override a system file using @ref custom-configuration ""
 with the exact *same name*:
 
 ```c
@@ -1270,6 +1270,8 @@ The above would let 49 and 10 be valid keycodes in the keymap, and
 assign them the names `TLDE` and `AE01` respectively. The format
 `<WXYZ>` is always used to refer to a key by name.
 
+#### Keycode naming convention
+
 The naming convention `<AE01>` is based on the
 [standard ISO/IEC&nbsp;9995-1][ISO9995-1]. It denotes the position of the
 key in the keyboard grid. It means: the main alphanumeric section
@@ -1296,6 +1298,8 @@ A         \Ctrl\GUI \Alt \Space…
 
 [ISO9995-1]: https://en.wikipedia.org/wiki/ISO/IEC_9995#ISO/IEC_9995-1
 
+#### Keycode values
+
 In the common case this just maps to the evdev scancodes from
 `/usr/include/linux/input.h`, e.g. the following definitions:
 
@@ -1303,12 +1307,14 @@ In the common case this just maps to the evdev scancodes from
     #define KEY_1                2
 
 correspond to the ones above. Similar definitions appear in the
-xf86-input-keyboard driver. Note that in all current keymaps there’s a
+X11’s `xf86-input-keyboard` driver. Note that in all current keymaps there’s a
 constant offset of 8 (for historical reasons).
 
 Note that contrary to xkbcommon, the X11 protocol supports keycodes
 only up to `255`. Therefore, when interfacing with X11, keymaps and applications
 using keycodes beyond `255` should expect warnings.
+
+#### Keycode conflicts
 
 If there’s a conflict, like the same name given to different keycodes,
 or same keycode given different names, it is resolved according to the
@@ -1335,8 +1341,8 @@ Statements of the form:
     indicator 3 = "Scroll Lock";
 
 Assigns a name to the keyboard LED (AKA [indicator]) with the given
-index. The LED may be referred by this name later in the compat
-section and by the user.
+index. The LED may be referred by this name later in the
+[compat section][@ref the-xkb_compat-section] and by the user.
 
 @todo `virtual` flag
 
@@ -3547,7 +3553,7 @@ Modifies the *locked* group.
 <td>Target group or group delta</td>
 </tr>
 <tr>
-<th>`lockOnRelease`</th>
+<th>`lockOnRelease` @anchor lockOnRelease</th>
 <td>boolean</td>
 <td>false</td>
 <td>

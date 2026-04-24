@@ -1398,7 +1398,7 @@ You can disable the documentation with -Denable-docs=false.''')
         'doc/quick-guide.md',
         'doc/compatibility.md',
         'doc/packaging-keyboard-layouts.md',
-        'doc/user-configuration.md',
+        'doc/custom-configuration.md',
         'doc/rules-format.md',
         'doc/keymap-text-format-v1-v2.md',
         'doc/message-registry.md',

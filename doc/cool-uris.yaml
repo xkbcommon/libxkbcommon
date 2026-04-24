@@ -63,7 +63,8 @@ structxkb__state.html: []
 todo.html: []
 topics.html:
 - modules.html
-user-configuration.html:
+custom-configuration.html:
+- user-configuration.html
 - md_doc_user_configuration.html
 xkb-intro.html: []
 xkbcommon-compatibility.html:

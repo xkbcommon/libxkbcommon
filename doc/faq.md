@@ -12,7 +12,7 @@ See: [Introduction to XKB](./introduction-to-xkb.md).
 
 See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 
-### What are the differences with the Xorg/X11 implementation?
+### What are the differences with the Xorg/X11 implementations?
 
 <dl>
 <dt>Features</dt>
@@ -22,6 +22,10 @@ See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 </dl>
 
 ## Keyboard layouts
+
+### Is there a quick guide?
+
+Yes, see the [custom configuration](./custom-configuration.md).
 
 ### Where are the standard keyboard layouts designed?<br/>How to report an issue or propose a patch?
 
@@ -33,29 +37,81 @@ See [contributing to xkeyboard-config] for further information.
 
 ### Where are the system keyboard layouts located?
 
-They are usually located at `/usr/share/xkeyboard-config-2`, or
+They are usually located at `/usr/share/xkeyboard-config-<VERSION>`, or
 `/usr/share/X11/xkb` on older setups.
 
 @note Do not modify system files! See @ref how-do-i-customize-my-layout "" for
 further instructions.
 
-### Why do my keyboard shortcuts not work properly?
+### How do I customize my layout?
 
-- 🚧 TODO: Setups with multiple layout and/or non-Latin keyboard layouts may have some
-  issues.
-- 🚧 TODO: [#420]
+This project does not provide any keyboard layout database:
+- If you want to modify only your *user* keyboard configuration,
+  see: [custom configuration](./custom-configuration.md).
+- If you want to modify the *system-wide* keyboard configuration,
+  follow the [custom configuration](./custom-configuration.md) but
+  *replace `$XDG_CONFIG_HOME` with `<sysconfdir>` (usually `/etc`) in the
+  file locations*.
+- If you want to modify the *standard keyboard layout database*, please first
+  try it *locally* (see our [debugging tools]) and then file a merge request at
+  the [xkeyboard-config] project.
 
-[#420]: https://github.com/xkbcommon/libxkbcommon/issues/420
+See also the [keymap text format][text format] documentation for the syntax and
+the [compatibility](./compatibility.md) page for the supported features.
+
+[text format]: ./keymap-text-format-v1-v2.md
+
+### How do I test my custom layout without installing it?
+
+Use our [debugging tools].
+
+### How can I create a package for my layout?
+
+See @ref packaging-keyboard-layouts.
 
 ### Why does my key combination to switch between layouts not work?
 
-There are currently some issue with modifier-only shortcuts. See [this issue][#420].
+There are some issues with *modifier-only* shortcuts: see [this bug report][#420].
+
+This can be fixed by using the new parameter <code>[lockOnRelease]</code> in
+`LockGroup()`, available since libxkbcommon 1.11. This will be done at some
+point in [xkeyboard-config].
+
+```diff
+ xkb_compatibility {
+     interpret ISO_Next_Group {
+         useModMapMods= level1;
+         virtualModifier= AltGr;
+-        action= LockGroup(group=+1);
++        action= LockGroup(group=+1, lockOnRelease);
+     };
+ };
+```
+
+[lockOnRelease]: @ref lockOnRelease
+[#420]: https://github.com/xkbcommon/libxkbcommon/issues/420
+
+### Why do my keyboard shortcuts not work properly?
+
+Users have different expectations when it comes to keyboard shortcuts. However,
+the reference use case is usually a single Latin keyboard layout, with fallbacks
+for other configurations. These fallbacks may not match users’ expectations nor
+even be consistent across applications. See [this issue][#753].
+
+[keycodes]: @ref keycode-def
+[keysyms]: @ref keysym-def
+[#753]: https://github.com/xkbcommon/libxkbcommon/issues/753
 
 ### Why does my keyboard layout not work as expected?
 
 There could be many reasons!
 
 <dl>
+<dt>Wrong keyboard model</dt>
+<dd>
+Nowadays most keyboards follow standards, so prefer using one of the “generic”
+keyboard models in the XKB configuration to avoid vendor-specific mappings.
+</dd>
 <dt>There is an issue with your keyboard layout database</dt>
 <dd>
 libxkbcommon may not be able to load your configuration due to an issue
@@ -93,28 +149,6 @@ log, expected/got results) and file a [bug report]!
 [debugging tools]: ./debugging.md
 [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
 [bug report]: https://github.com/xkbcommon/libxkbcommon/issues/new
-
-### How do I customize my layout?
-
-This project does not provide any keyboard layout database:
-- If you want to modify only your *local* keyboard configuration,
-  see: [User-configuration](./user-configuration.md).
-- If you want to modify the *system-wide* keyboard configuration,
-  follow the [User-configuration](./user-configuration.md) instructions but
-  *replace `$XDG_CONFIG_HOME` with `<sysconfdir>` (usually `/etc`) in the
-  file locations*.
-- If you want to modify the *standard keyboard layout database*, please first try
-  it *locally* (see our [debugging tools]) and then file an issue or a merge
-  request at the [xkeyboard-config] project.
-
-See also the [keymap text format][text format] documentation for the syntax and
-the [compatibility](./compatibility.md) page for the supported features.
-
-[text format]: ./keymap-text-format-v1-v2.md
-
-### How do I test my custom layout without installing it?
-
-Use our [debugging tools].
 
 ### How do I swap some keys?
 
@@ -162,8 +196,10 @@ xkb_symbols "variant2" {
 };
 ```
 
-See also @ref user-configuration "" to make the layouts discoverable for easy
+See also the instructions to make the [layouts discoverable] for easy
 configuration in your keyboard settings app.
+
+[layouts discoverable]: @ref discoverable-layouts
 </dd>
 <dt>Option for multiple layouts</dt>
 <dd>
@@ -352,7 +388,7 @@ One must use the tools *specific* to each display server in order order to
 achieve it.
 <!-- TODO: links to doc of most important DE -->
 
-If you use a custom layout, please have a look at @ref user-configuration "",
+If you use a custom layout, please have a look at @ref custom-configuration "",
 which enables making custom layouts *discoverable* by keyboard configuration GUI.
 </dd>
 </dl>
@@ -400,7 +436,7 @@ xkbcli dump-keymap-x11
 
 No equivalent: `xkbcli` does not modify the display server keymap.
 One must use the tools *specific* to each display server in order order to
-achieve it. Please have a look at @ref user-configuration "", which enables
+achieve it. Please have a look at @ref custom-configuration "", which enables
 making custom layouts *discoverable* by keyboard configuration GUI.
 </dd>
 </dl>
@@ -478,3 +514,30 @@ There is no dedicated API, since the use cases are too diverse or niche.
 Nevertheless, the following snippet provide a minimal example to achieve it.
 
 @snippet "test/modifiers.c" xkb_keymap_mod_get_codes
+
+### Keys
+
+#### How to check if a keymap defines/binds a keycode?
+
+<dl>
+<dt>Check if a keymaps *defines* a keycode<dt>
+<dd>
+`xkb_keymap::xkb_keymap_key_get_name()` returns `NULL` if the keycode is not
+defined in the corresponding keymap:
+
+```c
+if (xkb_keymap_key_get_name(keymap, keycode) != NULL)
+    // use existing key ...
+```
+</dd>
+<dt>Check if a keymaps *binds* a keycode<dt>
+<dd>
+`xkb_keymap::xkb_keymap_num_layouts_for_key()` returns `0` if the keycode is
+either not defined or unbound:
+
+```c
+if (xkb_keymap_num_layouts_for_key(keymap, keycode))
+    // use bound key ...
+```
+</dd>
+</dl>
