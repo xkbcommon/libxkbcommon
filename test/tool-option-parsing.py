@@ -482,8 +482,9 @@ class TestXkbcli(unittest.TestCase):
                     )
                 )
                 input: str | None = reduce(
-                    lambda acc, arg: acc
-                    or (arg.stdin if isinstance(arg, Target) else None),
+                    lambda acc, arg: (
+                        acc or (arg.stdin if isinstance(arg, Target) else None)
+                    ),
                     args,
                     None,
                 )
