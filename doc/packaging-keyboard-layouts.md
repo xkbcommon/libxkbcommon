@@ -5,7 +5,14 @@ using a new mechanism: the XKB **extensions directories**. It provides a proper
 way for keyboard layout packages to install their files, which otherwise resorted
 to hacking the xkeyboard-config system directory.
 
-@note For *single-user* setups, see also @ref user-configuration "".
+@note
+See also the following alternatives without packaging:
+<dl>
+<dt>*Single-user* setups</dt>
+<dd>@ref user-configuration ""</dd>
+<dt>*System-wide* setups</dt>
+<dd>@ref system-configuration ""</dd>
+</dl>
 
 @tableofcontents{html:2}
 
