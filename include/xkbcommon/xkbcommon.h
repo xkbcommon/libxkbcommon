@@ -1051,7 +1051,7 @@ xkb_context_get_user_data(struct xkb_context *context);
  *   the environment variable `XDG_CONFIG_HOME`, with the usual fallback to
  *   `$HOME/.config/` if unset.
  *
- *   See @ref user-configuration "" for further information.
+ *   See @ref custom-configuration "" for further information.
  * - @deprecated The *legacy* path `$HOME/.xkb`, where `$HOME` is the value of
  *   the environment variable `HOME`.
  *   <!-- [HACK] blank required by Doxygen -->
@@ -1063,7 +1063,7 @@ xkb_context_get_user_data(struct xkb_context *context);
  *   system configuration directory, defined at library configuration time
  *   (usually `/etc/xkb`).
  *
- *   One can adapt the @ref user-configuration "" instructions by replacing
+ *   One can adapt the @ref custom-configuration "" instructions by replacing
  *   `$XDG_CONFIG_HOME` with the system configuration directory in the
  *   file locations.
  * - Each subdirectory of each XKB extensions directory (versioned, then

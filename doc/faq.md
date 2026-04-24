@@ -12,7 +12,7 @@ See: [Introduction to XKB](./introduction-to-xkb.md).
 
 See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 
-### What are the differences with the Xorg/X11 implementation?
+### What are the differences with the Xorg/X11 implementations?
 
 <dl>
 <dt>Features</dt>
@@ -22,6 +22,10 @@ See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 </dl>
 
 ## Keyboard layouts
+
+### Is there a quick guide?
+
+Yes, see the [custom configuration](./custom-configuration.md).
 
 ### Where are the standard keyboard layouts designed?<br/>How to report an issue or propose a patch?
 
@@ -45,14 +49,14 @@ further instructions.
 
 This project does not provide any keyboard layout database:
 - If you want to modify only your *user* keyboard configuration,
-  see: [User-configuration](./user-configuration.md).
+  see: [custom configuration](./custom-configuration.md).
 - If you want to modify the *system-wide* keyboard configuration,
-  follow the [User-configuration](./user-configuration.md) but
+  follow the [custom configuration](./custom-configuration.md) but
   *replace `$XDG_CONFIG_HOME` with `<sysconfdir>` (usually `/etc`) in the
   file locations*.
 - If you want to modify the *standard keyboard layout database*, please first
-  try it *locally* (see our [debugging tools]) and then file an issue or a merge
-  request at the [xkeyboard-config] project.
+  try it *locally* (see our [debugging tools]) and then file a merge request at
+  the [xkeyboard-config] project.
 
 See also the [keymap text format][text format] documentation for the syntax and
 the [compatibility](./compatibility.md) page for the supported features.
@@ -129,6 +133,11 @@ to encourage developers to implement the relevant [API][shortcuts-api].
 There could be many reasons!
 
 <dl>
+<dt>Wrong keyboard model</dt>
+<dd>
+Nowadays most keyboards follow standards, so prefer using one of the “generic”
+keyboard models in the XKB configuration to avoid vendor-specific mappings.
+</dd>
 <dt>There is an issue with your keyboard layout database</dt>
 <dd>
 libxkbcommon may not be able to load your configuration due to an issue
@@ -213,8 +222,10 @@ xkb_symbols "variant2" {
 };
 ```
 
-See also @ref user-configuration "" to make the layouts discoverable for easy
+See also the instructions to make the [layouts discoverable] for easy
 configuration in your keyboard settings app.
+
+[layouts discoverable]: @ref discoverable-layouts
 </dd>
 <dt>Option for multiple layouts</dt>
 <dd>
@@ -403,7 +414,7 @@ One must use the tools *specific* to each display server in order order to
 achieve it.
 <!-- TODO: links to doc of most important DE -->
 
-If you use a custom layout, please have a look at @ref user-configuration "",
+If you use a custom layout, please have a look at @ref custom-configuration "",
 which enables making custom layouts *discoverable* by keyboard configuration GUI.
 </dd>
 </dl>
@@ -451,7 +462,7 @@ xkbcli dump-keymap-x11
 
 No equivalent: `xkbcli` does not modify the display server keymap.
 One must use the tools *specific* to each display server in order order to
-achieve it. Please have a look at @ref user-configuration "", which enables
+achieve it. Please have a look at @ref custom-configuration "", which enables
 making custom layouts *discoverable* by keyboard configuration GUI.
 </dd>
 </dl>

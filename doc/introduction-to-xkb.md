@@ -93,6 +93,9 @@ implementation.
       <dd>
       Set of extra options to customize the standard layouts.
 
+      An *option* is a set of changes of any keymap components that affect the
+      whole keyboard. They are usually not specific to a layout.
+
       Examples: switch modifiers keys, location of the compose key, etc.
       </dd>
     </dl>
