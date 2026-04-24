@@ -831,7 +831,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                  * and used for pending computations.
                  *
                  * NOTE: The RMLVO case is valid as long as multiple groups per
-                 * key is disallowed in a xkb_symbols section.
+                 * key is disallowed in an xkb_symbols section.
                  */
                 [GROUP_INDEX_NAME_LAST] = {
                     keymap->num_groups ? GROUP_LAST_INDEX_NAME : NULL,
@@ -849,7 +849,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
                  * and used for pending computations.
                  *
                  * NOTE: The RMLVO case is valid as long as multiple groups per
-                 * key is disallowed in a xkb_symbols section.
+                 * key is disallowed in an xkb_symbols section.
                  */
                 [GROUP_MASK_NAME_LAST] = {
                     keymap->num_groups ? GROUP_LAST_INDEX_NAME : NULL,

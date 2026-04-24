@@ -109,7 +109,7 @@ In this example:
    <dt><code>PACKAGE_NAME</code></dt>
    <dd>A *unique* identifier, typically the layout or package name.</dd>
    <dt><code>KCCGST_DIR</code></dt>
-   <dd>A XKB [KcCGST] component directory, such as `symbols`, `types`, etc.</dd>
+   <dd>An XKB [KcCGST] component directory, such as `symbols`, `types`, etc.</dd>
    </dl>
 
    @note If a custom *rules* file is required (e.g. to add an *option*), name it

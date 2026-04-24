@@ -44,7 +44,7 @@ void
 x11_atom_interner_round_trip(struct x11_atom_interner *interner);
 
 /*
- * Make a xkb_atom_t's from X atoms. The actual write is delayed until the next
+ * Make an xkb_atom_t's from X atoms. The actual write is delayed until the next
  * call to x11_atom_interner_round_trip() or when too many atoms are pending.
  */
 void
