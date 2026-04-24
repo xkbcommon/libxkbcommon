@@ -68,7 +68,7 @@ Layout database path is *hard-coded* in xserver.
 Multiple layout database paths can be used simultaneously, enabling user-space
 configuration.
 
-See @ref user-configuration "" for further information.
+See @ref custom-option "" for further information.
 </details>
 </td>
 </tr>

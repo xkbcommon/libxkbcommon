@@ -18,7 +18,7 @@ layouts and a fair set of <!--!
 ## Quick Guide
 
 - [Introduction to XKB][XKB]: to learn the essentials of XKB.
-- [User-configuration](doc/user-configuration.md): instructions to add
+- [Custom configuration](doc/custom-configuration.md): instructions to add
   a *custom layout* or option.
 - [Keymap format](doc/keymap-text-format-v1-v2.md): keymap components and keymap
   text syntax documentation.
