@@ -136,6 +136,8 @@ class Invocation(RMLVO, metaclass=ABCMeta):
             layout += f"+{self.option}"
         (output_dir / self.model).mkdir(exist_ok=True)
         keymap_file = output_dir / self.model / layout
+        # Handle subdirs
+        keymap_file.parent.mkdir(parents=True, exist_ok=True)
         if compress:
             keymap_file = keymap_file.with_suffix(".gz")
             with gzip.open(keymap_file, "wb", compresslevel=compress) as fd:
