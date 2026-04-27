@@ -14,10 +14,12 @@ import sys
 import xml.etree.ElementTree as ET
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
+from enum import StrEnum, auto, unique
 from functools import partial
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
+    Any,
     BinaryIO,
     ClassVar,
     Iterable,
@@ -29,6 +31,11 @@ from typing import (
     TypeVar,
     cast,
 )
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 # TODO: import unconditionally Self from typing once we raise Python requirement to 3.11+
 if TYPE_CHECKING:
@@ -549,6 +556,85 @@ class Registry:
         return count, iter_combos()
 
 
+class Introspection:
+    """
+    Enable to list symbols files from an xkbcommon YAML introspection file
+    """
+
+    @unique
+    class SectionFlag(StrEnum):
+        DEFAULT = auto()
+        PARTIAL = auto()
+        HIDDEN = auto()
+        ALPHANUMERIC = auto()
+        MODIFIERS = auto()
+        KEYPAD = auto()
+        FN = auto()
+        ALTGR = auto()
+
+        @classmethod
+        def parse(cls, raw: str) -> Self:
+            for f in cls:
+                if raw == f:
+                    return f
+            raise ValueError(raw)
+
+    @dataclass
+    class Section:
+        root: Path
+        file: Path
+        name: str
+        flags: tuple[Introspection.SectionFlag]
+
+        @property
+        def file_ref(self) -> str:
+            if self.name:
+                return f"{self.file}({self.name})"
+            else:
+                return str(self.file)
+
+        @classmethod
+        def parse_path(cls, path: Path) -> Path:
+            file = path
+            path = path.parent
+            while path.name != "symbols":
+                path = path.parent
+            return path.parent, file.relative_to(path)
+
+        @classmethod
+        def parse(cls, path: Path, raw: Any) -> Self:
+            flags = tuple(map(Introspection.SectionFlag.parse, raw["flags"]))
+            root, file = cls.parse_path(path)
+            return cls(root=root, file=file, name=raw["section"], flags=flags)
+
+        @classmethod
+        def parse_all(cls, doc: Any) -> Iterable[Self]:
+            for s in doc["sections"]:
+                if s["type"] == "symbols":
+                    yield cls.parse(Path(doc["path"]), s)
+
+    @classmethod
+    def _parse(cls, path: Path) -> Iterable[Introspection.Section]:
+        with path.open("rt", encoding="utf-8") as fd:
+            docs = tuple(yaml.safe_load_all(fd))
+        yield from map(cls.Section.parse_all, docs)
+
+    @classmethod
+    def parse(
+        cls,
+        paths: Sequence[Path],
+        tool: type[Invocation],
+    ) -> tuple[int, Iterator[Invocation]]:
+        symbols = tuple(
+            itertools.chain.from_iterable(
+                itertools.chain.from_iterable(cls._parse(p) for p in paths)
+            )
+        )
+        count = len(symbols)
+
+        return count, (tool.from_rmlvo(layout=s.file_ref) for s in symbols)
+
+
 T = TypeVar("T")
 
 
@@ -597,6 +683,14 @@ def main() -> NoReturn:
         type=Path,
         help="XKB root directory",
     )
+
+    if yaml:
+        parser.add_argument(
+            "--from-introspection",
+            action="store_true",
+            help="Interpret input files as YAML instrospection files instead of XML registry files",
+        )
+
     DEFAULT_TOOL = "xkbcommon"
     tools: dict[str, type[Invocation]] = {
         DEFAULT_TOOL: XkbcommonInvocation,
@@ -672,30 +766,38 @@ def main() -> NoReturn:
     variant: str | None = None if args.variant == WILDCARD else args.variant
     option: str | None = None if args.option == WILDCARD else args.option
 
-    if not args.paths:
-        # If there is no given registry, fallback to the given rules,
-        # else fallback to the default rules.
-        path = xkb_root / "rules" / (rules or RMLVO.DEFAULT_RULES)
-        paths = (path.with_suffix(f"{path.suffix}.xml"),)
+    if yaml and args.from_introspection:
+        paths = args.paths
+        count, iter_combos = Introspection.parse(paths=paths, tool=tool)
     else:
-        paths = tuple(Registry.parse_path(xkb_root, p) for p in args.paths)
+        if not args.paths:
+            # If there is no given registry, fallback to the given rules,
+            # else fallback to the default rules.
+            path = xkb_root / "rules" / (rules or RMLVO.DEFAULT_RULES)
+            paths = (path.with_suffix(f"{path.suffix}.xml"),)
+        else:
+            paths = tuple(Registry.parse_path(xkb_root, p) for p in args.paths)
+
+        if args.no_iterations:
+            combos = (
+                tool.from_rmlvo(
+                    rules=rules,
+                    model=model,
+                    layout=layout,
+                    variant=variant,
+                    option=option,
+                ),
+            )
+            count = len(combos)
+            iter_combos = iter(combos)
+        else:
+            count, iter_combos = Registry.parse(
+                paths, tool, rules, model, layout, variant, option
+            )
 
     # This need to be valid YAML. Currently unused, so left as comments
     print("# xkb root:", json.dumps(str(xkb_root)), file=sys.stderr)
     print("# paths:", json.dumps(tuple(map(str, paths))), file=sys.stderr)
-
-    if args.no_iterations:
-        combos = (
-            tool.from_rmlvo(
-                rules=rules, model=model, layout=layout, variant=variant, option=option
-            ),
-        )
-        count = len(combos)
-        iter_combos = iter(combos)
-    else:
-        count, iter_combos = Registry.parse(
-            paths, tool, rules, model, layout, variant, option
-        )
 
     failed = tool.run_all(
         xkb_root=xkb_root,
