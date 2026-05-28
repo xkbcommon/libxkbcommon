@@ -452,7 +452,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
                         xkb_file_type_to_string(xkb_file->file_type), stmt->file);
                 FreeXkbFile(xkb_file);
                 xkb_file = NULL;
-            } else if (stmt->map || (xkb_file->flags && MAP_IS_DEFAULT)) {
+            } else if (stmt->map || (xkb_file->flags & MAP_IS_DEFAULT)) {
                 /*
                  * Exact match: explicit map name or explicit default map.
                  * Lookup stops here.
