@@ -4,9 +4,9 @@ libxkbcommon [1.13.2] – 2026-05-30
 [1.13.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.2
 
 
-# API
+## API
 
-## New
+### New
 
 - Updated keysyms from latest [xorgproto] \(commit: `fcb7e9a1a0b593a44740d83b0babddd331fea830`):
 
@@ -31,22 +31,22 @@ libxkbcommon [1.13.2] – 2026-05-30
   [xorgproto-112]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/112
 - Added keysyms UTF translations for numeric phone keys `XF86Numeric[0-9]`.
 
-## Fixes
+### Fixes
 
 - Fixed include statement of default section, possibly broken in some custom configurations.
 
 
-# Tools
+## Tools
 
-## New
+### New
 
 - Added new tool `xkbcli info` to print information about libxkbcommon configuration,
   for debugging purposes.
 
 
-# Build system
+## Build system
 
-## Breaking changes
+### Breaking changes
 
 - Raised minimal meson version requirement to 1.4.0. ([#954](https://github.com/xkbcommon/libxkbcommon/issues/954))
 
