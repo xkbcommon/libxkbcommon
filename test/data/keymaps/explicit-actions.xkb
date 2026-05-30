@@ -234,7 +234,7 @@ xkb_compatibility "(unnamed)" {
 		useModMapMods=level1;
 		action= SetMods(modifiers=LevelFive,clearLocks);
 	};
-	interpret Mode_switch+AnyOfOrNone(all) {
+	interpret ISO_Group_Shift+AnyOfOrNone(all) {
 		virtualModifier= AltGr;
 		useModMapMods=level1;
 		action= SetGroup(group=+1);

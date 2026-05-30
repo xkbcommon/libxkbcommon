@@ -87,6 +87,7 @@ ambiguous_icase_ks_names[] = {
     { XKB_KEY_udiaeresis, 2, { "Udiaeresis", "udiaeresis" } },
     { XKB_KEY_yacute, 2, { "Yacute", "yacute" } },
     { XKB_KEY_thorn, 3, { "THORN", "Thorn", "thorn" } },
+    { XKB_KEY_ssharp, 2, { "SSHARP", "ssharp" } },
     { XKB_KEY_ydiaeresis, 2, { "Ydiaeresis", "ydiaeresis" } },
     { XKB_KEY_aogonek, 2, { "Aogonek", "aogonek" } },
     { XKB_KEY_lstroke, 2, { "Lstroke", "lstroke" } },
