@@ -216,7 +216,7 @@ if configh_data.get('HAVE_UNISTD_H', 0) == 1 and configh_data.get('HAVE_DIRENT_H
 else
     has_extensions_directories = false
 endif
-if cc.links('int main(){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
+if cc.links('int main(void){if(__builtin_expect(1<0,0)){}}', name: '__builtin_expect')
     configh_data.set('HAVE___BUILTIN_EXPECT', 1)
 endif
 if cc.has_header_symbol('unistd.h', 'eaccess', prefix: system_ext_define)
@@ -309,7 +309,7 @@ xkbcommon_map = meson.current_source_dir() / 'xkbcommon.map'
 # Supports -Wl,--version-script?
 meson_test_map = meson.current_source_dir() / 'test/meson_test.map'
 have_version_script = cc.links(
-    'int main() { return 0; }',
+    'int main(void) { return 0; }',
     args: f'-Wl,--version-script=@meson_test_map@',
     name: '-Wl,--version-script',
 )
