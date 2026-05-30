@@ -58,7 +58,10 @@ keymap is built.
 
 [Custom layouts](doc/custom-configuration.md)
 </dt>
-<dd>Quick start for adding a *custom layout* or option</dd>
+<dd>
+
+Quick start for adding a *custom layout* or option
+</dd>
 <dt>
 
 [Keymap format](doc/keymap-text-format-v1-v2.md)
@@ -68,7 +71,10 @@ keymap is built.
 
 [Tools](./README.md#tools)
 </dt>
-<dd>Introduction to the `xkbcli` application</dd>
+<dd>
+
+Introduction to the `xkbcli` application
+</dd>
 <dt>
 
 [FAQ](doc/faq.md)
