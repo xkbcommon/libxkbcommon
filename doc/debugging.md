@@ -33,6 +33,12 @@ xkbcommon provides multiple tools for debugging. Please consult the manual pages
 
 [compatibility interpretations]: @ref interpret-statements
 
+## Error index {#debugging-error-index}
+
+Each error has a unique identifier printed as `[XKB-nnn]` in the log.
+
+See the [error index](@ref error-index) for the documentation of each error.
+
 ## Testing a custom configuration {#testing-custom-config}
 
 @note An erroneous XKB configuration may make your keyboard unusable. Therefore

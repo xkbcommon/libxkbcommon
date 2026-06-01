@@ -176,6 +176,11 @@ log, expected/got results) and file a [bug report]!
 [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
 [bug report]: https://github.com/xkbcommon/libxkbcommon/issues/new
 
+### What are the `[XKB-nnn]` numbers in the log?
+
+They correspond to the *error identifiers*. See the [error index](@ref error-index) for
+the documentation of each error.
+
 ### How do I swap some keys?
 
 🚧 TODO
