@@ -211,6 +211,28 @@
   added: ALWAYS
   type: warning
   description: "Conflicting “map” entries in type definition"
+- id: "unrecognized-rmlvo-value"
+  code: 282
+  added: ALWAYS
+  type: error
+  description: "Unrecognized RMLVO value ignored"
+  details: |
+    The corresponding [RMLVO] value did not match any [rule][rules] and was ignored,
+    possibly resulting in an *incomplete layout*.
+
+    This may be:
+    - An issue with the [RMLVO] value not being in sync with the XKB database.
+      Updating the keyboard settings should fix it.
+    - An issue with the rules:
+      - If using *custom* XKB files, please check that you followed the
+        [corresponding instructions](@ref custom-configuration).
+        E.g. custom *options* requires a [dedicated entry](@ref custom-option).
+      - If using the *standard* rules, please file a bug report to the
+        [xkeyboard-config] project.
+
+    [RMLVO]: @ref RMLVO-intro
+    [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+    [rules]: @ref config-rules-def
 - id: "undefined-key-type"
   code: 286
   added: ALWAYS

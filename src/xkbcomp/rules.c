@@ -2040,24 +2040,28 @@ xkb_resolve_rules(struct xkb_context *ctx,
 
     struct matched_sval *mval = &matcher->rmlvo.model;
     if (!mval->matched && mval->sval.len > 0)
-        log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                "Unrecognized RMLVO model \"%.*s\" was ignored\n",
-                (unsigned int) mval->sval.len, mval->sval.start);
+        log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
+                "RMLVO mismatch: unrecognized model \"%.*s\" "
+                "was ignored in rules \"%s\"\n",
+                (unsigned int) mval->sval.len, mval->sval.start, rules);
     darray_foreach(mval, matcher->rmlvo.layouts)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                    "Unrecognized RMLVO layout \"%.*s\" was ignored\n",
-                    (unsigned int) mval->sval.len, mval->sval.start);
+            log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
+                    "RMLVO mismatch: unrecognized layout \"%.*s\" "
+                    "was ignored in rules \"%s\"\n",
+                    (unsigned int) mval->sval.len, mval->sval.start, rules);
     darray_foreach(mval, matcher->rmlvo.variants)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                    "Unrecognized RMLVO variant \"%.*s\" was ignored\n",
-                    (unsigned int) mval->sval.len, mval->sval.start);
+            log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
+                    "RMLVO mismatch: unrecognized variant \"%.*s\" "
+                    "was ignored in rules \"%s\"\n",
+                    (unsigned int) mval->sval.len, mval->sval.start, rules);
     darray_foreach(mval, matcher->rmlvo.options)
         if (!mval->matched && mval->sval.len > 0)
-            log_err(matcher->ctx, XKB_ERROR_CANNOT_RESOLVE_RMLVO,
-                    "Unrecognized RMLVO option \"%.*s\" was ignored\n",
-                    (unsigned int) mval->sval.len, mval->sval.start);
+            log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
+                    "RMLVO mismatch: unrecognized option \"%.*s\" "
+                    "was ignored in rules \"%s\"\n",
+                    (unsigned int) mval->sval.len, mval->sval.start, rules);
 
     /* Set the number of explicit layouts */
     if (out->symbols != NULL && explicit_layouts != NULL) {

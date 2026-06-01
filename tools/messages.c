@@ -44,6 +44,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_WARNING_CONFLICTING_KEY_TYPE_LEVEL_NAMES, "Conflicting key type level names"},
     {XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT, "Invalid set default statement"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY, "Conflicting key type map entry"},
+    {XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE, "Unrecognized rmlvo value"},
     {XKB_WARNING_UNDEFINED_KEY_TYPE, "Undefined key type"},
     {XKB_WARNING_DEPRECATED_KEYSYM, "Deprecated keysym"},
     {XKB_WARNING_DEPRECATED_KEYSYM_NAME, "Deprecated keysym name"},
