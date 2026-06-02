@@ -1034,7 +1034,8 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         CONTROL_FIELD_OVERLAY7,
         CONTROL_FIELD_OVERLAY8,
         CONTROL_FIELD_STICKY_KEYS,
-        CONTROL_FIELD_LATCH_TO_LOCK,
+        CONTROL_FIELD_STICKY_KEYS_NO_SIMULTANEOUS_KEYS,
+        CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK,
         CONTROL_FIELD_LATCH_SIMULTANEOUS,
         _NUM_CONTROL_FIELDS,
     };
@@ -1049,9 +1050,14 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         [CONTROL_FIELD_OVERLAY7] = "overlay7",
         [CONTROL_FIELD_OVERLAY8] = "overlay8",
         [CONTROL_FIELD_STICKY_KEYS] = "sticky-keys",
-        [CONTROL_FIELD_LATCH_TO_LOCK] = "latch-to-lock",
+        [CONTROL_FIELD_STICKY_KEYS_NO_SIMULTANEOUS_KEYS] = "sticky-keys-no-simultaneous",
+        [CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK] = "sticky-keys-latch-to-lock",
         [CONTROL_FIELD_LATCH_SIMULTANEOUS]= "latch-simultaneous",
     };
+
+    static_assert(CONTROL_FIELD_LATCH_SIMULTANEOUS == 11 &&
+                  CONTROL_FIELD_LATCH_SIMULTANEOUS + 1 == _NUM_CONTROL_FIELDS &&
+                  ARRAY_SIZE(fields) == _NUM_CONTROL_FIELDS, "");
 
     const char *start = raw;
     const char *s = start;
@@ -1137,7 +1143,12 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
                     options, XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS, disable
                 );
                 break;
-            case CONTROL_FIELD_LATCH_TO_LOCK:
+            case CONTROL_FIELD_STICKY_KEYS_NO_SIMULTANEOUS_KEYS:
+                ok = xkb_machine_options_update_a11y_flags(
+                    options, XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS, disable
+                );
+                break;
+            case CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK:
                 ok = xkb_machine_options_update_a11y_flags(
                     options, XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK, disable
                 );
@@ -1150,7 +1161,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
             default:
                 {} /* Label followed by declaration requires C23 */
                 static_assert(
-                    CONTROL_FIELD_LATCH_SIMULTANEOUS == 10 &&
+                    CONTROL_FIELD_LATCH_SIMULTANEOUS == 11 &&
                     CONTROL_FIELD_LATCH_SIMULTANEOUS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );
