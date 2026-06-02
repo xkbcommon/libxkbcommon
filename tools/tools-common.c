@@ -319,6 +319,10 @@ print_leds(struct xkb_state *state, bool verbose) {
         }
         count++;
     }
+
+    /* TODO: refactor when `xkb_state_serialize_leds()` is available */
+    if (verbose && !count)
+        printf("(none)");
 }
 
 static void
