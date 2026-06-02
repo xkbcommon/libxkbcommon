@@ -362,7 +362,8 @@ print_controls(struct xkb_state *state, bool verbose) {
     const enum xkb_keyboard_control_flags ctrls =
         xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS);
 
-    printf("0x%08x ", ctrls);
+    if (verbose)
+        printf("0x%08x ", ctrls);
 
     if (!ctrls) {
         printf("(none)");
@@ -507,6 +508,12 @@ tools_print_detailed_keycode_state(const char *prefix,
     printf(INDENT "LEDs: ");
     print_leds(state, true);
     printf("\n");
+
+    if (verbose) {
+        printf(INDENT "Controls: ");
+        print_controls(state, true);
+        printf("\n");
+    }
 }
 
 static void
