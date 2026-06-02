@@ -117,8 +117,8 @@ _xkbcli-list() {
 local -a interactive_common=(
 	'--help[print a help message and exit]'
 	'--verbose[enable verbose debugging output]'
-	'(-1 --uniline --multiline)--multiline[enable multiline event output]'
-	'(-1 --uniline --multiline)'{-1,--uniline}'[enable uniline event output]'
+	'(-* --multiline -1 --uniline)'{-\*,--multiline}'[enable multiline event output]'
+	'(-* --multiline -1 --uniline)'{-1,--uniline}'[enable uniline event output]'
 	'--consumed-mode=[select the consumed modifiers mode]:mode:(xkb gtk)'
 	'(--report-state-changes)--no-state-report[do not report changes to the state]'
 	'--format=[use the given keymap format]:xkb format:(v1 v2)'

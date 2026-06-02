@@ -575,7 +575,7 @@ usage(FILE *fp, char *progname)
                 "    --explicit-values    force serializing all values\n"
 #else
                 "    -1, --uniline        enable uniline event output\n"
-                "    --multiline          enable multiline event output\n"
+                "    -*, --multiline      enable multiline event output\n"
                 "    --consumed-mode={xkb|gtk}\n"
                 "                         select the consumed modifiers mode (default: xkb)\n"
                 "    --no-state-report    do not report changes to the state\n"

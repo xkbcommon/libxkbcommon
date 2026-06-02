@@ -995,7 +995,7 @@ usage(FILE *fp, char *progname)
                 "                       It implies --local-state.\n"
                 "                       If <FILE> is \"-\" or missing, then load from stdin.\n"
                 "    -1, --uniline      enable uniline event output\n"
-                "    --multiline        enable multiline event output\n"
+                "    -*, --multiline    enable multiline event output\n"
                 "    --consumed-mode={xkb|gtk}\n"
                 "                       select the consumed modifiers mode (default: xkb)\n"
                 "    --no-state-report  do not report changes to the state\n"
