@@ -442,7 +442,7 @@ usage(FILE *fp, char *progname)
             "    Enable verbose debugging output\n"
             " -1, --uniline\n"
             "    Enable uniline event output\n"
-            " --multiline\n"
+            " -*, --multiline\n"
             "    Enable uniline event output\n"
             " --short\n"
             "    Shorter event output\n"
