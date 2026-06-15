@@ -3118,6 +3118,33 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * - `::XKB_STATE_LAYOUT_LOCKED`  → `locked_layout`
  * - `::XKB_STATE_CONTROLS`       → `affect_controls`, `controls`
  *
+ * @note This struct uses a **size-based versioning** scheme to allow
+ * forward and compatibility between callers and the library:
+ * <dl>
+ * <dt>Older callers (smaller struct)</dt>
+ * <dd>
+ *   Trailing fields unknown to the caller default to zero in the library.
+ * </dd>
+ * <dt>Newer callers (larger struct)</dt>
+ * <dd>
+ *   Accepted only if all trailing bytes unknown to the library are zero.
+ * </dd>
+ * </dl>
+ *
+ * @pre The struct MUST be initialized with `memset()` before setting any
+ * fields:
+ * ```c
+ * struct xkb_state_components_update update;
+ * memset(&update, 0, sizeof(update));
+ * update.size = sizeof(update);
+ * update.components = …;
+ * ```
+ *
+ * @invariant #size MUST be explicitly set to
+ * `sizeof(struct xkb_state_components_update)`.
+ * @invariant All bytes of the struct, including padding, MUST remain zero
+ * except for *explicitly* assigned fields.
+ *
  * @since 1.14.0
  *
  * @sa `xkb_state_update`
@@ -3126,9 +3153,9 @@ struct xkb_state_components_update {
     /**
      * Size of this structure, for forward-compatibility.
      *
-     * Must be set to `sizeof(struct xkb_state_components_update)`.
-     * If the caller’s size exceeds the library’s (e.g. version mismatch),
-     * an error is returned unless all extra bytes are zero.
+     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
+     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
+     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
      */
     size_t size;
     /**
@@ -3213,6 +3240,11 @@ struct xkb_state_components_update {
      * @sa `xkb_keyboard_control_flags`
      */
     enum xkb_keyboard_control_flags controls;
+
+#if SIZE_MAX > UINT32_MAX
+    /** @private Reserved for ABI alignment. Must be zero. */
+    uint32_t _reserved;
+#endif
 };
 
 /**
@@ -3250,6 +3282,33 @@ enum xkb_layout_out_of_range_policy {
  * If `policy` is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
  * the target layout index; otherwise `redirect` is ignored.
  *
+ * @note This struct uses a **size-based versioning** scheme to allow
+ * forward and backward compatibility between callers and the library:
+ * <dl>
+ * <dt>Older callers (smaller struct)</dt>
+ * <dd>
+ *   Trailing fields unknown to the caller default to zero in the library.
+ * </dd>
+ * <dt>Newer callers (larger struct)</dt>
+ * <dd>
+ *   Accepted only if all trailing bytes unknown to the library are zero.
+ * </dd>
+ * </dl>
+ *
+ * @pre The struct MUST be initialized with `memset()` before setting any
+ * fields:
+ * ```c
+ * struct xkb_layout_policy_update update;
+ * memset(&update, 0, sizeof(update));
+ * update.size = sizeof(update);
+ * update.policy = …;
+ * ```
+ *
+ * @invariant #size MUST be explicitly set to
+ * `sizeof(struct xkb_layout_policy_update)`.
+ * @invariant All bytes of the struct, including padding, MUST remain zero
+ * except for *explicitly* assigned fields.
+ *
  * @since 1.14.0
  *
  * @sa `xkb_layout_out_of_range_policy`
@@ -3259,9 +3318,9 @@ struct xkb_layout_policy_update {
     /**
      * Size of this structure, for forward-compatibility.
      *
-     * Must be set to `sizeof(struct xkb_layout_policy_update)`.
-     * If the caller’s size exceeds the library’s (e.g. version mismatch),
-     * an error is returned unless all extra bytes are zero.
+     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
+     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
+     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
      */
     size_t size;
     /**
@@ -3291,6 +3350,32 @@ struct xkb_layout_policy_update {
  *
  * A `NULL` pointer means “not set / no change”.
  *
+ * @note This struct uses a **size-based versioning** scheme to allow
+ * forward and backward compatibility between callers and the library:
+ * <dl>
+ * <dt>Older callers (smaller struct)</dt>
+ * <dd>
+ *   Trailing fields unknown to the caller default to zero in the library.
+ * </dd>
+ * <dt>Newer callers (larger struct)</dt>
+ * <dd>
+ *   Accepted only if all trailing bytes unknown to the library are zero.
+ * </dd>
+ * </dl>
+ *
+ * @pre The struct MUST be initialized with `memset()` before setting any
+ * fields:
+ * ```c
+ * struct xkb_state_update update;
+ * memset(&update, 0, sizeof(update));
+ * update.size = sizeof(update);
+ * update.components = …;
+ * ```
+ *
+ * @invariant #size MUST be explicitly set to `sizeof(struct xkb_state_update)`.
+ * @invariant All bytes of the struct, including padding, MUST remain zero
+ * except for *explicitly* assigned fields.
+ *
  * @since 1.14.0
  *
  * @sa `xkb_state::xkb_state_update_synthetic()`
@@ -3302,9 +3387,9 @@ struct xkb_state_update {
     /**
      * Size of this structure, for forward-compatibility.
      *
-     * Must be set to `sizeof(struct xkb_state_update)`.
-     * If the caller’s size exceeds the library’s (e.g. version mismatch),
-     * an error is returned unless all extra bytes are zero.
+     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
+     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
+     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
      */
     size_t size;
     /**
