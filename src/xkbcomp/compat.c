@@ -768,8 +768,9 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
     ExprDef *ndx;
     bool ret;
 
-    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field, &ndx))
+    if (!ExprResolveLhs(info->ctx, stmt->name, &elem, &field, &ndx)) {
         ret = false;
+    }
     else if (elem && istreq(elem, "interpret")) {
         SymInterpInfo temp = {0};
         InitInterp(&temp);
@@ -797,7 +798,8 @@ HandleGlobalVar(CompatInfo *info, VarDef *stmt)
                                      &info->mods, elem, field, ndx,
                                      &stmt->value, stmt->merge) !=
                PARSER_FATAL_ERROR);
-    } else {
+    }
+    else {
         log_err(info->ctx, XKB_ERROR_UNKNOWN_DEFAULT_FIELD,
                 "Default defined for unknown field \"%s\"; Ignored\n", field);
         return !(info->keymap_info->strict &

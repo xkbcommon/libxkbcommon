@@ -304,6 +304,7 @@ typedef struct {
 } UnknownStatement;
 
 enum xkb_map_flags {
+    MAP_NO_FLAG = 0,
     MAP_IS_DEFAULT = (1 << 0),
     MAP_IS_PARTIAL = (1 << 1),
     MAP_IS_HIDDEN = (1 << 2),

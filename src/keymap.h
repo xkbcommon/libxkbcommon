@@ -139,6 +139,7 @@ enum xkb_action_flags {
  * @warning Encoding is different from X11.
  */
 enum xkb_action_controls {
+    CONTROL_NONE = 0,
     /* Public API */
     CONTROL_STICKY_KEYS = (1 << 0),
     CONTROL_OVERLAY1 = (1 << 1),
@@ -452,6 +453,7 @@ struct xkb_controls {
 };
 
 enum xkb_explicit_components {
+    EXPLICIT_NONE = 0,
     EXPLICIT_SYMBOLS = (1 << 0),
     EXPLICIT_INTERP = (1 << 1),
     EXPLICIT_TYPES = (1 << 2),

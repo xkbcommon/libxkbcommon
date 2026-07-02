@@ -47,7 +47,7 @@ static bool report_state_changes = true;
 static bool with_compose = false;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
 
-enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
+static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
 
 #define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)

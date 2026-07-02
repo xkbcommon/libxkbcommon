@@ -28,7 +28,7 @@
 #include <process.h>
 #else
 #include <unistd.h>
-#if defined(HAVE_TERMIOS)
+#ifdef HAVE_TERMIOS
 #include <termios.h>
 #endif
 #endif
@@ -174,9 +174,11 @@ print_modifiers_names(struct xkb_state *state,
     for (xkb_mod_index_t mod = 0; mod < xkb_keymap_num_mods(keymap); mod++) {
         if (xkb_state_mod_index_is_active(state, mod, components) <= 0)
             continue;
+        // NOLINTBEGIN(readability-suspicious-call-argument)
         const bool consumed =
             keycode != XKB_KEYCODE_INVALID &&
             xkb_state_mod_index_is_consumed2(state, keycode, mod, consumed_mode);
+        // NOLINTEND(readability-suspicious-call-argument)
         printf(" %s%s",
                (consumed ? "-" : ""), xkb_keymap_mod_get_name(keymap, mod));
     }

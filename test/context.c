@@ -18,16 +18,16 @@
 
 /* keeps a cache of all makedir/maketmpdir directories so we can free and
  * rmdir them in one go, see unmakedirs() */
-char *dirnames[64];
-int ndirs;
+static char *dirnames[64];
+static int ndirs;
 
 /* keeps a cache of all buffered env vars so we can restore
  * them in one go, see restore_env() */
-struct env {
+static struct env {
     char *key;
     char *value;
 } environment[64];
-int nenviron;
+static int nenviron;
 
 static void
 buffer_env(const char *key)

@@ -13,7 +13,7 @@
 #include "xkbcomp-priv.h"
 #include "parser-priv.h"
 
-const char DECIMAL_SEPARATOR = '.';
+static const char DECIMAL_SEPARATOR = '.';
 
 static bool
 number(struct scanner *s, int64_t *out, int *out_tok)
@@ -104,15 +104,15 @@ skip_more_whitespace_and_comments:
             if (scanner_chr(s, '\\')) {
                 uint8_t o;
                 const size_t start_pos = s->pos;
-                if      (scanner_chr(s, '\\')) scanner_buf_append(s, '\\');
-                else if (scanner_chr(s, '"'))  scanner_buf_append(s, '"');
-                else if (scanner_chr(s, 'n'))  scanner_buf_append(s, '\n');
-                else if (scanner_chr(s, 't'))  scanner_buf_append(s, '\t');
-                else if (scanner_chr(s, 'r'))  scanner_buf_append(s, '\r');
-                else if (scanner_chr(s, 'b'))  scanner_buf_append(s, '\b');
-                else if (scanner_chr(s, 'f'))  scanner_buf_append(s, '\f');
-                else if (scanner_chr(s, 'v'))  scanner_buf_append(s, '\v');
-                else if (scanner_chr(s, 'e'))  scanner_buf_append(s, '\x1b');
+                if      (scanner_chr(s, '\\')){scanner_buf_append(s, '\\');}
+                else if (scanner_chr(s, '"')) {scanner_buf_append(s, '"');}
+                else if (scanner_chr(s, 'n')) {scanner_buf_append(s, '\n');}
+                else if (scanner_chr(s, 't')) {scanner_buf_append(s, '\t');}
+                else if (scanner_chr(s, 'r')) {scanner_buf_append(s, '\r');}
+                else if (scanner_chr(s, 'b')) {scanner_buf_append(s, '\b');}
+                else if (scanner_chr(s, 'f')) {scanner_buf_append(s, '\f');}
+                else if (scanner_chr(s, 'v')) {scanner_buf_append(s, '\v');}
+                else if (scanner_chr(s, 'e')) {scanner_buf_append(s, '\x1b');}
                 else if (scanner_chr(s, 'u')) {
                     /* Unicode escape sequence */
                     uint32_t cp = 0;
@@ -131,8 +131,9 @@ skip_more_whitespace_and_comments:
                         /* Ignore. */
                     }
                 }
-                else if (scanner_oct(s, &o) && is_valid_char((uint32_t) o))
+                else if (scanner_oct(s, &o) && is_valid_char((uint32_t) o)) {
                     scanner_buf_append(s, (char) o);
+                }
                 else if (s->pos > start_pos) {
                     scanner_warn(s, XKB_WARNING_INVALID_ESCAPE_SEQUENCE,
                                  "invalid octal escape sequence \"%.*s\" "
