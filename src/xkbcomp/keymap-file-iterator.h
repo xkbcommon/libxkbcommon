@@ -11,6 +11,7 @@
 #include "src/scanner-utils.h"
 #include "src/utils.h"
 #include "ast.h"
+#include "xkbcomp-priv.h"
 
 XKB_EXPORT_PRIVATE const char *
 xkb_file_type_name(enum xkb_file_type type);
@@ -108,23 +109,31 @@ xkb_file_section_get_string(const struct xkb_file_section *section,
 
 /** Iterator over the sections of a keymap file */
 struct xkb_file_iterator {
-    enum xkb_file_iterator_flags flags;
-    bool finished;
+    struct xkb_context *ctx;
     /** File to analyze */
     const char *path;
     /** Section to analyze; if NULL then iter over all the sections */
     const char *map;
-    /** File type to check/filter */
-    enum xkb_file_type type;
-    /** Scanner of the keymap file */
-    struct scanner scanner;
-    /** Current section */
-    struct xkb_file_section section;
     /** Pending XKB file */
     XkbFile *pending_xkb_file;
     /** Pending component of the XKB file */
     XkbFile *pending_section;
-    struct xkb_context *ctx;
+
+    /** Scanner of the keymap file */
+    struct scanner scanner;
+    /** Current section */
+    struct xkb_file_section section;
+
+    /** Flags */
+    enum xkb_file_iterator_flags flags;
+    /** File type to check/filter */
+    enum xkb_file_type type;
+
+    /** Parser configuration */
+    struct parser_keymap_config parser_config;
+
+    /** Indicate whether the iterator reached the end */
+    bool finished;
 };
 
 /**

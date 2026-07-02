@@ -376,7 +376,9 @@ ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth)
 }
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
+ProcessIncludeFile(struct xkb_context *ctx,
+                   const struct parser_keymap_config *config,
+                   const IncludeStmt *stmt,
                    enum xkb_file_type file_type, char *path, size_t path_size)
 {
     /*
@@ -440,7 +442,7 @@ ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
     }
 
     while (file) {
-        xkb_file = XkbParseFile(ctx, file, stmt->file, stmt->map);
+        xkb_file = XkbParseFile(ctx, config, file, stmt->file, stmt->map);
         fclose(file);
 
         if (xkb_file) {

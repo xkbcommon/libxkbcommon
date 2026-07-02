@@ -658,6 +658,13 @@
   details: |
     The caller was compiled against an older version of the library and is
     missing fields that are mandatory in this version.
+- id: "unknown-section-flag"
+  code: 917
+  added: 1.14.0
+  type: error
+  description: "Invalid section flag"
+  details: |
+    See the list of valid [section flags](@ref section-flags-def).
 - id: "conflicting-key-fields"
   code: 935
   added: ALWAYS

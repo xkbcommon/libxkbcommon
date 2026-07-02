@@ -16,6 +16,7 @@
 
 #include "scanner-utils.h"
 #include "xkbcomp/ast.h"
+#include "xkbcomp/xkbcomp-priv.h"
 }
 
 %{
@@ -32,9 +33,13 @@ struct parser_param {
     struct xkb_context *ctx;
     struct scanner *scanner;
     XkbFile *rtrn;
+    struct parser_keymap_config config;
     bool more_maps;
 };
 
+#define parser_log_with_code(param, level, verbosity, log_msg_id, fmt, ...)   \
+    scanner_log_with_code((param)->scanner, level, verbosity, log_msg_id, fmt,\
+                          ##__VA_ARGS__)
 #define parser_err(param, error_id, fmt, ...) \
     scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
@@ -333,6 +338,21 @@ Flag            :       PARTIAL                 { $$ = MAP_IS_PARTIAL; }
                 |       KEYPAD_KEYS             { $$ = MAP_HAS_KEYPAD; }
                 |       FUNCTION_KEYS           { $$ = MAP_HAS_FN; }
                 |       ALTERNATE_GROUP         { $$ = MAP_IS_ALTGR; }
+                |       IDENT
+                        {
+                            const bool error = (param->config.strict & PARSER_NO_UNKNOWN_SECTION_FLAGS);
+                            parser_log_with_code(
+                                param, (error ? XKB_LOG_LEVEL_ERROR : XKB_LOG_LEVEL_WARNING),
+                                XKB_LOG_VERBOSITY_MINIMAL,
+                                XKB_ERROR_UNKNOWN_SECTION_FLAG,
+                                "Unknown section flag \"%.*s\"%s",
+                                (unsigned)$1.len, $1.start,
+                                (error ? "" : "; ignored")
+                            );
+                            if (error)
+                                YYABORT;
+                            $$ = 0;
+                        }
                 ;
 
 DeclList        :       DeclList Decl
@@ -1073,7 +1093,8 @@ MapName         :       STRING  { $$ = $1; }
 
 /* Parse a specific section */
 XkbFile *
-parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
+parse(struct xkb_context *ctx, const struct parser_keymap_config *config,
+      struct scanner *scanner, const char *map)
 {
     int ret;
     XkbFile *first = NULL;
@@ -1081,6 +1102,7 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
         .scanner = scanner,
         .ctx = ctx,
         .rtrn = NULL,
+        .config = *config,
         .more_maps = false,
     };
 
@@ -1133,13 +1155,16 @@ parse(struct xkb_context *ctx, struct scanner *scanner, const char *map)
 
 /* Parse the next section */
 bool
-parse_next(struct xkb_context *ctx, struct scanner *scanner, XkbFile **xkb_file)
+parse_next(struct xkb_context *ctx,
+           const struct parser_keymap_config *config,
+           struct scanner *scanner, XkbFile **xkb_file)
 {
     int ret;
     struct parser_param param = {
         .scanner = scanner,
         .ctx = ctx,
         .rtrn = NULL,
+        .config = *config,
         .more_maps = false,
     };
 

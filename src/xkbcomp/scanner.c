@@ -254,31 +254,35 @@ XkbParseStringInit(struct xkb_context *ctx, struct scanner *scanner,
 }
 
 XkbFile *
-XkbParseString(struct xkb_context *ctx, const char *string, size_t len,
+XkbParseString(struct xkb_context *ctx,
+               const struct parser_keymap_config *config,
+               const char *string, size_t len,
                const char *file_name, const char *map)
 {
     struct scanner scanner;
     if (!XkbParseStringInit(ctx, &scanner, string, len, file_name, map))
         return NULL;
 
-    return parse(ctx, &scanner, map);
+    return parse(ctx, config, &scanner, map);
 }
 
 bool
-XkbParseStringNext(struct xkb_context *ctx, struct scanner *scanner,
-                   const char *map, XkbFile **out)
+XkbParseStringNext(struct xkb_context *ctx,
+                   const struct parser_keymap_config *config,
+                   struct scanner *scanner, const char *map, XkbFile **out)
 {
     if (map) {
-        *out = parse(ctx, scanner, map);
+        *out = parse(ctx, config, scanner, map);
         return !!(*out);
     } else {
-        return parse_next(ctx, scanner, out);
+        return parse_next(ctx, config, scanner, out);
     }
 }
 
 XkbFile *
-XkbParseFile(struct xkb_context *ctx, FILE *file,
-             const char *file_name, const char *map)
+XkbParseFile(struct xkb_context *ctx,
+             const struct parser_keymap_config *config,
+             FILE *file, const char *file_name, const char *map)
 {
     bool ok;
     XkbFile *xkb_file;
@@ -293,7 +297,7 @@ XkbParseFile(struct xkb_context *ctx, FILE *file,
         return NULL;
     }
 
-    xkb_file = XkbParseString(ctx, string, size, file_name, map);
+    xkb_file = XkbParseString(ctx, config, string, size, file_name, map);
     unmap_file(string, size);
     return xkb_file;
 }

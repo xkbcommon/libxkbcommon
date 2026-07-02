@@ -682,12 +682,18 @@ HandleIncludeKeycodes(KeyNamesInfo *info, IncludeStmt *include, bool report)
     InitKeyNamesInfo(&included, info->keymap_info, 0 /* unused */);
     included.name = steal(&include->stmt);
 
+    const struct parser_keymap_config config = {
+        .format = info->keymap_info->keymap.format,
+        .strict = info->keymap_info->strict
+    };
+
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyNamesInfo next_incl;
         XkbFile *file;
 
         char path[PATH_MAX];
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_KEYCODES,
+
+        file = ProcessIncludeFile(info->ctx, &config, stmt, FILE_TYPE_KEYCODES,
                                   path, sizeof(path));
         if (!file) {
             info->errorCount += 10;
