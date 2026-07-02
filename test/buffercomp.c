@@ -253,6 +253,9 @@ test_optional_components(struct xkb_context *ctx, bool update_output_files)
 static void
 test_section_flags(void)
 {
+    static const char deprecated[] =
+        "warning: [XKB-021] (input string):4:29: deprecated section: \"(unnamed map)\"\n";
+
     static const char unknown_error[] =
         "error: [XKB-917] (input string):2:3: Unknown section flag \"foo\"\n"
         "error: [XKB-822] Failed to parse input xkb string\n";
@@ -278,26 +281,26 @@ test_section_flags(void)
                 "xkb_keymap {\n"
                 "  default partial hidden alphanumeric_keys \n"
                 "  modifier_keys keypad_keys function_keys alternate_group \n"
-                "  xkb_keycodes {};\n"
+                "  deprecated xkb_keycodes {};\n"
                 "};",
             .v1 = {
                 .strict = {
                     .error = false,
-                    .log = ""
+                    .log = deprecated
                 },
                 .lax = {
                     .error = false,
-                    .log = ""
+                    .log = deprecated
                 },
             },
             .v2 = {
                 .strict = {
                     .error = false,
-                    .log = ""
+                    .log = deprecated
                 },
                 .lax = {
                     .error = false,
-                    .log = ""
+                    .log = deprecated
                 },
             },
         },

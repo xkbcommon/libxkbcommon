@@ -28,6 +28,7 @@ alternate_group,        ALTERNATE_GROUP
 alternate,              ALTERNATE
 augment,                AUGMENT
 default,                DEFAULT
+deprecated,             DEPRECATED
 function_keys,          FUNCTION_KEYS
 group,                  GROUP
 hidden,                 HIDDEN

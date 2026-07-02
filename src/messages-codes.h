@@ -57,7 +57,9 @@ enum xkb_log_verbosity {
  * @name Codes of the log messages
  */
 enum xkb_message_code {
-    _XKB_LOG_MESSAGE_MIN_CODE = 34,
+    _XKB_LOG_MESSAGE_MIN_CODE = 21,
+    /** XKB section is deprecated */
+    XKB_WARNING_DEPRECATED_SECTION = 21,
     /** Warn on malformed number literals */
     XKB_ERROR_MALFORMED_NUMBER_LITERAL = 34,
     /** Conflicting “preserve” entries in a key type */

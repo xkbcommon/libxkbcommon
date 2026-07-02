@@ -19,6 +19,11 @@
 
 # TODO: fix missing detailed description, examples, resolution
 
+- id: "deprecated-section"
+  code: 21
+  added: 1.14.0
+  type: warning
+  description: "XKB section is deprecated"
 - id: "malformed-number-literal"
   code: 34
   added: ALWAYS

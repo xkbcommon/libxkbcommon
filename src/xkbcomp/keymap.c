@@ -873,7 +873,8 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
         } else {
             log_dbg(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Compiling %s \"%s\"\n",
-                    xkb_file_type_to_string(type), safe_map_name(files[type]));
+                    xkb_file_type_to_string(type),
+                    safe_map_name(files[type]->name));
         }
 
         /* Missing components are initialized with defaults */

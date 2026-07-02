@@ -40,6 +40,7 @@ struct parser_param {
 #define parser_log_with_code(param, level, verbosity, log_msg_id, fmt, ...)   \
     scanner_log_with_code((param)->scanner, level, verbosity, log_msg_id, fmt,\
                           ##__VA_ARGS__)
+
 #define parser_err(param, error_id, fmt, ...) \
     scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
@@ -163,6 +164,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
         KEYPAD_KEYS             75 "keypad_keys"
         FUNCTION_KEYS           76 "function_keys"
         ALTERNATE_GROUP         77 "alternate_group"
+        DEPRECATED              78 "deprecated"
 
 %right  EQUALS
 %left   PLUS MINUS
@@ -311,6 +313,11 @@ XkbMapConfig    :       OptFlags FileType OptMapName OBRACE
                             DeclList
                         CBRACE SEMI
                         {
+                            if ($1 & MAP_IS_DEPRECATED) {
+                                parser_warn(param, XKB_WARNING_DEPRECATED_SECTION,
+                                            "deprecated section: \"%s\"",
+                                            safe_map_name($3));
+                            }
                             $$ = XkbFileCreate($2, $3, $5.head, $1);
                         }
                 ;
@@ -338,6 +345,7 @@ Flag            :       PARTIAL                 { $$ = MAP_IS_PARTIAL; }
                 |       KEYPAD_KEYS             { $$ = MAP_HAS_KEYPAD; }
                 |       FUNCTION_KEYS           { $$ = MAP_HAS_FN; }
                 |       ALTERNATE_GROUP         { $$ = MAP_IS_ALTGR; }
+                |       DEPRECATED              { $$ = MAP_IS_DEPRECATED; }
                 |       IDENT
                         {
                             const bool error = (param->config.strict & PARSER_NO_UNKNOWN_SECTION_FLAGS);
@@ -1148,7 +1156,7 @@ parse(struct xkb_context *ctx, const struct parser_keymap_config *config,
                 XKB_WARNING_MISSING_DEFAULT_SECTION,
                 "No map in include statement, but \"%s\" contains several; "
                 "Using first defined map, \"%s\"\n",
-                scanner->file_name, safe_map_name(first));
+                scanner->file_name, safe_map_name(first->name));
 
     return first;
 }

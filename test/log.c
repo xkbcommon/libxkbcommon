@@ -166,6 +166,17 @@ test_keymaps(void)
                 "warning: [XKB-516] Type \"ONE_LEVEL\" has 1 levels, but <> has 2 levels; Ignoring extra symbols\n",
             .error = false
         },
+        /* Deprecated */
+        {
+            .input =
+                "default deprecated xkb_keymap {\n"
+                "  xkb_symbols {};\n"
+                "  deprecated xkb_types {};\n"
+                "};",
+            .log =
+                "warning: [XKB-021] (input string):3:26: deprecated section: \"(unnamed map)\"\n",
+            .error = false
+        },
         /* Invalid action fields */
         {
             .input =

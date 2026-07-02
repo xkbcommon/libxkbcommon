@@ -313,6 +313,7 @@ enum xkb_map_flags {
     MAP_HAS_KEYPAD = (1 << 5),
     MAP_HAS_FN = (1 << 6),
     MAP_IS_ALTGR = (1 << 7),
+    MAP_IS_DEPRECATED = (1 << 8),
 };
 
 typedef struct {
