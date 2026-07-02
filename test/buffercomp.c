@@ -163,6 +163,13 @@ test_component_syntax_error(struct xkb_context *ctx)
         "  xkb_compat {};"
         "  xkb_symbols {};"
         "};",
+        /*
+         * Syntax error, multiple keymaps
+         *
+         * If we allow multiple keymaps per file, then do re-enable the warning
+         * in `parser.y` about implicit default section for *all* file types.
+         */
+        "xkb_keymap \"1\" {};\nxkb_keymap \"2\" {};",
     };
 
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {

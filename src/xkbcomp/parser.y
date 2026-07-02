@@ -1151,11 +1151,15 @@ parse(struct xkb_context *ctx, const struct parser_keymap_config *config,
         return NULL;
     }
 
-    if (first)
+    /*
+     * Warn about implicit default section,
+     * but only if not a keymap: multiple keymaps per file not supported
+     */
+    if (first && first->file_type != FILE_TYPE_KEYMAP)
         log_vrb(ctx, XKB_LOG_VERBOSITY_DETAILED,
                 XKB_WARNING_MISSING_DEFAULT_SECTION,
-                "No map in include statement, but \"%s\" contains several; "
-                "Using first defined map, \"%s\"\n",
+                "No section name in include statement, but \"%s\" contains several; "
+                "Using first defined section, \"%s\"\n",
                 scanner->file_name, safe_map_name(first->name));
 
     return first;
