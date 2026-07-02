@@ -101,6 +101,7 @@ struct parser_param {
 #define parser_log_with_code(param, level, verbosity, log_msg_id, fmt, ...)   \
     scanner_log_with_code((param)->scanner, level, verbosity, log_msg_id, fmt,\
                           ##__VA_ARGS__)
+
 #define parser_err(param, error_id, fmt, ...) \
     scanner_err((param)->scanner, error_id, fmt, ##__VA_ARGS__)
 
@@ -152,7 +153,7 @@ resolve_keysym(struct parser_param *param, struct sval name, xkb_keysym_t *sym_r
 
 #define param_scanner param->scanner
 
-#line 149 "src/xkbcomp/parser.c"
+#line 150 "src/xkbcomp/parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -246,89 +247,90 @@ enum yysymbol_kind_t
   YYSYMBOL_KEYPAD_KEYS = 63,               /* "keypad_keys"  */
   YYSYMBOL_FUNCTION_KEYS = 64,             /* "function_keys"  */
   YYSYMBOL_ALTERNATE_GROUP = 65,           /* "alternate_group"  */
-  YYSYMBOL_YYACCEPT = 66,                  /* $accept  */
-  YYSYMBOL_XkbFile = 67,                   /* XkbFile  */
-  YYSYMBOL_XkbCompositeMap = 68,           /* XkbCompositeMap  */
-  YYSYMBOL_XkbCompositeType = 69,          /* XkbCompositeType  */
-  YYSYMBOL_XkbMapConfigList = 70,          /* XkbMapConfigList  */
-  YYSYMBOL_XkbMapConfig = 71,              /* XkbMapConfig  */
-  YYSYMBOL_FileType = 72,                  /* FileType  */
-  YYSYMBOL_OptFlags = 73,                  /* OptFlags  */
-  YYSYMBOL_Flags = 74,                     /* Flags  */
-  YYSYMBOL_Flag = 75,                      /* Flag  */
-  YYSYMBOL_DeclList = 76,                  /* DeclList  */
-  YYSYMBOL_Decl = 77,                      /* Decl  */
-  YYSYMBOL_VarDecl = 78,                   /* VarDecl  */
-  YYSYMBOL_KeyNameDecl = 79,               /* KeyNameDecl  */
-  YYSYMBOL_KeyAliasDecl = 80,              /* KeyAliasDecl  */
-  YYSYMBOL_VModDecl = 81,                  /* VModDecl  */
-  YYSYMBOL_VModDefList = 82,               /* VModDefList  */
-  YYSYMBOL_VModDef = 83,                   /* VModDef  */
-  YYSYMBOL_InterpretDecl = 84,             /* InterpretDecl  */
-  YYSYMBOL_InterpretMatch = 85,            /* InterpretMatch  */
-  YYSYMBOL_VarDeclList = 86,               /* VarDeclList  */
-  YYSYMBOL_KeyTypeDecl = 87,               /* KeyTypeDecl  */
-  YYSYMBOL_SymbolsDecl = 88,               /* SymbolsDecl  */
-  YYSYMBOL_OptSymbolsBody = 89,            /* OptSymbolsBody  */
-  YYSYMBOL_SymbolsBody = 90,               /* SymbolsBody  */
-  YYSYMBOL_SymbolsVarDecl = 91,            /* SymbolsVarDecl  */
-  YYSYMBOL_MultiKeySymOrActionList = 92,   /* MultiKeySymOrActionList  */
-  YYSYMBOL_NoSymbolOrActionList = 93,      /* NoSymbolOrActionList  */
-  YYSYMBOL_GroupCompatDecl = 94,           /* GroupCompatDecl  */
-  YYSYMBOL_ModMapDecl = 95,                /* ModMapDecl  */
-  YYSYMBOL_KeyOrKeySymList = 96,           /* KeyOrKeySymList  */
-  YYSYMBOL_KeyOrKeySym = 97,               /* KeyOrKeySym  */
-  YYSYMBOL_LedMapDecl = 98,                /* LedMapDecl  */
-  YYSYMBOL_LedNameDecl = 99,               /* LedNameDecl  */
-  YYSYMBOL_UnknownDecl = 100,              /* UnknownDecl  */
-  YYSYMBOL_UnknownCompoundStatementDecl = 101, /* UnknownCompoundStatementDecl  */
-  YYSYMBOL_ShapeDecl = 102,                /* ShapeDecl  */
-  YYSYMBOL_SectionDecl = 103,              /* SectionDecl  */
-  YYSYMBOL_SectionBody = 104,              /* SectionBody  */
-  YYSYMBOL_SectionBodyItem = 105,          /* SectionBodyItem  */
-  YYSYMBOL_RowBody = 106,                  /* RowBody  */
-  YYSYMBOL_RowBodyItem = 107,              /* RowBodyItem  */
-  YYSYMBOL_Keys = 108,                     /* Keys  */
-  YYSYMBOL_Key = 109,                      /* Key  */
-  YYSYMBOL_OverlayDecl = 110,              /* OverlayDecl  */
-  YYSYMBOL_OverlayKeyList = 111,           /* OverlayKeyList  */
-  YYSYMBOL_OverlayKey = 112,               /* OverlayKey  */
-  YYSYMBOL_OutlineList = 113,              /* OutlineList  */
-  YYSYMBOL_OutlineInList = 114,            /* OutlineInList  */
-  YYSYMBOL_CoordList = 115,                /* CoordList  */
-  YYSYMBOL_Coord = 116,                    /* Coord  */
-  YYSYMBOL_DoodadDecl = 117,               /* DoodadDecl  */
-  YYSYMBOL_DoodadType = 118,               /* DoodadType  */
-  YYSYMBOL_FieldSpec = 119,                /* FieldSpec  */
-  YYSYMBOL_Element = 120,                  /* Element  */
-  YYSYMBOL_OptMergeMode = 121,             /* OptMergeMode  */
-  YYSYMBOL_MergeMode = 122,                /* MergeMode  */
-  YYSYMBOL_ExprList = 123,                 /* ExprList  */
-  YYSYMBOL_Expr = 124,                     /* Expr  */
-  YYSYMBOL_Term = 125,                     /* Term  */
-  YYSYMBOL_MultiActionList = 126,          /* MultiActionList  */
-  YYSYMBOL_ActionList = 127,               /* ActionList  */
-  YYSYMBOL_NonEmptyActions = 128,          /* NonEmptyActions  */
-  YYSYMBOL_Actions = 129,                  /* Actions  */
-  YYSYMBOL_Action = 130,                   /* Action  */
-  YYSYMBOL_Lhs = 131,                      /* Lhs  */
-  YYSYMBOL_OptTerminal = 132,              /* OptTerminal  */
-  YYSYMBOL_Terminal = 133,                 /* Terminal  */
-  YYSYMBOL_MultiKeySymList = 134,          /* MultiKeySymList  */
-  YYSYMBOL_KeySymList = 135,               /* KeySymList  */
-  YYSYMBOL_NonEmptyKeySyms = 136,          /* NonEmptyKeySyms  */
-  YYSYMBOL_KeySyms = 137,                  /* KeySyms  */
-  YYSYMBOL_KeySym = 138,                   /* KeySym  */
-  YYSYMBOL_KeySymLit = 139,                /* KeySymLit  */
-  YYSYMBOL_SignedNumber = 140,             /* SignedNumber  */
-  YYSYMBOL_Number = 141,                   /* Number  */
-  YYSYMBOL_Float = 142,                    /* Float  */
-  YYSYMBOL_Integer = 143,                  /* Integer  */
-  YYSYMBOL_KeyCode = 144,                  /* KeyCode  */
-  YYSYMBOL_Ident = 145,                    /* Ident  */
-  YYSYMBOL_String = 146,                   /* String  */
-  YYSYMBOL_OptMapName = 147,               /* OptMapName  */
-  YYSYMBOL_MapName = 148                   /* MapName  */
+  YYSYMBOL_DEPRECATED = 66,                /* "deprecated"  */
+  YYSYMBOL_YYACCEPT = 67,                  /* $accept  */
+  YYSYMBOL_XkbFile = 68,                   /* XkbFile  */
+  YYSYMBOL_XkbCompositeMap = 69,           /* XkbCompositeMap  */
+  YYSYMBOL_XkbCompositeType = 70,          /* XkbCompositeType  */
+  YYSYMBOL_XkbMapConfigList = 71,          /* XkbMapConfigList  */
+  YYSYMBOL_XkbMapConfig = 72,              /* XkbMapConfig  */
+  YYSYMBOL_FileType = 73,                  /* FileType  */
+  YYSYMBOL_OptFlags = 74,                  /* OptFlags  */
+  YYSYMBOL_Flags = 75,                     /* Flags  */
+  YYSYMBOL_Flag = 76,                      /* Flag  */
+  YYSYMBOL_DeclList = 77,                  /* DeclList  */
+  YYSYMBOL_Decl = 78,                      /* Decl  */
+  YYSYMBOL_VarDecl = 79,                   /* VarDecl  */
+  YYSYMBOL_KeyNameDecl = 80,               /* KeyNameDecl  */
+  YYSYMBOL_KeyAliasDecl = 81,              /* KeyAliasDecl  */
+  YYSYMBOL_VModDecl = 82,                  /* VModDecl  */
+  YYSYMBOL_VModDefList = 83,               /* VModDefList  */
+  YYSYMBOL_VModDef = 84,                   /* VModDef  */
+  YYSYMBOL_InterpretDecl = 85,             /* InterpretDecl  */
+  YYSYMBOL_InterpretMatch = 86,            /* InterpretMatch  */
+  YYSYMBOL_VarDeclList = 87,               /* VarDeclList  */
+  YYSYMBOL_KeyTypeDecl = 88,               /* KeyTypeDecl  */
+  YYSYMBOL_SymbolsDecl = 89,               /* SymbolsDecl  */
+  YYSYMBOL_OptSymbolsBody = 90,            /* OptSymbolsBody  */
+  YYSYMBOL_SymbolsBody = 91,               /* SymbolsBody  */
+  YYSYMBOL_SymbolsVarDecl = 92,            /* SymbolsVarDecl  */
+  YYSYMBOL_MultiKeySymOrActionList = 93,   /* MultiKeySymOrActionList  */
+  YYSYMBOL_NoSymbolOrActionList = 94,      /* NoSymbolOrActionList  */
+  YYSYMBOL_GroupCompatDecl = 95,           /* GroupCompatDecl  */
+  YYSYMBOL_ModMapDecl = 96,                /* ModMapDecl  */
+  YYSYMBOL_KeyOrKeySymList = 97,           /* KeyOrKeySymList  */
+  YYSYMBOL_KeyOrKeySym = 98,               /* KeyOrKeySym  */
+  YYSYMBOL_LedMapDecl = 99,                /* LedMapDecl  */
+  YYSYMBOL_LedNameDecl = 100,              /* LedNameDecl  */
+  YYSYMBOL_UnknownDecl = 101,              /* UnknownDecl  */
+  YYSYMBOL_UnknownCompoundStatementDecl = 102, /* UnknownCompoundStatementDecl  */
+  YYSYMBOL_ShapeDecl = 103,                /* ShapeDecl  */
+  YYSYMBOL_SectionDecl = 104,              /* SectionDecl  */
+  YYSYMBOL_SectionBody = 105,              /* SectionBody  */
+  YYSYMBOL_SectionBodyItem = 106,          /* SectionBodyItem  */
+  YYSYMBOL_RowBody = 107,                  /* RowBody  */
+  YYSYMBOL_RowBodyItem = 108,              /* RowBodyItem  */
+  YYSYMBOL_Keys = 109,                     /* Keys  */
+  YYSYMBOL_Key = 110,                      /* Key  */
+  YYSYMBOL_OverlayDecl = 111,              /* OverlayDecl  */
+  YYSYMBOL_OverlayKeyList = 112,           /* OverlayKeyList  */
+  YYSYMBOL_OverlayKey = 113,               /* OverlayKey  */
+  YYSYMBOL_OutlineList = 114,              /* OutlineList  */
+  YYSYMBOL_OutlineInList = 115,            /* OutlineInList  */
+  YYSYMBOL_CoordList = 116,                /* CoordList  */
+  YYSYMBOL_Coord = 117,                    /* Coord  */
+  YYSYMBOL_DoodadDecl = 118,               /* DoodadDecl  */
+  YYSYMBOL_DoodadType = 119,               /* DoodadType  */
+  YYSYMBOL_FieldSpec = 120,                /* FieldSpec  */
+  YYSYMBOL_Element = 121,                  /* Element  */
+  YYSYMBOL_OptMergeMode = 122,             /* OptMergeMode  */
+  YYSYMBOL_MergeMode = 123,                /* MergeMode  */
+  YYSYMBOL_ExprList = 124,                 /* ExprList  */
+  YYSYMBOL_Expr = 125,                     /* Expr  */
+  YYSYMBOL_Term = 126,                     /* Term  */
+  YYSYMBOL_MultiActionList = 127,          /* MultiActionList  */
+  YYSYMBOL_ActionList = 128,               /* ActionList  */
+  YYSYMBOL_NonEmptyActions = 129,          /* NonEmptyActions  */
+  YYSYMBOL_Actions = 130,                  /* Actions  */
+  YYSYMBOL_Action = 131,                   /* Action  */
+  YYSYMBOL_Lhs = 132,                      /* Lhs  */
+  YYSYMBOL_OptTerminal = 133,              /* OptTerminal  */
+  YYSYMBOL_Terminal = 134,                 /* Terminal  */
+  YYSYMBOL_MultiKeySymList = 135,          /* MultiKeySymList  */
+  YYSYMBOL_KeySymList = 136,               /* KeySymList  */
+  YYSYMBOL_NonEmptyKeySyms = 137,          /* NonEmptyKeySyms  */
+  YYSYMBOL_KeySyms = 138,                  /* KeySyms  */
+  YYSYMBOL_KeySym = 139,                   /* KeySym  */
+  YYSYMBOL_KeySymLit = 140,                /* KeySymLit  */
+  YYSYMBOL_SignedNumber = 141,             /* SignedNumber  */
+  YYSYMBOL_Number = 142,                   /* Number  */
+  YYSYMBOL_Float = 143,                    /* Float  */
+  YYSYMBOL_Integer = 144,                  /* Integer  */
+  YYSYMBOL_KeyCode = 145,                  /* KeyCode  */
+  YYSYMBOL_Ident = 146,                    /* Ident  */
+  YYSYMBOL_String = 147,                   /* String  */
+  YYSYMBOL_OptMapName = 148,               /* OptMapName  */
+  YYSYMBOL_MapName = 149                   /* MapName  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -654,18 +656,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  17
+#define YYFINAL  18
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   928
+#define YYLAST   907
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  66
+#define YYNTOKENS  67
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  83
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  220
+#define YYNRULES  221
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  385
+#define YYNSTATES  386
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   257
@@ -689,7 +691,7 @@ static const yytype_int8 yytranslate[] =
       36,    37,    38,    39,    40,    41,    42,    43,    44,    45,
       46,    47,    48,    49,    50,    51,     2,     2,     2,     2,
       52,    53,    54,    55,    56,    57,     2,     2,     2,     2,
-      58,    59,    60,    61,    62,    63,    64,    65,     2,     2,
+      58,    59,    60,    61,    62,    63,    64,    65,    66,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -714,29 +716,29 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   273,   273,   275,   277,   281,   287,   288,   289,   295,
-     307,   310,   318,   319,   320,   321,   322,   325,   326,   329,
-     330,   333,   334,   335,   336,   337,   338,   339,   340,   341,
-     358,   373,   383,   386,   392,   397,   402,   407,   412,   417,
-     422,   427,   432,   437,   438,   439,   440,   442,   444,   451,
-     453,   455,   459,   463,   467,   471,   473,   477,   479,   483,
-     489,   491,   495,   507,   510,   516,   522,   523,   526,   528,
-     532,   533,   534,   535,   536,   551,   553,   571,   573,   595,
-     601,   603,   605,   608,   612,   616,   618,   622,   624,   628,
-     632,   634,   638,   647,   655,   657,   661,   665,   666,   669,
-     671,   673,   675,   677,   681,   682,   685,   686,   690,   691,
-     694,   696,   700,   704,   705,   708,   711,   713,   717,   719,
-     721,   725,   727,   731,   735,   739,   740,   741,   742,   745,
-     746,   749,   751,   753,   755,   757,   759,   761,   763,   765,
-     767,   769,   773,   774,   777,   778,   779,   780,   781,   793,
-     805,   807,   810,   812,   814,   816,   818,   820,   824,   826,
-     828,   830,   832,   834,   836,   838,   840,   844,   850,   852,
-     854,   858,   860,   864,   868,   870,   874,   878,   880,   882,
-     884,   888,   890,   893,   895,   897,   899,   903,   909,   911,
-     913,   917,   919,   926,   932,   944,   946,   958,   960,   964,
-     966,   975,   988,   989,   998,  1058,  1059,  1062,  1063,  1064,
-    1067,  1070,  1071,  1074,  1075,  1078,  1079,  1082,  1085,  1086,
-    1089
+       0,   275,   275,   277,   279,   283,   289,   290,   291,   297,
+     309,   312,   324,   325,   326,   327,   328,   331,   332,   335,
+     336,   339,   340,   341,   342,   343,   344,   345,   346,   347,
+     348,   365,   380,   390,   393,   399,   404,   409,   414,   419,
+     424,   429,   434,   439,   444,   445,   446,   447,   449,   451,
+     458,   460,   462,   466,   470,   474,   478,   480,   484,   486,
+     490,   496,   498,   502,   514,   517,   523,   529,   530,   533,
+     535,   539,   540,   541,   542,   543,   558,   560,   578,   580,
+     602,   608,   610,   612,   615,   619,   623,   625,   629,   631,
+     635,   639,   641,   645,   654,   662,   664,   668,   672,   673,
+     676,   678,   680,   682,   684,   688,   689,   692,   693,   697,
+     698,   701,   703,   707,   711,   712,   715,   718,   720,   724,
+     726,   728,   732,   734,   738,   742,   746,   747,   748,   749,
+     752,   753,   756,   758,   760,   762,   764,   766,   768,   770,
+     772,   774,   776,   780,   781,   784,   785,   786,   787,   788,
+     800,   812,   814,   817,   819,   821,   823,   825,   827,   831,
+     833,   835,   837,   839,   841,   843,   845,   847,   851,   857,
+     859,   861,   865,   867,   871,   875,   877,   881,   885,   887,
+     889,   891,   895,   897,   900,   902,   904,   906,   910,   916,
+     918,   920,   924,   926,   933,   939,   951,   953,   965,   967,
+     971,   973,   982,   995,   996,  1005,  1065,  1066,  1069,  1070,
+    1071,  1074,  1077,  1078,  1081,  1082,  1085,  1086,  1089,  1092,
+    1093,  1096
 };
 #endif
 
@@ -764,16 +766,16 @@ yysymbol_name (yysymbol_kind_t yysymbol)
   "decimal digit", "integer literal", "float literal", "identifier",
   "key name", "partial", "default", "hidden", "alphanumeric_keys",
   "modifier_keys", "keypad_keys", "function_keys", "alternate_group",
-  "$accept", "XkbFile", "XkbCompositeMap", "XkbCompositeType",
-  "XkbMapConfigList", "XkbMapConfig", "FileType", "OptFlags", "Flags",
-  "Flag", "DeclList", "Decl", "VarDecl", "KeyNameDecl", "KeyAliasDecl",
-  "VModDecl", "VModDefList", "VModDef", "InterpretDecl", "InterpretMatch",
-  "VarDeclList", "KeyTypeDecl", "SymbolsDecl", "OptSymbolsBody",
-  "SymbolsBody", "SymbolsVarDecl", "MultiKeySymOrActionList",
-  "NoSymbolOrActionList", "GroupCompatDecl", "ModMapDecl",
-  "KeyOrKeySymList", "KeyOrKeySym", "LedMapDecl", "LedNameDecl",
-  "UnknownDecl", "UnknownCompoundStatementDecl", "ShapeDecl",
-  "SectionDecl", "SectionBody", "SectionBodyItem", "RowBody",
+  "deprecated", "$accept", "XkbFile", "XkbCompositeMap",
+  "XkbCompositeType", "XkbMapConfigList", "XkbMapConfig", "FileType",
+  "OptFlags", "Flags", "Flag", "DeclList", "Decl", "VarDecl",
+  "KeyNameDecl", "KeyAliasDecl", "VModDecl", "VModDefList", "VModDef",
+  "InterpretDecl", "InterpretMatch", "VarDeclList", "KeyTypeDecl",
+  "SymbolsDecl", "OptSymbolsBody", "SymbolsBody", "SymbolsVarDecl",
+  "MultiKeySymOrActionList", "NoSymbolOrActionList", "GroupCompatDecl",
+  "ModMapDecl", "KeyOrKeySymList", "KeyOrKeySym", "LedMapDecl",
+  "LedNameDecl", "UnknownDecl", "UnknownCompoundStatementDecl",
+  "ShapeDecl", "SectionDecl", "SectionBody", "SectionBodyItem", "RowBody",
   "RowBodyItem", "Keys", "Key", "OverlayDecl", "OverlayKeyList",
   "OverlayKey", "OutlineList", "OutlineInList", "CoordList", "Coord",
   "DoodadDecl", "DoodadType", "FieldSpec", "Element", "OptMergeMode",
@@ -787,12 +789,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-281)
+#define YYPACT_NINF (-282)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-216)
+#define YYTABLE_NINF (-217)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -801,45 +803,45 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-       7,  -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,
-    -281,     6,  -281,  -281,   517,   524,  -281,  -281,  -281,  -281,
-    -281,  -281,  -281,  -281,  -281,  -281,   -42,   -42,  -281,  -281,
-     -23,  -281,    36,  -281,  -281,   849,    10,    74,  -281,   458,
-    -281,  -281,  -281,  -281,  -281,    81,  -281,    25,    34,  -281,
-    -281,   -27,    59,   172,  -281,    40,    82,   102,   -27,   -13,
-      59,  -281,    59,   120,  -281,  -281,  -281,   144,   -27,   324,
-     163,  -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,
-    -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,    59,    73,
-    -281,   175,   171,  -281,  -281,   147,  -281,   187,  -281,   186,
-    -281,  -281,  -281,  -281,  -281,   197,   206,  -281,   222,   213,
-    -281,  -281,   239,   237,   251,   247,   249,   252,   102,   243,
-    -281,  -281,   258,   271,  -281,  -281,  -281,   154,   261,   332,
-     869,   332,  -281,   -27,  -281,   332,  -281,  -281,   332,   597,
-     260,   332,    60,   332,  -281,    35,   461,   293,  -281,  -281,
-     332,  -281,  -281,   277,  -281,  -281,  -281,  -281,  -281,  -281,
-    -281,  -281,  -281,  -281,   332,   332,   825,   332,   332,   332,
-     -28,   228,  -281,  -281,  -281,   294,  -281,  -281,   287,   103,
-    -281,   433,   639,   654,   433,   478,   -27,   295,   288,  -281,
-    -281,   303,   -15,   299,   233,  -281,    13,  -281,  -281,   285,
-     696,   309,    96,    37,  -281,    45,  -281,   323,    59,   321,
-      59,  -281,  -281,   419,  -281,  -281,  -281,   332,   711,   372,
-    -281,   753,  -281,  -281,  -281,  -281,   331,    48,  -281,   418,
-    -281,  -281,   332,   332,   332,   332,   332,  -281,   332,   332,
-    -281,   315,  -281,   317,   337,   520,  -281,   347,   133,   146,
-    -281,  -281,   158,  -281,  -281,  -281,   343,   597,   290,  -281,
-    -281,   344,    60,  -281,   345,    56,   134,  -281,  -281,  -281,
-     356,  -281,   358,   -25,   364,   309,   377,   773,   375,   368,
-    -281,   386,   370,  -281,   373,   332,  -281,   869,  -281,    30,
-     433,   245,   245,  -281,  -281,   433,   266,  -281,  -281,  -281,
-    -281,    67,  -281,  -281,   540,  -281,   845,  -281,   161,  -281,
-    -281,  -281,   433,  -281,  -281,  -281,  -281,  -281,    96,  -281,
-    -281,  -281,  -281,   796,   433,   400,  -281,   227,  -281,   389,
-    -281,  -281,  -281,  -281,    58,  -281,  -281,   332,  -281,  -281,
-     208,   582,   170,   196,  -281,  -281,   180,  -281,  -281,  -281,
-     408,    89,   -20,   410,  -281,   424,   112,  -281,  -281,   433,
-    -281,  -281,  -281,  -281,  -281,  -281,  -281,  -281,   332,  -281,
-     117,  -281,  -281,   411,   425,   389,   128,   427,   -20,  -281,
-    -281,  -281,  -281,  -281,  -281
+       7,  -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,
+    -282,  -282,    10,  -282,  -282,   581,   465,  -282,  -282,  -282,
+    -282,  -282,  -282,  -282,  -282,  -282,  -282,   -20,   -20,  -282,
+    -282,   -24,  -282,    20,  -282,  -282,   836,    11,    -6,  -282,
+     297,  -282,  -282,  -282,  -282,  -282,    25,  -282,   290,    52,
+    -282,  -282,    35,    59,   172,  -282,    66,    94,    77,    35,
+     142,    59,  -282,    59,   113,  -282,  -282,  -282,   167,    35,
+     369,   163,  -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,
+    -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,    59,
+      73,  -282,   168,   162,  -282,  -282,   112,  -282,   184,  -282,
+     182,  -282,  -282,  -282,  -282,  -282,   186,   201,  -282,   202,
+     213,  -282,  -282,   238,   222,   248,   234,   237,   251,    77,
+     244,  -282,  -282,   258,   281,  -282,  -282,  -282,   115,   289,
+     377,   308,   377,  -282,    35,  -282,   377,  -282,  -282,   377,
+     600,   278,   377,    60,   377,  -282,    96,    26,   312,  -282,
+    -282,   377,  -282,  -282,   292,  -282,  -282,  -282,  -282,  -282,
+    -282,  -282,  -282,  -282,  -282,   377,   377,   828,   377,   377,
+     377,   -14,     2,  -282,  -282,  -282,   323,  -282,  -282,   317,
+     233,  -282,   228,   642,   657,   228,   481,    35,   329,   324,
+    -282,  -282,   338,   -30,   316,   305,  -282,   -27,  -282,  -282,
+     341,   699,   331,    43,    42,  -282,    45,  -282,   356,    59,
+     352,    59,  -282,  -282,   461,  -282,  -282,  -282,   377,   714,
+     414,  -282,   756,  -282,  -282,  -282,  -282,   351,    67,  -282,
+     596,  -282,  -282,   377,   377,   377,   377,   377,  -282,   377,
+     377,  -282,   355,  -282,   358,   366,   523,  -282,   368,   170,
+     196,  -282,  -282,   239,  -282,  -282,  -282,   370,   600,   332,
+    -282,  -282,   376,    60,  -282,   386,    92,   153,  -282,  -282,
+    -282,   393,  -282,   397,   -22,   400,   331,   419,   776,   417,
+     406,  -282,   428,   410,  -282,   412,   377,  -282,   308,  -282,
+      58,   228,   149,   149,  -282,  -282,   228,    40,  -282,  -282,
+    -282,  -282,   108,  -282,  -282,   543,  -282,   848,  -282,   161,
+    -282,  -282,  -282,   228,  -282,  -282,  -282,  -282,  -282,    43,
+    -282,  -282,  -282,  -282,   799,   228,   423,  -282,   227,  -282,
+     426,  -282,  -282,  -282,  -282,    95,  -282,  -282,   377,  -282,
+    -282,   208,   585,   242,   320,  -282,  -282,   180,  -282,  -282,
+    -282,   442,   128,   -35,   447,  -282,   462,   130,  -282,  -282,
+     228,  -282,  -282,  -282,  -282,  -282,  -282,  -282,  -282,   377,
+    -282,   131,  -282,  -282,   440,   459,   426,   139,   464,   -35,
+    -282,  -282,  -282,  -282,  -282,  -282
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -847,73 +849,73 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-      18,     4,    29,    21,    22,    23,    24,    25,    26,    27,
-      28,     0,     2,     3,     0,    17,    20,     1,     6,    12,
-      13,    15,    14,    16,     7,     8,   219,   219,    19,   220,
-       0,   218,     0,    10,    32,    18,   143,     0,     9,     0,
-     144,   146,   145,   147,   148,     0,    30,     0,   142,     5,
-      11,     0,   133,   132,   131,   134,     0,   135,   136,   137,
-     138,   139,   140,   141,   126,   127,   128,     0,     0,   215,
-       0,   216,    33,    35,    36,    31,    34,    37,    38,    40,
-      39,    41,    42,    46,    47,    43,    44,    45,     0,   177,
-     130,     0,   129,    48,   215,     0,    56,    57,   217,     0,
-     202,   200,   203,   204,   201,     0,    61,   199,     0,     0,
-     212,   211,     0,     0,     0,     0,     0,     0,     0,     0,
-     210,   186,     0,   181,   185,   184,   183,     0,     0,     0,
-       0,     0,    50,     0,    54,     0,    63,    63,     0,    67,
-       0,     0,     0,     0,    63,     0,     0,     0,    51,    63,
-       0,   214,   213,     0,    63,   133,   132,   134,   135,   136,
-     137,   138,   140,   141,     0,     0,     0,     0,     0,     0,
-     177,     0,   157,   174,   164,   162,   165,   129,   178,     0,
-      55,    58,     0,     0,    60,    82,     0,     0,    66,    69,
-      74,     0,   129,     0,     0,    87,     0,    86,    88,     0,
-       0,     0,     0,     0,   117,     0,   122,     0,   137,   139,
-       0,   100,   102,     0,    98,   103,   101,     0,     0,     0,
-      52,     0,   159,   162,   158,   175,     0,     0,   172,     0,
-     160,   161,   151,     0,     0,     0,     0,   179,     0,     0,
-      49,     0,    62,     0,   202,     0,   196,   201,     0,     0,
-     170,   169,     0,   190,   189,    73,     0,     0,     0,    53,
-      83,     0,     0,    90,     0,     0,     0,   208,   209,   207,
-       0,   206,     0,     0,     0,     0,     0,     0,     0,     0,
-      97,     0,     0,    92,     0,   151,   173,     0,   166,     0,
-     150,   153,   154,   152,   155,   156,     0,    64,    59,    81,
-     194,     0,   193,    79,     0,    77,     0,    75,     0,    65,
-      68,    71,    70,    84,    85,    89,   118,   205,     0,    94,
-     116,    95,   121,     0,   120,     0,   107,     0,   105,     0,
-      96,    91,    93,   124,     0,   171,   163,     0,   180,   195,
-       0,     0,     0,     0,   168,   167,     0,   197,   188,   187,
-       0,     0,     0,     0,   104,     0,     0,   114,   176,   149,
-     192,   191,    80,    78,    76,   198,   123,   119,   151,   110,
-       0,   109,    99,     0,     0,     0,     0,     0,     0,   115,
-     112,   113,   111,   106,   108
+      18,     4,    30,    21,    22,    23,    24,    25,    26,    27,
+      28,    29,     0,     2,     3,     0,    17,    20,     1,     6,
+      12,    13,    15,    14,    16,     7,     8,   220,   220,    19,
+     221,     0,   219,     0,    10,    33,    18,   144,     0,     9,
+       0,   145,   147,   146,   148,   149,     0,    31,     0,   143,
+       5,    11,     0,   134,   133,   132,   135,     0,   136,   137,
+     138,   139,   140,   141,   142,   127,   128,   129,     0,     0,
+     216,     0,   217,    34,    36,    37,    32,    35,    38,    39,
+      41,    40,    42,    43,    47,    48,    44,    45,    46,     0,
+     178,   131,     0,   130,    49,   216,     0,    57,    58,   218,
+       0,   203,   201,   204,   205,   202,     0,    62,   200,     0,
+       0,   213,   212,     0,     0,     0,     0,     0,     0,     0,
+       0,   211,   187,     0,   182,   186,   185,   184,     0,     0,
+       0,     0,     0,    51,     0,    55,     0,    64,    64,     0,
+      68,     0,     0,     0,     0,    64,     0,     0,     0,    52,
+      64,     0,   215,   214,     0,    64,   134,   133,   135,   136,
+     137,   138,   139,   141,   142,     0,     0,     0,     0,     0,
+       0,   178,     0,   158,   175,   165,   163,   166,   130,   179,
+       0,    56,    59,     0,     0,    61,    83,     0,     0,    67,
+      70,    75,     0,   130,     0,     0,    88,     0,    87,    89,
+       0,     0,     0,     0,     0,   118,     0,   123,     0,   138,
+     140,     0,   101,   103,     0,    99,   104,   102,     0,     0,
+       0,    53,     0,   160,   163,   159,   176,     0,     0,   173,
+       0,   161,   162,   152,     0,     0,     0,     0,   180,     0,
+       0,    50,     0,    63,     0,   203,     0,   197,   202,     0,
+       0,   171,   170,     0,   191,   190,    74,     0,     0,     0,
+      54,    84,     0,     0,    91,     0,     0,     0,   209,   210,
+     208,     0,   207,     0,     0,     0,     0,     0,     0,     0,
+       0,    98,     0,     0,    93,     0,   152,   174,     0,   167,
+       0,   151,   154,   155,   153,   156,   157,     0,    65,    60,
+      82,   195,     0,   194,    80,     0,    78,     0,    76,     0,
+      66,    69,    72,    71,    85,    86,    90,   119,   206,     0,
+      95,   117,    96,   122,     0,   121,     0,   108,     0,   106,
+       0,    97,    92,    94,   125,     0,   172,   164,     0,   181,
+     196,     0,     0,     0,     0,   169,   168,     0,   198,   189,
+     188,     0,     0,     0,     0,   105,     0,     0,   115,   177,
+     150,   193,   192,    81,    79,    77,   199,   124,   120,   152,
+     111,     0,   110,   100,     0,     0,     0,     0,     0,     0,
+     116,   113,   114,   112,   107,   109
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -281,  -281,  -281,  -281,  -281,   442,  -281,   448,  -281,   473,
-    -281,  -281,   -46,  -281,  -281,  -281,  -281,   367,  -281,  -281,
-      24,  -281,  -281,  -281,  -281,   248,   250,  -281,  -281,  -281,
-    -281,   253,   463,  -281,  -281,  -281,  -281,  -281,  -281,   300,
-    -281,   185,  -281,   136,  -281,  -281,   141,  -281,   256,  -197,
-     267,   471,  -281,   -47,  -281,  -281,  -281,  -280,    62,   203,
-     229,  -281,  -177,   230,  -182,   -36,  -281,   466,   246,  -281,
-     244,  -281,   494,  -183,   235,   289,  -281,   -45,  -281,   -38,
-     -24,   527,  -281
+    -282,  -282,  -282,  -282,  -282,   478,  -282,   479,  -282,   500,
+    -282,  -282,   -47,  -282,  -282,  -282,  -282,   384,  -282,  -282,
+       4,  -282,  -282,  -282,  -282,   261,   273,  -282,  -282,  -282,
+    -282,   275,   488,  -282,  -282,  -282,  -282,  -282,  -282,   325,
+    -282,   217,  -282,   171,  -282,  -282,   177,  -282,   282,  -198,
+     279,   509,  -282,   -48,  -282,  -282,  -282,  -281,    61,   247,
+     253,  -282,  -178,   252,  -183,   -37,  -282,   490,   265,  -282,
+     264,  -282,   524,  -184,   262,   313,  -282,   -44,  -282,   -39,
+     -25,   555,  -282
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-       0,    11,    12,    26,    35,    13,    27,    14,    15,    16,
-      36,    46,   242,    73,    74,    75,    95,    96,    76,   105,
-     182,    77,    78,   187,   188,   189,   190,   248,    79,    80,
-     196,   197,   212,    82,    83,    84,    85,    86,   213,   214,
-     327,   328,   370,   371,   215,   356,   357,   203,   204,   205,
-     206,   216,    88,   170,    90,    47,    48,   289,   290,   172,
-     249,   227,   173,   174,   228,   175,   122,   176,   252,   301,
-     253,   348,   198,   107,   270,   271,   124,   125,   153,   177,
-     126,    30,    31
+       0,    12,    13,    27,    36,    14,    28,    15,    16,    17,
+      37,    47,   243,    74,    75,    76,    96,    97,    77,   106,
+     183,    78,    79,   188,   189,   190,   191,   249,    80,    81,
+     197,   198,   213,    83,    84,    85,    86,    87,   214,   215,
+     328,   329,   371,   372,   216,   357,   358,   204,   205,   206,
+     207,   217,    89,   171,    91,    48,    49,   290,   291,   173,
+     250,   228,   174,   175,   229,   176,   123,   177,   253,   302,
+     254,   349,   199,   108,   271,   272,   125,   126,   154,   178,
+     127,    31,    32
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -921,168 +923,172 @@ static const yytype_int16 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      89,    72,   254,   251,   265,   334,    17,     1,   250,    92,
-      29,    91,   112,    97,   114,   232,   201,   129,    33,   130,
-     113,   368,    40,    41,    42,    43,    44,   -72,    99,    94,
-     119,    94,    71,   -72,    71,   115,   116,   369,   117,    98,
-     110,   111,    51,    52,    53,    54,    55,    56,    57,    58,
-      59,    60,    45,    61,    62,   261,    63,    64,    65,    66,
-      67,   262,   302,     2,   128,     3,     4,     5,     6,     7,
-       8,     9,    10,   147,   336,    68,   201,    34,   337,   272,
-     202,    69,    70,   178,    71,   273,    93,   274,   376,   100,
-     286,    94,    89,   275,    71,    97,   287,   108,   316,    89,
-     211,   192,   358,   191,   275,   335,   337,   207,    92,   339,
-      91,    98,   101,   102,   103,   340,   104,   195,   129,   226,
-     130,   254,   251,    49,   345,   349,   351,   250,   223,   223,
-      50,   367,   223,   223,   266,    89,    89,   275,   226,   109,
-     233,   234,   235,   236,    92,    92,    91,    91,   255,   267,
-     268,   269,   240,    89,   374,   110,   111,   361,   302,   377,
-     375,   183,    92,   302,    91,   378,    89,   211,   200,   118,
-     382,    89,  -125,   218,    89,    92,   337,    91,   221,   303,
-      92,   304,    91,    92,   115,    91,   278,   267,   268,   269,
-     100,   171,   305,   179,   306,   133,   134,   181,   226,   127,
-     184,   100,   346,   194,   307,   199,   308,   151,   152,   100,
-      89,   131,   219,   246,   102,   103,   363,   104,   306,   192,
-     132,   191,   365,   135,   101,   102,   103,   136,   104,   229,
-      89,   326,   300,   102,   103,   207,   104,   100,   137,    92,
-     226,    91,   364,   138,   308,   155,   156,    54,   157,   140,
-     158,   159,   160,   161,   325,    61,   162,   226,   163,   226,
-     360,   102,   103,   139,   104,   233,   234,   235,   236,   353,
-     233,   234,   235,   236,   237,   141,   226,    68,   142,   281,
-      89,   326,   260,    94,   235,   236,    71,   143,   144,    92,
-     145,    91,   148,   146,   226,   291,   292,   293,   294,   149,
-     295,   296,   154,   233,   234,   235,   236,   150,   155,   156,
-      54,   157,   338,   158,   159,   160,   161,   193,    61,   162,
-     312,   163,   233,   234,   235,   236,   220,   164,   165,   217,
-     238,   166,   239,   167,   263,   185,   257,   256,   324,   258,
-     168,   169,    98,   110,   111,   120,    94,   121,   259,    71,
-     155,   156,    54,   157,   202,   158,   159,   160,   161,   276,
-      61,   162,   277,   163,   297,  -182,   298,   222,   224,   164,
-     165,   230,   231,   166,   285,   167,    98,   110,   111,   120,
-    -140,   121,   168,   169,    98,   110,   111,   120,    94,   121,
-    -215,    71,   309,   313,   315,   155,   156,    54,   157,   359,
-     158,   159,   160,   161,   318,    61,   162,   319,   163,   233,
-     234,   235,   236,   321,   164,   165,   329,   330,   323,   332,
-     167,   283,   333,   233,   234,   235,   236,   168,   169,    98,
-     110,   111,   120,    94,   121,   331,    71,   155,   156,    54,
-     157,   352,   158,   159,   208,   161,   355,   209,   162,   210,
-      63,    64,    65,    66,   366,   233,   234,   235,   236,   372,
-     373,   279,   288,    19,    20,    21,    22,    23,   379,    68,
-     233,   234,   235,   236,   380,    94,   383,    38,    71,   155,
-     156,    54,   157,    39,   158,   159,   208,   161,    28,   209,
-     162,   210,    63,    64,    65,    66,   155,   156,    54,   157,
-     180,   158,   159,   160,   161,   310,    61,   244,   311,   163,
-      81,    68,   354,   280,   384,   314,   381,    94,    87,   245,
-      71,    18,    19,    20,    21,    22,    23,    24,    25,   320,
-     246,   102,   103,   342,   247,   123,   344,    71,   155,   156,
-      54,   157,   322,   158,   159,   160,   161,   106,    61,   244,
-     343,   163,   347,   350,    32,   317,     0,     0,   155,   156,
-      54,   157,   299,   158,   159,   160,   161,     0,    61,   244,
-       0,   163,   300,   102,   103,     0,   247,     0,     0,    71,
-       2,   341,     3,     4,     5,     6,     7,     8,     9,    10,
-       0,     0,   246,   102,   103,     0,   247,     0,     0,    71,
-     155,   156,    54,   157,     0,   158,   159,   160,   161,     0,
-      61,   244,     0,   163,     0,   155,   156,    54,   157,     0,
-     158,   159,   160,   161,   362,    61,   162,     0,   163,     0,
-       0,     0,     0,     0,   300,   102,   103,     0,   247,     0,
-       0,    71,   185,     0,     0,     0,     0,   186,     0,     0,
-       0,     0,     0,    94,     0,     0,    71,   155,   156,    54,
-     157,     0,   158,   159,   160,   161,     0,    61,   162,     0,
-     163,     0,   155,   156,    54,   157,     0,   158,   159,   160,
-     161,   241,    61,   162,     0,   163,     0,     0,     0,    68,
-       0,     0,     0,     0,     0,    94,   243,     0,    71,     0,
-       0,     0,     0,     0,    68,     0,     0,     0,     0,     0,
-      94,     0,     0,    71,   155,   156,    54,   157,     0,   158,
-     159,   160,   161,     0,    61,   162,     0,   163,     0,   155,
-     156,    54,   157,     0,   158,   159,   160,   161,   264,    61,
-     162,     0,   163,     0,     0,     0,    68,     0,     0,     0,
-       0,     0,    94,   282,     0,    71,     0,     0,     0,     0,
-       0,    68,     0,     0,     0,     0,     0,    94,     0,     0,
-      71,   155,   156,    54,   157,     0,   158,   159,   160,   161,
-       0,    61,   162,     0,   163,     0,     0,     0,     0,     0,
-       0,   155,   156,    54,   157,   284,   158,   159,   160,   161,
-     325,    61,   162,    68,   163,     0,     0,     0,     0,    94,
-       0,     0,    71,     0,   155,   156,    54,   157,     0,   158,
-     159,   160,   161,    68,    61,   162,     0,   163,     0,    94,
-       0,     0,    71,     0,     0,     0,     0,     0,   225,     0,
-       0,   202,     0,   155,   156,    54,   157,     0,   158,   159,
-     160,   161,    94,    61,   162,    71,   163,     0,     0,     0,
-       0,     0,     0,   155,   156,    54,   157,   225,   158,   159,
-     160,   161,     0,    61,   162,     0,   163,     0,     0,     0,
-       0,    94,     0,     0,    71,     0,   166,   155,   156,    54,
-     157,    37,   158,   159,   160,   161,     0,    61,   162,     0,
-     163,    94,     0,     0,    71,     2,     0,     3,     4,     5,
-       6,     7,     8,     9,    10,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    94,     0,     0,    71
+      90,    73,   255,   252,   266,   335,   369,     1,   251,    93,
+      18,    92,   -73,    98,   113,   262,   115,    34,   -73,   202,
+     114,   263,   370,    41,    42,    43,    44,    45,   100,   233,
+     120,   130,    30,   131,    95,   116,   117,    72,   118,   234,
+     235,   236,   237,    50,   156,   157,    55,   158,   238,   159,
+     160,   209,   162,    46,   210,   163,   211,    64,    65,    66,
+      67,    35,   303,     2,   129,     3,     4,     5,     6,     7,
+       8,     9,    10,    11,    51,   148,    69,   234,   235,   236,
+     237,   267,    95,   179,   273,    72,   339,   275,   377,   101,
+     274,    95,    90,   276,    72,    98,   268,   269,   270,    90,
+     212,   193,   337,   192,    94,   336,   338,   208,    93,   287,
+      92,    99,   102,   103,   104,   288,   105,   196,   130,   227,
+     131,   255,   252,   109,   346,   350,   352,   251,   224,   224,
+     111,   112,   224,   224,   317,    90,    90,   202,   227,   359,
+     276,   203,   184,   338,    93,    93,    92,    92,   256,   201,
+     340,   110,    95,    90,   219,    72,   341,   362,   303,   222,
+     134,   135,    93,   303,    92,  -126,    90,   212,   152,   153,
+     368,    90,   375,   378,    90,    93,   276,    92,   376,   379,
+      93,   383,    92,    93,   116,    92,   279,   338,   236,   237,
+     101,   172,   119,   180,    99,   111,   112,   182,   227,   128,
+     185,   101,   347,   195,   132,   200,   268,   269,   270,   101,
+      90,   133,   220,   247,   103,   104,   304,   105,   305,   193,
+     136,   192,   366,   137,   102,   103,   104,   138,   105,   230,
+      90,   327,   301,   103,   104,   208,   105,   101,   139,    93,
+     227,    92,   306,   140,   307,   156,   157,    55,   158,   141,
+     159,   160,   161,   162,   326,    62,   163,   227,   164,   227,
+     361,   103,   104,   143,   105,   234,   235,   236,   237,   354,
+     234,   235,   236,   237,   142,   145,   227,    69,   146,   282,
+      90,   327,   241,    95,   144,   308,    72,   309,   364,    93,
+     307,    92,   147,   149,   227,   292,   293,   294,   295,   150,
+     296,   297,    20,    21,    22,    23,    24,    52,    53,    54,
+      55,    56,    57,    58,    59,    60,    61,   151,    62,    63,
+     313,    64,    65,    66,    67,    68,   156,   157,    55,   158,
+     155,   159,   160,   161,   162,   194,    62,   163,   325,   164,
+      69,   221,   234,   235,   236,   237,    70,    71,   218,    72,
+     156,   157,    55,   158,   261,   159,   160,   161,   162,   239,
+      62,   163,   240,   164,    95,   260,   365,    72,   309,   165,
+     166,   257,   258,   167,   259,   168,   203,   186,   234,   235,
+     236,   237,   169,   170,    99,   111,   112,   121,    95,   122,
+     264,    72,   277,   278,   286,   156,   157,    55,   158,   360,
+     159,   160,   161,   162,   298,    62,   163,   299,   164,  -141,
+    -183,  -216,   223,   225,   165,   166,   231,   232,   167,   310,
+     168,    99,   111,   112,   121,   314,   122,   169,   170,    99,
+     111,   112,   121,    95,   122,   316,    72,   156,   157,    55,
+     158,   319,   159,   160,   161,   162,   320,    62,   163,   322,
+     164,   234,   235,   236,   237,   331,   165,   166,   330,   333,
+     324,   334,   168,   284,   353,   234,   235,   236,   237,   169,
+     170,    99,   111,   112,   121,    95,   122,   332,    72,   156,
+     157,    55,   158,   356,   159,   160,   209,   162,   367,   210,
+     163,   211,    64,    65,    66,    67,   373,   380,   374,   156,
+     157,    55,   158,   280,   159,   160,   161,   162,   381,    62,
+     245,    69,   164,   384,    39,    40,    29,    95,   181,   311,
+      72,     2,   246,     3,     4,     5,     6,     7,     8,     9,
+      10,    11,   312,   247,   103,   104,    82,   248,   315,   281,
+      72,   156,   157,    55,   158,   355,   159,   160,   161,   162,
+     385,    62,   245,   382,   164,   323,   321,    88,   343,   345,
+     124,   156,   157,    55,   158,   300,   159,   160,   161,   162,
+     344,    62,   245,   348,   164,   301,   103,   104,   107,   248,
+     318,   351,    72,    33,   342,    19,    20,    21,    22,    23,
+      24,    25,    26,     0,     0,   247,   103,   104,     0,   248,
+       0,     0,    72,   156,   157,    55,   158,     0,   159,   160,
+     161,   162,     0,    62,   245,     0,   164,     0,   156,   157,
+      55,   158,     0,   159,   160,   161,   162,   363,    62,   163,
+       0,   164,     0,   234,   235,   236,   237,   301,   103,   104,
+     289,   248,     0,     0,    72,   186,     0,     0,     0,     0,
+     187,     0,     0,     0,     0,     0,    95,     0,     0,    72,
+     156,   157,    55,   158,     0,   159,   160,   161,   162,     0,
+      62,   163,     0,   164,     0,   156,   157,    55,   158,     0,
+     159,   160,   161,   162,   242,    62,   163,     0,   164,     0,
+       0,     0,    69,     0,     0,     0,     0,     0,    95,   244,
+       0,    72,     0,     0,     0,     0,     0,    69,     0,     0,
+       0,     0,     0,    95,     0,     0,    72,   156,   157,    55,
+     158,     0,   159,   160,   161,   162,     0,    62,   163,     0,
+     164,     0,   156,   157,    55,   158,     0,   159,   160,   161,
+     162,   265,    62,   163,     0,   164,     0,     0,     0,    69,
+       0,     0,     0,     0,     0,    95,   283,     0,    72,     0,
+       0,     0,     0,     0,    69,     0,     0,     0,     0,     0,
+      95,     0,     0,    72,   156,   157,    55,   158,     0,   159,
+     160,   161,   162,     0,    62,   163,     0,   164,     0,     0,
+       0,     0,     0,     0,   156,   157,    55,   158,   285,   159,
+     160,   161,   162,   326,    62,   163,    69,   164,     0,     0,
+       0,     0,    95,     0,     0,    72,     0,   156,   157,    55,
+     158,     0,   159,   160,   161,   162,    69,    62,   163,     0,
+     164,     0,    95,     0,     0,    72,     0,     0,     0,     0,
+       0,   226,     0,     0,   203,     0,   156,   157,    55,   158,
+       0,   159,   160,   161,   162,    95,    62,   163,    72,   164,
+       0,     0,     0,     0,     0,     0,   156,   157,    55,   158,
+     226,   159,   160,   161,   162,     0,    62,   163,    38,   164,
+       0,     0,     0,     0,    95,     0,     0,    72,     0,   167,
+       0,     0,     2,     0,     3,     4,     5,     6,     7,     8,
+       9,    10,    11,     0,    95,     0,     0,    72
 };
 
 static const yytype_int16 yycheck[] =
 {
-      47,    47,   185,   185,   201,   285,     0,     0,   185,    47,
-      52,    47,    57,    51,    59,    43,    41,    45,    41,    47,
-      58,    41,    12,    13,    14,    15,    16,    42,    52,    56,
-      68,    56,    59,    48,    59,    59,    60,    57,    62,    52,
-      53,    54,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    42,    28,    29,    42,    31,    32,    33,    34,
-      35,    48,   245,    56,    88,    58,    59,    60,    61,    62,
-      63,    64,    65,   118,    44,    50,    41,    41,    48,    42,
-      45,    56,    57,   130,    59,    48,    52,    42,   368,    29,
-      42,    56,   139,    48,    59,   133,    48,    57,    42,   146,
-     146,   139,    44,   139,    48,   287,    48,   145,   146,    42,
-     146,    52,    52,    53,    54,    48,    56,    57,    45,   166,
-      47,   304,   304,    49,   306,   308,   323,   304,   164,   165,
-      49,    42,   168,   169,    38,   182,   183,    48,   185,    57,
-      37,    38,    39,    40,   182,   183,   182,   183,   186,    53,
-      54,    55,    49,   200,    42,    53,    54,   340,   341,    42,
-      48,   137,   200,   346,   200,    48,   213,   213,   144,    25,
-      42,   218,    52,   149,   221,   213,    48,   213,   154,    46,
-     218,    48,   218,   221,   208,   221,   210,    53,    54,    55,
-      29,   129,    46,   131,    48,    48,    49,   135,   245,    36,
-     138,    29,    41,   141,    46,   143,    48,    53,    54,    29,
-     257,    36,   150,    52,    53,    54,    46,    56,    48,   257,
-      49,   257,    42,    36,    52,    53,    54,    41,    56,   167,
-     277,   277,    52,    53,    54,   273,    56,    29,    41,   277,
-     287,   277,    46,    37,    48,    18,    19,    20,    21,    36,
-      23,    24,    25,    26,    27,    28,    29,   304,    31,   306,
+      48,    48,   186,   186,   202,   286,    41,     0,   186,    48,
+       0,    48,    42,    52,    58,    42,    60,    41,    48,    41,
+      59,    48,    57,    12,    13,    14,    15,    16,    53,    43,
+      69,    45,    52,    47,    56,    60,    61,    59,    63,    37,
+      38,    39,    40,    49,    18,    19,    20,    21,    46,    23,
+      24,    25,    26,    42,    28,    29,    30,    31,    32,    33,
+      34,    41,   246,    56,    89,    58,    59,    60,    61,    62,
+      63,    64,    65,    66,    49,   119,    50,    37,    38,    39,
+      40,    38,    56,   131,    42,    59,    46,    42,   369,    29,
+      48,    56,   140,    48,    59,   134,    53,    54,    55,   147,
+     147,   140,    44,   140,    52,   288,    48,   146,   147,    42,
+     147,    52,    52,    53,    54,    48,    56,    57,    45,   167,
+      47,   305,   305,    57,   307,   309,   324,   305,   165,   166,
+      53,    54,   169,   170,    42,   183,   184,    41,   186,    44,
+      48,    45,   138,    48,   183,   184,   183,   184,   187,   145,
+      42,    57,    56,   201,   150,    59,    48,   341,   342,   155,
+      48,    49,   201,   347,   201,    52,   214,   214,    53,    54,
+      42,   219,    42,    42,   222,   214,    48,   214,    48,    48,
+     219,    42,   219,   222,   209,   222,   211,    48,    39,    40,
+      29,   130,    25,   132,    52,    53,    54,   136,   246,    36,
+     139,    29,    41,   142,    36,   144,    53,    54,    55,    29,
+     258,    49,   151,    52,    53,    54,    46,    56,    48,   258,
+      36,   258,    42,    41,    52,    53,    54,    41,    56,   168,
+     278,   278,    52,    53,    54,   274,    56,    29,    37,   278,
+     288,   278,    46,    41,    48,    18,    19,    20,    21,    36,
+      23,    24,    25,    26,    27,    28,    29,   305,    31,   307,
       52,    53,    54,    41,    56,    37,    38,    39,    40,    42,
-      37,    38,    39,    40,    46,    36,   323,    50,    41,   217,
-     327,   327,    49,    56,    39,    40,    59,    36,    41,   327,
-      41,   327,    49,    41,   341,   233,   234,   235,   236,    41,
-     238,   239,    41,    37,    38,    39,    40,    36,    18,    19,
-      20,    21,    46,    23,    24,    25,    26,    57,    28,    29,
-     258,    31,    37,    38,    39,    40,    49,    37,    38,    36,
-      36,    41,    45,    43,    49,    45,    48,    42,   276,    36,
-      50,    51,    52,    53,    54,    55,    56,    57,    49,    59,
-      18,    19,    20,    21,    45,    23,    24,    25,    26,    36,
-      28,    29,    41,    31,    49,    41,    49,   164,   165,    37,
-      38,   168,   169,    41,    43,    43,    52,    53,    54,    55,
-      43,    57,    50,    51,    52,    53,    54,    55,    56,    57,
-      43,    59,    49,    49,    49,    18,    19,    20,    21,   337,
-      23,    24,    25,    26,    48,    28,    29,    49,    31,    37,
-      38,    39,    40,    49,    37,    38,    41,    49,    41,    49,
-      43,    49,    49,    37,    38,    39,    40,    50,    51,    52,
+      37,    38,    39,    40,    36,    41,   324,    50,    41,   218,
+     328,   328,    49,    56,    36,    46,    59,    48,    46,   328,
+      48,   328,    41,    49,   342,   234,   235,   236,   237,    41,
+     239,   240,     5,     6,     7,     8,     9,    17,    18,    19,
+      20,    21,    22,    23,    24,    25,    26,    36,    28,    29,
+     259,    31,    32,    33,    34,    35,    18,    19,    20,    21,
+      41,    23,    24,    25,    26,    57,    28,    29,   277,    31,
+      50,    49,    37,    38,    39,    40,    56,    57,    36,    59,
+      18,    19,    20,    21,    49,    23,    24,    25,    26,    36,
+      28,    29,    45,    31,    56,    49,    46,    59,    48,    37,
+      38,    42,    48,    41,    36,    43,    45,    45,    37,    38,
+      39,    40,    50,    51,    52,    53,    54,    55,    56,    57,
+      49,    59,    36,    41,    43,    18,    19,    20,    21,   338,
+      23,    24,    25,    26,    49,    28,    29,    49,    31,    43,
+      41,    43,   165,   166,    37,    38,   169,   170,    41,    49,
+      43,    52,    53,    54,    55,    49,    57,    50,    51,    52,
       53,    54,    55,    56,    57,    49,    59,    18,    19,    20,
-      21,    41,    23,    24,    25,    26,    57,    28,    29,    30,
-      31,    32,    33,    34,    46,    37,    38,    39,    40,    49,
-      36,    42,    44,     5,     6,     7,     8,     9,    57,    50,
-      37,    38,    39,    40,    49,    56,    49,    35,    59,    18,
-      19,    20,    21,    35,    23,    24,    25,    26,    15,    28,
-      29,    30,    31,    32,    33,    34,    18,    19,    20,    21,
-     133,    23,    24,    25,    26,   257,    28,    29,   258,    31,
-      47,    50,   327,   213,   378,   262,   375,    56,    47,    41,
-      59,     4,     5,     6,     7,     8,     9,    10,    11,   273,
-      52,    53,    54,   304,    56,    69,   306,    59,    18,    19,
-      20,    21,   275,    23,    24,    25,    26,    53,    28,    29,
-     304,    31,   308,   318,    27,   266,    -1,    -1,    18,    19,
-      20,    21,    42,    23,    24,    25,    26,    -1,    28,    29,
-      -1,    31,    52,    53,    54,    -1,    56,    -1,    -1,    59,
-      56,    41,    58,    59,    60,    61,    62,    63,    64,    65,
-      -1,    -1,    52,    53,    54,    -1,    56,    -1,    -1,    59,
+      21,    48,    23,    24,    25,    26,    49,    28,    29,    49,
+      31,    37,    38,    39,    40,    49,    37,    38,    41,    49,
+      41,    49,    43,    49,    41,    37,    38,    39,    40,    50,
+      51,    52,    53,    54,    55,    56,    57,    49,    59,    18,
+      19,    20,    21,    57,    23,    24,    25,    26,    46,    28,
+      29,    30,    31,    32,    33,    34,    49,    57,    36,    18,
+      19,    20,    21,    42,    23,    24,    25,    26,    49,    28,
+      29,    50,    31,    49,    36,    36,    16,    56,   134,   258,
+      59,    56,    41,    58,    59,    60,    61,    62,    63,    64,
+      65,    66,   259,    52,    53,    54,    48,    56,   263,   214,
+      59,    18,    19,    20,    21,   328,    23,    24,    25,    26,
+     379,    28,    29,   376,    31,   276,   274,    48,   305,   307,
+      70,    18,    19,    20,    21,    42,    23,    24,    25,    26,
+     305,    28,    29,   309,    31,    52,    53,    54,    54,    56,
+     267,   319,    59,    28,    41,     4,     5,     6,     7,     8,
+       9,    10,    11,    -1,    -1,    52,    53,    54,    -1,    56,
+      -1,    -1,    59,    18,    19,    20,    21,    -1,    23,    24,
+      25,    26,    -1,    28,    29,    -1,    31,    -1,    18,    19,
+      20,    21,    -1,    23,    24,    25,    26,    42,    28,    29,
+      -1,    31,    -1,    37,    38,    39,    40,    52,    53,    54,
+      44,    56,    -1,    -1,    59,    45,    -1,    -1,    -1,    -1,
+      50,    -1,    -1,    -1,    -1,    -1,    56,    -1,    -1,    59,
       18,    19,    20,    21,    -1,    23,    24,    25,    26,    -1,
       28,    29,    -1,    31,    -1,    18,    19,    20,    21,    -1,
       23,    24,    25,    26,    42,    28,    29,    -1,    31,    -1,
-      -1,    -1,    -1,    -1,    52,    53,    54,    -1,    56,    -1,
-      -1,    59,    45,    -1,    -1,    -1,    -1,    50,    -1,    -1,
+      -1,    -1,    50,    -1,    -1,    -1,    -1,    -1,    56,    42,
+      -1,    59,    -1,    -1,    -1,    -1,    -1,    50,    -1,    -1,
       -1,    -1,    -1,    56,    -1,    -1,    59,    18,    19,    20,
       21,    -1,    23,    24,    25,    26,    -1,    28,    29,    -1,
       31,    -1,    18,    19,    20,    21,    -1,    23,    24,    25,
@@ -1090,27 +1096,19 @@ static const yytype_int16 yycheck[] =
       -1,    -1,    -1,    -1,    -1,    56,    42,    -1,    59,    -1,
       -1,    -1,    -1,    -1,    50,    -1,    -1,    -1,    -1,    -1,
       56,    -1,    -1,    59,    18,    19,    20,    21,    -1,    23,
-      24,    25,    26,    -1,    28,    29,    -1,    31,    -1,    18,
-      19,    20,    21,    -1,    23,    24,    25,    26,    42,    28,
-      29,    -1,    31,    -1,    -1,    -1,    50,    -1,    -1,    -1,
-      -1,    -1,    56,    42,    -1,    59,    -1,    -1,    -1,    -1,
-      -1,    50,    -1,    -1,    -1,    -1,    -1,    56,    -1,    -1,
-      59,    18,    19,    20,    21,    -1,    23,    24,    25,    26,
-      -1,    28,    29,    -1,    31,    -1,    -1,    -1,    -1,    -1,
-      -1,    18,    19,    20,    21,    42,    23,    24,    25,    26,
-      27,    28,    29,    50,    31,    -1,    -1,    -1,    -1,    56,
-      -1,    -1,    59,    -1,    18,    19,    20,    21,    -1,    23,
-      24,    25,    26,    50,    28,    29,    -1,    31,    -1,    56,
-      -1,    -1,    59,    -1,    -1,    -1,    -1,    -1,    42,    -1,
-      -1,    45,    -1,    18,    19,    20,    21,    -1,    23,    24,
-      25,    26,    56,    28,    29,    59,    31,    -1,    -1,    -1,
-      -1,    -1,    -1,    18,    19,    20,    21,    42,    23,    24,
-      25,    26,    -1,    28,    29,    -1,    31,    -1,    -1,    -1,
-      -1,    56,    -1,    -1,    59,    -1,    41,    18,    19,    20,
-      21,    42,    23,    24,    25,    26,    -1,    28,    29,    -1,
-      31,    56,    -1,    -1,    59,    56,    -1,    58,    59,    60,
-      61,    62,    63,    64,    65,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    56,    -1,    -1,    59
+      24,    25,    26,    -1,    28,    29,    -1,    31,    -1,    -1,
+      -1,    -1,    -1,    -1,    18,    19,    20,    21,    42,    23,
+      24,    25,    26,    27,    28,    29,    50,    31,    -1,    -1,
+      -1,    -1,    56,    -1,    -1,    59,    -1,    18,    19,    20,
+      21,    -1,    23,    24,    25,    26,    50,    28,    29,    -1,
+      31,    -1,    56,    -1,    -1,    59,    -1,    -1,    -1,    -1,
+      -1,    42,    -1,    -1,    45,    -1,    18,    19,    20,    21,
+      -1,    23,    24,    25,    26,    56,    28,    29,    59,    31,
+      -1,    -1,    -1,    -1,    -1,    -1,    18,    19,    20,    21,
+      42,    23,    24,    25,    26,    -1,    28,    29,    42,    31,
+      -1,    -1,    -1,    -1,    56,    -1,    -1,    59,    -1,    41,
+      -1,    -1,    56,    -1,    58,    59,    60,    61,    62,    63,
+      64,    65,    66,    -1,    56,    -1,    -1,    59
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -1118,72 +1116,72 @@ static const yytype_int16 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,     0,    56,    58,    59,    60,    61,    62,    63,    64,
-      65,    67,    68,    71,    73,    74,    75,     0,     4,     5,
-       6,     7,     8,     9,    10,    11,    69,    72,    75,    52,
-     147,   148,   147,    41,    41,    70,    76,    42,    71,    73,
-      12,    13,    14,    15,    16,    42,    77,   121,   122,    49,
-      49,    17,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    28,    29,    31,    32,    33,    34,    35,    50,    56,
-      57,    59,    78,    79,    80,    81,    84,    87,    88,    94,
-      95,    98,    99,   100,   101,   102,   103,   117,   118,   119,
-     120,   131,   145,    52,    56,    82,    83,   145,    52,   146,
-      29,    52,    53,    54,    56,    85,   138,   139,    57,    57,
-      53,    54,   143,   145,   143,   146,   146,   146,    25,   145,
-      55,    57,   132,   133,   142,   143,   146,    36,   146,    45,
-      47,    36,    49,    48,    49,    36,    41,    41,    37,    41,
-      36,    36,    41,    36,    41,    41,    41,   143,    49,    41,
-      36,    53,    54,   144,    41,    18,    19,    21,    23,    24,
-      25,    26,    29,    31,    37,    38,    41,    43,    50,    51,
-     119,   124,   125,   128,   129,   131,   133,   145,   119,   124,
-      83,   124,    86,    86,   124,    45,    50,    89,    90,    91,
-      92,   131,   145,    57,   124,    57,    96,    97,   138,   124,
-      86,    41,    45,   113,   114,   115,   116,   145,    25,    28,
-      30,    78,    98,   104,   105,   110,   117,    36,    86,   124,
-      49,    86,   125,   131,   125,    42,   119,   127,   130,   124,
-     125,   125,    43,    37,    38,    39,    40,    46,    36,    45,
-      49,    42,    78,    42,    29,    41,    52,    56,    93,   126,
-     128,   130,   134,   136,   139,   145,    42,    48,    36,    49,
-      49,    42,    48,    49,    42,   115,    38,    53,    54,    55,
-     140,   141,    42,    48,    42,    48,    36,    41,   146,    42,
-     105,   124,    42,    49,    42,    43,    42,    48,    44,   123,
-     124,   124,   124,   124,   124,   124,   124,    49,    49,    42,
-      52,   135,   139,    46,    48,    46,    48,    46,    48,    49,
-      91,    92,   124,    49,    97,    49,    42,   141,    48,    49,
-     114,    49,   116,    41,   124,    27,    78,   106,   107,    41,
-      49,    49,    49,    49,   123,   130,    44,    48,    46,    42,
-      48,    41,   126,   134,   129,   130,    41,   136,   137,   139,
-     140,   115,    41,    42,   107,    57,   111,   112,    44,   124,
-      52,   139,    42,    46,    46,    42,    46,    42,    41,    57,
-     108,   109,    49,    36,    42,    48,   123,    42,    48,    57,
-      49,   112,    42,    49,   109
+      65,    66,    68,    69,    72,    74,    75,    76,     0,     4,
+       5,     6,     7,     8,     9,    10,    11,    70,    73,    76,
+      52,   148,   149,   148,    41,    41,    71,    77,    42,    72,
+      74,    12,    13,    14,    15,    16,    42,    78,   122,   123,
+      49,    49,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    28,    29,    31,    32,    33,    34,    35,    50,
+      56,    57,    59,    79,    80,    81,    82,    85,    88,    89,
+      95,    96,    99,   100,   101,   102,   103,   104,   118,   119,
+     120,   121,   132,   146,    52,    56,    83,    84,   146,    52,
+     147,    29,    52,    53,    54,    56,    86,   139,   140,    57,
+      57,    53,    54,   144,   146,   144,   147,   147,   147,    25,
+     146,    55,    57,   133,   134,   143,   144,   147,    36,   147,
+      45,    47,    36,    49,    48,    49,    36,    41,    41,    37,
+      41,    36,    36,    41,    36,    41,    41,    41,   144,    49,
+      41,    36,    53,    54,   145,    41,    18,    19,    21,    23,
+      24,    25,    26,    29,    31,    37,    38,    41,    43,    50,
+      51,   120,   125,   126,   129,   130,   132,   134,   146,   120,
+     125,    84,   125,    87,    87,   125,    45,    50,    90,    91,
+      92,    93,   132,   146,    57,   125,    57,    97,    98,   139,
+     125,    87,    41,    45,   114,   115,   116,   117,   146,    25,
+      28,    30,    79,    99,   105,   106,   111,   118,    36,    87,
+     125,    49,    87,   126,   132,   126,    42,   120,   128,   131,
+     125,   126,   126,    43,    37,    38,    39,    40,    46,    36,
+      45,    49,    42,    79,    42,    29,    41,    52,    56,    94,
+     127,   129,   131,   135,   137,   140,   146,    42,    48,    36,
+      49,    49,    42,    48,    49,    42,   116,    38,    53,    54,
+      55,   141,   142,    42,    48,    42,    48,    36,    41,   147,
+      42,   106,   125,    42,    49,    42,    43,    42,    48,    44,
+     124,   125,   125,   125,   125,   125,   125,   125,    49,    49,
+      42,    52,   136,   140,    46,    48,    46,    48,    46,    48,
+      49,    92,    93,   125,    49,    98,    49,    42,   142,    48,
+      49,   115,    49,   117,    41,   125,    27,    79,   107,   108,
+      41,    49,    49,    49,    49,   124,   131,    44,    48,    46,
+      42,    48,    41,   127,   135,   130,   131,    41,   137,   138,
+     140,   141,   116,    41,    42,   108,    57,   112,   113,    44,
+     125,    52,   140,    42,    46,    46,    42,    46,    42,    41,
+      57,   109,   110,    49,    36,    42,    48,   124,    42,    48,
+      57,    49,   113,    42,    49,   110
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    66,    67,    67,    67,    68,    69,    69,    69,    70,
-      70,    71,    72,    72,    72,    72,    72,    73,    73,    74,
-      74,    75,    75,    75,    75,    75,    75,    75,    75,    75,
-      76,    76,    76,    77,    77,    77,    77,    77,    77,    77,
-      77,    77,    77,    77,    77,    77,    77,    77,    77,    78,
-      78,    78,    79,    80,    81,    82,    82,    83,    83,    84,
-      85,    85,    86,    86,    87,    88,    89,    89,    90,    90,
-      91,    91,    91,    91,    91,    92,    92,    92,    92,    92,
-      93,    93,    93,    94,    95,    96,    96,    97,    97,    98,
-      99,    99,   100,   101,   102,   102,   103,   104,   104,   105,
-     105,   105,   105,   105,   106,   106,   107,   107,   108,   108,
-     109,   109,   110,   111,   111,   112,   113,   113,   114,   114,
-     114,   115,   115,   116,   117,   118,   118,   118,   118,   119,
-     119,   120,   120,   120,   120,   120,   120,   120,   120,   120,
-     120,   120,   121,   121,   122,   122,   122,   122,   122,   123,
-     123,   123,   124,   124,   124,   124,   124,   124,   125,   125,
-     125,   125,   125,   125,   125,   125,   125,   126,   126,   126,
-     126,   127,   127,   128,   129,   129,   130,   131,   131,   131,
-     131,   132,   132,   133,   133,   133,   133,   134,   134,   134,
-     134,   135,   135,   135,   135,   136,   136,   137,   137,   138,
-     138,   139,   139,   139,   139,   140,   140,   141,   141,   141,
-     142,   143,   143,   144,   144,   145,   145,   146,   147,   147,
-     148
+       0,    67,    68,    68,    68,    69,    70,    70,    70,    71,
+      71,    72,    73,    73,    73,    73,    73,    74,    74,    75,
+      75,    76,    76,    76,    76,    76,    76,    76,    76,    76,
+      76,    77,    77,    77,    78,    78,    78,    78,    78,    78,
+      78,    78,    78,    78,    78,    78,    78,    78,    78,    78,
+      79,    79,    79,    80,    81,    82,    83,    83,    84,    84,
+      85,    86,    86,    87,    87,    88,    89,    90,    90,    91,
+      91,    92,    92,    92,    92,    92,    93,    93,    93,    93,
+      93,    94,    94,    94,    95,    96,    97,    97,    98,    98,
+      99,   100,   100,   101,   102,   103,   103,   104,   105,   105,
+     106,   106,   106,   106,   106,   107,   107,   108,   108,   109,
+     109,   110,   110,   111,   112,   112,   113,   114,   114,   115,
+     115,   115,   116,   116,   117,   118,   119,   119,   119,   119,
+     120,   120,   121,   121,   121,   121,   121,   121,   121,   121,
+     121,   121,   121,   122,   122,   123,   123,   123,   123,   123,
+     124,   124,   124,   125,   125,   125,   125,   125,   125,   126,
+     126,   126,   126,   126,   126,   126,   126,   126,   127,   127,
+     127,   127,   128,   128,   129,   130,   130,   131,   132,   132,
+     132,   132,   133,   133,   134,   134,   134,   134,   135,   135,
+     135,   135,   136,   136,   136,   136,   137,   137,   138,   138,
+     139,   139,   140,   140,   140,   140,   141,   141,   142,   142,
+     142,   143,   144,   144,   145,   145,   146,   146,   147,   148,
+     148,   149
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -1192,26 +1190,26 @@ static const yytype_int8 yyr2[] =
        0,     2,     1,     1,     1,     7,     1,     1,     1,     2,
        0,     7,     1,     1,     1,     1,     1,     1,     0,     2,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       2,     3,     0,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     4,
-       2,     3,     4,     5,     3,     3,     1,     1,     3,     6,
-       3,     1,     2,     0,     6,     6,     1,     0,     3,     1,
-       3,     3,     1,     2,     1,     3,     5,     3,     5,     3,
-       4,     2,     0,     5,     6,     3,     1,     1,     1,     6,
-       5,     6,     5,     6,     6,     6,     6,     2,     1,     5,
-       1,     1,     1,     1,     2,     1,     5,     1,     3,     1,
-       1,     3,     6,     3,     1,     3,     3,     1,     3,     5,
-       3,     3,     1,     5,     6,     1,     1,     1,     1,     1,
+       1,     2,     3,     0,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       4,     2,     3,     4,     5,     3,     3,     1,     1,     3,
+       6,     3,     1,     2,     0,     6,     6,     1,     0,     3,
+       1,     3,     3,     1,     2,     1,     3,     5,     3,     5,
+       3,     4,     2,     0,     5,     6,     3,     1,     1,     1,
+       6,     5,     6,     5,     6,     6,     6,     6,     2,     1,
+       5,     1,     1,     1,     1,     2,     1,     5,     1,     3,
+       1,     1,     3,     6,     3,     1,     3,     3,     1,     3,
+       5,     3,     3,     1,     5,     6,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     0,     1,     1,     1,     1,     1,     3,
-       1,     0,     3,     3,     3,     3,     3,     1,     2,     2,
-       2,     2,     1,     4,     1,     1,     3,     3,     3,     1,
-       1,     3,     1,     3,     1,     2,     4,     1,     3,     4,
-       6,     1,     0,     1,     1,     1,     1,     3,     3,     1,
-       1,     3,     3,     1,     1,     3,     1,     1,     2,     1,
-       1,     1,     1,     1,     1,     2,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     0,
-       1
+       1,     1,     1,     1,     0,     1,     1,     1,     1,     1,
+       3,     1,     0,     3,     3,     3,     3,     3,     1,     2,
+       2,     2,     2,     1,     4,     1,     1,     3,     3,     3,
+       1,     1,     3,     1,     3,     1,     2,     4,     1,     3,
+       4,     6,     1,     0,     1,     1,     1,     1,     3,     3,
+       1,     1,     3,     3,     1,     1,     3,     1,     1,     2,
+       1,     1,     1,     1,     1,     1,     2,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       0,     1
 };
 
 
@@ -1635,285 +1633,285 @@ yydestruct (const char *yymsg,
   switch (yykind)
     {
     case YYSYMBOL_STRING: /* "string literal"  */
-#line 257 "src/xkbcomp/parser.y"
+#line 259 "src/xkbcomp/parser.y"
             { free(((*yyvaluep).str)); }
-#line 1634 "src/xkbcomp/parser.c"
+#line 1632 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_XkbFile: /* XkbFile  */
-#line 255 "src/xkbcomp/parser.y"
+#line 257 "src/xkbcomp/parser.y"
             { if (!param->rtrn) FreeXkbFile(((*yyvaluep).file)); }
-#line 1640 "src/xkbcomp/parser.c"
+#line 1638 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_XkbCompositeMap: /* XkbCompositeMap  */
-#line 255 "src/xkbcomp/parser.y"
+#line 257 "src/xkbcomp/parser.y"
             { if (!param->rtrn) FreeXkbFile(((*yyvaluep).file)); }
-#line 1646 "src/xkbcomp/parser.c"
+#line 1644 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_XkbMapConfigList: /* XkbMapConfigList  */
-#line 256 "src/xkbcomp/parser.y"
+#line 258 "src/xkbcomp/parser.y"
             { FreeXkbFile(((*yyvaluep).fileList).head); }
-#line 1652 "src/xkbcomp/parser.c"
+#line 1650 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_XkbMapConfig: /* XkbMapConfig  */
-#line 255 "src/xkbcomp/parser.y"
+#line 257 "src/xkbcomp/parser.y"
             { if (!param->rtrn) FreeXkbFile(((*yyvaluep).file)); }
-#line 1658 "src/xkbcomp/parser.c"
+#line 1656 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_DeclList: /* DeclList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).anyList).head); }
-#line 1664 "src/xkbcomp/parser.c"
+#line 1662 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Decl: /* Decl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).any)); }
-#line 1670 "src/xkbcomp/parser.c"
+#line 1668 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_VarDecl: /* VarDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).var)); }
-#line 1676 "src/xkbcomp/parser.c"
+#line 1674 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeyNameDecl: /* KeyNameDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).keyCode)); }
-#line 1682 "src/xkbcomp/parser.c"
+#line 1680 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeyAliasDecl: /* KeyAliasDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).keyAlias)); }
-#line 1688 "src/xkbcomp/parser.c"
+#line 1686 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_VModDecl: /* VModDecl  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).vmodList).head); }
-#line 1694 "src/xkbcomp/parser.c"
+#line 1692 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_VModDefList: /* VModDefList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).vmodList).head); }
-#line 1700 "src/xkbcomp/parser.c"
+#line 1698 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_VModDef: /* VModDef  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).vmod)); }
-#line 1706 "src/xkbcomp/parser.c"
+#line 1704 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_InterpretDecl: /* InterpretDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).interp)); }
-#line 1712 "src/xkbcomp/parser.c"
+#line 1710 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_InterpretMatch: /* InterpretMatch  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).interp)); }
-#line 1718 "src/xkbcomp/parser.c"
+#line 1716 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_VarDeclList: /* VarDeclList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).varList).head); }
-#line 1724 "src/xkbcomp/parser.c"
+#line 1722 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeyTypeDecl: /* KeyTypeDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).keyType)); }
-#line 1730 "src/xkbcomp/parser.c"
+#line 1728 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_SymbolsDecl: /* SymbolsDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).syms)); }
-#line 1736 "src/xkbcomp/parser.c"
+#line 1734 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_OptSymbolsBody: /* OptSymbolsBody  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).varList).head); }
-#line 1742 "src/xkbcomp/parser.c"
+#line 1740 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_SymbolsBody: /* SymbolsBody  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).varList).head); }
-#line 1748 "src/xkbcomp/parser.c"
+#line 1746 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_SymbolsVarDecl: /* SymbolsVarDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).var)); }
-#line 1754 "src/xkbcomp/parser.c"
+#line 1752 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_MultiKeySymOrActionList: /* MultiKeySymOrActionList  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1760 "src/xkbcomp/parser.c"
+#line 1758 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_GroupCompatDecl: /* GroupCompatDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).groupCompat)); }
-#line 1766 "src/xkbcomp/parser.c"
+#line 1764 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_ModMapDecl: /* ModMapDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).modMask)); }
-#line 1772 "src/xkbcomp/parser.c"
+#line 1770 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeyOrKeySymList: /* KeyOrKeySymList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).exprList).head); }
-#line 1778 "src/xkbcomp/parser.c"
+#line 1776 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeyOrKeySym: /* KeyOrKeySym  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1784 "src/xkbcomp/parser.c"
+#line 1782 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_LedMapDecl: /* LedMapDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).ledMap)); }
-#line 1790 "src/xkbcomp/parser.c"
+#line 1788 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_LedNameDecl: /* LedNameDecl  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).ledName)); }
-#line 1796 "src/xkbcomp/parser.c"
+#line 1794 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_CoordList: /* CoordList  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1802 "src/xkbcomp/parser.c"
+#line 1800 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Coord: /* Coord  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1808 "src/xkbcomp/parser.c"
+#line 1806 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_ExprList: /* ExprList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).exprList).head); }
-#line 1814 "src/xkbcomp/parser.c"
+#line 1812 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Expr: /* Expr  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1820 "src/xkbcomp/parser.c"
+#line 1818 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Term: /* Term  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1826 "src/xkbcomp/parser.c"
+#line 1824 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_MultiActionList: /* MultiActionList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).exprList).head); }
-#line 1832 "src/xkbcomp/parser.c"
+#line 1830 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_ActionList: /* ActionList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).exprList).head); }
-#line 1838 "src/xkbcomp/parser.c"
+#line 1836 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_NonEmptyActions: /* NonEmptyActions  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1844 "src/xkbcomp/parser.c"
+#line 1842 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Actions: /* Actions  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1850 "src/xkbcomp/parser.c"
+#line 1848 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Action: /* Action  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1856 "src/xkbcomp/parser.c"
+#line 1854 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Lhs: /* Lhs  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1862 "src/xkbcomp/parser.c"
+#line 1860 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_OptTerminal: /* OptTerminal  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1868 "src/xkbcomp/parser.c"
+#line 1866 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_Terminal: /* Terminal  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1874 "src/xkbcomp/parser.c"
+#line 1872 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_MultiKeySymList: /* MultiKeySymList  */
-#line 251 "src/xkbcomp/parser.y"
+#line 253 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).exprList).head); }
-#line 1880 "src/xkbcomp/parser.c"
+#line 1878 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeySymList: /* KeySymList  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1886 "src/xkbcomp/parser.c"
+#line 1884 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_NonEmptyKeySyms: /* NonEmptyKeySyms  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1892 "src/xkbcomp/parser.c"
+#line 1890 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_KeySyms: /* KeySyms  */
-#line 248 "src/xkbcomp/parser.y"
+#line 250 "src/xkbcomp/parser.y"
             { FreeStmt((ParseCommon *) ((*yyvaluep).expr)); }
-#line 1898 "src/xkbcomp/parser.c"
+#line 1896 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_OptMapName: /* OptMapName  */
-#line 257 "src/xkbcomp/parser.y"
+#line 259 "src/xkbcomp/parser.y"
             { free(((*yyvaluep).str)); }
-#line 1904 "src/xkbcomp/parser.c"
+#line 1902 "src/xkbcomp/parser.c"
         break;
 
     case YYSYMBOL_MapName: /* MapName  */
-#line 257 "src/xkbcomp/parser.y"
+#line 259 "src/xkbcomp/parser.y"
             { free(((*yyvaluep).str)); }
-#line 1910 "src/xkbcomp/parser.c"
+#line 1908 "src/xkbcomp/parser.c"
         break;
 
       default:
@@ -2190,49 +2188,49 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* XkbFile: XkbCompositeMap  */
-#line 274 "src/xkbcomp/parser.y"
+#line 276 "src/xkbcomp/parser.y"
                         { (yyval.file) = param->rtrn = (yyvsp[0].file); param->more_maps = !!param->rtrn; (void) yynerrs; }
-#line 2189 "src/xkbcomp/parser.c"
+#line 2187 "src/xkbcomp/parser.c"
     break;
 
   case 3: /* XkbFile: XkbMapConfig  */
-#line 276 "src/xkbcomp/parser.y"
+#line 278 "src/xkbcomp/parser.y"
                         { (yyval.file) = param->rtrn = (yyvsp[0].file); param->more_maps = !!param->rtrn; YYACCEPT; }
-#line 2195 "src/xkbcomp/parser.c"
+#line 2193 "src/xkbcomp/parser.c"
     break;
 
   case 4: /* XkbFile: "end of file"  */
-#line 278 "src/xkbcomp/parser.y"
+#line 280 "src/xkbcomp/parser.y"
                         { (yyval.file) = param->rtrn = NULL; param->more_maps = false; }
-#line 2201 "src/xkbcomp/parser.c"
+#line 2199 "src/xkbcomp/parser.c"
     break;
 
   case 5: /* XkbCompositeMap: OptFlags XkbCompositeType OptMapName "{" XkbMapConfigList "}" ";"  */
-#line 284 "src/xkbcomp/parser.y"
+#line 286 "src/xkbcomp/parser.y"
                         { (yyval.file) = XkbFileCreate((yyvsp[-5].file_type), (yyvsp[-4].str), (ParseCommon *) (yyvsp[-2].fileList).head, (yyvsp[-6].mapFlags)); }
-#line 2207 "src/xkbcomp/parser.c"
+#line 2205 "src/xkbcomp/parser.c"
     break;
 
   case 6: /* XkbCompositeType: "xkb_keymap"  */
-#line 287 "src/xkbcomp/parser.y"
+#line 289 "src/xkbcomp/parser.y"
                                         { (yyval.file_type) = FILE_TYPE_KEYMAP; }
-#line 2213 "src/xkbcomp/parser.c"
+#line 2211 "src/xkbcomp/parser.c"
     break;
 
   case 7: /* XkbCompositeType: "xkb_semantics"  */
-#line 288 "src/xkbcomp/parser.y"
+#line 290 "src/xkbcomp/parser.y"
                                         { (yyval.file_type) = FILE_TYPE_KEYMAP; }
-#line 2219 "src/xkbcomp/parser.c"
+#line 2217 "src/xkbcomp/parser.c"
     break;
 
   case 8: /* XkbCompositeType: "xkb_layout"  */
-#line 289 "src/xkbcomp/parser.y"
+#line 291 "src/xkbcomp/parser.y"
                                         { (yyval.file_type) = FILE_TYPE_KEYMAP; }
-#line 2225 "src/xkbcomp/parser.c"
+#line 2223 "src/xkbcomp/parser.c"
     break;
 
   case 9: /* XkbMapConfigList: XkbMapConfigList XkbMapConfig  */
-#line 296 "src/xkbcomp/parser.y"
+#line 298 "src/xkbcomp/parser.y"
                         {
                             if ((yyvsp[0].file)) {
                                 if ((yyvsp[-1].fileList).head) {
@@ -2244,127 +2242,137 @@ yyreduce:
                                 }
                             }
                         }
-#line 2241 "src/xkbcomp/parser.c"
+#line 2239 "src/xkbcomp/parser.c"
     break;
 
   case 10: /* XkbMapConfigList: %empty  */
-#line 307 "src/xkbcomp/parser.y"
+#line 309 "src/xkbcomp/parser.y"
                         { (yyval.fileList).head = (yyval.fileList).last = NULL; }
-#line 2247 "src/xkbcomp/parser.c"
+#line 2245 "src/xkbcomp/parser.c"
     break;
 
   case 11: /* XkbMapConfig: OptFlags FileType OptMapName "{" DeclList "}" ";"  */
-#line 313 "src/xkbcomp/parser.y"
+#line 315 "src/xkbcomp/parser.y"
                         {
+                            if ((yyvsp[-6].mapFlags) & MAP_IS_DEPRECATED) {
+                                parser_warn(param, XKB_WARNING_DEPRECATED_SECTION,
+                                            "deprecated section");
+                            }
                             (yyval.file) = XkbFileCreate((yyvsp[-5].file_type), (yyvsp[-4].str), (yyvsp[-2].anyList).head, (yyvsp[-6].mapFlags));
                         }
-#line 2255 "src/xkbcomp/parser.c"
+#line 2257 "src/xkbcomp/parser.c"
     break;
 
   case 12: /* FileType: "xkb_keycodes"  */
-#line 318 "src/xkbcomp/parser.y"
+#line 324 "src/xkbcomp/parser.y"
                                                 { (yyval.file_type) = FILE_TYPE_KEYCODES; }
-#line 2261 "src/xkbcomp/parser.c"
+#line 2263 "src/xkbcomp/parser.c"
     break;
 
   case 13: /* FileType: "xkb_types"  */
-#line 319 "src/xkbcomp/parser.y"
+#line 325 "src/xkbcomp/parser.y"
                                                 { (yyval.file_type) = FILE_TYPE_TYPES; }
-#line 2267 "src/xkbcomp/parser.c"
+#line 2269 "src/xkbcomp/parser.c"
     break;
 
   case 14: /* FileType: "xkb_compatibility"  */
-#line 320 "src/xkbcomp/parser.y"
+#line 326 "src/xkbcomp/parser.y"
                                                 { (yyval.file_type) = FILE_TYPE_COMPAT; }
-#line 2273 "src/xkbcomp/parser.c"
+#line 2275 "src/xkbcomp/parser.c"
     break;
 
   case 15: /* FileType: "xkb_symbols"  */
-#line 321 "src/xkbcomp/parser.y"
+#line 327 "src/xkbcomp/parser.y"
                                                 { (yyval.file_type) = FILE_TYPE_SYMBOLS; }
-#line 2279 "src/xkbcomp/parser.c"
+#line 2281 "src/xkbcomp/parser.c"
     break;
 
   case 16: /* FileType: "xkb_geometry"  */
-#line 322 "src/xkbcomp/parser.y"
+#line 328 "src/xkbcomp/parser.y"
                                                 { (yyval.file_type) = FILE_TYPE_GEOMETRY; }
-#line 2285 "src/xkbcomp/parser.c"
+#line 2287 "src/xkbcomp/parser.c"
     break;
 
   case 17: /* OptFlags: Flags  */
-#line 325 "src/xkbcomp/parser.y"
+#line 331 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = (yyvsp[0].mapFlags); }
-#line 2291 "src/xkbcomp/parser.c"
+#line 2293 "src/xkbcomp/parser.c"
     break;
 
   case 18: /* OptFlags: %empty  */
-#line 326 "src/xkbcomp/parser.y"
+#line 332 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = 0; }
-#line 2297 "src/xkbcomp/parser.c"
+#line 2299 "src/xkbcomp/parser.c"
     break;
 
   case 19: /* Flags: Flags Flag  */
-#line 329 "src/xkbcomp/parser.y"
+#line 335 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = ((yyvsp[-1].mapFlags) | (yyvsp[0].mapFlags)); }
-#line 2303 "src/xkbcomp/parser.c"
+#line 2305 "src/xkbcomp/parser.c"
     break;
 
   case 20: /* Flags: Flag  */
-#line 330 "src/xkbcomp/parser.y"
+#line 336 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = (yyvsp[0].mapFlags); }
-#line 2309 "src/xkbcomp/parser.c"
+#line 2311 "src/xkbcomp/parser.c"
     break;
 
   case 21: /* Flag: "partial"  */
-#line 333 "src/xkbcomp/parser.y"
+#line 339 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_IS_PARTIAL; }
-#line 2315 "src/xkbcomp/parser.c"
+#line 2317 "src/xkbcomp/parser.c"
     break;
 
   case 22: /* Flag: "default"  */
-#line 334 "src/xkbcomp/parser.y"
+#line 340 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_IS_DEFAULT; }
-#line 2321 "src/xkbcomp/parser.c"
+#line 2323 "src/xkbcomp/parser.c"
     break;
 
   case 23: /* Flag: "hidden"  */
-#line 335 "src/xkbcomp/parser.y"
+#line 341 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_IS_HIDDEN; }
-#line 2327 "src/xkbcomp/parser.c"
+#line 2329 "src/xkbcomp/parser.c"
     break;
 
   case 24: /* Flag: "alphanumeric_keys"  */
-#line 336 "src/xkbcomp/parser.y"
+#line 342 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_HAS_ALPHANUMERIC; }
-#line 2333 "src/xkbcomp/parser.c"
+#line 2335 "src/xkbcomp/parser.c"
     break;
 
   case 25: /* Flag: "modifier_keys"  */
-#line 337 "src/xkbcomp/parser.y"
+#line 343 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_HAS_MODIFIER; }
-#line 2339 "src/xkbcomp/parser.c"
+#line 2341 "src/xkbcomp/parser.c"
     break;
 
   case 26: /* Flag: "keypad_keys"  */
-#line 338 "src/xkbcomp/parser.y"
+#line 344 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_HAS_KEYPAD; }
-#line 2345 "src/xkbcomp/parser.c"
+#line 2347 "src/xkbcomp/parser.c"
     break;
 
   case 27: /* Flag: "function_keys"  */
-#line 339 "src/xkbcomp/parser.y"
+#line 345 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_HAS_FN; }
-#line 2351 "src/xkbcomp/parser.c"
+#line 2353 "src/xkbcomp/parser.c"
     break;
 
   case 28: /* Flag: "alternate_group"  */
-#line 340 "src/xkbcomp/parser.y"
+#line 346 "src/xkbcomp/parser.y"
                                                 { (yyval.mapFlags) = MAP_IS_ALTGR; }
-#line 2357 "src/xkbcomp/parser.c"
+#line 2359 "src/xkbcomp/parser.c"
     break;
 
-  case 29: /* Flag: "identifier"  */
-#line 342 "src/xkbcomp/parser.y"
+  case 29: /* Flag: "deprecated"  */
+#line 347 "src/xkbcomp/parser.y"
+                                                { (yyval.mapFlags) = MAP_IS_DEPRECATED; }
+#line 2365 "src/xkbcomp/parser.c"
+    break;
+
+  case 30: /* Flag: "identifier"  */
+#line 349 "src/xkbcomp/parser.y"
                         {
                             const bool error = (param->config.strict & PARSER_NO_UNKNOWN_SECTION_FLAGS);
                             parser_log_with_code(
@@ -2379,11 +2387,11 @@ yyreduce:
                                 YYABORT;
                             (yyval.mapFlags) = 0;
                         }
-#line 2376 "src/xkbcomp/parser.c"
+#line 2384 "src/xkbcomp/parser.c"
     break;
 
-  case 30: /* DeclList: DeclList Decl  */
-#line 359 "src/xkbcomp/parser.y"
+  case 31: /* DeclList: DeclList Decl  */
+#line 366 "src/xkbcomp/parser.y"
                         {
                             if ((yyvsp[0].any)) {
                                 if ((yyvsp[-1].anyList).head) {
@@ -2393,11 +2401,11 @@ yyreduce:
                                 }
                             }
                         }
-#line 2390 "src/xkbcomp/parser.c"
+#line 2398 "src/xkbcomp/parser.c"
     break;
 
-  case 31: /* DeclList: DeclList OptMergeMode VModDecl  */
-#line 374 "src/xkbcomp/parser.y"
+  case 32: /* DeclList: DeclList OptMergeMode VModDecl  */
+#line 381 "src/xkbcomp/parser.y"
                         {
                             for (VModDef *vmod = (yyvsp[0].vmodList).head; vmod; vmod = (VModDef *) vmod->common.next)
                                 vmod->merge = (yyvsp[-1].merge);
@@ -2407,224 +2415,224 @@ yyreduce:
                                 (yyval.anyList).head = &(yyvsp[0].vmodList).head->common; (yyval.anyList).last = &(yyvsp[0].vmodList).last->common;
                             }
                         }
-#line 2404 "src/xkbcomp/parser.c"
+#line 2412 "src/xkbcomp/parser.c"
     break;
 
-  case 32: /* DeclList: %empty  */
-#line 383 "src/xkbcomp/parser.y"
+  case 33: /* DeclList: %empty  */
+#line 390 "src/xkbcomp/parser.y"
                         { (yyval.anyList).head = (yyval.anyList).last = NULL; }
-#line 2410 "src/xkbcomp/parser.c"
+#line 2418 "src/xkbcomp/parser.c"
     break;
 
-  case 33: /* Decl: OptMergeMode VarDecl  */
-#line 387 "src/xkbcomp/parser.y"
+  case 34: /* Decl: OptMergeMode VarDecl  */
+#line 394 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].var)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].var);
                         }
-#line 2419 "src/xkbcomp/parser.c"
+#line 2427 "src/xkbcomp/parser.c"
     break;
 
-  case 34: /* Decl: OptMergeMode InterpretDecl  */
-#line 393 "src/xkbcomp/parser.y"
+  case 35: /* Decl: OptMergeMode InterpretDecl  */
+#line 400 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].interp)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].interp);
                         }
-#line 2428 "src/xkbcomp/parser.c"
+#line 2436 "src/xkbcomp/parser.c"
     break;
 
-  case 35: /* Decl: OptMergeMode KeyNameDecl  */
-#line 398 "src/xkbcomp/parser.y"
+  case 36: /* Decl: OptMergeMode KeyNameDecl  */
+#line 405 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].keyCode)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].keyCode);
                         }
-#line 2437 "src/xkbcomp/parser.c"
+#line 2445 "src/xkbcomp/parser.c"
     break;
 
-  case 36: /* Decl: OptMergeMode KeyAliasDecl  */
-#line 403 "src/xkbcomp/parser.y"
+  case 37: /* Decl: OptMergeMode KeyAliasDecl  */
+#line 410 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].keyAlias)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].keyAlias);
                         }
-#line 2446 "src/xkbcomp/parser.c"
+#line 2454 "src/xkbcomp/parser.c"
     break;
 
-  case 37: /* Decl: OptMergeMode KeyTypeDecl  */
-#line 408 "src/xkbcomp/parser.y"
+  case 38: /* Decl: OptMergeMode KeyTypeDecl  */
+#line 415 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].keyType)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].keyType);
                         }
-#line 2455 "src/xkbcomp/parser.c"
+#line 2463 "src/xkbcomp/parser.c"
     break;
 
-  case 38: /* Decl: OptMergeMode SymbolsDecl  */
-#line 413 "src/xkbcomp/parser.y"
+  case 39: /* Decl: OptMergeMode SymbolsDecl  */
+#line 420 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].syms)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].syms);
                         }
-#line 2464 "src/xkbcomp/parser.c"
+#line 2472 "src/xkbcomp/parser.c"
     break;
 
-  case 39: /* Decl: OptMergeMode ModMapDecl  */
-#line 418 "src/xkbcomp/parser.y"
+  case 40: /* Decl: OptMergeMode ModMapDecl  */
+#line 425 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].modMask)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].modMask);
                         }
-#line 2473 "src/xkbcomp/parser.c"
+#line 2481 "src/xkbcomp/parser.c"
     break;
 
-  case 40: /* Decl: OptMergeMode GroupCompatDecl  */
-#line 423 "src/xkbcomp/parser.y"
+  case 41: /* Decl: OptMergeMode GroupCompatDecl  */
+#line 430 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].groupCompat)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].groupCompat);
                         }
-#line 2482 "src/xkbcomp/parser.c"
+#line 2490 "src/xkbcomp/parser.c"
     break;
 
-  case 41: /* Decl: OptMergeMode LedMapDecl  */
-#line 428 "src/xkbcomp/parser.y"
+  case 42: /* Decl: OptMergeMode LedMapDecl  */
+#line 435 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].ledMap)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].ledMap);
                         }
-#line 2491 "src/xkbcomp/parser.c"
+#line 2499 "src/xkbcomp/parser.c"
     break;
 
-  case 42: /* Decl: OptMergeMode LedNameDecl  */
-#line 433 "src/xkbcomp/parser.y"
+  case 43: /* Decl: OptMergeMode LedNameDecl  */
+#line 440 "src/xkbcomp/parser.y"
                         {
                             (yyvsp[0].ledName)->merge = (yyvsp[-1].merge);
                             (yyval.any) = (ParseCommon *) (yyvsp[0].ledName);
                         }
-#line 2500 "src/xkbcomp/parser.c"
+#line 2508 "src/xkbcomp/parser.c"
     break;
 
-  case 43: /* Decl: OptMergeMode ShapeDecl  */
-#line 437 "src/xkbcomp/parser.y"
+  case 44: /* Decl: OptMergeMode ShapeDecl  */
+#line 444 "src/xkbcomp/parser.y"
                                                         { (yyval.any) = NULL; }
-#line 2506 "src/xkbcomp/parser.c"
+#line 2514 "src/xkbcomp/parser.c"
     break;
 
-  case 44: /* Decl: OptMergeMode SectionDecl  */
-#line 438 "src/xkbcomp/parser.y"
-                                                        { (yyval.any) = NULL; }
-#line 2512 "src/xkbcomp/parser.c"
-    break;
-
-  case 45: /* Decl: OptMergeMode DoodadDecl  */
-#line 439 "src/xkbcomp/parser.y"
-                                                        { (yyval.any) = NULL; }
-#line 2518 "src/xkbcomp/parser.c"
-    break;
-
-  case 46: /* Decl: OptMergeMode UnknownDecl  */
-#line 441 "src/xkbcomp/parser.y"
-                            { (yyval.any) = (ParseCommon *) (yyvsp[0].unknown); }
-#line 2524 "src/xkbcomp/parser.c"
-    break;
-
-  case 47: /* Decl: OptMergeMode UnknownCompoundStatementDecl  */
-#line 443 "src/xkbcomp/parser.y"
-                            { (yyval.any) = (ParseCommon *) (yyvsp[0].unknown); }
-#line 2530 "src/xkbcomp/parser.c"
-    break;
-
-  case 48: /* Decl: MergeMode "string literal"  */
+  case 45: /* Decl: OptMergeMode SectionDecl  */
 #line 445 "src/xkbcomp/parser.y"
+                                                        { (yyval.any) = NULL; }
+#line 2520 "src/xkbcomp/parser.c"
+    break;
+
+  case 46: /* Decl: OptMergeMode DoodadDecl  */
+#line 446 "src/xkbcomp/parser.y"
+                                                        { (yyval.any) = NULL; }
+#line 2526 "src/xkbcomp/parser.c"
+    break;
+
+  case 47: /* Decl: OptMergeMode UnknownDecl  */
+#line 448 "src/xkbcomp/parser.y"
+                            { (yyval.any) = (ParseCommon *) (yyvsp[0].unknown); }
+#line 2532 "src/xkbcomp/parser.c"
+    break;
+
+  case 48: /* Decl: OptMergeMode UnknownCompoundStatementDecl  */
+#line 450 "src/xkbcomp/parser.y"
+                            { (yyval.any) = (ParseCommon *) (yyvsp[0].unknown); }
+#line 2538 "src/xkbcomp/parser.c"
+    break;
+
+  case 49: /* Decl: MergeMode "string literal"  */
+#line 452 "src/xkbcomp/parser.y"
                         {
                             (yyval.any) = (ParseCommon *) IncludeCreate(param->ctx, (yyvsp[0].str), (yyvsp[-1].merge));
                             free((yyvsp[0].str));
                         }
-#line 2539 "src/xkbcomp/parser.c"
+#line 2547 "src/xkbcomp/parser.c"
     break;
 
-  case 49: /* VarDecl: Lhs "=" Expr ";"  */
-#line 452 "src/xkbcomp/parser.y"
+  case 50: /* VarDecl: Lhs "=" Expr ";"  */
+#line 459 "src/xkbcomp/parser.y"
                         { (yyval.var) = VarCreate((yyvsp[-3].expr), (yyvsp[-1].expr)); }
-#line 2545 "src/xkbcomp/parser.c"
+#line 2553 "src/xkbcomp/parser.c"
     break;
 
-  case 50: /* VarDecl: Ident ";"  */
-#line 454 "src/xkbcomp/parser.y"
+  case 51: /* VarDecl: Ident ";"  */
+#line 461 "src/xkbcomp/parser.y"
                         { (yyval.var) = BoolVarCreate((yyvsp[-1].atom), true); }
-#line 2551 "src/xkbcomp/parser.c"
+#line 2559 "src/xkbcomp/parser.c"
     break;
 
-  case 51: /* VarDecl: "!" Ident ";"  */
-#line 456 "src/xkbcomp/parser.y"
+  case 52: /* VarDecl: "!" Ident ";"  */
+#line 463 "src/xkbcomp/parser.y"
                         { (yyval.var) = BoolVarCreate((yyvsp[-1].atom), false); }
-#line 2557 "src/xkbcomp/parser.c"
+#line 2565 "src/xkbcomp/parser.c"
     break;
 
-  case 52: /* KeyNameDecl: "key name" "=" KeyCode ";"  */
-#line 460 "src/xkbcomp/parser.y"
+  case 53: /* KeyNameDecl: "key name" "=" KeyCode ";"  */
+#line 467 "src/xkbcomp/parser.y"
                         { (yyval.keyCode) = KeycodeCreate((yyvsp[-3].atom), (yyvsp[-1].num)); }
-#line 2563 "src/xkbcomp/parser.c"
+#line 2571 "src/xkbcomp/parser.c"
     break;
 
-  case 53: /* KeyAliasDecl: "alias" "key name" "=" "key name" ";"  */
-#line 464 "src/xkbcomp/parser.y"
+  case 54: /* KeyAliasDecl: "alias" "key name" "=" "key name" ";"  */
+#line 471 "src/xkbcomp/parser.y"
                         { (yyval.keyAlias) = KeyAliasCreate((yyvsp[-3].atom), (yyvsp[-1].atom)); }
-#line 2569 "src/xkbcomp/parser.c"
+#line 2577 "src/xkbcomp/parser.c"
     break;
 
-  case 54: /* VModDecl: "virtual_modifiers" VModDefList ";"  */
-#line 468 "src/xkbcomp/parser.y"
+  case 55: /* VModDecl: "virtual_modifiers" VModDefList ";"  */
+#line 475 "src/xkbcomp/parser.y"
                         { (yyval.vmodList) = (yyvsp[-1].vmodList); }
-#line 2575 "src/xkbcomp/parser.c"
+#line 2583 "src/xkbcomp/parser.c"
     break;
 
-  case 55: /* VModDefList: VModDefList "," VModDef  */
-#line 472 "src/xkbcomp/parser.y"
+  case 56: /* VModDefList: VModDefList "," VModDef  */
+#line 479 "src/xkbcomp/parser.y"
                         { (yyval.vmodList).head = (yyvsp[-2].vmodList).head; (yyval.vmodList).last->common.next = &(yyvsp[0].vmod)->common; (yyval.vmodList).last = (yyvsp[0].vmod); }
-#line 2581 "src/xkbcomp/parser.c"
+#line 2589 "src/xkbcomp/parser.c"
     break;
 
-  case 56: /* VModDefList: VModDef  */
-#line 474 "src/xkbcomp/parser.y"
+  case 57: /* VModDefList: VModDef  */
+#line 481 "src/xkbcomp/parser.y"
                         { (yyval.vmodList).head = (yyval.vmodList).last = (yyvsp[0].vmod); }
-#line 2587 "src/xkbcomp/parser.c"
+#line 2595 "src/xkbcomp/parser.c"
     break;
 
-  case 57: /* VModDef: Ident  */
-#line 478 "src/xkbcomp/parser.y"
+  case 58: /* VModDef: Ident  */
+#line 485 "src/xkbcomp/parser.y"
                         { (yyval.vmod) = VModCreate((yyvsp[0].atom), NULL); }
-#line 2593 "src/xkbcomp/parser.c"
+#line 2601 "src/xkbcomp/parser.c"
     break;
 
-  case 58: /* VModDef: Ident "=" Expr  */
-#line 480 "src/xkbcomp/parser.y"
+  case 59: /* VModDef: Ident "=" Expr  */
+#line 487 "src/xkbcomp/parser.y"
                         { (yyval.vmod) = VModCreate((yyvsp[-2].atom), (yyvsp[0].expr)); }
-#line 2599 "src/xkbcomp/parser.c"
+#line 2607 "src/xkbcomp/parser.c"
     break;
 
-  case 59: /* InterpretDecl: "interpret" InterpretMatch "{" VarDeclList "}" ";"  */
-#line 486 "src/xkbcomp/parser.y"
+  case 60: /* InterpretDecl: "interpret" InterpretMatch "{" VarDeclList "}" ";"  */
+#line 493 "src/xkbcomp/parser.y"
                         { (yyvsp[-4].interp)->def = (yyvsp[-2].varList).head; (yyval.interp) = (yyvsp[-4].interp); }
-#line 2605 "src/xkbcomp/parser.c"
+#line 2613 "src/xkbcomp/parser.c"
     break;
 
-  case 60: /* InterpretMatch: KeySym "+" Expr  */
-#line 490 "src/xkbcomp/parser.y"
+  case 61: /* InterpretMatch: KeySym "+" Expr  */
+#line 497 "src/xkbcomp/parser.y"
                         { (yyval.interp) = InterpCreate((yyvsp[-2].keysym), (yyvsp[0].expr)); }
-#line 2611 "src/xkbcomp/parser.c"
+#line 2619 "src/xkbcomp/parser.c"
     break;
 
-  case 61: /* InterpretMatch: KeySym  */
-#line 492 "src/xkbcomp/parser.y"
+  case 62: /* InterpretMatch: KeySym  */
+#line 499 "src/xkbcomp/parser.y"
                         { (yyval.interp) = InterpCreate((yyvsp[0].keysym), NULL); }
-#line 2617 "src/xkbcomp/parser.c"
+#line 2625 "src/xkbcomp/parser.c"
     break;
 
-  case 62: /* VarDeclList: VarDeclList VarDecl  */
-#line 496 "src/xkbcomp/parser.y"
+  case 63: /* VarDeclList: VarDeclList VarDecl  */
+#line 503 "src/xkbcomp/parser.y"
                         {
                             if ((yyvsp[0].var)) {
                                 if ((yyvsp[-1].varList).head) {
@@ -2636,89 +2644,89 @@ yyreduce:
                                 }
                             }
                         }
-#line 2633 "src/xkbcomp/parser.c"
+#line 2641 "src/xkbcomp/parser.c"
     break;
 
-  case 63: /* VarDeclList: %empty  */
-#line 507 "src/xkbcomp/parser.y"
+  case 64: /* VarDeclList: %empty  */
+#line 514 "src/xkbcomp/parser.y"
                         { (yyval.varList).head = (yyval.varList).last = NULL; }
-#line 2639 "src/xkbcomp/parser.c"
+#line 2647 "src/xkbcomp/parser.c"
     break;
 
-  case 64: /* KeyTypeDecl: "type" String "{" VarDeclList "}" ";"  */
-#line 513 "src/xkbcomp/parser.y"
+  case 65: /* KeyTypeDecl: "type" String "{" VarDeclList "}" ";"  */
+#line 520 "src/xkbcomp/parser.y"
                         { (yyval.keyType) = KeyTypeCreate((yyvsp[-4].atom), (yyvsp[-2].varList).head); }
-#line 2645 "src/xkbcomp/parser.c"
+#line 2653 "src/xkbcomp/parser.c"
     break;
 
-  case 65: /* SymbolsDecl: "key" "key name" "{" OptSymbolsBody "}" ";"  */
-#line 519 "src/xkbcomp/parser.y"
+  case 66: /* SymbolsDecl: "key" "key name" "{" OptSymbolsBody "}" ";"  */
+#line 526 "src/xkbcomp/parser.y"
                         { (yyval.syms) = SymbolsCreate((yyvsp[-4].atom), (yyvsp[-2].varList).head); }
-#line 2651 "src/xkbcomp/parser.c"
+#line 2659 "src/xkbcomp/parser.c"
     break;
 
-  case 66: /* OptSymbolsBody: SymbolsBody  */
-#line 522 "src/xkbcomp/parser.y"
-                                    { (yyval.varList) = (yyvsp[0].varList); }
-#line 2657 "src/xkbcomp/parser.c"
-    break;
-
-  case 67: /* OptSymbolsBody: %empty  */
-#line 523 "src/xkbcomp/parser.y"
-                                    { (yyval.varList).head = (yyval.varList).last = NULL; }
-#line 2663 "src/xkbcomp/parser.c"
-    break;
-
-  case 68: /* SymbolsBody: SymbolsBody "," SymbolsVarDecl  */
-#line 527 "src/xkbcomp/parser.y"
-                        { (yyval.varList).head = (yyvsp[-2].varList).head; (yyval.varList).last->common.next = &(yyvsp[0].var)->common; (yyval.varList).last = (yyvsp[0].var); }
-#line 2669 "src/xkbcomp/parser.c"
-    break;
-
-  case 69: /* SymbolsBody: SymbolsVarDecl  */
+  case 67: /* OptSymbolsBody: SymbolsBody  */
 #line 529 "src/xkbcomp/parser.y"
-                        { (yyval.varList).head = (yyval.varList).last = (yyvsp[0].var); }
-#line 2675 "src/xkbcomp/parser.c"
+                                    { (yyval.varList) = (yyvsp[0].varList); }
+#line 2665 "src/xkbcomp/parser.c"
     break;
 
-  case 70: /* SymbolsVarDecl: Lhs "=" Expr  */
-#line 532 "src/xkbcomp/parser.y"
-                                                { (yyval.var) = VarCreate((yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 2681 "src/xkbcomp/parser.c"
+  case 68: /* OptSymbolsBody: %empty  */
+#line 530 "src/xkbcomp/parser.y"
+                                    { (yyval.varList).head = (yyval.varList).last = NULL; }
+#line 2671 "src/xkbcomp/parser.c"
     break;
 
-  case 71: /* SymbolsVarDecl: Lhs "=" MultiKeySymOrActionList  */
-#line 533 "src/xkbcomp/parser.y"
-                                                           { (yyval.var) = VarCreate((yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 2687 "src/xkbcomp/parser.c"
-    break;
-
-  case 72: /* SymbolsVarDecl: Ident  */
+  case 69: /* SymbolsBody: SymbolsBody "," SymbolsVarDecl  */
 #line 534 "src/xkbcomp/parser.y"
-                                                { (yyval.var) = BoolVarCreate((yyvsp[0].atom), true); }
-#line 2693 "src/xkbcomp/parser.c"
+                        { (yyval.varList).head = (yyvsp[-2].varList).head; (yyval.varList).last->common.next = &(yyvsp[0].var)->common; (yyval.varList).last = (yyvsp[0].var); }
+#line 2677 "src/xkbcomp/parser.c"
     break;
 
-  case 73: /* SymbolsVarDecl: "!" Ident  */
-#line 535 "src/xkbcomp/parser.y"
-                                                { (yyval.var) = BoolVarCreate((yyvsp[0].atom), false); }
-#line 2699 "src/xkbcomp/parser.c"
-    break;
-
-  case 74: /* SymbolsVarDecl: MultiKeySymOrActionList  */
+  case 70: /* SymbolsBody: SymbolsVarDecl  */
 #line 536 "src/xkbcomp/parser.y"
+                        { (yyval.varList).head = (yyval.varList).last = (yyvsp[0].var); }
+#line 2683 "src/xkbcomp/parser.c"
+    break;
+
+  case 71: /* SymbolsVarDecl: Lhs "=" Expr  */
+#line 539 "src/xkbcomp/parser.y"
+                                                { (yyval.var) = VarCreate((yyvsp[-2].expr), (yyvsp[0].expr)); }
+#line 2689 "src/xkbcomp/parser.c"
+    break;
+
+  case 72: /* SymbolsVarDecl: Lhs "=" MultiKeySymOrActionList  */
+#line 540 "src/xkbcomp/parser.y"
+                                                           { (yyval.var) = VarCreate((yyvsp[-2].expr), (yyvsp[0].expr)); }
+#line 2695 "src/xkbcomp/parser.c"
+    break;
+
+  case 73: /* SymbolsVarDecl: Ident  */
+#line 541 "src/xkbcomp/parser.y"
+                                                { (yyval.var) = BoolVarCreate((yyvsp[0].atom), true); }
+#line 2701 "src/xkbcomp/parser.c"
+    break;
+
+  case 74: /* SymbolsVarDecl: "!" Ident  */
+#line 542 "src/xkbcomp/parser.y"
+                                                { (yyval.var) = BoolVarCreate((yyvsp[0].atom), false); }
+#line 2707 "src/xkbcomp/parser.c"
+    break;
+
+  case 75: /* SymbolsVarDecl: MultiKeySymOrActionList  */
+#line 543 "src/xkbcomp/parser.y"
                                                 { (yyval.var) = VarCreate(NULL, (yyvsp[0].expr)); }
-#line 2705 "src/xkbcomp/parser.c"
+#line 2713 "src/xkbcomp/parser.c"
     break;
 
-  case 75: /* MultiKeySymOrActionList: "[" MultiKeySymList "]"  */
-#line 552 "src/xkbcomp/parser.y"
+  case 76: /* MultiKeySymOrActionList: "[" MultiKeySymList "]"  */
+#line 559 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[-1].exprList).head; }
-#line 2711 "src/xkbcomp/parser.c"
+#line 2719 "src/xkbcomp/parser.c"
     break;
 
-  case 76: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "," MultiKeySymList "]"  */
-#line 554 "src/xkbcomp/parser.y"
+  case 77: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "," MultiKeySymList "]"  */
+#line 561 "src/xkbcomp/parser.y"
                         {
                             /* Prepend n times NoSymbol */
                             struct {ExprDef *head; ExprDef *last;} list = {
@@ -2736,17 +2744,17 @@ yyreduce:
                             }
                             (yyval.expr) = list.head;
                         }
-#line 2733 "src/xkbcomp/parser.c"
+#line 2741 "src/xkbcomp/parser.c"
     break;
 
-  case 77: /* MultiKeySymOrActionList: "[" MultiActionList "]"  */
-#line 572 "src/xkbcomp/parser.y"
+  case 78: /* MultiKeySymOrActionList: "[" MultiActionList "]"  */
+#line 579 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[-1].exprList).head; }
-#line 2739 "src/xkbcomp/parser.c"
+#line 2747 "src/xkbcomp/parser.c"
     break;
 
-  case 78: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "," MultiActionList "]"  */
-#line 574 "src/xkbcomp/parser.y"
+  case 79: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "," MultiActionList "]"  */
+#line 581 "src/xkbcomp/parser.y"
                         {
                             /* Prepend n times NoAction() */
                             struct {ExprDef *head; ExprDef *last;} list = {
@@ -2763,433 +2771,433 @@ yyreduce:
                             }
                             (yyval.expr) = list.head;
                         }
-#line 2760 "src/xkbcomp/parser.c"
+#line 2768 "src/xkbcomp/parser.c"
     break;
 
-  case 79: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "]"  */
-#line 596 "src/xkbcomp/parser.y"
+  case 80: /* MultiKeySymOrActionList: "[" NoSymbolOrActionList "]"  */
+#line 603 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprEmptyList(); }
-#line 2766 "src/xkbcomp/parser.c"
+#line 2774 "src/xkbcomp/parser.c"
     break;
 
-  case 80: /* NoSymbolOrActionList: NoSymbolOrActionList "," "{" "}"  */
-#line 602 "src/xkbcomp/parser.y"
-                        { (yyval.noSymbolOrActionList) = (yyvsp[-3].noSymbolOrActionList) + 1; }
-#line 2772 "src/xkbcomp/parser.c"
-    break;
-
-  case 81: /* NoSymbolOrActionList: "{" "}"  */
-#line 604 "src/xkbcomp/parser.y"
-                        { (yyval.noSymbolOrActionList) = 1; }
-#line 2778 "src/xkbcomp/parser.c"
-    break;
-
-  case 82: /* NoSymbolOrActionList: %empty  */
-#line 605 "src/xkbcomp/parser.y"
-                        { (yyval.noSymbolOrActionList) = 0; }
-#line 2784 "src/xkbcomp/parser.c"
-    break;
-
-  case 83: /* GroupCompatDecl: "group" Integer "=" Expr ";"  */
+  case 81: /* NoSymbolOrActionList: NoSymbolOrActionList "," "{" "}"  */
 #line 609 "src/xkbcomp/parser.y"
+                        { (yyval.noSymbolOrActionList) = (yyvsp[-3].noSymbolOrActionList) + 1; }
+#line 2780 "src/xkbcomp/parser.c"
+    break;
+
+  case 82: /* NoSymbolOrActionList: "{" "}"  */
+#line 611 "src/xkbcomp/parser.y"
+                        { (yyval.noSymbolOrActionList) = 1; }
+#line 2786 "src/xkbcomp/parser.c"
+    break;
+
+  case 83: /* NoSymbolOrActionList: %empty  */
+#line 612 "src/xkbcomp/parser.y"
+                        { (yyval.noSymbolOrActionList) = 0; }
+#line 2792 "src/xkbcomp/parser.c"
+    break;
+
+  case 84: /* GroupCompatDecl: "group" Integer "=" Expr ";"  */
+#line 616 "src/xkbcomp/parser.y"
                         { (yyval.groupCompat) = GroupCompatCreate((yyvsp[-3].num), (yyvsp[-1].expr)); }
-#line 2790 "src/xkbcomp/parser.c"
+#line 2798 "src/xkbcomp/parser.c"
     break;
 
-  case 84: /* ModMapDecl: "modifier_map" Ident "{" KeyOrKeySymList "}" ";"  */
-#line 613 "src/xkbcomp/parser.y"
+  case 85: /* ModMapDecl: "modifier_map" Ident "{" KeyOrKeySymList "}" ";"  */
+#line 620 "src/xkbcomp/parser.y"
                         { (yyval.modMask) = ModMapCreate((yyvsp[-4].atom), (yyvsp[-2].exprList).head); }
-#line 2796 "src/xkbcomp/parser.c"
+#line 2804 "src/xkbcomp/parser.c"
     break;
 
-  case 85: /* KeyOrKeySymList: KeyOrKeySymList "," KeyOrKeySym  */
-#line 617 "src/xkbcomp/parser.y"
+  case 86: /* KeyOrKeySymList: KeyOrKeySymList "," KeyOrKeySym  */
+#line 624 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyvsp[-2].exprList).head; (yyval.exprList).last->common.next = &(yyvsp[0].expr)->common; (yyval.exprList).last = (yyvsp[0].expr); }
-#line 2802 "src/xkbcomp/parser.c"
+#line 2810 "src/xkbcomp/parser.c"
     break;
 
-  case 86: /* KeyOrKeySymList: KeyOrKeySym  */
-#line 619 "src/xkbcomp/parser.y"
+  case 87: /* KeyOrKeySymList: KeyOrKeySym  */
+#line 626 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
-#line 2808 "src/xkbcomp/parser.c"
+#line 2816 "src/xkbcomp/parser.c"
     break;
 
-  case 87: /* KeyOrKeySym: "key name"  */
-#line 623 "src/xkbcomp/parser.y"
+  case 88: /* KeyOrKeySym: "key name"  */
+#line 630 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateKeyName((yyvsp[0].atom)); }
-#line 2814 "src/xkbcomp/parser.c"
+#line 2822 "src/xkbcomp/parser.c"
     break;
 
-  case 88: /* KeyOrKeySym: KeySym  */
-#line 625 "src/xkbcomp/parser.y"
+  case 89: /* KeyOrKeySym: KeySym  */
+#line 632 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateKeySym((yyvsp[0].keysym)); }
-#line 2820 "src/xkbcomp/parser.c"
+#line 2828 "src/xkbcomp/parser.c"
     break;
 
-  case 89: /* LedMapDecl: "indicator" String "{" VarDeclList "}" ";"  */
-#line 629 "src/xkbcomp/parser.y"
+  case 90: /* LedMapDecl: "indicator" String "{" VarDeclList "}" ";"  */
+#line 636 "src/xkbcomp/parser.y"
                         { (yyval.ledMap) = LedMapCreate((yyvsp[-4].atom), (yyvsp[-2].varList).head); }
-#line 2826 "src/xkbcomp/parser.c"
+#line 2834 "src/xkbcomp/parser.c"
     break;
 
-  case 90: /* LedNameDecl: "indicator" Integer "=" Expr ";"  */
-#line 633 "src/xkbcomp/parser.y"
+  case 91: /* LedNameDecl: "indicator" Integer "=" Expr ";"  */
+#line 640 "src/xkbcomp/parser.y"
                         { (yyval.ledName) = LedNameCreate((yyvsp[-3].num), (yyvsp[-1].expr), false); }
-#line 2832 "src/xkbcomp/parser.c"
+#line 2840 "src/xkbcomp/parser.c"
     break;
 
-  case 91: /* LedNameDecl: "virtual" "indicator" Integer "=" Expr ";"  */
-#line 635 "src/xkbcomp/parser.y"
+  case 92: /* LedNameDecl: "virtual" "indicator" Integer "=" Expr ";"  */
+#line 642 "src/xkbcomp/parser.y"
                         { (yyval.ledName) = LedNameCreate((yyvsp[-3].num), (yyvsp[-1].expr), true); }
-#line 2838 "src/xkbcomp/parser.c"
+#line 2846 "src/xkbcomp/parser.c"
     break;
 
-  case 92: /* UnknownDecl: "identifier" Terminal "=" Expr ";"  */
-#line 639 "src/xkbcomp/parser.y"
+  case 93: /* UnknownDecl: "identifier" Terminal "=" Expr ";"  */
+#line 646 "src/xkbcomp/parser.y"
                         {
                             FreeStmt((ParseCommon *) (yyvsp[-3].expr));
                             FreeStmt((ParseCommon *) (yyvsp[-1].expr));
                             (yyval.unknown) = UnknownStatementCreate(STMT_UNKNOWN_DECLARATION, (yyvsp[-4].sval));
                         }
-#line 2848 "src/xkbcomp/parser.c"
+#line 2856 "src/xkbcomp/parser.c"
     break;
 
-  case 93: /* UnknownCompoundStatementDecl: "identifier" OptTerminal "{" VarDeclList "}" ";"  */
-#line 648 "src/xkbcomp/parser.y"
+  case 94: /* UnknownCompoundStatementDecl: "identifier" OptTerminal "{" VarDeclList "}" ";"  */
+#line 655 "src/xkbcomp/parser.y"
                         {
                             FreeStmt((ParseCommon *) (yyvsp[-4].expr));
                             FreeStmt((ParseCommon *) (yyvsp[-2].varList).head);
                             (yyval.unknown) = UnknownStatementCreate(STMT_UNKNOWN_COMPOUND, (yyvsp[-5].sval));
                         }
-#line 2858 "src/xkbcomp/parser.c"
+#line 2866 "src/xkbcomp/parser.c"
     break;
 
-  case 94: /* ShapeDecl: "shape" String "{" OutlineList "}" ";"  */
-#line 656 "src/xkbcomp/parser.y"
+  case 95: /* ShapeDecl: "shape" String "{" OutlineList "}" ";"  */
+#line 663 "src/xkbcomp/parser.y"
                         { (yyval.geom) = NULL; }
-#line 2864 "src/xkbcomp/parser.c"
+#line 2872 "src/xkbcomp/parser.c"
     break;
 
-  case 95: /* ShapeDecl: "shape" String "{" CoordList "}" ";"  */
-#line 658 "src/xkbcomp/parser.y"
-                        { (void) (yyvsp[-2].expr); (yyval.geom) = NULL; }
-#line 2870 "src/xkbcomp/parser.c"
-    break;
-
-  case 96: /* SectionDecl: "section" String "{" SectionBody "}" ";"  */
-#line 662 "src/xkbcomp/parser.y"
-                        { (yyval.geom) = NULL; }
-#line 2876 "src/xkbcomp/parser.c"
-    break;
-
-  case 97: /* SectionBody: SectionBody SectionBodyItem  */
+  case 96: /* ShapeDecl: "shape" String "{" CoordList "}" ";"  */
 #line 665 "src/xkbcomp/parser.y"
-                                                        { (yyval.geom) = NULL;}
-#line 2882 "src/xkbcomp/parser.c"
+                        { (void) (yyvsp[-2].expr); (yyval.geom) = NULL; }
+#line 2878 "src/xkbcomp/parser.c"
     break;
 
-  case 98: /* SectionBody: SectionBodyItem  */
-#line 666 "src/xkbcomp/parser.y"
-                                                        { (yyval.geom) = NULL; }
-#line 2888 "src/xkbcomp/parser.c"
-    break;
-
-  case 99: /* SectionBodyItem: "row" "{" RowBody "}" ";"  */
-#line 670 "src/xkbcomp/parser.y"
+  case 97: /* SectionDecl: "section" String "{" SectionBody "}" ";"  */
+#line 669 "src/xkbcomp/parser.y"
                         { (yyval.geom) = NULL; }
-#line 2894 "src/xkbcomp/parser.c"
+#line 2884 "src/xkbcomp/parser.c"
     break;
 
-  case 100: /* SectionBodyItem: VarDecl  */
+  case 98: /* SectionBody: SectionBody SectionBodyItem  */
 #line 672 "src/xkbcomp/parser.y"
+                                                        { (yyval.geom) = NULL;}
+#line 2890 "src/xkbcomp/parser.c"
+    break;
+
+  case 99: /* SectionBody: SectionBodyItem  */
+#line 673 "src/xkbcomp/parser.y"
+                                                        { (yyval.geom) = NULL; }
+#line 2896 "src/xkbcomp/parser.c"
+    break;
+
+  case 100: /* SectionBodyItem: "row" "{" RowBody "}" ";"  */
+#line 677 "src/xkbcomp/parser.y"
+                        { (yyval.geom) = NULL; }
+#line 2902 "src/xkbcomp/parser.c"
+    break;
+
+  case 101: /* SectionBodyItem: VarDecl  */
+#line 679 "src/xkbcomp/parser.y"
                         { FreeStmt((ParseCommon *) (yyvsp[0].var)); (yyval.geom) = NULL; }
-#line 2900 "src/xkbcomp/parser.c"
+#line 2908 "src/xkbcomp/parser.c"
     break;
 
-  case 101: /* SectionBodyItem: DoodadDecl  */
-#line 674 "src/xkbcomp/parser.y"
-                        { (yyval.geom) = NULL; }
-#line 2906 "src/xkbcomp/parser.c"
-    break;
-
-  case 102: /* SectionBodyItem: LedMapDecl  */
-#line 676 "src/xkbcomp/parser.y"
-                        { FreeStmt((ParseCommon *) (yyvsp[0].ledMap)); (yyval.geom) = NULL; }
-#line 2912 "src/xkbcomp/parser.c"
-    break;
-
-  case 103: /* SectionBodyItem: OverlayDecl  */
-#line 678 "src/xkbcomp/parser.y"
-                        { (yyval.geom) = NULL; }
-#line 2918 "src/xkbcomp/parser.c"
-    break;
-
-  case 104: /* RowBody: RowBody RowBodyItem  */
+  case 102: /* SectionBodyItem: DoodadDecl  */
 #line 681 "src/xkbcomp/parser.y"
-                                                { (yyval.geom) = NULL;}
-#line 2924 "src/xkbcomp/parser.c"
+                        { (yyval.geom) = NULL; }
+#line 2914 "src/xkbcomp/parser.c"
     break;
 
-  case 105: /* RowBody: RowBodyItem  */
-#line 682 "src/xkbcomp/parser.y"
-                                                { (yyval.geom) = NULL; }
-#line 2930 "src/xkbcomp/parser.c"
+  case 103: /* SectionBodyItem: LedMapDecl  */
+#line 683 "src/xkbcomp/parser.y"
+                        { FreeStmt((ParseCommon *) (yyvsp[0].ledMap)); (yyval.geom) = NULL; }
+#line 2920 "src/xkbcomp/parser.c"
     break;
 
-  case 106: /* RowBodyItem: "keys" "{" Keys "}" ";"  */
+  case 104: /* SectionBodyItem: OverlayDecl  */
 #line 685 "src/xkbcomp/parser.y"
+                        { (yyval.geom) = NULL; }
+#line 2926 "src/xkbcomp/parser.c"
+    break;
+
+  case 105: /* RowBody: RowBody RowBodyItem  */
+#line 688 "src/xkbcomp/parser.y"
+                                                { (yyval.geom) = NULL;}
+#line 2932 "src/xkbcomp/parser.c"
+    break;
+
+  case 106: /* RowBody: RowBodyItem  */
+#line 689 "src/xkbcomp/parser.y"
+                                                { (yyval.geom) = NULL; }
+#line 2938 "src/xkbcomp/parser.c"
+    break;
+
+  case 107: /* RowBodyItem: "keys" "{" Keys "}" ";"  */
+#line 692 "src/xkbcomp/parser.y"
                                                      { (yyval.geom) = NULL; }
-#line 2936 "src/xkbcomp/parser.c"
+#line 2944 "src/xkbcomp/parser.c"
     break;
 
-  case 107: /* RowBodyItem: VarDecl  */
-#line 687 "src/xkbcomp/parser.y"
+  case 108: /* RowBodyItem: VarDecl  */
+#line 694 "src/xkbcomp/parser.y"
                         { FreeStmt((ParseCommon *) (yyvsp[0].var)); (yyval.geom) = NULL; }
-#line 2942 "src/xkbcomp/parser.c"
+#line 2950 "src/xkbcomp/parser.c"
     break;
 
-  case 108: /* Keys: Keys "," Key  */
-#line 690 "src/xkbcomp/parser.y"
-                                                { (yyval.geom) = NULL; }
-#line 2948 "src/xkbcomp/parser.c"
-    break;
-
-  case 109: /* Keys: Key  */
-#line 691 "src/xkbcomp/parser.y"
-                                                { (yyval.geom) = NULL; }
-#line 2954 "src/xkbcomp/parser.c"
-    break;
-
-  case 110: /* Key: "key name"  */
-#line 695 "src/xkbcomp/parser.y"
-                        { (yyval.geom) = NULL; }
-#line 2960 "src/xkbcomp/parser.c"
-    break;
-
-  case 111: /* Key: "{" ExprList "}"  */
+  case 109: /* Keys: Keys "," Key  */
 #line 697 "src/xkbcomp/parser.y"
-                        { FreeStmt((ParseCommon *) (yyvsp[-1].exprList).head); (yyval.geom) = NULL; }
-#line 2966 "src/xkbcomp/parser.c"
+                                                { (yyval.geom) = NULL; }
+#line 2956 "src/xkbcomp/parser.c"
     break;
 
-  case 112: /* OverlayDecl: "overlay" String "{" OverlayKeyList "}" ";"  */
-#line 701 "src/xkbcomp/parser.y"
+  case 110: /* Keys: Key  */
+#line 698 "src/xkbcomp/parser.y"
+                                                { (yyval.geom) = NULL; }
+#line 2962 "src/xkbcomp/parser.c"
+    break;
+
+  case 111: /* Key: "key name"  */
+#line 702 "src/xkbcomp/parser.y"
                         { (yyval.geom) = NULL; }
-#line 2972 "src/xkbcomp/parser.c"
+#line 2968 "src/xkbcomp/parser.c"
     break;
 
-  case 113: /* OverlayKeyList: OverlayKeyList "," OverlayKey  */
+  case 112: /* Key: "{" ExprList "}"  */
 #line 704 "src/xkbcomp/parser.y"
-                                                        { (yyval.geom) = NULL; }
-#line 2978 "src/xkbcomp/parser.c"
+                        { FreeStmt((ParseCommon *) (yyvsp[-1].exprList).head); (yyval.geom) = NULL; }
+#line 2974 "src/xkbcomp/parser.c"
     break;
 
-  case 114: /* OverlayKeyList: OverlayKey  */
-#line 705 "src/xkbcomp/parser.y"
-                                                        { (yyval.geom) = NULL; }
-#line 2984 "src/xkbcomp/parser.c"
-    break;
-
-  case 115: /* OverlayKey: "key name" "=" "key name"  */
+  case 113: /* OverlayDecl: "overlay" String "{" OverlayKeyList "}" ";"  */
 #line 708 "src/xkbcomp/parser.y"
-                                                        { (yyval.geom) = NULL; }
-#line 2990 "src/xkbcomp/parser.c"
-    break;
-
-  case 116: /* OutlineList: OutlineList "," OutlineInList  */
-#line 712 "src/xkbcomp/parser.y"
-                        { (yyval.geom) = NULL;}
-#line 2996 "src/xkbcomp/parser.c"
-    break;
-
-  case 117: /* OutlineList: OutlineInList  */
-#line 714 "src/xkbcomp/parser.y"
                         { (yyval.geom) = NULL; }
-#line 3002 "src/xkbcomp/parser.c"
+#line 2980 "src/xkbcomp/parser.c"
     break;
 
-  case 118: /* OutlineInList: "{" CoordList "}"  */
-#line 718 "src/xkbcomp/parser.y"
+  case 114: /* OverlayKeyList: OverlayKeyList "," OverlayKey  */
+#line 711 "src/xkbcomp/parser.y"
+                                                        { (yyval.geom) = NULL; }
+#line 2986 "src/xkbcomp/parser.c"
+    break;
+
+  case 115: /* OverlayKeyList: OverlayKey  */
+#line 712 "src/xkbcomp/parser.y"
+                                                        { (yyval.geom) = NULL; }
+#line 2992 "src/xkbcomp/parser.c"
+    break;
+
+  case 116: /* OverlayKey: "key name" "=" "key name"  */
+#line 715 "src/xkbcomp/parser.y"
+                                                        { (yyval.geom) = NULL; }
+#line 2998 "src/xkbcomp/parser.c"
+    break;
+
+  case 117: /* OutlineList: OutlineList "," OutlineInList  */
+#line 719 "src/xkbcomp/parser.y"
+                        { (yyval.geom) = NULL;}
+#line 3004 "src/xkbcomp/parser.c"
+    break;
+
+  case 118: /* OutlineList: OutlineInList  */
+#line 721 "src/xkbcomp/parser.y"
+                        { (yyval.geom) = NULL; }
+#line 3010 "src/xkbcomp/parser.c"
+    break;
+
+  case 119: /* OutlineInList: "{" CoordList "}"  */
+#line 725 "src/xkbcomp/parser.y"
                         { (void) (yyvsp[-1].expr); (yyval.geom) = NULL; }
-#line 3008 "src/xkbcomp/parser.c"
+#line 3016 "src/xkbcomp/parser.c"
     break;
 
-  case 119: /* OutlineInList: Ident "=" "{" CoordList "}"  */
-#line 720 "src/xkbcomp/parser.y"
+  case 120: /* OutlineInList: Ident "=" "{" CoordList "}"  */
+#line 727 "src/xkbcomp/parser.y"
                         { (void) (yyvsp[-1].expr); (yyval.geom) = NULL; }
-#line 3014 "src/xkbcomp/parser.c"
+#line 3022 "src/xkbcomp/parser.c"
     break;
 
-  case 120: /* OutlineInList: Ident "=" Expr  */
-#line 722 "src/xkbcomp/parser.y"
+  case 121: /* OutlineInList: Ident "=" Expr  */
+#line 729 "src/xkbcomp/parser.y"
                         { FreeStmt((ParseCommon *) (yyvsp[0].expr)); (yyval.geom) = NULL; }
-#line 3020 "src/xkbcomp/parser.c"
+#line 3028 "src/xkbcomp/parser.c"
     break;
 
-  case 121: /* CoordList: CoordList "," Coord  */
-#line 726 "src/xkbcomp/parser.y"
+  case 122: /* CoordList: CoordList "," Coord  */
+#line 733 "src/xkbcomp/parser.y"
                         { (void) (yyvsp[-2].expr); (void) (yyvsp[0].expr); (yyval.expr) = NULL; }
-#line 3026 "src/xkbcomp/parser.c"
+#line 3034 "src/xkbcomp/parser.c"
     break;
 
-  case 122: /* CoordList: Coord  */
-#line 728 "src/xkbcomp/parser.y"
+  case 123: /* CoordList: Coord  */
+#line 735 "src/xkbcomp/parser.y"
                         { (void) (yyvsp[0].expr); (yyval.expr) = NULL; }
-#line 3032 "src/xkbcomp/parser.c"
+#line 3040 "src/xkbcomp/parser.c"
     break;
 
-  case 123: /* Coord: "[" SignedNumber "," SignedNumber "]"  */
-#line 732 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = NULL; }
-#line 3038 "src/xkbcomp/parser.c"
-    break;
-
-  case 124: /* DoodadDecl: DoodadType String "{" VarDeclList "}" ";"  */
-#line 736 "src/xkbcomp/parser.y"
-                        { FreeStmt((ParseCommon *) (yyvsp[-2].varList).head); (yyval.geom) = NULL; }
-#line 3044 "src/xkbcomp/parser.c"
-    break;
-
-  case 125: /* DoodadType: "text"  */
+  case 124: /* Coord: "[" SignedNumber "," SignedNumber "]"  */
 #line 739 "src/xkbcomp/parser.y"
-                                { (yyval.num) = 0; }
-#line 3050 "src/xkbcomp/parser.c"
+                        { (yyval.expr) = NULL; }
+#line 3046 "src/xkbcomp/parser.c"
     break;
 
-  case 126: /* DoodadType: "outline"  */
-#line 740 "src/xkbcomp/parser.y"
-                                { (yyval.num) = 0; }
-#line 3056 "src/xkbcomp/parser.c"
+  case 125: /* DoodadDecl: DoodadType String "{" VarDeclList "}" ";"  */
+#line 743 "src/xkbcomp/parser.y"
+                        { FreeStmt((ParseCommon *) (yyvsp[-2].varList).head); (yyval.geom) = NULL; }
+#line 3052 "src/xkbcomp/parser.c"
     break;
 
-  case 127: /* DoodadType: "solid"  */
-#line 741 "src/xkbcomp/parser.y"
-                                { (yyval.num) = 0; }
-#line 3062 "src/xkbcomp/parser.c"
-    break;
-
-  case 128: /* DoodadType: "logo"  */
-#line 742 "src/xkbcomp/parser.y"
-                                { (yyval.num) = 0; }
-#line 3068 "src/xkbcomp/parser.c"
-    break;
-
-  case 129: /* FieldSpec: Ident  */
-#line 745 "src/xkbcomp/parser.y"
-                                { (yyval.atom) = (yyvsp[0].atom); }
-#line 3074 "src/xkbcomp/parser.c"
-    break;
-
-  case 130: /* FieldSpec: Element  */
+  case 126: /* DoodadType: "text"  */
 #line 746 "src/xkbcomp/parser.y"
-                                { (yyval.atom) = (yyvsp[0].atom); }
-#line 3080 "src/xkbcomp/parser.c"
+                                { (yyval.num) = 0; }
+#line 3058 "src/xkbcomp/parser.c"
     break;
 
-  case 131: /* Element: "action"  */
-#line 750 "src/xkbcomp/parser.y"
-                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "action"); }
-#line 3086 "src/xkbcomp/parser.c"
+  case 127: /* DoodadType: "outline"  */
+#line 747 "src/xkbcomp/parser.y"
+                                { (yyval.num) = 0; }
+#line 3064 "src/xkbcomp/parser.c"
     break;
 
-  case 132: /* Element: "interpret"  */
+  case 128: /* DoodadType: "solid"  */
+#line 748 "src/xkbcomp/parser.y"
+                                { (yyval.num) = 0; }
+#line 3070 "src/xkbcomp/parser.c"
+    break;
+
+  case 129: /* DoodadType: "logo"  */
+#line 749 "src/xkbcomp/parser.y"
+                                { (yyval.num) = 0; }
+#line 3076 "src/xkbcomp/parser.c"
+    break;
+
+  case 130: /* FieldSpec: Ident  */
 #line 752 "src/xkbcomp/parser.y"
+                                { (yyval.atom) = (yyvsp[0].atom); }
+#line 3082 "src/xkbcomp/parser.c"
+    break;
+
+  case 131: /* FieldSpec: Element  */
+#line 753 "src/xkbcomp/parser.y"
+                                { (yyval.atom) = (yyvsp[0].atom); }
+#line 3088 "src/xkbcomp/parser.c"
+    break;
+
+  case 132: /* Element: "action"  */
+#line 757 "src/xkbcomp/parser.y"
+                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "action"); }
+#line 3094 "src/xkbcomp/parser.c"
+    break;
+
+  case 133: /* Element: "interpret"  */
+#line 759 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "interpret"); }
-#line 3092 "src/xkbcomp/parser.c"
+#line 3100 "src/xkbcomp/parser.c"
     break;
 
-  case 133: /* Element: "type"  */
-#line 754 "src/xkbcomp/parser.y"
+  case 134: /* Element: "type"  */
+#line 761 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "type"); }
-#line 3098 "src/xkbcomp/parser.c"
+#line 3106 "src/xkbcomp/parser.c"
     break;
 
-  case 134: /* Element: "key"  */
-#line 756 "src/xkbcomp/parser.y"
+  case 135: /* Element: "key"  */
+#line 763 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "key"); }
-#line 3104 "src/xkbcomp/parser.c"
+#line 3112 "src/xkbcomp/parser.c"
     break;
 
-  case 135: /* Element: "group"  */
-#line 758 "src/xkbcomp/parser.y"
+  case 136: /* Element: "group"  */
+#line 765 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "group"); }
-#line 3110 "src/xkbcomp/parser.c"
+#line 3118 "src/xkbcomp/parser.c"
     break;
 
-  case 136: /* Element: "modifier_map"  */
-#line 760 "src/xkbcomp/parser.y"
+  case 137: /* Element: "modifier_map"  */
+#line 767 "src/xkbcomp/parser.y"
                         {(yyval.atom) = xkb_atom_intern_literal(param->ctx, "modifier_map");}
-#line 3116 "src/xkbcomp/parser.c"
+#line 3124 "src/xkbcomp/parser.c"
     break;
 
-  case 137: /* Element: "indicator"  */
-#line 762 "src/xkbcomp/parser.y"
+  case 138: /* Element: "indicator"  */
+#line 769 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "indicator"); }
-#line 3122 "src/xkbcomp/parser.c"
+#line 3130 "src/xkbcomp/parser.c"
     break;
 
-  case 138: /* Element: "shape"  */
-#line 764 "src/xkbcomp/parser.y"
+  case 139: /* Element: "shape"  */
+#line 771 "src/xkbcomp/parser.y"
                         { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "shape"); }
-#line 3128 "src/xkbcomp/parser.c"
+#line 3136 "src/xkbcomp/parser.c"
     break;
 
-  case 139: /* Element: "row"  */
-#line 766 "src/xkbcomp/parser.y"
-                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "row"); }
-#line 3134 "src/xkbcomp/parser.c"
-    break;
-
-  case 140: /* Element: "section"  */
-#line 768 "src/xkbcomp/parser.y"
-                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "section"); }
-#line 3140 "src/xkbcomp/parser.c"
-    break;
-
-  case 141: /* Element: "text"  */
-#line 770 "src/xkbcomp/parser.y"
-                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "text"); }
-#line 3146 "src/xkbcomp/parser.c"
-    break;
-
-  case 142: /* OptMergeMode: MergeMode  */
+  case 140: /* Element: "row"  */
 #line 773 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = (yyvsp[0].merge); }
-#line 3152 "src/xkbcomp/parser.c"
+                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "row"); }
+#line 3142 "src/xkbcomp/parser.c"
     break;
 
-  case 143: /* OptMergeMode: %empty  */
-#line 774 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = MERGE_DEFAULT; }
-#line 3158 "src/xkbcomp/parser.c"
+  case 141: /* Element: "section"  */
+#line 775 "src/xkbcomp/parser.y"
+                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "section"); }
+#line 3148 "src/xkbcomp/parser.c"
     break;
 
-  case 144: /* MergeMode: "include"  */
+  case 142: /* Element: "text"  */
 #line 777 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = MERGE_DEFAULT; }
-#line 3164 "src/xkbcomp/parser.c"
+                        { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "text"); }
+#line 3154 "src/xkbcomp/parser.c"
     break;
 
-  case 145: /* MergeMode: "augment"  */
-#line 778 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = MERGE_AUGMENT; }
-#line 3170 "src/xkbcomp/parser.c"
-    break;
-
-  case 146: /* MergeMode: "override"  */
-#line 779 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = MERGE_OVERRIDE; }
-#line 3176 "src/xkbcomp/parser.c"
-    break;
-
-  case 147: /* MergeMode: "replace"  */
+  case 143: /* OptMergeMode: MergeMode  */
 #line 780 "src/xkbcomp/parser.y"
-                                        { (yyval.merge) = MERGE_REPLACE; }
-#line 3182 "src/xkbcomp/parser.c"
+                                        { (yyval.merge) = (yyvsp[0].merge); }
+#line 3160 "src/xkbcomp/parser.c"
     break;
 
-  case 148: /* MergeMode: "alternate"  */
-#line 782 "src/xkbcomp/parser.y"
+  case 144: /* OptMergeMode: %empty  */
+#line 781 "src/xkbcomp/parser.y"
+                                        { (yyval.merge) = MERGE_DEFAULT; }
+#line 3166 "src/xkbcomp/parser.c"
+    break;
+
+  case 145: /* MergeMode: "include"  */
+#line 784 "src/xkbcomp/parser.y"
+                                        { (yyval.merge) = MERGE_DEFAULT; }
+#line 3172 "src/xkbcomp/parser.c"
+    break;
+
+  case 146: /* MergeMode: "augment"  */
+#line 785 "src/xkbcomp/parser.y"
+                                        { (yyval.merge) = MERGE_AUGMENT; }
+#line 3178 "src/xkbcomp/parser.c"
+    break;
+
+  case 147: /* MergeMode: "override"  */
+#line 786 "src/xkbcomp/parser.y"
+                                        { (yyval.merge) = MERGE_OVERRIDE; }
+#line 3184 "src/xkbcomp/parser.c"
+    break;
+
+  case 148: /* MergeMode: "replace"  */
+#line 787 "src/xkbcomp/parser.y"
+                                        { (yyval.merge) = MERGE_REPLACE; }
+#line 3190 "src/xkbcomp/parser.c"
+    break;
+
+  case 149: /* MergeMode: "alternate"  */
+#line 789 "src/xkbcomp/parser.y"
                 {
                     /*
                      * This used to be MERGE_ALT_FORM. This functionality was
@@ -3199,11 +3207,11 @@ yyreduce:
                                 "ignored unsupported legacy merge mode \"alternate\"");
                     (yyval.merge) = MERGE_DEFAULT;
                 }
-#line 3196 "src/xkbcomp/parser.c"
+#line 3204 "src/xkbcomp/parser.c"
     break;
 
-  case 149: /* ExprList: ExprList "," Expr  */
-#line 794 "src/xkbcomp/parser.y"
+  case 150: /* ExprList: ExprList "," Expr  */
+#line 801 "src/xkbcomp/parser.y"
                         {
                             if ((yyvsp[0].expr)) {
                                 if ((yyvsp[-2].exprList).head) {
@@ -3215,292 +3223,292 @@ yyreduce:
                                 }
                             }
                         }
-#line 3212 "src/xkbcomp/parser.c"
+#line 3220 "src/xkbcomp/parser.c"
     break;
 
-  case 150: /* ExprList: Expr  */
-#line 806 "src/xkbcomp/parser.y"
-                        { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3218 "src/xkbcomp/parser.c"
-    break;
-
-  case 151: /* ExprList: %empty  */
-#line 807 "src/xkbcomp/parser.y"
-                        { (yyval.exprList).head = (yyval.exprList).last = NULL; }
-#line 3224 "src/xkbcomp/parser.c"
-    break;
-
-  case 152: /* Expr: Expr "/" Expr  */
-#line 811 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = ExprCreateBinary(STMT_EXPR_DIVIDE, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 3230 "src/xkbcomp/parser.c"
-    break;
-
-  case 153: /* Expr: Expr "+" Expr  */
+  case 151: /* ExprList: Expr  */
 #line 813 "src/xkbcomp/parser.y"
+                        { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
+#line 3226 "src/xkbcomp/parser.c"
+    break;
+
+  case 152: /* ExprList: %empty  */
+#line 814 "src/xkbcomp/parser.y"
+                        { (yyval.exprList).head = (yyval.exprList).last = NULL; }
+#line 3232 "src/xkbcomp/parser.c"
+    break;
+
+  case 153: /* Expr: Expr "/" Expr  */
+#line 818 "src/xkbcomp/parser.y"
+                        { (yyval.expr) = ExprCreateBinary(STMT_EXPR_DIVIDE, (yyvsp[-2].expr), (yyvsp[0].expr)); }
+#line 3238 "src/xkbcomp/parser.c"
+    break;
+
+  case 154: /* Expr: Expr "+" Expr  */
+#line 820 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateBinary(STMT_EXPR_ADD, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 3236 "src/xkbcomp/parser.c"
+#line 3244 "src/xkbcomp/parser.c"
     break;
 
-  case 154: /* Expr: Expr "-" Expr  */
-#line 815 "src/xkbcomp/parser.y"
+  case 155: /* Expr: Expr "-" Expr  */
+#line 822 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateBinary(STMT_EXPR_SUBTRACT, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 3242 "src/xkbcomp/parser.c"
+#line 3250 "src/xkbcomp/parser.c"
     break;
 
-  case 155: /* Expr: Expr "*" Expr  */
-#line 817 "src/xkbcomp/parser.y"
+  case 156: /* Expr: Expr "*" Expr  */
+#line 824 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateBinary(STMT_EXPR_MULTIPLY, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 3248 "src/xkbcomp/parser.c"
+#line 3256 "src/xkbcomp/parser.c"
     break;
 
-  case 156: /* Expr: Lhs "=" Expr  */
-#line 819 "src/xkbcomp/parser.y"
+  case 157: /* Expr: Lhs "=" Expr  */
+#line 826 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateBinary(STMT_EXPR_ASSIGN, (yyvsp[-2].expr), (yyvsp[0].expr)); }
-#line 3254 "src/xkbcomp/parser.c"
+#line 3262 "src/xkbcomp/parser.c"
     break;
 
-  case 157: /* Expr: Term  */
-#line 821 "src/xkbcomp/parser.y"
+  case 158: /* Expr: Term  */
+#line 828 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3260 "src/xkbcomp/parser.c"
+#line 3268 "src/xkbcomp/parser.c"
     break;
 
-  case 158: /* Term: "-" Term  */
-#line 825 "src/xkbcomp/parser.y"
+  case 159: /* Term: "-" Term  */
+#line 832 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateUnary(STMT_EXPR_NEGATE, (yyvsp[0].expr)); }
-#line 3266 "src/xkbcomp/parser.c"
+#line 3274 "src/xkbcomp/parser.c"
     break;
 
-  case 159: /* Term: "+" Term  */
-#line 827 "src/xkbcomp/parser.y"
+  case 160: /* Term: "+" Term  */
+#line 834 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateUnary(STMT_EXPR_UNARY_PLUS, (yyvsp[0].expr)); }
-#line 3272 "src/xkbcomp/parser.c"
+#line 3280 "src/xkbcomp/parser.c"
     break;
 
-  case 160: /* Term: "!" Term  */
-#line 829 "src/xkbcomp/parser.y"
+  case 161: /* Term: "!" Term  */
+#line 836 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateUnary(STMT_EXPR_NOT, (yyvsp[0].expr)); }
-#line 3278 "src/xkbcomp/parser.c"
+#line 3286 "src/xkbcomp/parser.c"
     break;
 
-  case 161: /* Term: "~" Term  */
-#line 831 "src/xkbcomp/parser.y"
+  case 162: /* Term: "~" Term  */
+#line 838 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateUnary(STMT_EXPR_INVERT, (yyvsp[0].expr)); }
-#line 3284 "src/xkbcomp/parser.c"
+#line 3292 "src/xkbcomp/parser.c"
     break;
 
-  case 162: /* Term: Lhs  */
-#line 833 "src/xkbcomp/parser.y"
+  case 163: /* Term: Lhs  */
+#line 840 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3290 "src/xkbcomp/parser.c"
+#line 3298 "src/xkbcomp/parser.c"
     break;
 
-  case 163: /* Term: FieldSpec "(" ExprList ")"  */
-#line 835 "src/xkbcomp/parser.y"
+  case 164: /* Term: FieldSpec "(" ExprList ")"  */
+#line 842 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateAction((yyvsp[-3].atom), (yyvsp[-1].exprList).head); }
-#line 3296 "src/xkbcomp/parser.c"
+#line 3304 "src/xkbcomp/parser.c"
     break;
 
-  case 164: /* Term: Actions  */
-#line 837 "src/xkbcomp/parser.y"
+  case 165: /* Term: Actions  */
+#line 844 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3302 "src/xkbcomp/parser.c"
+#line 3310 "src/xkbcomp/parser.c"
     break;
 
-  case 165: /* Term: Terminal  */
-#line 839 "src/xkbcomp/parser.y"
+  case 166: /* Term: Terminal  */
+#line 846 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3308 "src/xkbcomp/parser.c"
+#line 3316 "src/xkbcomp/parser.c"
     break;
 
-  case 166: /* Term: "(" Expr ")"  */
-#line 841 "src/xkbcomp/parser.y"
+  case 167: /* Term: "(" Expr ")"  */
+#line 848 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[-1].expr); }
-#line 3314 "src/xkbcomp/parser.c"
+#line 3322 "src/xkbcomp/parser.c"
     break;
 
-  case 167: /* MultiActionList: MultiActionList "," Action  */
-#line 845 "src/xkbcomp/parser.y"
+  case 168: /* MultiActionList: MultiActionList "," Action  */
+#line 852 "src/xkbcomp/parser.y"
                         {
                             ExprDef *expr = ExprCreateActionList((yyvsp[0].expr));
                             (yyval.exprList) = (yyvsp[-2].exprList);
                             (yyval.exprList).last->common.next = &expr->common; (yyval.exprList).last = expr;
                         }
-#line 3324 "src/xkbcomp/parser.c"
+#line 3332 "src/xkbcomp/parser.c"
     break;
 
-  case 168: /* MultiActionList: MultiActionList "," Actions  */
-#line 851 "src/xkbcomp/parser.y"
+  case 169: /* MultiActionList: MultiActionList "," Actions  */
+#line 858 "src/xkbcomp/parser.y"
                         { (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList).last->common.next = &(yyvsp[0].expr)->common; (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3330 "src/xkbcomp/parser.c"
+#line 3338 "src/xkbcomp/parser.c"
     break;
 
-  case 169: /* MultiActionList: Action  */
-#line 853 "src/xkbcomp/parser.y"
+  case 170: /* MultiActionList: Action  */
+#line 860 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = ExprCreateActionList((yyvsp[0].expr)); }
-#line 3336 "src/xkbcomp/parser.c"
+#line 3344 "src/xkbcomp/parser.c"
     break;
 
-  case 170: /* MultiActionList: NonEmptyActions  */
-#line 855 "src/xkbcomp/parser.y"
+  case 171: /* MultiActionList: NonEmptyActions  */
+#line 862 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3342 "src/xkbcomp/parser.c"
+#line 3350 "src/xkbcomp/parser.c"
     break;
 
-  case 171: /* ActionList: ActionList "," Action  */
-#line 859 "src/xkbcomp/parser.y"
+  case 172: /* ActionList: ActionList "," Action  */
+#line 866 "src/xkbcomp/parser.y"
                         { (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList).last->common.next = &(yyvsp[0].expr)->common; (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3348 "src/xkbcomp/parser.c"
+#line 3356 "src/xkbcomp/parser.c"
     break;
 
-  case 172: /* ActionList: Action  */
-#line 861 "src/xkbcomp/parser.y"
+  case 173: /* ActionList: Action  */
+#line 868 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3354 "src/xkbcomp/parser.c"
+#line 3362 "src/xkbcomp/parser.c"
     break;
 
-  case 173: /* NonEmptyActions: "{" ActionList "}"  */
-#line 865 "src/xkbcomp/parser.y"
+  case 174: /* NonEmptyActions: "{" ActionList "}"  */
+#line 872 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateActionList((yyvsp[-1].exprList).head); }
-#line 3360 "src/xkbcomp/parser.c"
+#line 3368 "src/xkbcomp/parser.c"
     break;
 
-  case 174: /* Actions: NonEmptyActions  */
-#line 869 "src/xkbcomp/parser.y"
+  case 175: /* Actions: NonEmptyActions  */
+#line 876 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3366 "src/xkbcomp/parser.c"
+#line 3374 "src/xkbcomp/parser.c"
     break;
 
-  case 175: /* Actions: "{" "}"  */
-#line 871 "src/xkbcomp/parser.y"
+  case 176: /* Actions: "{" "}"  */
+#line 878 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateActionList(NULL); }
-#line 3372 "src/xkbcomp/parser.c"
+#line 3380 "src/xkbcomp/parser.c"
     break;
 
-  case 176: /* Action: FieldSpec "(" ExprList ")"  */
-#line 875 "src/xkbcomp/parser.y"
+  case 177: /* Action: FieldSpec "(" ExprList ")"  */
+#line 882 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateAction((yyvsp[-3].atom), (yyvsp[-1].exprList).head); }
-#line 3378 "src/xkbcomp/parser.c"
+#line 3386 "src/xkbcomp/parser.c"
     break;
 
-  case 177: /* Lhs: FieldSpec  */
-#line 879 "src/xkbcomp/parser.y"
+  case 178: /* Lhs: FieldSpec  */
+#line 886 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateIdent((yyvsp[0].atom)); }
-#line 3384 "src/xkbcomp/parser.c"
+#line 3392 "src/xkbcomp/parser.c"
     break;
 
-  case 178: /* Lhs: FieldSpec "." FieldSpec  */
-#line 881 "src/xkbcomp/parser.y"
+  case 179: /* Lhs: FieldSpec "." FieldSpec  */
+#line 888 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateFieldRef((yyvsp[-2].atom), (yyvsp[0].atom)); }
-#line 3390 "src/xkbcomp/parser.c"
+#line 3398 "src/xkbcomp/parser.c"
     break;
 
-  case 179: /* Lhs: FieldSpec "[" Expr "]"  */
-#line 883 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = ExprCreateArrayRef(XKB_ATOM_NONE, (yyvsp[-3].atom), (yyvsp[-1].expr)); }
-#line 3396 "src/xkbcomp/parser.c"
-    break;
-
-  case 180: /* Lhs: FieldSpec "." FieldSpec "[" Expr "]"  */
-#line 885 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = ExprCreateArrayRef((yyvsp[-5].atom), (yyvsp[-3].atom), (yyvsp[-1].expr)); }
-#line 3402 "src/xkbcomp/parser.c"
-    break;
-
-  case 181: /* OptTerminal: Terminal  */
-#line 889 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = (yyvsp[0].expr); }
-#line 3408 "src/xkbcomp/parser.c"
-    break;
-
-  case 182: /* OptTerminal: %empty  */
+  case 180: /* Lhs: FieldSpec "[" Expr "]"  */
 #line 890 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = NULL; }
-#line 3414 "src/xkbcomp/parser.c"
+                        { (yyval.expr) = ExprCreateArrayRef(XKB_ATOM_NONE, (yyvsp[-3].atom), (yyvsp[-1].expr)); }
+#line 3404 "src/xkbcomp/parser.c"
     break;
 
-  case 183: /* Terminal: String  */
-#line 894 "src/xkbcomp/parser.y"
-                        { (yyval.expr) = ExprCreateString((yyvsp[0].atom)); }
-#line 3420 "src/xkbcomp/parser.c"
+  case 181: /* Lhs: FieldSpec "." FieldSpec "[" Expr "]"  */
+#line 892 "src/xkbcomp/parser.y"
+                        { (yyval.expr) = ExprCreateArrayRef((yyvsp[-5].atom), (yyvsp[-3].atom), (yyvsp[-1].expr)); }
+#line 3410 "src/xkbcomp/parser.c"
     break;
 
-  case 184: /* Terminal: Integer  */
+  case 182: /* OptTerminal: Terminal  */
 #line 896 "src/xkbcomp/parser.y"
+                        { (yyval.expr) = (yyvsp[0].expr); }
+#line 3416 "src/xkbcomp/parser.c"
+    break;
+
+  case 183: /* OptTerminal: %empty  */
+#line 897 "src/xkbcomp/parser.y"
+                        { (yyval.expr) = NULL; }
+#line 3422 "src/xkbcomp/parser.c"
+    break;
+
+  case 184: /* Terminal: String  */
+#line 901 "src/xkbcomp/parser.y"
+                        { (yyval.expr) = ExprCreateString((yyvsp[0].atom)); }
+#line 3428 "src/xkbcomp/parser.c"
+    break;
+
+  case 185: /* Terminal: Integer  */
+#line 903 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateInteger((yyvsp[0].num)); }
-#line 3426 "src/xkbcomp/parser.c"
+#line 3434 "src/xkbcomp/parser.c"
     break;
 
-  case 185: /* Terminal: Float  */
-#line 898 "src/xkbcomp/parser.y"
+  case 186: /* Terminal: Float  */
+#line 905 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateFloat(/* Discard $1 */); }
-#line 3432 "src/xkbcomp/parser.c"
+#line 3440 "src/xkbcomp/parser.c"
     break;
 
-  case 186: /* Terminal: "key name"  */
-#line 900 "src/xkbcomp/parser.y"
+  case 187: /* Terminal: "key name"  */
+#line 907 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateKeyName((yyvsp[0].atom)); }
-#line 3438 "src/xkbcomp/parser.c"
+#line 3446 "src/xkbcomp/parser.c"
     break;
 
-  case 187: /* MultiKeySymList: MultiKeySymList "," KeySymLit  */
-#line 904 "src/xkbcomp/parser.y"
+  case 188: /* MultiKeySymList: MultiKeySymList "," KeySymLit  */
+#line 911 "src/xkbcomp/parser.y"
                         {
                             ExprDef *expr = ExprCreateKeySymList((yyvsp[0].keysym));
                             (yyval.exprList) = (yyvsp[-2].exprList);
                             (yyval.exprList).last->common.next = &expr->common; (yyval.exprList).last = expr;
                         }
-#line 3448 "src/xkbcomp/parser.c"
+#line 3456 "src/xkbcomp/parser.c"
     break;
 
-  case 188: /* MultiKeySymList: MultiKeySymList "," KeySyms  */
-#line 910 "src/xkbcomp/parser.y"
+  case 189: /* MultiKeySymList: MultiKeySymList "," KeySyms  */
+#line 917 "src/xkbcomp/parser.y"
                         { (yyval.exprList) = (yyvsp[-2].exprList); (yyval.exprList).last->common.next = &(yyvsp[0].expr)->common; (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3454 "src/xkbcomp/parser.c"
+#line 3462 "src/xkbcomp/parser.c"
     break;
 
-  case 189: /* MultiKeySymList: KeySymLit  */
-#line 912 "src/xkbcomp/parser.y"
+  case 190: /* MultiKeySymList: KeySymLit  */
+#line 919 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = ExprCreateKeySymList((yyvsp[0].keysym)); }
-#line 3460 "src/xkbcomp/parser.c"
+#line 3468 "src/xkbcomp/parser.c"
     break;
 
-  case 190: /* MultiKeySymList: NonEmptyKeySyms  */
-#line 914 "src/xkbcomp/parser.y"
+  case 191: /* MultiKeySymList: NonEmptyKeySyms  */
+#line 921 "src/xkbcomp/parser.y"
                         { (yyval.exprList).head = (yyval.exprList).last = (yyvsp[0].expr); }
-#line 3466 "src/xkbcomp/parser.c"
+#line 3474 "src/xkbcomp/parser.c"
     break;
 
-  case 191: /* KeySymList: KeySymList "," KeySymLit  */
-#line 918 "src/xkbcomp/parser.y"
+  case 192: /* KeySymList: KeySymList "," KeySymLit  */
+#line 925 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprAppendKeySymList((yyvsp[-2].expr), (yyvsp[0].keysym)); }
-#line 3472 "src/xkbcomp/parser.c"
+#line 3480 "src/xkbcomp/parser.c"
     break;
 
-  case 192: /* KeySymList: KeySymList "," "string literal"  */
-#line 920 "src/xkbcomp/parser.y"
+  case 193: /* KeySymList: KeySymList "," "string literal"  */
+#line 927 "src/xkbcomp/parser.y"
                         {
                             (yyval.expr) = ExprKeySymListAppendString(param->scanner, (yyvsp[-2].expr), (yyvsp[0].str));
                             free((yyvsp[0].str));
                             if (!(yyval.expr))
                                 YYERROR;
                         }
-#line 3483 "src/xkbcomp/parser.c"
+#line 3491 "src/xkbcomp/parser.c"
     break;
 
-  case 193: /* KeySymList: KeySymLit  */
-#line 927 "src/xkbcomp/parser.y"
+  case 194: /* KeySymList: KeySymLit  */
+#line 934 "src/xkbcomp/parser.y"
                         {
                             (yyval.expr) = ExprCreateKeySymList((yyvsp[0].keysym));
                             if (!(yyval.expr))
                                 YYERROR;
                         }
-#line 3493 "src/xkbcomp/parser.c"
+#line 3501 "src/xkbcomp/parser.c"
     break;
 
-  case 194: /* KeySymList: "string literal"  */
-#line 933 "src/xkbcomp/parser.y"
+  case 195: /* KeySymList: "string literal"  */
+#line 940 "src/xkbcomp/parser.y"
                         {
                             (yyval.expr) = ExprCreateKeySymList(XKB_KEY_NoSymbol);
                             if (!(yyval.expr))
@@ -3510,17 +3518,17 @@ yyreduce:
                             if (!(yyval.expr))
                                 YYERROR;
                         }
-#line 3507 "src/xkbcomp/parser.c"
+#line 3515 "src/xkbcomp/parser.c"
     break;
 
-  case 195: /* NonEmptyKeySyms: "{" KeySymList "}"  */
-#line 945 "src/xkbcomp/parser.y"
+  case 196: /* NonEmptyKeySyms: "{" KeySymList "}"  */
+#line 952 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[-1].expr); }
-#line 3513 "src/xkbcomp/parser.c"
+#line 3521 "src/xkbcomp/parser.c"
     break;
 
-  case 196: /* NonEmptyKeySyms: "string literal"  */
-#line 947 "src/xkbcomp/parser.y"
+  case 197: /* NonEmptyKeySyms: "string literal"  */
+#line 954 "src/xkbcomp/parser.y"
                         {
                             (yyval.expr) = ExprCreateKeySymList(XKB_KEY_NoSymbol);
                             if (!(yyval.expr))
@@ -3530,40 +3538,40 @@ yyreduce:
                             if (!(yyval.expr))
                                 YYERROR;
                         }
-#line 3527 "src/xkbcomp/parser.c"
+#line 3535 "src/xkbcomp/parser.c"
     break;
 
-  case 197: /* KeySyms: NonEmptyKeySyms  */
-#line 959 "src/xkbcomp/parser.y"
+  case 198: /* KeySyms: NonEmptyKeySyms  */
+#line 966 "src/xkbcomp/parser.y"
                         { (yyval.expr) = (yyvsp[0].expr); }
-#line 3533 "src/xkbcomp/parser.c"
+#line 3541 "src/xkbcomp/parser.c"
     break;
 
-  case 198: /* KeySyms: "{" "}"  */
-#line 961 "src/xkbcomp/parser.y"
+  case 199: /* KeySyms: "{" "}"  */
+#line 968 "src/xkbcomp/parser.y"
                         { (yyval.expr) = ExprCreateKeySymList(XKB_KEY_NoSymbol); }
-#line 3539 "src/xkbcomp/parser.c"
+#line 3547 "src/xkbcomp/parser.c"
     break;
 
-  case 199: /* KeySym: KeySymLit  */
-#line 965 "src/xkbcomp/parser.y"
+  case 200: /* KeySym: KeySymLit  */
+#line 972 "src/xkbcomp/parser.y"
                         { (yyval.keysym) = (yyvsp[0].keysym); }
-#line 3545 "src/xkbcomp/parser.c"
+#line 3553 "src/xkbcomp/parser.c"
     break;
 
-  case 200: /* KeySym: "string literal"  */
-#line 967 "src/xkbcomp/parser.y"
+  case 201: /* KeySym: "string literal"  */
+#line 974 "src/xkbcomp/parser.y"
                         {
                             (yyval.keysym) = KeysymParseString(param->scanner, (yyvsp[0].str));
                             free((yyvsp[0].str));
                             if ((yyval.keysym) == XKB_KEY_NoSymbol)
                                 YYERROR;
                         }
-#line 3556 "src/xkbcomp/parser.c"
+#line 3564 "src/xkbcomp/parser.c"
     break;
 
-  case 201: /* KeySymLit: "identifier"  */
-#line 976 "src/xkbcomp/parser.y"
+  case 202: /* KeySymLit: "identifier"  */
+#line 983 "src/xkbcomp/parser.y"
                         {
                             if (!resolve_keysym(param, (yyvsp[0].sval), &(yyval.keysym))) {
                                 parser_warn(
@@ -3575,17 +3583,17 @@ yyreduce:
                                 (yyval.keysym) = XKB_KEY_NoSymbol;
                             }
                         }
-#line 3572 "src/xkbcomp/parser.c"
+#line 3580 "src/xkbcomp/parser.c"
     break;
 
-  case 202: /* KeySymLit: "section"  */
-#line 988 "src/xkbcomp/parser.y"
+  case 203: /* KeySymLit: "section"  */
+#line 995 "src/xkbcomp/parser.y"
                                 { (yyval.keysym) = XKB_KEY_section; }
-#line 3578 "src/xkbcomp/parser.c"
+#line 3586 "src/xkbcomp/parser.c"
     break;
 
-  case 203: /* KeySymLit: "decimal digit"  */
-#line 990 "src/xkbcomp/parser.y"
+  case 204: /* KeySymLit: "decimal digit"  */
+#line 997 "src/xkbcomp/parser.y"
                         {
                             /*
                              * Special case for digits 0..9:
@@ -3594,11 +3602,11 @@ yyreduce:
                              */
                             (yyval.keysym) = XKB_KEY_0 + (xkb_keysym_t) (yyvsp[0].num);
                         }
-#line 3591 "src/xkbcomp/parser.c"
+#line 3599 "src/xkbcomp/parser.c"
     break;
 
-  case 204: /* KeySymLit: "integer literal"  */
-#line 999 "src/xkbcomp/parser.y"
+  case 205: /* KeySymLit: "integer literal"  */
+#line 1006 "src/xkbcomp/parser.y"
                         {
                             if ((yyvsp[0].num) < XKB_KEYSYM_MIN) {
                                 /* Negative value */
@@ -3656,107 +3664,107 @@ yyreduce:
                                 );
                             }
                         }
-#line 3653 "src/xkbcomp/parser.c"
+#line 3661 "src/xkbcomp/parser.c"
     break;
 
-  case 205: /* SignedNumber: "-" Number  */
-#line 1058 "src/xkbcomp/parser.y"
+  case 206: /* SignedNumber: "-" Number  */
+#line 1065 "src/xkbcomp/parser.y"
                                         { (yyval.num) = -(yyvsp[0].num); }
-#line 3659 "src/xkbcomp/parser.c"
+#line 3667 "src/xkbcomp/parser.c"
     break;
 
-  case 206: /* SignedNumber: Number  */
-#line 1059 "src/xkbcomp/parser.y"
+  case 207: /* SignedNumber: Number  */
+#line 1066 "src/xkbcomp/parser.y"
                                         { (yyval.num) = (yyvsp[0].num); }
-#line 3665 "src/xkbcomp/parser.c"
+#line 3673 "src/xkbcomp/parser.c"
     break;
 
-  case 207: /* Number: "float literal"  */
-#line 1062 "src/xkbcomp/parser.y"
+  case 208: /* Number: "float literal"  */
+#line 1069 "src/xkbcomp/parser.y"
                                       { (yyval.num) = (yyvsp[0].num); }
-#line 3671 "src/xkbcomp/parser.c"
+#line 3679 "src/xkbcomp/parser.c"
     break;
 
-  case 208: /* Number: "decimal digit"  */
-#line 1063 "src/xkbcomp/parser.y"
-                                      { (yyval.num) = (yyvsp[0].num); }
-#line 3677 "src/xkbcomp/parser.c"
-    break;
-
-  case 209: /* Number: "integer literal"  */
-#line 1064 "src/xkbcomp/parser.y"
-                                      { (yyval.num) = (yyvsp[0].num); }
-#line 3683 "src/xkbcomp/parser.c"
-    break;
-
-  case 210: /* Float: "float literal"  */
-#line 1067 "src/xkbcomp/parser.y"
-                                { (yyval.num) = 0; }
-#line 3689 "src/xkbcomp/parser.c"
-    break;
-
-  case 211: /* Integer: "integer literal"  */
+  case 209: /* Number: "decimal digit"  */
 #line 1070 "src/xkbcomp/parser.y"
                                       { (yyval.num) = (yyvsp[0].num); }
-#line 3695 "src/xkbcomp/parser.c"
+#line 3685 "src/xkbcomp/parser.c"
     break;
 
-  case 212: /* Integer: "decimal digit"  */
+  case 210: /* Number: "integer literal"  */
 #line 1071 "src/xkbcomp/parser.y"
                                       { (yyval.num) = (yyvsp[0].num); }
-#line 3701 "src/xkbcomp/parser.c"
+#line 3691 "src/xkbcomp/parser.c"
     break;
 
-  case 213: /* KeyCode: "integer literal"  */
+  case 211: /* Float: "float literal"  */
 #line 1074 "src/xkbcomp/parser.y"
-                                      { (yyval.num) = (yyvsp[0].num); }
-#line 3707 "src/xkbcomp/parser.c"
+                                { (yyval.num) = 0; }
+#line 3697 "src/xkbcomp/parser.c"
     break;
 
-  case 214: /* KeyCode: "decimal digit"  */
-#line 1075 "src/xkbcomp/parser.y"
+  case 212: /* Integer: "integer literal"  */
+#line 1077 "src/xkbcomp/parser.y"
                                       { (yyval.num) = (yyvsp[0].num); }
-#line 3713 "src/xkbcomp/parser.c"
+#line 3703 "src/xkbcomp/parser.c"
     break;
 
-  case 215: /* Ident: "identifier"  */
+  case 213: /* Integer: "decimal digit"  */
 #line 1078 "src/xkbcomp/parser.y"
-                                { (yyval.atom) = xkb_atom_intern(param->ctx, (yyvsp[0].sval).start, (yyvsp[0].sval).len); }
-#line 3719 "src/xkbcomp/parser.c"
+                                      { (yyval.num) = (yyvsp[0].num); }
+#line 3709 "src/xkbcomp/parser.c"
     break;
 
-  case 216: /* Ident: "default"  */
-#line 1079 "src/xkbcomp/parser.y"
-                                { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "default"); }
-#line 3725 "src/xkbcomp/parser.c"
+  case 214: /* KeyCode: "integer literal"  */
+#line 1081 "src/xkbcomp/parser.y"
+                                      { (yyval.num) = (yyvsp[0].num); }
+#line 3715 "src/xkbcomp/parser.c"
     break;
 
-  case 217: /* String: "string literal"  */
+  case 215: /* KeyCode: "decimal digit"  */
 #line 1082 "src/xkbcomp/parser.y"
-                                { (yyval.atom) = xkb_atom_intern(param->ctx, (yyvsp[0].str), strlen((yyvsp[0].str))); free((yyvsp[0].str)); }
-#line 3731 "src/xkbcomp/parser.c"
+                                      { (yyval.num) = (yyvsp[0].num); }
+#line 3721 "src/xkbcomp/parser.c"
     break;
 
-  case 218: /* OptMapName: MapName  */
+  case 216: /* Ident: "identifier"  */
 #line 1085 "src/xkbcomp/parser.y"
-                                { (yyval.str) = (yyvsp[0].str); }
-#line 3737 "src/xkbcomp/parser.c"
+                                { (yyval.atom) = xkb_atom_intern(param->ctx, (yyvsp[0].sval).start, (yyvsp[0].sval).len); }
+#line 3727 "src/xkbcomp/parser.c"
     break;
 
-  case 219: /* OptMapName: %empty  */
+  case 217: /* Ident: "default"  */
 #line 1086 "src/xkbcomp/parser.y"
-                                { (yyval.str) = NULL; }
-#line 3743 "src/xkbcomp/parser.c"
+                                { (yyval.atom) = xkb_atom_intern_literal(param->ctx, "default"); }
+#line 3733 "src/xkbcomp/parser.c"
     break;
 
-  case 220: /* MapName: "string literal"  */
+  case 218: /* String: "string literal"  */
 #line 1089 "src/xkbcomp/parser.y"
+                                { (yyval.atom) = xkb_atom_intern(param->ctx, (yyvsp[0].str), strlen((yyvsp[0].str))); free((yyvsp[0].str)); }
+#line 3739 "src/xkbcomp/parser.c"
+    break;
+
+  case 219: /* OptMapName: MapName  */
+#line 1092 "src/xkbcomp/parser.y"
                                 { (yyval.str) = (yyvsp[0].str); }
-#line 3749 "src/xkbcomp/parser.c"
+#line 3745 "src/xkbcomp/parser.c"
+    break;
+
+  case 220: /* OptMapName: %empty  */
+#line 1093 "src/xkbcomp/parser.y"
+                                { (yyval.str) = NULL; }
+#line 3751 "src/xkbcomp/parser.c"
+    break;
+
+  case 221: /* MapName: "string literal"  */
+#line 1096 "src/xkbcomp/parser.y"
+                                { (yyval.str) = (yyvsp[0].str); }
+#line 3757 "src/xkbcomp/parser.c"
     break;
 
 
-#line 3753 "src/xkbcomp/parser.c"
+#line 3761 "src/xkbcomp/parser.c"
 
       default: break;
     }
@@ -3980,7 +3988,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1092 "src/xkbcomp/parser.y"
+#line 1099 "src/xkbcomp/parser.y"
 
 
 /* Parse a specific section */
@@ -4040,7 +4048,7 @@ parse(struct xkb_context *ctx, const struct parser_keymap_config *config,
                 XKB_WARNING_MISSING_DEFAULT_SECTION,
                 "No map in include statement, but \"%s\" contains several; "
                 "Using first defined map, \"%s\"\n",
-                scanner->file_name, safe_map_name(first));
+                scanner->file_name, safe_map_name(first->name));
 
     return first;
 }

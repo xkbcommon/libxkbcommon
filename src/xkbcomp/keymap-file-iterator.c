@@ -71,6 +71,7 @@ xkb_map_flags_string_iter(unsigned int *index, enum xkb_map_flags flags)
         { MAP_HAS_KEYPAD, "keypad" },
         { MAP_HAS_FN, "fn" },
         { MAP_IS_ALTGR, "altgr" },
+        { MAP_IS_DEPRECATED, "deprecated" },
     };
 
     while (*index < ARRAY_SIZE(names)) {

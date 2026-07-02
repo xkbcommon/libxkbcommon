@@ -133,7 +133,8 @@ extern int _xkbcommon_debug;
     MODIFIER_KEYS = 74,            /* "modifier_keys"  */
     KEYPAD_KEYS = 75,              /* "keypad_keys"  */
     FUNCTION_KEYS = 76,            /* "function_keys"  */
-    ALTERNATE_GROUP = 77           /* "alternate_group"  */
+    ALTERNATE_GROUP = 77,          /* "alternate_group"  */
+    DEPRECATED = 78                /* "deprecated"  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -142,7 +143,7 @@ extern int _xkbcommon_debug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 175 "src/xkbcomp/parser.y"
+#line 177 "src/xkbcomp/parser.y"
 
         int64_t          num;
         enum xkb_file_type file_type;
@@ -175,7 +176,7 @@ union YYSTYPE
         XkbFile         *file;
         struct { XkbFile *head; XkbFile *last; } fileList;
 
-#line 172 "src/xkbcomp/parser.h"
+#line 173 "src/xkbcomp/parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

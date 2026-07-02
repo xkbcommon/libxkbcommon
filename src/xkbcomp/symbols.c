@@ -2088,7 +2088,7 @@ HandleSymbolsFile(SymbolsInfo *info, XkbFile *file)
         if (info->errorCount > 10) {
             log_err(info->ctx, XKB_ERROR_INVALID_XKB_SYNTAX,
                     "Abandoning symbols file \"%s\"\n",
-                    safe_map_name(file));
+                    safe_map_name(file->name));
             break;
         }
     }

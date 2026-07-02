@@ -921,7 +921,7 @@ HandleKeycodesFile(KeyNamesInfo *info, XkbFile *file)
         if (info->errorCount > 10) {
             log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Abandoning keycodes file \"%s\"\n",
-                    safe_map_name(file));
+                    safe_map_name(file->name));
             break;
         }
     }

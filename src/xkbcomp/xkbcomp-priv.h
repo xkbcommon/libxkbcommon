@@ -222,7 +222,7 @@ ReportBadField(struct xkb_context *ctx, const char *type, const char *field,
 }
 
 static inline const char*
-safe_map_name(XkbFile *file)
+safe_map_name(const char* name)
 {
-    return file->name ? file->name : "(unnamed map)";
+    return name ? name : "(unnamed map)";
 }

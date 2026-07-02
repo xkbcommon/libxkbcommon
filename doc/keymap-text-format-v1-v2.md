@@ -738,6 +738,7 @@ _case-sensitive_.
 | `alternate`             | Merge mode qualifier for [include] statements |
 | `augment`               | Merge mode qualifier for [include] statements |
 | `default`               | [Section flag](@ref section-flag-default) |
+| `deprecated`            | [Section flag](@ref section-flag-deprecated) |
 | `function_keys`         | [Section flag](@ref section-flag-function) |
 | `group`                 | <span class="todo">TODO</span> |
 | `hidden`                | [Section flag](@ref section-flag-hidden) |
@@ -1259,6 +1260,8 @@ marked as a default, the first map in the file is the *implicit* default. Only
 </dd>
 <dt><code>hidden</code>@anchor section-flag-hidden</dt>
 <dd>Variant that can only be used internally.</dd>
+<dt><code>default</code>@anchor section-flag-deprecated</dt>
+<dd>Section is deprecated</dd>
 </dl>
 
 ### Symbols flags
