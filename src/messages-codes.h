@@ -218,6 +218,8 @@ enum xkb_message_code {
     XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX = 903,
     /** ABI backward-compatibility check failed */
     XKB_ERROR_ABI_BACKWARD_COMPAT_ = 914,
+    /** Invalid section flag */
+    XKB_ERROR_UNKNOWN_SECTION_FLAG = 917,
     /** Warn if there are conflicting fields in the key definition or while merging keys */
     XKB_WARNING_CONFLICTING_KEY_FIELDS = 935,
     /** An identifier is used but is not built-in */

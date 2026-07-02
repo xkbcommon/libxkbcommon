@@ -13,7 +13,10 @@
 #include <time.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "darray.h"
 #include "keymap.h"
+#include "log.h"
+#include "messages-codes.h"
 #include "src/keysym.h"
 #include "test/keysym.h"
 #include "test.h"
@@ -245,6 +248,155 @@ test_optional_components(struct xkb_context *ctx, bool update_output_files)
                                    keymaps[k].keymap, strlen(keymaps[k].keymap),
                                    keymaps[k].expected, update_output_files));
     }
+}
+
+static void
+test_section_flags(void)
+{
+    static const char unknown_error[] =
+        "error: [XKB-917] (input string):2:3: Unknown section flag \"foo\"\n"
+        "error: [XKB-822] Failed to parse input xkb string\n";
+
+    static const char unknown_warning[] =
+        "warning: [XKB-917] (input string):2:3: Unknown section flag \"foo\"; ignored\n"
+        "warning: [XKB-917] (input string):2:7: Unknown section flag \"bar\"; ignored\n";
+
+    static const struct {
+        const char* keymap;
+        struct errors {
+            struct result {
+                const char* log;
+                bool error;
+            } strict;
+            struct result lax;
+        } v1;
+        struct errors v2;
+    } tests[] = {
+        /* Known flags */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  default partial hidden alphanumeric_keys \n"
+                "  modifier_keys keypad_keys function_keys alternate_group \n"
+                "  xkb_keycodes {};\n"
+                "};",
+            .v1 = {
+                .strict = {
+                    .error = false,
+                    .log = ""
+                },
+                .lax = {
+                    .error = false,
+                    .log = ""
+                },
+            },
+            .v2 = {
+                .strict = {
+                    .error = false,
+                    .log = ""
+                },
+                .lax = {
+                    .error = false,
+                    .log = ""
+                },
+            },
+        },
+        /* Unknown flags */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  foo bar xkb_keycodes {};\n"
+                "};",
+            .v1 = {
+                .strict = {
+                    .error = true,
+                    .log = unknown_error
+                },
+                .lax = {
+                    .error = true,
+                    .log = unknown_error
+                },
+            },
+            .v2 = {
+                .strict = {
+                    .error = true,
+                    .log = unknown_error
+                },
+                .lax = {
+                    .error = false,
+                    .log = unknown_warning
+                },
+            },
+        }
+    };
+
+    struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
+    assert(ctx);
+
+    darray_char log_string;
+    darray_init(log_string);
+    darray_append_lit(log_string, "");
+    xkb_context_set_user_data(ctx, &log_string);
+    xkb_context_set_log_fn(ctx, log_fn);
+
+    xkb_context_set_log_level(ctx, XKB_LOG_LEVEL_WARNING);
+    xkb_context_set_log_verbosity(ctx, XKB_LOG_VERBOSITY_MINIMAL);
+
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        const struct {
+            const char* log;
+            enum xkb_keymap_format format;
+            enum xkb_keymap_compile_flags flags;
+            bool error;
+        } configs[] = {
+            {
+                .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+                .flags = TEST_KEYMAP_COMPILE_FLAGS & ~XKB_KEYMAP_COMPILE_STRICT_MODE,
+                .error = tests[t].v1.lax.error,
+                .log = tests[t].v1.lax.log
+            },
+            {
+                .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+                .flags = TEST_KEYMAP_COMPILE_FLAGS | XKB_KEYMAP_COMPILE_STRICT_MODE,
+                .error = tests[t].v1.strict.error,
+                .log = tests[t].v1.strict.log
+            },
+            {
+                .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+                .flags = TEST_KEYMAP_COMPILE_FLAGS & ~XKB_KEYMAP_COMPILE_STRICT_MODE,
+                .error = tests[t].v2.lax.error,
+                .log = tests[t].v2.lax.log
+            },
+            {
+                .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+                .flags = TEST_KEYMAP_COMPILE_FLAGS | XKB_KEYMAP_COMPILE_STRICT_MODE,
+                .error = tests[t].v2.strict.error,
+                .log = tests[t].v2.strict.log
+            },
+        };
+
+        for (unsigned int c = 0; c < ARRAY_SIZE(configs); c++) {
+            fprintf(stderr, "------\n*** %s: #%u (format: %d, strict: %d) ***\n",
+                    __func__, t, configs[c].format, !!configs[c].flags);
+            assert(test_compile_output(
+                ctx, configs[c].format,
+                XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                compile_buffer, (void *)&configs[c].flags, __func__,
+                tests[t].keymap, strlen(tests[t].keymap),
+                (configs[c].error
+                    ? NULL
+                    : GOLDEN_TESTS_OUTPUTS "optional-components-none.xkb"),
+                false
+            ));
+            assert_printf(streq_not_null(darray_items(log_string), configs[c].log),
+                          "Expected:\n%s\nGot:\n%s\n",
+                          configs[c].log, darray_items(log_string));
+            darray_size(log_string) = 0;
+        }
+    }
+
+    xkb_context_unref(ctx);
+    darray_free(log_string);
 }
 
 static void
@@ -3339,6 +3491,7 @@ main(int argc, char *argv[])
     test_floats(ctx);
     test_component_syntax_error(ctx);
     test_optional_components(ctx, update_output_files);
+    test_section_flags();
     test_bidi_chars(ctx, update_output_files);
     test_recursive_includes(ctx);
     test_include_paths(ctx);

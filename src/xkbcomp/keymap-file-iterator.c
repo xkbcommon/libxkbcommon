@@ -11,12 +11,13 @@
 #include "xkbcommon/xkbcommon.h"
 #include "context.h"
 #include "darray.h"
+#include "include.h"
+#include "keymap-formats.h"
+#include "keymap-file-iterator.h"
 #include "messages-codes.h"
 #include "utils.h"
 #include "utils-paths.h"
-#include "keymap-file-iterator.h"
 #include "xkbcomp-priv.h"
-#include "include.h"
 #include "xkbcomp/ast.h"
 
 const char *
@@ -104,8 +105,14 @@ xkb_resolve_file(struct xkb_context *ctx,
                                  true);
     }
 
+    const enum xkb_keymap_format format = DEFAULT_INPUT_KEYMAP_FORMAT;
+    const struct parser_keymap_config config = {
+        .format = format,
+        .strict = parser_strict_flags_from_keymap_format(format)
+    };
+
     while (file) {
-        XkbFile * const xkb_file = XkbParseFile(ctx, file, path, map);
+        XkbFile * const xkb_file = XkbParseFile(ctx, &config, file, path, map);
         if (xkb_file) {
             if (file_type < _FILE_TYPE_NUM_ENTRIES &&
                 xkb_file->file_type != file_type) {
@@ -236,6 +243,7 @@ xkb_file_section_set_meta_data(struct xkb_context *ctx,
 static bool
 xkb_file_section_append_includes(struct xkb_context *ctx,
                                  enum xkb_file_iterator_flags flags,
+                                 const struct parser_keymap_config *config,
                                  const char *section_path,
                                  struct xkb_file_section *section,
                                  enum xkb_file_type file_type,
@@ -246,7 +254,8 @@ xkb_file_section_append_includes(struct xkb_context *ctx,
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         char buf[PATH_MAX];
         /* Parse the included file to check the include validity */
-        XkbFile *xkb_file = ProcessIncludeFile(ctx, stmt, file_type, buf, sizeof(buf));
+        XkbFile *xkb_file = ProcessIncludeFile(ctx, config, stmt, file_type,
+                                               buf, sizeof(buf));
         const bool valid = (xkb_file != NULL);
         if (valid || !(flags & XKB_FILE_ITERATOR_FAIL_ON_INCLUDE_ERROR)) {
             /* Collect the strings of the statement properties */
@@ -324,6 +333,7 @@ xkb_file_section_append_includes(struct xkb_context *ctx,
 static bool
 xkb_file_section_process(struct xkb_context *ctx,
                          enum xkb_file_iterator_flags flags,
+                         const struct parser_keymap_config *config,
                          const char *path,
                          struct xkb_file_section *section,
                          const XkbFile *xkb_file)
@@ -331,8 +341,8 @@ xkb_file_section_process(struct xkb_context *ctx,
     bool ok = true;
     for (ParseCommon *stmt = xkb_file->defs; stmt; stmt = stmt->next) {
         if (stmt->type == STMT_INCLUDE) {
-            ok = xkb_file_section_append_includes(ctx, flags, path, section,
-                                                  xkb_file->file_type,
+            ok = xkb_file_section_append_includes(ctx, flags, config, path,
+                                                  section, xkb_file->file_type,
                                                   (IncludeStmt *) stmt);
             if (!ok)
                 break;
@@ -360,7 +370,12 @@ xkb_file_section_parse(struct xkb_context *ctx,
         return false;
     }
 
-    XkbFile *xkb_file = XkbParseFile(ctx, file, path, map);
+    const struct parser_keymap_config config = {
+        .format = format,
+        .strict = parser_strict_flags_from_keymap_format(format)
+    };
+
+    XkbFile *xkb_file = XkbParseFile(ctx, &config, file, path, map);
     fclose(file);
     if (!xkb_file) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -374,7 +389,8 @@ xkb_file_section_parse(struct xkb_context *ctx,
     const bool ok = (
         xkb_file_section_set_meta_data(ctx, section, xkb_file) &&
         (no_includes ||
-         xkb_file_section_process(ctx, iterator_flags, path, section, xkb_file))
+         xkb_file_section_process(ctx, iterator_flags, &config, path, section,
+                                  xkb_file))
     );
     FreeXkbFile(xkb_file);
     return ok;
@@ -401,6 +417,10 @@ xkb_file_iterator_new_from_buffer(struct xkb_context *ctx,
     iter->path = path;
     iter->map = map;
     iter->type = file_type;
+    iter->parser_config = (struct parser_keymap_config) {
+        .format = format,
+        .strict = parser_strict_flags_from_keymap_format(format)
+    };
     xkb_file_section_init(&iter->section);
 
     if (!XkbParseStringInit(ctx, &iter->scanner, string, length, path, NULL)) {
@@ -449,7 +469,8 @@ next:
         }
     }
 
-    if (!XkbParseStringNext(iter->ctx, &iter->scanner, iter->map, &xkb_file)) {
+    if (!XkbParseStringNext(iter->ctx, &iter->parser_config, &iter->scanner,
+                            iter->map, &xkb_file)) {
         log_err(iter->ctx, XKB_LOG_MESSAGE_NO_ID,
                 "Error while parsing section in file: %s\n", iter->path);
         goto error;
@@ -504,8 +525,8 @@ parse_components:
     /* Collect include statements of current section */
     const bool process_includes = !(iter->flags & XKB_FILE_ITERATOR_NO_INCLUDES);
     if (process_includes &&
-        !xkb_file_section_process(iter->ctx, iter->flags, iter->path,
-                                  &iter->section, xkb_file)) {
+        !xkb_file_section_process(iter->ctx, iter->flags, &iter->parser_config,
+                                  iter->path, &iter->section, xkb_file)) {
         goto error;
     } else if (iter->pending_section) {
         /* Next component */

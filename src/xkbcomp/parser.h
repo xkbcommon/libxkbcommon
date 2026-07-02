@@ -58,8 +58,9 @@ extern int _xkbcommon_debug;
 
 #include "scanner-utils.h"
 #include "xkbcomp/ast.h"
+#include "xkbcomp/xkbcomp-priv.h"
 
-#line 56 "src/xkbcomp/parser.h"
+#line 57 "src/xkbcomp/parser.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -141,7 +142,7 @@ extern int _xkbcommon_debug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 170 "src/xkbcomp/parser.y"
+#line 175 "src/xkbcomp/parser.y"
 
         int64_t          num;
         enum xkb_file_type file_type;
@@ -174,7 +175,7 @@ union YYSTYPE
         XkbFile         *file;
         struct { XkbFile *head; XkbFile *last; } fileList;
 
-#line 171 "src/xkbcomp/parser.h"
+#line 172 "src/xkbcomp/parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

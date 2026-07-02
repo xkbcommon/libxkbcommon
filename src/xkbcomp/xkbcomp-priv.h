@@ -47,13 +47,42 @@ enum xkb_parser_strict_flags {
     PARSER_NO_UNKNOWN_ACTION_FIELDS = (1 << 12),
     PARSER_NO_ILLEGAL_ACTION_FIELDS = (1 << 13),
 
-    PARSER_V1_STRICT_FLAGS = ((PARSER_NO_ILLEGAL_ACTION_FIELDS << 1) - 1),
+    PARSER_NO_UNKNOWN_SECTION_FLAGS = (1 << 14),
+
+    PARSER_STRICT_FLAGS_ALL = ((PARSER_NO_UNKNOWN_SECTION_FLAGS << 1) - 1),
+
+    PARSER_V1_STRICT_FLAGS = PARSER_STRICT_FLAGS_ALL,
     /* Limited flexibility */
     PARSER_V1_LAX_FLAGS = (PARSER_V1_STRICT_FLAGS &
                            ~PARSER_NO_FIELD_VALUE_MISMATCH),
 
-    PARSER_V2_STRICT_FLAGS = PARSER_V1_STRICT_FLAGS,
+    PARSER_V2_STRICT_FLAGS = PARSER_STRICT_FLAGS_ALL,
     PARSER_V2_LAX_FLAGS = PARSER_NO_STRICT_FLAGS,
+};
+
+static inline enum xkb_parser_strict_flags
+parser_strict_flags_from_keymap_format(enum xkb_keymap_format format)
+{
+    return (format == XKB_KEYMAP_FORMAT_TEXT_V1)
+            ? PARSER_V1_LAX_FLAGS
+            : PARSER_V2_LAX_FLAGS;
+}
+
+static inline enum xkb_parser_strict_flags
+parser_strict_flags_from_keymap(const struct xkb_keymap *keymap)
+{
+    return (keymap->format == XKB_KEYMAP_FORMAT_TEXT_V1)
+            ? (keymap->flags & XKB_KEYMAP_COMPILE_STRICT_MODE
+                ? PARSER_V1_STRICT_FLAGS
+                : PARSER_V1_LAX_FLAGS)
+            : (keymap->flags & XKB_KEYMAP_COMPILE_STRICT_MODE
+                ? PARSER_V2_STRICT_FLAGS
+                : PARSER_V2_LAX_FLAGS);
+}
+
+struct parser_keymap_config {
+    enum xkb_keymap_format format;
+    enum xkb_parser_strict_flags strict;
 };
 
 typedef union ExprDef ExprDef;
@@ -104,8 +133,9 @@ text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
                              enum xkb_keymap_serialize_flags flags);
 
 XkbFile *
-XkbParseFile(struct xkb_context *ctx, FILE *file,
-             const char *file_name, const char *map);
+XkbParseFile(struct xkb_context *ctx,
+             const struct parser_keymap_config *config,
+             FILE *file, const char *file_name, const char *map);
 bool
 XkbParseStringInit(struct xkb_context *ctx, struct scanner *scanner,
                    const char *string, size_t len,
@@ -113,12 +143,14 @@ XkbParseStringInit(struct xkb_context *ctx, struct scanner *scanner,
 
 XkbFile *
 XkbParseString(struct xkb_context *ctx,
+               const struct parser_keymap_config *config,
                const char *string, size_t len,
                const char *file_name, const char *map);
 
 bool
-XkbParseStringNext(struct xkb_context *ctx, struct scanner *scanner,
-                   const char *map, XkbFile **out);
+XkbParseStringNext(struct xkb_context *ctx,
+                   const struct parser_keymap_config *config,
+                   struct scanner *scanner, const char *map, XkbFile **out);
 
 void
 FreeXkbFile(XkbFile *file);

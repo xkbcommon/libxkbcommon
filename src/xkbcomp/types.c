@@ -217,12 +217,17 @@ HandleIncludeKeyTypes(KeyTypesInfo *info, IncludeStmt *include)
                      &info->mods);
     included.name = steal(&include->stmt);
 
+    const struct parser_keymap_config config = {
+        .format = info->keymap_info->keymap.format,
+        .strict = info->keymap_info->strict
+    };
+
     for (IncludeStmt *stmt = include; stmt; stmt = stmt->next_incl) {
         KeyTypesInfo next_incl;
         XkbFile *file;
 
         char path[PATH_MAX];
-        file = ProcessIncludeFile(info->ctx, stmt, FILE_TYPE_TYPES,
+        file = ProcessIncludeFile(info->ctx, &config, stmt, FILE_TYPE_TYPES,
                                   path, sizeof(path));
         if (!file) {
             info->errorCount += 10;

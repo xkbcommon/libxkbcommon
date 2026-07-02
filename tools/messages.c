@@ -100,6 +100,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_CONFLICTING_KEY_SYMBOLS_ENTRY, "Conflicting key symbols entry"},
     {XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX, "Missing symbols group name index"},
     {XKB_ERROR_ABI_BACKWARD_COMPAT_, "Abi backward compat"},
+    {XKB_ERROR_UNKNOWN_SECTION_FLAG, "Unknown section flag"},
     {XKB_WARNING_CONFLICTING_KEY_FIELDS, "Conflicting key fields"},
     {XKB_ERROR_INVALID_IDENTIFIER, "Invalid identifier"},
     {XKB_WARNING_UNRESOLVED_KEYMAP_SYMBOL, "Unresolved keymap symbol"},

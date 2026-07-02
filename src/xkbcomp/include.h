@@ -8,6 +8,7 @@
 
 #include "ast.h"
 #include "utils.h"
+#include "xkbcomp-priv.h"
 
 /* Reasonable threshold, with plenty of margin for keymaps in the wild */
 #define INCLUDE_MAX_DEPTH 15
@@ -42,5 +43,7 @@ bool
 ExceedsIncludeMaxDepth(struct xkb_context *ctx, unsigned int include_depth);
 
 XkbFile *
-ProcessIncludeFile(struct xkb_context *ctx, const IncludeStmt *stmt,
+ProcessIncludeFile(struct xkb_context *ctx,
+                   const struct parser_keymap_config *config,
+                   const IncludeStmt *stmt,
                    enum xkb_file_type file_type, char *path, size_t path_size);
