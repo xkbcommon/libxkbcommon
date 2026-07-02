@@ -69,7 +69,7 @@ bench_stop(struct bench *bench)
 #ifndef _WIN32
 
 static const clockid_t best_clock =
-    #if defined(HAVE_CLOCK_PROCESS_CPUTIME_ID)
+    #ifdef HAVE_CLOCK_PROCESS_CPUTIME_ID
         CLOCK_PROCESS_CPUTIME_ID
     #elif defined(HAVE_CLOCK_MONOTONIC)
         CLOCK_MONOTONIC

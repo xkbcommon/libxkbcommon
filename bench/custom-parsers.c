@@ -15,7 +15,7 @@
 
 #include "bench.h"
 
-const double DEFAULT_STDEV = 0.05;
+static const double DEFAULT_STDEV = 0.05;
 
 static void
 usage(char **argv)

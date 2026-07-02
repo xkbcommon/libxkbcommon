@@ -13,8 +13,8 @@
 #include "xkbcomp/rules.h"
 #include "bench.h"
 
-const unsigned int DEFAULT_ITERATIONS = 20000;
-const double       DEFAULT_STDEV = 0.05;
+static const unsigned int DEFAULT_ITERATIONS = 20000;
+static const double       DEFAULT_STDEV = 0.05;
 
 static void
 usage(char **argv)

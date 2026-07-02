@@ -620,6 +620,7 @@ test_pure_virtual_modifiers(struct xkb_context *context)
 }
 
 /* Test FAQ snippet */
+// NOLINTBEGIN(readability-duplicate-include)
 //! [xkb_keymap_mod_get_codes]
 #include <xkbcommon/xkbcommon.h>
 /**
@@ -677,6 +678,7 @@ xkb_keymap_mod_get_codes(struct xkb_keymap *keymap, xkb_mod_index_t mod,
     return idx;
 }
 //! [xkb_keymap_mod_get_codes]
+// NOLINTEND(readability-duplicate-include)
 
 static void
 test_get_modifier_keycodes(struct xkb_context *context)
