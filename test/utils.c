@@ -17,6 +17,7 @@
 #include "utils.h"
 #include "utils-numbers.h"
 #include "utils-paths.h"
+#include "utils-random.h"
 #include "test/utils-text.h"
 
 static void
@@ -104,14 +105,14 @@ static uint32_t
 rand_uint32(void)
 {
     /* First decide how many bits we’ll actually use (1-32) */
-    int bits = 1 + (rand() % 32);
+    int bits = 1 + (int)(random() % 32);
 
     /* Generate a number with that many bits */
     uint32_t result = 0;
     while (bits > 0) {
         int bits_this_round = bits > 16 ? 16 : bits;
         result = (result << bits_this_round)
-               | (rand() & ((1U << bits_this_round) - 1));
+               | (random() & ((1U << bits_this_round) - 1));
         bits -= bits_this_round;
     }
 
@@ -122,14 +123,14 @@ static uint64_t
 rand_uint64(void)
 {
     /* First decide how many bits we’ll actually use (1-64) */
-    int bits = 1 + (rand() % 64);
+    int bits = 1 + (int)(random() % 64);
 
     /* Generate a number with that many bits */
     uint64_t result = 0;
     while (bits > 0) {
         int bits_this_round = bits > 16 ? 16 : bits;
         result = (result << bits_this_round)
-               | (rand() & ((1U << bits_this_round) - 1));
+               | (random() & ((1U << bits_this_round) - 1));
         bits -= bits_this_round;
     }
 
@@ -433,27 +434,27 @@ test_number_parsers(void)
         assert(count > 0);
         test_parse_to(uint32_t, hex, buffer, count, x32);
         /* Hex: some garbage after */
-        buffer[count] = (char) (((unsigned int) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) random()) % '0');
         test_parse_to(uint32_t, hex, buffer, count, x32);
         /* Hex: Upper case (64 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIX64, x64);
         assert(count > 0);
         test_parse_to(uint64_t, hex, buffer, count, x64);
         /* Hex: some garbage after */
-        buffer[count] = (char) (((unsigned int) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) random()) % '0');
         test_parse_to(uint64_t, hex, buffer, count, x64);
         /* Decimal (32 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu32, x32);
         assert(count > 0);
         test_parse_to(uint32_t, dec, buffer, count, x32);
         /* Decimal: some garbage after */
-        buffer[count] = (char) (((unsigned int) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) random()) % '0');
         test_parse_to(uint32_t, dec, buffer, count, x32);
         /* Decimal (64 bits) */
         count = snprintf(buffer, sizeof(buffer), "%"PRIu64, x64);
         assert(count > 0);
         test_parse_to(uint64_t, dec, buffer, count, x64);
-        buffer[count] = (char) (((unsigned int) rand()) % '0');
+        buffer[count] = (char) (((unsigned int) random()) % '0');
         test_parse_to(uint64_t, dec, buffer, count, x64);
     }
 }

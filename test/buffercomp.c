@@ -18,6 +18,7 @@
 #include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
+#include "utils-random.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -1279,11 +1280,11 @@ test_keycodes(struct xkb_context *ctx, bool update_output_files) {
 
         for (size_t b = 0; b < ARRAY_SIZE(bounds); b++) {
             assert(bounds[b].min < bounds[b].max);
-            const unsigned int keycode_count = rand() % (bounds[b].max_count + 1);
+            const unsigned int keycode_count = random() % (bounds[b].max_count + 1);
             for (unsigned int k = 0; k < keycode_count; k++) {
                 /* Note: we do not care about keycode uniqueness */
                 const xkb_keycode_t kc =
-                    bounds[b].min + (rand() % (bounds[b].max - bounds[b].min + 1));
+                    bounds[b].min + (random() % (bounds[b].max - bounds[b].min + 1));
                 assert(keycode_index < ARRAY_SIZE(keycodes));
                 keycodes[keycode_index++] = kc;
                 count = snprintf(buf, available,

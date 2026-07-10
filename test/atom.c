@@ -10,6 +10,7 @@
 
 #include "test.h"
 #include "atom.h"
+#include "utils-random.h"
 
 #define INTERN_LITERAL(table, literal) \
     atom_intern(table, literal, sizeof(literal) - 1, true)
@@ -28,14 +29,14 @@ random_string(char **str_out, size_t *len_out)
     size_t len;
     char *str;
 
-    len = rand() % 15;
+    len = random() % 15;
     str = malloc(len + 1);
     assert(str);
 
     for (size_t i = 0; i < len; i++)
-        str[i] = random_chars[rand() % ARRAY_SIZE(random_chars)];
+        str[i] = random_chars[random() % ARRAY_SIZE(random_chars)];
     /* Don't always terminate it; should work without. */
-    if (rand() % 2 == 0)
+    if (random() % 2 == 0)
         str[len] = '\0';
 
     *str_out = str;
@@ -60,7 +61,7 @@ test_random_strings(void)
     table = atom_table_new();
     assert(table);
 
-    N = 1 + rand() % 100000;
+    N = 1 + (int)random() % 100000;
     arr = calloc(N, sizeof(*arr));
     assert(arr);
 
@@ -155,7 +156,7 @@ main(int argc, char *argv[])
         seed = (unsigned int) time(NULL);
     }
     fprintf(stderr, "Seed for the pseudo-random generator: %u\n", seed);
-    srand(seed);
+    srandom(seed);
 
     table = atom_table_new();
     assert(table);
