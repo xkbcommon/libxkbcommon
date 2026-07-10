@@ -239,9 +239,17 @@ main(int argc, char **argv)
                 usage(stderr, argv);
                 exit(EXIT_INVALID_USAGE);
             }
-            stdev = atof(optarg) / 100;
-            if (stdev <= 0)
-                stdev = DEFAULT_STDEV;
+            {
+                errno = 0;
+                char *endp = optarg;
+                stdev = strtod(optarg, &endp) / 100;
+                if (errno || optarg == endp || *endp != '\0' || stdev <= 0){
+                    fprintf(stderr,
+                            "ERROR: invalid 'stdev' parameter; "
+                            "using default: %.3f\n", DEFAULT_STDEV);
+                    stdev = DEFAULT_STDEV;
+                }
+            }
             max_iterations = 0;
             break;
         default:
