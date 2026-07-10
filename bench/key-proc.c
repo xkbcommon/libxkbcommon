@@ -13,6 +13,7 @@
 #include "tools/tools-common.h"
 #include "bench.h"
 #include "utils.h"
+#include "utils-random.h"
 
 #define BENCHMARK_ITERATIONS 3000000
 
@@ -24,7 +25,7 @@ bench_legacy_api(struct xkb_state *state)
     volatile unsigned long acc_keysym  = 0;
 
     for (size_t i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        const xkb_keycode_t keycode = (rand() % (255 - 9)) + 9;
+        const xkb_keycode_t keycode = (random() % (255 - 9)) + 9;
         const enum xkb_key_direction direction = (keys[keycode])
                                                ? XKB_KEY_UP : XKB_KEY_DOWN;
         const enum xkb_state_component changed =
@@ -53,7 +54,7 @@ bench_modern_api(struct xkb_machine *sm,
     const struct xkb_event *event;
 
     for (size_t i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        const xkb_keycode_t keycode = (rand() % (255 - 9)) + 9;
+        const xkb_keycode_t keycode = (random() % (255 - 9)) + 9;
         const enum xkb_key_direction direction = (keys[keycode])
                                                ? XKB_KEY_UP : XKB_KEY_DOWN;
         const int ret = xkb_machine_process_key(sm, keycode, direction, events);
@@ -105,7 +106,7 @@ main(void)
 
     xkb_enable_quiet_logging(ctx);
 
-    srand((unsigned) time(NULL));
+    srandom((unsigned) time(NULL));
 
     struct bench bench;
     struct bench_time elapsed;

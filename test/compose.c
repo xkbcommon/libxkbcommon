@@ -23,6 +23,7 @@
 #include "src/compose/parser.h"
 #include "src/compose/escape.h"
 #include "src/compose/dump.h"
+#include "src/utils-random.h"
 #include "test/compose-iter.h"
 #include "test/utils-text.h"
 
@@ -981,21 +982,21 @@ static uint32_t
 random_non_null_unicode_char(bool ascii)
 {
     if (ascii)
-        return 0x01 + (rand() % 0x80);
-    switch (rand() % 5) {
+        return 0x01 + (random() % 0x80);
+    switch (random() % 5) {
         case 0:
             /* U+0080..U+07FF: 2 bytes in UTF-8 */
-            return 0x80 + (rand() % 0x800);
+            return 0x80 + (random() % 0x800);
         case 1:
             /* U+0800..U+FFFF: 3 bytes in UTF-8 */
-            return 0x800 + (rand() % 0x10000);
+            return 0x800 + (random() % 0x10000);
         case 2:
             /* U+10000..U+10FFFF: 4 bytes in UTF-8 */
-            return 0x10000 + (rand() % 0x110000);
+            return 0x10000 + (random() % 0x110000);
         default:
             /* NOTE: Higher probability for ASCII */
             /* U+0001..U+007F: 1 byte in UTF-8 */
-            return 0x01 + (rand() % 0x80);
+            return 0x01 + (random() % 0x80);
     }
 }
 
@@ -1023,7 +1024,7 @@ test_encode_escape_sequences(struct xkb_context *ctx)
         for (size_t s = 0; s < SAMPLE_SIZE; s++) {
             memset(buf, 0xab, sizeof(buf));
             /* Create the string */
-            size_t length = 1 + (rand() % MAX_CODE_POINTS_COUNT);
+            size_t length = 1 + (random() % MAX_CODE_POINTS_COUNT);
             size_t c = 0;
             for (size_t idx = 0; idx < length; idx++) {
                 uint8_t nbytes = 0;

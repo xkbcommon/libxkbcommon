@@ -288,6 +288,9 @@ elif cc.has_header_symbol(
 else
     message('C library does not support secure_getenv, using getenv instead')
 endif
+if cc.has_header_symbol('stdlib.h', 'random', prefix: system_ext_define)
+    configh_data.set10('HAVE_RANDOM', true)
+endif
 if cc.has_header_symbol('stdlib.h', 'realpath', prefix: system_ext_define)
     configh_data.set10('HAVE_REAL_PATH', true)
 endif

@@ -10,6 +10,7 @@
 #include <string.h>
 #include "src/darray.h"
 #include "src/utils.h"
+#include "src/utils-random.h"
 #include "test/utils-text.h"
 
 /* For each line, drop substring starting from a given needle, then drop
@@ -169,7 +170,7 @@ shuffle_lines(struct text_line *lines, size_t length, char *output)
          */
         for (size_t i = length - 1; i > 0; i--) {
             /* Swap current line with random line before it */
-            size_t j = rand() % (i+1);
+            size_t j = random() % (i+1);
             struct text_line tmp = lines[j];
             lines[j] = lines[i];
             lines[i] = tmp;
