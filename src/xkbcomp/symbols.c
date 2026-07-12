@@ -1067,14 +1067,18 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
         InitSymbolsInfo(&next_incl, info->keymap_info, info->include_depth + 1,
                         &included.mods);
         if (stmt->modifier) {
-            next_incl.explicit_group =
-                (xkb_layout_index_t)(atoi(stmt->modifier) - 1);
-            if (next_incl.explicit_group >= info->max_groups) {
+            const int count = parse_dec_to_uint32_t(stmt->modifier, SIZE_MAX,
+                                                    &next_incl.explicit_group);
+            if (count <= 0 || *(stmt->modifier + count) != '\0' ||
+                next_incl.explicit_group == 0 ||
+                next_incl.explicit_group > info->max_groups) {
                 log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
-                        "Cannot set explicit group to %"PRIu32" - "
+                        "Cannot set explicit group to \"%s\": "
                         "must be between 1..%"PRIu32"; Ignoring group number\n",
-                        next_incl.explicit_group + 1, info->max_groups);
+                        stmt->modifier, info->max_groups);
                 next_incl.explicit_group = info->explicit_group;
+            } else {
+                next_incl.explicit_group--;
             }
         }
         else if (info->keymap_info->keymap.num_groups != 0 &&

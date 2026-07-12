@@ -486,6 +486,115 @@ test_include_default_maps(bool update_output_files)
     xkb_context_unref(ctx);
 }
 
+static void
+test_include_group_indices(struct xkb_context *ctx, bool update_output_files)
+{
+    static const struct keymap_test_data tests[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(chr)\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+
+        /*
+         * Next keymaps have an invalid group index,
+         * which then default to the base one.
+         */
+
+        /* Empty group */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        /* Spaces */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr): \" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr): 2\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):2 \" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        /* Group NaN */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):x\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        /* Group < 0 */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):-1\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        /* Group == 0 */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):0\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+        /* Group > max */
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { include \"evdev\" };\n"
+                "  xkb_types { include \"basic\" };\n"
+                "  xkb_symbols \"pc_us(chr)\" { include \"pc+us(basic)+us(chr):5\" };\n"
+                "};",
+            .expected = GOLDEN_TESTS_OUTPUTS "include-invalid-group-index.xkb"
+        },
+    };
+
+    for (unsigned int t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected, update_output_files));
+    }
+}
+
 /* Test some limits related to allocations */
 static void
 test_alloc_limits(struct xkb_context *ctx, bool update_output_files)
@@ -3224,6 +3333,7 @@ main(int argc, char *argv[])
     test_recursive_includes(ctx);
     test_include_paths(ctx);
     test_include_default_maps(update_output_files);
+    test_include_group_indices(ctx, update_output_files);
     test_alloc_limits(ctx, update_output_files);
     test_integers(ctx, update_output_files);
     test_keycodes(ctx, update_output_files);
