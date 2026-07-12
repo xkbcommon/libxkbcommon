@@ -6,6 +6,7 @@
 #include "config.h"
 #include "test-config.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #include <errno.h>
@@ -1140,7 +1141,14 @@ main(int argc, char *argv[])
     /* Initialize pseudo-random generator with program arg or current time */
     unsigned int seed;
     if (argc >= 2 && !streq(argv[1], "-")) {
-        seed = (unsigned int) atoi(argv[1]);
+        char *endp = argv[1];
+        errno = 0;
+        const unsigned long raw = strtoul(argv[1], &endp, 10);
+        if (errno || endp == argv[1] || *endp != '\0' || raw > UINT_MAX) {
+            fprintf(stderr, "ERROR: Invalid seed: \"%s\"\n", argv[1]);
+            exit(TEST_SETUP_FAILURE);
+        }
+        seed = (unsigned int) raw;
     } else {
         seed = (unsigned int) time(NULL);
     }
@@ -1151,7 +1159,15 @@ main(int argc, char *argv[])
     size_t quickcheck_loops = 50; /* Default */
     if (argc > 2) {
         /* From command-line */
-        quickcheck_loops = (size_t)atoi(argv[2]);
+        char *endp = argv[2];
+        errno = 0;
+        const intmax_t raw = strtoimax(argv[2], &endp, 10);
+        if (errno || endp == argv[2] || *endp != '\0' ||
+            raw < 0 || (uintmax_t)raw > SIZE_MAX) {
+            fprintf(stderr, "ERROR: Invalid quickcheck loops: \"%s\"\n", argv[2]);
+            exit(TEST_SETUP_FAILURE);
+        }
+        quickcheck_loops = (size_t)raw;
     } else if (getenv("RUNNING_VALGRIND") != NULL) {
         /* Reduce if running Valgrind */
         quickcheck_loops = quickcheck_loops / 20;

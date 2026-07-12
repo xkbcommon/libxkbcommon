@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <limits.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,11 +19,14 @@
 
 static enum xkb_message_code
 parse_message_code(char *raw_code) {
-    int code = atoi(raw_code);
-    if (!code && istreq_prefix(XKB_PREFIX, raw_code)) {
-        code = atoi(&(raw_code[sizeof(XKB_PREFIX) - 1]));
-    }
-    return (enum xkb_message_code)code;
+    if (istreq_prefix(XKB_PREFIX, raw_code))
+        raw_code += sizeof(XKB_PREFIX) - 1;
+    char *endp = raw_code;
+    errno = 0;
+    const unsigned long code = strtoul(raw_code, &endp, 10);
+    return (errno || endp == raw_code || *endp != '\0' || code > INT_MAX)
+        ? 0
+        : (enum xkb_message_code)code;
 }
 
 static void
@@ -62,7 +66,7 @@ int main(int argc, char **argv) {
         code = parse_message_code(argv[k]);
         if (!code) {
             fprintf(stderr,
-                    XKB_CHECK_MSG_ERROR_PREFIX "Malformed message code: %s\n",
+                    XKB_CHECK_MSG_ERROR_PREFIX "Malformed message code: \"%s\"\n",
                     argv[k]);
             rc |= MALFORMED_MESSAGE;
             continue;
@@ -70,7 +74,7 @@ int main(int argc, char **argv) {
         entry = xkb_message_get(code);
         if (entry == NULL) {
             fprintf(stderr,
-                    XKB_CHECK_MSG_ERROR_PREFIX "Unsupported message code: %s\n",
+                    XKB_CHECK_MSG_ERROR_PREFIX "Unsupported message code: \"%s\"\n",
                     argv[k]);
             rc |= UNSUPPORTED_MESSAGE;
         }

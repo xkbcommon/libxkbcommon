@@ -2680,12 +2680,13 @@ test_prebuilt_keymap_roundtrip(struct xkb_context *ctx, bool update_output_files
         char *original = test_read_file(data[k].path);
         assert(original);
         /* Load a prebuild keymap, once without, once with the trailing \0 */
+        const size_t length = strlen(original);
         for (unsigned int i = 0; i <= 1; i++) {
             assert(test_compile_output2(ctx, data[k].format,
                                         XKB_KEYMAP_USE_ORIGINAL_FORMAT,
                                         data[k].serialize_flags,
                                         compile_buffer, NULL, "Round-trip",
-                                        original, strlen(original) + i,
+                                        original, length + i,
                                         data[k].path, update_output_files));
         }
         free(original);
@@ -3298,7 +3299,15 @@ main(int argc, char *argv[])
             /* Update files with *obtained* results */
             update_output_files = true;
         } else if (streq(argv[arg_index], "--seed") && arg_index + 1 < argc) {
-            seed = (unsigned int) atoi(argv[arg_index + 1]);
+            arg_index++;
+            char *endp = argv[arg_index];
+            errno = 0;
+            const unsigned long raw = strtoul(argv[arg_index], &endp, 10);
+            if (errno || endp == argv[arg_index] || *endp != '\0' || raw > UINT_MAX) {
+                fprintf(stderr, "ERROR: Invalid seed: \"%s\"\n", argv[arg_index]);
+                exit(TEST_SETUP_FAILURE);
+            }
+            seed = (unsigned int) raw;
         } else {
             fprintf(stderr, "ERROR: unsupported argument: \"%s\".\n",
                     argv[arg_index]);

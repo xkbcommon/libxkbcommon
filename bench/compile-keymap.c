@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <time.h>
 #include <getopt.h>
 
@@ -218,11 +219,18 @@ main(int argc, char **argv)
                 exit(EXIT_INVALID_USAGE);
             }
             {
-                const int max_iterations_raw = atoi(optarg);
-                if (max_iterations_raw <= 0)
+                errno = 0;
+                char *endp = optarg;
+                const unsigned long raw = strtoul(optarg, &endp, 10);
+                if (errno || optarg == endp || *endp != '\0' ||
+                    !raw || raw > UINT_MAX) {
+                    fprintf(stderr,
+                            "ERROR: invalid 'iter' parameter; "
+                            "using default: %u\n", DEFAULT_ITERATIONS);
                     max_iterations = DEFAULT_ITERATIONS;
-                else
-                    max_iterations = (unsigned int) max_iterations_raw;
+                } else {
+                    max_iterations = (unsigned int)raw;
+                }
             }
             explicit_iterations = true;
             break;
