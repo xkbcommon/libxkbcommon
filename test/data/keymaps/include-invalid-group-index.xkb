@@ -1,0 +1,630 @@
+xkb_keymap {
+xkb_keycodes "evdev" {
+	minimum = 8;
+	maximum = 569;
+	<ESC>                = 9;
+	<AE01>               = 10;
+	<AE02>               = 11;
+	<AE03>               = 12;
+	<AE04>               = 13;
+	<AE05>               = 14;
+	<AE06>               = 15;
+	<AE07>               = 16;
+	<AE08>               = 17;
+	<AE09>               = 18;
+	<AE10>               = 19;
+	<AE11>               = 20;
+	<AE12>               = 21;
+	<BKSP>               = 22;
+	<TAB>                = 23;
+	<AD01>               = 24;
+	<AD02>               = 25;
+	<AD03>               = 26;
+	<AD04>               = 27;
+	<AD05>               = 28;
+	<AD06>               = 29;
+	<AD07>               = 30;
+	<AD08>               = 31;
+	<AD09>               = 32;
+	<AD10>               = 33;
+	<AD11>               = 34;
+	<AD12>               = 35;
+	<RTRN>               = 36;
+	<LCTL>               = 37;
+	<AC01>               = 38;
+	<AC02>               = 39;
+	<AC03>               = 40;
+	<AC04>               = 41;
+	<AC05>               = 42;
+	<AC06>               = 43;
+	<AC07>               = 44;
+	<AC08>               = 45;
+	<AC09>               = 46;
+	<AC10>               = 47;
+	<AC11>               = 48;
+	<TLDE>               = 49;
+	<LFSH>               = 50;
+	<BKSL>               = 51;
+	<AB01>               = 52;
+	<AB02>               = 53;
+	<AB03>               = 54;
+	<AB04>               = 55;
+	<AB05>               = 56;
+	<AB06>               = 57;
+	<AB07>               = 58;
+	<AB08>               = 59;
+	<AB09>               = 60;
+	<AB10>               = 61;
+	<RTSH>               = 62;
+	<KPMU>               = 63;
+	<LALT>               = 64;
+	<SPCE>               = 65;
+	<CAPS>               = 66;
+	<FK01>               = 67;
+	<FK02>               = 68;
+	<FK03>               = 69;
+	<FK04>               = 70;
+	<FK05>               = 71;
+	<FK06>               = 72;
+	<FK07>               = 73;
+	<FK08>               = 74;
+	<FK09>               = 75;
+	<FK10>               = 76;
+	<NMLK>               = 77;
+	<SCLK>               = 78;
+	<KP7>                = 79;
+	<KP8>                = 80;
+	<KP9>                = 81;
+	<KPSU>               = 82;
+	<KP4>                = 83;
+	<KP5>                = 84;
+	<KP6>                = 85;
+	<KPAD>               = 86;
+	<KP1>                = 87;
+	<KP2>                = 88;
+	<KP3>                = 89;
+	<KP0>                = 90;
+	<KPDL>               = 91;
+	<LVL3>               = 92;
+	<LSGT>               = 94;
+	<FK11>               = 95;
+	<FK12>               = 96;
+	<AB11>               = 97;
+	<KATA>               = 98;
+	<HIRA>               = 99;
+	<HENK>               = 100;
+	<HKTG>               = 101;
+	<MUHE>               = 102;
+	<JPCM>               = 103;
+	<KPEN>               = 104;
+	<RCTL>               = 105;
+	<KPDV>               = 106;
+	<PRSC>               = 107;
+	<RALT>               = 108;
+	<LNFD>               = 109;
+	<HOME>               = 110;
+	<UP>                 = 111;
+	<PGUP>               = 112;
+	<LEFT>               = 113;
+	<RGHT>               = 114;
+	<END>                = 115;
+	<DOWN>               = 116;
+	<PGDN>               = 117;
+	<INS>                = 118;
+	<DELE>               = 119;
+	<I120>               = 120;
+	<MUTE>               = 121;
+	<VOL->               = 122;
+	<VOL+>               = 123;
+	<POWR>               = 124;
+	<KPEQ>               = 125;
+	<I126>               = 126;
+	<PAUS>               = 127;
+	<I128>               = 128;
+	<I129>               = 129;
+	<HNGL>               = 130;
+	<HJCV>               = 131;
+	<AE13>               = 132;
+	<LWIN>               = 133;
+	<RWIN>               = 134;
+	<COMP>               = 135;
+	<STOP>               = 136;
+	<AGAI>               = 137;
+	<PROP>               = 138;
+	<UNDO>               = 139;
+	<FRNT>               = 140;
+	<COPY>               = 141;
+	<OPEN>               = 142;
+	<PAST>               = 143;
+	<FIND>               = 144;
+	<CUT>                = 145;
+	<HELP>               = 146;
+	<I147>               = 147;
+	<I148>               = 148;
+	<I149>               = 149;
+	<I150>               = 150;
+	<I151>               = 151;
+	<I152>               = 152;
+	<I153>               = 153;
+	<I154>               = 154;
+	<I155>               = 155;
+	<I156>               = 156;
+	<I157>               = 157;
+	<I158>               = 158;
+	<I159>               = 159;
+	<I160>               = 160;
+	<I161>               = 161;
+	<I162>               = 162;
+	<I163>               = 163;
+	<I164>               = 164;
+	<I165>               = 165;
+	<I166>               = 166;
+	<I167>               = 167;
+	<I168>               = 168;
+	<I169>               = 169;
+	<I170>               = 170;
+	<I171>               = 171;
+	<I172>               = 172;
+	<I173>               = 173;
+	<I174>               = 174;
+	<I175>               = 175;
+	<I176>               = 176;
+	<I177>               = 177;
+	<I178>               = 178;
+	<I179>               = 179;
+	<I180>               = 180;
+	<I181>               = 181;
+	<I182>               = 182;
+	<I183>               = 183;
+	<I184>               = 184;
+	<I185>               = 185;
+	<I186>               = 186;
+	<I187>               = 187;
+	<I188>               = 188;
+	<I189>               = 189;
+	<I190>               = 190;
+	<FK13>               = 191;
+	<FK14>               = 192;
+	<FK15>               = 193;
+	<FK16>               = 194;
+	<FK17>               = 195;
+	<FK18>               = 196;
+	<FK19>               = 197;
+	<FK20>               = 198;
+	<FK21>               = 199;
+	<FK22>               = 200;
+	<FK23>               = 201;
+	<FK24>               = 202;
+	<MDSW>               = 203;
+	<ALT>                = 204;
+	<META>               = 205;
+	<SUPR>               = 206;
+	<HYPR>               = 207;
+	<I208>               = 208;
+	<I209>               = 209;
+	<I210>               = 210;
+	<I211>               = 211;
+	<I212>               = 212;
+	<I213>               = 213;
+	<I214>               = 214;
+	<I215>               = 215;
+	<I216>               = 216;
+	<I217>               = 217;
+	<I218>               = 218;
+	<I219>               = 219;
+	<I220>               = 220;
+	<I221>               = 221;
+	<I222>               = 222;
+	<I223>               = 223;
+	<I224>               = 224;
+	<I225>               = 225;
+	<I226>               = 226;
+	<I227>               = 227;
+	<I228>               = 228;
+	<I229>               = 229;
+	<I230>               = 230;
+	<I231>               = 231;
+	<I232>               = 232;
+	<I233>               = 233;
+	<I234>               = 234;
+	<I235>               = 235;
+	<I236>               = 236;
+	<I237>               = 237;
+	<I238>               = 238;
+	<I239>               = 239;
+	<I240>               = 240;
+	<I241>               = 241;
+	<I242>               = 242;
+	<I243>               = 243;
+	<I244>               = 244;
+	<I245>               = 245;
+	<I246>               = 246;
+	<I247>               = 247;
+	<I248>               = 248;
+	<I249>               = 249;
+	<I250>               = 250;
+	<I251>               = 251;
+	<I252>               = 252;
+	<I253>               = 253;
+	<I254>               = 254;
+	<I255>               = 255;
+	<I372>               = 372;
+	<I380>               = 380;
+	<I382>               = 382;
+	<I569>               = 569;
+	indicator 1 = "Caps Lock";
+	indicator 2 = "Num Lock";
+	indicator 3 = "Scroll Lock";
+	indicator 4 = "Compose";
+	indicator 5 = "Kana";
+	indicator 6 = "Sleep";
+	indicator 7 = "Suspend";
+	indicator 8 = "Mute";
+	indicator 9 = "Misc";
+	indicator 10 = "Mail";
+	indicator 11 = "Charging";
+	alias <AC12>         = <BKSL>;
+	alias <MENU>         = <COMP>;
+	alias <HZTG>         = <TLDE>;
+	alias <LMTA>         = <LWIN>;
+	alias <RMTA>         = <RWIN>;
+	alias <ALGR>         = <RALT>;
+	alias <KPPT>         = <I129>;
+};
+
+xkb_types "basic" {
+	virtual_modifiers NumLock;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+		level_name[1]= "Any";
+	};
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Shift";
+	};
+	type "ALPHABETIC" {
+		modifiers= Shift+Lock;
+		map[Shift]= 2;
+		map[Lock]= 2;
+		level_name[1]= "Base";
+		level_name[2]= "Caps";
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers NumLock;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret VoidSymbol+AnyOfOrNone(none) {
+		action= NoAction();
+	};
+};
+
+xkb_symbols "pc_us(chr)" {
+	name[1]="Cherokee";
+
+	key <ESC>                {	[          Escape ] };
+	key <AE01>               {
+		type= "ALPHABETIC",
+		symbols[1]= [               1,           U13B1 ]
+	};
+	key <AE02>               {
+		type= "ALPHABETIC",
+		symbols[1]= [               2,           U13C7 ]
+	};
+	key <AE03>               {
+		type= "ALPHABETIC",
+		symbols[1]= [               3,           U13E7 ]
+	};
+	key <AE04>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D9,           U13B0 ]
+	};
+	key <AE05>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13E6,           U13B9 ]
+	};
+	key <AE06>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13DC,           U13DD ]
+	};
+	key <AE07>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13CB,           U13E1 ]
+	};
+	key <AE08>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D6,           U13BA ]
+	};
+	key <AE09>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D2,       parenleft ]
+	};
+	key <AE10>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13C4,      parenright ]
+	};
+	key <AE11>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13BF,           U13BC ]
+	};
+	key <AE12>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13F3,           U13BD ]
+	};
+	key <BKSP>               {	[       BackSpace,       BackSpace ] };
+	key <TAB>                {	[             Tab,    ISO_Left_Tab ] };
+	key <AD01>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13AA,           U13C6 ]
+	};
+	key <AD02>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13B3,           U13EB ]
+	};
+	key <AD03>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A1,           U13E3 ]
+	};
+	key <AD04>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13DB,           U13CF ]
+	};
+	key <AD05>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D4,           U13D8 ]
+	};
+	key <AD06>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13EF,           U13F2 ]
+	};
+	key <AD07>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A4,           U13AD ]
+	};
+	key <AD08>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A2,           U13F1 ]
+	};
+	key <AD09>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A3,           U13EC ]
+	};
+	key <AD10>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13C1,           U13EA ]
+	};
+	key <AD11>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D5,           U13D1 ]
+	};
+	key <AD12>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13B6,           U13E4 ]
+	};
+	key <RTRN>               {	[          Return ] };
+	key <LCTL>               {	[       Control_L ] };
+	key <AC01>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A0,           U13CC ]
+	};
+	key <AC02>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13CD,           U13CE ]
+	};
+	key <AC03>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D7,           U13D0 ]
+	};
+	key <AC04>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A9,           U13C8 ]
+	};
+	key <AC05>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A6,           U13E5 ]
+	};
+	key <AC06>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13AF,           U13B2 ]
+	};
+	key <AC07>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13DA,           U13AB ]
+	};
+	key <AC08>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13B8,           U13A7 ]
+	};
+	key <AC09>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13B5,           U13AE ]
+	};
+	key <AC10>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13E8,           U13E0 ]
+	};
+	key <AC11>               {
+		type= "ALPHABETIC",
+		symbols[1]= [      apostrophe,        quotedbl ]
+	};
+	key <TLDE>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           grave,           U13CA ]
+	};
+	key <LFSH>               {	[         Shift_L ] };
+	key <BKSL>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13E9,           U13EE ]
+	};
+	key <AB01>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13AC,           U13C3 ]
+	};
+	key <AB02>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13F4,           U13ED ]
+	};
+	key <AB03>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13D3,           U13DF ]
+	};
+	key <AB04>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A5,           U13DE ]
+	};
+	key <AB05>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13A8,           U13F0 ]
+	};
+	key <AB06>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13BE,           U13BB ]
+	};
+	key <AB07>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13C5,           U13B7 ]
+	};
+	key <AB08>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           comma,           U13E2 ]
+	};
+	key <AB09>               {
+		type= "ALPHABETIC",
+		symbols[1]= [          period,           U13B4 ]
+	};
+	key <AB10>               {
+		type= "ALPHABETIC",
+		symbols[1]= [           U13C2,           U13C9 ]
+	};
+	key <RTSH>               {	[         Shift_R ] };
+	key <KPMU>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [     KP_Multiply ]
+	};
+	key <LALT>               {	[           Alt_L,          Meta_L ] };
+	key <SPCE>               {	[           space ] };
+	key <CAPS>               {	[       Caps_Lock ] };
+	key <FK01>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F1 ]
+	};
+	key <FK02>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F2 ]
+	};
+	key <FK03>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F3 ]
+	};
+	key <FK04>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F4 ]
+	};
+	key <FK05>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F5 ]
+	};
+	key <FK06>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F6 ]
+	};
+	key <FK07>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F7 ]
+	};
+	key <FK08>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F8 ]
+	};
+	key <FK09>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [              F9 ]
+	};
+	key <FK10>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [             F10 ]
+	};
+	key <NMLK>               {	[        Num_Lock ] };
+	key <SCLK>               {	[     Scroll_Lock ] };
+	key <KP7>                {	[         KP_Home ] };
+	key <KP8>                {	[           KP_Up ] };
+	key <KP9>                {	[        KP_Prior ] };
+	key <KPSU>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [     KP_Subtract ]
+	};
+	key <KP4>                {	[         KP_Left ] };
+	key <KP5>                {	[        KP_Begin ] };
+	key <KP6>                {	[        KP_Right ] };
+	key <KPAD>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [          KP_Add ]
+	};
+	key <KP1>                {	[          KP_End ] };
+	key <KP2>                {	[         KP_Down ] };
+	key <KP3>                {	[         KP_Next ] };
+	key <KP0>                {	[       KP_Insert ] };
+	key <KPDL>               {	[       KP_Delete ] };
+	key <LVL3>               {	[ ISO_Level3_Shift ] };
+	key <LSGT>               {	[            less ] };
+	key <FK11>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [             F11 ]
+	};
+	key <FK12>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [             F12 ]
+	};
+	key <KPEN>               {	[        KP_Enter ] };
+	key <RCTL>               {	[       Control_R ] };
+	key <KPDV>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [       KP_Divide ]
+	};
+	key <PRSC>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [           Print ]
+	};
+	key <RALT>               {
+		type= "TWO_LEVEL",
+		symbols[1]= [           Alt_R,          Meta_R ]
+	};
+	key <HOME>               {	[            Home ] };
+	key <UP>                 {	[              Up ] };
+	key <PGUP>               {	[           Prior ] };
+	key <LEFT>               {	[            Left ] };
+	key <RGHT>               {	[           Right ] };
+	key <END>                {	[             End ] };
+	key <DOWN>               {	[            Down ] };
+	key <PGDN>               {	[            Next ] };
+	key <INS>                {	[          Insert ] };
+	key <DELE>               {	[          Delete ] };
+	key <KPEQ>               {	[        KP_Equal ] };
+	key <PAUS>               {
+		type= "ONE_LEVEL",
+		symbols[1]= [           Pause ]
+	};
+	key <I129>               {	[      KP_Decimal ] };
+	key <LWIN>               {	[         Super_L ] };
+	key <RWIN>               {	[         Super_R ] };
+	key <COMP>               {	[            Menu ] };
+	key <MDSW>               {	[ ISO_Group_Shift ] };
+	key <ALT>                {	[        NoSymbol,           Alt_L ] };
+	key <META>               {	[        NoSymbol,          Meta_L ] };
+	key <SUPR>               {	[        NoSymbol,         Super_L ] };
+	key <HYPR>               {	[        NoSymbol,         Hyper_L ] };
+	modifier_map Shift { <LFSH>, <RTSH> };
+	modifier_map Lock { <CAPS> };
+	modifier_map Control { <LCTL>, <RCTL> };
+	modifier_map Mod1 { <LALT>, <RALT>, <META> };
+	modifier_map Mod2 { <NMLK> };
+	modifier_map Mod4 { <LWIN>, <RWIN>, <SUPR>, <HYPR> };
+	modifier_map Mod5 { <LVL3>, <MDSW> };
+};
+
+};
