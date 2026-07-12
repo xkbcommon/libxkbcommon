@@ -143,7 +143,14 @@ main(int argc, char *argv[])
     /* Initialize pseudo-random generator with program arg or current time */
     unsigned int seed;
     if (argc >= 2 && !streq(argv[1], "-")) {
-        seed = (unsigned int) atoi(argv[1]);
+        char *endp = argv[1];
+        errno = 0;
+        const unsigned long raw = strtoul(argv[1], &endp, 10);
+        if (errno || endp == argv[1] || *endp != '\0' || raw > UINT_MAX) {
+            fprintf(stderr, "ERROR: Invalid seed: \"%s\"\n", argv[1]);
+            exit(TEST_SETUP_FAILURE);
+        }
+        seed = (unsigned int) raw;
     } else {
         seed = (unsigned int) time(NULL);
     }
