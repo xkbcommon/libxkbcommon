@@ -427,6 +427,8 @@ invalid_usage:
     exit(EXIT_INVALID_USAGE);
 }
 
+static const char success_text[] = "Success!";
+
 static int
 print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
@@ -434,8 +436,10 @@ print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
     struct xkb_rule_names resolved = { NULL };
 
     if (!xkb_components_names_from_rules(ctx, rmlvo, &resolved, NULL)) {
+        fprintf(stderr, "ERROR: failed to get RMLVO names from rules\n");
         return EXIT_FAILURE;
     } else if (test) {
+        fprintf(stderr, "%s\n", success_text);
         return EXIT_SUCCESS;
     }
 
@@ -450,48 +454,53 @@ print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 static int
 print_kccgst(struct xkb_context *ctx, struct xkb_rule_names *rmlvo, bool yaml)
 {
-        struct xkb_component_names kccgst = { 0 };
+    struct xkb_component_names kccgst = { 0 };
+    int rc = EXIT_SUCCESS;
 
-        /* Resolve missing RMLVO values, then resolve the RMLVO names to
-         * KcCGST components */
-        if (!xkb_components_names_from_rules(ctx, rmlvo, NULL, &kccgst))
-            return EXIT_FAILURE;
-        if (test)
-            goto out;
+    /* Resolve missing RMLVO values, then resolve the RMLVO names to
+     * KcCGST components */
+    if (!xkb_components_names_from_rules(ctx, rmlvo, NULL, &kccgst)) {
+        fprintf(stderr, "ERROR: failed to get KcCGST components from rules\n");
+        rc = EXIT_FAILURE;
+        goto out;
+    } else if (test) {
+        fprintf(stderr, "%s\n", success_text);
+        goto out;
+    }
 
-        if (yaml) {
-            printf("keycodes: \"%s\"\n"
-                   "types: \"%s\"\n"
-                   "compat: \"%s\"\n"
-                   "symbols: \"%s\"\n",
-                   kccgst.keycodes, kccgst.types, kccgst.compatibility,
-                   kccgst.symbols);
-            /* Contrary to the previous components, geometry can be empty */
-            if (!isempty(kccgst.geometry)) {
-                printf("geometry: \"%s\"\n", kccgst.geometry);
-            }
-        } else {
-            printf("xkb_keymap {\n"
-                   "  xkb_keycodes { include \"%s\" };\n"
-                   "  xkb_types { include \"%s\" };\n"
-                   "  xkb_compat { include \"%s\" };\n"
-                   "  xkb_symbols { include \"%s\" };\n",
-                   kccgst.keycodes, kccgst.types, kccgst.compatibility,
-                   kccgst.symbols);
-            /* Contrary to the previous components, geometry can be empty */
-            if (!isempty(kccgst.geometry)) {
-                printf("  xkb_geometry { include \"%s\" };\n", kccgst.geometry);
-            }
-            printf("};\n");
+    if (yaml) {
+        printf("keycodes: \"%s\"\n"
+                "types: \"%s\"\n"
+                "compat: \"%s\"\n"
+                "symbols: \"%s\"\n",
+                kccgst.keycodes, kccgst.types, kccgst.compatibility,
+                kccgst.symbols);
+        /* Contrary to the previous components, geometry can be empty */
+        if (!isempty(kccgst.geometry)) {
+            printf("geometry: \"%s\"\n", kccgst.geometry);
         }
+    } else {
+        printf("xkb_keymap {\n"
+               "  xkb_keycodes { include \"%s\" };\n"
+               "  xkb_types { include \"%s\" };\n"
+               "  xkb_compat { include \"%s\" };\n"
+               "  xkb_symbols { include \"%s\" };\n",
+               kccgst.keycodes, kccgst.types, kccgst.compatibility,
+               kccgst.symbols);
+        /* Contrary to the previous components, geometry can be empty */
+        if (!isempty(kccgst.geometry)) {
+            printf("  xkb_geometry { include \"%s\" };\n", kccgst.geometry);
+        }
+        printf("};\n");
+    }
 out:
-        free(kccgst.keycodes);
-        free(kccgst.types);
-        free(kccgst.compatibility);
-        free(kccgst.symbols);
-        free(kccgst.geometry);
+    free(kccgst.keycodes);
+    free(kccgst.types);
+    free(kccgst.compatibility);
+    free(kccgst.symbols);
+    free(kccgst.geometry);
 
-        return EXIT_SUCCESS;
+    return rc;
 }
 
 static struct xkb_keymap*
@@ -539,7 +548,9 @@ print_keymap(struct xkb_context *ctx,
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
-    } else if (!test) {
+    } else if (test) {
+        fprintf(stderr, "%s\n", success_text);
+    } else {
         char* keymap_string = xkb_keymap_get_as_string2(
             keymap, keymap_output_format, serialize_flags
         );
@@ -568,7 +579,9 @@ print_modmaps(struct xkb_context *ctx,
     if (!keymap) {
         fprintf(stderr, "ERROR: Couldn't create xkb keymap\n");
         ret = EXIT_FAILURE;
-    } else if (!test) {
+    } else if (test) {
+        fprintf(stderr, "%s\n", success_text);
+    } else {
         print_modifiers_encodings(keymap);
         printf("\n");
         print_keys_modmaps(keymap);
