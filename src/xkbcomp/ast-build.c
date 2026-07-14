@@ -424,7 +424,7 @@ GroupCompatCreate(int64_t group, ExprDef *val)
 }
 
 ModMapDef *
-ModMapCreate(xkb_atom_t modifier, ExprDef *keys)
+ModMapCreate(ExprDef *modifiers, ExprDef *keys)
 {
     ModMapDef *def = malloc(sizeof(*def));
     if (!def)
@@ -433,7 +433,7 @@ ModMapCreate(xkb_atom_t modifier, ExprDef *keys)
     def->common.type = STMT_MODMAP;
     def->common.next = NULL;
     def->merge = MERGE_DEFAULT;
-    def->modifier = modifier;
+    def->modifiers = modifiers;
     def->keys = keys;
 
     return def;
@@ -718,6 +718,7 @@ FreeStmt(ParseCommon *stmt)
             FreeStmt((ParseCommon *) ((SymbolsDef *) stmt)->symbols);
             break;
         case STMT_MODMAP:
+            FreeStmt((ParseCommon *) ((ModMapDef *) stmt)->modifiers);
             FreeStmt((ParseCommon *) ((ModMapDef *) stmt)->keys);
             break;
         case STMT_GROUP_COMPAT:

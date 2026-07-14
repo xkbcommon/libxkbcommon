@@ -264,7 +264,7 @@ typedef struct {
     ParseCommon common;
     enum merge_mode merge;
     // NOTE: Can also be “None”, rather than a modifier name.
-    xkb_atom_t modifier;
+    ExprDef *modifiers;
     ExprDef *keys;
 } ModMapDef;
 

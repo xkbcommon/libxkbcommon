@@ -144,6 +144,8 @@ enum xkb_message_code {
     XKB_WARNING_MISSING_DEFAULT_SECTION = 433,
     /** ABI struct size check failed */
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE_ = 450,
+    /** Invalid real modifier mask in modifier map definition */
+    XKB_ERROR_INVALID_MODIFIER_MAP_MASK = 453,
     /** Warn if there are conflicting keysyms while merging keys */
     XKB_WARNING_CONFLICTING_KEY_SYMBOL = 461,
     /** The operation is invalid in the context */

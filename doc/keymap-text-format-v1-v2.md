@@ -129,6 +129,8 @@ Some additional resources are:
     <dd>
     They are the 8 _predefined_ (AKA *core*, *X11*) modifiers
     (see [usual modifiers] hereinafter).
+    A real modifier that is not predefined is called an
+    <a name="extended-real-mod-def">*extended real modifier*</a>.
 
     Real modifiers ensure backward compatibility: indeed
     they are the actual bits used to compute the [levels][level]
@@ -140,7 +142,10 @@ Some additional resources are:
     </dd>
     <dt><a name="virtual-modifier-def">Virtual modifiers</a>
     <dd>
-    They are the modifiers that are _not_ predefined.
+    They are names of real modifiers *masks* and are not predefined.
+
+    [Core real modifiers][core modifier] are also interpreted as virtual modifiers,
+    specifically they are [canonical virtual modifiers][canonical modifier].
     </dd>
   </dl>
 
@@ -150,29 +155,31 @@ Some additional resources are:
   [canonical modifiers][canonical modifier]. See the “@ref modifiers-encoding ""”
   section for further information.
 
-  The following table lists the
-  <a name="usual-modifiers">usual modifiers</a>
+  The following table lists the <a name="core-modifiers">predefined</a>
+  and <a name="usual-modifiers">usual modifiers</a>
   present in the [standard keyboard configuration][xkeyboard-config].
   Note that this is provided for information only, as it may change
   depending on the user configuration.
 
-  | Modifier     | Type    | Usual mapping     | Comment                     |
-  | ------------ | ------- | ----------------- | --------------------------- |
-  | `Shift`      | Real    | `Shift` (fixed)   | The usual [Shift]           |
-  | `Lock`       | Real    | `Lock` (fixed)    | The usual [Caps Lock][Lock] |
-  | `Control`    | Real    | `Control` (fixed) | The usual [Control]         |
-  | `Mod1`       | Real    | `Mod1` (fixed)    | Not conventional            |
-  | `Mod2`       | Real    | `Mod2` (fixed)    | Not conventional            |
-  | `Mod3`       | Real    | `Mod3` (fixed)    | Not conventional            |
-  | `Mod4`       | Real    | `Mod4` (fixed)    | Not conventional            |
-  | `Mod5`       | Real    | `Mod5` (fixed)    | Not conventional            |
-  | `Alt`        | Virtual | `Mod1`            | The usual [Alt]             |
-  | `Meta`       | Virtual | `Mod1`            | The legacy [Meta] key       |
-  | `NumLock`    | Virtual | `Mod2`            | The usual [NumLock]         |
-  | `Super`      | Virtual | `Mod4`            | The usual [Super]/GUI       |
-  | `LevelThree` | Virtual | `Mod5`            | [ISO][ISO9995] level 3, aka [AltGr] |
-  | `LevelFive`  | Virtual | `Mod3`            | [ISO][ISO9995] level 5      |
+  | Modifier     | Type           | Predefined | Usual mapping     | Comment                     |
+  | ------------ | -------------- | ---------- | ----------------- | --------------------------- |
+  | `Shift`      | Real + Virtual | Yes (Core) | `Shift` (fixed)   | The usual [Shift]           |
+  | `Lock`       | Real + Virtual | Yes (Core) | `Lock` (fixed)    | The usual [Caps Lock][Lock] |
+  | `Control`    | Real + Virtual | Yes (Core) | `Control` (fixed) | The usual [Control]         |
+  | `Mod1`       | Real + Virtual | Yes (Core) | `Mod1` (fixed)    | Not conventional            |
+  | `Mod2`       | Real + Virtual | Yes (Core) | `Mod2` (fixed)    | Not conventional            |
+  | `Mod3`       | Real + Virtual | Yes (Core) | `Mod3` (fixed)    | Not conventional            |
+  | `Mod4`       | Real + Virtual | Yes (Core) | `Mod4` (fixed)    | Not conventional            |
+  | `Mod5`       | Real + Virtual | Yes (Core) | `Mod5` (fixed)    | Not conventional            |
+  | `Alt`        | Virtual        | No         | `Mod1`            | The usual [Alt]             |
+  | `Meta`       | Virtual        | No         | `Mod1`            | The legacy [Meta] key       |
+  | `NumLock`    | Virtual        | No         | `Mod2`            | The usual [NumLock]         |
+  | `Super`      | Virtual        | No         | `Mod4`            | The usual [Super]/GUI       |
+  | `LevelThree` | Virtual        | No         | `Mod5`            | [ISO][ISO9995] level 3, aka [AltGr] |
+  | `LevelFive`  | Virtual        | No         | `Mod3`            | [ISO][ISO9995] level 5      |
 
+  [core modifier]: @ref core-modifiers
+  [extended modifier]: @ref extended-real-mod-def
   [usual modifiers]: @ref usual-modifiers
   [Shift]: https://en.wikipedia.org/wiki/Control_key
   [Lock]: https://en.wikipedia.org/wiki/Caps_Lock
@@ -2695,6 +2702,49 @@ Bind a [*real* modifier](@ref real-modifier) to a key, e.g.:
 modifier_map Control { <LCTL>, Control_L };
 ```
 
+The formats `::XKB_KEYMAP_FORMAT_TEXT_V1` (all libxkbcommon versions) and
+`::XKB_KEYMAP_FORMAT_TEXT_V2` (libxkbcommon < 1.14) accepts only a *single
+[X11 core modifier][core modifier]*.
+
+Since libxkbcommon 1.14, any modifier *mask* expression can be used in `::XKB_KEYMAP_FORMAT_TEXT_V2`:
+
+<dl>
+<dt>[X11 core modifiers][core modifier]</dt>
+<dd>
+```c
+modifier_map Shift { … };
+// New: numeric equivalent of the previous entry
+modifier_map 0x001 { … };
+// New: modifier mask expression
+modifier_map Mod1+Mod2 { … };
+// New: numeric equivalent of the previous entry
+modifier_map 0x018 { … };
+```
+</dd>
+<dt>[Extended real modifiers][extended modifier]</dt>
+<dd>
+```c
+// New: non-X11 core modifiers
+modifier_map 0x100 { … };
+// New: multiple non-X11 core modifiers
+modifier_map 0xf00 { … };
+// New: Mix of X11 core and non core modifiers
+modifier_map Mod2+0x100 { … };
+// New: Numeric equivalent of the previous entry
+modifier_map 0x110 { … };
+```
+</dd>
+<dt>Fallback to `::XKB_KEYMAP_FORMAT_TEXT_V1`</dt>
+<dd>
+Due to backward compatibility with the X11 ecosystem, serializing to the
+`::XKB_KEYMAP_FORMAT_TEXT_V1` is subject to the following restrictions:
+
+- Non-[X11 core modifiers][core modifier] are not supported.
+- Multiple modifiers per key is not supported, unless using keysyms in the
+  original `modifier_map` entry.
+</dd>
+</dl>
+
 See [real modifier map] for further information.
 
 ### Set default values
@@ -2856,8 +2906,6 @@ using the `modifier_map` statement:
   // Bind `Mod1` diretly to keycode <LALT> and indirectly via the keysym `Alt_L`
   modifier_map Mod1 { <LALT>, Alt_L };
   ```
-
-@note A key can be associated to _at most **one**_ real modifier.
 
 There is also a special entry, `None`, that enable *deleting* a previous entry:
 

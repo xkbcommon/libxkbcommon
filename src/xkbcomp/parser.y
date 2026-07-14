@@ -617,8 +617,21 @@ GroupCompatDecl :       GROUP Integer EQUALS Expr SEMI
                         { $$ = GroupCompatCreate($2, $4); }
                 ;
 
-ModMapDecl      :       MODIFIER_MAP Ident OBRACE KeyOrKeySymList CBRACE SEMI
-                        { $$ = ModMapCreate($2, $4.head); }
+ModMapDecl      :       MODIFIER_MAP Expr OBRACE KeyOrKeySymList CBRACE SEMI
+                        {
+                            if (param->config.format == XKB_KEYMAP_FORMAT_TEXT_V1 &&
+                                $2->common.type != STMT_EXPR_IDENT) {
+                                    parser_err(
+                                        param, XKB_ERROR_INVALID_MODIFIER_MAP_MASK,
+                                        "Invalid real modifier mask in modifier "
+                                        "map definition: expected identifier"
+                                    );
+                                    FreeStmt((ParseCommon *) $2);
+                                    FreeStmt((ParseCommon *) $4.head);
+                                    YYERROR;
+                            }
+                            $$ = ModMapCreate($2, $4.head);
+                        }
                 ;
 
 KeyOrKeySymList :       KeyOrKeySymList COMMA KeyOrKeySym
