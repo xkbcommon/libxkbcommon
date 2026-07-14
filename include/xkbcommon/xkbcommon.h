@@ -654,9 +654,10 @@ struct xkb_component_names {
  * @param[out] components_out The [KcCGST] components resulting of the [RMLVO]
  * resolution.
  *
- * @c rmlvo_out and @c components can be omitted by using `NULL`, but not both.
+ * @c rmlvo_out and @c components_out can be omitted by using `NULL`, but not
+ * both.
  *
- * If @c components is not `NULL`, it is filled with dynamically-allocated
+ * If @c components_out is not `NULL`, it is filled with dynamically-allocated
  * strings that should be freed by the caller.
  *
  * @returns `true` if the [RMLVO] names could be resolved, `false` otherwise.
