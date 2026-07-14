@@ -421,10 +421,10 @@ ExprResolveGroup(const struct xkb_keymap_info *keymap_info,
             ? PARSER_FATAL_ERROR
             : PARSER_RECOVERABLE_ERROR;
 
-    if (result < !!absolute || result > keymap_info->features.max_groups) {
+    if (result < (int64_t)absolute || result > keymap_info->features.max_groups) {
         log_err(keymap_info->keymap.ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
                 "Group index %"PRId64" is out of range (%u..%"PRIu32")\n",
-                result, !!absolute, keymap_info->features.max_groups);
+                result, absolute, keymap_info->features.max_groups);
         return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
             ? PARSER_FATAL_ERROR
             : PARSER_RECOVERABLE_ERROR;
