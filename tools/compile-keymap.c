@@ -432,10 +432,12 @@ print_rmlvo(struct xkb_context *ctx, struct xkb_rule_names *rmlvo)
 {
     /* Resolve default RMLVO values */
     struct xkb_rule_names resolved = { NULL };
-    xkb_components_names_from_rules(ctx, rmlvo, &resolved, NULL);
 
-    if (test)
+    if (!xkb_components_names_from_rules(ctx, rmlvo, &resolved, NULL)) {
+        return EXIT_FAILURE;
+    } else if (test) {
         return EXIT_SUCCESS;
+    }
 
     printf("rules: \"%s\"\nmodel: \"%s\"\nlayout: \"%s\"\nvariant: \"%s\"\n"
            "options: \"%s\"\n",
@@ -590,7 +592,6 @@ main(int argc, char **argv)
         (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
     enum xkb_keymap_serialize_flags serialize_flags =
         (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
-    int rc = 1;
 
     setlocale(LC_ALL, "");
 
@@ -612,7 +613,10 @@ main(int argc, char **argv)
         ctx_flags |= XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
 
     ctx = xkb_context_new(ctx_flags);
-    assert(ctx);
+    if (!ctx) {
+        fprintf(stderr, "ERROR: cannot create xkb context\n");
+        return EXIT_FAILURE;
+    }
 
     if (verbose)
         tools_enable_verbose_logging(ctx);
@@ -628,6 +632,7 @@ main(int argc, char **argv)
             xkb_context_include_path_append(ctx, include);
     }
 
+    int rc = EXIT_FAILURE;
     switch (output_format) {
     case OUTPUT_FORMAT_RMLVO:
         assert(input_format != INPUT_FORMAT_KEYMAP);
