@@ -415,13 +415,12 @@ CheckGroupField(const struct xkb_keymap_info *keymap_info,
     } else {
         flags &= ~ACTION_PENDING_COMPUTATION;
         /* `+n`, `-n` are relative, `n` is absolute. */
-        if (!(flags & ACTION_ABSOLUTE_SWITCH)) {
+        if (absolute) {
+            *group_rtrn = (int32_t) (idx - 1);
+        } else {
             *group_rtrn = (int32_t) idx;
             if (value->common.type == STMT_EXPR_NEGATE)
                 *group_rtrn = -*group_rtrn;
-        }
-        else {
-            *group_rtrn = (int32_t) (idx - 1);
         }
     }
 
