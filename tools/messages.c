@@ -63,6 +63,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE, "Global defaults wrong scope"},
     {XKB_WARNING_MISSING_DEFAULT_SECTION, "Missing default section"},
     {XKB_ERROR_ABI_INVALID_STRUCT_SIZE_, "Abi invalid struct size"},
+    {XKB_ERROR_INVALID_MODIFIER_MAP_MASK, "Invalid modifier map mask"},
     {XKB_WARNING_CONFLICTING_KEY_SYMBOL, "Conflicting key symbol"},
     {XKB_ERROR_INVALID_OPERATION, "Invalid operation"},
     {XKB_WARNING_NUMERIC_KEYSYM, "Numeric keysym"},

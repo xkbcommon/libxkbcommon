@@ -92,7 +92,7 @@ GroupCompatDef *
 GroupCompatCreate(int64_t group, ExprDef *def);
 
 ModMapDef *
-ModMapCreate(xkb_atom_t modifier, ExprDef *keys);
+ModMapCreate(ExprDef *modifiers, ExprDef *keys);
 
 LedMapDef *
 LedMapCreate(xkb_atom_t name, VarDef *body);

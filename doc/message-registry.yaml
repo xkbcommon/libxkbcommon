@@ -397,6 +397,25 @@
     ```c
     .size = sizeof(struct xkb_foo)
     ```
+- id: "invalid-modifier-map-mask"
+  code: 453
+  added: 1.14.0
+  type: error
+  description: "Invalid real modifier mask in modifier map definition"
+  details: |
+    <dl>
+    <dt>Parsing</dt>
+    <dd>
+    `::XKB_KEYMAP_FORMAT_TEXT_V1` allows only a *single* X11 core modifier
+    per [`modifier_map`](@ref modmap-statement) entry.
+    </dd>
+    <dt>Serializing</dt>
+    <dd>
+    `::XKB_KEYMAP_FORMAT_TEXT_V1` allows only X11 core modifiers and can
+    serialize multiple X11 core modifiers only if some of the original
+    [`modifier_map`](@ref modmap-statement) entries used a keysym.
+    </dd>
+    </dl>
 - id: "conflicting-key-symbol"
   code: 461
   added: ALWAYS

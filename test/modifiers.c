@@ -109,7 +109,7 @@ test_modmap_none(struct xkb_context *context)
     xkb_keycode_t keycode;
 
     keymap = test_compile_file(
-        context, XKB_KEYMAP_FORMAT_TEXT_V1, "keymaps/modmap-none.xkb"
+        context, XKB_KEYMAP_FORMAT_TEXT_V2, "keymaps/modmap-none.xkb"
     );
     assert(keymap);
 
@@ -136,6 +136,8 @@ test_modmap_none(struct xkb_context *context)
         { "AD07", Mod1Mask },
         { "AD08", Mod2Mask },
         { "AD09", Mod3Mask },
+        { "AD10", (Mod3Mask | Mod4Mask) },
+        { "AD11", (Mod3Mask | Mod4Mask | Mod5Mask) },
     };
 
     for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {

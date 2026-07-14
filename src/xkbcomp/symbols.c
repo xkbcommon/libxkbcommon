@@ -232,9 +232,8 @@ ClearKeyInfo(KeyInfo *keyi)
 typedef struct {
     enum merge_mode merge;
     bool haveSymbol;
-    /* NOTE: Can also be XKB_MOD_NONE, meaning
-     *       “don’t add a modifier to the modmap”. */
-    xkb_mod_index_t modifier;
+    /** NOTE: 0 means: “remove the key or keysym from the modmap” */
+    xkb_mod_mask_t mods;
     union {
         xkb_atom_t keyName;
         xkb_keysym_t keySym;
@@ -931,45 +930,44 @@ AddKeySymbols(SymbolsInfo *info, KeyInfo *keyi, bool same_file)
 }
 
 static bool
-AddModMapEntry(SymbolsInfo *info, ModMapEntry *new)
+AddModMapEntry(SymbolsInfo *info, const ModMapEntry *new)
 {
+    const bool clobber = (new->merge != MERGE_AUGMENT);
+
     ModMapEntry *old;
-    bool clobber = (new->merge != MERGE_AUGMENT);
-
     darray_foreach(old, info->modmaps) {
-        xkb_mod_index_t use, ignore;
-
         if ((new->haveSymbol != old->haveSymbol) ||
             (new->haveSymbol && new->u.keySym != old->u.keySym) ||
             (!new->haveSymbol && new->u.keyName != old->u.keyName))
             continue;
 
-        if (new->modifier == old->modifier)
+        if (new->mods == old->mods)
             return true;
 
-        use = (clobber ? new->modifier : old->modifier);
-        ignore = (clobber ? old->modifier : new->modifier);
+        const xkb_mod_mask_t use = (clobber ? new->mods : old->mods);
+        const xkb_mod_mask_t ignore = (clobber ? old->mods : new->mods);
 
         if (new->haveSymbol) {
             log_warn(info->ctx, XKB_WARNING_CONFLICTING_MODMAP,
-                     "Symbol \"%s\" added to modifier map for multiple modifiers; "
-                     "Using %s, ignoring %s\n",
-                     KeysymText(info->ctx, new->u.keySym),
-                     ModIndexText(info->ctx, &info->mods, use),
-                     ModIndexText(info->ctx, &info->mods, ignore));
+                    "Symbol \"%s\" added to modifier map "
+                    "for distinct modifiers mask; Using %s, ignoring %s\n",
+                    KeysymText(info->ctx, new->u.keySym),
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, use),
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, ignore));
         } else {
             log_warn(info->ctx, XKB_WARNING_CONFLICTING_MODMAP,
-                     "Key \"%s\" added to modifier map for multiple modifiers; "
-                     "Using %s, ignoring %s\n",
-                     KeyNameText(info->ctx, new->u.keyName),
-                     ModIndexText(info->ctx, &info->mods, use),
-                     ModIndexText(info->ctx, &info->mods, ignore));
+                    "Key \"%s\" added to modifier map "
+                    "for distinct modifiers mask; Using %s, ignoring %s\n",
+                    KeyNameText(info->ctx, new->u.keyName),
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, use),
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, ignore));
         }
-        old->modifier = use;
+        old->mods = use;
         return true;
     }
 
     darray_append(info->modmaps, *new);
+
     return true;
 }
 
@@ -1989,28 +1987,22 @@ static bool
 HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
 {
     ModMapEntry tmp;
-    xkb_mod_index_t ndx;
-    bool ok;
     struct xkb_context *ctx = info->ctx;
-    const char *modifier_name = xkb_atom_text(ctx, def->modifier);
 
-    if (istreq(modifier_name, "none")) {
-        /* Handle special "None" entry */
-        ndx = XKB_MOD_NONE;
-    } else {
-        /* Handle normal entry */
-        ndx = XkbModNameToIndex(&info->mods, def->modifier, MOD_REAL);
-        if (ndx == XKB_MOD_INVALID) {
-            log_err(info->ctx, XKB_ERROR_INVALID_REAL_MODIFIER,
-                    "Illegal modifier map definition; "
-                    "Ignoring map for non-modifier \"%s\"\n",
-                    xkb_atom_text(ctx, def->modifier));
-            return false;
-        }
+    if (!ExprResolveModMask(ctx, def->modifiers, MOD_REAL, &info->mods, &tmp.mods)) {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Illegal modifier map definition: invalid modifier mask\n");
+        return false;
     }
 
-    ok = true;
-    tmp.modifier = ndx;
+    /*
+     * NOTE: parser.y accepts only identifiers for v1 keymap format,
+     * so no further check is needed (e.g. no operation nor numeric values).
+     */
+    assert(info->keymap_info->keymap.format != XKB_KEYMAP_FORMAT_TEXT_V1 ||
+           def->modifiers->common.type == STMT_EXPR_IDENT);
+
+    bool ok = true;
     tmp.merge = def->merge;
 
     for (ExprDef *key = def->keys; key; key = (ExprDef *) key->common.next) {
@@ -2030,8 +2022,8 @@ HandleModMapDef(SymbolsInfo *info, ModMapDef *def)
         else {
             log_err(info->ctx, XKB_ERROR_INVALID_MODMAP_ENTRY,
                     "Modmap entries may contain only key names or keysyms; "
-                    "Illegal definition for %s modifier ignored\n",
-                    ModIndexText(info->ctx, &info->mods, tmp.modifier));
+                    "Illegal definition for %s modifier mask ignored\n",
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, tmp.mods));
             continue;
         }
 
@@ -2486,7 +2478,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Key %s not found in keycodes; "
                     "Modifier map entry for %s not updated\n",
                     KeyNameText(info->ctx, entry->u.keyName),
-                    ModIndexText(info->ctx, &info->mods, entry->modifier));
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, entry->mods));
             return false;
         }
     }
@@ -2498,15 +2490,14 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Key \"%s\" not found in symbol map; "
                     "Modifier map entry for %s not updated\n",
                     KeysymText(info->ctx, entry->u.keySym),
-                    ModIndexText(info->ctx, &info->mods, entry->modifier));
+                    ModMaskText(info->ctx, MOD_REAL, &info->mods, entry->mods));
             return false;
         }
     }
 
     /* Skip modMap None */
-    if (entry->modifier != XKB_MOD_NONE) {
-        /* Convert modifier index to modifier mask */
-        key->modmap |= (UINT32_C(1) << entry->modifier);
+    if (entry->mods) {
+        key->modmap |= entry->mods;
     }
 
     return true;
