@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <xcb/xkb.h>
 
+#include "darray.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "atom.h"
@@ -703,6 +704,8 @@ get_modmaps(struct xkb_keymap *keymap, xcb_connection_t *conn,
     xcb_xkb_key_mod_map_iterator_t iter =
         xcb_xkb_get_map_map_modmap_rtrn_iterator(reply, map);
 
+    darray(ModMapEntry) modmaps = darray_new();
+
     for (int i = 0; i < length; i++) {
         xcb_xkb_key_mod_map_t *wire = iter.data;
         struct xkb_key *key;
@@ -713,8 +716,17 @@ get_modmaps(struct xkb_keymap *keymap, xcb_connection_t *conn,
         key = &keymap->keys[wire->keycode];
         key->modmap = wire->mods;
 
+        darray_append(modmaps, (ModMapEntry) {
+            .keyCode = key->keycode,
+            .mods = key->modmap,
+            .haveSymbol = false,
+            .u.keyName = key->name
+        });
+
         xcb_xkb_key_mod_map_next(&iter);
     }
+
+    darray_steal(modmaps, &keymap->modmaps, &keymap->num_modmaps);
 
     return true;
 

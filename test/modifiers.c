@@ -17,6 +17,8 @@
 #include "keymap.h"
 #include "utils.h"
 
+#define GOLDEN_TESTS_OUTPUTS "keymaps/"
+
 /* Standard real modifier masks */
 enum real_mod_mask {
     ShiftMask   = (UINT32_C(1) << XKB_MOD_INDEX_SHIFT),
@@ -29,6 +31,18 @@ enum real_mod_mask {
     Mod5Mask    = (UINT32_C(1) << XKB_MOD_INDEX_MOD5),
     NoModifier  = 0
 };
+
+/* Our keymap compiler is the xkbcommon buffer compiler */
+static struct xkb_keymap *
+compile_buffer(struct xkb_context *context, enum xkb_keymap_format format,
+               const char *buf, size_t len, void *private)
+{
+    const enum xkb_keymap_compile_flags flags
+        = (private)
+        ? *(enum xkb_keymap_compile_flags*)private
+        : TEST_KEYMAP_COMPILE_FLAGS;
+    return test_compile_buffer2(context, format, flags, buf, len);
+}
 
 static bool
 test_real_mod(struct xkb_keymap *keymap, const char* name,
@@ -154,9 +168,93 @@ test_modmap_none(struct xkb_context *context)
 }
 
 static void
+test_modmap_mask(struct xkb_context *ctx, bool update_output_files)
+{
+    static const struct {
+        const char * keymap;
+        struct {
+            const char * v1;
+            const char * v2;
+        } expected;
+    } tests[] = {
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_compat {\n"
+                "    virtual_modifiers Alt;\n"
+                "    interpret Shift_L + Any {\n"
+                "        action = SetMods(modifiers=Shift);\n"
+                "    };\n"
+                "    interpret Alt_L + Any {\n"
+                "      virtualModifier = Alt;\n"
+                "      action = SetMods(modifiers=Alt);\n"
+                "    };\n"
+                "  };\n"
+                "  xkb_types {\n"
+                "    type \"TWO_LEVEL\" {\n"
+                "      modifiers = Shift;\n"
+                "      map[Shift] = 2;\n"
+                "    };\n"
+                "  };\n"
+                "  xkb_symbols  {\n"
+                "    key <> { [Alt_L, Shift_L] };\n"
+                "    modifier_map Shift { Shift_L };\n"
+                "    modifier_map Mod1  { <> };\n"
+                "  };\n"
+                "};",
+            .expected = {
+                .v1 = GOLDEN_TESTS_OUTPUTS "modmap-key+keysym-v1.xkb",
+                .v2 = GOLDEN_TESTS_OUTPUTS "modmap-key+keysym-v2.xkb",
+            }
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols  {\n"
+                "    modifier_map Shift+Mod1 { <> };\n"
+                "  };\n"
+                "};",
+            .expected = {
+                .v1 = NULL,
+                .v2 = GOLDEN_TESTS_OUTPUTS "modmap-identifier-mask-v2.xkb",
+            }
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes { <> = 1; };\n"
+                "  xkb_symbols  {\n"
+                "    modifier_map 0x9 { <> };\n"
+                "  };\n"
+                "};",
+            .expected = {
+                .v1 = NULL,
+                .v2 = GOLDEN_TESTS_OUTPUTS "modmap-identifier-mask-v2.xkb",
+            }
+        },
+    };
+
+    for (uint8_t t = 0; t < (uint8_t)ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected.v1, update_output_files));
+        assert(test_compile_output(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                   XKB_KEYMAP_USE_ORIGINAL_FORMAT,
+                                   compile_buffer, NULL, __func__,
+                                   tests[t].keymap, strlen(tests[t].keymap),
+                                   tests[t].expected.v2, update_output_files));
+    }
+}
+
+static void
 test_explicit_virtual_modifiers(struct xkb_context *context)
 {
-    const struct {
+    static const struct {
         const char* keymap;
         struct mod_props {
             enum mod_type type;
@@ -743,15 +841,25 @@ test_get_modifier_keycodes(struct xkb_context *context)
 #undef MAX_KEYCODES_COUNT
 
 int
-main(void)
+main(int argc, char *argv[])
 {
     test_init();
+
+    bool update_output_files = false;
+    int arg_index = 0;
+    while (++arg_index < argc) {
+        if (streq(argv[arg_index], "update")) {
+            /* Update files with *obtained* results */
+            update_output_files = true;
+        }
+    }
 
     struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     assert(context);
 
     test_modmap_none(context);
     test_modifiers_names(context);
+    test_modmap_mask(context, update_output_files);
     test_explicit_virtual_modifiers(context);
     test_virtual_modifiers_mapping_hack(context);
     test_pure_virtual_modifiers(context);

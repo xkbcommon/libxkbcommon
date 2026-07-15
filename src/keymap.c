@@ -86,6 +86,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap)
         clear_interpret(&keymap->sym_interprets[k]);
     }
     free(keymap->sym_interprets);
+    free(keymap->modmaps);
     free(keymap->key_aliases);
     free(keymap->group_names);
     free(keymap->keycodes_section_name);

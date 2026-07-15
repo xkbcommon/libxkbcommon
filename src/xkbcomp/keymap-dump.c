@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "context.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
@@ -24,6 +25,7 @@
 #include "keymap.h"
 #include "messages-codes.h"
 #include "text.h"
+#include "utils-numbers.h"
 #include "xkbcomp-priv.h"
 
 #define BUF_CHUNK_SIZE 4096
@@ -1542,6 +1544,218 @@ write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     return true;
 }
 
+
+static int
+cmp_modmap_step_1(const void *a, const void *b)
+{
+    const ModMapEntry *m1 = (const ModMapEntry *)a;
+    const ModMapEntry *m2 = (const ModMapEntry *)b;
+
+    if (!m1->mods) {
+        if (!m2->mods) {
+            /* Entry will be dropped: do not care about the other fields */
+            return 0;
+        }
+        return +1;
+    } else if (!m2->mods) {
+        return -1;
+    }
+
+    /* Valid only on step 1 */
+    if (m1->keyCode < m2->keyCode)
+        return -1;
+    else if (m1->keyCode > m2->keyCode)
+        return +1;
+
+    if (m1->mods < m2->mods)
+        return -1;
+    else if (m1->mods > m2->mods)
+        return +1;
+
+    if (m1->haveSymbol < m2->haveSymbol)
+        return +1;
+    else if (m1->haveSymbol > m2->haveSymbol)
+        return -1;
+
+    if (m1->haveSymbol) {
+        if (m1->u.keySym < m2->u.keySym)
+            return -1;
+        if (m1->u.keySym > m2->u.keySym)
+            return +1;
+    } else {
+        if (m1->u.keyName < m2->u.keyName)
+            return -1;
+        if (m1->u.keyName > m2->u.keyName)
+            return +1;
+    }
+
+    return 0;
+}
+
+static int
+cmp_modmap_step_2(const void *a, const void *b)
+{
+    const ModMapEntry *m1 = (const ModMapEntry *)a;
+    const ModMapEntry *m2 = (const ModMapEntry *)b;
+
+    if (m1->mods < m2->mods)
+        return -1;
+    if (m1->mods > m2->mods)
+        return +1;
+
+    if (m1->haveSymbol < m2->haveSymbol)
+        return -1;
+    if (m1->haveSymbol > m2->haveSymbol)
+        return +1;
+
+    if (m1->haveSymbol) {
+        if (m1->u.keySym < m2->u.keySym)
+            return -1;
+        if (m1->u.keySym > m2->u.keySym)
+            return +1;
+    } else {
+        if (m1->keyCode < m2->keyCode)
+            return -1;
+        if (m1->keyCode > m2->keyCode)
+            return +1;
+    }
+
+    return 0;
+}
+
+static bool
+write_modmaps(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+              const key_name_substitutions *substitutions,
+              bool pretty, bool drop_interprets, struct buf *buf)
+{
+    if (!keymap->num_modmaps)
+        return true;
+
+    darray(ModMapEntry) modmaps = darray_new();
+    darray_from_items(modmaps, keymap->modmaps, keymap->num_modmaps);
+    if (!darray_items(modmaps))
+        return false;
+
+    /* Sort entries by key code */
+    qsort(darray_items(modmaps), darray_size(modmaps),
+          sizeof(*darray_items(modmaps)), &cmp_modmap_step_1);
+
+    /* Drop disabled entries at the end */
+    for (darray_size_t m = darray_size(modmaps); m-- > 0;) {
+        if (darray_item(modmaps, m).mods)
+            break;
+        darray_size(modmaps)--;
+    }
+
+    /*
+     * Build detailed keymap modmap
+     *
+     * NOTE: use an explicit for-loop instead of the darray_foreach macro
+     * because we may add entries while iterating it. Iterate from the end,
+     * so that we do not iterate the new entries.
+     */
+    xkb_keycode_t current_keycode = XKB_KEYCODE_INVALID;
+    bool convert_to_v1_compatibility_entry = false;
+    for (darray_size_t m = darray_size(modmaps); m-- > 0;) {
+        ModMapEntry *mm = &darray_item(modmaps, m);
+        assert(mm->mods);
+
+        if (mm->keyCode == current_keycode) {
+            /*
+             * Keycode already processed: either drop next key code entries
+             * or convert them to keymap format v1
+             */
+            const xkb_mod_mask_t core_mods = (mm->mods & MOD_REAL_MASK_ALL);
+            if (convert_to_v1_compatibility_entry && core_mods) {
+                /*
+                 * Convert to keymap format V1-specific entry:
+                 * keep only the highest core modifier
+                 */
+                mm->mods = UINT32_C(1) << (XKB_MAX_MODS - 1 - clz32(core_mods));
+            } else {
+                /*
+                 * Drop if there is a previous entry for all keymap formats or
+                 * if the current entry is incompatible with V1 keymap format.
+                 */
+                mm->mods = 0;
+            }
+            continue;
+        }
+
+        current_keycode = mm->keyCode;
+        const struct xkb_key *key = XkbKey(keymap, mm->keyCode);
+
+        const xkb_mod_mask_t core_mods = (key->modmap & MOD_REAL_MASK_ALL);
+        if (format == XKB_KEYMAP_FORMAT_TEXT_V1 &&
+            ((key->modmap & (key->modmap - 1)) || key->modmap != core_mods)) {
+            /* V1 entry with multiple modifiers or non X11 core modifiers */
+            m++; /* process in next iteration */
+            convert_to_v1_compatibility_entry = true;
+            log_err(keymap->ctx, XKB_ERROR_INVALID_MODIFIER_MAP_MASK,
+                    "Cannot serialize modifier map of key %s: modifiers mask "
+                    "0x%"PRIx32" incompatible with keymap format v1\n",
+                    KeyNameText(keymap->ctx, key->name), key->modmap);
+        } else {
+            /* V2 format or V1 format with a single core modifier */
+            assert(key->modmap);
+            mm->mods = key->modmap;
+            /* Force key name */
+            mm->haveSymbol = false;
+            mm->u.keyName = key->name;
+            convert_to_v1_compatibility_entry = false;
+        }
+    }
+
+    if (darray_empty(modmaps))
+        goto exit;
+
+    /* Sort entries by modifier mask */
+    qsort(darray_items(modmaps), darray_size(modmaps),
+          sizeof(*darray_items(modmaps)), &cmp_modmap_step_2);
+
+    /*
+     * Serialize modmaps
+     */
+
+    xkb_mod_mask_t current_mods = 0;
+    const ModMapEntry *entry;
+    darray_foreach(entry, modmaps) {
+        if (!entry->mods)
+            continue;
+
+        if (current_mods != entry->mods) {
+            if (current_mods) {
+                copy_to_buf(buf, " };\n");
+            }
+            current_mods = entry->mods;
+            write_buf(buf, "\tmodifier_map %s { ",
+                      ModMaskText(keymap->ctx, MOD_REAL, &keymap->mods,
+                                  current_mods));
+        } else {
+            copy_to_buf(buf, ", ");
+        }
+
+        if (entry->haveSymbol) {
+            if (pretty || entry->u.keySym == XKB_KEY_NoSymbol)
+                write_buf(buf, "%s", KeysymText(keymap->ctx, entry->u.keySym));
+            else
+                write_buf(buf, "0x%"PRIx32, entry->u.keySym);
+        } else {
+            const xkb_atom_t name = (substitutions == NULL)
+                ? entry->u.keyName
+                : substitute_name(substitutions, entry->u.keyName);
+            write_buf(buf, "%s", KeyNameText(keymap->ctx, name));
+        }
+    }
+    if (current_mods) {
+        copy_to_buf(buf, " };\n");
+    }
+
+exit:
+    darray_free(modmaps);
+    return true;
+}
+
 static bool
 write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
               const key_name_substitutions *substitutions,
@@ -1593,30 +1807,11 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
     free(buf2.buf);
 
-    xkb_mod_index_t i;
-    const struct xkb_mod *mod;
-    xkb_rmods_enumerate(i, mod, &keymap->mods) {
-        bool had_any = false;
-        xkb_keys_foreach(key, keymap) {
-            if (key->modmap & (UINT32_C(1) << i)) {
-                if (!had_any)
-                    write_buf(buf, "\tmodifier_map %s { ",
-                              xkb_atom_text(keymap->ctx, mod->name));
-                const xkb_atom_t name = (substitutions == NULL)
-                    ? key->name
-                    : substitute_name(substitutions, key->name);
-                write_buf(buf, "%s%s",
-                          had_any ? ", " : "",
-                          KeyNameText(keymap->ctx, name));
-                had_any = true;
-            }
-        }
-        if (had_any)
-            copy_to_buf(buf, " };\n");
-    }
+    const bool ok = write_modmaps(keymap, format, substitutions,
+                                  pretty, drop_interprets, buf);
 
     copy_to_buf(buf, "};\n\n");
-    return true;
+    return ok;
 }
 
 static bool
