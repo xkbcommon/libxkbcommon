@@ -1,0 +1,37 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 1;
+	maximum = 255;
+	<>                   = 1;
+};
+
+xkb_types {
+	virtual_modifiers Alt;
+
+	type "TWO_LEVEL" {
+		modifiers= Shift;
+		map[Shift]= 2;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers Alt;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret Shift_L+AnyOf(all) {
+		action= SetMods(modifiers=Shift);
+	};
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=Alt);
+	};
+};
+
+xkb_symbols {
+	key <>                   {	[           Alt_L,         Shift_L ] };
+	modifier_map Shift { Shift_L };
+	modifier_map Mod1 { <> };
+};
+
+};

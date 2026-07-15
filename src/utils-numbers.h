@@ -134,6 +134,37 @@ popcount32(uint32_t x)
 }
 
 static inline unsigned int
+clz32(uint32_t x)
+{
+    if (x == 0)
+        return 32;
+
+#if defined(__GNUC__) || defined(__clang__)
+    return _Generic(
+        x,
+        unsigned int:
+            (unsigned int)__builtin_clz(x) -
+            (unsigned int)((sizeof(unsigned int) * CHAR_BIT) - 32),
+        unsigned long:
+            (unsigned int)__builtin_clzl(x) -
+            (unsigned int)((sizeof(unsigned long) * CHAR_BIT) - 32),
+        unsigned long long:
+            (unsigned int)__builtin_clzll(x) -
+            (unsigned int)((sizeof(unsigned long long) * CHAR_BIT) - 32)
+    );
+#else
+    // Efficient binary search fallback for 32-bit integers
+    unsigned int count = 0;
+    if ((x & 0xffff0000) == 0) { count += 16; x <<= 16; }
+    if ((x & 0xff000000) == 0) { count += 8;  x <<= 8;  }
+    if ((x & 0xf0000000) == 0) { count += 4;  x <<= 4;  }
+    if ((x & 0xc0000000) == 0) { count += 2;  x <<= 2;  }
+    if ((x & 0x80000000) == 0) { count += 1; }
+    return count;
+#endif
+}
+
+static inline unsigned int
 next_pow2(unsigned int x)
 {
 #if defined(__GNUC__) || defined(__clang__)

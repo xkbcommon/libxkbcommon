@@ -34,6 +34,7 @@
 #include "darray.h"
 #include "rmlvo.h"
 #include "utils.h"
+#include "xkbcomp/ast.h"
 
 /* Note: imposed by the size of the xkb_layout_mask_t type (32).
  * This is more than enough though. */
@@ -666,6 +667,22 @@ typedef union {
     } alias;
 } KeycodeMatch;
 
+typedef struct {
+    union {
+        /** Used for parsing */
+        enum merge_mode merge;
+        /** Used for serializing */
+        xkb_keycode_t keyCode;
+    };
+    bool haveSymbol;
+    /** NOTE: 0 means: “remove the key or keysym from the modmap” */
+    xkb_mod_mask_t mods;
+    union {
+        xkb_keysym_t keySym;
+        xkb_atom_t keyName;
+    } u;
+} ModMapEntry;
+
 /** Common keyboard description structure */
 struct xkb_keymap {
     struct xkb_context *ctx;
@@ -725,6 +742,10 @@ struct xkb_keymap {
 
     darray_size_t num_sym_interprets;
     struct xkb_sym_interpret *sym_interprets;
+
+    darray_size_t _padding;
+    darray_size_t num_modmaps;
+    ModMapEntry *modmaps;
 
     /**
      * Modifiers configuration.

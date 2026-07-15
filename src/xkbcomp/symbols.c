@@ -230,17 +230,6 @@ ClearKeyInfo(KeyInfo *keyi)
 /***====================================================================***/
 
 typedef struct {
-    enum merge_mode merge;
-    bool haveSymbol;
-    /** NOTE: 0 means: “remove the key or keysym from the modmap” */
-    xkb_mod_mask_t mods;
-    union {
-        xkb_atom_t keyName;
-        xkb_keysym_t keySym;
-    } u;
-} ModMapEntry;
-
-typedef struct {
     char *name;         /* e.g. pc+us+inet(evdev) */
     int errorCount;
     unsigned int include_depth;
@@ -2479,6 +2468,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Modifier map entry for %s not updated\n",
                     KeyNameText(info->ctx, entry->u.keyName),
                     ModMaskText(info->ctx, MOD_REAL, &info->mods, entry->mods));
+            entry->mods = 0; /* disable */
             return false;
         }
     }
@@ -2491,6 +2481,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
                     "Modifier map entry for %s not updated\n",
                     KeysymText(info->ctx, entry->u.keySym),
                     ModMaskText(info->ctx, MOD_REAL, &info->mods, entry->mods));
+            entry->mods = 0; /* disable */
             return false;
         }
     }
@@ -2498,6 +2489,7 @@ CopyModMapDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
     /* Skip modMap None */
     if (entry->mods) {
         key->modmap |= entry->mods;
+        entry->keyCode = key->keycode;
     }
 
     return true;
@@ -2507,7 +2499,6 @@ static bool
 CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
 {
     KeyInfo *keyi;
-    ModMapEntry *mm;
 
     keymap->symbols_section_name = strdup_safe(info->name);
     XkbEscapeMapName(keymap->symbols_section_name);
@@ -2535,9 +2526,14 @@ CopySymbolsToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info)
         }
     }
 
+    /* Resolve modmaps */
+    ModMapEntry *mm;
     darray_foreach(mm, info->modmaps)
         if (!CopyModMapDefToKeymap(keymap, info, mm))
             info->errorCount++;
+
+    /* Copy detailed modmap */
+    darray_steal(info->modmaps, &keymap->modmaps, &keymap->num_modmaps);
 
     /* XXX: If we don't ignore errorCount, things break. */
     return true;
