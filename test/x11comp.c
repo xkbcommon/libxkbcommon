@@ -326,14 +326,15 @@ test_keymap_roundtrip(struct xkb_context *ctx,
             ret = EXIT_FAILURE;
             fprintf(stderr,
                     "ERROR: roundtrip failed. "
-                    "Lengths difference: got %zu, expected %zu.\n",
-                    strlen(got), strlen(expected));
+                    "Lengths difference: expected %zu, got %zu.\n"
+                    "Keymap:\n",
+                    strlen(expected), strlen(got));
         } else {
             ret = EXIT_SUCCESS;
             fprintf(stderr, "Roundtrip succeed.\n");
         }
         if (print_keymap || ret == EXIT_FAILURE)
-            fprintf(stdout, "%s\n", got);
+            fprintf((ret == EXIT_FAILURE ? stderr : stdout), "%s\n", got);
         free(got);
     }
 
