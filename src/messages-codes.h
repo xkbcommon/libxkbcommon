@@ -130,6 +130,8 @@ enum xkb_message_code {
     XKB_ERROR_OVERLAPPING_OVERLAY = 355,
     /** Use of a legacy X11 action that is not supported */
     XKB_WARNING_UNSUPPORTED_LEGACY_ACTION = 362,
+    /** Layout count limit exceeded for the corresponding keymap format */
+    XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED = 366,
     /** Unsupported `xkb_a11y_flags` value */
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_ = 371,
     /** An entry is duplicated and will be ignored */
