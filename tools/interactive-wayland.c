@@ -1134,7 +1134,7 @@ main(int argc, char *argv[])
             serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
         case OPT_KEYMAP_EXPLICIT:
-            serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT;
+            serialize_flags |= TOOLS_KEYMAP_SERIALIZE_EXPLICIT;
             break;
         case OPT_RAW:
             dump_raw_keymap = true;

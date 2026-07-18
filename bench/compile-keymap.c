@@ -10,6 +10,7 @@
 #include <time.h>
 #include <getopt.h>
 
+#include "test.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "utils.h"
@@ -193,7 +194,7 @@ main(int argc, char **argv)
             serialize_flags |= XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
         case OPT_KEYMAP_EXPLICIT_VALUES:
-            serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT;
+            serialize_flags |= TEST_KEYMAP_SERIALIZE_EXPLICIT;
             break;
         case OPT_KEYMAP:
             keymap_path = optarg;

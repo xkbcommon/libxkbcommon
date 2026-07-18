@@ -1592,12 +1592,34 @@ enum xkb_keymap_serialize_flags {
      */
     XKB_KEYMAP_SERIALIZE_KEEP_UNUSED = (1 << 1),
     /**
-     * Force all values to be explicit. This is useful mainly for debugging,
-     * as it may increase considerably the size of the serialization.
+     * Force default values to be explicit.
+     *
+     * This is useful mainly for debugging.
      *
      * @since 1.14.0
      */
-    XKB_KEYMAP_SERIALIZE_EXPLICIT = (1 << 2),
+    XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES = (1 << 3),
+    /**
+     * Force [virtual modifier] encoding to be explicit.
+     *
+     * This is useful mainly for debugging.
+     *
+     * @since 1.14.0
+     *
+     * [virtual modifiers]: @ref virtual-modifier-def
+     */
+    XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS = (1 << 4),
+    /**
+     * Force key values to be explicit.
+     *
+     * This is useful mainly for debugging, as it may increase considerably
+     * the size of the serialization.
+     *
+     * This is useful mainly for debugging.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES = (1 << 5),
 };
 
 /**

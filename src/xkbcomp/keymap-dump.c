@@ -557,9 +557,6 @@ static bool
 write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
             enum xkb_keymap_serialize_flags flags, struct buf *buf)
 {
-    const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
-    const bool explicit = !!(flags & XKB_KEYMAP_SERIALIZE_EXPLICIT);
-
     if (keymap->types_section_name)
         write_buf(buf, "xkb_types \"%s\" {\n",
                   keymap->types_section_name);
@@ -568,9 +565,11 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     /* NOTE: support for default values has been removed */
 
-    if (!write_vmods(keymap, format, explicit, buf))
+    if (!write_vmods(keymap, format,
+                     (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS), buf))
         return false;
 
+    const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
     for (darray_size_t i = 0; i < keymap->num_types; i++) {
         const struct xkb_key_type * const type = &keymap->types[i];
         if (!type->required && drop_unused)
@@ -592,7 +591,8 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
              * Printing level 1 entries is redundant, it's the default,
              * unless there's preserve info.
              */
-            if (entry->level == 0 && entry->preserve.mods == 0 && !explicit)
+            if (entry->level == 0 && entry->preserve.mods == 0 &&
+                !(flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES))
                 continue;
 
             str = ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods,
@@ -623,14 +623,14 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
 static bool
 write_led_map(struct xkb_keymap *keymap, enum xkb_keymap_format format,
-              bool explicit, struct buf *buf, const struct xkb_led *led)
+              bool defaults, struct buf *buf, const struct xkb_led *led)
 {
     copy_to_buf(buf, "\tindicator ");
     write_buf_string_literal(buf, xkb_atom_text(keymap->ctx, led->name));
     copy_to_buf(buf, " {\n");
 
     if (led->which_groups) {
-        if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE || explicit) {
+        if (led->which_groups != XKB_STATE_LAYOUT_EFFECTIVE || defaults) {
             write_buf(buf, "\t\twhichGroupState= %s;\n",
                       LedStateMaskText(keymap->ctx, groupComponentMaskNames,
                                        led->which_groups));
@@ -640,7 +640,7 @@ write_led_map(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
 
     if (led->which_mods) {
-        if (led->which_mods != XKB_STATE_MODS_EFFECTIVE || explicit) {
+        if (led->which_mods != XKB_STATE_MODS_EFFECTIVE || defaults) {
             write_buf(buf, "\t\twhichModState= %s;\n",
                       LedStateMaskText(keymap->ctx, modComponentMaskNames,
                                        led->which_mods));
@@ -1094,11 +1094,12 @@ write_compat(struct xkb_keymap * restrict keymap,
              enum xkb_keymap_serialize_flags flags, bool * restrict some_interp,
              struct buf *buf)
 {
-    const bool pretty = !!(flags & XKB_KEYMAP_SERIALIZE_PRETTY);
-    const bool explicit = !!(flags & XKB_KEYMAP_SERIALIZE_EXPLICIT);
+    const bool pretty = (flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+    const bool defaults = (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES);
     const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
-    const bool drop_interprets = (explicit && drop_unused);
-    /* TODO: print all default values if explicit flag is set */
+    const bool drop_interprets =
+        ((flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES) && drop_unused);
+    /* TODO: print all default values if the explicit flag is set */
 
     if (keymap->compat_section_name)
         write_buf(buf, "xkb_compatibility \"%s\" {\n",
@@ -1106,10 +1107,11 @@ write_compat(struct xkb_keymap * restrict keymap,
     else
         copy_to_buf(buf, "xkb_compatibility {\n");
 
-    if (!write_vmods(keymap, format, explicit, buf))
+    if (!write_vmods(keymap, format,
+                     (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS), buf))
         return false;
 
-    if (explicit && !write_actions_defaults(keymap, format, buf))
+    if (defaults && !write_actions_defaults(keymap, format, buf))
         return false;
 
     copy_to_buf(buf, "\tinterpret.useModMapMods= AnyLevel;\n");
@@ -1154,7 +1156,7 @@ write_compat(struct xkb_keymap * restrict keymap,
         if (si->level_one_only) {
             copy_to_buf(buf, "\n\t\tuseModMapMods=level1;");
             has_explicit_properties = true;
-        } else if (explicit) {
+        } else if (defaults) {
             copy_to_buf(buf, "\n\t\tuseModMapMods=AnyLevel;");
             has_explicit_properties = true;
         }
@@ -1162,7 +1164,7 @@ write_compat(struct xkb_keymap * restrict keymap,
         if (si->repeat) {
             copy_to_buf(buf, "\n\t\trepeat= True;");
             has_explicit_properties = true;
-        } else if (explicit) {
+        } else if (defaults) {
             copy_to_buf(buf, "\n\t\trepeat= False;");
             has_explicit_properties = true;
         }
@@ -1222,7 +1224,7 @@ write_compat(struct xkb_keymap * restrict keymap,
     xkb_leds_foreach(led, keymap)
         if (led->which_groups || led->groups || led->which_mods ||
             led->mods.mods || led->ctrls)
-            if (!write_led_map(keymap, format, explicit, buf, led))
+            if (!write_led_map(keymap, format, defaults, buf, led))
                 return false;
 
     copy_to_buf(buf, "};\n\n");
@@ -1763,11 +1765,13 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
               enum xkb_keymap_serialize_flags flags, bool some_interp,
               struct buf *buf)
 {
-    const bool pretty = !!(flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+    const bool pretty = (flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+    const bool defaults =
+        (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES);
+    const bool explicit_key_values =
+        (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES);
     const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
-    const bool drop_interprets =
-        ((flags & XKB_KEYMAP_SERIALIZE_EXPLICIT) && drop_unused);
-    const bool explicit = !!(flags & XKB_KEYMAP_SERIALIZE_EXPLICIT);
+    const bool drop_interprets = (explicit_key_values && drop_unused);
     /* TODO: print all default values if explicit flag is set */
 
     if (keymap->symbols_section_name)
@@ -1789,7 +1793,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
     if (has_group_names)
         copy_to_buf(buf, "\n");
 
-    if (explicit && !write_actions_defaults(keymap, format, buf))
+    if (defaults && !write_actions_defaults(keymap, format, buf))
         return false;
 
     struct buf buf2 = { NULL, 0, 0 };
@@ -1798,7 +1802,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
         /* Skip keys with no explicit values */
         if (key->explicit) {
             if (!write_key(keymap, format, substitutions, max_groups,
-                           some_interp, drop_interprets, explicit,
+                           some_interp, drop_interprets, explicit_key_values,
                            pretty, buf, &buf2, key)) {
                 free(buf2.buf);
                 return false;
