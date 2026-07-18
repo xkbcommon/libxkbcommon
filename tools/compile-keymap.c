@@ -103,6 +103,12 @@ usage(FILE *file, const char *progname)
            "    Do not pretty-print when serializing a keymap\n"
            " --drop-unused\n"
            "    Disable unused bits serialization\n"
+           " --explicit-defaults\n"
+           "    Force serializing default values\n"
+           " --explicit-vmods\n"
+           "    Force serializing virtual modifiers encodings\n"
+           " --explicit-keys\n"
+           "    Force serializing key values\n"
            " --explicit-values\n"
            "    Force serializing all values\n"
            " --kccgst\n"
@@ -168,6 +174,9 @@ parse_options(int argc, char **argv,
         OPT_KEYMAP_OUTPUT_FORMAT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
+        OPT_KEYMAP_EXPLICIT_DEFAULTS,
+        OPT_KEYMAP_EXPLICIT_VMODS,
+        OPT_KEYMAP_EXPLICIT_KEYS,
         OPT_KEYMAP_EXPLICIT,
         OPT_KCCGST,
         OPT_KCCGST_YAML,
@@ -204,6 +213,9 @@ parse_options(int argc, char **argv,
         {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
         {"no-pretty",        no_argument,            0, OPT_KEYMAP_NO_PRETTY},
         {"drop-unused",      no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
+        {"explicit-defaults",no_argument,            0, OPT_KEYMAP_EXPLICIT_DEFAULTS},
+        {"explicit-vmods",   no_argument,            0, OPT_KEYMAP_EXPLICIT_VMODS},
+        {"explicit-keys",    no_argument,            0, OPT_KEYMAP_EXPLICIT_KEYS},
         {"explicit-values",  no_argument,            0, OPT_KEYMAP_EXPLICIT},
         {"kccgst",           no_argument,            0, OPT_KCCGST},
         {"kccgst-yaml",      no_argument,            0, OPT_KCCGST_YAML},
@@ -300,8 +312,19 @@ parse_options(int argc, char **argv,
         case OPT_KEYMAP_DROP_UNUSED:
             *serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
+        case OPT_KEYMAP_EXPLICIT_DEFAULTS:
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES;
+            break;
+        case OPT_KEYMAP_EXPLICIT_VMODS:
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS;
+            break;
+        case OPT_KEYMAP_EXPLICIT_KEYS:
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES;
+            break;
         case OPT_KEYMAP_EXPLICIT:
-            *serialize_flags |= TOOLS_KEYMAP_SERIALIZE_EXPLICIT;
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES
+                              | XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS
+                              | XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES;
             break;
         case OPT_RULES:
             if (input_format == INPUT_FORMAT_KEYMAP)
