@@ -1824,10 +1824,22 @@ write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 {
     const xkb_layout_index_t max_groups = format_max_groups(format);
     if (keymap->num_groups > max_groups) {
-        log_err(keymap->ctx, XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED,
-                "Cannot serialize %"PRIu32" groups in keymap format %d: "
-                "maximum is %"PRIu32"; discarding unsupported groups\n",
-                keymap->num_groups, format, max_groups);
+        const bool strict = (flags & XKB_KEYMAP_SERIALIZE_STRICT_MODE);
+        xkb_log_with_code(
+            keymap->ctx,
+            (strict ? XKB_LOG_LEVEL_ERROR : XKB_LOG_LEVEL_WARNING),
+            XKB_LOG_VERBOSITY_MINIMAL,
+            XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED,
+            "Cannot serialize %"PRIu32" groups in keymap format %d: "
+            "maximum is %"PRIu32"%s\n",
+            keymap->num_groups, format, max_groups,
+            (strict ? "" : "; discarding unsupported groups")
+        );
+        if (strict) {
+            return false;
+        } else {
+            /* discard excessive groups */
+        }
     }
 
     key_name_substitutions substitutions = darray_new();

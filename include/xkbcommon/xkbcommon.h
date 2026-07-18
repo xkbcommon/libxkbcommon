@@ -1592,6 +1592,18 @@ enum xkb_keymap_serialize_flags {
      */
     XKB_KEYMAP_SERIALIZE_KEEP_UNUSED = (1 << 1),
     /**
+     * Make the serializer operate in *strict* mode.
+     *
+     * This useful mainly for debugging.
+     *
+     * When this flag is set, the following will raise an error:
+     * - Exceeded layout count for the corresponding format
+     *   (see `::XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED`)
+     *
+     * @since 1.14.0
+     */
+    XKB_KEYMAP_SERIALIZE_STRICT_MODE = (1 << 2),
+    /**
      * Force default values to be explicit.
      *
      * This is useful mainly for debugging.
