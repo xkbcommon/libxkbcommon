@@ -254,7 +254,7 @@ XkbWrapGroupIntoRange(int32_t group,
 }
 
 xkb_action_count_t
-xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
+xkb_keymap_key_get_actions_by_level(const struct xkb_keymap *keymap,
                                     const struct xkb_key *key,
                                     xkb_layout_index_t layout,
                                     xkb_level_index_t level,

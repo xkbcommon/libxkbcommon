@@ -876,7 +876,7 @@ XkbKeyByName(const struct xkb_keymap *keymap, xkb_atom_t name, bool use_aliases)
 }
 
 static inline const struct xkb_key *
-XkbKey(struct xkb_keymap *keymap, xkb_keycode_t kc)
+XkbKey(const struct xkb_keymap *keymap, xkb_keycode_t kc)
 {
     if (kc < keymap->min_key_code || kc > keymap->max_key_code) {
         /* Unsupported keycode */
@@ -957,7 +957,7 @@ xkb_keymap_key_get_level(struct xkb_keymap *keymap, const struct xkb_key *key,
                          xkb_layout_index_t layout, xkb_level_index_t level);
 
 xkb_action_count_t
-xkb_keymap_key_get_actions_by_level(struct xkb_keymap *keymap,
+xkb_keymap_key_get_actions_by_level(const struct xkb_keymap *keymap,
                                     const struct xkb_key *key,
                                     xkb_layout_index_t layout,
                                     xkb_level_index_t level,
