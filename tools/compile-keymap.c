@@ -69,8 +69,10 @@ usage(FILE *file, const char *progname)
            "    The keymap format to use for parsing (default: '%s')\n"
            " --format <format>\n"
            "    The keymap format to use for both parsing and serializing\n"
-           " --strict\n"
+           " --input-strict\n"
            "    Parse using the strict mode.\n"
+           " --strict\n"
+           "    Parse and serialize using the strict mode.\n"
            " --keymap <file>\n"
            " --from-xkb <file>\n"
            "    Load the corresponding XKB file, ignore RMLVO options. If <file>\n"
@@ -99,6 +101,8 @@ usage(FILE *file, const char *progname)
            "Output options:\n"
            " --output-format <format>\n"
            "    The keymap format to use for serializing (default: same as input)\n"
+           " --output-strict\n"
+           "    Serialize using the strict mode\n"
            " --no-pretty\n"
            "    Do not pretty-print when serializing a keymap\n"
            " --drop-unused\n"
@@ -164,7 +168,8 @@ parse_options(int argc, char **argv,
         OPT_ENABLE_ENV_NAMES,
         OPT_KEYMAP_INPUT_FORMAT,
         OPT_KEYMAP_FORMAT,
-        OPT_KEYMAP_STRICT_PARSER,
+        OPT_KEYMAP_INPUT_STRICT,
+        OPT_KEYMAP_STRICT,
         OPT_RULES,
         OPT_MODEL,
         OPT_LAYOUT,
@@ -172,6 +177,7 @@ parse_options(int argc, char **argv,
         OPT_OPTION,
         /* Output */
         OPT_KEYMAP_OUTPUT_FORMAT,
+        OPT_KEYMAP_OUTPUT_STRICT,
         OPT_KEYMAP_NO_PRETTY,
         OPT_KEYMAP_DROP_UNUSED,
         OPT_KEYMAP_EXPLICIT_DEFAULTS,
@@ -198,7 +204,8 @@ parse_options(int argc, char **argv,
         {"keymap",           optional_argument,      0, OPT_KEYMAP},
         /* Alias maintained for backward compatibility */
         {"from-xkb",         optional_argument,      0, OPT_KEYMAP},
-        {"strict",           no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
+        {"input-strict",     no_argument,            0, OPT_KEYMAP_INPUT_STRICT},
+        {"strict",           no_argument,            0, OPT_KEYMAP_STRICT},
         {"enable-environment-names", no_argument,    0, OPT_ENABLE_ENV_NAMES},
         {"input-format",     required_argument,      0, OPT_KEYMAP_INPUT_FORMAT},
         {"format",           required_argument,      0, OPT_KEYMAP_FORMAT},
@@ -211,6 +218,7 @@ parse_options(int argc, char **argv,
          * Output
          */
         {"output-format",    required_argument,      0, OPT_KEYMAP_OUTPUT_FORMAT},
+        {"output-strict",    no_argument,            0, OPT_KEYMAP_OUTPUT_STRICT},
         {"no-pretty",        no_argument,            0, OPT_KEYMAP_NO_PRETTY},
         {"drop-unused",      no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
         {"explicit-defaults",no_argument,            0, OPT_KEYMAP_EXPLICIT_DEFAULTS},
@@ -303,8 +311,15 @@ parse_options(int argc, char **argv,
             }
             *keymap_output_format = *keymap_input_format;
             break;
-        case OPT_KEYMAP_STRICT_PARSER:
+        case OPT_KEYMAP_INPUT_STRICT:
             *compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
+            break;
+        case OPT_KEYMAP_OUTPUT_STRICT:
+            *compile_flags |= XKB_KEYMAP_SERIALIZE_STRICT_MODE;
+            break;
+        case OPT_KEYMAP_STRICT:
+            *compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
+            *serialize_flags |= XKB_KEYMAP_SERIALIZE_STRICT_MODE;
             break;
         case OPT_KEYMAP_NO_PRETTY:
             *serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
