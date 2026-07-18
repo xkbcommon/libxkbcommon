@@ -404,6 +404,7 @@ libxkbcommon_sources = [
     'src/xkbcomp/types.c',
     'src/xkbcomp/vmod.c',
     'src/xkbcomp/xkbcomp.c',
+    'src/abi-check.c',
     'src/atom.c',
     'src/context.c',
     'src/context-priv.c',
