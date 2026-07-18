@@ -644,6 +644,13 @@
   added: ALWAYS
   type: error
   description: "Keymap compilation failed"
+- id: "unsupported-keymap-serialization-flags"
+  code: 829
+  added: 1.12.0
+  type: error
+  description: "Unsupported keymap serialization flags"
+  details: |
+    See `::xkb_keymap_serialize_flags` for the list of valid flags.
 - id: "unknown-action-type"
   code: 844
   added: ALWAYS
