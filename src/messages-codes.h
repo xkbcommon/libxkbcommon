@@ -108,6 +108,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_SET_DEFAULT_STATEMENT = 254,
     /** Conflicting “map” entries in type definition */
     XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY = 266,
+    /** Unsupported keymap format */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT = 277,
     /** Unrecognized RMLVO value ignored */
     XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE = 282,
     /** Warn if using an undefined key type */
