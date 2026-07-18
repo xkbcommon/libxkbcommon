@@ -31,6 +31,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-features.h"
+#include "abi-check.h"
 #include "darray.h"
 #include "features/enums.h"
 #include "keymap.h"
@@ -1875,30 +1876,6 @@ state_update_layout_policy(struct xkb_server_state *state,
     }
 }
 
-static void
-log_abi_error(struct xkb_context * restrict ctx,
-              const char * restrict func, enum xkb_error_code error)
-{
-    switch (error) {
-    case XKB_ERROR_ABI_INVALID_STRUCT_SIZE:
-        log_err(ctx, XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
-                "%s: ABI error: unsupported versioned struct\n", func);
-        break;
-    case XKB_ERROR_ABI_BACKWARD_COMPAT:
-        log_err(ctx, XKB_ERROR_ABI_BACKWARD_COMPAT,
-                "%s: ABI version mismatch: missing newer required fields\n",
-                func);
-        break;
-    case XKB_ERROR_ABI_FORWARD_COMPAT:
-        log_err(ctx, XKB_ERROR_ABI_FORWARD_COMPAT,
-                "%s: ABI version mismatch: cannot use newer fields\n", func);
-        break;
-    default:
-        /* unreachable */
-        assert(false);
-    }
-}
-
 #define xkb_check_state_update_size(x) xkb_check_versioned_struct_size( \
     xkb_versioned_struct_size_v1(x),                                    \
     xkb_versioned_struct_size_min(x),                                   \
@@ -1917,7 +1894,7 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
          (error = xkb_check_state_update_size(update->components))) ||
         (update->layout_policy &&
          (error = xkb_check_state_update_size(update->layout_policy)))) {
-        log_abi_error(ctx, func, error);
+        xkb_log_abi_error(ctx, func, error);
     }
     return error;
 }
