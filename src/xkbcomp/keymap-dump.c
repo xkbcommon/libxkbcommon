@@ -239,7 +239,7 @@ typedef darray(struct key_name_substitution) key_name_substitutions;
  * hexadecimal number.
  */
 static bool
-rename_long_keys(struct xkb_keymap *keymap,
+rename_long_keys(const struct xkb_keymap *keymap,
                  key_name_substitutions *substitutions)
 {
     /*
@@ -431,7 +431,7 @@ substitute_name(const key_name_substitutions *substitutions, xkb_atom_t name)
 }
 
 static bool
-write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_vmods(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
             bool explicit, struct buf *buf)
 {
     const struct xkb_mod *mod;
@@ -485,7 +485,7 @@ write_vmods(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_keycodes(struct xkb_keymap *keymap,
+write_keycodes(const struct xkb_keymap *keymap,
                const key_name_substitutions *substitutions,
                enum xkb_keymap_serialize_flags flags, struct buf *buf)
 {
@@ -554,7 +554,7 @@ write_keycodes(struct xkb_keymap *keymap,
 }
 
 static bool
-write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_types(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
             enum xkb_keymap_serialize_flags flags, struct buf *buf)
 {
     if (keymap->types_section_name)
@@ -622,7 +622,7 @@ write_types(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_led_map(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_led_map(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
               bool defaults, struct buf *buf, const struct xkb_led *led)
 {
     copy_to_buf(buf, "\tindicator ");
@@ -680,7 +680,7 @@ affect_lock_text(enum xkb_action_flags flags, bool show_both)
 #define ACTION_PADDING 30
 
 static bool
-write_action(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
              xkb_layout_index_t max_groups, struct buf *buf,
              const union xkb_action *action,
              const char *prefix, const char *suffix)
@@ -879,7 +879,7 @@ static const union xkb_action void_actions[] = {
 };
 
 static bool
-write_actions(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_actions(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
               xkb_layout_index_t max_groups, struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group)
 {
@@ -1089,7 +1089,7 @@ static const struct xkb_sym_interpret fallback_interpret = {
 };
 
 static bool
-write_compat(struct xkb_keymap * restrict keymap,
+write_compat(const struct xkb_keymap * restrict keymap,
              enum xkb_keymap_format format, xkb_layout_index_t max_groups,
              enum xkb_keymap_serialize_flags flags, bool * restrict some_interp,
              struct buf *buf)
@@ -1233,7 +1233,8 @@ write_compat(struct xkb_keymap * restrict keymap,
 }
 
 static bool
-write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
+write_keysyms(const struct xkb_keymap *keymap,
+              struct buf *buf, struct buf *buf2,
               const struct xkb_key *key, xkb_layout_index_t group,
               bool pretty, bool show_actions)
 {
@@ -1248,8 +1249,11 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
         if (level != 0)
             copy_to_buf(buf, ", ");
 
-        num_syms = xkb_keymap_key_get_syms_by_level(keymap, key->keycode,
-                                                    group, level, &syms);
+        num_syms = xkb_keymap_key_get_syms_by_level(
+            /* remove `const` constraint to use the dated public API */
+            (struct xkb_keymap *)keymap,
+            key->keycode, group, level, &syms
+        );
 
         const xkb_keysym_t no_symbol = XKB_KEY_NoSymbol;
         if (num_syms == 0) {
@@ -1298,7 +1302,7 @@ write_keysyms(struct xkb_keymap *keymap, struct buf *buf, struct buf *buf2,
 }
 
 static bool
-write_key(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
           const key_name_substitutions *substitutions,
           xkb_layout_index_t max_groups, bool some_interprets,
           bool drop_interprets, bool explicit, bool pretty,
@@ -1626,7 +1630,7 @@ cmp_modmap_step_2(const void *a, const void *b)
 }
 
 static bool
-write_modmaps(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_modmaps(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
               const key_name_substitutions *substitutions,
               bool pretty, bool drop_interprets, struct buf *buf)
 {
@@ -1759,7 +1763,7 @@ exit:
 }
 
 static bool
-write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
               const key_name_substitutions *substitutions,
               xkb_layout_index_t max_groups,
               enum xkb_keymap_serialize_flags flags, bool some_interp,
@@ -1819,7 +1823,7 @@ write_symbols(struct xkb_keymap *keymap, enum xkb_keymap_format format,
 }
 
 static bool
-write_keymap(struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_keymap(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
              enum xkb_keymap_serialize_flags flags, struct buf *buf)
 {
     const xkb_layout_index_t max_groups = format_max_groups(format);
