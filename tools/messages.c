@@ -56,6 +56,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_UNKNOWN_OPERATOR, "Unknown operator"},
     {XKB_ERROR_OVERLAPPING_OVERLAY, "Overlapping overlay"},
     {XKB_WARNING_UNSUPPORTED_LEGACY_ACTION, "Unsupported legacy action"},
+    {XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED, "Layout count limit exceeded"},
     {XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_, "Unsupported a11y flags"},
     {XKB_WARNING_DUPLICATE_ENTRY, "Duplicate entry"},
     {XKB_ERROR_RECURSIVE_INCLUDE, "Recursive include"},

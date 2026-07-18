@@ -309,6 +309,12 @@
   details: |
     This action will be treated as `NoAction()`. See @ref unsupported-legacy-x11-actions ""
     for further information.
+- id: "layout-count-limit-exceeded"
+  code: 366
+  added: ALWAYS
+  type: error
+  description: "Layout count limit exceeded for the corresponding keymap format"
+  # TODO: details
 - id: "unsupported-a11y-flags"
   code: 371
   type: error
