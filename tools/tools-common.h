@@ -27,12 +27,6 @@ enum {
                                      XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
 };
 
-#define TOOLS_KEYMAP_SERIALIZE_EXPLICIT (          \
-    XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES | \
-    XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS |          \
-    XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES       \
-)
-
 /* Fields that are printed in the interactive tools. */
 enum print_state_options {
     PRINT_LAYOUT = (1u << 0),
