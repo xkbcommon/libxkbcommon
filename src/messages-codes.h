@@ -210,6 +210,8 @@ enum xkb_message_code {
     XKB_ERROR_UNKNOWN_FIELD = 812,
     /** Keymap compilation failed */
     XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
+    /** Unsupported keymap serialization flags */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS = 829,
     /** Unknown action type */
     XKB_ERROR_UNKNOWN_ACTION_TYPE = 844,
     /** ABI forward-compatibility check failed */

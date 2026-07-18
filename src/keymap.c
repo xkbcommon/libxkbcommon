@@ -261,7 +261,8 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
         = (enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS_VALUES;
 
     if (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
-        log_err_func(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(keymap->ctx,
+                     XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS,
                      "unrecognized serialization flags: %#x\n",
                      (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS));
         return NULL;
