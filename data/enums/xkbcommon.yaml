@@ -45,8 +45,12 @@ xkb_keymap_serialize_flags:
     value: 1
   - name: XKB_KEYMAP_SERIALIZE_KEEP_UNUSED
     value: 2
-  - name: XKB_KEYMAP_SERIALIZE_EXPLICIT
-    value: 4
+  - name: XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES
+    value: 8
+  - name: XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS
+    value: 16
+  - name: XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES
+    value: 32
 xkb_keymap_key_iterator_flags:
   - name: XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS
     value: 0
