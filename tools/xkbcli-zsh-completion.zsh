@@ -164,7 +164,6 @@ local -a dump_common=(
 	'--strict[parse using the strict mode]'
 	'--no-pretty[do not pretty print when serializing a keymap]'
 	'--drop-unused[disable unused bits serialization]'
-	'--explicit-values[force serializing all values]'
 )
 
 _xkbcli-dump-keymap() {
