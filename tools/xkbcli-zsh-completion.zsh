@@ -194,6 +194,9 @@ _xkbcli-compile-keymap() {
 		'(--format)--output-format=[the keymap format to use for serializing]:xkb format:(v1 v2)' \
 		'--no-pretty[do not pretty print when serializing a keymap]' \
 		'--drop-unused[disable unused bits serialization]' \
+		'--explicit-defaults[force serializing defaults values]' \
+		'--explicit-vmods[force serializing virtual modifiers encodings]' \
+		'--explicit-keys[force serializing keys values]' \
 		'--explicit-values[force serializing all values]' \
 		'(--kccgst-yaml --rmlvo --modmaps)--kccgst[print a keymap in KcCGST format]' \
 		'(--kccgst      --rmlvo --modmaps)--kccgst-yaml[print a KcCGST keymap in YAML format]' \

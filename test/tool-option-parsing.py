@@ -403,6 +403,9 @@ class TestXkbcli(unittest.TestCase):
             ["--strict", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
+            ["--explicit-defaults", "-h"],
+            ["--explicit-vmods", "-h"],
+            ["--explicit-keys", "-h"],
             ["--explicit-values", "-h"],
         ):
             with self.subTest(args=args):
