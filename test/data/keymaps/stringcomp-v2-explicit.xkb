@@ -1337,7 +1337,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 	RedirectKey.clearMods = 0;
 
 	key <ESC>                {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Escape ],
@@ -1536,7 +1536,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <BKSP>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      BackSpace,                      BackSpace ],
@@ -1751,14 +1751,14 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <RTRN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Return ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <LCTL>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= none,
 		symbols[1]= [                      Control_L ],
@@ -2181,7 +2181,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetPtrDflt(affect=button,button=2), SetPtrDflt(affect=button,button=2),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <LALT>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= Alt+Meta,
 		symbols[1]= [                          Alt_L,                         Meta_L ],
@@ -2204,7 +2204,10 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=lock), LockPtrBtn(button=default,affect=lock),                     NoAction(),                     NoAction() ]
 	};
 	key <CAPS>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= none,
 		symbols[1]= [                      Caps_Lock ],
@@ -2217,70 +2220,70 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetMods(modifiers=LevelThree,clearLocks) ]
 	};
 	key <FK01>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F1,                             F1,                             F1,                             F1,                XF86Switch_VT_1 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=1,!same) ]
 	};
 	key <FK02>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F2,                             F2,                             F2,                             F2,                XF86Switch_VT_2 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=2,!same) ]
 	};
 	key <FK03>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F3,                             F3,                             F3,                             F3,                XF86Switch_VT_3 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=3,!same) ]
 	};
 	key <FK04>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F4,                             F4,                             F4,                             F4,                XF86Switch_VT_4 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=4,!same) ]
 	};
 	key <FK05>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F5,                             F5,                             F5,                             F5,                XF86Switch_VT_5 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=5,!same) ]
 	};
 	key <FK06>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F6,                             F6,                             F6,                             F6,                XF86Switch_VT_6 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=6,!same) ]
 	};
 	key <FK07>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F7,                             F7,                             F7,                             F7,                XF86Switch_VT_7 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=7,!same) ]
 	};
 	key <FK08>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F8,                             F8,                             F8,                             F8,                XF86Switch_VT_8 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=8,!same) ]
 	};
 	key <FK09>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             F9,                             F9,                             F9,                             F9,                XF86Switch_VT_9 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),   SwitchScreen(screen=9,!same) ]
 	};
 	key <FK10>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                            F10,                            F10,                            F10,                            F10,               XF86Switch_VT_10 ],
@@ -2303,7 +2306,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), SetMods(modifiers=modMapMods,clearLocks), LockControls(controls=MouseKeys), SetMods(modifiers=modMapMods,clearLocks),                     NoAction() ]
 	};
 	key <SCLK>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    Scroll_Lock ],
@@ -2518,7 +2521,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ PtrBtn(button=default,count=2),                     NoAction(),                     NoAction(),                     NoAction(), LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock),                     NoAction(),                     NoAction() ]
 	};
 	key <LVL3>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= LevelThree,
 		symbols[1]= [               ISO_Level3_Shift ],
@@ -2541,21 +2544,22 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetMods(modifiers=LevelFive,clearLocks) ]
 	};
 	key <FK11>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                            F11,                            F11,                            F11,                            F11,               XF86Switch_VT_11 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),  SwitchScreen(screen=11,!same) ]
 	};
 	key <FK12>               {
-		type= "CTRL+ALT",
+		type[1]= "CTRL+ALT",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                            F12,                            F12,                            F12,                            F12,               XF86Switch_VT_12 ],
 		actions[1]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),  SwitchScreen(screen=12,!same) ]
 	};
 	key <AB11>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
+		type[2]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= none,
 		symbols[1]= [                      Control_L, {                      Control_L,                ISO_Group_Shift } ],
@@ -2564,35 +2568,35 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[2]= [ {     SetMods(modifiers=Control),             SetGroup(group=+1) },     SetMods(modifiers=Control) ]
 	};
 	key <KATA>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       Katakana ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HIRA>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       Hiragana ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HENK>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    Henkan_Mode ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HKTG>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [              Hiragana_Katakana ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <MUHE>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       Muhenkan ],
@@ -2615,7 +2619,9 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <RCTL>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= none,
 		symbols[1]= [                      Control_R ],
@@ -2642,7 +2648,7 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetPtrDflt(affect=button,button=1), SetPtrDflt(affect=button,button=1),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <PRSC>               {
-		type= "PC_ALT_LEVEL2",
+		type[1]= "PC_ALT_LEVEL2",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                          Print,                        Sys_Req ],
@@ -2665,105 +2671,105 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [ SetMods(modifiers=LevelFive,clearLocks) ]
 	};
 	key <LNFD>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       Linefeed ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HOME>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Home ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <UP>                 {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                             Up ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <PGUP>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                          Prior ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <LEFT>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Left ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <RGHT>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                          Right ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <END>                {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                            End ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <DOWN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Down ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <PGDN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Next ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <INS>                {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Insert ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <DELE>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Delete ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <MUTE>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioMute ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <VOL->               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [           XF86AudioLowerVolume ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <VOL+>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [           XF86AudioRaiseVolume ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <POWR>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                   XF86PowerOff ],
@@ -2786,735 +2792,735 @@ xkb_symbols "pc_us_ru_2_ca(multix)_3_de(neo)_4_inet(evdev)" {
 		actions[4]= [                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction(),                     NoAction() ]
 	};
 	key <I126>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      plusminus ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <PAUS>               {
-		type= "PC_CONTROL_LEVEL2",
+		type[1]= "PC_CONTROL_LEVEL2",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                          Pause,                          Break ],
 		actions[1]= [                     NoAction(),                     NoAction() ]
 	};
 	key <I128>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86LaunchA ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I129>               {
-		type= "KEYPAD",
+		type[1]= "KEYPAD",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     KP_Decimal,                     KP_Decimal ],
 		actions[1]= [ LockPtrBtn(button=default,affect=unlock), LockPtrBtn(button=default,affect=unlock) ]
 	};
 	key <HNGL>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Hangul ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HJCV>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                   Hangul_Hanja ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <LWIN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= Super,
 		symbols[1]= [                        Super_L ],
 		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ]
 	};
 	key <RWIN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= Super,
 		symbols[1]= [                        Super_R ],
 		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ]
 	};
 	key <COMP>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Menu ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <STOP>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Cancel ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <AGAI>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Redo ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <PROP>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       SunProps ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <UNDO>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Undo ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FRNT>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       SunFront ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <COPY>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Copy ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <OPEN>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                        SunOpen ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <PAST>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Paste ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FIND>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Find ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <CUT>                {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                        XF86Cut ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <HELP>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Help ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I147>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     XF86MenuKB ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I148>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86Calculator ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I150>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Sleep ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I151>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     XF86WakeUp ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I152>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                   XF86Explorer ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I153>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Send ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I155>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Xfer ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I156>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch1 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I157>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch2 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I158>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                        XF86WWW ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I159>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                        XF86DOS ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I160>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                XF86ScreenSaver ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I162>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [              XF86RotateWindows ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I163>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Mail ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I164>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86Favorites ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I165>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86MyComputer ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I166>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Back ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I167>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Forward ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I169>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Eject ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I170>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Eject,                      XF86Eject ],
 		actions[1]= [                     NoAction(),                     NoAction() ]
 	};
 	key <I171>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioNext ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I172>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioPlay,                 XF86AudioPause ],
 		actions[1]= [                     NoAction(),                     NoAction() ]
 	};
 	key <I173>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioPrev ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I174>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioStop,                      XF86Eject ],
 		actions[1]= [                     NoAction(),                     NoAction() ]
 	};
 	key <I175>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                XF86AudioRecord ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I176>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                XF86AudioRewind ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I177>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Phone ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I179>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Tools ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I180>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                   XF86HomePage ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I181>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     XF86Reload ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I182>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Close ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I185>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                   XF86ScrollUp ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I186>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86ScrollDown ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I187>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      parenleft ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I188>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     parenright ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I189>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                        XF86New ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I190>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                           Redo ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK13>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Tools ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK14>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch5 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK15>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch6 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK16>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch7 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK17>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch8 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK18>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch9 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK21>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [             XF86TouchpadToggle ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK22>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86TouchpadOn ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <FK23>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                XF86TouchpadOff ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <MDSW>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= No,
 		virtualMods= AltGr,
 		symbols[1]= [                ISO_Group_Shift ],
 		actions[1]= [             SetGroup(group=+1) ]
 	};
 	key <ALT>                {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= none,
 		symbols[1]= [                       NoSymbol,                          Alt_L ],
 		actions[1]= [                     NoAction(), SetMods(modifiers=Alt,clearLocks) ]
 	};
 	key <META>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= Meta,
 		symbols[1]= [                       NoSymbol,                         Meta_L ],
 		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
 	};
 	key <SUPR>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= Super,
 		symbols[1]= [                       NoSymbol,                        Super_L ],
 		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
 	};
 	key <HYPR>               {
-		type= "TWO_LEVEL",
+		type[1]= "TWO_LEVEL",
 		repeat= No,
 		virtualMods= Hyper,
 		symbols[1]= [                       NoSymbol,                        Hyper_L ],
 		actions[1]= [                     NoAction(), SetMods(modifiers=modMapMods,clearLocks) ]
 	};
 	key <I208>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioPlay ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I209>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86AudioPause ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I210>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch3 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I211>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Launch4 ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I212>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86LaunchB ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I213>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Suspend ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I214>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Close ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I215>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86AudioPlay ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I216>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [               XF86AudioForward ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I218>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                          Print ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I220>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     XF86WebCam ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I223>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Mail ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I224>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86Messenger ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I225>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                     XF86Search ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I226>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         XF86Go ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I227>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Finance ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I228>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Game ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I229>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Shop ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I231>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                         Cancel ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I232>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [          XF86MonBrightnessDown ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I233>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [            XF86MonBrightnessUp ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I234>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                 XF86AudioMedia ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I235>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Display ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I236>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [              XF86KbdLightOnOff ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I237>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [          XF86KbdBrightnessDown ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I238>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [            XF86KbdBrightnessUp ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I239>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Send ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I240>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                      XF86Reply ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I241>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                XF86MailForward ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I242>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86Save ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I243>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86Documents ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I244>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                    XF86Battery ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I245>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                  XF86Bluetooth ],
 		actions[1]= [                     NoAction() ]
 	};
 	key <I246>               {
-		type= "ONE_LEVEL",
+		type[1]= "ONE_LEVEL",
 		repeat= Yes,
 		virtualMods= none,
 		symbols[1]= [                       XF86WLAN ],
