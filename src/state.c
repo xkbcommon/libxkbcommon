@@ -234,11 +234,7 @@ xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t kc,
 static inline xkb_layout_index_t
 state_key_get_layout(struct xkb_state *state, const struct xkb_key *key)
 {
-    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
-    return XkbWrapGroupIntoRange((int32_t) state->components.group,
-                                 key->num_groups,
-                                 key->out_of_range_group_policy,
-                                 key->out_of_range_group_number);
+    return xkb_keymap_key_effective_layout(key, state->components.group);
 }
 
 /**
