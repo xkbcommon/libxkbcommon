@@ -949,6 +949,17 @@ XkbWrapGroupIntoRange(int32_t group,
                       enum xkb_layout_out_of_range_policy out_of_range_group_policy,
                       xkb_layout_index_t out_of_range_group_number);
 
+static inline xkb_layout_index_t
+xkb_keymap_key_effective_layout(const struct xkb_key *key,
+                                xkb_layout_index_t layout)
+{
+    static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
+    return XkbWrapGroupIntoRange((int32_t) layout,
+                                 key->num_groups,
+                                 key->out_of_range_group_policy,
+                                 key->out_of_range_group_number);
+}
+
 XKB_EXPORT_PRIVATE xkb_mod_mask_t
 mod_mask_get_effective(struct xkb_keymap *keymap, xkb_mod_mask_t mods);
 
