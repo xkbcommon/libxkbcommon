@@ -1321,14 +1321,17 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     else
         write_buf(buf, "\tkey %s {", KeyNameText(keymap->ctx, name));
 
-    if (key->explicit & EXPLICIT_TYPES || explicit) {
+    if ((key->explicit & EXPLICIT_TYPES) || explicit) {
         simple = false;
 
-        bool multi_type = false;
-        for (xkb_layout_index_t group = 1; group < num_groups; group++) {
-            if (key->groups[group].type != key->groups[0].type) {
-                multi_type = true;
-                break;
+        bool multi_type = explicit;
+        /* Check for distinct key types only if not requiring explicit values */
+        if (!explicit) {
+            for (xkb_layout_index_t group = 1; group < num_groups; group++) {
+                if (key->groups[group].type != key->groups[0].type) {
+                    multi_type = true;
+                    break;
+                }
             }
         }
 
