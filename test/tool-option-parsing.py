@@ -409,6 +409,7 @@ class TestXkbcli(unittest.TestCase):
             ["--explicit-vmods", "-h"],
             ["--explicit-keys", "-h"],
             ["--explicit-values", "-h"],
+            ["--layouts-mask", "0x1", "-h"],
         ):
             with self.subTest(args=args):
                 self.xkbcli_compile_keymap.run_command_success(args)

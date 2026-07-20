@@ -106,6 +106,9 @@ enum tools_arg_optionality {
 bool
 tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out);
 
+bool
+tools_parse_mask(const char *s, enum tools_arg_optionality optional, uint32_t *out);
+
 /** Raw modifier masks: plus-separated list of modifier names */
 struct xkb_raw_mod_mask {
     darray_char names;

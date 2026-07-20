@@ -966,6 +966,32 @@ tools_parse_bool(const char *s, enum tools_arg_optionality optional, bool *out)
     }
 }
 
+bool
+tools_parse_mask(const char *s, enum tools_arg_optionality optional, uint32_t *out)
+{
+    #define HEX_PREFIX "0x"
+    if (isempty(s)) {
+        if (optional == TOOLS_ARG_REQUIRED) {
+            fprintf(stderr, "ERROR: mask value is required, but got none\n");
+            return false;
+        } else {
+            /* Keep value unchanged */
+            return true;
+        }
+    } else if (strncmp(s, HEX_PREFIX, sizeof(HEX_PREFIX) - 1) == 0) {
+        const int count =
+            parse_hex_to_uint32_t(s + sizeof(HEX_PREFIX) - 1, SIZE_MAX, out);
+        const size_t expected = strlen(s) - (sizeof(HEX_PREFIX) - 1);
+        if (count == (int)expected) {
+            return true;
+        }
+    }
+
+    fprintf(stderr, "ERROR: invalid mask value: \"%s\"\n", s);
+    return false;
+    #undef HEX_PREFIX
+}
+
 static void
 xkb_raw_modifiers_free(struct xkb_raw_mod_mask *raw_mods)
 {
