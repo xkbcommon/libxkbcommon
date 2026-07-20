@@ -1,0 +1,63 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<LALT>               = 64;
+	<RALT>               = 108;
+};
+
+xkb_types {
+	virtual_modifiers Alt=Mod1,LevelThree=Mod5;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers Alt=Mod1,LevelThree=Mod5;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+};
+
+xkb_symbols {
+	name[1]="1";
+	name[2]="2";
+	name[3]="3";
+	name[4]="4";
+	name[5]="5";
+	name[6]="6";
+
+	key <LALT>               {
+		groupsRedirect= 1,
+		symbols[1]= [           Alt_L ],
+		symbols[2]= [           Alt_L ],
+		symbols[3]= [ ISO_Level3_Shift ],
+		symbols[4]= [               a ],
+		symbols[5]= [           Alt_L ],
+		symbols[6]= [               b ]
+	};
+	key <RALT>               {
+		groupsRedirect= 2,
+		symbols[1]= [ ISO_Level3_Shift ],
+		symbols[2]= [ ISO_Level3_Shift ],
+		symbols[3]= [               c ],
+		symbols[4]= [ ISO_Level3_Shift ],
+		symbols[5]= [               d ],
+		symbols[6]= [               e ]
+	};
+	modifier_map Mod1 { <LALT> };
+	modifier_map Mod5 { <RALT> };
+};
+
+};

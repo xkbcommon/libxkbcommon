@@ -1,0 +1,77 @@
+xkb_keymap {
+xkb_keycodes {
+	minimum = 8;
+	maximum = 255;
+	<LALT>               = 64;
+	<RALT>               = 108;
+};
+
+xkb_types {
+	virtual_modifiers Alt=Mod1,LevelThree=Mod5;
+
+	type "ONE_LEVEL" {
+		modifiers= none;
+	};
+};
+
+xkb_compatibility {
+	virtual_modifiers Alt=Mod1,LevelThree=Mod5;
+
+	interpret.useModMapMods= AnyLevel;
+	interpret.repeat= False;
+	interpret Alt_L+AnyOf(all) {
+		virtualModifier= Alt;
+		action= SetMods(modifiers=modMapMods,clearLocks);
+	};
+	interpret ISO_Level3_Shift+AnyOf(all) {
+		virtualModifier= LevelThree;
+		useModMapMods=level1;
+		action= SetMods(modifiers=LevelThree,clearLocks);
+	};
+};
+
+xkb_symbols {
+	name[1]="2";
+	name[2]="3";
+	name[3]="4";
+	name[4]="5";
+
+	key <LALT>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= Alt,
+		groupsRedirect= 1,
+		symbols[1]= [                          Alt_L ],
+		actions[1]= [ SetMods(modifiers=modMapMods,clearLocks) ],
+		symbols[2]= [               ISO_Level3_Shift ],
+		actions[2]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[3]= [                              a ],
+		actions[3]= [                     NoAction() ],
+		symbols[4]= [                          Alt_L ],
+		actions[4]= [ SetMods(modifiers=modMapMods,clearLocks) ]
+	};
+	key <RALT>               {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= LevelThree,
+		groupsRedirect= 1,
+		symbols[1]= [               ISO_Level3_Shift ],
+		actions[1]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[2]= [                              c ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [               ISO_Level3_Shift ],
+		actions[3]= [ SetMods(modifiers=LevelThree,clearLocks) ],
+		symbols[4]= [                              d ],
+		actions[4]= [                     NoAction() ]
+	};
+	modifier_map Mod1 { <LALT> };
+	modifier_map Mod5 { <RALT> };
+};
+
+};

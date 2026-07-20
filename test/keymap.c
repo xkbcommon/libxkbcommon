@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
@@ -23,6 +24,8 @@
 
 #define KEY_LVL3 84
 #define KEY_LVL5 195
+
+#define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
 static void
 test_supported_formats(void)
@@ -893,10 +896,155 @@ test_issue_934(void)
     xkb_context_unref(context);
 }
 
+static void
+test_serialize_layouts_subset(bool update_output_files)
+{
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+    assert(context);
+
+    /*
+     * This keymap is used to test that vmods remains unchanged, independently
+     * of the subset of layouts.
+     */
+    static const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <LALT> = 64; <RALT> = 108; };\n"
+        "  xkb_compat {\n"
+        "    virtual_modifiers  Alt, LevelThree;\n"
+        "    interpret.repeat= False;\n"
+        "    setMods.clearLocks= True;\n"
+        "    interpret Alt_L+Any {\n"
+        "      virtualModifier= Alt;\n"
+        "      action = SetMods(modifiers=modMapMods);\n"
+        "    };\n"
+        "    interpret ISO_Level3_Shift+Any {\n"
+        "      useModMapMods= level1;\n"
+        "      virtualModifier= LevelThree;\n"
+        "      action= SetMods(modifiers=LevelThree);\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    name[1] = \"1\";\n"
+        "    name[2] = \"2\";\n"
+        "    name[3] = \"3\";\n"
+        "    name[4] = \"4\";\n"
+        "    name[5] = \"5\";\n"
+        "    name[6] = \"6\";\n"
+        "    key <LALT> {\n"
+        "      groupsRedirect = 1,\n"
+        "      symbols[1] = [Alt_L],\n"
+        "      symbols[3] = [ISO_Level3_Shift],\n"
+        "      symbols[4] = [a],\n"
+        "      symbols[5] = [Alt_L],\n"
+        "      symbols[6] = [b]\n"
+        "    };\n"
+        "    key <RALT> {\n"
+        "      groupsRedirect = 2,\n"
+        "      symbols[1] = [ISO_Level3_Shift],\n"
+        "      symbols[3] = [c],\n"
+        "      symbols[4] = [ISO_Level3_Shift],\n"
+        "      symbols[5] = [d],\n"
+        "      symbols[6] = [e]\n"
+        "    };\n"
+        "    modifier_map Mod1 { <LALT> };\n"
+        "    modifier_map Mod5 { ISO_Level3_Shift };\n"
+        "  };\n"
+        "};";
+
+    struct xkb_keymap * const keymap = xkb_keymap_new_from_buffer(
+        context, keymap_str, sizeof(keymap_str),
+        XKB_KEYMAP_FORMAT_TEXT_V2, XKB_KEYMAP_COMPILE_NO_FLAGS
+    );
+    assert(keymap);
+
+    static const struct {
+        xkb_layout_mask_t layouts;
+        const char* expected;
+    } tests[] = {
+        {
+            .layouts = 0x3f,
+            .expected = GOLDEN_TESTS_OUTPUTS "serialize-layouts-subset-all.xkb"
+        },
+        {
+            .layouts = 0x1e,
+            .expected = GOLDEN_TESTS_OUTPUTS "serialize-layouts-subset-2,3,4,5.xkb"
+        },
+        {
+            .layouts = 0x1c,
+            .expected = GOLDEN_TESTS_OUTPUTS "serialize-layouts-subset-3,4,5.xkb"
+        },
+        {
+            .layouts = 0x20,
+            .expected = GOLDEN_TESTS_OUTPUTS "serialize-layouts-subset-6.xkb"
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+        const struct xkb_keymap_serialize_config config = {
+            .size = sizeof(config),
+            .format = XKB_KEYMAP_FORMAT_TEXT_V2,
+            .flags = TEST_KEYMAP_SERIALIZE_FLAGS |
+                     XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS,
+            .layouts = tests[t].layouts,
+        };
+        struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
+        const enum xkb_error_code ret =
+            xkb_keymap_serialize(keymap, &config, &result);
+        assert(ret ^ !!result.serialized);
+        assert(ret ^ !!tests[t].expected);
+        assert(!!result.serialized == !!tests[t].expected);
+        assert_eq("layout mask", tests[t].layouts, result.layouts, "%"PRIx32);
+
+        char* const path = test_get_path(tests[t].expected);
+        assert(path);
+        if (tests[t].expected) {
+            assert(result.length == strlen(result.serialized) + 1);
+            if (update_output_files) {
+                fprintf(stderr, "Writing golden test output to: %s\n", path);
+                FILE *file = fopen(path, "wb");
+                assert(file);
+                fwrite(result.serialized, sizeof(*result.serialized),
+                       result.length - 1, file);
+                fclose(file);
+            } else {
+                fprintf(stderr, "Reading golden test output: %s\n", path);
+                char* const expected = test_read_file(tests[t].expected);
+                assert(expected);
+                if (!streq(expected, result.serialized)) {
+                    fprintf(stderr,
+                            "Failure: dumped map differs from expected.\n"
+                            "Path to expected file: %s\n"
+                            "Length: expected %zu, got: %zu\n"
+                            "Dumped map:\n%s\n",
+                            path, strlen(expected),
+                            result.length, result.serialized);
+                    assert(false);
+                }
+                free(expected);
+            }
+        }
+        free(path);
+        free(result.serialized);
+    }
+
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(context);
+}
+
 int
-main(void)
+main(int argc, char *argv[])
 {
     test_init();
+
+    bool update_output_files = false;
+    int arg_index = 0;
+    while (++arg_index < argc) {
+        if (streq(argv[arg_index], "update")) {
+            /* Update files with *obtained* results */
+            update_output_files = true;
+        }
+    }
 
     test_supported_formats();
     test_garbage_key();
@@ -908,6 +1056,7 @@ main(void)
     test_keynames_atoms();
     test_key_iterator();
     test_issue_934();
+    test_serialize_layouts_subset(update_output_files);
 
     return EXIT_SUCCESS;
 }
