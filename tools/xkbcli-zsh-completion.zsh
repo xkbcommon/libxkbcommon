@@ -198,6 +198,7 @@ _xkbcli-compile-keymap() {
 		'--explicit-vmods[force serializing virtual modifiers encodings]' \
 		'--explicit-keys[force serializing keys values]' \
 		'--explicit-values[force serializing all values]' \
+		'--layouts-mask[Hexadecimal mask of the layouts indices to select for serializing]:' \
 		'(--kccgst-yaml --rmlvo --modmaps)--kccgst[print a keymap in KcCGST format]' \
 		'(--kccgst      --rmlvo --modmaps)--kccgst-yaml[print a KcCGST keymap in YAML format]' \
 		'(--kccgst-yaml         --modmaps)--rmlvo[print the full RMLVO in YAML format]' \

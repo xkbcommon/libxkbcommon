@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon.h"
 #include "tools-common.h"
 #include "src/utils.h"
@@ -115,6 +116,8 @@ usage(FILE *file, const char *progname)
            "    Force serializing key values\n"
            " --explicit-values\n"
            "    Force serializing all values\n"
+           " --layouts-mask\n"
+           "    Hexadecimal mask of the layouts indices to select for serializing\n"
            " --kccgst\n"
            "    Print a keymap which only includes the KcCGST component names instead of the full keymap\n"
            " --kccgst-yaml\n"
@@ -152,6 +155,7 @@ parse_options(int argc, char **argv,
               enum xkb_keymap_format *keymap_output_format,
               enum xkb_keymap_compile_flags *compile_flags,
               enum xkb_keymap_serialize_flags *serialize_flags,
+              xkb_layout_mask_t *layout_mask,
               bool *use_env_names,
               char **path, struct xkb_rule_names *names)
 {
@@ -184,6 +188,7 @@ parse_options(int argc, char **argv,
         OPT_KEYMAP_EXPLICIT_VMODS,
         OPT_KEYMAP_EXPLICIT_KEYS,
         OPT_KEYMAP_EXPLICIT,
+        OPT_KEYMAP_LAYOUTS,
         OPT_KCCGST,
         OPT_KCCGST_YAML,
         OPT_RMLVO,
@@ -225,6 +230,7 @@ parse_options(int argc, char **argv,
         {"explicit-vmods",   no_argument,            0, OPT_KEYMAP_EXPLICIT_VMODS},
         {"explicit-keys",    no_argument,            0, OPT_KEYMAP_EXPLICIT_KEYS},
         {"explicit-values",  no_argument,            0, OPT_KEYMAP_EXPLICIT},
+        {"layouts-mask",     required_argument,      0, OPT_KEYMAP_LAYOUTS},
         {"kccgst",           no_argument,            0, OPT_KCCGST},
         {"kccgst-yaml",      no_argument,            0, OPT_KCCGST_YAML},
         {"rmlvo",            no_argument,            0, OPT_RMLVO},
@@ -341,6 +347,13 @@ parse_options(int argc, char **argv,
                               | XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS
                               | XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES;
             break;
+        case OPT_KEYMAP_LAYOUTS: {
+            uint32_t mask = 0;
+            if (!tools_parse_mask(optarg, TOOLS_ARG_REQUIRED, &mask))
+                goto invalid_usage;
+            *layout_mask = mask;
+            break;
+        }
         case OPT_RULES:
             if (input_format == INPUT_FORMAT_KEYMAP)
                 goto input_format_error;
@@ -576,8 +589,7 @@ print_keymap(struct xkb_context *ctx,
              enum xkb_keymap_compile_flags compile_flags,
              enum input_format format,
              const struct xkb_rule_names *rmlvo, const char *path,
-             enum xkb_keymap_format keymap_output_format,
-             enum xkb_keymap_serialize_flags serialize_flags)
+             const struct xkb_keymap_serialize_config *config)
 {
     int ret = EXIT_SUCCESS;
     struct xkb_keymap *keymap = load_keymap(ctx, keymap_input_format,
@@ -589,15 +601,15 @@ print_keymap(struct xkb_context *ctx,
     } else if (test) {
         fprintf(stderr, "%s\n", success_text);
     } else {
-        char* keymap_string = xkb_keymap_get_as_string2(
-            keymap, keymap_output_format, serialize_flags
-        );
-        if (!keymap_string) {
-            fprintf(stderr, "ERROR: Couldn't get the keymap string\n");
+        struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
+        const enum xkb_error_code error =
+            xkb_keymap_serialize(keymap, config, &result);
+        if (error != XKB_SUCCESS) {
+            fprintf(stderr, "ERROR %d: Couldn't get the keymap string\n", error);
             ret = EXIT_FAILURE;
         } else {
-            fputs(keymap_string, stdout);
-            free(keymap_string);
+            fputs(result.serialized, stdout);
+            free(result.serialized);
         }
     }
     xkb_keymap_unref(keymap);
@@ -643,6 +655,7 @@ main(int argc, char **argv)
         (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
     enum xkb_keymap_serialize_flags serialize_flags =
         (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
+    xkb_layout_mask_t layout_mask = 0; /* all layouts by default */
 
     setlocale(LC_ALL, "");
 
@@ -655,8 +668,8 @@ main(int argc, char **argv)
     enum output_format output_format = OUTPUT_FORMAT_KEYMAP;
     if (!parse_options(argc, argv, &input_format, &output_format,
                        &keymap_input_format, &keymap_output_format,
-                       &compile_flags, &serialize_flags, &use_env_names,
-                       &keymap_path, &names))
+                       &compile_flags, &serialize_flags, &layout_mask,
+                       &use_env_names, &keymap_path, &names))
         return EXIT_INVALID_USAGE;
 
     enum xkb_context_flags ctx_flags = XKB_CONTEXT_NO_DEFAULT_INCLUDES;
@@ -701,10 +714,16 @@ main(int argc, char **argv)
         rc = print_modmaps(ctx, keymap_input_format,
                            compile_flags, input_format, &names, keymap_path);
         break;
-    default:
+    default: {
+        struct xkb_keymap_serialize_config config = {
+            .size = sizeof(config),
+            .flags = serialize_flags,
+            .format = keymap_output_format,
+            .layouts = layout_mask,
+        };
         rc = print_keymap(ctx, keymap_input_format, compile_flags, input_format,
-                          &names, keymap_path,
-                          keymap_output_format, serialize_flags);
+                          &names, keymap_path, &config);
+    }
     }
 
     xkb_context_unref(ctx);
