@@ -109,7 +109,7 @@ enum xkb_message_code {
     /** Conflicting “map” entries in type definition */
     XKB_WARNING_CONFLICTING_KEY_TYPE_MAP_ENTRY = 266,
     /** Unsupported keymap format */
-    XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT = 277,
+    XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_ = 277,
     /** Unrecognized RMLVO value ignored */
     XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE = 282,
     /** Warn if using an undefined key type */
@@ -131,7 +131,7 @@ enum xkb_message_code {
     /** Use of a legacy X11 action that is not supported */
     XKB_WARNING_UNSUPPORTED_LEGACY_ACTION = 362,
     /** Layout count limit exceeded for the corresponding keymap format */
-    XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED = 366,
+    XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED_ = 366,
     /** Unsupported `xkb_a11y_flags` value */
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_ = 371,
     /** An entry is duplicated and will be ignored */
@@ -213,7 +213,7 @@ enum xkb_message_code {
     /** Keymap compilation failed */
     XKB_ERROR_KEYMAP_COMPILATION_FAILED = 822,
     /** Unsupported keymap serialization flags */
-    XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS = 829,
+    XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS_ = 829,
     /** Unknown action type */
     XKB_ERROR_UNKNOWN_ACTION_TYPE = 844,
     /** ABI forward-compatibility check failed */

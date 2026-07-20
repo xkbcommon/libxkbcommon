@@ -1065,7 +1065,7 @@ HandleIncludeSymbols(SymbolsInfo *info, IncludeStmt *include)
             if (count <= 0 || *(stmt->modifier + count) != '\0' ||
                 next_incl.explicit_group == 0 ||
                 next_incl.explicit_group > info->max_groups) {
-                log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                         "Cannot set explicit group to \"%s\": "
                         "must be between 1..%"PRIu32"; Ignoring group number\n",
                         stmt->modifier, info->max_groups);
@@ -1128,7 +1128,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
         }
 
         if (i >= info->max_groups) {
-            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                     "Too many groups of %s for key %s (max %"PRIu32"); "
                     "Ignoring %s defined for extra groups\n",
                     name, KeyInfoText(info, keyi), info->max_groups, name);
@@ -1142,7 +1142,7 @@ GetGroupIndex(SymbolsInfo *info, KeyInfo *keyi, ExprDef *arrayNdx,
 
     if (ExprResolveGroup(info->keymap_info, arrayNdx, false, ndx_rtrn, NULL) !=
         PARSER_SUCCESS) {
-        log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+        log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                 "Illegal group index for %s of key %s\n"
                 "Definition with non-integer array index ignored\n",
                 name, KeyInfoText(info, keyi));
@@ -1490,7 +1490,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         }
         else if (ExprResolveGroup(info->keymap_info, arrayNdx, false,
                                   &ndx, NULL) != PARSER_SUCCESS) {
-            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                     "Illegal group index for type of key %s; "
                     "Definition with non-integer array index ignored\n",
                     KeyInfoText(info, keyi));
@@ -1690,7 +1690,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
         // TODO: recover?
         if (ExprResolveGroup(info->keymap_info, value, false, &grp, &pending) !=
             PARSER_SUCCESS && !pending) {
-            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+            log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                     "Illegal group index for redirect of key %s; "
                     "Definition with non-integer group ignored\n",
                     KeyInfoText(info, keyi));
@@ -1747,7 +1747,7 @@ SetGroupName(SymbolsInfo *info, ExprDef *arrayNdx, ExprDef *value,
     xkb_layout_index_t group = 0;
     if (ExprResolveGroup(info->keymap_info, arrayNdx, false, &group, NULL) !=
         PARSER_SUCCESS) {
-        log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+        log_err(info->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                 "Illegal index in group name definition; "
                 "Definition with non-integer array index ignored\n");
         return false;
