@@ -11,6 +11,11 @@
 
 #include "xkbcommon/xkbcommon.h"
 
+enum {
+    /* Use a reasonable upper size limit to avoid malicious caller values */
+    XKB_ABI_MAX_SIZE = 4096,
+};
+
 /**
  * Check the size field of a versioned struct for forward-compatibility.
  *
@@ -33,7 +38,9 @@ xkb_check_versioned_struct_size_(size_t v1_size, size_t min_size,
     assert(v1_size <= min_size);
     assert(min_size <= lib_size);
 
-    if (caller_size < v1_size)
+    static const size_t max_size = (size_t)XKB_ABI_MAX_SIZE;
+
+    if (caller_size < v1_size || caller_size > max_size || !caller_data)
         return XKB_ERROR_ABI_INVALID_STRUCT_SIZE;
 
     if (caller_size < min_size)

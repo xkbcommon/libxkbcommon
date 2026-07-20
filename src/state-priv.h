@@ -7,6 +7,7 @@
 #include "config.h"
 
 #include "xkbcommon/xkbcommon.h"
+#include "abi-check.h"
 #include "keymap.h"
 
 /** Core keyboard state components */
@@ -82,6 +83,10 @@ static_assert(sizeof(struct xkb_state_components_update_v1) ==
 static_assert(sizeof(struct xkb_state_components_update) ==
               sizeof(struct xkb_state_components_update_v1), "");
 
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_state_components_update) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
 /**
  * Version 1 of `xkb_layout_policy_update`, used for ABI check only
  *
@@ -104,6 +109,10 @@ static_assert(sizeof(struct xkb_layout_policy_update_v1) ==
 static_assert(sizeof(struct xkb_layout_policy_update) ==
               sizeof(struct xkb_layout_policy_update_v1), "");
 
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_layout_policy_update) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
 /**
  * Version 1 of `xkb_state_update`, used for ABI check only
  *
@@ -125,6 +134,10 @@ static_assert(sizeof(struct xkb_state_update_v1) ==
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_update) ==
               sizeof(struct xkb_state_update_v1), "");
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_state_update) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
 
 /** Size of the *first version* of the struct */
 #define xkb_versioned_struct_size_v1(x) _Generic(      \
