@@ -727,10 +727,10 @@ get_modmaps(struct xkb_keymap *keymap, xcb_connection_t *conn,
     }
 
     darray_steal(modmaps, &keymap->modmaps, &keymap->num_modmaps);
-
     return true;
 
 fail:
+    darray_free(modmaps);
     return false;
 }
 
