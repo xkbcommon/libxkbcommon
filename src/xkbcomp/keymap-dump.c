@@ -1818,11 +1818,13 @@ write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
     free(buf2.buf);
 
-    const bool ok = write_modmaps(keymap, format, substitutions,
-                                  pretty, drop_interprets, buf);
+
+    if (!write_modmaps(keymap, format, substitutions,
+                       pretty, drop_interprets, buf))
+        return false;
 
     copy_to_buf(buf, "};\n\n");
-    return ok;
+    return true;
 }
 
 static bool
