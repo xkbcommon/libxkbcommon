@@ -100,6 +100,20 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX = 237,
     /**
+     * Unsupported keymap format
+     *
+     * See `xkb_keymap_format` for the list of valid values.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT = 277,
+    /**
+     * Layout count limit exceeded for the corresponding keymap format
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED = 366,
+    /**
      * Unsupported `xkb_a11y_flags` value
      *
      * Use the following to check if the linked libxkbcommon library supports a
@@ -132,6 +146,14 @@ enum xkb_error_code {
      * @since 1.14.0
      */
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE = 450,
+    /**
+     * Unsupported keymap serialization flags
+     *
+     * See `::xkb_keymap_serialize_flags` for the list of valid flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS = 829,
     /**
      * ABI forward-compatibility check failed
      *

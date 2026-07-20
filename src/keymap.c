@@ -118,7 +118,7 @@ xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
 {
     const struct xkb_keymap_format_ops *ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_rmlvo) {
-        log_err_func(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT,
+        log_err_func(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_,
                      "unsupported keymap format: %d\n", format);
         return NULL;
     }
@@ -144,7 +144,7 @@ xkb_keymap_new_from_names2(struct xkb_context *ctx,
 {
     const struct xkb_keymap_format_ops *ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_names) {
-        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_,
                      "unsupported keymap format: %d\n", format);
         return NULL;
     }
@@ -194,7 +194,7 @@ xkb_keymap_new_from_buffer(struct xkb_context *ctx,
 {
     const struct xkb_keymap_format_ops *ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_string) {
-        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_,
                      "unsupported keymap format: %d\n", format);
         return NULL;
     }
@@ -229,7 +229,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
 {
     const struct xkb_keymap_format_ops *ops = get_keymap_format_ops(format);
     if (!ops || !ops->keymap_new_from_file) {
-        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT,
+        log_err_func(ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_,
                      "unsupported keymap format: %d\n", format);
         return NULL;
     }

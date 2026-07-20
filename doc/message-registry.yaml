@@ -218,8 +218,11 @@
   description: "Conflicting “map” entries in type definition"
 - id: "unsupported-keymap-format"
   code: 277
-  added: ALWAYS
+  added:
+    internal: ALWAYS
+    public: 1.14.0
   type: error
+  visibility: public
   description: "Unsupported keymap format"
   details: |
     See `xkb_keymap_format` for the list of valid values.
@@ -311,8 +314,11 @@
     for further information.
 - id: "layout-count-limit-exceeded"
   code: 366
-  added: ALWAYS
+  added:
+    internal: ALWAYS
+    public: 1.14.0
   type: error
+  visibility: public
   description: "Layout count limit exceeded for the corresponding keymap format"
   # TODO: details
 - id: "unsupported-a11y-flags"
@@ -652,8 +658,11 @@
   description: "Keymap compilation failed"
 - id: "unsupported-keymap-serialization-flags"
   code: 829
-  added: 1.12.0
+  added:
+    internal: 1.12.0
+    public: 1.14.0
   type: error
+  visibility: public
   description: "Unsupported keymap serialization flags"
   details: |
     See `::xkb_keymap_serialize_flags` for the list of valid flags.
