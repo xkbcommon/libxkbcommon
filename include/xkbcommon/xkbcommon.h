@@ -1515,6 +1515,9 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  * This is just like `xkb_keymap_new_from_file()`, but instead of a file, gets
  * the keymap as one enormous string.
  *
+ * @returns A keymap compiled from the given string, or `NULL` if
+ * the compilation failed.
+ *
  * @since 1.14.0 Parser is lenient by default.
  * @see `xkb_keymap_new_from_file()`
  * @memberof xkb_keymap
@@ -1529,6 +1532,9 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  *
  * This is just like `xkb_keymap_new_from_string()`, but takes a @p length
  * argument so the input string does not have to be zero-terminated.
+ *
+ * @returns A keymap compiled from the given buffer, or `NULL` if
+ * the compilation failed.
  *
  * @since 0.3.0
  * @since 1.14.0 Parser is lenient by default.
@@ -3204,6 +3210,8 @@ struct xkb_state_components_update {
      * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
      * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
      * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     *
+     * @since 1.14.0
      */
     size_t size;
     /**
@@ -3219,6 +3227,8 @@ struct xkb_state_components_update {
      * Other components are ignored.
      *
      * @sa `xkb_state_component`
+     *
+     * @since 1.14.0
      */
     uint32_t components;
     /**
@@ -3228,6 +3238,8 @@ struct xkb_state_components_update {
      * `latched_mods`. Only considered if `::XKB_STATE_MODS_LATCHED` is
      * set in `components`.
      *
+     * @since 1.14.0
+     *
      * [latched modifiers]: @ref latched-mod-def
      */
     xkb_mod_mask_t affect_latched_mods;
@@ -3236,6 +3248,8 @@ struct xkb_state_components_update {
      *
      * Only modifiers in `affect_latched_mods` are considered. Only
      * considered if `::XKB_STATE_MODS_LATCHED` is set in `components`.
+     *
+     * @since 1.14.0
      *
      * [latched]: @ref latched-mod-def
      */
@@ -3247,6 +3261,8 @@ struct xkb_state_components_update {
      * `locked_mods`. Only considered if `::XKB_STATE_MODS_LOCKED` is
      * set in `components`.
      *
+     * @since 1.14.0
+     *
      * [locked modifiers]: @ref locked-mod-def
      */
     xkb_mod_mask_t affect_locked_mods;
@@ -3255,6 +3271,8 @@ struct xkb_state_components_update {
      *
      * Only modifiers in `affect_locked_mods` are considered. Only
      * considered if `::XKB_STATE_MODS_LOCKED` is set in `components`.
+     *
+     * @since 1.14.0
      *
      * [locked]: @ref locked-mod-def
      */
@@ -3267,6 +3285,8 @@ struct xkb_state_components_update {
      * considered if `::XKB_STATE_LAYOUT_LATCHED` is set in `components`.
      *
      * @sa `xkb_layout_index_t`
+     *
+     * @since 1.14.0
      */
     int32_t latched_layout;
     /**
@@ -3277,6 +3297,8 @@ struct xkb_state_components_update {
      * considered if `::XKB_STATE_LAYOUT_LOCKED` is set in `components`.
      *
      * @sa `xkb_layout_index_t`
+     *
+     * @since 1.14.0
      */
     int32_t locked_layout;
     /**
@@ -3288,6 +3310,8 @@ struct xkb_state_components_update {
      *
      * @sa `xkb_keyboard_control_flags`
      *
+     * @since 1.14.0
+     *
      * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
     uint32_t affect_controls;
@@ -3298,6 +3322,8 @@ struct xkb_state_components_update {
      * if `::XKB_STATE_CONTROLS` is set in `components`.
      *
      * @sa `xkb_keyboard_control_flags`
+     *
+     * @since 1.14.0
      *
      * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
@@ -3387,6 +3413,8 @@ struct xkb_layout_policy_update {
      * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
      * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
      * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     *
+     * @since 1.14.0
      */
     size_t size;
     /**
@@ -3394,12 +3422,16 @@ struct xkb_layout_policy_update {
      *
      * @sa `xkb_layout_out_of_range_policy`
      *
+     * @since 1.14.0
+     *
      * [Policy]: @ref xkb_layout_out_of_range_policy
      */
     uint32_t policy;
     /**
      * Layout index to redirect to when `policy` is
      * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
+     *
+     * @since 1.14.0
      */
     xkb_layout_index_t redirect;
 };
@@ -3444,12 +3476,12 @@ struct xkb_layout_policy_update {
  * @invariant All bytes of the struct, including padding, MUST remain zero
  * except for *explicitly* assigned fields.
  *
- * @since 1.14.0
- *
  * @sa `xkb_state::xkb_state_update_synthetic()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  * @sa `xkb_state_components_update`
  * @sa `xkb_layout_policy_update`
+ *
+ * @since 1.14.0
  */
 struct xkb_state_update {
     /**
@@ -3458,18 +3490,24 @@ struct xkb_state_update {
      * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
      * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
      * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     *
+     * @since 1.14.0
      */
     size_t size;
     /**
      * Components updates, or `NULL` for no change.
      *
      * @sa `xkb_state_component`
+     *
+     * @since 1.14.0
      */
     const struct xkb_state_components_update *components;
     /**
      * Out-of-range layout policy update, or `NULL` for no change.
      *
      * @sa `xkb_layout_out_of_range_policy`
+     *
+     * @since 1.14.0
      */
     const struct xkb_layout_policy_update *layout_policy;
 };
