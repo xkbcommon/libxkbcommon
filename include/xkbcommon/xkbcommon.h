@@ -1292,6 +1292,15 @@ enum xkb_keymap_compile_flags {
     XKB_KEYMAP_COMPILE_STRICT_MODE = (1 << 0)
 };
 
+/** @} */
+
+/**
+ * @defgroup xkb_keymap_format_enum Keymap formats
+ * @ingroup keymap keymap-serialization
+ * @brief Keymap formats for parsing and serializing keymaps
+ * <!-- this group enable to display keymap formats in multiple groups -->
+ */
+
 /**
  * @enum xkb_keymap_format
  * The possible keymap formats.
@@ -1367,6 +1376,8 @@ enum xkb_keymap_compile_flags {
  * </tbody>
  * </table>
  *
+ * @ingroup xkb_keymap_format_enum
+ *
  * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
  * [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
  */
@@ -1410,6 +1421,11 @@ enum xkb_keymap_format {
      */
     XKB_KEYMAP_FORMAT_TEXT_V2 = 2
 };
+
+/**
+ * @addtogroup keymap
+ * @{
+ */
 
 /**
  * Create a keymap from a [RMLVO] builder.
@@ -1569,6 +1585,15 @@ xkb_keymap_ref(struct xkb_keymap *keymap);
  */
 XKB_EXPORT void
 xkb_keymap_unref(struct xkb_keymap *keymap);
+
+/** @} */
+
+/**
+ * @defgroup keymap-serialization Keymap Serialization
+ * Serializing keymaps.
+ *
+ * @{
+ */
 
 /**
  * Get the keymap as a string in the format from which it was created.
