@@ -19,7 +19,7 @@ extern "C" {
  */
 
 /**
- * @defgroup x11 X11 support
+ * @defgroup x11-support X11 support
  * Additional X11 support for xkbcommon.
  * @since 0.4.0
  *
