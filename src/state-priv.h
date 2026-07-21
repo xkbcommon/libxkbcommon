@@ -57,11 +57,7 @@ struct xkb_state_components_update_v1 {
     int32_t locked_layout;
     uint32_t affect_controls;
     uint32_t controls;
-
-#if SIZE_MAX > UINT32_MAX
-    /* Reserved for ABI alignment. Must be zero. */
     uint32_t reserved;
-#endif
 };
 
 /* Ensure there is no implicit padding */
@@ -76,22 +72,13 @@ static_assert(sizeof(struct xkb_state_components_update_v1) ==
             + sizeof(int32_t)                         /* locked_layout       */
             + sizeof(uint32_t)                        /* affect_controls     */
             + sizeof(uint32_t)                        /* controls            */
-#if SIZE_MAX > UINT32_MAX
             + sizeof(uint32_t)                        /* reserved            */
-#endif
             , "struct xkb_state_components_update_v1 has implicit padding");
 
-#if SIZE_MAX > UINT32_MAX
-#define XKB_STATE_COMPONENTS_UPDATE_RESERVED_OFFSET \
-    offsetof(struct xkb_state_components_update, reserved)
-static_assert(XKB_STATE_COMPONENTS_UPDATE_RESERVED_OFFSET +
+static_assert(offsetof(struct xkb_state_components_update, reserved) +
               sizeof(((struct xkb_state_components_update *)0)->reserved) ==
               sizeof(struct xkb_state_components_update),
               "`reserved` is not the explicit trailing padding");
-#else
-#define XKB_STATE_COMPONENTS_UPDATE_RESERVED_OFFSET \
-    sizeof(struct xkb_state_components_update)
-#endif
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_components_update) ==
@@ -176,14 +163,14 @@ static_assert(sizeof(struct xkb_state_update) * 30 <=
 )
 
 /** Offset of the last meaningful field of the current struct */
-#define xkb_versioned_struct_reserved_offset(x) _Generic( \
-    (x),                                                  \
-    const struct xkb_state_update *:                      \
-        sizeof(struct xkb_state_update),                  \
-    const struct xkb_state_components_update *:           \
-        XKB_STATE_COMPONENTS_UPDATE_RESERVED_OFFSET,      \
-    const struct xkb_layout_policy_update *:              \
-        sizeof(struct xkb_layout_policy_update)           \
+#define xkb_versioned_struct_reserved_offset(x) _Generic(      \
+    (x),                                                       \
+    const struct xkb_state_update *:                           \
+        sizeof(struct xkb_state_update),                       \
+    const struct xkb_state_components_update *:                \
+        offsetof(struct xkb_state_components_update, reserved),\
+    const struct xkb_layout_policy_update *:                   \
+        sizeof(struct xkb_layout_policy_update)                \
 )
 
 /* V1 is the smallest struct version */
