@@ -3303,10 +3303,8 @@ struct xkb_state_components_update {
      */
     uint32_t controls;
 
-#if SIZE_MAX > UINT32_MAX
     /** @private Reserved for ABI alignment. Must be zero. */
     uint32_t reserved;
-#endif
 };
 
 /**
