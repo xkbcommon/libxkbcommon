@@ -982,9 +982,11 @@ struct xkb_keymap_format_ops {
     bool (*keymap_new_from_string)(struct xkb_keymap *keymap,
                                    const char *string, size_t length);
     bool (*keymap_new_from_file)(struct xkb_keymap *keymap, FILE *file);
-    char *(*keymap_get_as_string)(struct xkb_keymap *keymap,
-                                  enum xkb_keymap_format format,
-                                  enum xkb_keymap_serialize_flags flags);
+    enum xkb_error_code (*keymap_serialize)(
+        const struct xkb_keymap *keymap,
+        const struct xkb_keymap_serialize_config *config,
+        struct xkb_keymap_serialize_result *result
+    );
 };
 
 extern const struct xkb_keymap_format_ops text_v1_keymap_format_ops;

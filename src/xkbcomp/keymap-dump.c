@@ -13,14 +13,16 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "context.h"
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
 #include "action.h"
+#include "context.h"
 #include "darray.h"
 #include "keymap.h"
 #include "messages-codes.h"
@@ -750,6 +752,11 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
                       suffix);
         } else {
             /* Unsupported group index: degrade to VoidAction() */
+            log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Unsupported group index %"PRIu32" for action %s()\n",
+                      (action->group.group +
+                       !!(action->group.flags & ACTION_ABSOLUTE_SWITCH)),
+                     type);
             goto void_action;
         }
         break;
@@ -1302,7 +1309,8 @@ write_keysyms(const struct xkb_keymap *keymap,
 }
 
 static bool
-write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_key(const struct xkb_keymap *keymap,
+          const struct xkb_keymap_serialize_config *config,
           const key_name_substitutions *substitutions,
           xkb_layout_index_t max_groups, bool some_interprets,
           bool drop_interprets, bool explicit, bool pretty,
@@ -1310,7 +1318,24 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
 {
     bool simple = true;
 
-    const xkb_layout_index_t num_groups = MIN(key->num_groups, max_groups);
+    xkb_layout_mask_t layouts = config->layouts;
+    if (popcount32(layouts) != keymap->num_groups) {
+        /* Subset of layouts: use out-of-range key policy */
+        xkb_layout_index_t l = 0;
+        for (xkb_layout_mask_t ls = layouts; ls; ls >>= 1, l++) {
+            if (ls & 0x1) {
+                /* Replace target layout with its effective layout, if valid */
+                layouts &= ~(UINT32_C(1) << l);
+                const xkb_layout_index_t effective =
+                    xkb_keymap_key_effective_layout(key, l);
+                if (effective != XKB_LAYOUT_INVALID)
+                    layouts |= (UINT32_C(1) << effective);
+            }
+        }
+    } else {
+        layouts &= ((UINT64_C(1) << key->num_groups) - 1);
+    }
+    const xkb_layout_index_t groups_count = popcount32(layouts);
 
     const xkb_atom_t name = (substitutions == NULL)
         ? key->name
@@ -1327,7 +1352,10 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         bool multi_type = explicit;
         /* Check for distinct key types only if not requiring explicit values */
         if (!explicit) {
-            for (xkb_layout_index_t group = 1; group < num_groups; group++) {
+            for (xkb_layout_index_t group = 1; group < key->num_groups; group++) {
+                if (!((UINT32_C(1) << group) & layouts))
+                    continue;
+
                 if (key->groups[group].type != key->groups[0].type) {
                     multi_type = true;
                     break;
@@ -1336,12 +1364,18 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
 
         if (multi_type) {
-            for (xkb_layout_index_t group = 0; group < num_groups; group++) {
+            xkb_layout_index_t new_group = (xkb_layout_index_t)-1;
+            for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+                if (!((UINT32_C(1) << group) & layouts))
+                    continue;
+
+                new_group++;
+
                 if (!key->groups[group].explicit_type && !explicit)
                     continue;
 
                 const struct xkb_key_type * const type = key->groups[group].type;
-                write_buf(buf, "\n\t\ttype[%"PRIu32"]= ", group + 1);
+                write_buf(buf, "\n\t\ttype[%"PRIu32"]= ", new_group + 1);
                 write_buf_string_literal(
                   buf, xkb_atom_text(keymap->ctx, type->name));
                 copy_to_buf(buf, ",");
@@ -1418,14 +1452,34 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         simple = false;
         break;
 
-    case XKB_LAYOUT_OUT_OF_RANGE_REDIRECT:
-        if (key->out_of_range_group_number < num_groups) {
-            /* TODO: Fallback or warning if condition fails? */
-            write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",",
-                      key->out_of_range_group_number + 1);
-            simple = false;
+    case XKB_LAYOUT_OUT_OF_RANGE_REDIRECT: {
+        if (!groups_count) {
+            /* No layout to redirect to: skip */
+            break;
         }
+
+        xkb_layout_mask_t layout_mask =
+            (UINT32_C(1) << key->out_of_range_group_number);
+        if (!(layouts & layout_mask)) {
+            /*
+             * Layout is not included: default to first layout
+             * See: XkbWrapGroupIntoRange
+             */
+            log_warn(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "key %s: groupsRedirect=%"PRIu32" converted to "
+                     "groupsRedirect=1\n",
+                     KeyNameText(keymap->ctx, name),
+                     key->out_of_range_group_number + 1);
+            layout_mask = 0x1;
+        }
+
+        /* In case some lower layouts were discarded, update the group index */
+        const xkb_layout_mask_t low = (layouts & (layout_mask - 1));
+        const xkb_layout_index_t new = popcount32(low);
+        write_buf(buf, "\n\t\tgroupsRedirect= %"PRIu32",", new + 1);
+        simple = false;
         break;
+    }
 
     case XKB_LAYOUT_OUT_OF_RANGE_WRAP:
     default:
@@ -1435,7 +1489,8 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     if (key->overlays) {
         xkb_overlay_mask_t remaining = key->overlays;
 
-        const xkb_overlay_index_t overlay_max = format_max_overlays(format);
+        const xkb_overlay_index_t overlay_max =
+            format_max_overlays(config->format);
         static_assert(XKB_OVERLAY_MAX == 8, "invalid right shift");
         const xkb_overlay_mask_t valid =
             (xkb_overlay_mask_t)((1u << overlay_max) - 1u);
@@ -1450,7 +1505,7 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
 
         if (remaining && !key->overlays_inline &&
-            !areOverlappingOverlaysSupported(format)) {
+            !areOverlappingOverlaysSupported(config->format)) {
             /* isolate lowest set bit */
             const xkb_overlay_mask_t lsb = (xkb_overlay_mask_t)(
                 remaining &
@@ -1497,24 +1552,35 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         }
     }
 
-    if (num_groups > 1 || explicit_actions || explicit)
+    if (groups_count > 1 || explicit_actions || explicit)
         simple = false;
 
     if (simple) {
-        if (num_groups == 0) {
+        if (groups_count == 0) {
             /* Remove trailing comma */
+            delete_last_char(buf, ',');
             if (buf->buf[buf->size - 1] == ',')
                 buf->size--;
         } else {
             copy_to_buf(buf, "\t[ ");
-            if (!write_keysyms(keymap, buf, buf2, key, 0, pretty, false))
+            /* Get the single group index */
+            xkb_mod_index_t group = ctz32(layouts);
+            /* The group may not be defined for this key if it is not the first one */
+            group = xkb_keymap_key_effective_layout(key, group);
+            if (!write_keysyms(keymap, buf, buf2, key, group, pretty, false))
                 return false;
             copy_to_buf(buf, " ]");
         }
         copy_to_buf(buf, " };\n");
     }
     else {
-        for (xkb_layout_index_t group = 0; group < num_groups; group++) {
+        xkb_layout_index_t new_group = (xkb_layout_index_t)-1;
+        for (xkb_layout_index_t group = 0; group < key->num_groups; group++) {
+            if (!((UINT32_C(1) << group) & layouts))
+                continue;
+
+            new_group++;
+
             const bool print_actions =
                 /* Group has explicit actions */
                 key->groups[group].explicit_actions ||
@@ -1529,23 +1595,23 @@ write_key(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
                  * the actions must be made explicit */
                 (key->groups[group].implicit_actions && !some_interprets);
 
-            if (group != 0)
+            if (new_group != 0)
                 copy_to_buf(buf, ",");
-            write_buf(buf, "\n\t\tsymbols[%"PRIu32"]= [ ", group + 1);
+            write_buf(buf, "\n\t\tsymbols[%"PRIu32"]= [ ", new_group + 1);
 
             if (!write_keysyms(keymap, buf, buf2, key, group,
                                pretty, print_actions))
                 return false;
             copy_to_buf(buf, " ]");
             if (print_actions) {
-                write_buf(buf, ",\n\t\tactions[%"PRIu32"]= [ ", group + 1);
-                if (!write_actions(keymap, format, max_groups,
+                write_buf(buf, ",\n\t\tactions[%"PRIu32"]= [ ", new_group + 1);
+                if (!write_actions(keymap, config->format, max_groups,
                                    buf, buf2, key, group))
                     return false;
                 copy_to_buf(buf, " ]");
             }
         }
-        if (!num_groups)
+        if (!groups_count)
             delete_last_char(buf, ',');
         copy_to_buf(buf, "\n\t};\n");
     }
@@ -1766,18 +1832,18 @@ exit:
 }
 
 static bool
-write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
+write_symbols(const struct xkb_keymap *keymap,
+              const struct xkb_keymap_serialize_config *config,
               const key_name_substitutions *substitutions,
-              xkb_layout_index_t max_groups,
-              enum xkb_keymap_serialize_flags flags, bool some_interp,
+              xkb_layout_index_t max_groups, bool some_interp,
               struct buf *buf)
 {
-    const bool pretty = (flags & XKB_KEYMAP_SERIALIZE_PRETTY);
+    const bool pretty = (config->flags & XKB_KEYMAP_SERIALIZE_PRETTY);
     const bool defaults =
-        (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES);
+        (config->flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES);
     const bool explicit_key_values =
-        (flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES);
-    const bool drop_unused = !(flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
+        (config->flags & XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES);
+    const bool drop_unused = !(config->flags & XKB_KEYMAP_SERIALIZE_KEEP_UNUSED);
     const bool drop_interprets = (explicit_key_values && drop_unused);
     /* TODO: print all default values if explicit flag is set */
 
@@ -1786,21 +1852,26 @@ write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     else
         copy_to_buf(buf, "xkb_symbols {\n");
 
-    const xkb_layout_index_t num_group_names = MIN(keymap->num_group_names,
-                                                   max_groups);
     bool has_group_names = false;
-    for (xkb_layout_index_t group = 0; group < num_group_names; group++)
+    xkb_layout_index_t new_group = (xkb_layout_index_t)-1;
+    for (xkb_layout_index_t group = 0; group < keymap->num_group_names; group++) {
+        if (!((UINT32_C(1) << group) & config->layouts))
+            continue;
+
+        new_group++;
+
         if (keymap->group_names[group]) {
-            write_buf(buf, "\tname[%"PRIu32"]=", group + 1);
+            write_buf(buf, "\tname[%"PRIu32"]=", new_group + 1);
             write_buf_string_literal(
                 buf, xkb_atom_text(keymap->ctx, keymap->group_names[group]));
             copy_to_buf(buf, ";\n");
             has_group_names = true;
         }
+    }
     if (has_group_names)
         copy_to_buf(buf, "\n");
 
-    if (defaults && !write_actions_defaults(keymap, format, buf))
+    if (defaults && !write_actions_defaults(keymap, config->format, buf))
         return false;
 
     struct buf buf2 = { NULL, 0, 0 };
@@ -1808,7 +1879,7 @@ write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
         if (key->explicit) {
-            if (!write_key(keymap, format, substitutions, max_groups,
+            if (!write_key(keymap, config, substitutions, max_groups,
                            some_interp, drop_interprets, explicit_key_values,
                            pretty, buf, &buf2, key)) {
                 free(buf2.buf);
@@ -1818,8 +1889,7 @@ write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     }
     free(buf2.buf);
 
-
-    if (!write_modmaps(keymap, format, substitutions,
+    if (!write_modmaps(keymap, config->format, substitutions,
                        pretty, drop_interprets, buf))
         return false;
 
@@ -1827,64 +1897,57 @@ write_symbols(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     return true;
 }
 
-static bool
-write_keymap(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
-             enum xkb_keymap_serialize_flags flags, struct buf *buf)
+static enum xkb_error_code
+write_keymap(const struct xkb_keymap *keymap,
+             const struct xkb_keymap_serialize_config *config,
+             struct buf *buf, struct xkb_keymap_serialize_result *result)
 {
-    const xkb_layout_index_t max_groups = format_max_groups(format);
-    if (keymap->num_groups > max_groups) {
-        const bool strict = (flags & XKB_KEYMAP_SERIALIZE_STRICT_MODE);
-        xkb_log_with_code(
-            keymap->ctx,
-            (strict ? XKB_LOG_LEVEL_ERROR : XKB_LOG_LEVEL_WARNING),
-            XKB_LOG_VERBOSITY_MINIMAL,
-            XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED,
-            "Cannot serialize %"PRIu32" groups in keymap format %d: "
-            "maximum is %"PRIu32"%s\n",
-            keymap->num_groups, format, max_groups,
-            (strict ? "" : "; discarding unsupported groups")
-        );
-        if (strict) {
-            return false;
-        } else {
-            /* discard excessive groups */
-        }
-    }
-
     key_name_substitutions substitutions = darray_new();
-    if (format == XKB_KEYMAP_FORMAT_TEXT_V1) {
+    if (config->format == XKB_KEYMAP_FORMAT_TEXT_V1) {
         if (!rename_long_keys(keymap, &substitutions))
             return false;
     }
     const key_name_substitutions * const substitutions_ptr =
         (darray_empty(substitutions)) ? NULL : &substitutions;
 
+    const xkb_layout_index_t max_groups = format_max_groups(config->format);
+
     bool some_interp = false;
     const bool ok = (
         check_write_buf(buf, "xkb_keymap {\n") &&
-        write_keycodes(keymap, substitutions_ptr, flags, buf) &&
-        write_types(keymap, format, flags, buf) &&
-        write_compat(keymap, format, max_groups, flags, &some_interp, buf) &&
-        write_symbols(keymap, format, substitutions_ptr, max_groups,
-                      flags, some_interp, buf) &&
+        write_keycodes(keymap, substitutions_ptr, config->flags, buf) &&
+        write_types(keymap, config->format, config->flags, buf) &&
+        write_compat(keymap, config->format, max_groups, config->flags,
+                     &some_interp, buf) &&
+        write_symbols(keymap, config, substitutions_ptr, max_groups,
+                      some_interp, buf) &&
         check_write_buf(buf, "};\n")
     );
 
     darray_free(substitutions);
-    return ok;
+    return ok ? XKB_SUCCESS : -1;
 }
 
-char *
-text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
-                             enum xkb_keymap_format format,
-                             enum xkb_keymap_serialize_flags flags)
+enum xkb_error_code
+text_v1_keymap_serialize(
+        const struct xkb_keymap *keymap,
+        const struct xkb_keymap_serialize_config *config,
+        struct xkb_keymap_serialize_result *result
+)
 {
     struct buf buf = { NULL, 0, 0 };
 
-    if (!write_keymap(keymap, format, flags, &buf)) {
+    const enum xkb_error_code error =
+        write_keymap(keymap, config, &buf, result);
+    if (error != XKB_SUCCESS) {
         free(buf.buf);
-        return NULL;
+        result->serialized = NULL;
+        return error;
     }
 
-    return buf.buf;
+    result->serialized = buf.buf;
+    result->length = buf.size + 1;
+    result->layouts = config->layouts;
+
+    return XKB_SUCCESS;
 }

@@ -10,6 +10,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(_MSC_VER)
+# include <intrin.h>
+#endif
+
 #include "utils.h"
 
 /*
@@ -115,6 +119,8 @@ MAKE_PARSE_HEX_TO(uint32_t, UINT32_MAX)
  */
 MAKE_PARSE_HEX_TO(uint64_t, UINT64_MAX)
 
+#undef MAKE_PARSE_HEX_TO
+
 static inline unsigned int
 popcount32(uint32_t x)
 {
@@ -130,6 +136,33 @@ popcount32(uint32_t x)
         count++;
     }
     return count;
+#endif
+}
+
+static inline unsigned int
+ctz32(uint32_t x)
+{
+    if (x == 0)
+        return 32;
+
+#if defined(__GNUC__) || defined(__clang__)
+    return _Generic(
+        x,
+        unsigned int: (unsigned int)__builtin_ctz(x),
+        unsigned long: (unsigned int)__builtin_ctzl(x),
+        unsigned long long: (unsigned int)__builtin_ctzll(x)
+    );
+#elif defined(_MSC_VER)
+    unsigned long index;
+    _BitScanForward(&index, x);
+    return (unsigned int)index;
+#else
+    /* Fallback: De Bruijn sequence algorithm for 32-bit integers */
+    static const unsigned int debruijn32[32] = {
+        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+        31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    };
+    return debruijn32[((x & -x) * UINT32_C(0x077cb531)) >> 27];
 #endif
 }
 
@@ -179,4 +212,13 @@ next_pow2(unsigned int x)
 #endif
 }
 
-#undef MAKE_PARSE_HEX_TO
+static inline uint32_t
+keep_lowest_n_set_bits(uint32_t mask, unsigned int n) {
+    const uint32_t original = mask;
+
+    /* Clear the lowest set bit n times */
+    while (n-- && mask)
+        mask &= (mask - 1);
+
+    return original ^ mask;
+}

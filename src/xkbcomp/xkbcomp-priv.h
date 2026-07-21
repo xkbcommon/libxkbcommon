@@ -127,10 +127,12 @@ struct xkb_keymap_info {
     pending_computation_array *pending_computations;
 };
 
-char *
-text_v1_keymap_get_as_string(struct xkb_keymap *keymap,
-                             enum xkb_keymap_format format,
-                             enum xkb_keymap_serialize_flags flags);
+enum xkb_error_code
+text_v1_keymap_serialize(
+        const struct xkb_keymap *keymap,
+        const struct xkb_keymap_serialize_config *config,
+        struct xkb_keymap_serialize_result *result
+);
 
 XkbFile *
 XkbParseFile(struct xkb_context *ctx,
