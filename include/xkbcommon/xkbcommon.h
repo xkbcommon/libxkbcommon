@@ -3303,7 +3303,13 @@ struct xkb_state_components_update {
      */
     uint32_t controls;
 
-    /** @private Reserved for ABI alignment. Must be zero. */
+    /**
+     * @private
+     *
+     * Reserved for future extensions.
+     *
+     * @pre Must be set to `0` by the caller.
+     */
     uint32_t reserved;
 };
 

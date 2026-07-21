@@ -36,6 +36,8 @@ EXCLUDE                = LICENSE NEWS.md meson.options
 
 RECURSIVE              = YES
 
+EXTRACT_PRIVATE        = YES
+
 EXAMPLE_PATH           = test
 
 USE_MDFILE_AS_MAINPAGE = README.md
