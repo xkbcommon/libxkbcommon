@@ -666,3 +666,57 @@ if (xkb_keymap_num_layouts_for_key(keymap, keycode))
 ```
 </dd>
 </dl>
+
+### Layouts
+
+#### How to handle more than 4 layouts?
+
+##### Parsing
+
+Creating a keymap with more than 4 layouts requires using the [keymap format v2].
+
+[keymap format v2]: @ref xkb_keymap_format::XKB_KEYMAP_FORMAT_TEXT_V2
+
+##### Serialiazing
+
+Serialiazing a keymap with more than 4 layouts may be achieved by:
+
+<dl>
+<dt>*Lossless* serialization</dt>
+<dd>Serialize all the layouts using the [keymap format v2].</dd>
+<dt>*Lossy* serialization</dt>
+<dd>
+Serialize a *subset* of the layouts using `xkb_keymap::xkb_keymap_serialize()`.
+The target keymap format depends on the use case.
+
+@figure
+@figcaption
+Example of an X11-compatible serialization of a **8**-layout keymap:
+only layouts indices **3 to 6** are serialized.
+@endfigcaption
+
+```c
+const struct xkb_keymap_serialize_config config = {
+    .size = sizeof(config),
+    /* X11 compatibility */
+    .format = XKB_KEYMAP_FORMAT_TEXT_V1,
+    /* X11 compatibility: 4 layouts (max supported by X11), indices 3-6 (0-indexed) */
+    .layouts = 0x78
+};
+
+struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
+
+const xkb_error_code ret = xkb_keymap_serialize(keymap, &config, &result);
+if (ret == XKB_SUCCESS) {
+    // send result.serialized
+    …
+} else {
+    // handle error
+    …
+}
+
+free(result.serialized);
+```
+@endfigure
+</dd>
+</dl>
