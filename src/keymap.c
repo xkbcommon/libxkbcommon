@@ -16,10 +16,13 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "utils-numbers.h"
 #include "xkbcommon/xkbcommon.h"
+#include "abi-check.h"
 #include "atom.h"
 #include "features/enums.h"
 #include "keymap.h"
+#include "keymap-priv.h"
 #include "messages-codes.h"
 #include "text.h"
 
@@ -252,34 +255,130 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
     return keymap;
 }
 
+/* Check ABI compatibility */
+static enum xkb_error_code
+check_keymap_serialize_abi(
+    struct xkb_context * restrict ctx,
+    const char * restrict func,
+    const struct xkb_keymap_serialize_config * restrict config,
+    const struct xkb_keymap_serialize_result * restrict result
+)
+{
+    enum xkb_error_code error;
+    if ((error = xkb_check_keymap_serialize_struct_size(config)) ||
+        (error = xkb_check_keymap_serialize_struct_size(result))) {
+        xkb_log_abi_error(ctx, func, error);
+    }
+    return error;
+}
+
+enum xkb_error_code
+xkb_keymap_serialize(const struct xkb_keymap *keymap,
+                     const struct xkb_keymap_serialize_config *config,
+                     struct xkb_keymap_serialize_result *result)
+{
+    /* Check ABI compatibility */
+    enum xkb_error_code error =
+        check_keymap_serialize_abi(keymap->ctx, __func__, config, result);
+    if (error)
+        return error;
+
+    struct xkb_keymap_serialize_config new_config = *config;
+
+    static const enum xkb_keymap_serialize_flags XKB_KEYMAP_SERIALIZE_FLAGS
+        = (enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS_VALUES;
+
+    if (new_config.flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
+        log_err_func(keymap->ctx,
+                     XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS_,
+                     "unrecognized serialization flags: %#x\n",
+                     (new_config.flags & ~XKB_KEYMAP_SERIALIZE_FLAGS));
+        return XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS;
+    }
+
+    if (new_config.format == XKB_KEYMAP_USE_ORIGINAL_FORMAT)
+        new_config.format = keymap->format;
+
+    const struct xkb_keymap_format_ops * const ops =
+        get_keymap_format_ops(new_config.format);
+    if (!ops || !ops->keymap_serialize) {
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT_,
+                     "unsupported keymap format: %d\n", new_config.format);
+        return XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT;
+    }
+
+    const xkb_layout_mask_t all_layouts =
+        (xkb_layout_mask_t)((UINT64_C(1) << keymap->num_groups) - 1);
+    if (!new_config.layouts) {
+        new_config.layouts = all_layouts;
+    }
+
+    if (new_config.layouts & ~all_layouts) {
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+                     "unsupported layout mask: "
+                     "expected subset of 0x%08"PRIx32", got: 0x%08"PRIx32"\n",
+                     all_layouts, new_config.layouts);
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
+    }
+
+    const xkb_layout_index_t max_groups = format_max_groups(config->format);
+    const xkb_layout_index_t num_groups =
+        (xkb_layout_index_t)popcount32(new_config.layouts);
+
+    if (num_groups > max_groups) {
+        const bool strict =
+            (new_config.flags & XKB_KEYMAP_SERIALIZE_STRICT_MODE);
+        xkb_log_with_code(
+            keymap->ctx,
+            (strict ? XKB_LOG_LEVEL_ERROR : XKB_LOG_LEVEL_WARNING),
+            XKB_LOG_VERBOSITY_MINIMAL,
+            XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED_,
+            "Cannot serialize %"PRIu32" groups in keymap format %d: "
+            "maximum is %"PRIu32"%s\n",
+            num_groups, config->format, max_groups,
+            (strict ? "" : "; discarding unsupported groups")
+        );
+        if (strict) {
+            return XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED;
+        } else {
+            new_config.layouts =
+                keep_lowest_n_set_bits(new_config.layouts, max_groups);
+        }
+    }
+
+    log_dbg(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+            "Serializing group mask 0x%"PRIx32" (total: %"PRIu32")\n",
+            new_config.layouts, num_groups);
+
+    if (new_config.layouts != all_layouts) {
+        /*
+         * If some layouts are discarded, then interprets may not trigger
+         * properly. Avoid this by requiring explicit values.
+         */
+        new_config.flags |= (XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES |
+                             XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS);
+    }
+
+    return ops->keymap_serialize(keymap, &new_config, result);
+}
+
 char *
 xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
                           enum xkb_keymap_format format,
                           enum xkb_keymap_serialize_flags flags)
 {
-    static const enum xkb_keymap_serialize_flags XKB_KEYMAP_SERIALIZE_FLAGS
-        = (enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS_VALUES;
+    const struct xkb_keymap_serialize_config config = {
+        .size = sizeof(config),
+        .flags = flags,
+        .format = format,
+        .layouts = 0,
+    };
 
-    if (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
-        log_err_func(keymap->ctx,
-                     XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS,
-                     "unrecognized serialization flags: %#x\n",
-                     (flags & ~XKB_KEYMAP_SERIALIZE_FLAGS));
-        return NULL;
-    }
+    struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
 
-    if (format == XKB_KEYMAP_USE_ORIGINAL_FORMAT)
-        format = keymap->format;
-
-    const struct xkb_keymap_format_ops * const ops =
-        get_keymap_format_ops(format);
-    if (!ops || !ops->keymap_get_as_string) {
-        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT,
-                     "unsupported keymap format: %d\n", format);
-        return NULL;
-    }
-
-    return ops->keymap_get_as_string(keymap, format, flags);
+    return (xkb_keymap_serialize(keymap, &config, &result) == XKB_SUCCESS)
+        ? result.serialized
+        : NULL;
 }
 
 char *

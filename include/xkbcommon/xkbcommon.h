@@ -1381,6 +1381,10 @@ enum xkb_keymap_format {
      * advised to use this format as well for serializing, in order to ensure
      * maximum compatibility for interchange.
      *
+     * @note In case serializing a keymap with *more than 4 layouts*, use
+     * `xkb_keymap::xkb_keymap_serialize()` and select the layouts to serialize
+     * using `xkb_keymap_serialize_config::layouts`.
+     *
      * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
      */
     XKB_KEYMAP_FORMAT_TEXT_V1 = 1,
@@ -1641,6 +1645,170 @@ enum xkb_keymap_serialize_flags {
 };
 
 /**
+ * @struct xkb_keymap_serialize_config
+ *
+ * Serialization configuration for `xkb_keymap::xkb_keymap_serialize()`.
+ *
+ * @sa `::xkb_keymap_serialize_result`
+ * @since 1.14.0
+ */
+struct xkb_keymap_serialize_config {
+    /**
+     * Size of this structure, for forward-compatibility.
+     *
+     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
+     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
+     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     *
+     * @since 1.14.0
+     */
+    size_t size;
+    /**
+     * Mask of [serialization flags].
+     *
+     * @sa `xkb_keymap_serialize_flags`
+     *
+     * @since 1.14.0
+     *
+     * [serialization flags]: @ref xkb_keymap_serialize_flags
+     */
+    uint32_t flags;
+    /**
+     * Target [keymap format].
+     *
+     * @sa `xkb_keymap_format`
+     *
+     * @since 1.14.0
+     *
+     * [keymap format]: @ref xkb_keymap_format
+     */
+    uint32_t format;
+    /**
+     * Mask of layouts to serialize.
+     *
+     * If `0`, then all the keymap layouts are serialized.
+     *
+     * @since 1.14.0
+     */
+    xkb_layout_mask_t layouts;
+    /**
+     * @private
+     *
+     * Reserved for future extensions.
+     *
+     * @pre Must be set to `0` by the caller.
+     */
+    uint32_t reserved;
+};
+
+/**
+ * @struct xkb_keymap_serialize_result
+ *
+ * Result of `xkb_keymap::xkb_keymap_serialize()`
+ *
+ * @sa `::xkb_keymap_serialize_config`
+ * @since 1.14.0
+ */
+struct xkb_keymap_serialize_result {
+    /**
+     * Size of this structure, for forward-compatibility.
+     *
+     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
+     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
+     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     *
+     * @since 1.14.0
+     */
+    size_t size;
+    /**
+     * A newly *allocated* keymap serialization, or `NULL` on failure.
+     *
+     * The caller of `xkb_keymap::xkb_keymap_serialize()` must free it.
+     *
+     * @since 1.14.0
+     */
+    char *serialized;
+    /**
+     * Length of #serialized, in bytes, including any terminating `NUL` byte.
+     *
+     * Valid only if the function returns `::XKB_SUCCESS`; otherwise unspecified.
+     *
+     * @since 1.14.0
+     */
+    size_t length;
+    /**
+     * Mask of the original layouts actually included in #serialized.
+     *
+     * Valid only if the function returns `::XKB_SUCCESS`; otherwise unspecified.
+     *
+     * @sa `xkb_keymap_serialize_config::layouts`
+     *
+     * @since 1.14.0
+     */
+    xkb_layout_mask_t layouts;
+    /**
+     * @private
+     *
+     * Reserved for future extensions.
+     *
+     * @pre Must be set to `0` by the caller.
+     */
+    uint32_t reserved;
+};
+
+/**
+ * Serialize a compiled keymap to a string.
+ *
+ * On success, returns a newly *allocated* serialized keymap in
+ * [`result->serialized`][serialized], together with additional metadata.
+ * It is suitable to use with `xkb_keymap_new_from_string2()`.
+ *
+ * Use this function instead of `xkb_keymap_get_as_string()` or
+ * `xkb_keymap_get_as_string2()` when more control on serializing
+ * or its result is required.
+ *
+ * @note This function enables to serialize an X11-<em>incompatible</em> keymap
+ * with more than 4 layouts to an X11-<em>compatible</em> keymap with up to 4
+ * layouts:
+ * - set [`config->format`][format] to `::XKB_KEYMAP_FORMAT_TEXT_V1`,
+ * - set up to 4 bits in [`config->layouts`][layouts] to select a subset of
+ *   layouts to serialized.
+ *
+ * @param[in]     keymap   The keymap to serialize.
+ * @param[in]     config   Configuration guiding the serialization.
+ * @param[in,out] result   Result of the serialization.
+ *
+ * @pre @p config must point to a zero-initialized struct with
+ * [`size`](@ref xkb_keymap_serialize_config::size) set to `sizeof(*config)`.
+ *
+ * @pre @p result must point to a zero-initialized struct with
+ * [`size`](@ref xkb_keymap_serialize_result::size) set to `sizeof(*result)`.
+ *
+ * @invariant The library writes only to fields of @p result that fall
+ * within `result->size`.
+ *
+ * @post If the return value is `::XKB_SUCCESS`, the caller is responsible
+ * for freeing [`result->serialized`][serialized].
+ *
+ * @post Otherwise, [`result->serialized`][serialized] is set to `NULL` and
+ * all fields of @p result beyond it are left unspecified.
+ *
+ * @returns `::XKB_SUCCESS` on success; otherwise an
+ * [error code](@ref xkb_error_code).
+ *
+ * @since 1.14.0
+ * @memberof xkb_keymap
+ *
+ * [format]: @ref xkb_keymap_serialize_config::format
+ * [layouts]: @ref xkb_keymap_serialize_config::layouts
+ * [serialized]: @ref xkb_keymap_serialize_result::serialized
+ */
+XKB_EXPORT enum xkb_error_code
+xkb_keymap_serialize(const struct xkb_keymap *keymap,
+                     const struct xkb_keymap_serialize_config *config,
+                     struct xkb_keymap_serialize_result *result);
+
+/**
  * Get the compiled keymap as a string.
  *
  * Same as `xkb_keymap::xkb_keymap_get_as_string2()` using
@@ -1649,6 +1817,7 @@ enum xkb_keymap_serialize_flags {
  * @since 1.12.0: Drop unused types and compatibility entries and do not
  * pretty-print.
  *
+ * @sa `xkb_keymap::xkb_keymap_serialize()`
  * @sa `xkb_keymap::xkb_keymap_get_as_string2()`
  * @memberof xkb_keymap
  */
@@ -1676,6 +1845,7 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  *
  * @since 1.12.0
  *
+ * @sa `xkb_keymap_serialize()`
  * @sa `xkb_keymap_get_as_string()`
  * @sa `xkb_keymap_new_from_string()`
  * @memberof xkb_keymap

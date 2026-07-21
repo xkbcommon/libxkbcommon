@@ -29,13 +29,28 @@ xkb_symbols {
 	name[1]="G1";
 
 	key <a>                  {
-		symbols[1]= [               a ],
-		symbols[2]= [               a ],
-		symbols[3]= [               a ],
-		symbols[4]= [               a ]
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		repeat= No,
+		virtualMods= none,
+		symbols[1]= [                              a ],
+		actions[1]= [ LockControls(controls=none,affect=neither) ],
+		symbols[2]= [                              a ],
+		actions[2]= [ LockControls(controls=none,affect=neither) ],
+		symbols[3]= [                              a ],
+		actions[3]= [ LockControls(controls=none,affect=neither) ],
+		symbols[4]= [                              a ],
+		actions[4]= [ LockControls(controls=none,affect=neither) ]
 	};
 	key <b>                  {
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
 		repeat= No,
+		virtualMods= none,
 		symbols[1]= [                       NoSymbol ],
 		actions[1]= [ LockControls(controls=none,affect=neither) ],
 		symbols[2]= [                       NoSymbol ],
@@ -46,10 +61,20 @@ xkb_symbols {
 		actions[4]= [ LockControls(controls=none,affect=neither) ]
 	};
 	key <c>                  {
-		symbols[1]= [               1 ],
-		symbols[2]= [               2 ],
-		symbols[3]= [               3 ],
-		symbols[4]= [               4 ]
+		type[1]= "ONE_LEVEL",
+		type[2]= "ONE_LEVEL",
+		type[3]= "ONE_LEVEL",
+		type[4]= "ONE_LEVEL",
+		repeat= Yes,
+		virtualMods= none,
+		symbols[1]= [                              1 ],
+		actions[1]= [                     NoAction() ],
+		symbols[2]= [                              2 ],
+		actions[2]= [                     NoAction() ],
+		symbols[3]= [                              3 ],
+		actions[3]= [                     NoAction() ],
+		symbols[4]= [                              4 ],
+		actions[4]= [                     NoAction() ]
 	};
 };
 
