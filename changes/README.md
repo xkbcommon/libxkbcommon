@@ -47,17 +47,17 @@ Guidelines for the fragment files:
 
 ## Build the changelog
 
-Install <code>[towncrier]</code> from Pypi:
+1. Install <code>[towncrier]</code> from Pypi:
 
-```bash
-python3 -m pip install towncrier
-```
+   ```bash
+   python3 -m pip install towncrier
+   ```
+2. Build the changelog:
 
-Then build the changelog:
-
-```bash
-# Only check the result. Useful after adding a new fragment.
-towncrier build --draft --version 1.8.0
-# Write the changelog & delete the news fragments
-towncrier build --yes --version 1.8.0
-```
+   ```bash
+   # Only check the result. Useful after adding a new fragment.
+   towncrier build --draft --version 1.8.0
+   # Write the changelog & delete the news fragments
+   towncrier build --yes --version 1.8.0
+   ```
+3. Fix the level of the generated headings.
