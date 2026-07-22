@@ -25,6 +25,7 @@ usage(const char *progname, FILE *fp)
             "  --skip-default-paths ... Do not load the default XKB paths\n"
             "  --load-exotic .......... Load the exotic (extra) rulesets\n"
             "  --help ................. Print this help and exit\n"
+           "   --version .............. Print version information and exit\n"
             "\n"
             "Trailing arguments are treated as XKB base directory installations.\n",
             progname);
@@ -45,6 +46,7 @@ main(int argc, char **argv)
 
     static const struct option opts[] = {
         {"help",                no_argument,        0, 'h'},
+        {"version",             no_argument,        0, 'V'},
         {"verbose",             no_argument,        0, 'v'},
         {"load-exotic",         no_argument,        0, 'e'},
         {"skip-default-paths",  no_argument,        0, 'd'},
@@ -58,14 +60,14 @@ main(int argc, char **argv)
         int c;
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "hev", opts, &option_index);
+        c = getopt_long(argc, argv, "hedrvV", opts, &option_index);
         if (c == -1)
             break;
 
         switch (c) {
             case 'h':
                 usage(argv[0], stdout);
-                return 0;
+                return EXIT_SUCCESS;
             case 'd':
                 load_defaults = false;
                 break;
@@ -78,6 +80,9 @@ main(int argc, char **argv)
             case 'v':
                 verbosity++;
                 break;
+            case 'V':
+                printf("%s\n", LIBXKBCOMMON_VERSION);
+                exit(EXIT_SUCCESS);
             default:
                 usage(argv[0], stderr);
                 return EXIT_INVALID_USAGE;

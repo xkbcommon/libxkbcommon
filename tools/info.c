@@ -25,16 +25,18 @@ parse_options(int argc, char **argv)
 {
     enum options {
         OPT_HELP = 'h',
+        OPT_VERSION = 'V',
     };
 
     static struct option opts[] = {
         {"help",                 no_argument,            0, OPT_HELP},
+        {"version",              no_argument,            0, OPT_VERSION},
         {0, 0, 0, 0},
     };
 
     while (1) {
         int option_index = 0;
-        int opt = getopt_long(argc, argv, "h", opts, &option_index);
+        int opt = getopt_long(argc, argv, "hV", opts, &option_index);
 
         if (opt == -1)
             break;
@@ -42,6 +44,9 @@ parse_options(int argc, char **argv)
         switch (opt) {
         case OPT_HELP:
             usage(stdout, argv[0]);
+            exit(EXIT_SUCCESS);
+        case OPT_VERSION:
+            printf("%s\n", LIBXKBCOMMON_VERSION);
             exit(EXIT_SUCCESS);
         default:
 // invalid_usage:

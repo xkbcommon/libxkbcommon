@@ -108,7 +108,8 @@ local -a rmlvo_opts_common=(
 _xkbcli-list() {
 	_arguments -S : \
 		'(-v --verbose)'{-v,--verbose}'[increase verbosity]' \
-		'--help[print a help message and exit]' \
+		'(-h --help)'{-h,--help}'[print a help message and exit]' \
+		'(-V --version)'{-V,--version}'[print version information and exit]' \
 		'--ruleset=[load a ruleset]' \
 		'--skip-default-paths[do not load the default XKB paths]' \
 		'--load-exotic[load the exotic (extra) rulesets]' \
@@ -116,7 +117,8 @@ _xkbcli-list() {
 }
 
 local -a interactive_common=(
-	'--help[print a help message and exit]'
+	'(-h --help)'{-h,--help}'[print a help message and exit]'
+	'(-V --version)'{-V,--version}'[print version information and exit]'
 	'--verbose[enable verbose debugging output]'
 	'(-* --multiline -1 --uniline)'{-\*,--multiline}'[enable multiline event output]'
 	'(-* --multiline -1 --uniline)'{-1,--uniline}'[enable uniline event output]'
@@ -157,7 +159,8 @@ _xkbcli-interactive-evdev() {
 
 local -a dump_common=(
 	'--verbose[enable verbose debugging output]'
-	'--help[print a help message and exit]'
+	'(-h --help)'{-h,--help}'[print a help message and exit]'
+	'(-V --version)'{-V,--version}'[print version information and exit]'
 	'(--format)--input-format=[use the given input keymap format]:xkb format:(v1 v2)'
 	'(--format)--output-format=[use the given output keymap format]:xkb format:(v1 v2)'
 	'(--input-format --output-format)--format=[use the given keymap format for input and output]:xkb format:(v1 v2)'
@@ -179,7 +182,8 @@ _xkbcli-dump-keymap-wayland() {
 
 _xkbcli-compile-keymap() {
 	_arguments -S : \
-		'--help[print a help message and exit]' \
+		'(-h --help)'{-h,--help}'[print a help message and exit]' \
+		'(-V --version)'{-V,--version}'[print version information and exit]' \
 		'--verbose[enable verbose debugging output]' \
 		'--test[test compilation but do not print the keymap]' \
 		+ input \
@@ -207,7 +211,8 @@ _xkbcli-compile-keymap() {
 
 _xkbcli-compile-compose() {
 	_arguments -S : \
-		'--help[print a help message and exit]' \
+	    '(-h --help)'{-h,--help}'[print a help message and exit]' \
+	    '(-V --version)'{-V,--version}'[print version information and exit]' \
 		'--verbose[enable verbose debugging output]' \
 		'--test[test compilation but do not print the Compose file]' \
 		'--locale=[use the specified locale]:locale:_locales'
@@ -225,7 +230,8 @@ _xkbcli-how-to-type() {
 
 	local ret=1
 	_arguments -S : \
-		'--help[print a help message and exit]' \
+	    '(-h --help)'{-h,--help}'[print a help message and exit]' \
+	    '(-V --version)'{-V,--version}'[print version information and exit]' \
 		'--verbose[enable verbose debugging output]' \
 		'--keysym[treat the argument only as a keysym]' \
 		'--disable-compose[disable Compose support]' \

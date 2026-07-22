@@ -71,7 +71,7 @@ parse_char_or_codepoint(const char *raw) {
 static void
 usage(FILE *fp, const char *argv0)
 {
-    fprintf(fp, "Usage: %s [--help] [--verbose] [--keysym] [--disable-compose] "
+    fprintf(fp, "Usage: %s [--help] [--version] [--verbose] [--keysym] [--disable-compose] "
                 "[--rules <rules>] [--model <model>] "
                 "[--layout <layout>] [--variant <variant>] "
                 "[--options <options>] [--enable-environment-names] "
@@ -95,6 +95,8 @@ usage(FILE *fp, const char *argv0)
         "Options:\n"
         " --help\n"
         "    Print this help and exit\n"
+        " --version\n"
+        "    Print version information and exit\n"
         " --verbose\n"
         "    Enable verbose debugging output\n"
         " --keysym\n"
@@ -163,6 +165,7 @@ parse_options(int argc, char **argv, bool *verbose,
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"version",              no_argument,            0, 'V'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"keysym",               no_argument,            0, OPT_KEYSYM},
         {"disable-compose",      no_argument,            0, OPT_DISABLE_COMPOSE},
@@ -181,7 +184,7 @@ parse_options(int argc, char **argv, bool *verbose,
         int opt;
         int option_index = 0;
 
-        opt = getopt_long(argc, argv, "h", opts, &option_index);
+        opt = getopt_long(argc, argv, "hV", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -246,6 +249,9 @@ parse_options(int argc, char **argv, bool *verbose,
             break;
         case 'h':
             usage(stdout, argv[0]);
+            exit(EXIT_SUCCESS);
+        case 'V':
+            printf("%s\n", LIBXKBCOMMON_VERSION);
             exit(EXIT_SUCCESS);
         default:
             goto invalid_usage;

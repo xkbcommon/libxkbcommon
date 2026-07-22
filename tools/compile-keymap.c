@@ -50,6 +50,8 @@ usage(FILE *file, const char *progname)
            "General options:\n"
            " --help\n"
            "    Print this help and exit\n"
+           " --version\n"
+           "    Print version information and exit\n"
            " --verbose\n"
            "    Enable verbose debugging output\n"
            " --test\n"
@@ -199,6 +201,7 @@ parse_options(int argc, char **argv,
          * General
          */
         {"help",             no_argument,            0, 'h'},
+        {"version",          no_argument,            0, 'V'},
         {"verbose",          no_argument,            0, OPT_VERBOSE},
         {"test",             no_argument,            0, OPT_TEST},
         /*
@@ -242,7 +245,7 @@ parse_options(int argc, char **argv,
     int option_index = 0;
     while (1) {
         option_index = 0;
-        int c = getopt_long(argc, argv, "h", opts, &option_index);
+        int c = getopt_long(argc, argv, "hV", opts, &option_index);
         if (c == -1)
             break;
 
@@ -250,7 +253,10 @@ parse_options(int argc, char **argv,
         /* General */
         case 'h':
             usage(stdout, argv[0]);
-            exit(0);
+            exit(EXIT_SUCCESS);
+        case 'V':
+            printf("%s\n", LIBXKBCOMMON_VERSION);
+            exit(EXIT_SUCCESS);
         case OPT_VERBOSE:
             verbose = true;
             break;
