@@ -935,7 +935,7 @@ static void
 usage(FILE *fp, char *progname)
 {
         fprintf(fp,
-                "Usage: %s [--help] [--verbose]"
+                "Usage: %s [--help] [--version] [--verbose]"
 #ifdef KEYMAP_DUMP
                 " [--no-pretty] [--drop-unused] [--raw] [--input-format] [--strict]"
                 " [--output-format] [--format] [--no-pretty] [--drop-unused]"
@@ -1001,7 +1001,8 @@ usage(FILE *fp, char *progname)
                 "    --no-state-report  do not report changes to the state\n"
 #endif
                 "    --verbose          enable verbose debugging output\n"
-                "    --help             display this help and exit\n",
+                "    --help             display this help and exit\n"
+                "    --version          print version information and exit\n",
                 xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
         );
 }
@@ -1045,6 +1046,7 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"version",              no_argument,            0, 'V'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"strict",               no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
 #ifdef KEYMAP_DUMP
@@ -1084,7 +1086,7 @@ main(int argc, char *argv[])
         int opt;
         int option_index = 0;
 
-        opt = getopt_long(argc, argv, "*1h", opts, &option_index);
+        opt = getopt_long(argc, argv, "*1hV", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -1214,6 +1216,10 @@ local_state:
 #endif
         case 'h':
             usage(stdout, argv[0]);
+            ret = EXIT_SUCCESS;
+            goto error_parse_args;
+        case 'V':
+            printf("%s\n", LIBXKBCOMMON_VERSION);
             ret = EXIT_SUCCESS;
             goto error_parse_args;
         default:

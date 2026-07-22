@@ -468,8 +468,10 @@ usage(FILE *fp, char *progname)
             " --without-x11-offset\n"
             "    Don't add X11 keycode offset\n"
             "Other:\n"
-            "    --help\n"
-            "    Display this help and exit\n",
+            " --help\n"
+            "    Display this help and exit\n"
+            " --version\n"
+            "    Print version information and exit\n",
             progname, progname,
             xkb_keymap_get_format_label(DEFAULT_INPUT_KEYMAP_FORMAT)
     );
@@ -528,6 +530,7 @@ main(int argc, char *argv[])
     };
     static struct option opts[] = {
         {"help",                 no_argument,            0, 'h'},
+        {"version",              no_argument,            0, 'V'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
@@ -568,7 +571,7 @@ main(int argc, char *argv[])
 
     while (1) {
         int option_index = 0;
-        int opt = getopt_long(argc, argv, "*1h", opts, &option_index);
+        int opt = getopt_long(argc, argv, "*1hV", opts, &option_index);
         if (opt == -1)
             break;
 
@@ -725,6 +728,10 @@ main(int argc, char *argv[])
             break;
         case 'h':
             usage(stdout, argv[0]);
+            ret = EXIT_SUCCESS;
+            goto error_parse_args;
+        case 'V':
+            printf("%s\n", LIBXKBCOMMON_VERSION);
             ret = EXIT_SUCCESS;
             goto error_parse_args;
         default:
