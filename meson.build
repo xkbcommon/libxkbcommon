@@ -1,7 +1,7 @@
 project(
     'libxkbcommon',
     'c',
-    version: '1.13.0',
+    version: '1.14.0-beta1',
     default_options: [
         'c_std=c11',
         'build.c_std=c11',
@@ -10,7 +10,9 @@ project(
     meson_version: '>= 1.4.0',  # Released on March 2024
 )
 
-xkbcommon_project_version = meson.project_version().split('.')
+xkbcommon_project_version_parts = meson.project_version().split('-')
+xkbcommon_project_version = xkbcommon_project_version_parts[0].split('.')
+
 if xkbcommon_project_version[0] != '1'
     # The versioning used for the shared libraries assumes that the major
     # version of xkbcommon as a whole will increase to 2 if and only if there

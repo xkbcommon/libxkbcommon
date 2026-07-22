@@ -1,11 +1,439 @@
+libxkbcommon [1.14.0-beta1] – 2026-07-22
+========================================
+
+[1.14.0-beta1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.14.0-beta1
+
+@note The highlights of this release are:
+- A new `xkb_machine` keyboard state API specifically designed for *server* applications.
+  Contrary to the legacy API, it unlocks the full state-handling capabilities of xkbcommon,
+  making it possible to:
+
+  - generate *sequences of [events](@ref xkb_event)* corresponding to *atomic* state changes;
+  - support events other than state components changes.
+
+  New features include: [keyboard overlays], full support for [`RedirectKey()`](@ref redirect-key-action),
+  selecting a [reference layout for keyboard shortcuts],
+  making [`Control+Alt` act as `AltGr`][modifier-remapping] (improving *compatibility*
+  across platforms), and much more!
+- Support for the <strong>[sticky keys]</strong> accessibility feature.
+- A [lenient keymap parser] by *default*, to improve <em>forward</em>-compatibility.
+- An API to query xkbcommon [supported features].
+
+[supported features]: @ref xkb_feature
+[lenient keymap parser]: @ref XKB_KEYMAP_COMPILE_STRICT_MODE
+[keyboard overlays]: @ref key-behavior-overlay
+[reference layout for keyboard shortcuts]: @ref xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout
+[modifier-remapping]: @ref xkb_machine_builder::xkb_machine_builder_remap_mods
+[sticky keys]: @ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
+
+## Keymap text format
+
+### Breaking changes
+
+- The `keycode` parameter of [`RedirectKey()`](@ref redirect-key-action) now defaults
+  to the new special value [`auto`](@ref redirect-key-auto) instead of an invalid keycode.
+
+### New
+
+- Added [`deprecated`](@ref section-flag-deprecated) section flag.
+  ([#1044](https://github.com/xkbcommon/libxkbcommon/issues/1044))
+- Added support for `overlay[3-8]` in key statements of the
+  [keymap format v2](@ref XKB_KEYMAP_FORMAT_TEXT_V2), as well as their
+  corresponding keyboard controls.
+
+  Overlays may [*overlap*](@ref overlapping-overlays).
+
+  ([#124](https://github.com/xkbcommon/libxkbcommon/issues/124))
+- Added support for `First` and `Last` group indices and masks: it is now possible
+  to define a proper interpretation entry of the keysym `ISO_Last_Group`:
+
+  ```c
+  interpret ISO_Last_Group {
+      action= LockGroup(group=Last);
+  };
+  ```
+
+  ([#798](https://github.com/xkbcommon/libxkbcommon/issues/798))
+- Added the *default* special value [`auto`](@ref redirect-key-auto) to the `keycode`
+  parameter of the [`RedirectKey()`](@ref redirect-key-action) action, which resolves
+  to the keycode where the action is located:
+
+  ```c
+  // Original: implicit parameter
+  key <AB01> { [RedirectKey(…) ] };
+  // Original: explicit parameter
+  key <AB01> { [RedirectKey(keycode=auto, …) ] };
+  // Resolved
+  key <AB01> { [RedirectKey(keycode=<AB01>, …) ] };
+  ```
+- Added the following features for [modifier maps] in the [keymap format v2]\&
+  ([#1052](https://github.com/xkbcommon/libxkbcommon/issues/1052)):
+
+  <dl>
+  <dt>Modifiers mask expression</dt>
+  <dd>
+  ```c
+  modifier_map Shift { … };
+  // New: numeric equivalent of the previous entry
+  modifier_map 0x001 { … };
+  // New: modifier mask expression
+  modifier_map Mod1+Mod2 { … };
+  // New: numeric equivalent of the previous entry
+  modifier_map 0x018 { … };
+  ```
+  </dd>
+  <dt>[Extended real modifiers](@ref extended-real-mod-def)</dt>
+  <dd>
+  ```c
+  // New: non-X11 core modifiers
+  modifier_map 0x100 { … };
+  // New: multiple non-X11 core modifiers
+  modifier_map 0xf00 { … };
+  // New: Mix of X11 core and non core modifiers
+  modifier_map Mod2+0x100 { … };
+  // New: Numeric equivalent of the previous entry
+  modifier_map 0x110 { … };
+  ```
+  </dd>
+  <dt>Fallback to [keymap format v1]</dt>
+  <dd>
+  Due to backward compatibility with the X11 ecosystem, serializing to the
+  [keymap format v1] is subject to the following restrictions:
+
+  - Non-[X11 core modifiers](@ref core-modifiers) are not supported.
+  - Multiple modifiers per key are not supported, unless using keysyms in the
+    original `modifier_map` entry.
+  </dd>
+  </dl>
+
+[modifier maps]: @ref modmap-statement
+[keymap format v1]: @ref ::XKB_KEYMAP_FORMAT_TEXT_V1
+[keymap format v2]: @ref ::XKB_KEYMAP_FORMAT_TEXT_V2
+
+## API
+
+### Breaking changes
+
+- The XKB parser is now *lenient by default* to enable *forward*-compatibility.
+  The primary motivation is the evolution of the [keymap format v2].
+  Use the `::XKB_KEYMAP_COMPILE_STRICT_MODE` flag to restore the previous behavior.
+  ([#982](https://github.com/xkbcommon/libxkbcommon/issues/982))
+- Rename keys and aliases with names longer than 4 characters when serializing
+  using `::XKB_KEYMAP_FORMAT_TEXT_V1`, to ensure compatibility with the X11
+  ecosystem.
+- `xkb_state::xkb_state_mod_names_are_active()` and
+  `xkb_state::xkb_state_mod_indices_are_active()` now reject invalid
+  `xkb_state_match` flags.
+
+### New
+
+#### General
+
+- Added `xkb_feature_supported()`, `enum xkb_feature` and the corresponding header
+  `xkbcommon-features.h`. They enable testing feature availability, which is
+  useful when the library is dynamically linked.
+  Currently they support only testing enumerations and their values.
+
+#### Keysyms
+
+- Added `xkb_utf8_to_keysym()` as the inverse of `xkb_keysym_to_utf8()`.
+  ([#993](https://github.com/xkbcommon/libxkbcommon/issues/993))
+- Added keysyms from latest [xorgproto]
+        \(commit: `fcb7e9a1a0b593a44740d83b0babddd331fea830`):
+
+  - `XKB_KEY_dead_apostrophe` ([xorgproto-110])
+  - `XKB_KEY_SSHARP` ([xorgproto-110])
+  - `XKB_KEY_leftsingleanglequotemark` ([xorgproto-110])
+  - `XKB_KEY_rightsingleanglequotemark` ([xorgproto-110])
+  - `XKB_KEY_XF86ElectronicPrivacyScreenOn` ([xorgproto-109])
+  - `XKB_KEY_XF86ElectronicPrivacyScreenOff` ([xorgproto-109])
+  - `XKB_KEY_XF86ActionOnSelection` ([xorgproto-112])
+  - `XKB_KEY_XF86ContextualInsert` ([xorgproto-112])
+  - `XKB_KEY_XF86ContextualQuery` ([xorgproto-112])
+
+  Other changes:
+  - `ISO_Group_Shift` is now the canonical name of the corresponding keysym.
+    Previously it was `Mode_switch`, which refers to a core X group
+    mechanism obsoleted by XKB.
+
+  [xorgproto-109]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/109
+  [xorgproto-110]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/110
+  [xorgproto-112]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/112
+- Added UTF translations for numeric phone keys `XF86Numeric[0-9]`.
+
+#### Keymap compilation
+
+- Added `::XKB_KEYMAP_COMPILE_STRICT_MODE` to the `xkb_keymap_compile_flags` enumeration.
+  ([#982](https://github.com/xkbcommon/libxkbcommon/issues/982))
+
+#### Keymap serialization
+
+- Added `xkb_keymap::xkb_keymap_serialize()`,  `struct xkb_keymap_serialize_config` and
+  `struct xkb_keymap_serialize_result` to enable more control over serialization or its result.
+
+  In particular, it enables to serialize a keymap with more than 4 layouts into
+  an <strong>X11</strong>-compatible keymap, suitable to use in the [Wayland] protocol
+  (see: [`wl_keyboard::keymap_format::xkb_v1`][wl_keyboard::keymap_format::xkb_v1]).
+
+
+  [Wayland]: https://wayland.freedesktop.org/
+  [wl_keyboard::keymap_format::xkb_v1]: https://wayland.app/protocols/wayland#wl_keyboard:enum:keymap_format:entry:xkb_v1
+- Extended the enumeration `xkb_keymap_serialize_flags` to force some values to be *explicit*:
+  - `::XKB_KEYMAP_SERIALIZE_EXPLICIT_DEFAULT_VALUES`
+  - `::XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS`
+  - `::XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES`
+
+  This is useful mainly for debugging.
+
+#### Keymap properties
+
+- Added an iterator API over keymaps keys:
+  - `struct xkb_keymap_key_iterator`
+  - `enum xkb_keymap_key_iterator_flags`
+  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
+  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_destroy()`
+  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_next()`
+
+  It has the following pros over `xkb_keymap::xkb_keymap_key_for_each()`:
+  - lazy (i.e. on-demand);
+  - enable early termination;
+  - flags to control the iterator’s behavior, e.g. ascending/descending
+    order.
+
+  ([#925](https://github.com/xkbcommon/libxkbcommon/issues/925))
+
+#### State
+
+- Added `xkb_state::xkb_state_new_with_mode()` and the corresponding
+  `xkb_state_mode` enumeration. They enable creating `xkb_state` objects
+  with smaller memory footprint and protect against state corruption by
+  disallowing mixing server and client APIs.
+- Added `xkb_state::xkb_state_update_synthetic()` for out-of-band updates.
+- Added API to change controls of the keyboard state:
+  - new enumeration `xkb_keyboard_control_flags`
+  - new function `xkb_state::xkb_state_serialize_enabled_controls()`
+  - new member `XKB_STATE_CONTROLS` in the `xkb_state_component` enumeration.
+- Added support for the <strong>[sticky keys]</strong> accessibility feature.
+  ([#596](https://github.com/xkbcommon/libxkbcommon/issues/596))
+- Added support for X11’s [`XkbAX_TwoKeys`][XkbAX_TwoKeys] flag
+  to disable sticky keys when at least 2 keys are simultaneously pressed.
+  See `::XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS` for further details.
+  Currently, this requires at least one modifier key to be pressed, matching the behavior of the Xorg server.
+  ([#918](https://github.com/xkbcommon/libxkbcommon/issues/918))
+
+  [XkbAX_TwoKeys]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#:~:text=XkbAX_TwoKeys
+- Added `::XKB_KEY_REPEATED` to the `xkb_key_direction` enumeration. It enables
+  proper handling of **key repetition** managed by compositors.
+- Added the **server machine API:**
+  - `struct xkb_machine` (new):
+    - `xkb_machine::xkb_machine_new()`
+    - `xkb_machine::xkb_machine_ref()`
+    - `xkb_machine::xkb_machine_unref()`
+    - `xkb_machine::xkb_machine_get_keymap()`
+    - `xkb_machine::xkb_machine_process_key()`
+    - `xkb_machine::xkb_machine_process_synthetic()`
+  - `struct xkb_machine_builder` (new):
+    - `xkb_machine_builder::xkb_machine_builder_new()`
+    - `xkb_machine_builder::xkb_machine_builder_destroy()`
+    - `xkb_machine_builder::xkb_machine_builder_get_keymap()`
+    - `xkb_machine_builder::xkb_machine_builder_update_a11y_flags()`
+    - `xkb_machine_builder::xkb_machine_builder_remap_mods()`
+    - `xkb_machine_builder::xkb_machine_builder_update_shortcut_mods()`
+    - `xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
+  - `enum xkb_machine_builder_flags` (new)
+  - `enum xkb_events_flags` (new)
+  - `struct xkb_events` (new):
+    - `xkb_events::xkb_events_new_batch()`
+    - `xkb_events::xkb_events_destroy()`
+    - `xkb_events::xkb_events_next()`
+  - `struct xkb_event` (new):
+    - `xkb_event::xkb_event_get_type()`
+    - `xkb_event::xkb_event_get_keycode()`
+    - `xkb_event::xkb_event_get_changed_components()`
+  - `struct xkb_state`:
+    - `xkb_state::xkb_state_update_event()`
+
+  This is the recommended API for **server** applications. It enables the full
+  feature set that xkbcommon supports.
+
+  This API enables to generate a sequence of [events](@ref xkb_event) corresponding
+  to *atomic* state changes, contrary to the `xkb_state` API that cannot generate
+  events. Additionally, the event API supports events other than state
+  components changes, such as keys events, so that it enables handling most of
+  the XKB [key actions](@ref key-action-def).
+
+  See the [example for a Wayland server](@ref quick-guide-wayland-server)
+  in the quick guide.
+- Enable the configuration of out-of-range layout handling using the
+  following new API:
+  - `xkb_state_update::layout_policy`
+  - `struct xkb_layout_policy_update`
+  - `enum xkb_layout_out_of_range_policy`, with values:
+    - `XKB_LAYOUT_OUT_OF_RANGE_WRAP`: wrap into range using integer
+      modulus (default, as before).
+    - `XKB_LAYOUT_OUT_OF_RANGE_CLAMP`: clamp into range, i.e.
+      invalid indices are corrected to the closest valid bound (0 or
+      highest layout index).
+    - `XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`: redirect to a specific
+      layout index.
+- [`SetControls()`](@ref set-controls-action) and
+  [`LockControls()`](@ref lock-controls-action) actions are now effectual.
+  Note that only a subset of the keyboard controls are actually supported: see
+  `xkb_keyboard_control_flags` for further details.
+- Added support for [`RedirectKey()`](@ref redirect-key-action) action.
+  Please note that full support requires using the `xkb_machine` API.
+  ([#145](https://github.com/xkbcommon/libxkbcommon/issues/145))
+- Added complete support for [keyboard overlays](@ref key-behavior-overlay):
+  - [keymap format v1](@ref XKB_KEYMAP_FORMAT_TEXT_V1) is limited to
+    **2** *disjoint* overlays, compatible with X11.
+  - [keymap format v2](@ref XKB_KEYMAP_FORMAT_TEXT_V2) supports up to
+    **8** [*overlappable*](@ref overlapping-overlays) overlays.
+
+  Also added the respective [keyboard controls](@ref xkb_keyboard_control_flags).
+
+  This feature requires the [`xkb_machine` API](@ref server-client-state).
+
+  ([#124](https://github.com/xkbcommon/libxkbcommon/issues/124))
+- Added options to configure the active layout when specific modifiers are active,
+  enabling controlling which layout is used with keyboard shortcuts.
+
+  Examples of use cases (they may overlap):
+  - Latin shortcuts for non-Latin layouts
+  - Qwerty/Qwertz/Azerty/etc. shortcuts for non-standard Latin layouts
+  - Shortcuts independent of the active layout in setups with multiple layouts
+
+  It works by specifying:
+  - A *modifier mask* to watch, typically `Control`, `Alt` and `Super`.
+  - A *mapping*: source layout → target shortcuts layout.
+
+  Then whenever the active modifiers contain *some* of the modifiers of the mask
+  defined hereinabove, the active layout is switched to the target layout defined
+  in the mapping, if any, otherwise it is left unchanged.
+
+  See the new API:
+  - `xkb_machine_builder::xkb_machine_builder_update_shortcut_mods()`
+  - `xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
+
+  ([#753](https://github.com/xkbcommon/libxkbcommon/issues/753))
+- Added `xkb_machine_builder::xkb_machine_builder_remap_mods()` to enable remapping
+  modifiers combos, e.g. to make `Control+Alt` map to `LevelThree` (`AltGr`).
+  This helps improving *compatibility* across platforms.
+  ([#914](https://github.com/xkbcommon/libxkbcommon/issues/914))
+
+### Fixes
+
+- Fixed some functions accepting unsupported flags:
+  - `xkb_context::xkb_context_new()`
+  - `xkb_rmlvo_builder::xkb_rmlvo_builder_new()`
+  - `xkb_compose_state::xkb_compose_state_new()`
+  - `rxkb_context_new()`
+- Fixed incomplete [modifier map](@ref modmap-statement) entries when serializing
+  a key with multiple modifiers.
+  ([#1052](https://github.com/xkbcommon/libxkbcommon/issues/1052))
+- Fixed LEDs state not being properly initialized if they are activated when
+  the effective group is 1 or by some keyboard controls.
+
+  Note that it is very unlikely, because the standard layout database
+  [xkeyboard-config] does not ship such configurations.
+- Fixed the include statement of the default section, which could be broken in some custom configurations.
+- Fixed include statements silently accepting invalid group indices.
+
+
+## Tools
+
+### Breaking changes
+
+- `xkbcli {compile-keymap,dump-keymap*,interactive*}`: The parser is now *lenient*
+  by default. Use `--strict` to restore the previous behavior.
+  ([#982](https://github.com/xkbcommon/libxkbcommon/issues/982))
+
+### New
+
+<dl>
+<dt>`xkbcli *`</dt>
+<dd>
+- Added `--version` to all tools.
+</dd>
+<dt>`xkbcli info`</dt>
+<dd>
+- Added *new* tool `xkbcli info` to print information about libxkbcommon configuration,
+  for debugging purposes.
+</dd>
+<dt>`xkbcli compile-keymap`</dt>
+<dd>
+- Added `--layouts-mask` to select the layout indices to serialize.
+- Added `--explicit-values` to force all values to be serialized explicitly.
+  This is useful mainly for debugging.
+- Added `--input-strict` and `--strict` for *parsing* keymaps in *strict* mode.
+  `--strict` additionally enables *serializing* in strict mode.
+  This is useful mainly for debugging.
+  ([#982](https://github.com/xkbcommon/libxkbcommon/issues/982))
+- Added `--output-strict` for *serializing* keymaps in *strict* mode.
+  This is useful mainly for debugging.
+</dd>
+<dt>`xkbcli interactive-{evdev,wayland,x11}`</dt>
+<dd>
+- Added support for the new `xkb_machine` API.
+  The legacy state API can be used instead, by passing `--legacy-state-api`.
+- Added `--shortcuts-mask` and `--shortcuts-mapping` to
+  configure shortcuts tweaks.
+  ([#753](https://github.com/xkbcommon/libxkbcommon/issues/753))
+- Added `--modifiers-mapping` to enable remapping modifiers combos.
+  ([#914](https://github.com/xkbcommon/libxkbcommon/issues/914))
+- Added `--controls` to configure the keyboard controls.
+  Currently only options related to *sticky-keys* and *overlays* are supported.
+- Added `--strict` for parsing keymaps in *strict* mode.
+  This is useful mainly for debugging.
+- Added `--consumed-mode`.
+- Added `--no-state-report` to disable logging state changes.
+</dd>
+<dt>`xkbcli dump-keymap{wayland,x11}`</dt>
+<dd>
+- Added `--strict` for parsing keymaps in *strict* mode.
+  This is useful mainly for debugging.
+</dd>
+<dt>CLI completion</dt>
+<dd>
+- Added [zsh](https://zsh.sourceforge.io/) completions.
+
+  Contributed by Ronan Pigott
+  ([#901](https://github.com/xkbcommon/libxkbcommon/pull/901))
+</dd>
+</dl>
+
+
+## Build system
+
+### Breaking changes
+
+- Raised minimal meson version requirement to 1.4.0.
+  ([#954](https://github.com/xkbcommon/libxkbcommon/issues/954))
+
+### New
+
+- Added *pre-generated parser files*.
+  ([#997](https://github.com/xkbcommon/libxkbcommon/issues/997))
+- Added the option `enable-parser-auto-generation`, enabled by default:
+  - When *enabled*, `bison` is *required* and the build automatically generates
+    the parser files. This is the behavior of the previous versions.
+  - When *disabled*, `bison` is *optional* and the build uses the pre-generated
+    parser files.
+
+  ([#997](https://github.com/xkbcommon/libxkbcommon/issues/997))
+
+## Full changelog
+
+[1.13.2 – 1.14.0-beta1 changelog](https://github.com/xkbcommon/libxkbcommon/compare/xkbcommon-1.13.2...xkbcommon-1.14.0-beta1)
+
+
 libxkbcommon [1.13.2] – 2026-05-30
 ==================================
 
 [1.13.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.2
 
-# API
+## API
 
-## New
+### New
 
 - Updated keysyms from latest [xorgproto] \(commit: `fcb7e9a1a0b593a44740d83b0babddd331fea830`):
 
@@ -30,22 +458,22 @@ libxkbcommon [1.13.2] – 2026-05-30
   [xorgproto-112]: https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/112
 - Added keysyms UTF translations for numeric phone keys `XF86Numeric[0-9]`.
 
-## Fixes
+### Fixes
 
 - Fixed include statement of default section, possibly broken in some custom configurations.
 
 
-# Tools
+## Tools
 
-## New
+### New
 
 - Added new tool `xkbcli info` to print information about libxkbcommon configuration,
   for debugging purposes.
 
 
-# Build system
+## Build system
 
-## Breaking changes
+### Breaking changes
 
 - Raised minimal meson version requirement to 1.4.0.
   ([#954](https://github.com/xkbcommon/libxkbcommon/issues/954))
@@ -66,9 +494,10 @@ libxkbcommon [1.13.1] – 2025-12-03
 libxkbcommon [1.13.0] – 2025-11-05
 ==================================
 
-The highlight of this release is the introduction of the XKB **extensions directories**,
-a new mechanism to facilitate keyboard layout packaging and distribution.
-See @ref packaging-keyboard-layouts "" for further details.
+> [!note]
+> The highlight of this release is the introduction of the XKB **extensions directories**,
+> a new mechanism to facilitate keyboard layout packaging and distribution.
+> See @ref packaging-keyboard-layouts "" for further details.
 
 [1.13.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.0
 
@@ -248,10 +677,11 @@ libxkbcommon [1.12.1] – 2025-10-17
 libxkbcommon [1.12.0] – 2025-10-10
 ==================================
 
-The highlight of this release is the performance improvements for keymap handling:
-- about 1.6× speedup at *serializing* with default options;
-- about 1.7× speedup at *parsing* keymaps serialized by libxkbcommon, otherwise
-  at least 1.1×.
+> [!note]
+> The highlight of this release is the performance improvements for keymap handling:
+> - about 1.6× speedup at *serializing* with default options;
+> - about 1.7× speedup at *parsing* keymaps serialized by libxkbcommon, otherwise
+>   at least 1.1×.
 
 [1.12.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.0
 
@@ -347,9 +777,10 @@ The highlight of this release is the performance improvements for keymap handlin
 libxkbcommon [1.11.0] – 2025-08-08
 ==================================
 
-The highlight of this release is the introduction of a new keymap text format,
-`::XKB_KEYMAP_FORMAT_TEXT_V2`, in order to fix decade-old issues inherited from
-the X11 ecosystem. See the API section for documentation of its use.
+> [!note]
+> The highlight of this release is the introduction of a new keymap text format,
+> `::XKB_KEYMAP_FORMAT_TEXT_V2`, in order to fix decade-old issues inherited from
+> the X11 ecosystem. See the API section for documentation of its use.
 
 [1.11.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.11.0
 
@@ -2078,7 +2509,7 @@ libxkbcommon 0.5.0 – 2014-10-18
   Note: binaries compiled against this and future versions will not be
   able to link against the previous versions of the library.
 
-- Removed several compatablity symbols from the binary (the API isn’t
+- Removed several compatibility symbols from the binary (the API isn’t
   affected). This affects binaries which
 
   1. Were compiled against a pre-stable (\<0.2.0) version of libxkbcommon, and
