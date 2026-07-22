@@ -1529,7 +1529,7 @@ state_update_enabled_controls(struct xkb_server_state *state,
                                & CONTROL_STICKY_KEYS;
 
     /*
-     * Enable to use the public API with the all the Control values, except
+     * Enable using the public API with the all the Control values, except
      * the internal ones, if any.
      */
     affect = affect & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN;
@@ -2328,7 +2328,7 @@ serialize_controls(const struct state_components *components,
 {
     return (type & XKB_STATE_CONTROLS)
         /*
-         * Enable to use the public API with the all the Controls values, except
+         * Enable using the public API with the all the Controls values, except
          * the internal ones, if any.
          */
         ? (enum xkb_keyboard_control_flags)

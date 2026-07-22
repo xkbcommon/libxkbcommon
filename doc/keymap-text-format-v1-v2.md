@@ -2740,7 +2740,7 @@ Due to backward compatibility with the X11 ecosystem, serializing to the
 `::XKB_KEYMAP_FORMAT_TEXT_V1` is subject to the following restrictions:
 
 - Non-[X11 core modifiers][core modifier] are not supported.
-- Multiple modifiers per key is not supported, unless using keysyms in the
+- Multiple modifiers per key are not supported, unless using keysyms in the
   original `modifier_map` entry.
 </dd>
 </dl>

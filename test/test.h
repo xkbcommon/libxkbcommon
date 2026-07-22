@@ -40,7 +40,7 @@
                   test_name ". Expected " format ", got: " format "\n", \
                   ##__VA_ARGS__, expected, got)
 
-/* Enable to test assertion failures */
+/* Enable testing assertion failures */
 #if defined(__unix__) || defined(__APPLE__)
     #include <sys/wait.h>
     #include <sys/mman.h>
