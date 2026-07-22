@@ -1097,7 +1097,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
 
         /*
          * Handle +/- prefix, to respectively enable or disable the
-         * corresponding option. This enable to explicitly override defaults.
+         * corresponding option. This enables explicitly overriding defaults.
          */
         const bool disable = (start[0] == '-');
         if (disable || start[0] == '+')

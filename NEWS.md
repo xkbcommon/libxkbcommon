@@ -311,7 +311,7 @@ The highlight of this release is the performance improvements for keymap handlin
   - `XKB_KEY_XF86Fn_S`
   - `XKB_KEY_XF86Fn_B`
   - `XKB_KEY_XF86PerformanceMode`
-- Enable to parse the full range of keycodes `0 .. 0xfffffffe`, which was
+- Enable parsing the full range of keycodes `0 .. 0xfffffffe`, which was
   previously limited to `0 .. 0xfff`.
   ([#849](https://github.com/xkbcommon/libxkbcommon/issues/849))
 - Compose: Custom locales now fallback to `en_US.UTF-8`. Custom locales requiring
@@ -414,7 +414,7 @@ although future iterations should be backward-compatible. See the
 
 - Added support for the constants `Level<INDEX>` for *any* valid level index,
   instead of the previous limited range `Level1`..`Level8`.
-- Enable to use absolute paths and `%`-expansion variables for including
+- Enable using absolute paths and `%`-expansion variables for including
   *keymap components*, in the same fashion than the *rules* files.
 
 [compatibility page]: https://xkbcommon.org/doc/current/xkbcommon-compatibility.html
@@ -556,7 +556,7 @@ although future iterations should be backward-compatible. See the
   - Wayland and X11: Added `--local-state` to enable handling the keyboard state
     with a local state machine instead of the display server.
     ([#832](https://github.com/xkbcommon/libxkbcommon/issues/832))
-  - Wayland and X11: Added `--keymap` to enable to use a custom keymap instead
+  - Wayland and X11: Added `--keymap` to enable using a custom keymap instead
     of the keymap from the display server. Implies `--local-state`.
     ([#833](https://github.com/xkbcommon/libxkbcommon/issues/833))
 - `xkbcli how-to-type`: Added `--keymap` to enable loading the keymap from a
@@ -772,7 +772,7 @@ libxkbcommon [1.9.0] – 2025-04-26
 
   [Unicode code point]: https://en.wikipedia.org/wiki/Unicode#Codespace_and_code_points
   [UTF-8]: https://en.wikipedia.org/wiki/UTF-8
-- Enable to write keysyms as UTF-8-encoded strings:
+- Enable writing keysyms as UTF-8-encoded strings:
   - *Single* Unicode code point `U+1F3BA` (TRUMPET) `"🎺"` is converted into a
     single keysym: `U1F3BA`.
   - *Multiple* Unicode code points are converted to a keysym *list* where it is
@@ -905,7 +905,7 @@ libxkbcommon [1.8.0] – 2025-02-04
   key <> { [NoSymbol, a, b, {a, b}] };
   ```
 
-- Added the upper case mapping ß → ẞ (`ssharp` → `U1E9E`). This enable to type
+- Added the upper case mapping ß → ẞ (`ssharp` → `U1E9E`). This enables typing
   ẞ using CapsLock thanks to the internal capitalization rules.
 
 - Updated keysyms case mappings to cover full **[Unicode 16.0]**. This change

@@ -42,7 +42,7 @@ test_init(void)
     /* Make stdout always unbuffered, to ensure we always get it entirely */
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-    /* Enable to use another locale than C or en_US, so we can catch
+    /* Enable using another locale than C or en_US, so we can catch
      * locale-specific bugs */
     setlocale(LC_ALL, "");
 }

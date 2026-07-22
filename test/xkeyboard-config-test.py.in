@@ -558,7 +558,7 @@ class Registry:
 
 class Introspection:
     """
-    Enable to list symbols files from an xkbcommon YAML introspection file
+    Enable listing symbols files from an xkbcommon YAML introspection file
     """
 
     @unique

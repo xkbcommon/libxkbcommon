@@ -19,7 +19,7 @@
  *       items have the *same order* in the compared keymaps.
  */
 
-/* TODO: enable to relax the order on some items, such as: aliases, etc. */
+/* TODO: enable relaxing the order on some items, such as: aliases, etc. */
 
 
 static bool

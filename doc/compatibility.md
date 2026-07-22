@@ -728,7 +728,7 @@ See @ref keymap-string-literal "string literal" for further information.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-Enable to define e.g. a proper interpretation entry of the keysym `ISO_Last_Group`:
+Enable defining e.g. a proper interpretation entry of the keysym `ISO_Last_Group`:
 
 ```c
 interpret ISO_Last_Group {

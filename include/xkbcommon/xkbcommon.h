@@ -1275,7 +1275,7 @@ enum xkb_keymap_compile_flags {
     /**
      * Make the parser operate in *strict* mode.
      *
-     * This useful mainly for debugging.
+     * This is useful mainly for debugging.
      *
      * When this flag is set, the following will raise an error:
      * - field type mismatch (e.g. a number instead of a string)
@@ -1298,7 +1298,7 @@ enum xkb_keymap_compile_flags {
  * @defgroup xkb_keymap_format_enum Keymap formats
  * @ingroup keymap keymap-serialization
  * @brief Keymap formats for parsing and serializing keymaps
- * <!-- this group enable to display keymap formats in multiple groups -->
+ * <!-- this group enables displaying keymap formats in multiple groups -->
  */
 
 /**
@@ -1629,7 +1629,7 @@ enum xkb_keymap_serialize_flags {
     /**
      * Make the serializer operate in *strict* mode.
      *
-     * This useful mainly for debugging.
+     * This is useful mainly for debugging.
      *
      * When this flag is set, the following will raise an error:
      * - Exceeded layout count for the corresponding format
