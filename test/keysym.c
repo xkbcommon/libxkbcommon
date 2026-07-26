@@ -606,6 +606,12 @@ main(void)
 #define XKB_KEY_LONGEST_CANONICAL_NAME CONCAT2(XKB_KEY_, XKB_KEYSYM_LONGEST_CANONICAL_NAME)
     assert(test_string(LONGEST_CANONICAL_NAME, XKB_KEY_LONGEST_CANONICAL_NAME));
 
+    /* Non-canonical */
+    assert(test_string("dead_small_schwa", XKB_KEY_dead_schwa));
+    assert(test_string("dead_schwa", XKB_KEY_dead_schwa));
+    assert(test_string("dead_capital_schwa", XKB_KEY_dead_SCHWA));
+    assert(test_string("dead_SCHWA", XKB_KEY_dead_SCHWA));
+
     /* Decimal keysyms are not supported (digits are special cases) */
     assert(test_string("-1", XKB_KEY_NoSymbol));
     assert(test_string("10", XKB_KEY_NoSymbol));
@@ -729,6 +735,8 @@ main(void)
     assert(test_keysym(XKB_KEY_guillemetleft, "guillemotleft"));
     assert(test_keysym(XKB_KEY_ordmasculine, "masculine"));
     assert(test_keysym(XKB_KEY_Greek_lambda, "Greek_lamda"));
+    assert(test_keysym(XKB_KEY_dead_schwa, "dead_small_schwa"));
+    assert(test_keysym(XKB_KEY_dead_SCHWA, "dead_capital_schwa"));
     /* Unicode: ISO-8859-1 (Latin-1 + C0 and C1 control code) */
     assert(test_keysym(XKB_KEYSYM_UNICODE_OFFSET, STRINGIFY2(XKB_KEYSYM_UNICODE_OFFSET)));
     assert(test_keysym(0x01000001, "0x01000001"));
@@ -800,6 +808,10 @@ main(void)
     assert(test_deprecated(XKB_KEY_ISO_Group_Shift, NULL, false, "ISO_Group_Shift"));
     assert(test_deprecated(XKB_KEY_ISO_Group_Shift, "ISO_Group_Shift", false, "ISO_Group_Shift"));
     assert(test_deprecated(XKB_KEY_ISO_Group_Shift, garbage_name, false, "ISO_Group_Shift"));
+    assert(test_deprecated(XKB_KEY_dead_capital_schwa, NULL, false, "dead_SCHWA"));
+    assert(test_deprecated(XKB_KEY_dead_capital_schwa, "dead_capital_schwa", true, "dead_SCHWA"));
+    assert(test_deprecated(XKB_KEY_dead_capital_schwa, "dead_SCHWA", false, "dead_SCHWA"));
+    assert(test_deprecated(XKB_KEY_dead_capital_schwa, garbage_name, true, "dead_SCHWA"));
     assert(test_deprecated(XKB_KEY_SunAltGraph, NULL, false, "ISO_Group_Shift"));
     assert(test_deprecated(XKB_KEY_SunAltGraph, "SunAltGraph", true, "ISO_Group_Shift"));
     assert(test_deprecated(XKB_KEY_SunAltGraph, garbage_name, false, "ISO_Group_Shift"));

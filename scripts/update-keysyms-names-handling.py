@@ -7,19 +7,19 @@ Generate C file to handle keysym names
 import argparse
 import itertools
 import random
-import re
 import sys
-from collections import defaultdict
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import DefaultDict, Generator, Iterable, Iterator
+from typing import Generator, Iterable, Iterator
 
 import perfect_hash
 
 # Root of the project
 SCRIPT = Path(__file__)
 ROOT = SCRIPT.parent.parent
+
+sys.path.append(str(SCRIPT.parent))
+
+from keysyms import Keysym, Keysyms, Semantics  # noqa: E402
 
 # libxkbcommon Keysyms names header
 KEYSYMS_NAMES_HEADER = ROOT / "src" / "keysym-names.h"
@@ -38,75 +38,11 @@ args = parser.parse_args()
 # Set the seed explicitly, so we reduce diff
 random.seed(b"libxkbcommon")
 
-KEYSYM_ENTRY_PATTERN = re.compile(
-    r"""
-    ^\#define\s+
-    XKB_KEY_(?P<name>\w+)\s+
-    (?P<value>0x[0-9a-fA-F]+)\s*
-    (?:/\*\s*
-        (?:
-            (?P<deprecated>(?:D|d)eprecated)|
-            \(<U\+(?P<unicode_alt_semantics>[0-9a-fA-F]{4,}>)\)|
-            \(U\+(?P<deprecated_unicode>[0-9a-fA-F]{4,})\s(?:\s|\w|-)+\)|
-            .*
-        )
-    )?
-    """,
-    re.VERBOSE,
+
+all_keysyms = Keysyms.parse_file(args.c_header)
+entries: tuple[Keysym, ...] = tuple(
+    itertools.chain.from_iterable(all_keysyms.by_value.values())
 )
-
-
-class Deprecation(Enum):
-    NONE = "none"
-    "No deprecation"
-    EXPLICIT = "explicit"
-    "Explicit deprecation in comment: /* deprecated */"
-    IMPLICIT = "implicit"
-    """
-    Implicit deprecation: the keysym has already been defined with a previous
-    name, and the present name has not been declared explicitly as an alias.
-    """
-
-
-@dataclass
-class Keysym:
-    name: str
-    value: int
-    deprecated: Deprecation
-    alias: bool
-
-
-def parse_keysyms(path: Path) -> Iterator[Keysym]:
-    with path.open("rt", encoding="utf-8") as fd:
-        for line in fd:
-            if m := KEYSYM_ENTRY_PATTERN.match(line):
-                yield Keysym(
-                    name=m.group("name"),
-                    value=int(m.group("value"), 16),
-                    deprecated=Deprecation.EXPLICIT
-                    if m.group("deprecated") or m.group("deprecated_unicode")
-                    else Deprecation.NONE,
-                    alias="alias for" in line.casefold(),
-                )
-
-
-def get_keysyms(path: Path) -> dict[int, list[Keysym]]:
-    keysyms: DefaultDict[int, list[Keysym]] = defaultdict(list)
-    for keysym in parse_keysyms(path):
-        if (
-            (ks := keysyms.get(keysym.value))
-            and keysym.deprecated is Deprecation.NONE
-            and not keysym.alias
-            # deal with first name being deprecated
-            and any(k.deprecated is Deprecation.NONE for k in ks)
-        ):
-            keysym.deprecated = Deprecation.IMPLICIT
-        keysyms[keysym.value].append(keysym)
-    return keysyms
-
-
-keysyms_by_value = get_keysyms(args.c_header)
-entries = tuple(itertools.chain.from_iterable(keysyms_by_value.values()))
 
 # Sort based on the keysym name:
 #   1. Sort by the casefolded name: e.g. kana_ya < kana_YO.
@@ -239,65 +175,74 @@ def make_deprecated_entry(
     explicit_deprecated_aliases_index: int,
 ) -> tuple[str | None, tuple[int, ...]]:
     assert keysyms
-    non_deprecated_ks = tuple(k for k in keysyms if k.deprecated is Deprecation.NONE)
-    explicit_deprecated_aliases: tuple[int, ...] = ()
-    if non_deprecated_ks:
-        # Keysym is not deprecated. Check if none of its aliases are.
-        if len(keysyms) == 1 or all(
-            ks.alias and ks.deprecated is Deprecation.NONE for ks in keysyms[1:]
-        ):
-            return None, ()
-        ref = non_deprecated_ks[0].name
-        canonical_name = f"Reference: {ref}. "
-        assert ref in entry_offsets
-        canonical_index = str(entry_offsets[ref])
-        deprecated_ks = tuple(k for k in keysyms if k not in non_deprecated_ks)
-        if any(ks.alias and ks.deprecated is Deprecation.NONE for ks in keysyms[1:]):
-            # keysym has both explicit and deprecated aliases
-            explicit_deprecated_aliases = tuple(
-                entry_offsets[ks.name]
-                for ks in keysyms[1:]
-                if ks.deprecated is not Deprecation.NONE
+
+    if all(not k.deprecated for k in keysyms):
+        # No name is deprecated
+        return None, ()
+
+    canonical = keysyms[0]
+    assert canonical.is_canonical
+    ref = canonical.preferred
+    non_deprecated_names = tuple(k for k in keysyms if not k.deprecated)
+    deprecated_names = tuple(k for k in keysyms if k.deprecated)
+    deprecated_names_indices: tuple[int, ...] = ()
+
+    if non_deprecated_names:
+        # Keysym is not deprecated, but some of its names are.
+        assert not ref.deprecated, ref
+        ref_name = f"Reference: {ref.name}. "
+        ref_index = str(entry_offsets[ref.name])
+        assert deprecated_names or ref.deprecated, keysyms
+
+        if any(k is not ref for k in non_deprecated_names):
+            # Keysym has both multiple valid names and some deprecated names
+            deprecated_names_indices = tuple(
+                entry_offsets[k.name] for k in deprecated_names
             )
             assert (
                 explicit_deprecated_aliases_index < MAX_EXPLICIT_DEPRECATED_ALIAS_INDEX
             )
-            assert (
-                len(explicit_deprecated_aliases) < MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT
-            )
+            assert len(deprecated_names_indices) < MAX_EXPLICIT_DEPRECATED_ALIAS_COUNT
         else:
+            # Keysym has a single valid name and some deprecated names
+            assert len(non_deprecated_names) == 1, non_deprecated_names
+            assert deprecated_names
+            # Do *not* use an explicit list of deprecated names
             explicit_deprecated_aliases_index = 0
     else:
         # Keysym is deprecated
-        canonical_name = ""
-        canonical_index = (
+        assert ref.deprecated, ref
+        ref_name = ""
+        ref_index = (
             "DEPRECATED_KEYSYM"
             if value < XKB_KEYSYM_UNICODE_MIN or value > XKB_KEYSYM_UNICODE_MAX
             else "UNICODE_KEYSYM"
         )
-        deprecated_ks = keysyms
+        # Do *not* use an explicit list of deprecated names
         explicit_deprecated_aliases_index = 0
-    if non_deprecated_ks[1:]:
+
+    if non_deprecated_aliases := tuple(k for k in non_deprecated_names if k is not ref):
         non_deprecated = (
             "Non deprecated aliases: "
-            + ", ".join(ks.name for ks in non_deprecated_ks[1:])
+            + ", ".join(k.name for k in non_deprecated_aliases)
             + ". "
         )
     else:
         non_deprecated = ""
-    deprecated = ", ".join(ks.name for ks in deprecated_ks)
-    comment = f"{canonical_name}{non_deprecated}Deprecated: {deprecated}"
+
+    deprecated = ", ".join(k.name for k in deprecated_names)
+    comment = f"{ref_name}{non_deprecated}Deprecated: {deprecated}"
     return (
-        f"    {{ 0x{value:0>8x}, {canonical_index: <17}, {explicit_deprecated_aliases_index}, {len(explicit_deprecated_aliases)} }}, /* {comment} */",
-        explicit_deprecated_aliases,
+        f"    {{ 0x{value:0>8x}, {ref_index: <17}, {explicit_deprecated_aliases_index}, {len(deprecated_names_indices)} }}, /* {comment} */",
+        deprecated_names_indices,
     )
 
 
 def generate_deprecated_keysyms(
-    keysyms_by_value: dict[int, list[Keysym]], entry_offsets: dict[str, int]
+    all_keysyms: Keysyms, entry_offsets: dict[str, int]
 ) -> Generator[tuple[int, ...], None, None]:
     explicit_deprecated_aliases_index = 0
-    for value, keysyms in sorted(keysyms_by_value.items(), key=lambda e: e[0]):
+    for value, keysyms in sorted(all_keysyms.by_value.items(), key=lambda e: e[0]):
         assert keysyms
         c_entry, explicit_deprecated_aliases = make_deprecated_entry(
             value, keysyms, entry_offsets, explicit_deprecated_aliases_index
@@ -343,7 +288,7 @@ struct deprecated_keysym {
 """)
 print("static const struct deprecated_keysym deprecated_keysyms[] = {")
 explicit_deprecated_aliases = tuple(
-    generate_deprecated_keysyms(keysyms_by_value, entry_offsets)
+    generate_deprecated_keysyms(all_keysyms, entry_offsets)
 )
 print("};\n")
 print("static const uint32_t explicit_deprecated_aliases[] = {")
@@ -394,10 +339,21 @@ for entry in entries:
         if not entry.name.islower():
             # Keywords’s atoms are registered in *lower* case, so the keysym will be
             # replaced by the keysym with the corresponding name, but they may not match.
-            entry2: Keysym = Keysym("NoSymbol", 0, Deprecation.NONE, False)
+            entry2: Keysym = Keysym(
+                name="NoSymbol",
+                value=0,
+                char=None,
+                char_aliases=[],
+                char_semantics=Semantics.Default,
+                deprecation=None,
+                _canonical=None,
+                _preferred=None,
+                aliases=[],
+                comment="",
+            )
             if any(
                 e.name == lower
-                for e in keysyms_by_value[entry.value]
+                for e in all_keysyms.by_value[entry.value]
                 if e.name != entry.value
             ):
                 # There is a keysym in lower case that is an alias
