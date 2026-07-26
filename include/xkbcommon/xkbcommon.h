@@ -213,8 +213,7 @@ typedef uint32_t xkb_keycode_t;
  * Each such symbol is represented by a *keysym* (short for “key symbol”).
  * Note that keysyms are somewhat more general, in that they can also represent
  * some “function”, such as “Left” or “Right” for the arrow keys.  For more
- * information, see: Appendix A [“KEYSYM Encoding”][encoding] of the X Window
- * System Protocol.
+ * information, see: @ref keysym-encoding "".
  *
  * Specifically named keysyms can be found in the
  * xkbcommon/xkbcommon-keysyms.h header file.  Their name does not include
@@ -232,12 +231,14 @@ typedef uint32_t xkb_keycode_t;
  * @note **Encoding:** Keysyms are 32-bit integers with the 3 most significant
  * bits always set to zero.  Thus valid keysyms are in the range
  * `0 .. 0x1fffffff` = @ref XKB_KEYSYM_MAX.
- * See: Appendix A [“KEYSYM Encoding”][encoding] of the X Window System Protocol.
+ * See @ref keysym-encoding "" for further details.
  *
  * [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
  *
  * @ingroup keysyms
  * @sa `::XKB_KEYSYM_MAX`
+ * @sa @ref keysym-encoding
+ * @sa @ref predefined-keysyms
  */
 typedef uint32_t xkb_keysym_t;
 
@@ -686,6 +687,9 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * @defgroup keysyms Keysyms
  * Utility functions related to [*keysyms*](@ref xkb_keysym_t) (short for
  * “key symbols”).
+ *
+ * @sa keysym-encoding
+ * @sa predefined-keysyms
  *
  * @{
  */

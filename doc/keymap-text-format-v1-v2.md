@@ -92,7 +92,8 @@ Some additional resources are:
   symbol on the cap of a key.
 
   Some keysyms have a canonical name for convenience. The complete list of
-  canonical names is defined in `xkbcommon/xkbcommon-keysyms.h`.
+  canonical names is defined in `xkbcommon/xkbcommon-keysyms.h` and
+  conveniently consultable at @ref predefined-keysyms.
 
   Common types of keysyms are:
 
@@ -111,7 +112,8 @@ Some additional resources are:
   - A _system action:_ e.g. the arrow `Left`, `Pause`, `Escape`, `F1`.
 
   @sa [xkb_symbols] for further details on binding keysyms to keycodes.
-  @sa [Keysym syntax][@ref keysym-syntax]
+  @sa [Keysym syntax](@ref keysym-syntax)
+  @sa @ref predefined-keysyms
   </dd>
   <dt><a name="modifier-def">Modifier</a></dt>
   <dd>
@@ -556,7 +558,8 @@ They are grouped in [keymap component files][keymap component file] to form a
     <td>`symbols`</td>
     <td>
     A translation of symbolic [key codes][keycode] into actual [key symbols][keysyms]
-    (keysyms).
+    (*keysyms*).
+    @sa @ref predefined-keysyms
     </td>
   </tr>
   <tr>
@@ -628,10 +631,12 @@ Comments are introduced following either `//` or `#` until the end of the line.
 <dt>Name</dt>
 <dd>
 
-Keysym names are defined in `xkbcommon/xkbcommon-keysyms.h`; remove the
-`XKB_KEY_` prefix to get the name.
+Keysym names are defined in `xkbcommon/xkbcommon-keysyms.h` and the list is
+conveniently consultable at @ref predefined-keysyms "".
 
-Example: the keysym `0xffbe = XKB_KEY_F1` has the name `F1`.
+> [!tip]
+> Remove the `XKB_KEY_` prefix to get the name.
+> Example: the keysym `0xffbe = XKB_KEY_F1` has the name `F1`.
 </dd>
 <dt>Unicode</dt>
 <dd>
