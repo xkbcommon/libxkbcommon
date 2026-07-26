@@ -10,7 +10,6 @@ import pathlib
 import re
 import sys
 
-
 top_srcdir = pathlib.Path(os.environ["top_srcdir"])
 
 

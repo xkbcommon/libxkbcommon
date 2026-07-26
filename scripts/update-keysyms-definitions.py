@@ -5,8 +5,9 @@ Convert X11 keysyms headers into our keysyms header.
 """
 
 from __future__ import print_function
-import re
+
 import os
+import re
 from pathlib import Path
 
 XORG_KEY_PREFIX = "XK_"

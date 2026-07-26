@@ -74,12 +74,14 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import importlib.util
 import itertools
 import math
 import os
 import re
 import sys
 import textwrap
+import unicodedata
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable
@@ -87,7 +89,6 @@ from ctypes.util import find_library
 from dataclasses import dataclass
 from enum import Enum, unique
 from functools import cache, reduce
-import importlib.util
 from pathlib import Path
 from typing import (
     Any,
@@ -103,7 +104,6 @@ from typing import (
     TypeVar,
     cast,
 )
-import unicodedata
 
 import jinja2
 import yaml
