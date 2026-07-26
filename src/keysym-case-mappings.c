@@ -9,7 +9,7 @@
 /* Case mappings for Unicode 17.0
  *
  * There are two kinds of keysyms to consider:
- * • Legacy keysyms: their case mappings is located at `data/keysyms.yaml`.
+ * • Legacy keysyms: their case mappings is located at `data/keysyms/list.yaml`.
  * • Unicode keysyms: their case mappings come from the ICU library.
  *
  * These mappings would create huge lookup tables if done naively. Fortunately,
