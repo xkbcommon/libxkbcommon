@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import argparse
-from enum import StrEnum, auto, unique
 import re
 import secrets
 from dataclasses import astuple, dataclass
+from enum import StrEnum, auto, unique
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Generic, Sequence, Self, TypeAlias, TypeVar
+from typing import Any, Callable, ClassVar, Generic, Self, Sequence, TypeAlias, TypeVar
 
 import jinja2
 import yaml

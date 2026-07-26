@@ -9,14 +9,14 @@ This script generate tests for merge modes.
 
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
 import argparse
-from collections import defaultdict
-from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 import dataclasses
 import itertools
 import re
 import textwrap
+from abc import ABCMeta, abstractmethod
+from collections import defaultdict
+from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from enum import Flag, IntFlag, StrEnum, auto, unique
 from pathlib import Path

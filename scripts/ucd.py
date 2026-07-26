@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-# # Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
+# Copyright © 2025 Pierre Le Marre <dev@wismill.eu>
 # SPDX-License-Identifier: MIT
 
 """
 Utils to parse the Unicode database files
 """
 
+import sys
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-import sys
 from typing import ClassVar, Self
 
 

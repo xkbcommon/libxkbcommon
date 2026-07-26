@@ -4,12 +4,12 @@
 # argument given.
 
 import argparse
-import tempfile
-from pathlib import Path
-import subprocess
 import os
 import re
+import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 # Template to force our key to TLDE
 template = """

@@ -15,7 +15,7 @@ from typing import Any, TypeAlias
 import jinja2
 
 KEYSYM_PATTERN = re.compile(
-    r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\s"
+    r"^#define\s+XKB_KEY_(?P<name>\w+)\s+(?P<value>0x[0-9a-fA-F]+)\b"
 )
 MAX_AMBIGUOUS_NAMES = 3
 

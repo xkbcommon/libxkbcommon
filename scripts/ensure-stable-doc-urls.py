@@ -9,8 +9,8 @@
 # legacy URLs as redirections to their canonical page.
 
 import argparse
-from enum import IntFlag
 import glob
+from enum import IntFlag
 from itertools import chain
 from pathlib import Path
 from string import Template
