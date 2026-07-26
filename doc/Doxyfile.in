@@ -31,6 +31,8 @@ INPUT                  = @INPUT@
 FILE_PATTERNS          = *.c \
                          *.h
 
+FILTER_PATTERNS        = *include/xkbcommon/xkbcommon-keysyms.h=scripts/update-keysyms-docstring.py
+
 # These are included in other file but we do not want them as standalone
 EXCLUDE                = LICENSE NEWS.md meson.options
 
