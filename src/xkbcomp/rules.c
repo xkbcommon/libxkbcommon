@@ -726,10 +726,11 @@ extract_layout_index(const char *s, size_t max_len, xkb_layout_index_t *out)
 
 /* Special layout indices */
 enum layout_index_ranges {
-    LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID - 4,
-    LAYOUT_INDEX_FIRST  = XKB_LAYOUT_INVALID - 3,
-    LAYOUT_INDEX_LATER  = XKB_LAYOUT_INVALID - 2,
-    LAYOUT_INDEX_ANY    = XKB_LAYOUT_INVALID - 1
+    LAYOUT_INDEX_SINGLE = XKB_LAYOUT_INVALID - 5,
+    LAYOUT_INDEX_FIRST,
+    LAYOUT_INDEX_LATER,
+    LAYOUT_INDEX_MULTIPLE,
+    LAYOUT_INDEX_ANY,
 };
 
 static_assert((xkb_layout_index_t) XKB_MAX_GROUPS <
@@ -740,6 +741,8 @@ static_assert((xkb_layout_index_t) LAYOUT_INDEX_SINGLE <
               (xkb_layout_index_t) LAYOUT_INDEX_FIRST <
               (xkb_layout_index_t) LAYOUT_INDEX_LATER &&
               (xkb_layout_index_t) LAYOUT_INDEX_LATER <
+              (xkb_layout_index_t) LAYOUT_INDEX_MULTIPLE &&
+              (xkb_layout_index_t) LAYOUT_INDEX_MULTIPLE <
               (xkb_layout_index_t) LAYOUT_INDEX_ANY &&
               (xkb_layout_index_t) LAYOUT_INDEX_ANY <
               (xkb_layout_index_t) XKB_LAYOUT_INVALID,
@@ -755,10 +758,11 @@ extract_mapping_layout_index(const char *s, size_t max_len,
         uint8_t length;
         enum layout_index_ranges range;
     } names[] = {
-        { "single]", 7, LAYOUT_INDEX_SINGLE },
-        { "first]" , 6, LAYOUT_INDEX_FIRST  },
-        { "later]" , 6, LAYOUT_INDEX_LATER  },
-        { "any]"   , 4, LAYOUT_INDEX_ANY    },
+        { "multiple]", 9, LAYOUT_INDEX_MULTIPLE },
+        { "single]"  , 7, LAYOUT_INDEX_SINGLE   },
+        { "first]"   , 6, LAYOUT_INDEX_FIRST    },
+        { "later]"   , 6, LAYOUT_INDEX_LATER    },
+        { "any]"     , 4, LAYOUT_INDEX_ANY      },
     };
 
     /* Check for minimal `[` + index + `]` */
@@ -896,6 +900,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
                 ((UINT64_C(1) << m->mapping.layout_idx_max) - UINT64_C(1)) &
                 ~UINT64_C(1);
             break;
+        case LAYOUT_INDEX_MULTIPLE:
         case LAYOUT_INDEX_ANY:
             m->mapping.has_layout_idx_range = true;
             m->mapping.layout_idx_min = 0;
@@ -987,8 +992,13 @@ matcher_mapping_verify(struct matcher *m, struct scanner *s)
                 if (darray_size(m->rmlvo.layouts) > 1)
                     goto skip;
                 break;
-            case LAYOUT_INDEX_ANY:
+            case LAYOUT_INDEX_MULTIPLE:
             case LAYOUT_INDEX_LATER:
+                /* Layout rule matches when at least 2 layouts are specified */
+                if (darray_size(m->rmlvo.layouts) < 2)
+                    goto skip;
+                break;
+            case LAYOUT_INDEX_ANY:
             case LAYOUT_INDEX_FIRST:
                 /* No restrictions */
                 break;

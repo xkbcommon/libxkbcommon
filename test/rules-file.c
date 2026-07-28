@@ -392,18 +392,18 @@ test_layout_index_ranges(struct xkb_context *ctx, const char *too_much_layouts,
         /* Test index ranges: multiple layouts */
         ENTRY("a,b", NULL, NULL, "a+b:2", 2, false),
         ENTRY("a,b", ",c", NULL, "a+b(c):2", 2, false),
-        ENTRY("layout_e,layout_a", NULL, NULL, "e:1+x:2", 2, false),
+        ENTRY("layout_e,layout_a", NULL, NULL, "e:1+x:2+m:2", 2, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d", NULL, NULL,
-              "a:1+y:2+layout_c:3+layout_d:4+z:3", 4, false),
+              "a:1+y:2+layout_c:3+layout_d:4+m:1+z:3", 4, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d",
               "extra,,,extra", NULL,
-              "a:1+y:2+layout_c:3+layout_d(extra):4+z:3"
+              "a:1+y:2+layout_c:3+layout_d(extra):4+m:1+z:3"
               "+foo:1|bar:1+foo:4|bar:4", 4, false),
         ENTRY("layout_a,layout_b,layout_c,layout_d,layout_e", NULL, NULL,
-              "a:1+y:2+layout_c:3+layout_d:4+layout_e:5+z:3", 5, false),
+              "a:1+y:2+layout_c:3+layout_d:4+layout_e:5+m:1+z:3", 5, false),
         /* Check that special indices merge the KcCGST values in the expected order */
         ENTRY("layout_a,layout_b,layout_c", NULL, "option_3,option_2,option_1",
-              "a:1+y:2+layout_c:3+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
+              "a:1+y:2+layout_c:3+m:1+z:3+III:2+JJJ:2+HHH:3+KKK:3+LLL+OOO:2+MMM:3+NNN:3",
               3, false),
 #undef ENTRY
         /* Test index ranges: too much layouts */
