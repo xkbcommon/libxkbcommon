@@ -31,6 +31,9 @@
   layout_b      = +y:%i
   *             = +%l[%i]%(v[%i]):%i
 
+! layout[multiple] = symbols
+  layout_a         = +m:%i
+
 ! layout[any]   = symbols
   layout_c      = +z:%i
 

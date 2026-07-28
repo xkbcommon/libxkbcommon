@@ -185,7 +185,7 @@ Mapping      ::= { Mlvo } "=" { Kccgst } "\n"
 Mlvo         ::= "model" | "option" | ("layout" | "variant") [ Index ]
 Index        ::= "[" ({ NumericIndex } | { SpecialIndex }) "]"
 NumericIndex ::= 1..XKB_MAX_GROUPS
-SpecialIndex ::= "single" | "first" | "later" | "any"
+SpecialIndex ::= "single" | "first" | "later" | "multiple" | "any"
 Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 
 Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
@@ -227,29 +227,36 @@ or %%H seems to do the job though.
   clarify the semantics:
 
   <dl>
-    <dt>`single`</dt>
+    <dt>`single` @anchor rules-layout-index-single</dt>
     <dd>
         Matches a single layout; `layout[single]` is the same as without
         explicit index: `layout`.
     </dd>
-    <dt>`first`</dt>
+    <dt>`first` @anchor rules-layout-index-first</dt>
     <dd>
         Matches the first layout/variant, no matter how many layouts are in
         the RMLVO configuration. Acts as both `layout` and `layout[1]`.
     </dd>
-    <dt>`later`</dt>
+    <dt>`later` @anchor rules-layout-index-later</dt>
     <dd>
         Matches all but the first layout. This is an index *range*.
-        Acts as `layout[2]` .. `layout[4]`.
+        Acts as `layout[2]` .. `layout[32]`.
     </dd>
-    <dt>any</dt>
+    <dt>`multiple` @anchor rules-layout-index-multiple</dt>
     <dd>
-        Matches layout at any position. This is an index *range*.
-        Acts as `layout`, `layout[1]` .. `layout[4]`.
+        Matches layouts at any position, but only if there are *at least 2 layouts*.
+        This is an index *range*. Acts as `layout[1]` .. `layout[32]`.
+
+        Available since version `1.14.0`.
+    </dd>
+    <dt>`any` @anchor rules-layout-index-any</dt>
+    <dd>
+        Matches layouts at any position. This is an index *range*.
+        Acts as `layout`, `layout[1]` .. `layout[32]`.
     </dd>
   </dl>
 
-  When using a layout index *range* (`later`, `any`), the @ref rules-i-expansion "%i expansion"
+  When using a layout index *range* (`later`, `multiple`, `any`), the @ref rules-i-expansion "%i expansion"
   can be used in the `KccgstValue` to refer to the index of the matched layout.
 
 - The order of values in a `Rule` must be the same as the `Mapping` it
@@ -513,6 +520,9 @@ Using the following example:
 
 ! layout[3] = symbols
   *         = +%l[3]%(v[3]):3
+
+! layout[4] = symbols
+  *         = +%l[4]%(v[4]):4
 ```
 
 we would have the following resolutions of <em>[symbols]</em>:
@@ -528,10 +538,10 @@ Since version `1.8.0`, the previous code can be replaced with simply:
 
 ```c
 ! layout[first] = symbols
-  *             = pc+%l[%i]%(v[%i])
+  *             = pc
 
-! layout[later] = symbols
-  *             = +%l[%i]%(v[%i]):%i
+! layout[any] = symbols
+  *           = +%l[%i]%(v[%i]):%i
 ```
 
 ### Example: layout, option and symbols {#rules-options-example}
@@ -612,7 +622,7 @@ Using the following example:
   *             = pc
 
 ! layout[any] = symbols
-  *           = %l[%i]%(v[%i])
+  *           = +%l[%i]%(v[%i])
 
 // Not layout-specific
 ! option      = symbols
