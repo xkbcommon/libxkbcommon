@@ -185,17 +185,13 @@ static const struct sval rules_kccgst_svals[_KCCGST_NUM_ENTRIES] = {
     [KCCGST_GEOMETRY] = SVAL_INIT("geometry"),
 };
 
-static_assert(XKB_MAX_GROUPS < (1u << 30),
-              "Layout index does not fix in matched_sval::matched_layouts");
-#define OPTIONS_MATCH_ALL_GROUPS XKB_MAX_GROUPS
-
 /* We use this to keep score whether an mlvo was matched or not; if not,
  * we warn the user that their preference was ignored. */
 struct matched_sval {
     struct sval sval;
-    bool matched:1;
-    /* Used for layout-specific options */
-    xkb_layout_index_t layout:31;
+    /** Used for layout-specific options */
+    xkb_layout_index_t layout;
+    bool matched;
 };
 typedef darray(struct matched_sval) darray_matched_sval;
 
@@ -340,8 +336,8 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
 
         struct matched_sval val = {
             .sval = SVAL(NULL, 0),
-            /* NOTE: Cannot store XKB_LAYOUT_INVALID */
-            .layout = OPTIONS_MATCH_ALL_GROUPS
+            .layout = XKB_LAYOUT_INVALID,
+            .matched = false
         };
         darray_append(arr, val);
         return arr;
@@ -350,9 +346,8 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
     while (true) {
         struct matched_sval val = {
             .sval = SVAL(s, 0),
+            .layout = XKB_LAYOUT_INVALID,
             .matched = false,
-            /* NOTE: Cannot store XKB_LAYOUT_INVALID */
-            .layout = OPTIONS_MATCH_ALL_GROUPS
         };
         while (*s != '\0' && *s != ',' && *s != OPTIONS_GROUP_SPECIFIER_PREFIX) {
             s++;
@@ -394,7 +389,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
                         "component \"%.*s\"; discarding specifier.\n",
                         (unsigned int) (s - layout_start), layout_start,
                         (unsigned int) val.sval.len, val.sval.start);
-                val.layout = OPTIONS_MATCH_ALL_GROUPS;
+                val.layout = XKB_LAYOUT_INVALID;
             }
         }
 
@@ -445,7 +440,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         m->rmlvo.model.sval.start = rmlvo->model;
     }
     m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
-    m->rmlvo.model.layout = OPTIONS_MATCH_ALL_GROUPS;
+    m->rmlvo.model.layout = XKB_LAYOUT_INVALID;
 
     assert((changed & RMLVO_LAYOUT) || !(changed & RMLVO_VARIANT));
     if (changed & RMLVO_LAYOUT) {
@@ -475,7 +470,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         darray_foreach(layout, rmlvo->layouts) {
             struct matched_sval val = {
                 .sval = SVAL(layout->layout, strlen_safe(layout->layout)),
-                .layout = OPTIONS_MATCH_ALL_GROUPS,
+                .layout = XKB_LAYOUT_INVALID,
                 .matched = false
             };
             darray_append(m->rmlvo.layouts, val);
@@ -493,9 +488,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         darray_foreach(option, rmlvo->options) {
             struct matched_sval val = {
                 .sval = SVAL(option->option, strlen_safe(option->option)),
-                .layout = (option->layout) == XKB_LAYOUT_INVALID
-                    ? OPTIONS_MATCH_ALL_GROUPS
-                    : option->layout,
+                .layout = option->layout,
                 .matched = false
             };
             darray_append(m->rmlvo.options, val);
@@ -516,7 +509,7 @@ matcher_new_from_names(struct xkb_context *ctx,
     m->ctx = ctx;
     m->rmlvo.model.sval.start = rmlvo->model;
     m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
-    m->rmlvo.model.layout = OPTIONS_MATCH_ALL_GROUPS;
+    m->rmlvo.model.layout = XKB_LAYOUT_INVALID;
     m->rmlvo.layouts = split_comma_separated_mlvo(ctx, MLVO_LAYOUT, rmlvo->layout);
     m->rmlvo.variants = split_comma_separated_mlvo(ctx, MLVO_VARIANT, rmlvo->variant);
     m->rmlvo.options = split_comma_separated_mlvo(ctx, MLVO_OPTION, rmlvo->options);
@@ -1596,7 +1589,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                              * Skip if layout-specific option and the target
                              * layout does not match.
                              */
-                            if (to->layout != OPTIONS_MATCH_ALL_GROUPS &&
+                            if (to->layout != XKB_LAYOUT_INVALID &&
                                 to->layout != idx)
                                 continue;
                             if (match_value_and_mark(m, value, to, match_type,
@@ -1640,7 +1633,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                      *   (layout_idx_min == XKB_LAYOUT_INVALID), or
                      * - the target layout index does not match.
                      */
-                    if (to->layout != OPTIONS_MATCH_ALL_GROUPS &&
+                    if (to->layout != XKB_LAYOUT_INVALID &&
                         to->layout != m->mapping.layout_idx_min)
                         continue;
                     matched = match_value_and_mark(m, value, to, match_type,
