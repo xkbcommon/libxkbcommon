@@ -335,6 +335,9 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
      */
 
     if (!s) {
+        ensure_at_least_one_value:
+        /* Label followed by a declaration is a C23 extension */ ;
+
         struct matched_sval val = { .sval = SVAL(NULL, 0) };
         darray_append(arr, val);
         return arr;
@@ -391,11 +394,15 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
             }
         }
 
-        darray_append(arr, val);
+        if (val.sval.len || mlvo != MLVO_OPTION)
+            darray_append(arr, val);
 
         if (*s == '\0') break;
         if (*s == ',') s++;
     }
+
+    if (darray_empty(arr))
+        goto ensure_at_least_one_value;
 
     return arr;
 }
@@ -1149,7 +1156,7 @@ match_group(struct matcher *m, struct sval group_name, struct sval to)
 }
 
 static bool
-match_value(struct matcher *m, struct sval val, struct sval to,
+match_value(struct matcher *m, const struct sval val, const struct sval to,
             enum mlvo_match_type match_type,
             enum wildcard_match_type wildcard_type)
 {
@@ -1173,7 +1180,7 @@ match_value(struct matcher *m, struct sval val, struct sval to,
 }
 
 static bool
-match_value_and_mark(struct matcher *m, struct sval val,
+match_value_and_mark(struct matcher *m, const struct sval val,
                      struct matched_sval *to, enum mlvo_match_type match_type,
                      enum wildcard_match_type wildcard_type)
 {
@@ -1565,6 +1572,8 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                     default:
                         assert(mlvo == MLVO_OPTION);
                         bool found_option = false;
+                        /* There is always at least one value "" */
+                        assert(!darray_empty(m->rmlvo.options));
                         darray_foreach(to, m->rmlvo.options) {
                             /*
                              * Skip if layout-specific option and the target
@@ -1605,6 +1614,8 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                 break;
             default:
                 assert(mlvo == MLVO_OPTION);
+                /* There is always at least one value "" */
+                assert(!darray_empty(m->rmlvo.options));
                 darray_foreach(to, m->rmlvo.options) {
                     /*
                      * Skip if it is a layout-specific option and either:
