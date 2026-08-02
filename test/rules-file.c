@@ -345,40 +345,72 @@ test_wild_card(struct xkb_context *ctx)
 static void
 test_extended_wilcards(struct xkb_context *ctx)
 {
-#define ENTRY(_rules, _layout, _variant, _symbols, _layouts, _fail)   \
-    { .rules = (_rules), .model = NULL,                               \
-      .layout = (_layout), .variant = (_variant), .options = NULL,    \
-      .keycodes = "evdev", .types = "complete", .compat = "complete", \
-      .symbols = (_symbols) , .explicit_layouts = (_layouts),         \
-      .should_fail = (_fail) }
+#define ENTRY(_model, _layout, _variant, _options, _symbols, _layouts, _fail) {\
+      .rules = "extended-wild-cards", .model = (_model),                       \
+      .layout = (_layout), .variant = (_variant), .options = (_options),       \
+      .keycodes = "evdev", .types = "complete", .compat = "complete",          \
+      .symbols = (_symbols) , .explicit_layouts = (_layouts),                  \
+      .should_fail = (_fail)                                                   \
+    }
 
     static const struct test_data tests[] = {
-        ENTRY("extended-wild-cards", "l1", NULL, "pc+l10:1", 1, false),
-        ENTRY("extended-wild-cards", "l1", "v1", "pc+l20:1", 1, false),
-        ENTRY("extended-wild-cards", "l1", "v2", "pc+l30(v2):1", 1, false),
+        /*
+         * Model
+         */
+
+        ENTRY(NULL, "l1", NULL, NULL, "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("", "l1", NULL, NULL, "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, NULL, "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+
+        /*
+         * Layout / variant
+         */
+
+        ENTRY("m", "l1", NULL, NULL, "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", "v1", NULL, "pc+l20:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", "v2", NULL, "pc+l30(v2):1+o1+o2+o4+o6:1+o8:1", 1, false),
         /* legacy wild card * does not catch empty variant */
-        ENTRY("extended-wild-cards", "l2", NULL, "pc+l2:1", 1, false),
-        ENTRY("extended-wild-cards", "l2", "v1", "pc+l40(v1):1", 1, false),
-        ENTRY("extended-wild-cards", "l2", "v2", "pc+l40(v2):1", 1, false),
-        ENTRY("extended-wild-cards", "l3", NULL, "pc+l50:1", 1, false),
-        ENTRY("extended-wild-cards", "l3", "v1", "pc+l50(v1):1", 1, false),
-        ENTRY("extended-wild-cards", "l3", "v2", "pc+l50(v2):1", 1, false),
+        ENTRY("m", "l2", NULL, NULL, "pc+l2:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l2", "v1", NULL, "pc+l40(v1):1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l2", "v2", NULL, "pc+l40(v2):1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l3", NULL, NULL, "pc+l50:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l3", "v1", NULL, "pc+l50(v1):1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l3", "v2", NULL, "pc+l50(v2):1+o1+o2+o4+o6:1+o8:1", 1, false),
         /* ? wild card does catch empty variant */
-        ENTRY("extended-wild-cards", "l4", NULL, "pc+l4:1", 1, false),
-        ENTRY("extended-wild-cards", "l4", "v1", "pc+l4(v1):1", 1, false),
-        ENTRY("extended-wild-cards", "l4", "v2", "pc+l4(v20):1", 1, false),
-        ENTRY("extended-wild-cards", "l1,l1,l1,l2", ",v1,v2,",
-              "pc+l10:1+l20:2+l30(v2):3+l2:4", 4, false),
-        ENTRY("extended-wild-cards", "l2,l2,l3,l3", "v1,v2,,v1",
-              "pc+l40(v1):1+l40(v2):2+l50:3+l50(v1):4", 4, false),
-        ENTRY("extended-wild-cards", "l3,l4,l4,l4", "v2,,v1,v2",
-              "pc+l50(v2):1+l4:2+l4(v1):3+l4(v20):4", 4, false),
+        ENTRY("m", "l4", NULL, NULL, "pc+l4:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l4", "v1", NULL, "pc+l4(v1):1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l4", "v2", NULL, "pc+l4(v20):1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1,l1,l1,l2", ",v1,v2,", NULL,
+              "pc+l10:1+l20:2+l30(v2):3+l2:4"
+              "+o1+o2+o4+o6:1+o8:1+o6:2+o8:2+o6:3+o8:3+o6:4+o8:4", 4, false),
+        ENTRY("m", "l2,l2,l3,l3", "v1,v2,,v1", NULL,
+              "pc+l40(v1):1+l40(v2):2+l50:3+l50(v1):4"
+              "+o1+o2+o4+o6:1+o8:1+o6:2+o8:2+o6:3+o8:3+o6:4+o8:4", 4, false),
+        ENTRY("m", "l3,l4,l4,l4", "v2,,v1,v2", NULL,
+              "pc+l50(v2):1+l4:2+l4(v1):3+l4(v20):4"
+              "+o1+o2+o4+o6:1+o8:1+o6:2+o8:2+o6:3+o8:3+o6:4+o8:4", 4, false),
+
+        /*
+         * Options
+         */
+
+        /* Empty list: check `*`, `<none>`, `<any>` wild cards */
+        ENTRY("m", "l1", NULL, NULL, "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, "", "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, ",", "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, "!", "pc+l10:1+o1+o2+o4+o6:1+o8:1", 1, false), /* discarded */
+        /* Some values */
+        ENTRY("m", "l1", NULL, "*", "pc+l10:1+o1+o3+o4+o7:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, ":", "pc+l10:1+o1+o3+o4+o7:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, "=", "pc+l10:1+o1+o3+o4+o7:1+o8:1", 1, false),
+        ENTRY("m", "l1", NULL, "opt0", "pc+l10:1+o0+o1+o3+o4+o7:1+o8:1", 1, false),
     };
+
 #undef ENTRY
 
-    for (unsigned int k = 0; k < ARRAY_SIZE(tests); k++) {
-        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, k);
-        assert(test_rules(ctx, &tests[k]));
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+        assert(test_rules(ctx, &tests[t]));
     }
 }
 
