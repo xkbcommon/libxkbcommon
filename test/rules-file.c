@@ -54,14 +54,22 @@ test_rules(struct xkb_context *ctx, const struct test_data *data)
 
     bool passed = true;
     xkb_layout_index_t explicit_layouts = 0;
-    for (int k = 0; k < 2; k++) {
+    enum api_type {
+        API_PRIVATE = 0,
+        API_PUBLIC
+    };
+    for (enum api_type api = API_PRIVATE; api <= API_PUBLIC; api++) {
         bool ok;
         const struct xkb_rule_names rmlvo = {
-            data->rules, data->model, data->layout, data->variant, data->options
+            .rules = data->rules,
+            .model = data->model,
+            .layout = data->layout,
+            .variant = data->variant,
+            .options = data->options
         };
         struct xkb_component_names kccgst;
 
-        if (k == 0) {
+        if (api == API_PRIVATE) {
             /* Private API */
             ok = xkb_components_from_rules_names(ctx, &rmlvo, &kccgst,
                                                  &explicit_layouts);
@@ -160,21 +168,33 @@ test_strict_decimal_groups(struct xkb_context *ctx)
 {
     static const struct test_data tests[] = {
         {
-            .rules = "invalid-group-index",
+            .rules = "invalid-group-index-1",
 
-            .model = "my_model", .layout = "1,2", .variant = NULL,
+            .model = "m", .layout = "1,2", .variant = NULL,
             .options = NULL,
 
-            .keycodes = "default_keycodes", .types = "default_types",
-            .compat = "default_compat",
-            .symbols = "default_symbols+default_symbols:2",
-            .explicit_layouts = 2,
+            .should_fail = true,
+        },
+        {
+            .rules = "invalid-group-index-2",
+
+            .model = "m", .layout = "1", .variant = NULL,
+            .options = NULL,
+
+            .should_fail = true,
+        },
+        {
+            .rules = "invalid-group-index-3",
+
+            .model = "m", .layout = "1", .variant = NULL,
+            .options = NULL,
+
             .should_fail = true,
         },
         {
             .rules = "invalid-group-qualifier",
 
-            .model = "my_model", .layout = "1,2", .variant = NULL,
+            .model = "m", .layout = "1,2", .variant = NULL,
             .options = NULL,
 
             .keycodes = "default_keycodes", .types = "default_types",
