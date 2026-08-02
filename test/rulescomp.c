@@ -17,6 +17,44 @@
 #include "test.h"
 #include "utils.h"
 
+static void
+test_components_names_from_rules(struct xkb_context *ctx) {
+    static const struct xkb_rule_names tests[] = {
+        {
+            .rules = "evdev",
+            .model = "pc105",
+            .layout = "us",
+            .variant = NULL,
+            .options = NULL
+        },
+        {
+            .rules = "evdev",
+            .model = "pc105",
+            .layout = "us",
+            .variant = NULL,
+            .options = "" /* empty string */
+        },
+        {
+            .rules = "evdev",
+            .model = "pc105",
+            .layout = "us",
+            .variant = NULL,
+            .options = "," /* dummy list */
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+        struct xkb_rule_names rmlvo = {0};
+        assert(xkb_components_names_from_rules(ctx, &tests[t], &rmlvo, NULL));
+        assert_streq_not_null("rules", tests[t].rules, rmlvo.rules);
+        assert_streq_not_null("model", tests[t].model, rmlvo.model);
+        assert_streq_not_null("layout", tests[t].layout, rmlvo.layout);
+        assert_streq("variant", tests[t].variant, rmlvo.variant);
+        assert_streq("options", tests[t].options, rmlvo.options);
+    }
+}
+
 /* xkb_rule_names API */
 static int
 test_rmlvo_va(struct xkb_context *context, enum xkb_keymap_format format,
@@ -214,6 +252,8 @@ main(int argc, char *argv[])
                                         XKB_KEYMAP_FORMAT_TEXT_V1, -1));
     assert(!xkb_keymap_new_from_names2(ctx, &rmlvo,
                                         XKB_KEYMAP_FORMAT_TEXT_V1, 5453));
+
+    test_components_names_from_rules(ctx);
 
     /* Test “Last” group constant as an array index */
     struct xkb_keymap *keymap =

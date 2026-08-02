@@ -31,6 +31,10 @@
        assert(__cond);                                     \
     }} while (0)
 
+#define assert_streq(test_name, expected, got) \
+    assert_printf(streq_null(expected, got), \
+                  test_name ". Expected \"%s\", got: \"%s\"\n", expected, got)
+
 #define assert_streq_not_null(test_name, expected, got) \
     assert_printf(streq_not_null(expected, got), \
                   test_name ". Expected \"%s\", got: \"%s\"\n", expected, got)
