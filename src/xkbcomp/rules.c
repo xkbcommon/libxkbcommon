@@ -221,6 +221,7 @@ struct mapping {
     mlvo_index_t num_mlvo;
     mlvo_mask_t defined_mlvo_mask;
     bool has_layout_idx_range;
+    bool has_multiple_layouts;
     /* This member has 2 uses:
      * • Keep track of layout and variant indices while parsing MLVO headers.
      * • Store layout/variant range afterwards.
@@ -694,7 +695,7 @@ matcher_mapping_start_new(struct matcher *m)
         m->mapping.mlvo_at_pos[i] = _MLVO_NUM_ENTRIES;
     for (kccgst_index_t i = 0; i < (kccgst_index_t) _KCCGST_NUM_ENTRIES; i++)
         m->mapping.kccgst_at_pos[i] = _KCCGST_NUM_ENTRIES;
-    m->mapping.has_layout_idx_range = false;
+    m->mapping.has_multiple_layouts = false;
     m->mapping.layout_idx = m->mapping.variant_idx = XKB_LAYOUT_INVALID;
     m->mapping.num_mlvo = m->mapping.num_kccgst = 0;
     m->mapping.defined_mlvo_mask = 0;
@@ -912,7 +913,7 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
                    !is_mlvo_mask_defined(m, MLVO_VARIANT));
             m->mapping.has_layout_idx_range = false;
             m->mapping.layout_idx_min = XKB_LAYOUT_INVALID;
-            m->mapping.layout_idx_max = XKB_LAYOUT_INVALID;
+            m->mapping.layout_idx_max = m->mapping.layout_idx_min;
             m->mapping.layouts_candidates_mask = 0x1; /* active = true */
             break;
         case LAYOUT_INDEX_LATER:
@@ -947,6 +948,10 @@ matcher_mapping_set_layout_bounds(struct matcher *m)
             m->mapping.layout_idx_max = idx + 1;
             m->mapping.layouts_candidates_mask = UINT32_C(1) << idx;
     }
+    m->mapping.has_multiple_layouts = (
+        m->mapping.layout_idx_max > m->mapping.layout_idx_min &&
+        m->mapping.layout_idx_max - m->mapping.layout_idx_min > 1
+    );
 }
 
 static void
@@ -1473,7 +1478,7 @@ error:
 static bool
 matcher_append_pending_kccgst(struct matcher *m)
 {
-    if (!m->mapping.has_layout_idx_range)
+    if (!m->mapping.has_multiple_layouts)
         return true;
     /*
      * Handle pending KcCGST values
@@ -1502,7 +1507,7 @@ matcher_append_pending_kccgst(struct matcher *m)
         }
     }
     /* Ensure we won’t come here before the next relevant rule set */
-    m->mapping.has_layout_idx_range = false;
+    m->mapping.has_multiple_layouts = false;
     return true;
 }
 
@@ -1625,7 +1630,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
             return;
     }
 
-    if (m->mapping.has_layout_idx_range) {
+    if (m->mapping.has_multiple_layouts) {
         /* Special index: loop over the index range */
         for (xkb_layout_index_t idx = m->mapping.layout_idx_min;
              idx < m->mapping.layout_idx_max;
@@ -1810,7 +1815,7 @@ mapping_kccgst:
     case TOK_END_OF_LINE:
         if (m->mapping.active && matcher_mapping_verify(m, s)) {
             matcher_mapping_set_layout_bounds(m);
-            if (m->mapping.has_layout_idx_range) {
+            if (m->mapping.has_multiple_layouts) {
                 /* Lazily reset buffers for layout index ranges.
                  * We’ll reuse the allocations. */
                 darray_size(m->pending_kccgst.buffer) = 0;
