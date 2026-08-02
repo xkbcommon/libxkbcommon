@@ -338,7 +338,11 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
         ensure_at_least_one_value:
         /* Label followed by a declaration is a C23 extension */ ;
 
-        struct matched_sval val = { .sval = SVAL(NULL, 0) };
+        struct matched_sval val = {
+            .sval = SVAL(NULL, 0),
+            /* NOTE: Cannot store XKB_LAYOUT_INVALID */
+            .layout = OPTIONS_MATCH_ALL_GROUPS
+        };
         darray_append(arr, val);
         return arr;
     }
@@ -1530,9 +1534,22 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
         struct matched_sval *to;
         bool matched = false;
 
-        /* NOTE: Wild card * matches empty values only for model and options, as
-         * implemented in libxkbfile and xserver. The reason for such different
-         * treatment is not documented. */
+        /*
+         * NOTE: The wildcard `*` behaves differently depending on the MLVO field:
+         * - model and options: matches any value, including empty;
+         * - layout and variant: matches any *non-empty* value.
+         *
+         * This aligns with the implementation in libxkbfile and xserver, with
+         * the exception of options, where `*` is entirely ignored.
+         *
+         * The underlying rationale for this discrepancy across MLVO fields is
+         * undocumented.
+         *
+         * In xkbcommon, `*` behaves identically for both model and options to
+         * maintain consistency and simplicity. This divergence is unlikely
+         * to have a practical impact: to the best of our knowledge, `*` has
+         * no real-world use for the options field.
+         */
         if (mlvo == MLVO_MODEL) {
             to = &m->rmlvo.model;
             matched = match_value_and_mark(m, value, to, match_type,
