@@ -487,10 +487,13 @@
   added: 1.7.0
   type: error
   description: "Invalid file encoding"
-- id: "allocation-error"
+- id: "allocation-failure"
   code: 550
-  added: ALWAYS
+  added:
+    internal: ALWAYS
+    public: 1.14.0
   type: error
+  visibility: public
   description: "Cannot allocate memory"
 - id: "invalid-action-field"
   code: 563

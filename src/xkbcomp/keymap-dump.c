@@ -404,7 +404,7 @@ rename_long_keys(const struct xkb_keymap *keymap,
 error:
     darray_free(*substitutions);
     /* There was a memory error */
-    log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+    log_err(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
             "Cannot allocate key name substitution\n");
     return false;
 }

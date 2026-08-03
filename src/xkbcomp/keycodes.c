@@ -562,7 +562,7 @@ AddKeyName(KeyNamesInfo *info, xkb_keycode_t kc, xkb_atom_t name,
     } else {
         /* No previous keycode */
         if (!keycode_store_insert_key(&info->keycodes, kc, name)) {
-            log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
+            log_err(info->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                     "Cannot add keycode\n");
             return false;
         }

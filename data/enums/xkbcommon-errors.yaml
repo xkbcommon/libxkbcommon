@@ -21,6 +21,8 @@ xkb_error_code:
     value: 399
   - name: XKB_ERROR_ABI_INVALID_STRUCT_SIZE
     value: 450
+  - name: XKB_ERROR_ALLOCATION_FAILURE
+    value: 550
   - name: XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS
     value: 829
   - name: XKB_ERROR_ABI_FORWARD_COMPAT

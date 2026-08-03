@@ -408,7 +408,7 @@ xkb_file_iterator_new_from_buffer(struct xkb_context *ctx,
 {
     struct xkb_file_iterator * const iter = calloc(1, sizeof(*iter));
     if (!iter) {
-        log_err(ctx, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                 "Cannot allocate file iterator\n");
         return NULL;
     }

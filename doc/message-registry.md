@@ -66,7 +66,7 @@ There are currently 91 entries.
 | [XKB-516] | `extra-symbols-ignored` | <span class="todo">TODO:</span> add description | Warning |
 | [XKB-523] | `conflicting-key-name` | Conflicting definitions of a key name or alias | Warning |
 | [XKB-542] | `invalid-file-encoding` | Invalid file encoding | Error |
-| [XKB-550] | `allocation-error` | Cannot allocate memory | Error |
+| [XKB-550] | `allocation-failure` | Cannot allocate memory | Error |
 | [XKB-563] | `invalid-action-field` | Unknown or unsupported action field | Error |
 | [XKB-578] | `wrong-field-type` | Warn when a field has not the expected type | Error |
 | [XKB-588] | `unsupported-overlay-index` | Overlay index is not in the supported range | Error |
@@ -784,7 +784,7 @@ key <AE01> { [ U1ED0 ] };
   <dt>Summary</dt><dd>Invalid file encoding</dd>
 </dl>
 
-### XKB-550 – Allocation error {#XKB-550}
+### XKB-550 – Allocation failure {#XKB-550}
 
 <dl>
   <dt>Since</dt><dd>1.0.0</dd>
