@@ -19,6 +19,11 @@ enum RMLVO {
     RMLVO_OPTIONS = (1 << 4)
 };
 
+enum {
+    /** Value of the layout mask for layout-independent options */
+    XKB_OPTION_LAYOUT_MASK_GLOBAL = 0
+};
+
 struct xkb_rmlvo_builder_layout {
     char *layout;
     char *variant;
