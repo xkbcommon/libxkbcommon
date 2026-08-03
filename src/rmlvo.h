@@ -33,7 +33,7 @@ typedef darray(struct xkb_rmlvo_builder_layout) xkb_rmlvo_builder_layouts;
 
 struct xkb_rmlvo_builder_option {
     char *option;
-    xkb_layout_index_t layout;
+    xkb_layout_mask_t layouts;
 };
 
 typedef darray(struct xkb_rmlvo_builder_option) xkb_rmlvo_builder_options;
