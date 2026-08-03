@@ -53,7 +53,7 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
     return builder;
 
 error:
-    log_err(context, XKB_ERROR_ALLOCATION_ERROR,
+    log_err(context, XKB_ERROR_ALLOCATION_FAILURE_,
             "Cannot allocate a RMLVO builder.\n");
     xkb_rmlvo_builder_unref(builder);
     return NULL;
@@ -84,7 +84,7 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
     if (!new.layout || (!new.variant && variant)) {
         free(new.layout);
         free(new.variant);
-        log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                 "Cannot allocate layout \"%s(%s)\" to the RMLVO builder.\n",
                 layout, (variant) ? variant : "");
         return false;
@@ -103,7 +103,7 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
         };
 
         if (!option.option) {
-            log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_ERROR,
+            log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                     "Cannot allocate option \"%s\" of layout \"%s(%s)\" "
                     "to the RMLVO builder.\n",
                     options[k], layout, (variant) ? variant : "");
@@ -137,7 +137,7 @@ xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
         .layout = XKB_LAYOUT_INVALID
     };
     if (!new.option) {
-        log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(rmlvo->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                 "Cannot allocate option \"%s\" to the RMLVO builder.\n",
                 option);
         return false;

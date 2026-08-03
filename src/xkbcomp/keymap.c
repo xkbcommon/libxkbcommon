@@ -254,7 +254,7 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
                                key->groups[group].levels[level].num_actions,
                                sizeof(*darray_items(actions)));
                     if (!key->groups[group].levels[level].a.actions) {
-                        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+                        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                                 "Could not allocate interpret actions\n");
                         darray_free(actions);
                         darray_free(interprets);

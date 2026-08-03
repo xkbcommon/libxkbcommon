@@ -706,7 +706,7 @@ xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
 
     struct xkb_keymap_key_iterator * const iter = calloc(1, sizeof(*iter));
     if (!iter) {
-        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                 "Could not allocate a keymap key iterator.\n");
         return NULL;
     }

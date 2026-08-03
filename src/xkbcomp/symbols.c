@@ -1898,7 +1898,7 @@ HandleSymbolsBody(SymbolsInfo *info, VarDef *def, KeyInfo *keyi)
         }
 
         if (unlikely(!def->value)) {
-            log_err(info->ctx, XKB_ERROR_ALLOCATION_ERROR,
+            log_err(info->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                     "Could not allocate the value of field \"%s\". "
                     "Statement ignored.\n", field);
             ok = false;

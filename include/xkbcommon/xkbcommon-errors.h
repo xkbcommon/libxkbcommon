@@ -147,6 +147,12 @@ enum xkb_error_code {
      */
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE = 450,
     /**
+     * Cannot allocate memory
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_ALLOCATION_FAILURE = 550,
+    /**
      * Unsupported keymap serialization flags
      *
      * See `::xkb_keymap_serialize_flags` for the list of valid flags.

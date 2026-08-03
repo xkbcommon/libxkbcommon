@@ -3695,7 +3695,7 @@ xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags)
 
     struct xkb_events *events = calloc(1, sizeof(*events));
     if (events == NULL) {
-        log_err(context, XKB_ERROR_ALLOCATION_ERROR,
+        log_err(context, XKB_ERROR_ALLOCATION_FAILURE_,
                 "%s: cannot allocate state events collection\n", __func__);
         return events;
     }
