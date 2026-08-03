@@ -1576,7 +1576,7 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                      * - there is a layout or variant field, and
                      * - the option layout matches the remaining candidates.
                      */
-                    ? (unmatched & (UINT16_C(1) << to->layout))
+                    ? (unmatched & (UINT32_C(1) << to->layout))
                     /* Layout-generic option: no restriction */
                     : XKB_ALL_GROUPS;
                 if (matchable && match_value_and_mark(m, value, to, match_type,
