@@ -522,16 +522,9 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
     } else {
         struct xkb_rmlvo_builder_option *option;
         darray_foreach(option, rmlvo->options) {
-            static_assert(XKB_MAX_GROUPS == 32 &&
-                          XKB_MAX_GROUPS < XKB_LAYOUT_INVALID,
-                          "Invalid shift");
-            const xkb_layout_mask_t layouts =
-                (option->layout >= XKB_MAX_GROUPS)
-                    ? (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL
-                    : (UINT32_C(1) << option->layout);
             struct matched_sval val = {
                 .sval = SVAL(option->option, strlen_safe(option->option)),
-                .layouts = layouts,
+                .layouts = option->layouts,
                 .matched = 0
             };
             darray_append(m->rmlvo.options, val);
