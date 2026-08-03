@@ -195,13 +195,16 @@ enum {
     GLOBAL_MATCHED_LAYOUTS = XKB_ALL_GROUPS,
 };
 
+static_assert(~(xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL ==
+              (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS,
+              "Global layout mask consistency");
 
 /* We use this to keep score whether an mlvo was matched or not; if not,
  * we warn the user that their preference was ignored. */
 struct matched_sval {
     struct sval sval;
     /** Used for layout-specific options */
-    xkb_layout_index_t layout;
+    xkb_layout_mask_t layouts;
     xkb_layout_mask_t matched;
 };
 typedef darray(struct matched_sval) darray_matched_sval;
@@ -348,7 +351,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
 
         struct matched_sval val = {
             .sval = SVAL(NULL, 0),
-            .layout = XKB_LAYOUT_INVALID,
+            .layouts = (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL,
             .matched = 0
         };
         darray_append(arr, val);
@@ -358,7 +361,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
     while (true) {
         struct matched_sval val = {
             .sval = SVAL(s, 0),
-            .layout = XKB_LAYOUT_INVALID,
+            .layouts = (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL,
             .matched = 0,
         };
         while (*s != '\0' && *s != ',' && *s != OPTIONS_GROUP_SPECIFIER_PREFIX) {
@@ -377,6 +380,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
             if (count > 0) {
                 /* Note: 1-indexed layout */
                 s += count;
+                static_assert(XKB_MAX_GROUPS == 32, "Invalid shift");
                 if (layout == 0 || layout > XKB_MAX_GROUPS) {
                     log_err(ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                             "Invalid layout index %"PRIu32" "
@@ -388,7 +392,7 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
                              "the RMLVO component: \"%.*s\"\n", layout,
                              (unsigned int) val.sval.len, val.sval.start);
                 } else {
-                    val.layout = layout - 1;
+                    val.layouts = (UINT32_C(1) << (layout - 1));
                 }
             }
 
@@ -401,13 +405,33 @@ split_comma_separated_mlvo(struct xkb_context *ctx,
                         "component \"%.*s\"; discarding specifier.\n",
                         (unsigned int) (s - layout_start), layout_start,
                         (unsigned int) val.sval.len, val.sval.start);
-                val.layout = XKB_LAYOUT_INVALID;
             }
         }
 
-        if (val.sval.len || mlvo != MLVO_OPTION)
+        if (val.sval.len || mlvo != MLVO_OPTION) {
+            if (mlvo == MLVO_OPTION) {
+                /* Check for previous entry */
+                struct matched_sval *prev;
+                darray_foreach(prev, arr) {
+                    if (svaleq(prev->sval, val.sval)) {
+                        /* Merge options */
+                        if (val.layouts ==
+                            (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL) {
+                            /* Global option overrides layout-specific ones */
+                            prev->layouts = val.layouts;
+                        } else if (prev->layouts != (xkb_layout_mask_t)
+                                   XKB_OPTION_LAYOUT_MASK_GLOBAL) {
+                            /* Layout-specific option cannot override global */
+                            prev->layouts |= val.layouts;
+                        }
+                        goto next_value;
+                    }
+                }
+            }
             darray_append(arr, val);
+        }
 
+next_value:
         if (*s == '\0') break;
         if (*s == ',') s++;
     }
@@ -452,7 +476,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         m->rmlvo.model.sval.start = rmlvo->model;
     }
     m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
-    m->rmlvo.model.layout = XKB_LAYOUT_INVALID;
+    m->rmlvo.model.layouts = (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL;
 
     assert((changed & RMLVO_LAYOUT) || !(changed & RMLVO_VARIANT));
     if (changed & RMLVO_LAYOUT) {
@@ -465,9 +489,9 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
             /* Do not warn if no variants was provided */
             if (!isempty(names.variant))
                 log_warn(m->ctx, XKB_LOG_MESSAGE_NO_ID,
-                        "More layouts than variants: \"%s\" vs. \"%s\".\n",
-                        names.layout ? names.layout : "(none)",
-                        names.variant ? names.variant : "(none)");
+                         "More layouts than variants: \"%s\" vs. \"%s\".\n",
+                         names.layout ? names.layout : "(none)",
+                         names.variant ? names.variant : "(none)");
             darray_resize0(m->rmlvo.variants, darray_size(m->rmlvo.layouts));
         } else if (darray_size(m->rmlvo.layouts) < darray_size(m->rmlvo.variants)) {
             log_err(m->ctx, XKB_LOG_MESSAGE_NO_ID,
@@ -482,7 +506,7 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
         darray_foreach(layout, rmlvo->layouts) {
             struct matched_sval val = {
                 .sval = SVAL(layout->layout, strlen_safe(layout->layout)),
-                .layout = XKB_LAYOUT_INVALID,
+                .layouts = (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL,
                 .matched = 0
             };
             darray_append(m->rmlvo.layouts, val);
@@ -498,9 +522,16 @@ matcher_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo, const char **rules
     } else {
         struct xkb_rmlvo_builder_option *option;
         darray_foreach(option, rmlvo->options) {
+            static_assert(XKB_MAX_GROUPS == 32 &&
+                          XKB_MAX_GROUPS < XKB_LAYOUT_INVALID,
+                          "Invalid shift");
+            const xkb_layout_mask_t layouts =
+                (option->layout >= XKB_MAX_GROUPS)
+                    ? (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL
+                    : (UINT32_C(1) << option->layout);
             struct matched_sval val = {
                 .sval = SVAL(option->option, strlen_safe(option->option)),
-                .layout = option->layout,
+                .layouts = layouts,
                 .matched = 0
             };
             darray_append(m->rmlvo.options, val);
@@ -521,7 +552,7 @@ matcher_new_from_names(struct xkb_context *ctx,
     m->ctx = ctx;
     m->rmlvo.model.sval.start = rmlvo->model;
     m->rmlvo.model.sval.len = strlen_safe(rmlvo->model);
-    m->rmlvo.model.layout = XKB_LAYOUT_INVALID;
+    m->rmlvo.model.layouts = (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL;
     m->rmlvo.layouts = split_comma_separated_mlvo(ctx, MLVO_LAYOUT, rmlvo->layout);
     m->rmlvo.variants = split_comma_separated_mlvo(ctx, MLVO_VARIANT, rmlvo->variant);
     m->rmlvo.options = split_comma_separated_mlvo(ctx, MLVO_OPTION, rmlvo->options);
@@ -1587,16 +1618,13 @@ matcher_rule_apply_if_matches(struct matcher *m, struct scanner *s)
                     : 0;
 
             darray_foreach(to, m->rmlvo.options) {
-                static_assert(XKB_MAX_GROUPS == 32 &&
-                              XKB_MAX_GROUPS < XKB_LAYOUT_INVALID,
-                              "unsafe shift");
-                const xkb_layout_mask_t matchable = (to->layout < XKB_MAX_GROUPS)
+                const xkb_layout_mask_t matchable = to->layouts
                     /*
                      * Layout-specific option; may match only if:
                      * - there is a layout or variant field, and
                      * - the option layout matches the remaining candidates.
                      */
-                    ? (unmatched & (UINT32_C(1) << to->layout))
+                    ? (unmatched & to->layouts)
                     /* Layout-generic option: no restriction */
                     : (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS;
                 if (matchable && match_value_and_mark(m, value, to, match_type,
@@ -2112,24 +2140,21 @@ xkb_resolve_rules(struct xkb_context *ctx,
         if (!mval->sval.len)
             continue;
 
-        static_assert(XKB_MAX_GROUPS == 32 &&
-                      XKB_MAX_GROUPS < XKB_LAYOUT_INVALID,
-                      "Invalid shift");
-        if (mval->layout < XKB_MAX_GROUPS) {
-            const xkb_layout_mask_t layouts = (UINT32_C(1) << mval->layout);
-            const xkb_layout_mask_t unmatched = (layouts & ~mval->matched);
-            if (unmatched) {
-                log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
-                        "RMLVO mismatch: option \"%.*s\" with layout mask "
-                        "0x%"PRIx32" was ignored in rules \"%s\"\n",
-                        (unsigned int)mval->sval.len, mval->sval.start,
-                        unmatched, rules);
-            }
-        } else if (mval->matched != (xkb_layout_mask_t)GLOBAL_MATCHED_LAYOUTS) {
+        if (!mval->matched) {
+            /* No match (either layout-specific or layout-independent) */
             log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
                     "RMLVO mismatch: unrecognized option \"%.*s\" "
                     "was ignored in rules \"%s\"\n",
                     (unsigned int) mval->sval.len, mval->sval.start, rules);
+        } else if (mval->layouts && mval->layouts != mval->matched) {
+            /* Partial match (layout-specific) */
+            const xkb_layout_mask_t unmatched = (mval->layouts & ~mval->matched);
+            assert(unmatched);
+            log_err(matcher->ctx, XKB_ERROR_UNRECOGNIZED_RMLVO_VALUE,
+                    "RMLVO mismatch: option \"%.*s\" with layout mask "
+                    "0x%"PRIx32" was ignored in rules \"%s\"\n",
+                    (unsigned int)mval->sval.len, mval->sval.start,
+                    unmatched, rules);
         }
     }
 
