@@ -1290,7 +1290,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
 
     /* Check for index. */
     idx = XKB_LAYOUT_INVALID;
-    bool expanded_index = false;
+    bool variable_index = false;
     if (*i < value.len && str[*i] == '[') {
         if (mlv != MLVO_LAYOUT && mlv != MLVO_VARIANT) {
             scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
@@ -1305,7 +1305,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
             /* %i encountered */
             assert(layout_idx != XKB_LAYOUT_INVALID);
             idx = layout_idx;
-            expanded_index = true;
+            variable_index = true;
         }
         *i += (size_t)consumed;
     }
@@ -1327,7 +1327,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         /* Some index provided: expand only if it is %i or
          * if there are multiple layouts */
         } else if (idx < darray_size(m->rmlvo.layouts) &&
-                   (expanded_index || darray_size(m->rmlvo.layouts) > 1)) {
+                   (variable_index || darray_size(m->rmlvo.layouts) > 1)) {
                 expanded_value = &darray_item(m->rmlvo.layouts, idx);
         }
     }
@@ -1339,7 +1339,7 @@ expand_rmlvo_in_kccgst_value(struct matcher *m, struct scanner *s,
         /* Some index provided: expand only if it is %i or
          * if there are multiple variants */
         } else if (idx < darray_size(m->rmlvo.variants) &&
-                   (expanded_index || darray_size(m->rmlvo.variants) > 1)) {
+                   (variable_index || darray_size(m->rmlvo.variants) > 1)) {
                 expanded_value = &darray_item(m->rmlvo.variants, idx);
         }
     }
