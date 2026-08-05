@@ -2868,7 +2868,7 @@ It is used as a compatibility layer for the X11 core protocol and to apply
 
 See @ref set-real-mod-map "" for further information.
 </dd>
-<dt><a name="virtual-modifier-map">*Real* modifier map</a></dt>
+<dt><a name="virtual-modifier-map">*Virtual* modifier map</a></dt>
 <dd>
 
 List the [*virtual* modifiers](@ref virtual-modifier) associated to the key.
