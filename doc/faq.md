@@ -621,7 +621,7 @@ if (xkb_machine_builder_remap_shortcut_layout(options, 0, 1)) {
 </dd>
 <dt>*Multiple* layouts</dt>
 <dd>
-The user types with multiples layouts but wants shortcuts consistency accross
+The user types with multiple layouts but wants shortcuts consistency across
 all the layouts, typically using the first layout as the reference.
 
 ```c
