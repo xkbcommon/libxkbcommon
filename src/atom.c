@@ -2,13 +2,11 @@
  * For MIT-open-group:
  * Copyright 1987, 1998  The Open Group
  *
- * For LicenseRef-digital-equipment-corporation:
- * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
- *
  * For HPND:
+ * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * Copyright 1994 by Silicon Graphics Computer Systems, Inc.
  *
- * SPDX-License-Identifier: MIT-open-group AND LicenseRef-digital-equipment-corporation AND HPND
+ * SPDX-License-Identifier: MIT-open-group AND HPND
  */
 
 #include "config.h"
