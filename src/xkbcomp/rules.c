@@ -2029,12 +2029,8 @@ rule_mlvo:
 rule_mlvo_no_tok:
     switch (tok) {
     case TOK_IDENTIFIER:
-        if (!m->rule.skip) {
-            if (m->val.string.len == 1 && m->val.string.start[0] == '+')
-                matcher_rule_set_mlvo_wildcard(m, s, MLVO_MATCH_WILDCARD_SOME);
-            else
-                matcher_rule_set_mlvo(m, s, m->val.string);
-        }
+        if (!m->rule.skip)
+            matcher_rule_set_mlvo(m, s, m->val.string);
         goto rule_mlvo;
     case TOK_WILD_CARD_STAR:
         if (!m->rule.skip)
