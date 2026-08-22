@@ -168,7 +168,38 @@ This wild card usually appears near the end of a rule set to set *default* value
 It is advised to look at a file like `rules/evdev` along with
 this grammar.
 
-@note Comments, whitespace, etc. are not shown.
+<dl>
+<dt>`<ident>`</dt>
+<dd>
+Denotes a lexical identifier: a non-empty maximal sequence of printable ASCII
+characters in the range `!` – `~`, excluding backslash `\`.
+The first character shall not be one of `!`, `=`, `$`, `*`, or `<`.
+</dd>
+<dt>`<kccgst-ident>`</dt>
+<dd>
+Same as `<ident>`, except it excludes also merge mode characters `+|^` and
+the qualifier prefix `:`.
+</dd>
+</dl>
+
+@remark It is recommended to avoid any unnecessary punctuation in identifiers,
+because later versions of the rules may assign syntactic meaning to characters
+that are currently unreserved.
+
+@note *Whitespace*, except line feed `\n`, may appear between lexical tokens
+unless explicitly prohibited by the lexical grammar. It is not shown in the
+productions below.
+
+@note The sequence consisting of a backslash `\`, an optional carriage return
+`\r` and a line feed `\n` is discarded during lexical analysis. It serves only
+to allow a grammar production to span multiple physical lines and does not
+affect tokenization.
+
+@note A comment begins with `//` and extends to, but does not include, the next
+line feed `\n` or the end of the input.
+
+@note In the following, comments are treated as whitespace and are omitted
+from the grammar.
 
 ```bnf
 File         ::= { "!" (Include | Group | RuleSet) }
@@ -181,17 +212,29 @@ GroupElement ::= <ident>
 
 RuleSet      ::= Mapping { Rule }
 
-Mapping      ::= { Mlvo } "=" { Kccgst } "\n"
+Mapping      ::= Mlvo { Mlvo } "=" Kccgst { Kccgst } "\n"
 Mlvo         ::= "model" | "option" | ("layout" | "variant") [ Index ]
-Index        ::= "[" ({ NumericIndex } | { SpecialIndex }) "]"
+Index        ::= "[" (NumericIndex | SpecialIndex) "]"
 NumericIndex ::= 1..XKB_MAX_GROUPS
 SpecialIndex ::= "single" | "first" | "later" | "multiple" | "any"
 Kccgst       ::= "keycodes" | "symbols" | "types" | "compat" | "geometry"
 
-Rule         ::= { MlvoValue } "=" { KccgstValue } "\n"
-MlvoValue    ::= "*" | "<none>" | "<some>" | "<any>" | GroupName | <ident>
-KccgstValue  ::= <ident> [ { Qualifier } ]
-Qualifier    ::= ":" ({ NumericIndex } | "all")
+Rule         ::= MlvoValue { MlvoValue } "=" KccgstValue { KccgstValue } "\n"
+MlvoValue    ::= Wildcard | GroupName | <ident>
+Wildcard     ::= "*" | "<none>" | "<some>" | "<any>"
+KccgstValue  ::= <kccgst-value>
+```
+
+The following is a subgrammar for `<kccgst-value>`:
+
+@important In the following grammar, *whitespace* is prohibited between lexical
+tokens unless explicitly allowed.
+
+```bnf
+<kccgst-value>  ::= [ MergeMode ] KccgstEntry { MergeMode KccgstEntry }
+MergeMode       ::= "+" | "|" | "^"
+KccgstEntry     ::= <kccgst-ident> [ ":" KccgstQualifier ]
+KccgstQualifier ::= "%i" | "all" | NumericIndex
 ```
 
 <!--
