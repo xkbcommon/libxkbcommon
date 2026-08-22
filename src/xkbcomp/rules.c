@@ -56,21 +56,21 @@ static enum rules_token
 lex(struct scanner *s, union lvalue *val)
 {
 skip_more_whitespace_and_comments:
-    /* Skip spaces. */
+    /* Skip spaces */
     while (scanner_chr(s, ' ') || scanner_chr(s, '\t') || scanner_chr(s, '\r'));
 
-    /* Skip comments. */
+    /* Skip comments */
     if (scanner_lit(s, "//")) {
         scanner_skip_to_eol(s);
     }
 
-    /* New line. */
+    /* New line */
     if (scanner_eol(s)) {
         while (scanner_eol(s)) scanner_next(s);
         return TOK_END_OF_LINE;
     }
 
-    /* Escaped line continuation. */
+    /* Escaped line continuation */
     if (scanner_chr(s, '\\')) {
         /* Optional \r. */
         scanner_chr(s, '\r');
@@ -83,74 +83,90 @@ skip_more_whitespace_and_comments:
         goto skip_more_whitespace_and_comments;
     }
 
-    /* See if we're done. */
+    /* See if we're done */
     if (scanner_eof(s)) return TOK_END_OF_FILE;
 
-    /* New token. */
+    /* New token */
     s->token_pos = s->pos;
+    enum rules_token token = TOK_IDENTIFIER;
 
-    /* Operators and punctuation. */
-    if (scanner_chr(s, '!')) return TOK_BANG;
-    if (scanner_chr(s, '=')) {
+    const char next = scanner_next(s);
+    switch (next) {
+    case '!':
+        return TOK_BANG;
+    case '$':
+        /* Group */
+        token = TOK_GROUP_NAME;
+        val->string.len = 0;
+        break;
+    case '*':
         if (scanner_rules_is_ident(scanner_peek(s))) {
             /* Backtrack */
             s->pos--;
+            break;
+        } else {
+            /* Legacy wild card */
+            return TOK_WILD_CARD_STAR;
+        }
+    case '<':
+        /* Extended wild cards */
+        if (scanner_rules_lit_token(s, "none>")) return TOK_WILD_CARD_NONE;
+        if (scanner_rules_lit_token(s, "some>")) return TOK_WILD_CARD_SOME;
+        if (scanner_rules_lit_token(s, "any>")) return TOK_WILD_CARD_ANY;
+        /* No match: continue lax parsing */
+        assert(scanner_rules_is_ident('<'));
+        val->string.len = 1;
+        break;
+    case '=':
+        if (scanner_rules_is_ident(scanner_peek(s))) {
+            /* Backtrack */
+            s->pos--;
+            break;
         } else {
             return TOK_EQUALS;
         }
-    }
-
-    /* Wild cards */
-    if (scanner_chr(s, '*')) {
-        if (scanner_rules_is_ident(scanner_peek(s))) {
-            /* Backtrack */
-            s->pos--;
+    case 'i':
+        if (scanner_rules_lit_token(s, "nclude")) {
+            /* Include statement */
+            return TOK_INCLUDE;
+        }
+        /* Identifier */
+        assert(scanner_rules_is_ident('i'));
+        val->string.len = 1;
+        break;
+    default:
+        if (likely(scanner_rules_is_ident(next))) {
+            /* Identifier */
+            val->string.len = 1;
         } else {
-            return TOK_WILD_CARD_STAR;
+            /* Invalid */
+            s->pos--;
+            val->string.len = 0;
         }
     }
-    if (scanner_rules_lit_token(s, "<none>")) return TOK_WILD_CARD_NONE;
-    if (scanner_rules_lit_token(s, "<some>")) return TOK_WILD_CARD_SOME;
-    if (scanner_rules_lit_token(s, "<any>")) return TOK_WILD_CARD_ANY;
 
-    /* Group name. */
-    if (scanner_chr(s, '$')) {
-        val->string.start = s->s + s->pos;
-        val->string.len = 0;
-        while (scanner_rules_is_ident(scanner_peek(s))) {
-            scanner_next(s);
-            val->string.len++;
-        }
-        if (val->string.len == 0) {
-            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
-                        "unexpected character after \'$\'; expected name");
-            return TOK_ERROR;
-        }
-        return TOK_GROUP_NAME;
-    }
-
-    /* Include statement. */
-    if (scanner_rules_lit_token(s, "include"))
-        return TOK_INCLUDE;
-
-    /* Identifier. */
+    /* Identifier */
+    val->string.start = s->s + s->pos - val->string.len;
     /* Ensure that we can parse KcCGST values with merge modes */
     assert(scanner_rules_is_ident(MERGE_OVERRIDE_PREFIX));
     assert(scanner_rules_is_ident(MERGE_AUGMENT_PREFIX));
     assert(scanner_rules_is_ident(MERGE_REPLACE_PREFIX));
-    if (scanner_rules_is_ident(scanner_peek(s))) {
-        val->string.start = s->s + s->pos;
-        val->string.len = 0;
-        while (scanner_rules_is_ident(scanner_peek(s))) {
-            scanner_next(s);
-            val->string.len++;
+    assert(scanner_rules_is_ident('('));
+    assert(scanner_rules_is_ident(')'));
+    val->string.len += scanner_rules_ident_token(s);
+
+    if (unlikely(val->string.len == 0)) {
+        if (token == TOK_GROUP_NAME) {
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                        "unexpected character after \'$\'; expected name");
+        } else {
+            scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
+                        "unrecognized token");
         }
-        return TOK_IDENTIFIER;
+        return TOK_ERROR;
     }
 
-    scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
-                "unrecognized token");
-    return TOK_ERROR;
+    return token;
 }
 
 /***====================================================================***/
@@ -2095,7 +2111,7 @@ finish:
 
 state_error:
     scanner_err(s, XKB_ERROR_INVALID_RULES_SYNTAX,
-                "unexpected token");
+                "unexpected token (0x%x)", tok);
 error:
     return false;
 }

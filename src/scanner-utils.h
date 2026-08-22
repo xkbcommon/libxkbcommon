@@ -200,6 +200,17 @@ scanner_rules_str_token(struct scanner *s, const char *string, size_t len)
 #define scanner_rules_lit_token(s, literal) \
     scanner_rules_str_token((s), (literal), sizeof(literal) - 1)
 
+static inline size_t
+scanner_rules_ident_token(struct scanner *s)
+{
+    size_t len = 0;
+    while (!scanner_eof(s) && scanner_rules_is_ident(s->s[s->pos])) {
+        s->pos++;
+        len++;
+    }
+    return len;
+}
+
 static inline bool
 scanner_buf_append(struct scanner *s, char ch)
 {
