@@ -1,0 +1,25 @@
+! include simple
+
+! layout variant = symbols
+  <any><any>     = +aaa // skipped: single value on LHS
+
+! layout variant = symbols
+  *<any>         = +bbb // skipped: single value on LHS
+
+! variant layout = symbols
+  <any>*         = +ccc // skipped: single value on LHS
+
+! layout variant = symbols
+  *      <any> * = +ddd // skipped: too many values in LHS
+
+! layout variant = symbols
+  *      <any>*  = +eee // skipped: invalid wild card
+
+! layout variant = symbols
+  *      *<any>  = +fff // skipped: invalid wild card
+
+! layout variant = symbols
+  *      <any><any> = +ggg // skipped: invalid wild card
+
+! layout variant = symbols
+  *      <any>   = +valid

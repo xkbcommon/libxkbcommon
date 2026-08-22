@@ -1,0 +1,4 @@
+! include simple
+
+! layout= symbols // Syntax error: missing space before “=”
+  *     = +aaa

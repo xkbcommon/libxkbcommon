@@ -174,6 +174,33 @@ scanner_str(struct scanner *s, const char *string, size_t len)
 #define scanner_lit(s, literal) scanner_str(s, literal, sizeof(literal) - 1)
 
 static inline bool
+scanner_rules_is_ident(char ch)
+{
+    return is_graph(ch) && ch != '\\';
+}
+
+/*
+ * A keyword/operator is only valid when it is followed by a character
+ * which cannot continue the token.
+ */
+static inline bool
+scanner_rules_str_token(struct scanner *s, const char *string, size_t len)
+{
+    if (!scanner_str(s, string, len)) {
+        return false;
+    }
+    if (scanner_rules_is_ident(scanner_peek(s))) {
+        /* Backtrack */
+        s->pos -= len;
+        return false;
+    }
+    return true;
+}
+
+#define scanner_rules_lit_token(s, literal) \
+    scanner_rules_str_token((s), (literal), sizeof(literal) - 1)
+
+static inline bool
 scanner_buf_append(struct scanner *s, char ch)
 {
     if (s->buf_pos + 1 >= sizeof(s->buf))

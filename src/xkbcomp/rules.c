@@ -52,12 +52,6 @@ enum rules_token {
     TOK_ERROR
 };
 
-static inline bool
-is_ident(char ch)
-{
-    return is_graph(ch) && ch != '\\';
-}
-
 static enum rules_token
 lex(struct scanner *s, union lvalue *val)
 {
@@ -97,19 +91,33 @@ skip_more_whitespace_and_comments:
 
     /* Operators and punctuation. */
     if (scanner_chr(s, '!')) return TOK_BANG;
-    if (scanner_chr(s, '=')) return TOK_EQUALS;
+    if (scanner_chr(s, '=')) {
+        if (scanner_rules_is_ident(scanner_peek(s))) {
+            /* Backtrack */
+            s->pos--;
+        } else {
+            return TOK_EQUALS;
+        }
+    }
 
     /* Wild cards */
-    if (scanner_chr(s, '*')) return TOK_WILD_CARD_STAR;
-    if (scanner_lit(s, "<none>")) return TOK_WILD_CARD_NONE;
-    if (scanner_lit(s, "<some>")) return TOK_WILD_CARD_SOME;
-    if (scanner_lit(s, "<any>")) return TOK_WILD_CARD_ANY;
+    if (scanner_chr(s, '*')) {
+        if (scanner_rules_is_ident(scanner_peek(s))) {
+            /* Backtrack */
+            s->pos--;
+        } else {
+            return TOK_WILD_CARD_STAR;
+        }
+    }
+    if (scanner_rules_lit_token(s, "<none>")) return TOK_WILD_CARD_NONE;
+    if (scanner_rules_lit_token(s, "<some>")) return TOK_WILD_CARD_SOME;
+    if (scanner_rules_lit_token(s, "<any>")) return TOK_WILD_CARD_ANY;
 
     /* Group name. */
     if (scanner_chr(s, '$')) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_ident(scanner_peek(s))) {
+        while (scanner_rules_is_ident(scanner_peek(s))) {
             scanner_next(s);
             val->string.len++;
         }
@@ -122,18 +130,18 @@ skip_more_whitespace_and_comments:
     }
 
     /* Include statement. */
-    if (scanner_lit(s, "include"))
+    if (scanner_rules_lit_token(s, "include"))
         return TOK_INCLUDE;
 
     /* Identifier. */
     /* Ensure that we can parse KcCGST values with merge modes */
-    assert(is_ident(MERGE_OVERRIDE_PREFIX));
-    assert(is_ident(MERGE_AUGMENT_PREFIX));
-    assert(is_ident(MERGE_REPLACE_PREFIX));
-    if (is_ident(scanner_peek(s))) {
+    assert(scanner_rules_is_ident(MERGE_OVERRIDE_PREFIX));
+    assert(scanner_rules_is_ident(MERGE_AUGMENT_PREFIX));
+    assert(scanner_rules_is_ident(MERGE_REPLACE_PREFIX));
+    if (scanner_rules_is_ident(scanner_peek(s))) {
         val->string.start = s->s + s->pos;
         val->string.len = 0;
-        while (is_ident(scanner_peek(s))) {
+        while (scanner_rules_is_ident(scanner_peek(s))) {
             scanner_next(s);
             val->string.len++;
         }

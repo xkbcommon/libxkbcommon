@@ -162,6 +162,50 @@ test_encodings(struct xkb_context *ctx)
     }
 }
 
+static void
+test_token_boundaries(struct xkb_context *ctx)
+{
+    static const struct test_data tests[] = {
+        {
+            .rules = "token-boundaries-1",
+
+            .model = "my_model", .layout = "my_layout", .variant = "",
+            .options = NULL,
+            .should_fail = true,
+        },
+        {
+            .rules = "token-boundaries-2",
+
+            .model = "my_model", .layout = "my_layout", .variant = "",
+            .options = NULL,
+            .should_fail = true,
+        },
+        {
+            .rules = "token-boundaries-3",
+
+            .model = "my_model", .layout = "my_layout", .variant = "",
+            .options = NULL,
+            .should_fail = true,
+        },
+        {
+            .rules = "token-boundaries-4",
+
+            .model = "my_model", .layout = "my_layout", .variant = "my_variant",
+            .options = NULL,
+
+            .keycodes = "my_keycodes", .types = "my_types",
+            .compat = "my_compat",
+            .symbols = "my_symbols+extra_variant+valid",
+            .explicit_layouts = 1,
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu ***\n", __func__, t);
+        assert(test_rules(ctx, &tests[t]));
+    }
+}
+
 /* Only parse strict decimal groups */
 static void
 test_strict_decimal_groups(struct xkb_context *ctx)
@@ -903,6 +947,7 @@ main(int argc, char *argv[])
     assert(ctx);
 
     test_encodings(ctx);
+    test_token_boundaries(ctx);
     test_strict_decimal_groups(ctx);
     test_simple(ctx);
     test_wild_card(ctx);
