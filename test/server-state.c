@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include "abi-check.h"
 #include "config.h"
 #include "test-config.h"
 
@@ -249,35 +250,29 @@ test_state_update(struct xkb_context *ctx)
 
     /* Simulate a new version with some new fields */
     struct xkb_state_update_newer {
-        union {
-            size_t size;
-            struct xkb_state_update current;
-        };
+        struct xkb_state_update current;
         uint64_t extra;
     };
+    assert_no_padding(struct xkb_state_update_newer, current, extra);
 
     /* Simulate a new version with some new fields */
     struct xkb_state_components_update_newer {
-        union {
-            size_t size;
-            struct xkb_state_components_update current;
-        };
+        struct xkb_state_components_update current;
         uint64_t extra;
     };
+    assert_no_padding(struct xkb_state_components_update_newer, current, extra);
 
     /* Simulate a new version with some new fields */
     struct xkb_layout_policy_update_newer {
-        union {
-            size_t size;
-            struct xkb_layout_policy_update current;
-        };
-        uint64_t extra;
+        struct xkb_layout_policy_update current;
+        uint32_t extra;
     };
+    assert_no_padding(struct xkb_layout_policy_update_newer, current, extra);
 
     static const struct {
         struct params {
             size_t size;
-            uint64_t extra;
+            uint32_t extra;
             bool enabled;
         } root;
         struct params components;
@@ -390,7 +385,7 @@ test_state_update(struct xkb_context *ctx)
         {
             .root = {
                 sizeof(struct xkb_state_update_newer),
-                (UINT64_C(1) << 0)
+                (UINT32_C(1) << 0)
             },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
@@ -399,7 +394,7 @@ test_state_update(struct xkb_context *ctx)
         {
             .root = {
                 sizeof(struct xkb_state_update_newer),
-                (UINT64_C(1) << 63)
+                (UINT32_C(1) << 31)
             },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
@@ -410,7 +405,7 @@ test_state_update(struct xkb_context *ctx)
             .components = {
                 .enabled = true,
                 .size = sizeof(struct xkb_state_components_update_newer),
-                .extra = (UINT64_C(1) << 63),
+                .extra = (UINT32_C(1) << 31),
             },
             .layout_policy = { .enabled = false },
             .error = XKB_ERROR_ABI_FORWARD_COMPAT,
@@ -421,7 +416,7 @@ test_state_update(struct xkb_context *ctx)
             .layout_policy = {
                 .enabled = true,
                 .size = sizeof(struct xkb_layout_policy_update_newer),
-                .extra = (UINT64_C(1) << 63),
+                .extra = (UINT32_C(1) << 31),
             },
             .error = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
