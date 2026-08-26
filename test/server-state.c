@@ -28,6 +28,8 @@
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
+#define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
+
 static enum xkb_state_component
 xkb_state_update_enabled_controls(struct xkb_state *state,
                                   enum xkb_keyboard_control_flags affect,
@@ -1213,7 +1215,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                            "grp:menu_toggle,grp:win_switch,ctrl:rctrl_latch,ctrl:copy");
     assert(keymap);
 
-    const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
+    const xkb_mod_mask_t ctrl = _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
     const xkb_mod_mask_t alt = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
     const xkb_mod_mask_t level3 = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
     const xkb_mod_mask_t level5 = _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL5);
@@ -1222,9 +1224,19 @@ test_shortcuts_tweak(struct xkb_context *context)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     assert(builder);
 
-    assert(xkb_machine_builder_update_shortcut_mods(builder, ctrl, ctrl) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_shortcut_layout(builder, 1, 2) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_shortcut_layout(builder, 3, 0) == XKB_SUCCESS);
+    struct xkb_machine_builder_shortcut_layout_update update = {
+        .size = sizeof(update),
+    };
+    update.source = 1;
+    update.target = 2;
+    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
+    update.source = 3;
+    update.target = 0;
+    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
+    update.source = XKB_LAYOUT_INVALID;
+    update.mods_affect = ctrl;
+    update.mods = ctrl;
+    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
 
     struct xkb_machine * sm = xkb_machine_new(builder);
     assert(sm);
@@ -2672,8 +2684,6 @@ test_modifiers_tweak(struct xkb_context *context)
                                                             XKB_EVENTS_NO_FLAGS);
     assert(events);
 
-#define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
-
     assert(test_key_seq2(
         keymap, sm, events,
 
@@ -2730,8 +2740,6 @@ test_modifiers_tweak(struct xkb_context *context)
         KEY_Y       , BOTH, XKB_KEY_z             , NEXT,
         KEY_LEFTCTRL, UP  , XKB_KEY_Control_L     , FINISH
     ));
-
-#undef U
 
     const xkb_led_mask_t num_led =
         UINT32_C(1) << xkb_keymap_led_get_index(keymap, XKB_LED_NAME_NUM);
@@ -3375,6 +3383,279 @@ test_xkb_machine_builder_mods_remap_update(struct xkb_context *context)
     xkb_keymap_unref(keymap_);
 }
 
+/* Example from the public header */
+static void
+test_machine_builder_shortcut_layout_update(struct xkb_context *context)
+{
+    enum {
+        SHORTCUT_LAYOUT_UPDATE_EXAMPLE_1 = 0,
+        SHORTCUT_LAYOUT_UPDATE_EXAMPLE_2,
+        SHORTCUT_LAYOUT_UPDATE_EXAMPLE_3,
+        SHORTCUT_LAYOUT_UPDATE_EXAMPLE_COUNT
+    };
+    struct xkb_keymap *keymap_ = NULL;
+    struct xkb_machine_builder *builder = NULL;
+    static const struct {
+        xkb_keysym_t unmatched;
+        xkb_keysym_t ctrl_alt;
+        xkb_keysym_t super;
+        xkb_keysym_t some;
+    } ys[][2] = {
+        [SHORTCUT_LAYOUT_UPDATE_EXAMPLE_1] = {
+            {
+                .unmatched = XKB_KEY_z,
+                .ctrl_alt = XKB_KEY_y,
+                .super = XKB_KEY_y,
+                .some = XKB_KEY_y,
+            },
+            {
+                .unmatched = XKB_KEY_y,
+                .ctrl_alt = XKB_KEY_y,
+                .super = XKB_KEY_y,
+                .some = XKB_KEY_y,
+            }
+        },
+        [SHORTCUT_LAYOUT_UPDATE_EXAMPLE_2] = {
+            {
+                .unmatched = XKB_KEY_y,
+                .ctrl_alt = XKB_KEY_y,
+                .super = XKB_KEY_y,
+                .some = XKB_KEY_y,
+            },
+            {
+                .unmatched = XKB_KEY_z,
+                .ctrl_alt = XKB_KEY_y,
+                .super = XKB_KEY_y,
+                .some = XKB_KEY_y,
+            }
+        },
+        [SHORTCUT_LAYOUT_UPDATE_EXAMPLE_3] = {
+            {
+                .unmatched = XKB_KEY_f,
+                .ctrl_alt = XKB_KEY_y,
+                .super = XKB_KEY_f,
+                .some = XKB_KEY_y,
+            },
+            {
+                .unmatched = XKB_KEY_z,
+                .ctrl_alt = XKB_KEY_z,
+                .super = U(0x92c),
+                .some = U(0x92c),
+            }
+        },
+    };
+
+    for (int example = SHORTCUT_LAYOUT_UPDATE_EXAMPLE_1;
+         example < SHORTCUT_LAYOUT_UPDATE_EXAMPLE_COUNT;
+         example++) {
+        if (example == SHORTCUT_LAYOUT_UPDATE_EXAMPLE_1) {
+            keymap_ = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                         "evdev", "pc104", "de,us", NULL,
+                                         "grp:menu_toggle");
+            assert(keymap_);
+
+            builder = xkb_machine_builder_new(keymap_,
+                                              XKB_MACHINE_BUILDER_NO_FLAGS);
+            assert(builder);
+
+/* Use another variable `keymap` for the snippet */
+//! [shortcut_layout_update_example_1]
+struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+
+const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+const xkb_mod_mask_t mods = ctrl | alt | super;
+
+const struct xkb_machine_builder_shortcut_layout_update update = {
+    .size = sizeof(update),
+    .source = 0,
+    .target = 1,
+    .mods_affect = mods,
+    .mods = mods,
+};
+const enum xkb_error_code error =
+    xkb_machine_builder_update_shortcut_layout(builder, &update);
+if (error != XKB_SUCCESS) {
+    // handle error
+    assert(!"error");
+}
+//! [shortcut_layout_update_example_1]
+        }
+
+        if (example == SHORTCUT_LAYOUT_UPDATE_EXAMPLE_2) {
+            keymap_ = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                         "evdev", "pc104", "us,de", NULL,
+                                         "grp:menu_toggle");
+            assert(keymap_);
+
+            builder = xkb_machine_builder_new(keymap_,
+                                              XKB_MACHINE_BUILDER_NO_FLAGS);
+            assert(builder);
+
+/* Use another variable `keymap` for the snippet */
+//! [shortcut_layout_update_example_2]
+struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+
+const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+const xkb_mod_mask_t mods = ctrl | alt | super;
+
+const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
+for (xkb_layout_index_t source = num_layouts; source-- > 1;) {
+    const struct xkb_machine_builder_shortcut_layout_update update = {
+        .size = sizeof(update),
+        .source = source,
+        .target = 0,
+        .mods_affect = mods,
+        .mods = mods,
+    };
+    const enum xkb_error_code error =
+        xkb_machine_builder_update_shortcut_layout(builder, &update);
+    if (error != XKB_SUCCESS) {
+        // handle error
+        assert(!"error");
+    }
+}
+//! [shortcut_layout_update_example_2]
+        }
+
+        if (example == SHORTCUT_LAYOUT_UPDATE_EXAMPLE_3) {
+            keymap_ = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                                         "evdev", "pc104", "us,de,us,in", "dvorak,,,",
+                                         "grp:menu_toggle");
+            assert(keymap_);
+
+            builder = xkb_machine_builder_new(keymap_,
+                                              XKB_MACHINE_BUILDER_NO_FLAGS);
+            assert(builder);
+
+/* Use another variable `keymap` for the snippet */
+//! [shortcut_layout_update_example_3]
+struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+
+const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+
+struct xkb_machine_builder_shortcut_layout_update update = {
+    .size = sizeof(update),
+    .source = 0,
+    .target = 2,
+    .mods_affect = ctrl | alt,
+    .mods = ctrl | alt,
+};
+enum xkb_error_code error =
+    xkb_machine_builder_update_shortcut_layout(builder, &update);
+if (error != XKB_SUCCESS) {
+    // handle error
+    assert(!"error");
+}
+update = (struct xkb_machine_builder_shortcut_layout_update) {
+    .size = sizeof(update),
+    .source = 1,
+    .target = 3,
+    .mods_affect = super,
+    .mods = super,
+};
+error = xkb_machine_builder_update_shortcut_layout(builder, &update);
+if (error != XKB_SUCCESS) {
+    // handle error
+    assert(!"error");
+}
+//! [shortcut_layout_update_example_3]
+        }
+
+        struct xkb_machine * sm = xkb_machine_new(builder);
+        assert(sm);
+
+        struct xkb_events * const events =
+            xkb_events_new_batch(context, XKB_EVENTS_NO_FLAGS);
+        assert(events);
+
+        assert(test_key_seq2(
+            keymap_, sm, events,
+            /* Layout #0 */
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+            KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, xkb_keysym_to_upper(ys[example][0].unmatched), NEXT,
+            KEY_LEFTSHIFT, UP  , XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+            KEY_LEFTCTRL , DOWN, XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTCTRL , UP  , XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+            KEY_LEFTALT  , DOWN, XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTALT  , UP  , XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+            KEY_LEFTMETA , DOWN, XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].super    , NEXT,
+            KEY_LEFTMETA , UP  , XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+            KEY_LEFTCTRL , DOWN, XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, xkb_keysym_to_upper(ys[example][0].ctrl_alt), NEXT,
+            KEY_LEFTSHIFT, UP  , XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTALT  , DOWN, XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTALT  , UP  , XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTMETA , DOWN, XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].some     , NEXT,
+            KEY_LEFTMETA , UP  , XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][0].ctrl_alt , NEXT,
+            KEY_LEFTCTRL , UP  , XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][0].unmatched, NEXT,
+
+            KEY_COMPOSE , BOTH, XKB_KEY_ISO_Next_Group, NEXT,
+
+            /* Layout #1 */
+            KEY_Y        , BOTH, ys[example][1].unmatched, NEXT,
+            KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, xkb_keysym_to_upper(ys[example][1].unmatched), NEXT,
+            KEY_LEFTSHIFT, UP  , XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].unmatched, NEXT,
+            KEY_LEFTCTRL , DOWN, XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTCTRL , UP  , XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][1].unmatched, NEXT,
+            KEY_LEFTALT  , DOWN, XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTALT  , UP  , XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][1].unmatched, NEXT,
+            KEY_LEFTMETA , DOWN, XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].super    , NEXT,
+            KEY_LEFTMETA , UP  , XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].unmatched, NEXT,
+            KEY_LEFTCTRL , DOWN, XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, xkb_keysym_to_upper(ys[example][1].ctrl_alt), NEXT,
+            KEY_LEFTSHIFT, UP  , XKB_KEY_Shift_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTALT  , DOWN, XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTALT  , UP  , XKB_KEY_Alt_L           , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTMETA , DOWN, XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].some     , NEXT,
+            KEY_LEFTMETA , UP  , XKB_KEY_Super_L         , NEXT,
+            KEY_Y        , BOTH, ys[example][1].ctrl_alt , NEXT,
+            KEY_LEFTCTRL , UP  , XKB_KEY_Control_L       , NEXT,
+            KEY_Y        , BOTH, ys[example][1].unmatched, FINISH
+        ));
+
+        xkb_events_destroy(events);
+        xkb_machine_unref(sm);
+        xkb_machine_builder_destroy(builder);
+        xkb_keymap_unref(keymap_);
+    }
+}
+
 int
 main(void)
 {
@@ -3404,6 +3685,7 @@ main(void)
     test_modifiers_tweak(context);
     test_shortcuts_tweak(context);
     test_xkb_machine_builder_mods_remap_update(context);
+    test_machine_builder_shortcut_layout_update(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;

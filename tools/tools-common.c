@@ -1416,13 +1416,19 @@ tools_set_shortcuts_mask(const struct xkb_machine_options *options,
                          struct xkb_machine_builder *builder)
 {
     struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
-    xkb_mod_mask_t mask = 0;
+    xkb_mod_mask_t mods = 0;
 
-    return (
-        tools_parse_mod_mask(keymap, &options->shortcuts.mask,
-                             "shortcut modifier mask", &mask) &&
-        !xkb_machine_builder_update_shortcut_mods(builder, mask, mask)
-    );
+    if (!tools_parse_mod_mask(keymap, &options->shortcuts.mask,
+                             "shortcut modifier mask", &mods))
+        return false;
+    const struct xkb_machine_builder_shortcut_layout_update update = {
+        .size = sizeof(update),
+        .source = XKB_LAYOUT_INVALID,
+        .mods_affect = mods,
+        .mods = mods
+    };
+    return (xkb_machine_builder_update_shortcut_layout(builder, &update) !=
+            XKB_SUCCESS);
 }
 
 static int
@@ -1531,8 +1537,13 @@ tools_set_shortcuts_mappings(const struct xkb_machine_options *options,
     darray_enumerate(source, target, options->shortcuts.mappings) {
         if (*target == XKB_LAYOUT_INVALID)
             continue;
+        const struct xkb_machine_builder_shortcut_layout_update update = {
+            .size = sizeof(update),
+            .source = source,
+            .target = *target,
+        };
         const enum xkb_error_code error =
-            xkb_machine_builder_remap_shortcut_layout(builder, source, *target);
+            xkb_machine_builder_update_shortcut_layout(builder, &update);
         if (error != XKB_SUCCESS) {
             fprintf(stderr,
                     "ERROR %d: cannot add shortcuts layout mapping: "
@@ -1561,8 +1572,8 @@ xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
     if ((unsigned)(xkb_machine_builder_update_a11y(builder, &a11y_update) !=
                    XKB_SUCCESS) |
         (unsigned)!tools_set_modifiers_mappings(options, builder) |
-        (unsigned)!tools_set_shortcuts_mask(options, builder) |
-        (unsigned)!tools_set_shortcuts_mappings(options, builder)) {
+        (unsigned)!tools_set_shortcuts_mappings(options, builder) |
+        (unsigned)!tools_set_shortcuts_mask(options, builder)) {
             xkb_machine_builder_destroy(builder);
             return NULL;
     }
