@@ -402,6 +402,127 @@ typedef uint32_t xkb_led_mask_t;
 #define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
 /**
+ * @defgroup abi-struct-contract Extensible structure ABI contract
+ *
+ * @brief Explains how extensible structures maintain ABI compatibility
+ * across library releases.
+ *
+ * To guarantee long-term forward and backward compatibility of the ABI,
+ * functions across this library accept **extensible structures** that
+ * share a common **ABI contract**.
+ *
+ * @section abi-struct-layout Layout
+ *
+ * Every extensible structure begins with a **mandatory `uint32_t size` first
+ * field** and **must not contain any implicit padding**: every alignment gap
+ * is filled explicitly with a **reserved field**, each sized for the platform
+ * with the strictest alignment requirements and verified via `static_assert`.
+ *
+ * ```c
+ * struct Example {
+ *     uint32_t size;
+ *     uint8_t a;
+ *     uint8_t reserved0[3];
+ *     char *b;
+ *     uint32_t c;
+ *     uint32_t reserved1; // padding for 64-bit platforms
+ * };
+ * ```
+ *
+ * `size` specifies the byte size of the structure, as provided by the caller.
+ * It has a fixed-width type `uint32_t` so that its representation is
+ * independent of the platform’s native `size_t` width.
+ *
+ * A structure’s **reserved** fields (`reserved0`, `reserved1`, …) either
+ * fill an alignment gap or pre-allocate space for a future field. They
+ * are numbered in declaration order; when one is later repurposed (see
+ * @ref abi-struct-guarantees), remaining reserved fields keep their names.
+ *
+ * @section abi-struct-init Structure initialization
+ *
+ * When initializing an extensible structure, callers **must**:
+ * - Set `size` to `sizeof()` of the structure.
+ * - Zero every reserved field, e.g. using `memset()` or by omitting
+ *   them from a designated initializer (structures are padded explicitly).
+ *
+ * ```c
+ * struct Example example = {
+ *     .size = sizeof(example),
+ *     .a = …,
+ *     // .reserved0 is zeroed automatically
+ *     .b = …,
+ *     .c = …,
+ *     // .reserved1 is zeroed automatically
+ * };
+ * ```
+ *
+ * @section abi-struct-resolution Version resolution
+ *
+ * When a function receives an extensible structure, it uses the caller-
+ * provided `size` to determine which fields are present, and validates
+ * any reserved field covered by that `size`:
+ *
+ * <dl>
+ * <dt>*Backward* compatibility</dt>
+ * <dd>
+ * The caller was built against an older header: *caller’s `size` \< library’s*.
+ * Only the fields covered by `size` are read; the library never accesses memory
+ * past that boundary. Fields beyond it are treated as unset and fall back to
+ * their default behavior.
+ *
+ * In the unlikely case that a missing field has no safe default for the
+ * requested operation, the call fails with `::XKB_ERROR_ABI_BACKWARD_COMPAT`.
+ * </dd>
+ * <dt>*Forward* compatibility</dt>
+ * <dd>
+ * The caller was built against a header identical to or newer than the
+ * library: *caller’s `size` \≥ library’s* (note that equal `size` does not
+ * imply same version: *Reserved fields* below). Only the fields known to
+ * this version of the library are read. The trailing, unrecognized bytes
+ * (if any) are inspected only to check they are zero. If they are all zero,
+ * they are silently ignored: the caller is requesting default behavior
+ * for fields this library predates. If any are non-zero, the caller is
+ * explicitly requesting behavior this library version cannot provide,
+ * and the call fails with `::XKB_ERROR_ABI_FORWARD_COMPAT`.
+ * </dd>
+ * <dt>Reserved fields</dt>
+ * <dd>
+ * Independently of the above, every reserved field covered by `size` must be
+ * zero. A non-zero value means the caller was built against a header where
+ * that field has since been given meaning — behavior this library version
+ * cannot honor — and the call fails with `::XKB_ERROR_ABI_FORWARD_COMPAT`,
+ * the same code used for non-zero trailing bytes beyond `size`.
+ * </dd>
+ * <dt>Invalid</dt>
+ * <dd>
+ * If `size` is smaller than the very first released version of the struct
+ * (e.g. left uninitialized) or excessively big (e.g. corrupted), the call
+ * fails safely with `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`.
+ * </dd>
+ * </dl>
+ *
+ * @section abi-struct-guarantees Compatibility guarantees
+ *
+ * This contract holds as long as fields are only ever **appended** to
+ * an extensible structure: never removed, reordered, or resized.
+ * A reserved field may later be repurposed by renaming it and giving it
+ * a new ABI-compatible type, so that the structure’s layout is unchanged.
+ * Under these rules:
+ *
+ * - A binary built against an *older* header keeps working against a
+ *   *newer* library.
+ * - A binary built against a *newer* header keeps working against an
+ *   *older* library, as long as it does not set any field the library
+ *   predates — including any reserved field — to a non-default value.
+ * - When a reserved field is repurposed, older callers that correctly
+ *   zero-initialized it continue to work unmodified: zero was already
+ *   the only value the contract allowed, and the new release simply
+ *   defines that value as the field’s default.
+ *
+ * @since 1.14.0
+ */
+
+/**
  * @defgroup rules-api Rules
  * Utility functions related to *rules*, whose purpose is introduced in:
  * @ref xkb-the-config "".
@@ -1675,6 +1796,7 @@ enum xkb_keymap_serialize_flags {
 
 /**
  * @struct xkb_keymap_serialize_config
+ * @ingroup abi-struct-contract
  *
  * Serialization configuration for `xkb_keymap::xkb_keymap_serialize()`.
  *
@@ -1683,11 +1805,9 @@ enum xkb_keymap_serialize_flags {
  */
 struct xkb_keymap_serialize_config {
     /**
-     * Size of this structure, for forward-compatibility.
+     * Size of this structure in bytes.
      *
-     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
-     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
-     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     * @sa @ref abi-struct-contract
      *
      * @since 1.14.0
      */
@@ -1724,6 +1844,7 @@ struct xkb_keymap_serialize_config {
 
 /**
  * @struct xkb_keymap_serialize_result
+ * @ingroup abi-struct-contract
  *
  * Result of `xkb_keymap::xkb_keymap_serialize()`
  *
@@ -1732,11 +1853,9 @@ struct xkb_keymap_serialize_config {
  */
 struct xkb_keymap_serialize_result {
     /**
-     * Size of this structure, for forward-compatibility.
+     * Size of this structure in bytes.
      *
-     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
-     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
-     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     * @sa @ref abi-struct-contract
      *
      * @since 1.14.0
      */
@@ -3341,6 +3460,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
 
 /**
  * @struct xkb_state_components_update
+ * @ingroup abi-struct-contract
  * Latched and locked state components for an out-of-band state update.
  *
  * Carries the modifier, layout and boolean controls assignments for
@@ -3388,11 +3508,9 @@ xkb_machine_process_key(struct xkb_machine *machine,
  */
 struct xkb_state_components_update {
     /**
-     * Size of this structure, for forward-compatibility.
+     * Size of this structure in bytes.
      *
-     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
-     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
-     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     * @sa @ref abi-struct-contract
      *
      * @since 1.14.0
      */
@@ -3543,6 +3661,7 @@ enum xkb_layout_out_of_range_policy {
 
 /**
  * @struct xkb_layout_policy_update
+ * @ingroup abi-struct-contract
  * Configures the policy used to bring out-of-range layout indices into range.
  *
  * If `policy` is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
@@ -3582,11 +3701,9 @@ enum xkb_layout_out_of_range_policy {
  */
 struct xkb_layout_policy_update {
     /**
-     * Size of this structure, for forward-compatibility.
+     * Size of this structure in bytes.
      *
-     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
-     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
-     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     * @sa @ref abi-struct-contract
      *
      * @since 1.14.0
      */
@@ -3612,6 +3729,7 @@ struct xkb_layout_policy_update {
 
 /**
  * @struct xkb_state_update
+ * @ingroup abi-struct-contract
  * Request to process an out-of-band atomic update through an `xkb_machine` or
  * `xkb_state`.
  *
@@ -3659,11 +3777,9 @@ struct xkb_layout_policy_update {
  */
 struct xkb_state_update {
     /**
-     * Size of this structure, for forward-compatibility.
+     * Size of this structure in bytes.
      *
-     * @sa `::XKB_ERROR_ABI_INVALID_STRUCT_SIZE`
-     * @sa `::XKB_ERROR_ABI_BACKWARD_COMPAT`
-     * @sa `::XKB_ERROR_ABI_FORWARD_COMPAT`
+     * @sa @ref abi-struct-contract
      *
      * @since 1.14.0
      */
