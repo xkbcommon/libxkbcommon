@@ -3341,57 +3341,123 @@ xkb_machine_builder_update_mods_remap(
 );
 
 /**
- * Set the modifiers that trigger the keyboard shortcut overrides.
+ * @struct xkb_machine_builder_shortcut_layout_update
+ * @ingroup abi-struct-contract
  *
- * When any of the specified modifiers is active, the effective layout
- * is substituted according to the mapping set by
- * `xkb_machine_builder_remap_shortcut_layout()`.
- * This ensures a consistent user experience with keyboard shortcuts
- * across the layouts.
+ * Update a layout substitution of the shortcut layout overrides for
+ * `xkb_machine_builder::xkb_machine_builder_update()`
  *
- * @param[in,out] builder The `xkb_machine` builder object to modify.
- * @param[in]     affect  Modifiers to consider, using their [encoding].
- * @param[in]     mask    Modifiers to set or unset, using their [encoding].
- *                        Modifiers in @p affect but not in @p mask are cleared.
- *                        Modifiers outside @p affect are not changed.
+ * When any of the specified modifiers (see #mods and #mods_affect) is active,
+ * the effective layout #source is substituted with layout #target in key
+ * processing. This ensures a consistent user experience with keyboard
+ * shortcuts across the layouts.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @figure@figcaption
+ * Example: substitute layout #0 with layout #1 when any of the modifiers
+ * `Control`, `Alt` and `Super` triggers shortcut overrides.
+ * @endfigcaption
+ * @snippet "test/server-state.c" shortcut_layout_update_example_1
+ * @endfigure
  *
- * @sa `xkb_machine_builder_remap_shortcut_layout()`
- * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
+ * @figure@figcaption
+ * Example: all layouts will behave as if using the *first* layout any of the
+ * modifiers `Control`, `Alt` and `Super` triggers shortcut overrides.
+ * @endfigcaption
+ * @snippet "test/server-state.c" shortcut_layout_update_example_2
+ * @endfigure
+ *
+ * @figure@figcaption
+ * Example: substitute layout #0 with #2 for modifiers `Control` and `Alt`,
+ * substitute layout #1 with #3 for modifier `Super`.
+ * @endfigcaption
+ * @snippet "test/server-state.c" shortcut_layout_update_example_3
+ * @endfigure
+ *
+ * @sa `xkb_layout_index_t`
+ * @sa @ref modifiers-encoding
+ * @sa `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`
+ *
  * @since 1.14.0
- * @memberof xkb_machine_builder
- *
- * [encoding]: @ref modifiers-encoding
  */
-XKB_EXPORT enum xkb_error_code
-xkb_machine_builder_update_shortcut_mods(struct xkb_machine_builder *builder,
-                                         xkb_mod_mask_t affect,
-                                         xkb_mod_mask_t mask);
+struct xkb_machine_builder_shortcut_layout_update {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * Source layout to substitute.
+     *
+     * If set to `::XKB_LAYOUT_INVALID`, then #source and #target are ignored
+     * and all the active substitution entries are modified with the other
+     * fields.
+     *
+     * @since 1.14.0
+     */
+    xkb_layout_index_t source;
+    /**
+     * Target layout to substitute to #source when any of the specified
+     * modifiers (see #mods and #mods_affect) are active.
+     *
+     * If set to `::XKB_LAYOUT_INVALID` or #source, then the substitution is
+     * deactivated for layout #source.
+     *
+     * @since 1.14.0
+     */
+    xkb_layout_index_t target;
+    /**
+     * Modifiers to affected by the update, using their [encoding].
+     *
+     * If set to `0`, then #mods_affect and #mods are ignored.
+     *
+     * See #mods.
+     *
+     * @since 1.14.0
+     *
+     * [encoding]: @ref modifiers-encoding
+     */
+    xkb_mod_mask_t mods_affect;
+    /**
+     * Modifiers triggering the layout substitution, using their [encoding].
+     *
+     * - If there was no previous mapping (#source, #target):
+     *   - Modifiers in both #mods_affect and #mods are set.
+     * - Otherwise:
+     *   - Previous modifiers in #mods_affect but not in #mods are cleared.
+     *   - Previous modifiers outside #mods_affect are left unchanged.
+     *   - Modifiers in #mods_affect and #mods but not in previous modifiers
+     *     are added.
+     *
+     * @since 1.14.0
+     *
+     * [encoding]: @ref modifiers-encoding
+     */
+    xkb_mod_mask_t mods;
+};
 
 /**
- * Set a layout substitution for the shortcut layout override.
- *
- * When any modifier set via `xkb_machine_builder_update_shortcut_mods()` is
- * active, the effective layout @p source is substituted with layout @p target
- * in key processing. This allows shortcuts defined in layout @p target
- * (typically a Latin layout) to remain reachable when layout @p source is
- * active.
+ * Update layout substitution of the shortcut layout overrides for
+ * `xkb_machine_builder::xkb_machine_builder_update()`
  *
  * @param[in,out] builder The `xkb_machine` builder object to modify.
- * @param[in]     source  Source layout to substitute.
- * @param[in]     target  Target layout to use instead of @p source.
+ * @param[in]     update  Shortcut layout substitution update object.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
  *
+ * @sa `xkb_machine_builder_shortcut_layout_update`
+ *
  * @since 1.14.0
- * @sa `xkb_machine_builder_update_shortcut_mods()`
+ *
  * @memberof xkb_machine_builder
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_builder_remap_shortcut_layout(struct xkb_machine_builder *builder,
-                                          xkb_layout_index_t source,
-                                          xkb_layout_index_t target);
+xkb_machine_builder_update_shortcut_layout(
+    struct xkb_machine_builder *builder,
+    const struct xkb_machine_builder_shortcut_layout_update *update
+);
 
 /**
  * Create a new keyboard state machine object.

@@ -122,7 +122,7 @@ to encourage developers to implement the relevant [API][shortcuts-api].
 </dd>
 </dl>
 
-[shortcuts-api]: @ref xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout
+[shortcuts-api]: @ref xkb_machine_builder::xkb_machine_builder_update_shortcut_layout
 [keycodes]: @ref keycode-def
 [keysyms]: @ref keysym-def
 
@@ -584,31 +584,8 @@ keyboard database, [xkeyboard-config].
 ##### Custom and consistent shortcuts behavior using libxkbcommon
 
 Since libxkbcommon 1.14, tweaking the keyboard shortcuts can be achieved by using
-the following functions from the `xkb_machine` API:
+`xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`.
 
-<dl>
-<dt>
-`xkb_machine_builder::xkb_machine_builder_update_shortcut_mods()`
-</dt>
-<dd>
-Set the modifiers that will trigger the shortcuts tweak, typically
-`Control+Alt+Super`.
-
-```c
-const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
-const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
-const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
-const xkb_mod_mask_t shortcuts_mask = ctrl | alt | super;
-if (xkb_machine_builder_update_shortcut_mods(options, shortcuts_mask, shortcuts_mask)) {
-    /* handle error */
-    …
-}
-```
-</dd>
-<dt>
-`xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
-</dt>
-<dd>
 Set the layout to use for shortcuts for each relevant layout. There are 2 typical
 use cases:
 
@@ -617,34 +594,27 @@ use cases:
 <dd>
 The user types with a single layout, but want the shortcuts to act as if using
 another layout: e.g. Qwerty shortcuts for the Arabic layout. The keymap would
-be configured with *2* layouts: the user layout then the shortcut layout (e.g.
-`ara,us`).
+actually be configured with *2* layouts: the user layout then the shortcut layout
+(e.g. `ara,us`).
 
-```c
-if (xkb_machine_builder_remap_shortcut_layout(options, 0, 1)) {
-    /* handle error */
-    …
-}
-```
+@figure@figcaption
+Example: substitute layout #0 with layout #1 when any of the modifiers
+`Control`, `Alt` and `Super` triggers shortcut overrides.
+@endfigcaption
+@snippet "test/server-state.c" shortcut_layout_update_example_1
+@endfigure
 </dd>
 <dt>*Multiple* layouts</dt>
 <dd>
 The user types with multiple layouts but wants shortcuts consistency across
 all the layouts, typically using the first layout as the reference.
 
-```c
-// When using shortcuts, all layouts will behave as if using the *first* layout.
-const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
-for (xkb_layout_index_t source = 1; source < num_layouts; source++) {
-    if (xkb_machine_builder_remap_shortcut_layout(options, source, 0)) {
-        /* handle error */
-        …
-    }
-}
-```
-</dd>
-</dl>
-
+@figure@figcaption
+Example: all layouts will behave as if using the *first* layout any of the
+modifiers `Control`, `Alt` and `Super` triggers shortcut overrides.
+@endfigcaption
+@snippet "test/server-state.c" shortcut_layout_update_example_2
+@endfigure
 </dd>
 </dl>
 

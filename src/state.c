@@ -2720,6 +2720,13 @@ struct xkb_overlaid_key {
     int refcnt;
 };
 
+struct xkb_shortcuts_config_entry {
+    /** Real modifier mask to trigger shortcuts tweaks */
+    xkb_mod_mask_t mods;
+    /** Target layout */
+    xkb_layout_index_t target;
+};
+
 /*
  * `xkb_machine` have a similar role as the `xkb_state` state machine and is
  * indeed currently only a simple wrapper. However, having a separate type:
@@ -2774,10 +2781,8 @@ struct xkb_machine {
 
         /** Shortcuts tweak */
         struct machine_shortcuts_config {
-            /** Real modifier mask to trigger shortcuts tweaks */
-            xkb_mod_mask_t mask;
-            /** Layouts targets */
-            xkb_layout_index_t *targets;
+            /** Substitution entries */
+            struct xkb_shortcuts_config_entry *entries;
         } shortcuts;
     } config;
 };
@@ -2801,10 +2806,8 @@ struct xkb_machine_builder {
 
     /** Shortcuts tweak */
     struct xkb_shortcuts_config_options {
-        /** Modifier mask to trigger tweak */
-        xkb_mod_mask_t mask;
-        /** Target layouts targets */
-        darray(xkb_layout_index_t) targets;
+        /** Substitution entries */
+        darray(struct xkb_shortcuts_config_entry) entries;
     } shortcuts;
 
     enum xkb_machine_builder_flags flags;
@@ -2839,8 +2842,7 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
         },
         .mods = darray_new(),
         .shortcuts = {
-            .mask = 0,
-            .targets = darray_new(),
+            .entries = darray_new(),
         },
     };
 
@@ -2853,7 +2855,7 @@ xkb_machine_builder_destroy(struct xkb_machine_builder *builder)
     if (builder == NULL)
         return;
 
-    darray_free(builder->shortcuts.targets);
+    darray_free(builder->shortcuts.entries);
     darray_free(builder->mods);
     xkb_keymap_unref(builder->keymap);
     free(builder);
@@ -2964,67 +2966,95 @@ xkb_machine_builder_update_mods_remap(
 }
 
 enum xkb_error_code
-xkb_machine_builder_update_shortcut_mods(struct xkb_machine_builder *builder,
-                                         xkb_mod_mask_t affect,
-                                         xkb_mod_mask_t mask)
+xkb_machine_builder_update_shortcut_layout(
+    struct xkb_machine_builder * restrict builder,
+    const struct xkb_machine_builder_shortcut_layout_update * restrict update
+)
 {
+    struct xkb_keymap *keymap = builder->keymap;
+
     /* Check the modifiers against the keymap */
-    const xkb_mod_mask_t invalid = ~builder->keymap->canonical_state_mask;
-    if ((affect & invalid)) {
-        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+    const xkb_mod_mask_t invalid = ~keymap->canonical_state_mask;
+    if ((update->mods_affect & invalid)) {
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                 "%s: Invalid affected modifiers: 0x%"PRIx32"\n",
-                __func__, affect);
+                __func__, update->mods_affect);
         return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
     }
-    if ((mask & invalid)) {
-        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
+    if ((update->mods & invalid)) {
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                 "%s: Invalid modifiers: 0x%"PRIx32"\n",
-                __func__, mask);
+                __func__, update->mods);
         return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
     }
 
-    builder->shortcuts.mask &= ~affect;
-    builder->shortcuts.mask |= (mask & affect);
-    return XKB_SUCCESS;
-}
-
-enum xkb_error_code
-xkb_machine_builder_remap_shortcut_layout(struct xkb_machine_builder *builder,
-                                          xkb_layout_index_t source,
-                                          xkb_layout_index_t target)
-{
-    if (source >= builder->keymap->num_groups) {
-        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+    /* Check the layout indices against the keymap */
+    if (update->source >= keymap->num_groups &&
+        update->source != XKB_LAYOUT_INVALID) {
+        static_assert(XKB_LAYOUT_INVALID == UINT32_MAX, "integer overflow");
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                 "%s: Invalid source layout: "
                 "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
-                __func__, builder->keymap->num_groups, source + 1);
+                __func__, keymap->num_groups, update->source + 1);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
     }
-    if (target >= builder->keymap->num_groups) {
-        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+    if (update->target >= keymap->num_groups &&
+        update->target != XKB_LAYOUT_INVALID) {
+        static_assert(XKB_LAYOUT_INVALID == UINT32_MAX, "integer overflow");
+        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                 "%s: Invalid target layout: "
                 "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
-                __func__, builder->keymap->num_groups, target + 1);
+                __func__, keymap->num_groups, update->target + 1);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
     }
 
     struct xkb_shortcuts_config_options * const config = &builder->shortcuts;
 
     /* Resize array & initialize new entries, if relevant */
-    if (source >= darray_size(config->targets)) {
-        if (target == source) {
+    if (update->source >= darray_size(config->entries) &&
+        update->source != XKB_LAYOUT_INVALID) {
+        if (update->target == update->source) {
             /* Skip default setting */
             return XKB_SUCCESS;
         }
-        xkb_layout_index_t new = darray_size(config->targets);
-        darray_resize(config->targets, source + 1);
-        for (; new < source; new++)
-            darray_item(config->targets, new) = XKB_LAYOUT_INVALID;
+        xkb_layout_index_t new = darray_size(config->entries);
+        darray_resize(config->entries, update->source + 1);
+        for (; new <= update->source; new++) {
+            darray_item(config->entries, new) =
+                (struct xkb_shortcuts_config_entry) {
+                    .target = XKB_LAYOUT_INVALID,
+                    .mods = 0
+                };
+        }
     }
 
-    darray_item(config->targets, source) = (source == target)
-        ? XKB_LAYOUT_INVALID
-        : target;
+    struct xkb_shortcuts_config_entry *entry;
+    xkb_layout_index_t source = (update->source == XKB_LAYOUT_INVALID)
+        ? 0               /* Loop over all entries */
+        : update->source; /* Single entry */
+    darray_foreach_from(entry, config->entries, source) {
+        if (update->source == XKB_LAYOUT_INVALID &&
+            entry->target == XKB_LAYOUT_INVALID) {
+            /* Skip previous deactivated entry */
+            source++;
+            continue;
+        }
+
+        if (update->mods_affect) {
+            entry->mods &= ~update->mods_affect;
+            entry->mods |= (update->mods_affect & update->mods);
+        }
+
+        if (update->source != XKB_LAYOUT_INVALID) {
+            entry->target = (update->target == source)
+                ? XKB_LAYOUT_INVALID
+                : update->target;
+            /* Single entry: exit loop */
+            break;
+        }
+        source++;
+    }
+
     return XKB_SUCCESS;
 }
 
@@ -3104,60 +3134,70 @@ machine_set_mods(struct xkb_machine *sm,
 }
 
 static bool
-machine_set_shortcuts(struct xkb_machine * restrict sm,
-                      const struct xkb_shortcuts_config_options * restrict options)
+machine_set_shortcuts(
+    struct xkb_machine * restrict sm,
+    const struct xkb_shortcuts_config_options * restrict options
+)
 {
-    if (darray_empty(options->targets)) {
+    if (darray_empty(options->entries)) {
         sm->config.shortcuts = (struct machine_shortcuts_config) {
-            .mask = 0,
-            .targets = NULL
+            .entries = NULL
         };
         return true;
     }
 
     struct xkb_keymap * const keymap = sm->base.base.keymap;
 
-    /* Consider only defined layouts */
-    xkb_layout_index_t count = MIN(
-        keymap->num_groups,
-        (xkb_layout_index_t) darray_size(options->targets)
-    );
-    /* Drop layout entries with default setting or invalid group */
-    static_assert(XKB_LAYOUT_INVALID > XKB_MAX_GROUPS, "");
-    while (count > 1) {
-        if (darray_item(options->targets, count - 1) <
-            keymap->num_groups)
-            break;
-        count--;
-    }
-    if (!count)
-        return true;
-
-    xkb_mod_mask_t mask = options->mask;
-    /* Sanitize mask */
-    mask &= sm->base.base.keymap->canonical_state_mask;
-    if (!mask)
-        return true;
-
-    xkb_layout_index_t * const targets = calloc(keymap->num_groups,
-                                                sizeof(*targets));
-    if (!targets)
+    struct xkb_shortcuts_config_entry * entries =
+        calloc(keymap->num_groups, sizeof(*entries));
+    if (!entries)
         return false;
 
+    const xkb_layout_index_t count = MIN(
+        keymap->num_groups,
+        (xkb_layout_index_t) darray_size(options->entries)
+    );
+
+    bool some_entries = false;
     for (xkb_layout_index_t l = 0; l < count; l++) {
-        /* Sanitize layouts targets */
-        targets[l] = (darray_item(options->targets, l) <
-                        keymap->num_groups)
-                        ? darray_item(options->targets, l)
-                        : XKB_LAYOUT_INVALID;
+        /* Sanitize layout target */
+        const xkb_layout_index_t target =
+            darray_item(options->entries, l).target;
+        /* Sanitize modifier mask */
+        const xkb_mod_mask_t mods = (
+            darray_item(options->entries, l).mods &
+            sm->base.base.keymap->canonical_state_mask
+        );
+        if (target < keymap->num_groups && target != l && mods) {
+            entries[l] = (struct xkb_shortcuts_config_entry) {
+                .target = target,
+                .mods = mods
+            };
+            some_entries = true;
+        } else {
+            entries[l] = (struct xkb_shortcuts_config_entry) {
+                .target = XKB_LAYOUT_INVALID,
+                .mods = 0
+            };
+            continue;
+        }
     }
-    for (xkb_layout_index_t l = count; l < keymap->num_groups; l++) {
-        targets[l] = XKB_LAYOUT_INVALID;
+
+    if (!some_entries) {
+        free(entries);
+        entries = NULL;
+    } else {
+        /* Initialize groups with no entries */
+        for (xkb_layout_index_t l = count; l < keymap->num_groups; l++) {
+            entries[l] = (struct xkb_shortcuts_config_entry) {
+                .target = XKB_LAYOUT_INVALID,
+                .mods = 0
+            };
+        }
     }
 
     sm->config.shortcuts = (struct machine_shortcuts_config) {
-        .mask = mask,
-        .targets = targets
+        .entries = entries
     };
     return true;
 }
@@ -3203,7 +3243,7 @@ xkb_machine_unref(struct xkb_machine *sm)
 
     xkb_state_destroy(&sm->base.base);
     darray_free(sm->overlays.keys);
-    free(sm->config.shortcuts.targets);
+    free(sm->config.shortcuts.entries);
     free(sm->config.modifiers.mappings);
     free(sm);
 }
@@ -3395,10 +3435,16 @@ do_shortcuts_tweak(const struct machine_shortcuts_config *config,
                    const struct state_components *previous_components,
                    struct xkb_events *events, ssize_t remap_event)
 {
-    if (config->targets &&
-        (state->components.mods & config->mask) &&
-        (config->targets[state->components.group] !=
-         XKB_LAYOUT_INVALID)) {
+    if (!config->entries) {
+        /* No shortcuts tweak */
+        return remap_event;
+    }
+
+    const struct xkb_shortcuts_config_entry * const entry =
+        &config->entries[state->components.group];
+
+    if (entry->target != XKB_LAYOUT_INVALID &&
+        (entry->mods & state->components.mods)) {
         /*
          * Activate shortcuts tweak:
          * 1. The real base group is saved by the caller, to be restored by
@@ -3424,7 +3470,7 @@ do_shortcuts_tweak(const struct machine_shortcuts_config *config,
                 darray_item(events->queue, remap_event).components.components;
         }
         new.components.base_group
-            = (int32_t) config->targets[state->components.group]
+            = (int32_t) entry->target
             - state->components.latched_group
             - state->components.locked_group;
         xkb_state_update_derived(&new);
@@ -3437,7 +3483,7 @@ do_shortcuts_tweak(const struct machine_shortcuts_config *config,
 
         state->components.group = new.components.group;
     } else {
-        /* No shortcuts tweak */
+        /* Deactivated entry or modifiers do not match */
     }
     return remap_event;
 }
