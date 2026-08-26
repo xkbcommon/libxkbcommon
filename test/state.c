@@ -606,7 +606,8 @@ test_state_modes(struct xkb_context *ctx)
         RUN_ISOLATED(code, changed,
             changed = xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET,
                                            XKB_KEY_DOWN);
-            xkb_state_unref(state)
+            xkb_state_unref(state);
+            xkb_keymap_unref(keymap);
         );
         if (code != SKIP_TEST) {
             assert_eq("update_key: code",
