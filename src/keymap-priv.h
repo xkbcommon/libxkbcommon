@@ -31,18 +31,11 @@ struct xkb_keymap_serialize_config_v1 {
 };
 
 /* Ensure there is no implicit padding */
-static_assert(sizeof(struct xkb_keymap_serialize_config) ==
-              sizeof(size_t)                          /* size        */
-            + sizeof(uint32_t)                        /* flags       */
-            + sizeof(uint32_t)                        /* format      */
-            + sizeof(xkb_layout_mask_t)               /* layouts     */
-            + sizeof(uint32_t),                       /* reserved    */
-              "struct xkb_keymap_serialize_config_v1 has implicit padding");
-
-static_assert(offsetof(struct xkb_keymap_serialize_config, reserved) +
-              sizeof(((struct xkb_keymap_serialize_config *)0)->reserved) ==
-              sizeof(struct xkb_keymap_serialize_config),
-              "`reserved` is not the explicit trailing padding");
+assert_no_padding(struct xkb_keymap_serialize_config, size, flags);
+assert_no_padding(struct xkb_keymap_serialize_config, flags, format);
+assert_no_padding(struct xkb_keymap_serialize_config, format, layouts);
+assert_no_padding(struct xkb_keymap_serialize_config, layouts, reserved);
+assert_no_padding(struct xkb_keymap_serialize_config, reserved);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_config) ==
@@ -70,18 +63,13 @@ struct xkb_keymap_serialize_result_v1 {
 };
 
 /* Ensure there is no implicit padding */
-static_assert(sizeof(struct xkb_keymap_serialize_result) ==
-              sizeof(size_t)                          /* size        */
-            + sizeof((void *)0)                       /* serialized  */
-            + sizeof(size_t)                          /* length      */
-            + sizeof(xkb_layout_mask_t)               /* layouts     */
-            + sizeof(uint32_t),                       /* reserved    */
-              "struct xkb_keymap_serialize_result_v1 has implicit padding");
-
-static_assert(offsetof(struct xkb_keymap_serialize_result, reserved) +
-              sizeof(((struct xkb_keymap_serialize_result *)0)->reserved) ==
-              sizeof(struct xkb_keymap_serialize_result),
-              "`reserved` is not the explicit trailing padding");
+assert_no_padding(struct xkb_keymap_serialize_result, size, serialized);
+// NOLINTBEGIN(bugprone-sizeof-expression)
+assert_no_padding(struct xkb_keymap_serialize_result, serialized, length);
+// NOLINTEND(bugprone-sizeof-expression)
+assert_no_padding(struct xkb_keymap_serialize_result, length, layouts);
+assert_no_padding(struct xkb_keymap_serialize_result, layouts, reserved);
+assert_no_padding(struct xkb_keymap_serialize_result, reserved);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_result) ==

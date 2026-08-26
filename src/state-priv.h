@@ -6,6 +6,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -61,24 +62,17 @@ struct xkb_state_components_update_v1 {
 };
 
 /* Ensure there is no implicit padding */
-static_assert(sizeof(struct xkb_state_components_update_v1) ==
-              sizeof(size_t)                          /* size                */
-            + sizeof(uint32_t)                        /* components          */
-            + sizeof(xkb_mod_mask_t)                  /* affect_latched_mods */
-            + sizeof(xkb_mod_mask_t)                  /* latched_mods        */
-            + sizeof(xkb_mod_mask_t)                  /* affect_locked_mods  */
-            + sizeof(xkb_mod_mask_t)                  /* locked_mods         */
-            + sizeof(int32_t)                         /* latched_layout      */
-            + sizeof(int32_t)                         /* locked_layout       */
-            + sizeof(uint32_t)                        /* affect_controls     */
-            + sizeof(uint32_t)                        /* controls            */
-            + sizeof(uint32_t)                        /* reserved            */
-            , "struct xkb_state_components_update_v1 has implicit padding");
-
-static_assert(offsetof(struct xkb_state_components_update, reserved) +
-              sizeof(((struct xkb_state_components_update *)0)->reserved) ==
-              sizeof(struct xkb_state_components_update),
-              "`reserved` is not the explicit trailing padding");
+assert_no_padding(struct xkb_state_components_update, size, components);
+assert_no_padding(struct xkb_state_components_update, components, affect_latched_mods);
+assert_no_padding(struct xkb_state_components_update, affect_latched_mods, latched_mods);
+assert_no_padding(struct xkb_state_components_update, latched_mods, affect_locked_mods);
+assert_no_padding(struct xkb_state_components_update, affect_locked_mods, locked_mods);
+assert_no_padding(struct xkb_state_components_update, locked_mods, latched_layout);
+assert_no_padding(struct xkb_state_components_update, latched_layout, locked_layout);
+assert_no_padding(struct xkb_state_components_update, locked_layout, affect_controls);
+assert_no_padding(struct xkb_state_components_update, affect_controls, controls);
+assert_no_padding(struct xkb_state_components_update, controls, reserved);
+assert_no_padding(struct xkb_state_components_update, reserved);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_components_update) ==
@@ -100,11 +94,9 @@ struct xkb_layout_policy_update_v1 {
 };
 
 /* Ensure there is no implicit padding */
-static_assert(sizeof(struct xkb_layout_policy_update_v1) ==
-              sizeof(size_t)                               /* size     */
-            + sizeof(uint32_t)                             /* policy   */
-            + sizeof(xkb_layout_index_t),                  /* redirect */
-              "struct xkb_layout_policy_update_v1 has implicit padding");
+assert_no_padding(struct xkb_layout_policy_update, size, policy);
+assert_no_padding(struct xkb_layout_policy_update, policy, redirect);
+assert_no_padding(struct xkb_layout_policy_update, redirect);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_layout_policy_update) ==
@@ -126,11 +118,11 @@ struct xkb_state_update_v1 {
 };
 
 /* Ensure there is no implicit padding */
-static_assert(sizeof(struct xkb_state_update_v1) ==
-              sizeof(size_t)                          /* size          */
-            + sizeof((void *)0)                       /* components    */
-            + sizeof((void *)0),                      /* layout_policy */
-              "struct xkb_state_update_v1 has implicit padding");
+assert_no_padding(struct xkb_state_update_v1, size, components);
+// NOLINTBEGIN(bugprone-sizeof-expression)
+assert_no_padding(struct xkb_state_update_v1, components, layout_policy);
+assert_no_padding(struct xkb_state_update_v1, layout_policy);
+// NOLINTEND(bugprone-sizeof-expression)
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_update) ==
