@@ -3122,8 +3122,7 @@ xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder);
 
 /**
  * @enum xkb_a11y_flags
- * Flags for
- * `xkb_machine_builder::xkb_machine_builder_update_a11y_flags()`.
+ * Flags for `xkb_machine_builder_a11y_update`.
  *
  * These flags configure the accessibility (*a11y*) features.
  *
@@ -3200,25 +3199,65 @@ enum xkb_a11y_flags {
 };
 
 /**
+ * @struct xkb_machine_builder_a11y_update
+ * @ingroup abi-struct-contract
+ *
+ * Accessibility update for
+ * `xkb_machine_builder::xkb_machine_builder_update_a11y()`
+ *
+ * @sa `xkb_a11y_flags`
+ * @sa `xkb_machine_builder::xkb_machine_builder_update_a11y()`
+ *
+ * @since 1.14.0
+ */
+struct xkb_machine_builder_a11y_update {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * Mask of [accessibility flags] to modify.
+     *
+     * @since 1.14.0
+     *
+     * [accessibility flags]: @ref xkb_a11y_flags
+     */
+    uint32_t affect;
+    /**
+     * Mask of [accessibility flags] to to set or unset.
+     *
+     * Flags in #affect but not in #flags are cleared.
+     * Flags outside #affect are not changed.
+     *
+     * @since 1.14.0
+     *
+     * [accessibility flags]: @ref xkb_a11y_flags
+     */
+    uint32_t flags;
+};
+
+/**
  * Update the accessibility flags of an `xkb_machine_builder` object.
  *
  * @param[in,out] builder The `xkb_machine` builder object to modify.
- * @param[in]     affect  Accessibility flags to modify.
- * @param[in]     flags   Accessibility flags to set or unset.
- *                        Flags in @p affect but not in @p flags are cleared.
- *                        Flags outside @p affect are not changed.
+ * @param[in]     update  Accessibility update object.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ *
+ * @sa `xkb_machine_builder_a11y_update`
  *
  * @since 1.14.0
  *
  * @memberof xkb_machine_builder
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_builder_update_a11y_flags(
+xkb_machine_builder_update_a11y(
     struct xkb_machine_builder *builder,
-    enum xkb_a11y_flags affect,
-    enum xkb_a11y_flags flags
+    const struct xkb_machine_builder_a11y_update *update
 );
 
 /**

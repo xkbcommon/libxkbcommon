@@ -1548,9 +1548,13 @@ xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
     if (!builder)
         return NULL;
 
-    if ((unsigned)(xkb_machine_builder_update_a11y_flags(
-            builder, options->controls.a11y.affect, options->controls.a11y.flags
-        ) != XKB_SUCCESS) |
+    const struct xkb_machine_builder_a11y_update a11y_update = {
+        .size = sizeof(a11y_update),
+        .affect = options->controls.a11y.affect,
+        .flags = options->controls.a11y.flags
+    };
+    if ((unsigned)(xkb_machine_builder_update_a11y(builder, &a11y_update) !=
+                   XKB_SUCCESS) |
         (unsigned)!tools_set_modifiers_mappings(options, builder) |
         (unsigned)!tools_set_shortcuts_mask(options, builder) |
         (unsigned)!tools_set_shortcuts_mappings(options, builder)) {

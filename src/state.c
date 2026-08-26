@@ -2867,30 +2867,36 @@ xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder)
 }
 
 enum xkb_error_code
-xkb_machine_builder_update_a11y_flags(
-    struct xkb_machine_builder *builder,
-    enum xkb_a11y_flags affect,
-    enum xkb_a11y_flags flags)
+xkb_machine_builder_update_a11y(
+    struct xkb_machine_builder * restrict builder,
+    const struct xkb_machine_builder_a11y_update * restrict update)
 {
+    /* Check ABI compatibility */
+    enum xkb_error_code error = xkb_check_update_size(update);
+    if (error) {
+        xkb_log_abi_error(builder->keymap->ctx, __func__, error);
+        return error;
+    }
+
     const enum xkb_a11y_flags invalid_flags =
         ~(enum xkb_a11y_flags)XKB_A11Y_FLAGS_VALUES;
 
-    if (affect & invalid_flags) {
-        log_err_func(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "%s: unrecognized A11Y affected flags: %#x\n",
-                     __func__, affect & invalid_flags);
+    if (update->affect & invalid_flags) {
+        log_err(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized A11Y affected flags: %#x\n",
+                __func__, update->affect & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
-    if (flags & invalid_flags) {
-        log_err_func(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                     "%s: unrecognized A11Y flags: %#x\n",
-                     __func__, flags & invalid_flags);
+    if (update->flags & invalid_flags) {
+        log_err(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+                "%s: unrecognized A11Y flags: %#x\n",
+                __func__, update->flags & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
 
-    builder->controls.a11y.affect |= affect;
-    builder->controls.a11y.flags &= ~affect;
-    builder->controls.a11y.flags |= (flags & affect);
+    builder->controls.a11y.affect |= update->affect;
+    builder->controls.a11y.flags &= ~update->affect;
+    builder->controls.a11y.flags |= (update->flags & update->affect);
 
     return XKB_SUCCESS;
 }

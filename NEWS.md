@@ -236,7 +236,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_machine_builder::xkb_machine_builder_new()`
     - `xkb_machine_builder::xkb_machine_builder_destroy()`
     - `xkb_machine_builder::xkb_machine_builder_get_keymap()`
-    - `xkb_machine_builder::xkb_machine_builder_update_a11y_flags()`
+    - `xkb_machine_builder::xkb_machine_builder_update_a11y()`,
+      `struct xkb_machine_builder_a11y_update`
     - `xkb_machine_builder::xkb_machine_builder_remap_mods()`
     - `xkb_machine_builder::xkb_machine_builder_update_shortcut_mods()`
     - `xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
