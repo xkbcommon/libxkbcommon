@@ -1691,7 +1691,7 @@ struct xkb_keymap_serialize_config {
      *
      * @since 1.14.0
      */
-    size_t size;
+    uint32_t size;
     /**
      * Mask of [serialization flags].
      *
@@ -1720,14 +1720,6 @@ struct xkb_keymap_serialize_config {
      * @since 1.14.0
      */
     xkb_layout_mask_t layouts;
-    /**
-     * @private
-     *
-     * Reserved for future extensions.
-     *
-     * @pre Must be set to `0` by the caller.
-     */
-    uint32_t reserved;
 };
 
 /**
@@ -1748,7 +1740,17 @@ struct xkb_keymap_serialize_result {
      *
      * @since 1.14.0
      */
-    size_t size;
+    uint32_t size;
+    /**
+     * Mask of the original layouts actually included in #serialized.
+     *
+     * Valid only if the function returns `::XKB_SUCCESS`; otherwise unspecified.
+     *
+     * @sa `xkb_keymap_serialize_config::layouts`
+     *
+     * @since 1.14.0
+     */
+    xkb_layout_mask_t layouts;
     /**
      * A newly *allocated* keymap serialization, or `NULL` on failure.
      *
@@ -1765,24 +1767,6 @@ struct xkb_keymap_serialize_result {
      * @since 1.14.0
      */
     size_t length;
-    /**
-     * Mask of the original layouts actually included in #serialized.
-     *
-     * Valid only if the function returns `::XKB_SUCCESS`; otherwise unspecified.
-     *
-     * @sa `xkb_keymap_serialize_config::layouts`
-     *
-     * @since 1.14.0
-     */
-    xkb_layout_mask_t layouts;
-    /**
-     * @private
-     *
-     * Reserved for future extensions.
-     *
-     * @pre Must be set to `0` by the caller.
-     */
-    uint32_t reserved;
 };
 
 /**
@@ -3412,7 +3396,7 @@ struct xkb_state_components_update {
      *
      * @since 1.14.0
      */
-    size_t size;
+    uint32_t size;
     /**
      * Mask of [state components](@ref xkb_state_component) to update.
      *
@@ -3527,15 +3511,6 @@ struct xkb_state_components_update {
      * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
     uint32_t controls;
-
-    /**
-     * @private
-     *
-     * Reserved for future extensions.
-     *
-     * @pre Must be set to `0` by the caller.
-     */
-    uint32_t reserved;
 };
 
 /**
@@ -3615,7 +3590,7 @@ struct xkb_layout_policy_update {
      *
      * @since 1.14.0
      */
-    size_t size;
+    uint32_t size;
     /**
      * [Policy] to use to handle out-of-range layout indices.
      *
@@ -3692,7 +3667,15 @@ struct xkb_state_update {
      *
      * @since 1.14.0
      */
-    size_t size;
+    uint32_t size;
+    /**
+     * @private
+     *
+     * Reserved for future extensions.
+     *
+     * @pre Must be set to `0` by the caller.
+     */
+    uint32_t reserved0;
     /**
      * Components updates, or `NULL` for no change.
      *

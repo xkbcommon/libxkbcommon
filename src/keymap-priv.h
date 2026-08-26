@@ -24,19 +24,17 @@
  * @since 1.14.0
  */
 struct xkb_keymap_serialize_config_v1 {
-    size_t size;
+    uint32_t size;
     uint32_t flags;
     uint32_t format;
     xkb_layout_mask_t layouts;
-    uint32_t reserved;
 };
 
 /* Ensure there is no implicit padding */
 assert_no_padding(struct xkb_keymap_serialize_config, size, flags);
 assert_no_padding(struct xkb_keymap_serialize_config, flags, format);
 assert_no_padding(struct xkb_keymap_serialize_config, format, layouts);
-assert_no_padding(struct xkb_keymap_serialize_config, layouts, reserved);
-assert_no_padding(struct xkb_keymap_serialize_config, reserved);
+assert_no_padding(struct xkb_keymap_serialize_config, layouts);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_config) ==
@@ -45,7 +43,6 @@ assert_same_field(struct xkb_keymap_serialize_config, _v1, size);
 assert_same_field(struct xkb_keymap_serialize_config, _v1, flags);
 assert_same_field(struct xkb_keymap_serialize_config, _v1, format);
 assert_same_field(struct xkb_keymap_serialize_config, _v1, layouts);
-assert_same_field(struct xkb_keymap_serialize_config, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_keymap_serialize_config) * 30 <=
@@ -61,21 +58,17 @@ static_assert(sizeof(struct xkb_keymap_serialize_config) * 30 <=
  * @since 1.14.0
  */
 struct xkb_keymap_serialize_result_v1 {
-    size_t size;
+    uint32_t size;
+    xkb_layout_mask_t layouts;
     char *serialized;
     size_t length;
-    xkb_layout_mask_t layouts;
-    uint32_t reserved;
 };
 
 /* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_keymap_serialize_result, size, serialized);
-// NOLINTBEGIN(bugprone-sizeof-expression)
+assert_no_padding(struct xkb_keymap_serialize_result, size, layouts);
+assert_no_padding(struct xkb_keymap_serialize_result, layouts, serialized);
 assert_no_padding(struct xkb_keymap_serialize_result, serialized, length);
-// NOLINTEND(bugprone-sizeof-expression)
-assert_no_padding(struct xkb_keymap_serialize_result, length, layouts);
-assert_no_padding(struct xkb_keymap_serialize_result, layouts, reserved);
-assert_no_padding(struct xkb_keymap_serialize_result, reserved);
+assert_no_padding(struct xkb_keymap_serialize_result, length);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_result) ==
@@ -86,7 +79,6 @@ assert_same_field(struct xkb_keymap_serialize_result, _v1, serialized);
 // NOLINTEND(bugprone-sizeof-expression)
 assert_same_field(struct xkb_keymap_serialize_result, _v1, length);
 assert_same_field(struct xkb_keymap_serialize_result, _v1, layouts);
-assert_same_field(struct xkb_keymap_serialize_result, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_keymap_serialize_result) * 30 <=
@@ -115,12 +107,12 @@ static_assert(sizeof(struct xkb_keymap_serialize_result) * 30 <=
 )
 
 /** Offset of the last meaningful field of the current struct */
-#define xkb_versioned_struct_reserved_offset(x) _Generic(      \
-    (x),                                                       \
-    const struct xkb_keymap_serialize_config *:                \
-        offsetof(struct xkb_keymap_serialize_config, reserved),\
-    const struct xkb_keymap_serialize_result *:                \
-        offsetof(struct xkb_keymap_serialize_result, reserved) \
+#define xkb_versioned_struct_reserved_offset(x) _Generic( \
+    (x),                                                  \
+    const struct xkb_keymap_serialize_config *:           \
+        sizeof(struct xkb_keymap_serialize_config),       \
+    const struct xkb_keymap_serialize_result *:           \
+        sizeof(struct xkb_keymap_serialize_result)        \
 )
 
 /* V1 is the smallest struct version */

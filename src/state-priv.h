@@ -49,7 +49,7 @@ struct xkb_event {
  * @since 1.14.0
  */
 struct xkb_state_components_update_v1 {
-    size_t size;
+    uint32_t size;
     uint32_t components;
     xkb_mod_mask_t affect_latched_mods;
     xkb_mod_mask_t latched_mods;
@@ -59,7 +59,6 @@ struct xkb_state_components_update_v1 {
     int32_t locked_layout;
     uint32_t affect_controls;
     uint32_t controls;
-    uint32_t reserved;
 };
 
 /* Ensure there is no implicit padding */
@@ -72,8 +71,7 @@ assert_no_padding(struct xkb_state_components_update, locked_mods, latched_layou
 assert_no_padding(struct xkb_state_components_update, latched_layout, locked_layout);
 assert_no_padding(struct xkb_state_components_update, locked_layout, affect_controls);
 assert_no_padding(struct xkb_state_components_update, affect_controls, controls);
-assert_no_padding(struct xkb_state_components_update, controls, reserved);
-assert_no_padding(struct xkb_state_components_update, reserved);
+assert_no_padding(struct xkb_state_components_update, controls);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_components_update) ==
@@ -88,7 +86,6 @@ assert_same_field(struct xkb_state_components_update, _v1, latched_layout);
 assert_same_field(struct xkb_state_components_update, _v1, locked_layout);
 assert_same_field(struct xkb_state_components_update, _v1, affect_controls);
 assert_same_field(struct xkb_state_components_update, _v1, controls);
-assert_same_field(struct xkb_state_components_update, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_state_components_update) * 30 <=
@@ -100,7 +97,7 @@ static_assert(sizeof(struct xkb_state_components_update) * 30 <=
  * @since 1.14.0
  */
 struct xkb_layout_policy_update_v1 {
-    size_t size;
+    uint32_t size;
     uint32_t policy;
     xkb_layout_index_t redirect;
 };
@@ -127,22 +124,25 @@ static_assert(sizeof(struct xkb_layout_policy_update) * 30 <=
  * @since 1.14.0
  */
 struct xkb_state_update_v1 {
-    size_t size;
+    uint32_t size;
+    uint32_t reserved0;
     const struct xkb_state_components_update_v1 *components;
     const struct xkb_layout_policy_update_v1 *layout_policy;
 };
 
 /* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_state_update_v1, size, components);
+assert_no_padding(struct xkb_state_update, size, reserved0);
+assert_no_padding(struct xkb_state_update, reserved0, components);
 // NOLINTBEGIN(bugprone-sizeof-expression)
-assert_no_padding(struct xkb_state_update_v1, components, layout_policy);
-assert_no_padding(struct xkb_state_update_v1, layout_policy);
+assert_no_padding(struct xkb_state_update, components, layout_policy);
+assert_no_padding(struct xkb_state_update, layout_policy);
 // NOLINTEND(bugprone-sizeof-expression)
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_update) ==
               sizeof(struct xkb_state_update_v1), "");
 assert_same_field(struct xkb_state_update, _v1, size);
+assert_same_field(struct xkb_state_update, _v1, reserved0);
 // NOLINTBEGIN(bugprone-sizeof-expression)
 assert_same_field(struct xkb_state_update, _v1, components);
 assert_same_field(struct xkb_state_update, _v1, layout_policy);
@@ -175,14 +175,14 @@ static_assert(sizeof(struct xkb_state_update) * 30 <=
 )
 
 /** Offset of the last meaningful field of the current struct */
-#define xkb_versioned_struct_reserved_offset(x) _Generic(      \
-    (x),                                                       \
-    const struct xkb_state_update *:                           \
-        sizeof(struct xkb_state_update),                       \
-    const struct xkb_state_components_update *:                \
-        offsetof(struct xkb_state_components_update, reserved),\
-    const struct xkb_layout_policy_update *:                   \
-        sizeof(struct xkb_layout_policy_update)                \
+#define xkb_versioned_struct_reserved_offset(x) _Generic( \
+    (x),                                                  \
+    const struct xkb_state_update *:                      \
+        sizeof(struct xkb_state_update),                  \
+    const struct xkb_state_components_update *:           \
+        sizeof(struct xkb_state_components_update),       \
+    const struct xkb_layout_policy_update *:              \
+        sizeof(struct xkb_layout_policy_update)           \
 )
 
 /* V1 is the smallest struct version */
