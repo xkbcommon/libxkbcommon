@@ -179,19 +179,32 @@ test_machine_builder(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     assert(builder);
 
+    struct xkb_machine_builder_a11y_update a11y_update = {
+        .size = sizeof(a11y_update)
+    };
+
     /* Valid flags */
     static_assert(XKB_A11Y_NO_FLAGS == 0, "default flags");
-    assert(xkb_machine_builder_update_a11y_flags(
-            builder, XKB_A11Y_NO_FLAGS, XKB_A11Y_NO_FLAGS) == XKB_SUCCESS);
+    a11y_update.affect = XKB_A11Y_NO_FLAGS;
+    a11y_update.flags = XKB_A11Y_NO_FLAGS;
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_update) == XKB_SUCCESS);
 
     /* Invalid flags */
-    assert(xkb_machine_builder_update_a11y_flags(builder, -1000, 0) ==
+    a11y_update.affect = -1000;
+    a11y_update.flags = 0;
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    assert(xkb_machine_builder_update_a11y_flags(builder, 0, -1000) ==
+    a11y_update.affect = 0;
+    a11y_update.flags = -1000;
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    assert(xkb_machine_builder_update_a11y_flags(builder, 1000, 0) ==
+    a11y_update.affect = 1000;
+    a11y_update.flags = 0;
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    assert(xkb_machine_builder_update_a11y_flags(builder, 0, 1000) ==
+    a11y_update.affect = 0;
+    a11y_update.flags = 1000;
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
 
     struct xkb_machine *sm = xkb_machine_new(builder);
@@ -915,10 +928,13 @@ test_sticky_keys(struct xkb_context *ctx)
     struct xkb_machine_builder * const sm_builder =
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     assert(sm_builder);
-    assert(xkb_machine_builder_update_a11y_flags(
-                sm_builder,
-                XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
-                XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) == XKB_SUCCESS);
+    const struct xkb_machine_builder_a11y_update a11y_update = {
+        .size = sizeof(a11y_update),
+        .affect = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
+        .flags = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK
+    };
+    assert(xkb_machine_builder_update_a11y(sm_builder, &a11y_update) ==
+           XKB_SUCCESS);
     sm = xkb_machine_new(sm_builder);
     assert(sm);
     xkb_machine_builder_destroy(sm_builder);
