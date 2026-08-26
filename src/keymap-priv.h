@@ -8,6 +8,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdalign.h>
 #include <stddef.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -40,6 +41,11 @@ assert_no_padding(struct xkb_keymap_serialize_config, reserved);
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_config) ==
               sizeof(struct xkb_keymap_serialize_config_v1), "");
+assert_same_field(struct xkb_keymap_serialize_config, _v1, size);
+assert_same_field(struct xkb_keymap_serialize_config, _v1, flags);
+assert_same_field(struct xkb_keymap_serialize_config, _v1, format);
+assert_same_field(struct xkb_keymap_serialize_config, _v1, layouts);
+assert_same_field(struct xkb_keymap_serialize_config, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_keymap_serialize_config) * 30 <=
@@ -74,6 +80,13 @@ assert_no_padding(struct xkb_keymap_serialize_result, reserved);
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_serialize_result) ==
               sizeof(struct xkb_keymap_serialize_result_v1), "");
+assert_same_field(struct xkb_keymap_serialize_result, _v1, size);
+// NOLINTBEGIN(bugprone-sizeof-expression)
+assert_same_field(struct xkb_keymap_serialize_result, _v1, serialized);
+// NOLINTEND(bugprone-sizeof-expression)
+assert_same_field(struct xkb_keymap_serialize_result, _v1, length);
+assert_same_field(struct xkb_keymap_serialize_result, _v1, layouts);
+assert_same_field(struct xkb_keymap_serialize_result, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_keymap_serialize_result) * 30 <=
