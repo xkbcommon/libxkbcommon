@@ -2152,7 +2152,12 @@ test_shortcuts_tweak(struct xkb_context *context)
      * Use modifiers tweak in addition to the shortcuts tweak
      */
 
-    assert(xkb_machine_builder_remap_mods(builder, ctrl | alt, level3) ==
+    const struct xkb_machine_builder_mods_remap_update mods_remap_update = {
+        .size = sizeof(mods_remap_update),
+        .source = ctrl | alt,
+        .target = level3
+    };
+    assert(xkb_machine_builder_update_mods_remap(builder, &mods_remap_update) ==
            XKB_SUCCESS);
 
     sm = xkb_machine_new(builder);
@@ -2630,16 +2635,34 @@ test_modifiers_tweak(struct xkb_context *context)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     assert(builder);
 
-    assert(xkb_machine_builder_remap_mods(builder, 0, 0) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_mods(builder, 0, level3) ==
-           XKB_ERROR_UNSUPPORTED_MODIFIER_MASK);
-    assert(xkb_machine_builder_remap_mods(builder, scroll, alt) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_mods(builder, super, level3) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_mods(builder, alt, level5) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_mods(builder, ctrl | alt, level3) == XKB_SUCCESS);
+    struct xkb_machine_builder_mods_remap_update update = {
+        .size = sizeof(update)
+    };
 
-    assert(xkb_machine_builder_remap_mods(builder, ctrl, shift) == XKB_SUCCESS);
-    assert(xkb_machine_builder_remap_mods(builder, ctrl, 0) == XKB_SUCCESS);
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+    update.source = 0;
+    update.target = level3;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) ==
+           XKB_ERROR_UNSUPPORTED_MODIFIER_MASK);
+    update.source = scroll;
+    update.target = alt;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+    update.source = super;
+    update.target = level3;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+    update.source = alt;
+    update.target = level5;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+    update.source = ctrl | alt;
+    update.target = level3;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+
+    update.source = ctrl;
+    update.target = shift;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
+    update.source = ctrl;
+    update.target = 0;
+    assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
 
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
@@ -3312,6 +3335,46 @@ test_modifiers_tweak(struct xkb_context *context)
     xkb_keymap_unref(keymap);
 }
 
+/* Example from the public header */
+static void
+test_xkb_machine_builder_mods_remap_update(struct xkb_context *context)
+{
+    struct xkb_keymap * const keymap_ =
+        test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V2,
+                           "evdev", "pc104", "us,de", ",T3",
+                           "grp:menu_toggle,grp:alt_caps_toggle,"
+                           "terminate:ctrl_alt_bksp,ctrl:copy");
+    assert(keymap_);
+
+    struct xkb_machine_builder *builder =
+        xkb_machine_builder_new(keymap_, XKB_MACHINE_BUILDER_NO_FLAGS);
+    assert(builder);
+
+    /* Use another variable `keymap` for the snippet */
+//! [xkb_machine_builder_mods_remap_update_example]
+    struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+
+    const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+    const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+    const xkb_mod_mask_t level3 = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
+
+    const struct xkb_machine_builder_mods_remap_update update = {
+        .size = sizeof(update),
+        .source = ctrl | alt,
+        .target = level3
+    };
+    const enum xkb_error_code error =
+        xkb_machine_builder_update_mods_remap(builder, &update);
+    if (error != XKB_SUCCESS) {
+        // handle error
+        assert(!"error");
+    }
+//! [xkb_machine_builder_mods_remap_update_example]
+
+    xkb_machine_builder_destroy(builder);
+    xkb_keymap_unref(keymap_);
+}
+
 int
 main(void)
 {
@@ -3340,6 +3403,7 @@ main(void)
     test_overlays(context);
     test_modifiers_tweak(context);
     test_shortcuts_tweak(context);
+    test_xkb_machine_builder_mods_remap_update(context);
 
     xkb_context_unref(context);
     return EXIT_SUCCESS;

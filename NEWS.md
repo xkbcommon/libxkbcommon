@@ -23,7 +23,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 [lenient keymap parser]: @ref XKB_KEYMAP_COMPILE_STRICT_MODE
 [keyboard overlays]: @ref key-behavior-overlay
 [reference layout for keyboard shortcuts]: @ref xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout
-[modifier-remapping]: @ref xkb_machine_builder::xkb_machine_builder_remap_mods
+[modifier-remapping]: @ref xkb_machine_builder::xkb_machine_builder_update_mods_remap
 [sticky keys]: @ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
 
 ## Keymap text format
@@ -238,7 +238,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_machine_builder::xkb_machine_builder_get_keymap()`
     - `xkb_machine_builder::xkb_machine_builder_update_a11y()`,
       `struct xkb_machine_builder_a11y_update`
-    - `xkb_machine_builder::xkb_machine_builder_remap_mods()`
+    - `xkb_machine_builder::xkb_machine_builder_update_mods_remap()`,
+      `struct xkb_machine_builder_mods_remap_update`
     - `xkb_machine_builder::xkb_machine_builder_update_shortcut_mods()`
     - `xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
   - `enum xkb_machine_builder_flags` (new)
@@ -316,7 +317,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `xkb_machine_builder::xkb_machine_builder_remap_shortcut_layout()`
 
   ([#753](https://github.com/xkbcommon/libxkbcommon/issues/753))
-- Added `xkb_machine_builder::xkb_machine_builder_remap_mods()` to enable remapping
+- Added `xkb_machine_builder::xkb_machine_builder_update_mods_remap()` to enable remapping
   modifiers combos, e.g. to make `Control+Alt` map to `LevelThree` (`AltGr`).
   This helps improving *compatibility* across platforms.
   ([#914](https://github.com/xkbcommon/libxkbcommon/issues/914))

@@ -179,6 +179,35 @@ assert_same_field(struct xkb_machine_builder_a11y_update, _v1, flags);
 static_assert(sizeof(struct xkb_machine_builder_a11y_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
+/**
+ * Version 1 of `xkb_machine_builder_mods_remap_update`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_machine_builder_mods_remap_update_v1 {
+    uint32_t size;
+    xkb_mod_mask_t source;
+    xkb_mod_mask_t target;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_machine_builder_mods_remap_update, size, source);
+assert_no_padding(struct xkb_machine_builder_mods_remap_update, source, target);
+assert_no_padding(struct xkb_machine_builder_mods_remap_update, target);
+
+/* Current version is 1 */
+static_assert(
+    sizeof(struct xkb_machine_builder_mods_remap_update) ==
+    sizeof(struct xkb_machine_builder_mods_remap_update_v1), ""
+);
+assert_same_field(struct xkb_machine_builder_mods_remap_update, _v1, size);
+assert_same_field(struct xkb_machine_builder_mods_remap_update, _v1, source);
+assert_same_field(struct xkb_machine_builder_mods_remap_update, _v1, target);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_machine_builder_mods_remap_update) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
 /** Size of the *first version* of the struct */
 #define xkb_versioned_struct_size_v1(x) _Generic(                 \
     (x),                                                          \
@@ -189,7 +218,9 @@ static_assert(sizeof(struct xkb_machine_builder_a11y_update) * 30 <=
     const struct xkb_layout_policy_update *:                      \
         sizeof(struct xkb_layout_policy_update_v1),               \
     const struct xkb_machine_builder_a11y_update *:               \
-        sizeof(struct xkb_machine_builder_a11y_update_v1)         \
+        sizeof(struct xkb_machine_builder_a11y_update_v1),        \
+    const struct xkb_machine_builder_mods_remap_update *:         \
+        sizeof(struct xkb_machine_builder_mods_remap_update_v1)   \
 )
 
 /** Minimal *current* valid size of the struct */
@@ -202,7 +233,9 @@ static_assert(sizeof(struct xkb_machine_builder_a11y_update) * 30 <=
     const struct xkb_layout_policy_update *:                      \
         sizeof(struct xkb_layout_policy_update_v1),               \
     const struct xkb_machine_builder_a11y_update *:               \
-        sizeof(struct xkb_machine_builder_a11y_update_v1)         \
+        sizeof(struct xkb_machine_builder_a11y_update_v1),        \
+    const struct xkb_machine_builder_mods_remap_update *:         \
+        sizeof(struct xkb_machine_builder_mods_remap_update_v1)   \
 )
 
 /** Offset of the last meaningful field of the current struct */
@@ -215,7 +248,9 @@ static_assert(sizeof(struct xkb_machine_builder_a11y_update) * 30 <=
     const struct xkb_layout_policy_update *:                     \
         sizeof(struct xkb_layout_policy_update),                 \
     const struct xkb_machine_builder_a11y_update *:              \
-        sizeof(struct xkb_machine_builder_a11y_update)           \
+        sizeof(struct xkb_machine_builder_a11y_update),          \
+    const struct xkb_machine_builder_mods_remap_update *:        \
+        sizeof(struct xkb_machine_builder_mods_remap_update)     \
 )
 
 #define xkb_check_update_size(x) xkb_check_versioned_struct_size( \
@@ -246,6 +281,11 @@ static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_machine_builder_a11y_update *)NULL)),
     ""
 );
+static_assert(
+    xkb_versioned_struct_size_v1(((const struct xkb_machine_builder_mods_remap_update *)NULL)) <=
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_mods_remap_update *)NULL)),
+    ""
+);
 
 /* Minimal size is lower or equal to the current size */
 static_assert(
@@ -266,6 +306,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_machine_builder_a11y_update *)NULL)) <=
     sizeof(const struct xkb_machine_builder_a11y_update),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_mods_remap_update *)NULL)) <=
+    sizeof(const struct xkb_machine_builder_mods_remap_update),
     ""
 );
 

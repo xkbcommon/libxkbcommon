@@ -546,6 +546,14 @@ Nevertheless, the following snippet provide a minimal example to achieve it.
 
 @snippet "test/modifiers.c" xkb_keymap_mod_get_codes
 
+#### How to use Windows-style `AltGr`, i.e. remap `Control+Alt` to `LevelThree`?
+
+@figure@figcaption
+Remap `Control+Alt` to `LevelThree`.
+@endfigcaption
+@snippet "test/server-state.c" xkb_machine_builder_mods_remap_update_example
+@endfigure
+
 #### How to use keyboard shortcuts from a different layout?
 
 ##### The keyboard shortcuts mess

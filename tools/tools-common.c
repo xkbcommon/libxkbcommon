@@ -1375,7 +1375,12 @@ tools_set_modifiers_mappings(const struct xkb_machine_options *options,
             continue;
         }
 
-        if (xkb_machine_builder_remap_mods(builder, source, target) !=
+        const struct xkb_machine_builder_mods_remap_update update = {
+            .size = sizeof(update),
+            .source = source,
+            .target = target
+        };
+        if (xkb_machine_builder_update_mods_remap(builder, &update) !=
             XKB_SUCCESS) {
             fprintf(stderr,
                     "ERROR: cannot add modifiers mapping: "
