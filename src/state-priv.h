@@ -185,6 +185,13 @@ static_assert(sizeof(struct xkb_state_update) * 30 <=
         sizeof(struct xkb_layout_policy_update)           \
 )
 
+#define xkb_check_update_size(x) xkb_check_versioned_struct_size( \
+    xkb_versioned_struct_size_v1(x),                              \
+    xkb_versioned_struct_size_min(x),                             \
+    xkb_versioned_struct_reserved_offset(x),                      \
+    (x)                                                           \
+)
+
 /* V1 is the smallest struct version */
 static_assert(
     xkb_versioned_struct_size_v1(((const struct xkb_state_update *)NULL)) <=

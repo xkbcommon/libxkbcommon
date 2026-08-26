@@ -17,17 +17,13 @@ enum {
 };
 
 /**
- * Check that field `f` in compound type `T` must be contiguous with either
- * the next field (the 3rd argument) or the struct end (only 2 arguments).
+ * Check that field `f` in compound type `T` must be contiguous with either the
+ * next field (3rd argument) or the struct end (when using only 2 arguments).
  */
-#define assert_no_padding(T, f, ...) static_assert(\
-    offsetof(T, f) +                               \
-    sizeof(((T){0}).f) == sizeof(T)                \
-    __VA_OPT__(                                    \
-        - sizeof(T)                                \
-        + offsetof(T, __VA_ARGS__)                 \
-    ),                                             \
-    #T " has implicit padding after " #f           \
+#define assert_no_padding(T, f, ...) static_assert(      \
+    offsetof(T, f) + sizeof(((T){0}).f) ==               \
+    __VA_OPT__(offsetof(T, __VA_ARGS__) + 0 *) sizeof(T),\
+    #T " has implicit padding after " #f                 \
 )
 
 /**
