@@ -7,6 +7,7 @@
 #include "config.h"
 
 #include <assert.h>
+#include <stdalign.h>
 #include <stddef.h>
 
 #include "xkbcommon/xkbcommon.h"
@@ -77,6 +78,17 @@ assert_no_padding(struct xkb_state_components_update, reserved);
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_components_update) ==
               sizeof(struct xkb_state_components_update_v1), "");
+assert_same_field(struct xkb_state_components_update, _v1, size);
+assert_same_field(struct xkb_state_components_update, _v1, components);
+assert_same_field(struct xkb_state_components_update, _v1, affect_latched_mods);
+assert_same_field(struct xkb_state_components_update, _v1, latched_mods);
+assert_same_field(struct xkb_state_components_update, _v1, affect_locked_mods);
+assert_same_field(struct xkb_state_components_update, _v1, locked_mods);
+assert_same_field(struct xkb_state_components_update, _v1, latched_layout);
+assert_same_field(struct xkb_state_components_update, _v1, locked_layout);
+assert_same_field(struct xkb_state_components_update, _v1, affect_controls);
+assert_same_field(struct xkb_state_components_update, _v1, controls);
+assert_same_field(struct xkb_state_components_update, _v1, reserved);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_state_components_update) * 30 <=
@@ -101,6 +113,9 @@ assert_no_padding(struct xkb_layout_policy_update, redirect);
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_layout_policy_update) ==
               sizeof(struct xkb_layout_policy_update_v1), "");
+assert_same_field(struct xkb_layout_policy_update, _v1, size);
+assert_same_field(struct xkb_layout_policy_update, _v1, policy);
+assert_same_field(struct xkb_layout_policy_update, _v1, redirect);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_layout_policy_update) * 30 <=
@@ -127,6 +142,11 @@ assert_no_padding(struct xkb_state_update_v1, layout_policy);
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_state_update) ==
               sizeof(struct xkb_state_update_v1), "");
+assert_same_field(struct xkb_state_update, _v1, size);
+// NOLINTBEGIN(bugprone-sizeof-expression)
+assert_same_field(struct xkb_state_update, _v1, components);
+assert_same_field(struct xkb_state_update, _v1, layout_policy);
+// NOLINTEND(bugprone-sizeof-expression)
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_state_update) * 30 <=

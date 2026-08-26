@@ -31,6 +31,17 @@ enum {
 )
 
 /**
+ * Check that the offset, size and alignment of a field are identical
+ * in 2 structs.
+ */
+#define assert_same_field(T, suffix, f) static_assert(                         \
+    offsetof(T, f) == offsetof(T##suffix, f) &&                                \
+    sizeof(((T){0}).f) == sizeof(((T##suffix){0}).f) &&                        \
+    alignof(__typeof__(((T){0}).f)) == alignof(__typeof__(((T##suffix){0}).f)),\
+    "Field " #f " is different in " #T " and " #T #suffix                      \
+)
+
+/**
  * Check the size field of a versioned struct for forward-compatibility.
  *
  * @param v1_size      Size of the first version of the struct. A caller_size
