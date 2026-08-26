@@ -17,6 +17,20 @@ enum {
 };
 
 /**
+ * Check that field `f` in compound type `T` must be contiguous with either
+ * the next field (the 3rd argument) or the struct end (only 2 arguments).
+ */
+#define assert_no_padding(T, f, ...) static_assert(\
+    offsetof(T, f) +                               \
+    sizeof(((T){0}).f) == sizeof(T)                \
+    __VA_OPT__(                                    \
+        - sizeof(T)                                \
+        + offsetof(T, __VA_ARGS__)                 \
+    ),                                             \
+    #T " has implicit padding after " #f           \
+)
+
+/**
  * Check the size field of a versioned struct for forward-compatibility.
  *
  * @param v1_size      Size of the first version of the struct. A caller_size
