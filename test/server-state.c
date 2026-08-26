@@ -273,6 +273,7 @@ test_state_update(struct xkb_context *ctx)
         struct params {
             size_t size;
             uint32_t extra;
+            uint32_t reserved0;
             bool enabled;
         } root;
         struct params components;
@@ -347,6 +348,17 @@ test_state_update(struct xkb_context *ctx)
                 .enabled = true
             },
             .error = XKB_SUCCESS,
+        },
+
+        /*
+         * Invalid: reserved0 ≠ 0
+         */
+
+        {
+            .root = { sizeof(struct xkb_state_update), 0, .reserved0 = 1 },
+            .components = { .enabled = false },
+            .layout_policy = { .enabled = false },
+            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
 
         /*
@@ -439,6 +451,7 @@ test_state_update(struct xkb_context *ctx)
         const struct xkb_state_update_newer update = {
             .current = {
                 .size = tests[s].root.size,
+                .reserved0 = tests[s].root.reserved0,
                 .components = (tests[s].components.enabled)
                     ? (struct xkb_state_components_update*)&components
                     : NULL,
