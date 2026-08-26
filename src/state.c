@@ -1887,6 +1887,7 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
 {
     enum xkb_error_code error = XKB_SUCCESS;
     if ((error = xkb_check_state_update_size(update)) ||
+        (update->reserved0 != 0 && (error = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
         (update->components &&
          (error = xkb_check_state_update_size(update->components))) ||
         (update->layout_policy &&
