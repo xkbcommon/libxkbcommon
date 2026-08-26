@@ -1872,13 +1872,6 @@ state_update_layout_policy(struct xkb_server_state *state,
     }
 }
 
-#define xkb_check_state_update_size(x) xkb_check_versioned_struct_size( \
-    xkb_versioned_struct_size_v1(x),                                    \
-    xkb_versioned_struct_size_min(x),                                   \
-    xkb_versioned_struct_reserved_offset(x),                            \
-    (x)                                                                 \
-)
-
 /* Check ABI compatibility */
 static enum xkb_error_code
 check_state_update_abi_(struct xkb_context * restrict ctx,
@@ -1886,12 +1879,12 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
                         const struct xkb_state_update * restrict update)
 {
     enum xkb_error_code error = XKB_SUCCESS;
-    if ((error = xkb_check_state_update_size(update)) ||
+    if ((error = xkb_check_update_size(update)) ||
         (update->reserved0 != 0 && (error = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
         (update->components &&
-         (error = xkb_check_state_update_size(update->components))) ||
+         (error = xkb_check_update_size(update->components))) ||
         (update->layout_policy &&
-         (error = xkb_check_state_update_size(update->layout_policy)))) {
+         (error = xkb_check_update_size(update->layout_policy)))) {
         xkb_log_abi_error(ctx, func, error);
     }
     return error;
