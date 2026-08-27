@@ -213,7 +213,7 @@ test_machine_builder(struct xkb_context *ctx)
     assert(sm);
 
     xkb_machine_unref(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
 
@@ -238,7 +238,7 @@ test_initial_derived_values(struct xkb_context *ctx)
     assert(xkb_state_led_name_is_active(state, XKB_LED_NAME_SCROLL));
 
     xkb_machine_unref(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
 
@@ -258,7 +258,7 @@ test_state_update(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
 
@@ -564,7 +564,7 @@ test_group_wrap(struct xkb_context *ctx)
 
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
 
     struct xkb_state * const state = xkb_state_new(keymap);
     assert(state);
@@ -672,7 +672,7 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(builder);
     struct xkb_machine *sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
@@ -937,7 +937,7 @@ test_sticky_keys(struct xkb_context *ctx)
            XKB_SUCCESS);
     sm = xkb_machine_new(sm_builder);
     assert(sm);
-    xkb_machine_builder_destroy(sm_builder);
+    xkb_machine_builder_unref(sm_builder);
     events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     state = xkb_state_new(keymap);
@@ -1009,7 +1009,7 @@ test_redirect_key(struct xkb_context *ctx)
 
     struct xkb_machine *sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
 
     static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
     static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
@@ -2460,7 +2460,7 @@ test_shortcuts_tweak(struct xkb_context *context)
 
     xkb_machine_unref(sm);
     xkb_events_destroy(events);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
 
@@ -2502,7 +2502,7 @@ test_overlays(struct xkb_context *context)
     assert(builder);
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     struct xkb_events * events = xkb_events_new(context, NULL, NULL);
     assert(events);
 
@@ -2674,7 +2674,7 @@ test_modifiers_tweak(struct xkb_context *context)
 
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
 
     struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
     assert(events);
@@ -3374,7 +3374,7 @@ test_xkb_machine_builder_mods_remap_update(struct xkb_context *context)
     }
 //! [xkb_machine_builder_mods_remap_update_example]
 
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap_);
 }
 
@@ -3645,7 +3645,7 @@ if (error != XKB_SUCCESS) {
 
         xkb_events_destroy(events);
         xkb_machine_unref(sm);
-        xkb_machine_builder_destroy(builder);
+        xkb_machine_builder_unref(builder);
         xkb_keymap_unref(keymap_);
     }
 }
@@ -3663,7 +3663,7 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
     xkb_machine_unref(NULL);
-    xkb_machine_builder_destroy(NULL);
+    xkb_machine_builder_unref(NULL);
     xkb_events_destroy(NULL);
 
     test_machine_builder(context);

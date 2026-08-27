@@ -191,7 +191,7 @@ update_keymap(struct keyboard *kbd)
                 }
 
                 kbd->machine = xkb_machine_new(machine_builder);
-                xkb_machine_builder_destroy(machine_builder);
+                xkb_machine_builder_unref(machine_builder);
                 if (!kbd->machine)
                     return -1;
             }
