@@ -3241,10 +3241,20 @@ enum xkb_machine_builder_flags {
  * `xkb_machine` objects can then be created from the builder using
  * `xkb_machine::xkb_machine_new()`.
  *
- * @param[in] keymap  The keymap which the state machine will use.
- * @param[in] flags   Flags to control the builder behavior, or 0.
+ * @param[in] keymap
+ *   The keymap which the state machine will use.
+ * @param[in] flags
+ *   Flags to control the builder behavior, or 0.
+ * @param[out] error
+ *   Pointer to store the resulting [error code], or `NULL` if not needed.
  *
  * @returns A new `xkb_machine` builder object, or `NULL` on failure.
+ *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or to an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - `::XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS`
  *
  * @since 1.14.0
  *
@@ -3256,7 +3266,8 @@ enum xkb_machine_builder_flags {
  */
 XKB_EXPORT struct xkb_machine_builder *
 xkb_machine_builder_new(struct xkb_keymap *keymap,
-                        enum xkb_machine_builder_flags flags);
+                        enum xkb_machine_builder_flags flags,
+                        enum xkb_error_code *error);
 
 /**
  * Take a new reference on an `xkb_machine` builder object.

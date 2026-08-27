@@ -1560,7 +1560,7 @@ xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
                                      const struct xkb_machine_options *options)
 {
     struct xkb_machine_builder * const builder =
-        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     if (!builder)
         return NULL;
 
