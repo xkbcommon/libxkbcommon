@@ -3007,7 +3007,8 @@ xkb_event_serialize_layout(const struct xkb_event *event,
  *
  * @sa `xkb_events_new()`
  * @sa `xkb_events_next()`
- * @sa `xkb_events_destroy()`
+ * @sa `xkb_events_ref()`
+ * @sa `xkb_events_unref()`
  * @sa `xkb_machine::xkb_machine_process_key()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  */
@@ -3067,7 +3068,7 @@ struct xkb_events_config {
 };
 
 /**
- * Create a new [event](@ref xkb_event) collection object.
+ * Create a new [event] collection object.
  *
  * @param[in] context
  *   The context in which to create the object.
@@ -3090,12 +3091,14 @@ struct xkb_events_config {
  * @since 1.14.0
  *
  * @sa `xkb_events_config`
- * @sa `xkb_events_destroy()`
+ * @sa `xkb_events_ref()`
+ * @sa `xkb_events_unref()`
  * @sa `xkb_events_next()`
  * @sa `xkb_machine::xkb_machine_process_key()`
  *
  * @memberof xkb_events
  *
+ * [event]: @ref xkb_event
  * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_events *
@@ -3104,31 +3107,57 @@ xkb_events_new(struct xkb_context *context,
                enum xkb_error_code *error);
 
 /**
- * Free an event collection.
+ * Take a new reference on an [event](@ref xkb_event) collection object.
+ *
+ * @note In case the collection is a **batch** of events, it is reset
+ * on each `process_*` function call, such as
+ * `xkb_machine::xkb_machine_process_key()`, so it cannot be used concurrently.
+ *
+ * @param[in] builder The collection to reference.
+ *
+ * @returns The passed-in collection.
+ *
+ * @sa `xkb_events_new()`
+ * @sa `xkb_events_unref()`
+ *
+ * @since 1.14.0
+ * @memberof xkb_events
+ */
+XKB_EXPORT struct xkb_events *
+xkb_events_ref(struct xkb_events *events);
+
+/**
+ * Release a reference on an [event] collection object,
+ * and possibly free it.
  *
  * @param[in] events
- *     The event collection to free.
+ *     The [event] collection object.
  *     If it is `NULL`, this function does nothing.
  *
  * @since 1.14.0
  *
  * @sa `xkb_events_new()`
+ * @sa `xkb_events_ref()`
  *
  * @memberof xkb_events
+ *
+ * [event]: @ref xkb_event
  */
 XKB_EXPORT void
-xkb_events_destroy(struct xkb_events *events);
+xkb_events_unref(struct xkb_events *events);
 
 /**
- * Get the next event from an event collection.
+ * Get the next [event] from an [event] collection.
  *
- * @param[in] events The event collection.
+ * @param[in] events The [event] collection.
  *
- * @returns The next event, or `NULL` if there are no more events to read.
+ * @returns The next [event], or `NULL` if there are no more events to read.
  *
  * @since 1.14.0
  *
  * @memberof xkb_events
+ *
+ * [event]: @ref xkb_event
  */
 XKB_EXPORT const struct xkb_event *
 xkb_events_next(struct xkb_events *events);

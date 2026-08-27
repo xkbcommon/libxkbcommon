@@ -196,7 +196,7 @@ err_kbd:
 err_compose_state:
     xkb_state_unref(state);
 err_state:
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
 err_xkb_events:
     xkb_machine_unref(machine);
 err_machine:
@@ -216,7 +216,7 @@ keyboard_free(struct keyboard *kbd)
         close(kbd->fd);
     free(kbd->path);
     xkb_machine_unref(kbd->machine);
-    xkb_events_destroy(kbd->events);
+    xkb_events_unref(kbd->events);
     xkb_state_unref(kbd->state);
     xkb_compose_state_unref(kbd->compose_state);
     free(kbd);

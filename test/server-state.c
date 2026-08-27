@@ -491,7 +491,7 @@ test_state_update(struct xkb_context *ctx)
         );
     }
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_state_unref(state);
     xkb_keymap_unref(keymap);
@@ -652,7 +652,7 @@ test_group_wrap(struct xkb_context *ctx)
                   "%"PRIu32);
     }
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_state_unref(state);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
@@ -918,7 +918,7 @@ test_sticky_keys(struct xkb_context *ctx)
     }
 
     xkb_state_unref(state);
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
 
     /*
@@ -989,7 +989,7 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(mods == 0);
 
     xkb_state_unref(state);
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
 
     xkb_keymap_unref(keymap);
@@ -1199,7 +1199,7 @@ test_redirect_key(struct xkb_context *ctx)
                             tests[t].up.events_count));
     }
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -2459,7 +2459,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     );
 
     xkb_machine_unref(sm);
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
@@ -2615,7 +2615,7 @@ test_overlays(struct xkb_context *context)
         }
     }
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -3333,7 +3333,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
     );
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -3643,7 +3643,7 @@ if (error != XKB_SUCCESS) {
             KEY_Y        , BOTH, ys[example][1].unmatched, FINISH
         ));
 
-        xkb_events_destroy(events);
+        xkb_events_unref(events);
         xkb_machine_unref(sm);
         xkb_machine_builder_unref(builder);
         xkb_keymap_unref(keymap_);
@@ -3664,7 +3664,7 @@ main(void)
     xkb_state_unref(NULL);
     xkb_machine_unref(NULL);
     xkb_machine_builder_unref(NULL);
-    xkb_events_destroy(NULL);
+    xkb_events_unref(NULL);
 
     test_machine_builder(context);
     test_initial_derived_values(context);
@@ -3679,7 +3679,7 @@ main(void)
            error == XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS);
     struct xkb_events *events = xkb_events_new(context, NULL, &error);
     assert(events && error == XKB_SUCCESS);
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
 
     test_state_update(context);
     test_group_wrap(context);

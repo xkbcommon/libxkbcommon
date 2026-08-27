@@ -745,7 +745,7 @@ seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps)
         else
             wl_keyboard_destroy(seat->wl_kbd);
 
-        xkb_events_destroy(seat->events);
+        xkb_events_unref(seat->events);
         xkb_state_unref(seat->state);
         xkb_machine_unref(seat->machine);
         xkb_keymap_unref(seat->keymap);
@@ -822,7 +822,7 @@ seat_destroy(struct interactive_seat *seat)
         else
             wl_keyboard_destroy(seat->wl_kbd);
 
-        xkb_events_destroy(seat->events);
+        xkb_events_unref(seat->events);
         xkb_machine_unref(seat->machine);
         xkb_state_unref(seat->state);
         xkb_compose_state_unref(seat->compose_state);

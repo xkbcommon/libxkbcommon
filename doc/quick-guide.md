@@ -312,7 +312,7 @@ int new_keyboard(…)
 
 int destroy_keyboard(…)
 {
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(machine);
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
