@@ -758,7 +758,7 @@ test_key_iterator(void)
     while ((kc = xkb_keymap_key_iterator_next(iter)) != XKB_KEYCODE_INVALID) {
         // ...
     }
-    xkb_keymap_key_iterator_destroy(iter);
+    xkb_keymap_key_iterator_unref(iter);
     //! [xkb_keymap_key_iterator_new_example]
 
     /* Reject invalid flags */
@@ -894,7 +894,7 @@ test_key_iterator(void)
 
             assert(count == expected_count);
 
-            xkb_keymap_key_iterator_destroy(iter);
+            xkb_keymap_key_iterator_unref(iter);
         }
 
         xkb_keymap_unref(keymap);

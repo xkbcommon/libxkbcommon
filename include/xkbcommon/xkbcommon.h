@@ -2026,7 +2026,8 @@ xkb_keymap_max_keycode(struct xkb_keymap *keymap);
  *
  * @sa `xkb_keycode_t`
  * @sa `xkb_keymap_key_iterator_new()`
- * @sa `xkb_keymap_key_iterator_destroy()`
+ * @sa `xkb_keymap_key_iterator_ref()`
+ * @sa `xkb_keymap_key_iterator_unref()`
  * @since 1.14.0
  */
 struct xkb_keymap_key_iterator;
@@ -2122,7 +2123,8 @@ struct xkb_keymap_key_iterator_config {
  * @sa `xkb_keymap_key_iterator`
  * @sa `xkb_keymap_key_iterator_flags`
  * @sa `xkb_keymap_key_iterator_next()`
- * @sa `xkb_keymap_key_iterator_destroy()`
+ * @sa `xkb_keymap_key_iterator_ref()`
+ * @sa `xkb_keymap_key_iterator_unref()`
  * @since 1.14.0
  * @memberof xkb_keymap_key_iterator
  *
@@ -2136,16 +2138,44 @@ xkb_keymap_key_iterator_new(
 );
 
 /**
- * Free a keymap’s keys iterator.
+ * Take a new reference on an keymap’s [keys] [iterator] object.
  *
- * @param[in] iter The iterator to free. If it is `NULL`, do nothing.
+ * @param[in] iter The [iterator] to reference.
+ *
+ * @returns The passed-in [iterator].
  *
  * @sa `xkb_keymap_key_iterator_new()`
+ * @sa `xkb_keymap_key_iterator_unref()`
+ *
  * @since 1.14.0
  * @memberof xkb_keymap_key_iterator
+ *
+ * [keys]: @ref xkb_keycode_t
+ * [iterator]: @ref xkb_keymap_key_iterator
+ */
+XKB_EXPORT struct xkb_keymap_key_iterator *
+xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter);
+
+/**
+ * Release a reference on an keymap’s [keys] [iterator],
+ * and possibly free it.
+ *
+ * @param[in] iter
+ *     The iterator object.
+ *     If it is `NULL`, this function does nothing.
+ *
+ * @sa `xkb_keymap_key_iterator_new()`
+ * @sa `xkb_keymap_key_iterator_ref()`
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_keymap_key_iterator
+ *
+ * [keys]: @ref xkb_keycode_t
+ * [iterator]: @ref xkb_keymap_key_iterator
  */
 XKB_EXPORT void
-xkb_keymap_key_iterator_destroy(struct xkb_keymap_key_iterator *iter);
+xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter);
 
 /**
  * Get the next [keycode] from a keymap’s keys iterator.
