@@ -16,11 +16,12 @@
 
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
+#include "features/enums.h"
+#include "keysym.h"
+#include "keysym-names.h"
 #include "utf8-decoding.h"
 #include "utils.h"
 #include "utils-numbers.h"
-#include "keysym.h"
-#include "keysym-names.h"
 
 static ssize_t
 find_keysym_index(xkb_keysym_t ks)
@@ -239,10 +240,7 @@ parse_keysym_hex(const char *s, uint32_t *out)
 xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
 {
-    static const enum xkb_keysym_flags XKB_KEYSYM_FLAGS =
-        XKB_KEYSYM_CASE_INSENSITIVE;
-
-    if (flags & ~XKB_KEYSYM_FLAGS)
+    if (flags & ~(enum xkb_keysym_flags)XKB_KEYSYM_FLAGS_VALUES)
         return XKB_KEY_NoSymbol;
 
     const struct name_keysym *entry = NULL;

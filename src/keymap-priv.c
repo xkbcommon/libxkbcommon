@@ -50,13 +50,13 @@ xkb_keymap_new(struct xkb_context *ctx, const char *func,
                enum xkb_keymap_format format,
                enum xkb_keymap_compile_flags flags)
 {
-    static const enum xkb_keymap_compile_flags XKB_KEYMAP_COMPILE_FLAGS =
-        (enum xkb_keymap_compile_flags) XKB_KEYMAP_COMPILE_FLAGS_VALUES;
-
-    if (flags & ~XKB_KEYMAP_COMPILE_FLAGS) {
+    const enum xkb_keymap_compile_flags invalid_flags = (
+        flags & ~(enum xkb_keymap_compile_flags)XKB_KEYMAP_COMPILE_FLAGS_VALUES
+    );
+    if (invalid_flags) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "%s: unrecognized keymap compilation flags: 0x%x\n", func,
-                (flags & ~XKB_KEYMAP_COMPILE_FLAGS));
+                "%s: unrecognized keymap compilation flags: 0x%x\n",
+                func, invalid_flags);
         return NULL;
     }
 

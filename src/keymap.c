@@ -279,21 +279,22 @@ xkb_keymap_serialize(const struct xkb_keymap *keymap,
                      struct xkb_keymap_serialize_result *result)
 {
     /* Check ABI compatibility */
-    enum xkb_error_code error =
+    const enum xkb_error_code error =
         check_keymap_serialize_abi(keymap->ctx, __func__, config, result);
     if (error)
         return error;
 
     struct xkb_keymap_serialize_config new_config = *config;
 
-    static const enum xkb_keymap_serialize_flags XKB_KEYMAP_SERIALIZE_FLAGS
-        = (enum xkb_keymap_serialize_flags) XKB_KEYMAP_SERIALIZE_FLAGS_VALUES;
-
-    if (new_config.flags & ~XKB_KEYMAP_SERIALIZE_FLAGS) {
+    const enum xkb_keymap_serialize_flags invalid_flags = (
+        new_config.flags &
+        ~(enum xkb_keymap_serialize_flags)XKB_KEYMAP_SERIALIZE_FLAGS_VALUES
+    );
+    if (invalid_flags) {
         log_err_func(keymap->ctx,
                      XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS_,
                      "unrecognized serialization flags: %#x\n",
-                     (new_config.flags & ~XKB_KEYMAP_SERIALIZE_FLAGS));
+                     invalid_flags);
         return XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS;
     }
 
