@@ -1412,7 +1412,6 @@ enum xkb_keymap_compile_flags {
      * - unknown compound statement
      * - unknown action/action parameter
      * - invalid action parameter value
-     * - TODO
      *
      * @since 1.14.0
      */
@@ -2139,6 +2138,10 @@ xkb_keymap_key_iterator_new(
 
 /**
  * Take a new reference on an keymap’s [keys] [iterator] object.
+ *
+ * @note The [iterator]’s cursor is a *shared* state: advancing it via
+ * `xkb_keymap_key_iterator_next()` through *any* reference advances it
+ * for *every* reference to the same iterator.
  *
  * @param[in] iter The [iterator] to reference.
  *
@@ -3139,11 +3142,16 @@ xkb_events_new(struct xkb_context *context,
 /**
  * Take a new reference on an [event](@ref xkb_event) collection object.
  *
- * @note In case the collection is a **batch** of events, it is reset
- * on each `process_*` function call, such as
- * `xkb_machine::xkb_machine_process_key()`, so it cannot be used concurrently.
+ * @note In case the collection is a **batch** of events, it is reset on each
+ * `process_*` function call, such as `xkb_machine::xkb_machine_process_key()`
+ * or `xkb_machine::xkb_machine_process_synthetic()`. A reference does not
+ * preserve the collection’s contents: if the [machine] processes another
+ * frame while a reference is held, the events visible through *every*
+ * reference are replaced by that frame’s events. Do not hold a reference
+ * past the next `process_*` call if you still need to read the current
+ * frame's events.
  *
- * @param[in] builder The collection to reference.
+ * @param[in] events The collection to reference.
  *
  * @returns The passed-in collection.
  *
@@ -3152,6 +3160,8 @@ xkb_events_new(struct xkb_context *context,
  *
  * @since 1.14.0
  * @memberof xkb_events
+ *
+ * [machine]: @ref xkb_machine
  */
 XKB_EXPORT struct xkb_events *
 xkb_events_ref(struct xkb_events *events);
@@ -3321,7 +3331,6 @@ enum xkb_a11y_flags {
      * @since 1.14.0
      *
      * [sticky keys]: @ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
-     * @since 1.14.0
      */
     XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS = (1 << 0),
     /**
