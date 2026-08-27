@@ -266,8 +266,8 @@ check_keymap_serialize_abi(
 )
 {
     enum xkb_error_code error;
-    if ((error = xkb_check_keymap_serialize_struct_size(config)) ||
-        (error = xkb_check_keymap_serialize_struct_size(result))) {
+    if ((error = xkb_check_keymap_abi(config)) ||
+        (error = xkb_check_keymap_abi(result))) {
         xkb_log_abi_error(ctx, func, error);
     }
     return error;
@@ -691,16 +691,37 @@ struct xkb_keymap_key_iterator {
 };
 
 struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
-                            enum xkb_keymap_key_iterator_flags flags)
+xkb_keymap_key_iterator_new(
+    struct xkb_keymap * restrict keymap,
+    const struct xkb_keymap_key_iterator_config * restrict config,
+    enum xkb_error_code * restrict error
+)
 {
+    /* Handle default configuration */
+    static const struct xkb_keymap_key_iterator_config default_config = {
+        .size = sizeof(default_config)
+    };
+    if (!config)
+        config = &default_config;
+
+    /* Check ABI compatibility */
+    const enum xkb_error_code abi_error = xkb_check_keymap_abi(config);
+    if (abi_error) {
+        xkb_log_abi_error(keymap->ctx, __func__, abi_error);
+        if (error)
+            *error = abi_error;
+        return NULL;
+    }
+
     /* Sanitize input */
     const uint32_t invalid_flags =
-        ((uint32_t)flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
+        (config->flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
     if (invalid_flags) {
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_,
                      "Unsupported keymap iterator flags: 0x%"PRIx32"\n",
                      invalid_flags);
+        if (error)
+            *error = XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS;
         return NULL;
     }
 
@@ -708,8 +729,13 @@ xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
     if (!iter) {
         log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                       "Could not allocate a keymap key iterator.\n");
+        if (error)
+            *error = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
     }
+
+    if (error)
+        *error = XKB_SUCCESS;
 
     iter->keymap = xkb_keymap_ref(keymap);
 
@@ -720,8 +746,8 @@ xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
         return iter;
     }
 
-    iter->skip_unbound = (flags & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
-    iter->increment = (flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
+    iter->skip_unbound = (config->flags & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
+    iter->increment = (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
         ? -1
         : 1;
     iter->min = (keymap->num_keys_low)

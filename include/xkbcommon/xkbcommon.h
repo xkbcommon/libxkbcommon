@@ -411,6 +411,8 @@ typedef uint32_t xkb_led_mask_t;
  * functions across this library accept **extensible structures** that
  * share a common **ABI contract**.
  *
+ * @tableofcontents{html:2}
+ *
  * @section abi-struct-layout Layout
  *
  * Every extensible structure begins with a **mandatory `uint32_t size` first
@@ -2031,13 +2033,15 @@ struct xkb_keymap_key_iterator;
 
 /**
  * @enum xkb_keymap_key_iterator_flags
- * Flags for `xkb_keymap_key_iterator_new()`.
+ * Flags for `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`.
  *
  * @since 1.14.0
  */
 enum xkb_keymap_key_iterator_flags {
     /**
-     * Do not apply any flags.
+     * Do not apply any flags:
+     * - iterate keys in *ascending* order;
+     * - iterate all keys, even if unbound (i.e. with no group).
      *
      * @since 1.14.0
      */
@@ -2059,23 +2063,61 @@ enum xkb_keymap_key_iterator_flags {
 };
 
 /**
+ * @struct xkb_keymap_key_iterator_config
+ * @ingroup abi-struct-contract
+ *
+ * Options for creating a new `xkb_keymap_key_iterator`.
+ *
+ * @sa `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
+ *
+ * @since 1.14.0
+ */
+struct xkb_keymap_key_iterator_config {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * [Flags] to control the iterator behavior, or `0`
+     * (`::XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS`) for the default.
+     *
+     * @since 1.14.0
+     *
+     * [Flags]: @ref xkb_keymap_key_iterator_flags
+     */
+    uint32_t flags;
+};
+
+/**
  * Create a new iterator over a keymap’s keys.
  *
- * Intended use:
+ * @figure@figcaption
+ * Intended use
+ * @endfigcaption
+ * @snippet "test/keymap.c" xkb_keymap_key_iterator_new_example
+ * @endfigure
  *
- * ```c
- * struct xkb_keymap_key_iterator *iter = xkb_keymap_key_iterator_new(keymap, 0);
- * xkb_keycode_t kc;
- * while ((kc = xkb_keymap_key_iterator_next(iter)) != XKB_KEYCODE_INVALID) {
- *     // ...
- * }
- * xkb_keymap_key_iterator_destroy(iter);
- * ```
- *
- * @param[in] keymap The keymap to iterate over.
- * @param[in] flags  Flags to control the iterator behavior, or 0.
+ * @param[in] keymap
+ *     The keymap to iterate over.
+ * @param[in] config
+ *     Configuration to control the iterator behavior, or `NULL` for the
+ *     defaults: an `xkb_keymap_key_iterator_config` struct with `size`
+ *     set per @ref abi-struct-contract and all other fields zeroed.
+ * @param[out] error
+ *     Pointer to store the resulting [error code], or `NULL` if not needed.
  *
  * @returns A new keys iterator, or `NULL` on failure.
+ *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
  *
  * @sa `xkb_keymap_key_iterator`
  * @sa `xkb_keymap_key_iterator_flags`
@@ -2083,10 +2125,15 @@ enum xkb_keymap_key_iterator_flags {
  * @sa `xkb_keymap_key_iterator_destroy()`
  * @since 1.14.0
  * @memberof xkb_keymap_key_iterator
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
-                            enum xkb_keymap_key_iterator_flags flags);
+xkb_keymap_key_iterator_new(
+    struct xkb_keymap *keymap,
+    const struct xkb_keymap_key_iterator_config *config,
+    enum xkb_error_code *error
+);
 
 /**
  * Free a keymap’s keys iterator.
