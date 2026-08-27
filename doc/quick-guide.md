@@ -291,9 +291,16 @@ int new_keyboard(…)
             exit(EXIT_FAILURE);
         }
     }
-    struct xkb_machine *machine = xkb_machine_new(machine_builder);
+    struct xkb_machine *machine = xkb_machine_new(machine_builder, &error);
     xkb_machine_builder_unref(machine_builder);
-    if (!machine) <error>
+    if (!machine) {
+        assert(error != XKB_SUCCESS);
+        switch (error) {
+        // ...
+        default:
+            exit(EXIT_FAILURE);
+        }
+    }
 
     struct xkb_events *events;
 

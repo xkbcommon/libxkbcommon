@@ -771,7 +771,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
-    struct xkb_machine *sm = xkb_machine_new(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
     struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);

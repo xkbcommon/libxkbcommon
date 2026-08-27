@@ -3113,7 +3113,7 @@ cmp_mod_masks(const void *a, const void *b)
     return (m1 < m2) ? -1 : +1;
 }
 
-static bool
+static enum xkb_error_code
 machine_set_mods(struct xkb_machine *sm,
                  const machine_mods_mappings *raw_mappings)
 {
@@ -3153,10 +3153,10 @@ machine_set_mods(struct xkb_machine *sm,
         };
     }
 
-    return true;
+    return XKB_SUCCESS;
 }
 
-static bool
+static enum xkb_error_code
 machine_set_shortcuts(
     struct xkb_machine * restrict sm,
     const struct xkb_shortcuts_config_options * restrict options
@@ -3166,7 +3166,7 @@ machine_set_shortcuts(
         sm->config.shortcuts = (struct machine_shortcuts_config) {
             .entries = NULL
         };
-        return true;
+        return XKB_SUCCESS;
     }
 
     struct xkb_keymap * const keymap = sm->base.base.keymap;
@@ -3174,7 +3174,7 @@ machine_set_shortcuts(
     struct xkb_shortcuts_config_entry * entries =
         calloc(keymap->num_groups, sizeof(*entries));
     if (!entries)
-        return false;
+        return XKB_ERROR_ALLOCATION_FAILURE;
 
     const xkb_layout_index_t count = MIN(
         keymap->num_groups,
@@ -3222,25 +3222,38 @@ machine_set_shortcuts(
     sm->config.shortcuts = (struct machine_shortcuts_config) {
         .entries = entries
     };
-    return true;
+    return XKB_SUCCESS;
 }
 
 struct xkb_machine *
-xkb_machine_new(const struct xkb_machine_builder *builder)
+xkb_machine_new(const struct xkb_machine_builder * restrict builder,
+                enum xkb_error_code * restrict error)
 {
     struct xkb_machine * const machine = calloc(1, sizeof(*machine));
-    if (!machine)
+    if (!machine) {
+        log_err_func1(builder->keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "cannot allocate machine\n");
+        if (error)
+            *error = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
+    }
 
     xkb_server_state_init(&machine->base, builder->keymap, SERVER_STATE,
                           builder->controls.a11y.affect,
                           builder->controls.a11y.flags);
 
-    if (!machine_set_mods(machine, &builder->mods) ||
-        !machine_set_shortcuts(machine, &builder->shortcuts))
+    enum xkb_error_code error_;
+    if ((error_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
+        (error_ = machine_set_shortcuts(machine, &builder->shortcuts)) !=
+        XKB_SUCCESS) {
+        *error = error_;
         goto error;
+    }
 
     darray_init(machine->overlays.keys);
+
+    if (error)
+        *error = XKB_SUCCESS;
 
     return machine;
 

@@ -120,7 +120,7 @@ keyboard_new(struct dirent *ent,
     }
 
     if (use_events_api) {
-        machine = xkb_machine_new(builder);
+        machine = xkb_machine_new(builder, NULL);
         if (!machine) {
             fprintf(stderr, "Couldn't create xkb state machine for %s\n", path);
             ret = -EFAULT;

@@ -3263,6 +3263,8 @@ enum xkb_machine_builder_flags {
  * @sa `xkb_machine::xkb_machine_new()`
  *
  * @memberof xkb_machine_builder
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_machine_builder *
 xkb_machine_builder_new(struct xkb_keymap *keymap,
@@ -3664,19 +3666,30 @@ xkb_machine_builder_update_shortcut_layout(
  * `xkb_state::xkb_state_update_mask()`.
  * See @ref server-client-state for further information.
  *
- * @param[in] builder The [builder](@ref xkb_machine_builder) object from which
- *                    to create the state machine.
+ * @param[in] builder
+ *   The [builder](@ref xkb_machine_builder) object from which
+ *   to create the state machine.
+ * @param[out] error
+ *   Pointer to store the resulting [error code], or `NULL` if not needed.
  *
  * @returns A new keyboard state machine object, or `NULL` on failure.
+ *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or to an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
  *
  * @since 1.14.0
  *
  * @sa `xkb_machine_builder::xkb_machine_builder_new()`
  *
  * @memberof xkb_machine
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_machine *
-xkb_machine_new(const struct xkb_machine_builder *builder);
+xkb_machine_new(const struct xkb_machine_builder *builder,
+                enum xkb_error_code *error);
 
 /**
  * Take a new reference on a `xkb_machine` object.
