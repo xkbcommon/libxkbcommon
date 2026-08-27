@@ -535,6 +535,18 @@
   details: |
     xkbcommon support the Unicode sequence `\u{NNNN}`, where `NNNN` denotes a
     Unicode code point in hexadecimal format in the range `1‥0x10ffff`.
+- id: "unsupported-events-flags"
+  code: 611
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_events_flags` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_feature_supported(XKB_FEATURE_ENUM_EVENTS_FLAGS, flag)
+    ```
 - id: "invalid-real-modifier"
   code: 623
   added: ALWAYS

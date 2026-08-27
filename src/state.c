@@ -3732,7 +3732,7 @@ xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags)
     const enum xkb_events_flags invalid_flags =
         (flags & ~(enum xkb_events_flags)XKB_EVENTS_FLAGS_VALUES);
     if (invalid_flags) {
-        log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
+        log_err_func(context, XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS_,
                      "unrecognized events batch flags: %#x\n",
                      invalid_flags);
         return NULL;
