@@ -63,9 +63,10 @@ struct xkb_events {
     /**
      * Read cursor for `xkb_events_next()`. Reset to 0 on each `process_*` call.
      */
-    darray_size_t next;
-    darray(struct xkb_event) queue;
     struct xkb_context *ctx;
+    darray(struct xkb_event) queue;
+    darray_size_t next;
+    int refcnt;
 };
 
 struct xkb_server_state;
@@ -3782,16 +3783,26 @@ xkb_events_new(struct xkb_context * restrict context,
     if (error)
         *error = XKB_SUCCESS;
 
+    events->ctx = xkb_context_ref(context);
     darray_init(events->queue);
     events->next = 0;
-    events->ctx = xkb_context_ref(context);
+    events->refcnt = 1;
+    return events;
+}
+
+struct xkb_events *
+xkb_events_ref(struct xkb_events *events)
+{
+    assert(events->refcnt > 0);
+    events->refcnt++;
     return events;
 }
 
 void
-xkb_events_destroy(struct xkb_events *events)
+xkb_events_unref(struct xkb_events *events)
 {
-    if (events == NULL)
+    assert(!events || events->refcnt > 0);
+    if (!events || --events->refcnt > 0)
         return;
     darray_free(events->queue);
     xkb_context_unref(events->ctx);

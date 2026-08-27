@@ -260,7 +260,7 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
 err_state:
     xkb_state_unref(kbd->state);
     xkb_machine_unref(kbd->machine);
-    xkb_events_destroy(kbd->events);
+    xkb_events_unref(kbd->events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 err_out:
@@ -272,7 +272,7 @@ deinit_kbd(struct keyboard *kbd)
 {
     xkb_state_unref(kbd->state);
     xkb_machine_unref(kbd->machine);
-    xkb_events_destroy(kbd->events);
+    xkb_events_unref(kbd->events);
     xkb_compose_state_unref(kbd->compose_state);
     xkb_keymap_unref(kbd->keymap);
 }

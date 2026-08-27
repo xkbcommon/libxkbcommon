@@ -250,7 +250,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `struct xkb_events` (new):
     - `struct xkb_events_config`
     - `xkb_events::xkb_events_new()`
-    - `xkb_events::xkb_events_destroy()`
+    - `xkb_events::xkb_events_ref()`
+    - `xkb_events::xkb_events_unref()`
     - `xkb_events::xkb_events_next()`
   - `enum xkb_event_type` (new)
   - `struct xkb_event` (new):

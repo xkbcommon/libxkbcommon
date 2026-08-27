@@ -173,8 +173,9 @@ global:
     xkb_machine_process_key;
     xkb_machine_process_synthetic;
     xkb_events_new;
-    xkb_events_destroy;
     xkb_events_next;
+    xkb_events_ref;
+    xkb_events_unref;
     xkb_event_get_type;
     xkb_event_get_keycode;
     xkb_event_get_changed_components;

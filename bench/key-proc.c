@@ -153,7 +153,7 @@ main(void)
     bench_stop2(&bench);
 
     xkb_state_unref(state);
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
 
     bench_elapsed(&bench, &elapsed);

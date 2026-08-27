@@ -1326,7 +1326,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         }
     );
 
-    xkb_events_destroy(events);
+    xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_state_unref(state);
 
