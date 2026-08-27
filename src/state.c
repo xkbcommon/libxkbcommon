@@ -2816,8 +2816,9 @@ struct xkb_machine_builder {
 };
 
 struct xkb_machine_builder *
-xkb_machine_builder_new(struct xkb_keymap *keymap,
-                        enum xkb_machine_builder_flags flags)
+xkb_machine_builder_new(struct xkb_keymap * restrict keymap,
+                        enum xkb_machine_builder_flags flags,
+                        enum xkb_error_code * restrict error)
 {
     const enum xkb_machine_builder_flags invalid_flags
         = flags
@@ -2826,12 +2827,19 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_,
                      "unrecognized machine builder flags: 0x%x\n",
                      invalid_flags);
+        if (error)
+            *error = XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS;
         return NULL;
     }
 
     struct xkb_machine_builder * const builder = calloc(1, sizeof(*builder));
-    if (!builder)
+    if (!builder) {
+        log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "cannot allocate machine builder\n");
+        if (error)
+            *error = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
+    }
 
     *builder = (struct xkb_machine_builder) {
         .keymap = xkb_keymap_ref(keymap),
@@ -2848,6 +2856,9 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
             .entries = darray_new(),
         },
     };
+
+    if (error)
+        *error = XKB_SUCCESS;
 
     return builder;
 }

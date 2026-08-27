@@ -280,16 +280,23 @@ int new_keyboard(…)
     * Initialize the keymap
     */
 
+    enum xkb_error_code error;
     struct xkb_machine_builder *machine_builder =
-        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
-    if (!machine_builder) <error>
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, &error);
+    if (!machine_builder) {
+        assert(error != XKB_SUCCESS);
+        switch (error) {
+        // ...
+        default:
+            exit(EXIT_FAILURE);
+        }
+    }
     struct xkb_machine *machine = xkb_machine_new(machine_builder);
     xkb_machine_builder_unref(machine_builder);
     if (!machine) <error>
 
     struct xkb_events *events;
 
-    enum xkb_error_code error;
     events = xkb_events_new(ctx, NULL, &error);
     if (!events) {
         assert(error != XKB_SUCCESS);
