@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "context.h"
 #include "utils-numbers.h"
 #include "xkbcommon/xkbcommon.h"
 #include "abi-check.h"
@@ -693,21 +694,20 @@ struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_new(struct xkb_keymap *keymap,
                             enum xkb_keymap_key_iterator_flags flags)
 {
-    static const enum xkb_keymap_key_iterator_flags XKB_KEYMAP_KEY_ITERATOR_FLAGS
-        = XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
-        | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND;
-
-    if (flags & ~XKB_KEYMAP_KEY_ITERATOR_FLAGS) {
-            log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "unrecognized keymap iterator flags: %#x\n",
-                    (flags & ~XKB_KEYMAP_KEY_ITERATOR_FLAGS));
-            return NULL;
+    /* Sanitize input */
+    const uint32_t invalid_flags =
+        ((uint32_t)flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
+    if (invalid_flags) {
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_,
+                     "Unsupported keymap iterator flags: 0x%"PRIx32"\n",
+                     invalid_flags);
+        return NULL;
     }
 
     struct xkb_keymap_key_iterator * const iter = calloc(1, sizeof(*iter));
     if (!iter) {
-        log_err(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
-                "Could not allocate a keymap key iterator.\n");
+        log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "Could not allocate a keymap key iterator.\n");
         return NULL;
     }
 
