@@ -133,6 +133,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   `xkbcommon-features.h`. They enable testing feature availability, which is
   useful when the library is dynamically linked.
   Currently they support only testing enumerations and their values.
+- Added `enum xkb_error_code` and the corresponding header `xkbcommon-errors.h`.
 
 #### Keysyms
 
@@ -233,6 +234,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_machine::xkb_machine_get_keymap()`
     - `xkb_machine::xkb_machine_process_key()`
     - `xkb_machine::xkb_machine_process_synthetic()`
+  - `enum xkb_machine_builder_flags` (new)
   - `struct xkb_machine_builder` (new):
     - `xkb_machine_builder::xkb_machine_builder_new()`
     - `xkb_machine_builder::xkb_machine_builder_destroy()`
@@ -243,17 +245,20 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
       `struct xkb_machine_builder_mods_remap_update`
     - `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`,
       `struct xkb_machine_builder_shortcut_layout_update`
-  - `enum xkb_machine_builder_flags` (new)
   - `enum xkb_events_flags` (new)
   - `struct xkb_events` (new):
     - `struct xkb_events_config`
     - `xkb_events::xkb_events_new()`
     - `xkb_events::xkb_events_destroy()`
     - `xkb_events::xkb_events_next()`
+  - `enum xkb_event_type` (new)
   - `struct xkb_event` (new):
     - `xkb_event::xkb_event_get_type()`
     - `xkb_event::xkb_event_get_keycode()`
     - `xkb_event::xkb_event_get_changed_components()`
+    - `xkb_event::xkb_event_serialize_mods()`
+    - `xkb_event::xkb_event_serialize_layout()`
+    - `xkb_event::xkb_event_serialize_enabled_controls()`
   - `struct xkb_state`:
     - `xkb_state::xkb_state_update_event()`
 
