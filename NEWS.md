@@ -190,6 +190,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 - Added an iterator API over keymaps keys:
   - `struct xkb_keymap_key_iterator`
   - `enum xkb_keymap_key_iterator_flags`
+  - `struct xkb_keymap_key_iterator_config`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_destroy()`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_next()`

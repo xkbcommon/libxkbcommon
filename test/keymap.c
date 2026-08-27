@@ -9,6 +9,7 @@
 #include "test-config.h"
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -732,6 +733,41 @@ test_key_iterator(void)
     struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
     assert(context);
 
+    struct xkb_keymap *keymap = test_compile_string(
+        context, XKB_KEYMAP_FORMAT_TEXT_V1, "xkb_keymap {};"
+    );
+
+    //! [xkb_keymap_key_iterator_new_example]
+    enum xkb_error_code error;
+    struct xkb_keymap_key_iterator_config config = {
+        .size = sizeof(config),
+        .flags = XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
+    };
+    struct xkb_keymap_key_iterator *iter =
+        xkb_keymap_key_iterator_new(keymap, &config, &error);
+    if (!iter) {
+        // handle errors
+        assert(error != XKB_SUCCESS);
+        switch(error) {
+        // ...
+        default:
+            exit(EXIT_FAILURE);
+        }
+    }
+    xkb_keycode_t kc;
+    while ((kc = xkb_keymap_key_iterator_next(iter)) != XKB_KEYCODE_INVALID) {
+        // ...
+    }
+    xkb_keymap_key_iterator_destroy(iter);
+    //! [xkb_keymap_key_iterator_new_example]
+
+    /* Reject invalid flags */
+    config.flags = UINT32_MAX;
+    assert(!xkb_keymap_key_iterator_new(keymap, &config, &error) &&
+           error == XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
+
+    xkb_keymap_unref(keymap);
+
     static const xkb_keycode_t test0_all[] = {1, 2, 9};
     static const xkb_keycode_t test0_bound[] = {2, 9};
     static const xkb_keycode_t test1_all[] = {0x1000, 0x2000, 0x9000};
@@ -803,14 +839,10 @@ test_key_iterator(void)
     };
 
     for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
-        struct xkb_keymap * const keymap = test_compile_string(
+        keymap = test_compile_string(
             context, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].keymap
         );
         assert(keymap);
-
-        /* Reject invalid flags */
-        assert(!xkb_keymap_key_iterator_new(keymap, -1));
-        assert(!xkb_keymap_key_iterator_new(keymap, 0xffff));
 
         static const enum xkb_keymap_key_iterator_flags flags[] = {
             XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
@@ -822,9 +854,9 @@ test_key_iterator(void)
         for (size_t f = 0; f < ARRAY_SIZE(flags); f++) {
             fprintf(stderr, "------\n*** %s: #%zu, flags: 0x%x ***\n",
                     __func__, t, flags[f]);
-            struct xkb_keymap_key_iterator * const iter =
-                xkb_keymap_key_iterator_new(keymap, flags[f]);
-            assert(iter);
+            config.flags = (uint32_t)flags[f];
+            iter = xkb_keymap_key_iterator_new(keymap, &config, &error);
+            assert(iter && error == XKB_SUCCESS);
 
             const bool ascending =
                 !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
