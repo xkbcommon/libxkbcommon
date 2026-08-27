@@ -284,7 +284,7 @@ int new_keyboard(…)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS);
     if (!machine_builder) <error>
     struct xkb_machine *machine = xkb_machine_new(machine_builder);
-    xkb_machine_builder_destroy(machine_builder);
+    xkb_machine_builder_unref(machine_builder);
     if (!machine) <error>
 
     struct xkb_events *events;

@@ -3179,7 +3179,8 @@ enum xkb_machine_builder_flags {
  *
  * @since 1.14.0
  *
- * @sa `xkb_machine_builder_destroy()`
+ * @sa `xkb_machine_builder_ref()`
+ * @sa `xkb_machine_builder_unref()`
  * @sa `xkb_machine::xkb_machine_new()`
  *
  * @memberof xkb_machine_builder
@@ -3189,7 +3190,20 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
                         enum xkb_machine_builder_flags flags);
 
 /**
- * Free a `xkb_machine` builder object.
+ * Take a new reference on an `xkb_machine` builder object.
+ *
+ * @param[in] builder The builder to reference.
+ *
+ * @returns The passed-in builder.
+ *
+ * @since 1.14.0
+ * @memberof xkb_machine_builder
+ */
+XKB_EXPORT struct xkb_machine_builder *
+xkb_machine_builder_ref(struct xkb_machine_builder *builder);
+
+/**
+ * Release a reference on an `xkb_machine` builder object, and possibly free it.
  *
  * @param[in] builder The `xkb_machine` builder. If it is `NULL`, this function
  *                    does nothing.
@@ -3197,11 +3211,12 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
  * @since 1.14.0
  *
  * @sa `xkb_machine_builder_new()`
+ * @sa `xkb_machine_builder_ref()`
  *
  * @memberof xkb_machine_builder
  */
 XKB_EXPORT void
-xkb_machine_builder_destroy(struct xkb_machine_builder *builder);
+xkb_machine_builder_unref(struct xkb_machine_builder *builder);
 
 /**
  * Get the keymap which a `xkb_machine_builder` object is using.

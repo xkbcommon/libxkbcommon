@@ -888,7 +888,7 @@ too_much_arguments:
     free_keyboards(kbds);
 out:
     xkb_compose_table_unref(compose_table);
-    xkb_machine_builder_destroy(machine_builder);
+    xkb_machine_builder_unref(machine_builder);
     xkb_keymap_unref(keymap);
 error_parse_args:
     xkb_machine_options_free(&machine_options);

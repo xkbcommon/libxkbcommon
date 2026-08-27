@@ -2811,6 +2811,7 @@ struct xkb_machine_builder {
     } shortcuts;
 
     enum xkb_machine_builder_flags flags;
+    int refcnt;
 };
 
 struct xkb_machine_builder *
@@ -2827,12 +2828,13 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
         return NULL;
     }
 
-    struct xkb_machine_builder * const opt = calloc(1, sizeof(*opt));
-    if (!opt)
+    struct xkb_machine_builder * const builder = calloc(1, sizeof(*builder));
+    if (!builder)
         return NULL;
 
-    *opt = (struct xkb_machine_builder) {
+    *builder = (struct xkb_machine_builder) {
         .keymap = xkb_keymap_ref(keymap),
+        .refcnt = 1,
         .flags = flags,
         .controls = {
             .a11y = {
@@ -2846,13 +2848,22 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
         },
     };
 
-    return opt;
+    return builder;
+}
+
+struct xkb_machine_builder *
+xkb_machine_builder_ref(struct xkb_machine_builder *builder)
+{
+    assert(builder->refcnt > 0);
+    builder->refcnt++;
+    return builder;
 }
 
 void
-xkb_machine_builder_destroy(struct xkb_machine_builder *builder)
+xkb_machine_builder_unref(struct xkb_machine_builder *builder)
 {
-    if (builder == NULL)
+    assert(!builder || builder->refcnt > 0);
+    if (!builder || --builder->refcnt > 0)
         return;
 
     darray_free(builder->shortcuts.entries);

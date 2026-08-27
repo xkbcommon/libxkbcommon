@@ -1574,7 +1574,7 @@ xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
         (unsigned)!tools_set_modifiers_mappings(options, builder) |
         (unsigned)!tools_set_shortcuts_mappings(options, builder) |
         (unsigned)!tools_set_shortcuts_mask(options, builder)) {
-            xkb_machine_builder_destroy(builder);
+            xkb_machine_builder_unref(builder);
             return NULL;
     }
 

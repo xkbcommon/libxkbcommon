@@ -773,7 +773,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     assert(builder);
     struct xkb_machine *sm = xkb_machine_new(builder);
     assert(sm);
-    xkb_machine_builder_destroy(builder);
+    xkb_machine_builder_unref(builder);
     struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     const xkb_keysym_t *syms;

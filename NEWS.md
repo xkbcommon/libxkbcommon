@@ -237,7 +237,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `enum xkb_machine_builder_flags` (new)
   - `struct xkb_machine_builder` (new):
     - `xkb_machine_builder::xkb_machine_builder_new()`
-    - `xkb_machine_builder::xkb_machine_builder_destroy()`
+    - `xkb_machine_builder::xkb_machine_builder_ref()`
+    - `xkb_machine_builder::xkb_machine_builder_unref()`
     - `xkb_machine_builder::xkb_machine_builder_get_keymap()`
     - `xkb_machine_builder::xkb_machine_builder_update_a11y()`,
       `struct xkb_machine_builder_a11y_update`
