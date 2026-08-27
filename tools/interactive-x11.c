@@ -190,7 +190,7 @@ update_keymap(struct keyboard *kbd)
                     return - 1;
                 }
 
-                kbd->machine = xkb_machine_new(machine_builder);
+                kbd->machine = xkb_machine_new(machine_builder, NULL);
                 xkb_machine_builder_unref(machine_builder);
                 if (!kbd->machine)
                     return -1;

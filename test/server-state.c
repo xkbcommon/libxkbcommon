@@ -221,7 +221,7 @@ test_machine_builder(struct xkb_context *ctx)
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
 
-    struct xkb_machine *sm = xkb_machine_new(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
     assert(sm);
 
     xkb_machine_unref(sm);
@@ -243,7 +243,7 @@ test_initial_derived_values(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
 
-    struct xkb_machine * const sm = xkb_machine_new(builder);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
     assert(sm);
 
     struct xkb_state * const state = xkb_machine_get_state(sm);
@@ -268,7 +268,7 @@ test_state_update(struct xkb_context *ctx)
     assert(state);
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
-    struct xkb_machine * const sm = xkb_machine_new(builder);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
     struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
@@ -574,7 +574,7 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
 
-    struct xkb_machine * const sm = xkb_machine_new(builder);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
 
@@ -682,7 +682,7 @@ test_sticky_keys(struct xkb_context *ctx)
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
-    struct xkb_machine *sm = xkb_machine_new(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
     struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
@@ -947,7 +947,7 @@ test_sticky_keys(struct xkb_context *ctx)
     };
     assert(xkb_machine_builder_update_a11y(sm_builder, &a11y_update) ==
            XKB_SUCCESS);
-    sm = xkb_machine_new(sm_builder);
+    sm = xkb_machine_new(sm_builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(sm_builder);
     events = xkb_events_new(ctx, NULL, NULL);
@@ -1019,7 +1019,7 @@ test_redirect_key(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
 
-    struct xkb_machine *sm = xkb_machine_new(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
 
@@ -1248,7 +1248,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     update.mods = ctrl;
     assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
 
-    struct xkb_machine * sm = xkb_machine_new(builder);
+    struct xkb_machine * sm = xkb_machine_new(builder, NULL);
     assert(sm);
 
     struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
@@ -2181,7 +2181,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     assert(xkb_machine_builder_update_mods_remap(builder, &mods_remap_update) ==
            XKB_SUCCESS);
 
-    sm = xkb_machine_new(builder);
+    sm = xkb_machine_new(builder, NULL);
     assert(sm);
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -2512,7 +2512,7 @@ test_overlays(struct xkb_context *context)
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
     assert(builder);
-    struct xkb_machine * const sm = xkb_machine_new(builder);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
     struct xkb_events * events = xkb_events_new(context, NULL, NULL);
@@ -2684,7 +2684,7 @@ test_modifiers_tweak(struct xkb_context *context)
     update.target = 0;
     assert(xkb_machine_builder_update_mods_remap(builder, &update) == XKB_SUCCESS);
 
-    struct xkb_machine * const sm = xkb_machine_new(builder);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
     assert(sm);
     xkb_machine_builder_unref(builder);
 
@@ -3577,7 +3577,7 @@ if (error != XKB_SUCCESS) {
 //! [shortcut_layout_update_example_3]
         }
 
-        struct xkb_machine * sm = xkb_machine_new(builder);
+        struct xkb_machine * sm = xkb_machine_new(builder, NULL);
         assert(sm);
 
         struct xkb_events * const events = xkb_events_new(context, NULL, NULL);

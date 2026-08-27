@@ -495,7 +495,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 return;
             }
 
-            seat->machine = xkb_machine_new(machine_builder);
+            seat->machine = xkb_machine_new(machine_builder, NULL);
             xkb_machine_builder_unref(machine_builder);
             if (!seat->machine) {
                 fprintf(stderr, "%s: ERROR: Failed to create local XKB state!\n",
