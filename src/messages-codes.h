@@ -176,6 +176,8 @@ enum xkb_message_code {
     XKB_ERROR_CANNOT_RESOLVE_RMLVO = 595,
     /** Invalid Unicode escape sequence */
     XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE = 607,
+    /** Unsupported `xkb_events_flags` value */
+    XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS_ = 611,
     /** Invalid _real_ modifier */
     XKB_ERROR_INVALID_REAL_MODIFIER = 623,
     /** Unable to add any default include path */

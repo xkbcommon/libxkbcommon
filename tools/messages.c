@@ -79,6 +79,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_UNSUPPORTED_OVERLAY_INDEX, "Unsupported overlay index"},
     {XKB_ERROR_CANNOT_RESOLVE_RMLVO, "Cannot resolve rmlvo"},
     {XKB_WARNING_INVALID_UNICODE_ESCAPE_SEQUENCE, "Invalid unicode escape sequence"},
+    {XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS_, "Unsupported events flags"},
     {XKB_ERROR_INVALID_REAL_MODIFIER, "Invalid real modifier"},
     {XKB_ERROR_NO_VALID_DEFAULT_INCLUDE_PATH, "No valid default include path"},
     {XKB_ERROR_UNKNOWN_DEFAULT_FIELD, "Unknown default field"},

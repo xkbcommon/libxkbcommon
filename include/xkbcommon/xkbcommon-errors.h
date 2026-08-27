@@ -166,6 +166,19 @@ enum xkb_error_code {
      */
     XKB_ERROR_ALLOCATION_FAILURE = 550,
     /**
+     * Unsupported `xkb_events_flags` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_feature_supported(XKB_FEATURE_ENUM_EVENTS_FLAGS, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS = 611,
+    /**
      * Unsupported keymap serialization flags
      *
      * See `::xkb_keymap_serialize_flags` for the list of valid flags.
