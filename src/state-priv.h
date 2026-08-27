@@ -43,6 +43,38 @@ struct xkb_event {
     };
 };
 
+/******************************************************************************
+ * xkb_events_config
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_events_config`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_events_config_v1 {
+    uint32_t size;
+    uint32_t flags;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_events_config, size, flags);
+assert_no_padding(struct xkb_events_config, flags);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_events_config) ==
+              sizeof(struct xkb_events_config_v1), "");
+assert_same_field(struct xkb_events_config, _v1, size);
+assert_same_field(struct xkb_events_config, _v1, flags);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_events_config) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_state_components_update
+ *****************************************************************************/
+
 /**
  * Version 1 of `xkb_state_components_update`, used for ABI check only
  *
@@ -91,6 +123,10 @@ assert_same_field(struct xkb_state_components_update, _v1, controls);
 static_assert(sizeof(struct xkb_state_components_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
+/******************************************************************************
+ * xkb_layout_policy_update
+ *****************************************************************************/
+
 /**
  * Version 1 of `xkb_layout_policy_update`, used for ABI check only
  *
@@ -117,6 +153,10 @@ assert_same_field(struct xkb_layout_policy_update, _v1, redirect);
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_layout_policy_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_state_update
+ *****************************************************************************/
 
 /**
  * Version 1 of `xkb_state_update`, used for ABI check only
@@ -152,6 +192,10 @@ assert_same_field(struct xkb_state_update, _v1, layout_policy);
 static_assert(sizeof(struct xkb_state_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
+/******************************************************************************
+ * xkb_machine_builder_a11y_update
+ *****************************************************************************/
+
 /**
  * Version 1 of `xkb_machine_builder_a11y_update`, used for ABI check only
  *
@@ -178,6 +222,10 @@ assert_same_field(struct xkb_machine_builder_a11y_update, _v1, flags);
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_machine_builder_a11y_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_machine_builder_mods_remap_update
+ *****************************************************************************/
 
 /**
  * Version 1 of `xkb_machine_builder_mods_remap_update`, used for ABI check only
@@ -207,6 +255,10 @@ assert_same_field(struct xkb_machine_builder_mods_remap_update, _v1, target);
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_machine_builder_mods_remap_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_machine_builder_shortcut_layout_update
+ *****************************************************************************/
 
 /**
  * Version 1 of `xkb_machine_builder_shortcut_layout_update`, used for ABI check only
@@ -241,9 +293,15 @@ assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, mods);
 static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
+/******************************************************************************
+ * Utils
+ *****************************************************************************/
+
 /** Size of the *first version* of the struct */
 #define xkb_versioned_struct_size_v1(x) _Generic(                   \
     (x),                                                            \
+    const struct xkb_events_config *:                               \
+        sizeof(struct xkb_events_config_v1),                        \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -261,6 +319,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
 /** Minimal *current* valid size of the struct */
 #define xkb_versioned_struct_size_min(x) _Generic(                  \
     (x),                                                            \
+    const struct xkb_events_config *:                               \
+        sizeof(struct xkb_events_config_v1),                        \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -278,6 +338,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
 /** Offset of the last meaningful field of the current struct */
 #define xkb_versioned_struct_reserved_offset(x) _Generic(        \
     (x),                                                         \
+    const struct xkb_events_config *:                            \
+        sizeof(struct xkb_events_config),                        \
     const struct xkb_state_update *:                             \
         sizeof(struct xkb_state_update),                         \
     const struct xkb_state_components_update *:                  \
@@ -300,6 +362,11 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
 )
 
 /* V1 is the smallest struct version */
+static_assert(
+    xkb_versioned_struct_size_v1(((const struct xkb_events_config *)NULL)) <=
+    xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)),
+    ""
+);
 static_assert(
     xkb_versioned_struct_size_v1(((const struct xkb_state_update *)NULL)) <=
     xkb_versioned_struct_size_min(((const struct xkb_state_update *)NULL)),
@@ -332,6 +399,11 @@ static_assert(
 );
 
 /* Minimal size is lower or equal to the current size */
+static_assert(
+    xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)) <=
+    sizeof(const struct xkb_events_config),
+    ""
+);
 static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_state_update *)NULL)) <=
     sizeof(const struct xkb_state_update),

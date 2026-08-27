@@ -56,7 +56,7 @@
  * on each `process_*` call.
  *
  * @warning Not thread-safe. Must only be used from a single thread.
- * For multi-threaded use, we need a future `xkb_events_new_queue()` will
+ * For multi-threaded use, we need a future `xkb_event` **queue** to
  * provide a thread-safe implementation (e.g. circular buffer).
  */
 struct xkb_events {
@@ -3727,23 +3727,50 @@ xkb_machine_process_key(struct xkb_machine *sm,
 }
 
 struct xkb_events *
-xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags)
+xkb_events_new(struct xkb_context * restrict context,
+               const struct xkb_events_config * restrict config,
+               enum xkb_error_code * restrict error)
 {
-    const enum xkb_events_flags invalid_flags =
-        (flags & ~(enum xkb_events_flags)XKB_EVENTS_FLAGS_VALUES);
+    /* Handle default configuration */
+    static const struct xkb_events_config default_config = {
+        .size = sizeof(default_config)
+    };
+    if (!config)
+        config = &default_config;
+
+    /* Check ABI compatibility */
+    const enum xkb_error_code abi_error = xkb_check_state_abi(config);
+    if (abi_error) {
+        xkb_log_abi_error(context, __func__, abi_error);
+        if (error)
+            *error = abi_error;
+        return NULL;
+    }
+
+     /* Sanitize input */
+    const uint32_t invalid_flags =
+        (config->flags & ~(uint32_t)XKB_EVENTS_FLAGS_VALUES);
     if (invalid_flags) {
         log_err_func(context, XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS_,
-                     "unrecognized events batch flags: %#x\n",
+                     "unrecognized events collection flags: 0x%"PRIx32"\n",
                      invalid_flags);
+        if (error)
+            *error = XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS;
         return NULL;
     }
 
     struct xkb_events *events = calloc(1, sizeof(*events));
     if (events == NULL) {
-        log_err(context, XKB_ERROR_ALLOCATION_FAILURE_,
-                "%s: cannot allocate state events collection\n", __func__);
+        log_err_func1(context, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "cannot allocate state events collection\n");
+        if (error)
+            *error = XKB_ERROR_ALLOCATION_FAILURE;
         return events;
     }
+
+    if (error)
+        *error = XKB_SUCCESS;
+
     darray_init(events->queue);
     events->next = 0;
     events->ctx = xkb_context_ref(context);

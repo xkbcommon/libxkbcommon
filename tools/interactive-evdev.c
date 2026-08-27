@@ -23,6 +23,7 @@
 
 #include <linux/input.h>
 
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "src/utils.h"
@@ -126,9 +127,11 @@ keyboard_new(struct dirent *ent,
             goto err_machine;
         }
 
-        events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
+        enum xkb_error_code error;
+        events = xkb_events_new(ctx, NULL, &error);
         if (!events) {
-            fprintf(stderr, "Couldn't create xkb events for %s\n", path);
+            fprintf(stderr, "Couldn't create xkb events for %s; code: 0x%x\n",
+                    path, error);
             ret = -EFAULT;
             goto err_xkb_events;
         }
