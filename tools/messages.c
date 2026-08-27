@@ -104,6 +104,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_ABI_FORWARD_COMPAT_, "Abi forward compat"},
     {XKB_WARNING_CONFLICTING_KEY_ACTION, "Conflicting key action"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_MERGING_GROUPS, "Conflicting key type merging groups"},
+    {XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_, "Unsupported machine builder flags"},
     {XKB_ERROR_CONFLICTING_KEY_SYMBOLS_ENTRY, "Conflicting key symbols entry"},
     {XKB_WARNING_MISSING_SYMBOLS_GROUP_NAME_INDEX, "Missing symbols group name index"},
     {XKB_ERROR_ABI_BACKWARD_COMPAT_, "Abi backward compat"},
