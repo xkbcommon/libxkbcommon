@@ -25,6 +25,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "context.h"
 #include "darray.h"
+#include "features/enums.h"
 #include "messages-codes.h"
 #include "utils.h"
 
@@ -501,15 +502,11 @@ xkb_context_new(enum xkb_context_flags flags)
     ctx->log_level = XKB_LOG_LEVEL_ERROR;
     ctx->log_verbosity = XKB_LOG_VERBOSITY_DEFAULT;
 
-    static const enum xkb_context_flags XKB_CONTEXT_FLAGS
-        = XKB_CONTEXT_NO_DEFAULT_INCLUDES
-        | XKB_CONTEXT_NO_ENVIRONMENT_NAMES
-        | XKB_CONTEXT_NO_SECURE_GETENV;
-
-    if (flags & ~XKB_CONTEXT_FLAGS) {
-        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "Invalid context flags: 0x%x\n",
-                (flags & ~XKB_CONTEXT_FLAGS));
+    const enum xkb_context_flags invalid_flags =
+        (flags & ~(enum xkb_context_flags)XKB_CONTEXT_FLAGS_VALUES);
+    if (invalid_flags) {
+        log_err_func(ctx, XKB_LOG_MESSAGE_NO_ID,
+                     "Invalid context flags: 0x%x\n", invalid_flags);
         free(ctx);
         return NULL;
     }

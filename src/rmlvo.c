@@ -12,6 +12,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-errors.h"
 #include "context.h"
+#include "features/enums.h"
 #include "keymap.h"
 #include "messages-codes.h"
 #include "rmlvo.h"
@@ -24,13 +25,12 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
                       const char *rules, const char *model,
                       enum xkb_rmlvo_builder_flags flags)
 {
-    static const enum xkb_rmlvo_builder_flags XKB_RMLVO_BUILDER_FLAGS =
-        XKB_RMLVO_BUILDER_NO_FLAGS;
-
-    if (flags & ~XKB_RMLVO_BUILDER_FLAGS) {
-        log_err(context, XKB_LOG_MESSAGE_NO_ID,
-                "Unsupported RMLVO flags: 0x%x\n",
-                (flags & ~XKB_RMLVO_BUILDER_FLAGS));
+    const enum xkb_rmlvo_builder_flags invalid_flags =
+        (flags & ~(enum xkb_rmlvo_builder_flags)XKB_RMLVO_BUILDER_FLAGS_VALUES);
+    if (invalid_flags) {
+        log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
+                     "Unsupported RMLVO flags: 0x%x\n",
+                     invalid_flags);
         return NULL;
     }
 

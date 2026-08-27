@@ -8,9 +8,10 @@
 #include <assert.h>
 
 #include "context.h"
+#include "features/enums.h"
+#include "keysym.h"
 #include "table.h"
 #include "utils.h"
-#include "keysym.h"
 
 struct xkb_compose_state {
     int refcnt;
@@ -34,13 +35,12 @@ struct xkb_compose_state *
 xkb_compose_state_new(struct xkb_compose_table *table,
                       enum xkb_compose_state_flags flags)
 {
-    static const enum xkb_compose_state_flags XKB_COMPOSE_STATE_FLAGS =
-        XKB_COMPOSE_STATE_NO_FLAGS;
-
-    if (flags & ~XKB_COMPOSE_STATE_FLAGS) {
+    const enum xkb_compose_state_flags invalid_flags =
+        (flags & ~(enum xkb_compose_state_flags)XKB_COMPOSE_STATE_FLAGS_VALUES);
+    if (invalid_flags) {
         log_err_func(table->ctx, XKB_LOG_MESSAGE_NO_ID,
                      "Unsupported compose state flags: %#x\n",
-                     (flags & ~XKB_COMPOSE_STATE_FLAGS));
+                     invalid_flags);
         return NULL;
     }
 

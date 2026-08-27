@@ -3729,12 +3729,12 @@ xkb_machine_process_key(struct xkb_machine *sm,
 struct xkb_events *
 xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags)
 {
-    static const enum xkb_events_flags XKB_EVENTS_FLAGS = XKB_EVENTS_NO_FLAGS;
-
-    if (flags & ~XKB_EVENTS_FLAGS) {
+    const enum xkb_events_flags invalid_flags =
+        (flags & ~(enum xkb_events_flags)XKB_EVENTS_FLAGS_VALUES);
+    if (invalid_flags) {
         log_err_func(context, XKB_LOG_MESSAGE_NO_ID,
                      "unrecognized events batch flags: %#x\n",
-                     (flags & ~XKB_EVENTS_FLAGS));
+                     invalid_flags);
         return NULL;
     }
 

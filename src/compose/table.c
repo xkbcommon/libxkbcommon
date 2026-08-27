@@ -8,12 +8,13 @@
 #include <assert.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "messages-codes.h"
-#include "utils.h"
+#include "features/enums.h"
 #include "constants.h"
-#include "table.h"
+#include "messages-codes.h"
 #include "parser.h"
 #include "paths.h"
+#include "table.h"
+#include "utils.h"
 
 static struct xkb_compose_table *
 xkb_compose_table_new(struct xkb_context *ctx, const char *func,
@@ -21,13 +22,12 @@ xkb_compose_table_new(struct xkb_context *ctx, const char *func,
                       enum xkb_compose_format format,
                       enum xkb_compose_compile_flags flags)
 {
-    static const enum xkb_compose_compile_flags XKB_COMPOSE_COMPILE_FLAGS =
-        XKB_COMPOSE_COMPILE_NO_FLAGS;
-
-    if (flags & ~XKB_COMPOSE_COMPILE_FLAGS) {
+    const enum xkb_compose_compile_flags invalid_flags = (
+        flags & ~(enum xkb_compose_compile_flags)XKB_COMPOSE_COMPILE_FLAGS_VALUES
+    );
+    if (invalid_flags) {
         log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                "%s: unrecognized flags: %#x\n", func,
-                (flags & ~XKB_COMPOSE_COMPILE_FLAGS));
+                "%s: unrecognized flags: %#x\n", func, invalid_flags);
         return NULL;
     }
 
