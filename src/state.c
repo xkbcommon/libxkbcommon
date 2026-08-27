@@ -1879,12 +1879,12 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
                         const struct xkb_state_update * restrict update)
 {
     enum xkb_error_code error = XKB_SUCCESS;
-    if ((error = xkb_check_update_size(update)) ||
+    if ((error = xkb_check_state_abi(update)) ||
         (update->reserved0 != 0 && (error = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
         (update->components &&
-         (error = xkb_check_update_size(update->components))) ||
+         (error = xkb_check_state_abi(update->components))) ||
         (update->layout_policy &&
-         (error = xkb_check_update_size(update->layout_policy)))) {
+         (error = xkb_check_state_abi(update->layout_policy)))) {
         xkb_log_abi_error(ctx, func, error);
     }
     return error;
@@ -2874,7 +2874,7 @@ xkb_machine_builder_update_a11y(
     const struct xkb_machine_builder_a11y_update * restrict update)
 {
     /* Check ABI compatibility */
-    enum xkb_error_code error = xkb_check_update_size(update);
+    enum xkb_error_code error = xkb_check_state_abi(update);
     if (error) {
         xkb_log_abi_error(builder->keymap->ctx, __func__, error);
         return error;
