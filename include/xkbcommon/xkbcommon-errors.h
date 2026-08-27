@@ -75,6 +75,19 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
     /**
+     * Unsupported `xkb_keymap_key_iterator_flags` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS = 138,
+    /**
      * The given layout out-of-range policy is not supported
      *
      * Use the following to check if the linked libxkbcommon library supports a

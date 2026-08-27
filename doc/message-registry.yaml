@@ -122,6 +122,18 @@
   added: ALWAYS
   type: error
   description: "A buffer has an insufficient size"
+- id: "unsupported-key-iterator-flags"
+  code: 138
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_keymap_key_iterator_flags` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
+    ```
 - id: "wrong-statement-type"
   code: 150
   added: ALWAYS

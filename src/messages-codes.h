@@ -80,6 +80,8 @@ enum xkb_message_code {
     XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER = 123,
     /** A buffer has an insufficient size */
     XKB_ERROR_INSUFFICIENT_BUFFER_SIZE = 134,
+    /** Unsupported `xkb_keymap_key_iterator_flags` value */
+    XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_ = 138,
     /** The type of the statement is not allowed in the context */
     XKB_ERROR_WRONG_STATEMENT_TYPE = 150,
     /** The given path is invalid */
