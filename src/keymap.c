@@ -683,12 +683,13 @@ xkb_keymap_max_keycode(struct xkb_keymap *keymap)
 }
 
 struct xkb_keymap_key_iterator {
-    int8_t increment;
-    bool skip_unbound;
     const struct xkb_key *min;
     const struct xkb_key *max;
     const struct xkb_key *next;
     struct xkb_keymap *keymap;
+    int refcnt;
+    int8_t increment;
+    bool skip_unbound;
 };
 
 struct xkb_keymap_key_iterator *
@@ -739,6 +740,7 @@ xkb_keymap_key_iterator_new(
         *error = XKB_SUCCESS;
 
     iter->keymap = xkb_keymap_ref(keymap);
+    iter->refcnt = 1;
 
     if (keymap->num_keys == 0) {
         iter->next = NULL;
@@ -765,10 +767,19 @@ xkb_keymap_key_iterator_new(
     return iter;
 }
 
-void
-xkb_keymap_key_iterator_destroy(struct xkb_keymap_key_iterator *iter)
+struct xkb_keymap_key_iterator *
+xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter)
 {
-    if (!iter)
+    assert(iter->refcnt > 0);
+    iter->refcnt++;
+    return iter;
+}
+
+void
+xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter)
+{
+    assert(!iter || iter->refcnt > 0);
+    if (!iter || --iter->refcnt > 0)
         return;
 
     xkb_keymap_unref(iter->keymap);
