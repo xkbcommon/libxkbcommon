@@ -719,6 +719,18 @@
   added: ALWAYS
   type: warning
   description: "Warn if there are conflicting key types while merging groups"
+- id: "unsupported-machine-builder-flags"
+  code: 899
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_machine_builder_flags` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS, flag)
+    ```
 - id: "conflicting-key-symbols-entry"
   code: 901
   added: ALWAYS

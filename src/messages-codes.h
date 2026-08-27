@@ -226,6 +226,8 @@ enum xkb_message_code {
     XKB_WARNING_CONFLICTING_KEY_ACTION = 883,
     /** Warn if there are conflicting key types while merging groups */
     XKB_WARNING_CONFLICTING_KEY_TYPE_MERGING_GROUPS = 893,
+    /** Unsupported `xkb_machine_builder_flags` value */
+    XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_ = 899,
     /** Conflicting symbols entry for a key */
     XKB_ERROR_CONFLICTING_KEY_SYMBOLS_ENTRY = 901,
     /** Missing group index in a group name entry */

@@ -31,5 +31,7 @@ xkb_error_code:
     value: 829
   - name: XKB_ERROR_ABI_FORWARD_COMPAT
     value: 876
+  - name: XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS
+    value: 899
   - name: XKB_ERROR_ABI_BACKWARD_COMPAT
     value: 914

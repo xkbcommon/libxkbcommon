@@ -2823,9 +2823,9 @@ xkb_machine_builder_new(struct xkb_keymap *keymap,
         = flags
         & ~(enum xkb_machine_builder_flags)XKB_MACHINE_BUILDER_FLAGS_VALUES;
     if (invalid_flags) {
-        log_err(keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
-                "%s: unrecognized keymap compilation flags: 0x%x\n",
-                __func__, invalid_flags);
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_,
+                     "unrecognized machine builder flags: 0x%x\n",
+                     invalid_flags);
         return NULL;
     }
 

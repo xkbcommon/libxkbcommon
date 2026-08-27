@@ -196,6 +196,19 @@ enum xkb_error_code {
      */
     XKB_ERROR_ABI_FORWARD_COMPAT = 876,
     /**
+     * Unsupported `xkb_machine_builder_flags` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS = 899,
+    /**
      * ABI backward-compatibility check failed
      *
      * The caller was compiled against an older version of the library and is
