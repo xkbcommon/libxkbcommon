@@ -196,8 +196,7 @@ update_keymap(struct keyboard *kbd)
                     return -1;
             }
             if (!kbd->events) {
-                kbd->events = xkb_events_new_batch(kbd->ctx,
-                                                   XKB_EVENTS_NO_FLAGS);
+                kbd->events = xkb_events_new(kbd->ctx, NULL, NULL);
                 if (!kbd->events)
                     return -1;
             }

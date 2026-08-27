@@ -246,7 +246,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `enum xkb_machine_builder_flags` (new)
   - `enum xkb_events_flags` (new)
   - `struct xkb_events` (new):
-    - `xkb_events::xkb_events_new_batch()`
+    - `struct xkb_events_config`
+    - `xkb_events::xkb_events_new()`
     - `xkb_events::xkb_events_destroy()`
     - `xkb_events::xkb_events_next()`
   - `struct xkb_event` (new):

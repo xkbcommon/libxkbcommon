@@ -2113,7 +2113,7 @@ struct xkb_keymap_key_iterator_config {
  * @returns A new keys iterator, or `NULL` on failure.
  *
  * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
- * on *success* or an [error code] corresponding to the failure.
+ * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - Errors from ABI @ref abi-struct-resolution.
@@ -3005,7 +3005,7 @@ xkb_event_serialize_layout(const struct xkb_event *event,
  *
  * @since 1.14.0
  *
- * @sa `xkb_events_new_batch()`
+ * @sa `xkb_events_new()`
  * @sa `xkb_events_next()`
  * @sa `xkb_events_destroy()`
  * @sa `xkb_machine::xkb_machine_process_key()`
@@ -3016,37 +3016,92 @@ struct xkb_events;
 /**
  * @enum xkb_events_flags
  *
- * Flags for `xkb_events::xkb_events_new_batch()`.
+ * Flags for `xkb_events_config::flags`.
+ *
+ * @sa `xkb_events::xkb_events_new()`.
  *
  * @since 1.14.0
  */
 enum xkb_events_flags {
     /**
-     * Do not apply any flags.
+     * Do not apply any flags: the corresponding [event collection]
+     * will behave as a **batch** of [events].
      *
      * @since 1.14.0
+     *
+     * [event collection]: @ref xkb_events
+     * [events]: @ref xkb_event
      */
     XKB_EVENTS_NO_FLAGS = 0
 };
 
 /**
- * Create a new [event](@ref xkb_event) batch.
+ * @struct xkb_events_config
+ * @ingroup abi-struct-contract
  *
- * @param[in] context The context in which to create the batch.
- * @param[in] flags   Optional flags for the batch, or 0.
+ * Configuration for `xkb_events::xkb_events_new()`.
  *
- * @returns A new event batch, or `NULL` on failure.
+ * @since 1.14.0
+ */
+struct xkb_events_config {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * [Flags] to control the behavior of [events collections], or `0`
+     * (`::XKB_EVENTS_NO_FLAGS`) for the default.
+     *
+     * @sa `xkb_events_flags`
+     *
+     * @since 1.14.0
+     *
+     * [Flags]: @ref xkb_events_flags
+     * [events collections]: @ref xkb_events
+     */
+    uint32_t flags;
+};
+
+/**
+ * Create a new [event](@ref xkb_event) collection object.
+ *
+ * @param[in] context
+ *   The context in which to create the object.
+ * @param[in] config
+ *   Configuration to control the collection behavior, or `NULL` for
+ *   the defaults: an `xkb_events_config` struct with `size` set per
+ *   @ref abi-struct-contract and all other fields zeroed.
+ * @param[out] error
+ *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ *
+ * @returns A new [event] collection, or `NULL` on failure.
+  *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or to an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS`
  *
  * @since 1.14.0
  *
+ * @sa `xkb_events_config`
  * @sa `xkb_events_destroy()`
  * @sa `xkb_events_next()`
  * @sa `xkb_machine::xkb_machine_process_key()`
  *
  * @memberof xkb_events
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_events *
-xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags);
+xkb_events_new(struct xkb_context *context,
+               const struct xkb_events_config *config,
+               enum xkb_error_code *error);
 
 /**
  * Free an event collection.
@@ -3057,7 +3112,7 @@ xkb_events_new_batch(struct xkb_context *context, enum xkb_events_flags flags);
  *
  * @since 1.14.0
  *
- * @sa `xkb_events_new_batch()`
+ * @sa `xkb_events_new()`
  *
  * @memberof xkb_events
  */

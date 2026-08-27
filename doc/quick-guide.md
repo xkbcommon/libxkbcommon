@@ -289,8 +289,16 @@ int new_keyboard(…)
 
     struct xkb_events *events;
 
-    events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
-    if (!events) <error>
+    enum xkb_error_code error;
+    events = xkb_events_new(ctx, NULL, &error);
+    if (!events) {
+        assert(error != XKB_SUCCESS);
+        switch (error) {
+        // ...
+        default:
+            exit(EXIT_FAILURE);
+        }
+    }
 
     char *keymap_string =
         xkb_keymap_get_as_string(keymap, XKB_KEYMAP_FORMAT_TEXT_V1);

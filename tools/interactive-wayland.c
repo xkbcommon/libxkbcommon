@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/utils.h"
@@ -504,8 +505,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         }
         if (!seat->events && seat->machine) {
             /* Initialize the events queue */
-            seat->events = xkb_events_new_batch(seat->inter->ctx,
-                                                XKB_EVENTS_NO_FLAGS);
+            enum xkb_error_code error;
+            seat->events = xkb_events_new(seat->inter->ctx, NULL, &error);
             if (seat->events) {
                 const struct xkb_state_components_update components = {
                     .size = sizeof(components),
@@ -526,8 +527,9 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 }
             } else {
                 fprintf(stderr,
-                        "%s: ERROR: Failed to create XKB event queue!\n",
-                        seat->name_str);
+                        "%s: ERROR: Failed to create XKB event queue! "
+                        "Code: 0x%x\n",
+                        seat->name_str, error);
             }
         }
     }

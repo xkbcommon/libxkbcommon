@@ -259,8 +259,7 @@ test_state_update(struct xkb_context *ctx)
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
     xkb_machine_builder_destroy(builder);
-    struct xkb_events * const events = xkb_events_new_batch(ctx,
-                                                            XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
 
     /* Simulate a new version with some new fields */
@@ -570,8 +569,7 @@ test_group_wrap(struct xkb_context *ctx)
     struct xkb_state * const state = xkb_state_new(keymap);
     assert(state);
 
-    struct xkb_events * const events = xkb_events_new_batch(ctx,
-                                                            XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
 
     const struct xkb_event *event;
@@ -675,7 +673,7 @@ test_sticky_keys(struct xkb_context *ctx)
     struct xkb_machine *sm = xkb_machine_new(builder);
     assert(sm);
     xkb_machine_builder_destroy(builder);
-    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     struct xkb_state *state = xkb_state_new(keymap);
     assert(state);
@@ -940,7 +938,7 @@ test_sticky_keys(struct xkb_context *ctx)
     sm = xkb_machine_new(sm_builder);
     assert(sm);
     xkb_machine_builder_destroy(sm_builder);
-    events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
+    events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     state = xkb_state_new(keymap);
     assert(state);
@@ -1016,7 +1014,7 @@ test_redirect_key(struct xkb_context *ctx)
     static const xkb_mod_mask_t shift = UINT32_C(1) << XKB_MOD_INDEX_SHIFT;
     static const xkb_mod_mask_t ctrl = UINT32_C(1) << XKB_MOD_INDEX_CTRL;
 
-    struct xkb_events *events = xkb_events_new_batch(ctx, XKB_EVENTS_NO_FLAGS);
+    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
 
     assert(test_key_seq2(
@@ -1241,8 +1239,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     struct xkb_machine * sm = xkb_machine_new(builder);
     assert(sm);
 
-    struct xkb_events * const events = xkb_events_new_batch(context,
-                                                            XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
     assert(events);
 
     /*
@@ -2506,8 +2503,7 @@ test_overlays(struct xkb_context *context)
     struct xkb_machine * const sm = xkb_machine_new(builder);
     assert(sm);
     xkb_machine_builder_destroy(builder);
-    struct xkb_events * events = xkb_events_new_batch(context,
-                                                      XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * events = xkb_events_new(context, NULL, NULL);
     assert(events);
 
     static const struct {
@@ -2680,8 +2676,7 @@ test_modifiers_tweak(struct xkb_context *context)
     assert(sm);
     xkb_machine_builder_destroy(builder);
 
-    struct xkb_events * const events = xkb_events_new_batch(context,
-                                                            XKB_EVENTS_NO_FLAGS);
+    struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
     assert(events);
 
     assert(test_key_seq2(
@@ -3570,8 +3565,7 @@ if (error != XKB_SUCCESS) {
         struct xkb_machine * sm = xkb_machine_new(builder);
         assert(sm);
 
-        struct xkb_events * const events =
-            xkb_events_new_batch(context, XKB_EVENTS_NO_FLAGS);
+        struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
         assert(events);
 
         assert(test_key_seq2(
@@ -3675,7 +3669,17 @@ main(void)
     test_machine_builder(context);
     test_initial_derived_values(context);
 
-    assert(!xkb_events_new_batch(context, -1));
+    enum xkb_error_code error;
+    static const struct xkb_events_config config = {
+        .size = sizeof(config),
+        .flags = UINT32_MAX
+    };
+    assert(!xkb_events_new(context, &config, NULL));
+    assert(!xkb_events_new(context, &config, &error) &&
+           error == XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS);
+    struct xkb_events *events = xkb_events_new(context, NULL, &error);
+    assert(events && error == XKB_SUCCESS);
+    xkb_events_destroy(events);
 
     test_state_update(context);
     test_group_wrap(context);
