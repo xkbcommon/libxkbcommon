@@ -27,6 +27,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_UNSUPPORTED_MODIFIER_MASK_, "Unsupported modifier mask"},
     {XKB_ERROR_EXPECTED_ARRAY_ENTRY, "Expected array entry"},
     {XKB_ERROR_INVALID_NUMERIC_KEYSYM, "Invalid numeric keysym"},
+    {XKB_ERROR_UNSUPPORTED_STATE_MODE_, "Unsupported state mode"},
     {XKB_WARNING_ILLEGAL_KEYCODE_ALIAS, "Illegal keycode alias"},
     {XKB_WARNING_UNRECOGNIZED_KEYSYM, "Unrecognized keysym"},
     {XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER, "Undeclared virtual modifier"},

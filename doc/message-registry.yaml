@@ -77,6 +77,18 @@
     [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
 
     @see keysyms
+- id: "unsupported-state-mode"
+  code: 86
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_state_mode` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given mode:
+
+    ```c
+    xkb_feature_supported(XKB_FEATURE_ENUM_STATE_MODE, flag)
+    ```
 - id: "illegal-keycode-alias"
   code: 101
   added: ALWAYS

@@ -72,6 +72,8 @@ enum xkb_message_code {
     XKB_ERROR_EXPECTED_ARRAY_ENTRY = 77,
     /** Invalid numeric keysym */
     XKB_ERROR_INVALID_NUMERIC_KEYSYM = 82,
+    /** Unsupported `xkb_state_mode` value */
+    XKB_ERROR_UNSUPPORTED_STATE_MODE_ = 86,
     /** Illegal keycode alias with the name of a real key */
     XKB_WARNING_ILLEGAL_KEYCODE_ALIAS = 101,
     /** Warn on unrecognized keysyms */
