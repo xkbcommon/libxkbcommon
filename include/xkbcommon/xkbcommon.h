@@ -4278,22 +4278,37 @@ enum xkb_state_mode {
 };
 
 /**
- * Create a new keyboard state object with an explicit mode.
+ * Create a new keyboard state object with an explicit [mode].
  *
  * This entry point is intended for both server and client applications.
  * It enables using the optimal implementation for the intended use.
  *
- * @param[in] keymap The keymap which the state will use.
- * @param[in] mode   The [state mode](@ref xkb_state_mode) to use.
+ * @param[in] keymap
+ *   The keymap which the state will use.
+ * @param[in] mode
+ *   The [state mode][mode] to use.
+ * @param[out] error
+ *     Pointer to store the resulting [error code], or `NULL` if not needed.
  *
  * @returns A new keyboard state object, or `NULL` on failure.
+ *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or to an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - `::XKB_ERROR_UNSUPPORTED_STATE_MODE`
  *
  * @since 1.14.0
  * @sa `xkb_state_mode`
  * @memberof xkb_state
+ *
+ * [mode]: @ref xkb_state_mode
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT struct xkb_state *
-xkb_state_new_with_mode(struct xkb_keymap *keymap, enum xkb_state_mode mode);
+xkb_state_new_with_mode(struct xkb_keymap *keymap,
+                        enum xkb_state_mode mode,
+                        enum xkb_error_code *error);
 
 /**
  * Create a new keyboard state object.

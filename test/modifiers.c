@@ -390,7 +390,7 @@ test_explicit_virtual_modifiers(struct xkb_context *context)
                tests[k].m2.mapping_effective);
 
         struct xkb_state *state =
-            xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT);
+            xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT, NULL);
         assert(state);
 
         /* Not in the canonical modifier mask nor denotes a *known* virtual
@@ -444,7 +444,7 @@ test_virtual_modifiers_mapping_hack(struct xkb_context *context)
     assert(keymap);
 
     struct xkb_state* state =
-        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT);
+        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT, NULL);
     assert(state);
 
     static const struct {
@@ -751,7 +751,7 @@ xkb_keymap_mod_get_codes(struct xkb_keymap *keymap, xkb_mod_index_t mod,
          * avoid side effects (latches, etc.)
          */
         struct xkb_state * const state =
-            xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER);
+            xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER, NULL);
         assert(state);
 
         static const enum xkb_key_direction directions[] = {

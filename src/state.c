@@ -1322,8 +1322,11 @@ struct xkb_state *
 xkb_state_new(struct xkb_keymap *keymap)
 {
     struct xkb_server_state * const state = calloc(1, sizeof(*state));
-    if (!state)
+    if (!state) {
+        log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "Could not allocate a state object.\n");
         return NULL;
+    }
 
     xkb_server_state_init(state, keymap, LEGACY_MIXED_STATE, 0, 0);
 
@@ -1331,14 +1334,16 @@ xkb_state_new(struct xkb_keymap *keymap)
 }
 
 struct xkb_state *
-xkb_state_new_with_mode(struct xkb_keymap *keymap, enum xkb_state_mode mode)
+xkb_state_new_with_mode(struct xkb_keymap * restrict keymap,
+                        enum xkb_state_mode mode,
+                        enum xkb_error_code * restrict error)
 {
     switch (mode) {
     case XKB_STATE_MODE_CLIENT:
     case XKB_STATE_MODE_SERVER_QUERY: {
         struct xkb_client_state * const state = calloc(1, sizeof(*state));
         if (!state)
-            return NULL;
+            break;
 
         static_assert((unsigned)XKB_STATE_MODE_CLIENT ==
                       (unsigned)CLIENT_STATE, "");
@@ -1346,24 +1351,36 @@ xkb_state_new_with_mode(struct xkb_keymap *keymap, enum xkb_state_mode mode)
                       (unsigned)SERVER_COMPANION, "");
         xkb_client_state_init(state, keymap, (enum xkb_state_mode_internal)mode);
 
+        if (error)
+            *error = XKB_SUCCESS;
+
         return (struct xkb_state *)state;
     }
     case XKB_STATE_MODE_SERVER: {
         struct xkb_server_state * const state = calloc(1, sizeof(*state));
         if (!state)
-            return NULL;
+            break;
 
         xkb_server_state_init(state, keymap, LEGACY_SERVER_STATE, 0, 0);
+
+        if (error)
+            *error = XKB_SUCCESS;
 
         return (struct xkb_state *)state;
     }
     default:
-        /*
-         * No error message: caller should check mode availability with the
-         * `xkb_feature_supported()`.
-         */
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_STATE_MODE_,
+                     "Unsupported state mode: %u\n", mode);
+        if (error)
+            *error = XKB_ERROR_UNSUPPORTED_STATE_MODE;
         return NULL;
     }
+
+    log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
+                  "Could not allocate a state object.\n");
+    if (error)
+        *error = XKB_ERROR_ALLOCATION_FAILURE;
+    return NULL;
 }
 
 struct xkb_state *
