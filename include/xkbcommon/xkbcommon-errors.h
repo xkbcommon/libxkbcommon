@@ -75,6 +75,19 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK = 60,
     /**
+     * Unsupported `xkb_state_mode` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given mode:
+     *
+     * ```c
+     * xkb_feature_supported(XKB_FEATURE_ENUM_STATE_MODE, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_STATE_MODE = 86,
+    /**
      * Unsupported `xkb_keymap_key_iterator_flags` value
      *
      * Use the following to check if the linked libxkbcommon library supports a
