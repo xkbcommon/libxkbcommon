@@ -431,6 +431,10 @@ test_state_modes(struct xkb_context *ctx)
     );
     assert(keymap);
 
+    enum xkb_error_code error;
+    assert(!xkb_state_new_with_mode(keymap, 0xffff, &error) &&
+           error == XKB_ERROR_UNSUPPORTED_STATE_MODE);
+
     enum { LEGACY_STATE_MODE = 0xff };
 
     const xkb_mod_mask_t shift =
@@ -550,11 +554,13 @@ test_state_modes(struct xkb_context *ctx)
         fprintf(stderr, "------\n*** %s: #%zu (mode: %d) ***\n",
                 __func__, t, tests[t].mode);
 
+        error = XKB_SUCCESS;
         struct xkb_state * const state =
             (tests[t].mode == (enum xkb_state_mode)LEGACY_STATE_MODE)
                 ? xkb_state_new(keymap)
-                : xkb_state_new_with_mode(keymap, tests[t].mode);
+                : xkb_state_new_with_mode(keymap, tests[t].mode, &error);
         assert(state);
+        assert(error == XKB_SUCCESS);
 
         enum xkb_state_component changed = 0;
         int code = EXIT_SUCCESS;

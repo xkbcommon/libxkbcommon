@@ -118,8 +118,16 @@ keyboard modifiers and LEDs are active:
 ~~~{.c}
     struct xkb_state *state;
 
-    state = xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT);
-    if (!state) <error>
+    enum xkb_error_code error;
+    state = xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT, &error);
+    if (!state) {
+        assert(error != XKB_SUCCESS);
+        switch (error) {
+        // ...
+        default:
+            exit(EXIT_FAILURE);
+        }
+    }
 ~~~
 
 For **X11/XCB** clients, this is better:
