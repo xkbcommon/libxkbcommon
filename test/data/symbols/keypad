@@ -580,6 +580,9 @@ xkb_symbols "pointerkeys" {
 partial modifier_keys
 xkb_symbols "pointer-extra" {
     key <I126> { [ Pointer_EnableKeys ] };
+    key <KPEQ> { [ Pointer_Drag_Dflt ] };
+    key <I187> { [ Pointer_Drag1    ] };
+    key <I188> { [ Pointer_Drag2    ] };
 };
 
 
