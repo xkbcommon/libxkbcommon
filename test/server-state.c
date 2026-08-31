@@ -1063,6 +1063,7 @@ test_redirect_key(struct xkb_context *ctx)
             .down = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
                         .keycode = EVDEV_OFFSET + KEY_A
                     }
@@ -1072,6 +1073,7 @@ test_redirect_key(struct xkb_context *ctx)
             .up = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
                         .keycode = EVDEV_OFFSET + KEY_A
                     }
@@ -1085,6 +1087,7 @@ test_redirect_key(struct xkb_context *ctx)
             .down = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
                         .keycode = EVDEV_OFFSET + KEY_A
                     }
@@ -1094,6 +1097,7 @@ test_redirect_key(struct xkb_context *ctx)
             .up = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
                         .keycode = EVDEV_OFFSET + KEY_A
                     }
@@ -1107,6 +1111,7 @@ test_redirect_key(struct xkb_context *ctx)
             .down = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                         .components = {
                             .components = {
@@ -1122,10 +1127,12 @@ test_redirect_key(struct xkb_context *ctx)
                         }
                     },
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
                         .keycode = EVDEV_OFFSET + KEY_S
                     },
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                         .components = {
                             .components = {
@@ -1146,6 +1153,7 @@ test_redirect_key(struct xkb_context *ctx)
             .up = {
                 .events = {
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                         .components = {
                             .components = {
@@ -1161,10 +1169,12 @@ test_redirect_key(struct xkb_context *ctx)
                         }
                     },
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
                         .keycode = EVDEV_OFFSET + KEY_S
                     },
                     {
+                        .ctx = ctx,
                         .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                         .components = {
                             .components = {
@@ -1407,6 +1417,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1423,10 +1434,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1443,6 +1456,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE,
@@ -1465,6 +1479,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
@@ -1475,6 +1490,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_Q + EVDEV_OFFSET
         }
@@ -1485,10 +1501,12 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -1511,7 +1529,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                                    XKB_KEY_REPEATED, events) == 0);
     check_events_(
         events,
-        { .type = XKB_EVENT_TYPE_NONE }, /* does not repeat */
+        { .ctx = context, .type = XKB_EVENT_TYPE_NONE }, /* does not repeat */
     );
 
     assert(xkb_machine_process_key(sm, KEY_RIGHTCTRL + EVDEV_OFFSET,
@@ -1519,6 +1537,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1536,10 +1555,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1557,6 +1578,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED,
@@ -1580,6 +1602,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1596,10 +1619,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_102ND + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1617,6 +1642,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -1640,6 +1666,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1657,10 +1684,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1678,6 +1707,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE,
@@ -1701,6 +1731,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_Q + EVDEV_OFFSET
         }
@@ -1711,10 +1742,12 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_102ND + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -1744,6 +1777,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE,
@@ -1768,6 +1802,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_LOCKED,
@@ -1790,6 +1825,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1807,10 +1843,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1834,6 +1872,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1851,10 +1890,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1878,6 +1919,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1895,10 +1937,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE,
@@ -1924,6 +1968,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_LATCHED | XKB_STATE_LAYOUT_LOCKED
@@ -1949,6 +1994,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -1973,6 +2019,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE,
@@ -2008,6 +2055,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_CONTROLS,
@@ -2029,7 +2077,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     /* Enable already enabled sticky keys: no change */
     assert(xkb_machine_update_enabled_controls(sm, events, controls, controls)
            == XKB_SUCCESS);
-    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    check_events_(events, { .ctx = context, .type = XKB_EVENT_TYPE_NONE });
 
     /* Disable sticky keys: clear latches & locks */
     assert(xkb_machine_update_enabled_controls(sm, events, controls, 0)
@@ -2037,6 +2085,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_EFFECTIVE
@@ -2072,6 +2121,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
@@ -2096,6 +2146,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2113,6 +2164,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2129,10 +2181,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2149,6 +2203,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2193,6 +2248,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2210,10 +2266,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2237,6 +2295,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2254,6 +2313,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2270,10 +2330,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2290,6 +2352,7 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_DEPRESSED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -2315,6 +2378,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2337,6 +2401,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2355,10 +2420,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2387,6 +2454,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2405,10 +2473,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Q + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2433,6 +2503,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2449,10 +2520,12 @@ test_shortcuts_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -2760,10 +2833,12 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_LEFTALT + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2783,6 +2858,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2796,10 +2872,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Y + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2819,6 +2897,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2832,10 +2911,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_Y + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2855,6 +2936,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2868,10 +2950,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_Y + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -2893,6 +2977,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
@@ -2914,6 +2999,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2929,10 +3015,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_Y + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2955,6 +3043,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2970,10 +3059,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_Y + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -2996,6 +3087,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_BACKSPACE + EVDEV_OFFSET
         }
@@ -3006,6 +3098,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3021,10 +3114,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_LEFTALT + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3040,6 +3135,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
@@ -3062,6 +3158,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
@@ -3084,6 +3181,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3099,10 +3197,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3118,6 +3218,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_LAYOUT_LOCKED | XKB_STATE_LAYOUT_EFFECTIVE
@@ -3145,6 +3246,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3160,6 +3262,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3174,10 +3277,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3192,6 +3297,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3213,6 +3319,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3228,6 +3335,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3242,10 +3350,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3260,6 +3370,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3282,6 +3393,7 @@ test_modifiers_tweak(struct xkb_context *context)
     check_events_(
         events,
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -3297,6 +3409,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3311,10 +3424,12 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_COPY + EVDEV_OFFSET
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
@@ -3329,6 +3444,7 @@ test_modifiers_tweak(struct xkb_context *context)
             }
         },
         {
+            .ctx = context,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED

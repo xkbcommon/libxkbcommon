@@ -1086,6 +1086,7 @@ append_redirect_key_events(struct xkb_state *state,
         changed = get_state_component_changes(&last_components, &new);
         if (changed) {
             darray_append(events->queue, (struct xkb_event) {
+                .ctx = events->ctx, /* borrowed from events */
                 .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                 .components = {
                     .components = new,
@@ -1096,6 +1097,7 @@ append_redirect_key_events(struct xkb_state *state,
     }
 
     darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
         .type = (direction == XKB_KEY_UP)
               ? XKB_EVENT_TYPE_KEY_UP
               : (direction == XKB_KEY_REPEATED)
@@ -1107,6 +1109,7 @@ append_redirect_key_events(struct xkb_state *state,
     if (mask && changed) {
         /* Restore state */
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = last_components,
@@ -3433,6 +3436,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 
         /* Create event only if some component actually changed */
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = changed,
@@ -3489,6 +3493,7 @@ do_remap_modifiers(const struct machine_modifiers_config * restrict mappings,
     if (changed) {
         event_idx = (ssize_t) darray_size(events->queue);
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = new.components,
@@ -3537,6 +3542,7 @@ do_shortcuts_tweak(const struct machine_shortcuts_config *config,
             /* Create new event */
             remap_event = (ssize_t) darray_size(events->queue);
             darray_append(events->queue, (struct xkb_event) {
+                .ctx = events->ctx, /* borrowed from events */
                 .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
                 .components = {
                     .components = {0},
@@ -3587,6 +3593,7 @@ undo_tweaks(const struct xkb_state *state,
                                     &event->components.components);
     if (changed) {
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = *previous_components,
@@ -3773,6 +3780,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
          * RedirectKey().
          */
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = (direction == XKB_KEY_UP)
                 ? XKB_EVENT_TYPE_KEY_UP
                 : (direction == XKB_KEY_REPEATED)
@@ -3795,6 +3803,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
             machine_update_overlays(sm);
 
         darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = state->base.components,

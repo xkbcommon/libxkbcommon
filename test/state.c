@@ -589,6 +589,7 @@ test_state_modes(struct xkb_context *ctx)
 
         #ifndef _WIN32
         const struct xkb_event event = {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = tests[t].update_event.changed,
@@ -810,10 +811,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = {
@@ -828,7 +831,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
     /* Ensure it does not repeat */
     update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_REPEATED);
-    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    check_events_(events, { .ctx = ctx, .type = XKB_EVENT_TYPE_NONE });
     assert(xkb_state_mod_name_is_active(state, XKB_MOD_NAME_CTRL,
                                         XKB_STATE_MODS_DEPRESSED) > 0);
 
@@ -839,10 +842,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_RIGHTALT + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = {
@@ -938,7 +943,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
                             NULL)));
     /* Ensure it does not repeat */
     update_states(state, sm, KEY_RIGHTALT + EVDEV_OFFSET, XKB_KEY_REPEATED);
-    check_events_(events, { .type = XKB_EVENT_TYPE_NONE });
+    check_events_(events, { .ctx = ctx, .type = XKB_EVENT_TYPE_NONE });
 
     /* RAlt down */
     update_states(state, sm, KEY_LEFTCTRL + EVDEV_OFFSET, XKB_KEY_UP);
@@ -947,10 +952,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = {
@@ -989,10 +996,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_RIGHTALT + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .components = { .base_mods = 0, .mods = 0, },
@@ -1079,10 +1088,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -1102,10 +1113,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
@@ -1122,10 +1135,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
@@ -1144,10 +1159,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -1172,10 +1189,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -1193,6 +1212,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         }
@@ -1201,10 +1221,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
@@ -1221,10 +1243,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
@@ -1241,6 +1265,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         }
@@ -1249,10 +1274,12 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_NUMLOCK + EVDEV_OFFSET
         },
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
@@ -1276,6 +1303,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_5 + EVDEV_OFFSET
         }
@@ -1285,6 +1313,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_5 + EVDEV_OFFSET
         }
@@ -1293,6 +1322,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_5 + EVDEV_OFFSET
         }
@@ -1310,6 +1340,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
             .keycode = KEY_6 + EVDEV_OFFSET
         }
@@ -1319,6 +1350,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
             .keycode = KEY_6 + EVDEV_OFFSET
         }
@@ -1327,6 +1359,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
     check_events_(
         events,
         {
+            .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
             .keycode = KEY_6 + EVDEV_OFFSET
         }
