@@ -2675,6 +2675,8 @@ struct xkb_event;
  * @enum xkb_event_type
  * Denotes the type of a [state event](@ref xkb_event).
  *
+ * @sa `xkb_event::xkb_event_get_type()`
+ *
  * @since 1.14.0
  */
 enum xkb_event_type {
@@ -2702,6 +2704,14 @@ enum xkb_event_type {
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+    /**
+     * **Pointer _motion_** event
+     *
+     * @sa `xkb_event::xkb_event_get_pointer_motion()`
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_POINTER_MOTION,
 };
 
 /**
@@ -3070,6 +3080,53 @@ enum xkb_pointer_motion_flags {
      *
      */
     XKB_POINTER_MOTION_ABSOLUTE_Y  = (1 << 2),
+};
+
+/**
+ * @struct xkb_event_pointer_motion
+ * @ingroup abi-struct-contract
+ *
+ * Description of a pointer motion.
+ *
+ * @sa `xkb_pointer_motion_flags`
+ * @sa `xkb_event::xkb_event_get_pointer_motion()`
+ * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
+ *
+ * @since 1.14.0
+ */
+struct xkb_event_pointer_motion {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * [Motions flags](@ref xkb_pointer_motion_flags)
+     *
+     * @sa xkb_pointer_motion_flags
+     *
+     * @since 1.14.0
+     */
+    uint32_t flags;
+    /**
+     * **x** coordinate
+     *
+     * @sa `::XKB_POINTER_MOTION_ABSOLUTE_X`
+     *
+     * @since 1.14.0
+     */
+    int32_t x;
+    /**
+     * **y** coordinate
+     *
+     * @sa `::XKB_POINTER_MOTION_ABSOLUTE_Y`
+     *
+     * @since 1.14.0
+     */
+    int32_t y;
 };
 
 /**

@@ -263,6 +263,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_event::xkb_event_serialize_layout()`
     - `xkb_event::xkb_event_serialize_enabled_controls()`
   - `enum xkb_pointer_motion_flags` (new)
+  - `struct xkb_event_pointer_motion` (new)
   - `struct xkb_state`:
     - `xkb_state::xkb_state_update_event()`
 
