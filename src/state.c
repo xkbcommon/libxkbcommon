@@ -151,6 +151,11 @@ struct xkb_client_state {
     struct xkb_state base;
 };
 
+enum state_flags {
+    STATE_NO_FLAGS = 0,
+    STATE_REQUIRE_KEY_EVENT = (1 << 0),
+};
+
 /**
  * Legacy server state, used for `LEGACY_MIXED_STATE` and `LEGACY_SERVER_STATE`
  * modes.
@@ -167,6 +172,8 @@ struct xkb_server_state {
 
     /* NOTE: if we ever add other flags types, we could merge them internally */
     enum xkb_a11y_flags flags;
+
+    enum state_flags update_flags;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -1055,7 +1062,7 @@ xkb_filter_ctrls_func(struct xkb_server_state *state,
 }
 
 static bool
-append_redirect_key_events(struct xkb_state *state,
+append_redirect_key_events(struct xkb_server_state *state,
                            struct xkb_events *events,
                            const struct xkb_redirect_key_action *redirect,
                            enum xkb_key_direction direction)
@@ -1068,7 +1075,7 @@ append_redirect_key_events(struct xkb_state *state,
      * use the current state.
      */
     struct xkb_event *event;
-    struct state_components last_components = state->components;
+    struct state_components last_components = state->base.components;
     darray_foreach_reverse(event, events->queue) {
         if (event->type == XKB_EVENT_TYPE_COMPONENTS_CHANGE) {
             last_components = event->components.components;
@@ -1118,6 +1125,7 @@ append_redirect_key_events(struct xkb_state *state,
         });
     }
 
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
     return true;
 }
 
@@ -1131,7 +1139,7 @@ xkb_filter_redirect_key_new(struct xkb_server_state *state,
         filter->func = NULL;
         return;
     }
-    append_redirect_key_events(&state->base, events, &filter->action.redirect,
+    append_redirect_key_events(state, events, &filter->action.redirect,
                                XKB_KEY_DOWN);
 }
 
@@ -1146,7 +1154,7 @@ xkb_filter_redirect_key_func(struct xkb_server_state *state,
         return XKB_FILTER_CONTINUE;
 
     if (direction == XKB_KEY_UP) {
-        append_redirect_key_events(&state->base, events,
+        append_redirect_key_events(state, events,
                                    &filter->action.redirect, XKB_KEY_UP);
         filter->func = NULL;
         return XKB_FILTER_CONSUME;
@@ -1159,7 +1167,7 @@ xkb_filter_redirect_key_func(struct xkb_server_state *state,
             if (actions[a].type == ACTION_TYPE_REDIRECT_KEY &&
                 actions[a].redirect.keycode != filter->action.redirect.keycode) {
                     /* One action redirects to a different key: release first */
-                    append_redirect_key_events(&state->base, events,
+                    append_redirect_key_events(state, events,
                                                &filter->action.redirect,
                                                XKB_KEY_UP);
                 filter->func = NULL;
@@ -1168,7 +1176,7 @@ xkb_filter_redirect_key_func(struct xkb_server_state *state,
         }
     }
 
-    append_redirect_key_events(&state->base, events, &filter->action.redirect,
+    append_redirect_key_events(state, events, &filter->action.redirect,
                                direction);
     return XKB_FILTER_CONSUME;
 }
@@ -3731,6 +3739,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
     remap_event = do_shortcuts_tweak(&sm->config.shortcuts, &state->base,
                                      &previous_components, events, remap_event);
 
+    state->update_flags = STATE_REQUIRE_KEY_EVENT;
     state->set_mods = 0;
     state->clear_mods = 0;
 
@@ -3760,21 +3769,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
 
     xkb_state_update_derived(&state->base);
 
-    bool has_key_event = false;
-    const struct xkb_event *event;
-    darray_foreach(event, events->queue) {
-        switch (event->type) {
-        case XKB_EVENT_TYPE_KEY_DOWN:
-        case XKB_EVENT_TYPE_KEY_REPEATED:
-        case XKB_EVENT_TYPE_KEY_UP:
-            has_key_event = true;
-            break;
-        default:
-            continue;
-        }
-    }
-
-    if (!has_key_event) {
+    if (state->update_flags & STATE_REQUIRE_KEY_EVENT) {
         /*
          * Append key event only if we did not generate it before with e.g.
          * RedirectKey().
