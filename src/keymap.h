@@ -306,19 +306,6 @@ struct xkb_controls_action {
     enum xkb_action_controls ctrls;
 };
 
-struct xkb_pointer_default_action {
-    enum xkb_action_type type;
-    enum xkb_action_flags flags;
-    int8_t value;
-};
-
-struct xkb_pointer_motion_action {
-    enum xkb_action_type type;
-    enum xkb_action_flags flags;
-    int16_t x;
-    int16_t y;
-};
-
 typedef uint8_t xkb_pointer_button_index_t;
 typedef uint8_t xkb_pointer_button_mask_t;
 
@@ -339,6 +326,31 @@ static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_INDEX_MAX,
 
 static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
               "xkb_pointer_button_mask_t cannot store button mask");
+
+struct xkb_pointer_default_action {
+    enum xkb_action_type type;
+    enum xkb_action_flags flags;
+    int8_t value;
+};
+
+enum {
+    XKB_POINTER_DEFAULT_ACTION_VALUE_WIDTH =
+        sizeof(((struct xkb_pointer_default_action*)0)->value) * CHAR_BIT,
+    XKB_POINTER_DEFAULT_ACTION_VALUE_MAX =
+        /* NOTE: signed integer */
+        (UINT32_C(1) << (XKB_POINTER_DEFAULT_ACTION_VALUE_WIDTH - 1)) - 1,
+};
+
+static_assert((uint32_t)XKB_POINTER_BUTTON_MAX <=
+              (uint32_t)XKB_POINTER_DEFAULT_ACTION_VALUE_MAX,
+              "Cannot store button in xkb_pointer_default_action::value");
+
+struct xkb_pointer_motion_action {
+    enum xkb_action_type type;
+    enum xkb_action_flags flags;
+    int16_t x;
+    int16_t y;
+};
 
 struct xkb_pointer_button_action {
     enum xkb_action_type type;
@@ -397,11 +409,11 @@ union xkb_action {
     struct xkb_mod_action mods;
     struct xkb_group_action group;
     struct xkb_controls_action ctrls;
+    struct xkb_redirect_key_action redirect;
     struct xkb_pointer_default_action dflt;
-    struct xkb_switch_screen_action screen;
     struct xkb_pointer_motion_action ptr;
     struct xkb_pointer_button_action btn;
-    struct xkb_redirect_key_action redirect;
+    struct xkb_switch_screen_action screen;
     struct xkb_private_action priv;
     struct xkb_internal_action internal;
 };
