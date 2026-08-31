@@ -786,8 +786,10 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
             write_buf(buf, "%"PRIu8, action->btn.button);
         else
             copy_to_buf(buf, "default");
-        if (action->btn.count)
+        if (action->btn.count) {
+            assert(action->type != ACTION_TYPE_PTR_LOCK);
             write_buf(buf, ",count=%u", action->btn.count);
+        }
         if (args)
             write_buf(buf, "%s", args);
         write_buf(buf, ")%s", suffix);
