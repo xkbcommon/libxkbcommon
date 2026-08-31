@@ -3427,8 +3427,8 @@ The following table provide an overview of the available actions:
 | [Keyboard emulation action] | [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code |
 | [Mouse emulation actions] | [`MovePointer`][MovePointer] | `MovePtr`        | Simulate a mouse pointer motion |
 | ^        | [`PointerButton`][PointerButton] | `PtrBtn`         | Simulate a mouse button press |
-| [Legacy action] | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
-| ^        | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
+| ^        | [`LockPointerButton`][LockPointerButton] | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
+| [Legacy action] | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
 | ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
 | ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
 | ^        | [`Private`][Private]|                  | Raw encoding of an action          |
@@ -4222,6 +4222,7 @@ modifiers at the time of the release, changed as described on the key press.
 [mouse keys]: @ref XKB_KEYBOARD_CONTROL_MOUSE_KEYS
 [MovePointer]: @ref move-pointer-action
 [PointerButton]: @ref pointer-button-action
+[LockPointerButton]: @ref pointer-lock-button-action
 
 <dl>
 <dt>`MovePointer` @anchor move-pointer-action<dt>
@@ -4447,6 +4448,123 @@ The repeat counter.
 </tbody>
 </table>
 </dd>
+
+<dt>`LockPointerButton` @anchor pointer-lock-button-action</dt>
+<dt>`LockPointerBtn`</dt>
+<dt>`LockPtrButton`</dt>
+<dt>`LockPtrBtn`</dt>
+<dd>
+Simulate a mouse button press, locked until the action’s key is pressed again.
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`button`</th>
+<td></td>
+<td>
+Button identifier:
+- integer 1..5
+- named constants:
+  - `default`
+  - `button1..button5`
+</td>
+<td>`default`</td>
+<td>
+The mouse button to simulate.
+</td>
+</tr>
+<!--
+NOTE: `count` is parsed but ignored, so we do not document it here.
+It seems an oversight in X.Org’s xkbcomp, since `SA_LockPtrBtn` has no `count` parameter.
+See: https://xorg.freedesktop.org/archive/current/doc/kbproto/xkbproto.html#:~:text=SA_LockPtrBtn
+-->
+<tr>
+<th>`affect`</th>
+<td></td>
+<td>
+enumeration:
+- `lock`
+- `unlock`
+- `both`
+- `neither`
+</td>
+<td>`both`</td>
+<td>
+- `lock`: the action only locks the button, but cannot unlock it.
+- `unlock`: the action only unlocks button, but cannot lock it.
+- `both`: the first key press locks the button and the second key
+  press releases the button.
+- `neither`: do not lock nor unlock, i.e. do nothing.
+</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [mouse keys] is enabled, it does not generates the usual [key press event]
+  but instead:
+  - If the mouse button `button` is already *locked* or
+    `affect` is not `lock` nor `both`, it has no effect.
+  - Otherwise it *locks* the mouse button `button` and
+    generates the corresponding [pointer button event]&zwnj;:
+    <dl>
+    <dt>[`direction`](@ref xkb_event_pointer_button::direction)</dt>
+    <dd>`::XKB_POINTER_BUTTON_DOWN`</dd>
+    <dt>[`count`](@ref xkb_event_pointer_button::count)</dt>
+    <dd>1</dd>
+    </dl>
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [mouse keys] is enabled, it has not effect.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [mouse keys] is enabled, it does not generates the usual [key release event]
+  but instead:
+  - If the mouse button `button` was *locked* at key press and
+    `affect` is `unlock` or `both`, it *unlocks* `button` and
+    generates the corresponding [pointer button event]&zwnj;:
+    <dl>
+    <dt>[`direction`](@ref xkb_event_pointer_button::direction)</dt>
+    <dd>`::XKB_POINTER_BUTTON_UP`</dd>
+    <dt>[`count`](@ref xkb_event_pointer_button::count)</dt>
+    <dd>1</dd>
+    </dl>
+  - Otherwise it has no effect.
+- Otherwise it generates the usual [key release event].
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
 </dl>
 
 [pointer motion event]: @ref XKB_EVENT_TYPE_POINTER_MOTION
@@ -4466,18 +4584,6 @@ and validated but have no effect. This allows to use keymaps defined in
 #### Pointer actions
 
 <dl>
-<dt>`LockPointerButton`</dt>
-<dt>`LockPointerBtn`</dt>
-<dt>`LockPtrButton`</dt>
-<dt>`LockPtrBtn`</dt>
-<dd>
-Simulate a mouse button press, locked until this actiion’s key is pressed again
-
-@todo LockPointerButton parameters
-<!-- blank required by Doxygen -->
-
-</dd>
-
 <dt>`SetPointerDefault`</dt>
 <dt>`SetPtrDflt`</dt>
 <dd>
