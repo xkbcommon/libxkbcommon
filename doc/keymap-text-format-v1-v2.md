@@ -3428,8 +3428,8 @@ The following table provide an overview of the available actions:
 | [Mouse emulation actions] | [`MovePointer`][MovePointer] | `MovePtr`        | Simulate a mouse pointer motion |
 | ^        | [`PointerButton`][PointerButton] | `PtrBtn`         | Simulate a mouse button press |
 | ^        | [`LockPointerButton`][LockPointerButton] | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
-| [Legacy action] | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
-| ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
+| ^        | [`SetPointerDefault`][SetPointerDefault] | `SetPtrDflt`     | Set the default mouse button |
+| [Legacy action] | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
 | ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
 | ^        | [`Private`][Private]|                  | Raw encoding of an action          |
 | [Unsupported legacy action] | `ISOLock`           |                  | Convert ordinary modifier key actions into lock actions while this action is active |
@@ -4223,6 +4223,7 @@ modifiers at the time of the release, changed as described on the key press.
 [MovePointer]: @ref move-pointer-action
 [PointerButton]: @ref pointer-button-action
 [LockPointerButton]: @ref pointer-lock-button-action
+[SetPointerDefault]: @ref pointer-set-default-button
 
 <dl>
 <dt>`MovePointer` @anchor move-pointer-action<dt>
@@ -4565,6 +4566,94 @@ enumeration:
 </tbody>
 </table>
 </dd>
+
+<dt>`SetPointerDefault` @anchor pointer-set-default-button</dt>
+<dt>`SetPtrDflt`</dt>
+<dd>
+Set the default mouse button
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`button`</th>
+<td></td>
+<td>
+Button:
+- integer 1..5
+- named constant: `button1..button5`
+- either absolute (no sign) or relative (`+`/`-` sign)
+</td>
+<td>`+button1`</td>
+<td>
+The mouse button to set as default or button delta.
+</td>
+</tr>
+<tr>
+<th>`affect`</th>
+<td></td>
+<td>
+enumeration:
+- `defaultbutton` (also: `dfltbtn`, `button`)
+</td>
+<td>`defaultbutton`</td>
+<td>
+Legacy paramater: *do not use*.
+</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [mouse keys] is enabled, it does not generates the usual [key press event]
+  but instead:
+  - If affect is `defaultbutton`:
+    - if `button` is *absolute*, the default mouse button is set to `button`;
+    - otherwise it adds `button` to the current default mouse button.
+
+    In either case, the resulting *effective* default mouse button is *wrapped*
+    back into range.
+  - Otherwise it does nothing.
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [mouse keys] is enabled, it has no effect.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [mouse keys] is enabled, it has no effect.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+</tbody>
+</table>
+<dd>
 </dl>
 
 [pointer motion event]: @ref XKB_EVENT_TYPE_POINTER_MOTION
@@ -4580,21 +4669,6 @@ enumeration:
 @attention The following legacy actions are kept for compatibility only: they are parsed
 and validated but have no effect. This allows to use keymaps defined in
 <code>[xkeyboard-config]</code> for both X11 and Wayland.
-
-#### Pointer actions
-
-<dl>
-<dt>`SetPointerDefault`</dt>
-<dt>`SetPtrDflt`</dt>
-<dd>
-Set the default select button (???)
-
-@todo SetPointerDefault parameters
-<!-- blank required by Doxygen -->
-
-<dd>
-</dl>
-
 
 #### Server actions
 
