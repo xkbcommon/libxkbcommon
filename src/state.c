@@ -2910,6 +2910,12 @@ struct xkb_machine {
             struct xkb_shortcuts_config_entry *entries;
         } shortcuts;
     } config;
+
+    /** Mouse keys handling */
+    struct {
+        /** Default pointer button */
+        xkb_pointer_button_index_t default_button;
+    } mouse;
 };
 
 typedef darray(struct machine_mods_mapping) machine_mods_mappings;
@@ -3375,6 +3381,7 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
     }
 
     darray_init(machine->overlays.keys);
+    machine->mouse.default_button = XKB_POINTER_BUTTON_MIN;
 
     if (error)
         *error = XKB_SUCCESS;
