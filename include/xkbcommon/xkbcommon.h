@@ -3180,6 +3180,24 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
                              struct xkb_event_pointer_motion *motion);
 
 /**
+ * @enum xkb_pointer_button_direction
+ * Specifies the direction of a button (press / release).
+ *
+ * @sa `xkb_event_pointer_button`
+ *
+ * @since 1.14.0
+ */
+enum xkb_pointer_button_direction {
+    /** The pointer button was *pressed*. */
+    XKB_POINTER_BUTTON_DOWN = (1 << 0),
+    /** The pointer button was *released*. */
+    XKB_POINTER_BUTTON_UP = (1 << 1),
+    /** The pointer button was *clicked* (pressed then released). */
+    XKB_POINTER_BUTTON_CLICK = ( XKB_POINTER_BUTTON_UP
+                               | XKB_POINTER_BUTTON_DOWN),
+};
+
+/**
  * @struct xkb_events
  * Opaque keyboard event collection object.
  *

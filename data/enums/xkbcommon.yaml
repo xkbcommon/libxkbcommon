@@ -124,6 +124,13 @@ xkb_pointer_motion_flags:
     value: 2
   - name: XKB_POINTER_MOTION_ABSOLUTE_Y
     value: 4
+xkb_pointer_button_direction:
+  - name: XKB_POINTER_BUTTON_DOWN
+    value: 1
+  - name: XKB_POINTER_BUTTON_UP
+    value: 2
+  - name: XKB_POINTER_BUTTON_CLICK
+    value: 3
 xkb_events_flags:
   - name: XKB_EVENTS_NO_FLAGS
     value: 0

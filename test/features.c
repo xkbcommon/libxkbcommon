@@ -57,6 +57,7 @@ test_libxkbcommon_enums(void)
         ENUM(XKB_FEATURE_ENUM_EVENT_TYPE, xkb_event_type_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_KEY_DIRECTION, xkb_key_direction_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_POINTER_MOTION_FLAGS, xkb_pointer_motion_flags_values, ENUM_FLAG),
+        ENUM(XKB_FEATURE_ENUM_POINTER_BUTTON_DIRECTION, xkb_pointer_button_direction_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_EVENTS_FLAGS, xkb_events_flags_values, ENUM_FLAG),
         ENUM(XKB_FEATURE_ENUM_COMPOSE_FORMAT, xkb_compose_format_values, ENUM_NONE),
         ENUM(XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS, xkb_compose_compile_flags_values, ENUM_FLAG),
