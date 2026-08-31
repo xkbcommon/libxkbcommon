@@ -3130,6 +3130,43 @@ struct xkb_event_pointer_motion {
 };
 
 /**
+ * Get the [pointer motion] corresponding to a [state event][event] of type
+ * `::XKB_EVENT_TYPE_POINTER_MOTION`.
+ *
+ * @param[in] event
+ *   The event object to process.
+ * @param[in,out] motion
+ *   A pointer motion object to update with the [event].
+ *
+ * @pre The event must have the type `::XKB_EVENT_TYPE_POINTER_MOTION`.
+ * Otherwise @p motion is *not* updated.
+ *
+ * @pre @p motion must point to a zero-initialized struct with
+ * [`motion->size`](@ref xkb_event_pointer_motion::size) set per
+ * @ref abi-struct-contract.
+ *
+ * @invariant The library writes only to fields of @p motion that fall
+ * within [`motion->size`](@ref xkb_event_pointer_motion::size).
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - Errors from ABI @ref abi-struct-resolution.
+ *
+ * @sa xkb_event_pointer_motion
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_event
+ *
+ * [pointer motion]: @ref xkb_event_pointer_motion
+ * [event]: @ref xkb_event
+ * [error code]: @ref xkb_error_code
+ */
+XKB_EXPORT enum xkb_error_code
+xkb_event_get_pointer_motion(const struct xkb_event *event,
+                             struct xkb_event_pointer_motion *motion);
+
+/**
  * @struct xkb_events
  * Opaque keyboard event collection object.
  *
