@@ -1236,6 +1236,7 @@
   esperanto:colemak     =	+epo(colemak)
   terminate:ctrl_alt_bksp =	+terminate(ctrl_alt_bksp)
   keypad:pointerkeys	=	+keypad(pointerkeys)
+  keypad:pointer-extra	=	+keypad(pointer-extra)
   apple:alupckeys	=	+macintosh_vndr/apple(alupckeys)
   shift:both_capslock                =       +shift(both_capslock)
   shift:lshift_both_capslock         =       +shift(lshift_both_capslock)

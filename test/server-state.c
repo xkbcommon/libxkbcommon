@@ -30,6 +30,13 @@
 
 #define U(cp) (XKB_KEYSYM_UNICODE_OFFSET + (cp))
 
+enum key_directions {
+    XKB_KEY_PRESS = (1 << 0),
+    XKB_KEY_REPEAT = (1 << 1),
+    XKB_KEY_RELEASE = (1 << 2),
+    XKB_KEY_TAP = XKB_KEY_PRESS | XKB_KEY_RELEASE,
+};
+
 static enum xkb_state_component
 xkb_state_update_enabled_controls(struct xkb_state *state,
                                   enum xkb_keyboard_control_flags affect,
@@ -1219,6 +1226,438 @@ test_redirect_key(struct xkb_context *ctx)
                                        XKB_KEY_UP, events) == XKB_SUCCESS);
         assert(check_events(events, tests[t].up.events,
                             tests[t].up.events_count));
+    }
+
+    xkb_events_unref(events);
+    xkb_machine_unref(sm);
+    xkb_keymap_unref(keymap);
+}
+
+static void
+test_mouse_keys(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap =
+        test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                           "evdev", "pc104", "us", "",
+                           "keypad:pointer-extra,lv3:ralt_latch");
+    assert(keymap);
+
+    struct xkb_machine_builder * const builder =
+        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
+    assert(builder);
+
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_builder_unref(builder);
+
+    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+
+    const xkb_mod_mask_t level3 =
+        _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_LEVEL3);
+
+    const xkb_led_index_t mouse_keys_idx =
+        _xkb_keymap_led_get_index(keymap, "Mouse Keys");
+    const xkb_led_mask_t mouse_keys = (UINT32_C(1) << mouse_keys_idx);
+
+    const struct {
+        xkb_keycode_t keycode;
+        enum key_directions directions;
+        bool repeats;
+        struct test_events {
+            struct xkb_event events[2];
+            unsigned int events_count;
+        } down;
+        struct test_events repeat;
+        struct test_events up;
+    } tests[] = {
+        /*
+         * Mouse keys: off
+         */
+
+        /* Latch LevelThree */
+        {
+            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .repeats = false,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .base_mods = level3,
+                                .latched_mods = 0,
+                                .mods = level3,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .repeat = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    }
+                },
+                .events_count = 1
+            },
+            .up = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED,
+                            .components = {
+                                .base_mods = 0,
+                                .latched_mods = level3,
+                                .mods = level3,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            }
+        },
+
+        /* Deactivated: move pointer (breaks latch) */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .repeats = true,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_KP7
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .latched_mods = 0,
+                                .mods = 0,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .repeat = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .keycode = EVDEV_OFFSET + KEY_KP7
+                    }
+                },
+                .events_count = 1
+            },
+            .up = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_KP7
+                    }
+                },
+                .events_count = 1
+            }
+        },
+
+        /*
+         * Enable mouse keys
+         */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS,
+            .repeats = false,
+            .directions = XKB_KEY_TAP,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_CONTROLS
+                                     | XKB_STATE_LEDS,
+                            .components = {
+                                .controls = CONTROL_MOUSE_KEYS,
+                                .leds = mouse_keys,
+                            },
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .up = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                    },
+                },
+                .events_count = 1
+            },
+        },
+
+        /* Latch LevelThree */
+        {
+            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .repeats = false,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .base_mods = level3,
+                                .mods = level3,
+                                .controls = CONTROL_MOUSE_KEYS,
+                                .leds = mouse_keys,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .repeat = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    }
+                },
+                .events_count = 1
+            },
+            .up = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_LATCHED,
+                            .components = {
+                                .base_mods = 0,
+                                .latched_mods = level3,
+                                .mods = level3,
+                                .controls = CONTROL_MOUSE_KEYS,
+                                .leds = mouse_keys,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            }
+        },
+
+        /*
+         * Mouse keys: on
+         */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .repeats = true,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_POINTER_MOTION,
+                        .pointer_motion = {
+                            .size = sizeof(tests->down.events->pointer_motion),
+                            .flags = XKB_POINTER_MOTION_REPEATS,
+                            .x = -1,
+                            .y = -1,
+                        }
+                    }
+                },
+                .events_count = 1
+            },
+            .repeat = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_POINTER_MOTION,
+                        .pointer_motion = {
+                            .size = sizeof(tests->down.events->pointer_motion),
+                            .flags = XKB_POINTER_MOTION_REPEATS,
+                            .x = -1,
+                            .y = -1,
+                        }
+                    }
+                },
+                .events_count = 1
+            },
+            .up = { .events_count = 0 }
+        },
+
+        /*
+         * Check disabling mouse keys control: press keys with pointer actions
+         */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .repeats = true,
+            .directions = XKB_KEY_PRESS,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_POINTER_MOTION,
+                        .pointer_motion = {
+                            .size = sizeof(tests->down.events->pointer_motion),
+                            .flags = XKB_POINTER_MOTION_REPEATS,
+                            .x = -1,
+                            .y = -1,
+                        }
+                    }
+                },
+                .events_count = 1
+            },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
+
+        /*
+         * Check disabling mouse keys control: switch mouse keys off
+         */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS,
+            .repeats = false,
+            .directions = XKB_KEY_TAP,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_MODS_LATCHED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .latched_mods = 0,
+                                .mods = 0,
+                                .controls = CONTROL_MOUSE_KEYS,
+                                .leds = mouse_keys,
+                            },
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .up = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+                        .components = {
+                            .changed = XKB_STATE_CONTROLS
+                                     | XKB_STATE_LEDS,
+                            .components = {
+                                .controls = 0,
+                                .leds = 0,
+                            },
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+        },
+
+        /*
+         * Check disabling mouse keys control: release keys with pointer actions
+         */
+        {
+            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .repeats = true,
+            .directions = XKB_KEY_RELEASE,
+            .down = { .events_count = 0 },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu, keycode: %"PRIu32" ***\n",
+                __func__, t, tests[t].keycode);
+        assert(xkb_keymap_key_repeats(keymap, tests[t].keycode) ==
+               tests[t].repeats);
+        if (tests[t].directions & XKB_KEY_PRESS) {
+            fprintf(stderr, "+++ Press +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_DOWN, events) == XKB_SUCCESS);
+            assert(check_events(events, tests[t].down.events,
+                                tests[t].down.events_count));
+        }
+        if (tests[t].directions & XKB_KEY_REPEAT) {
+            fprintf(stderr, "+++ Repeat +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_REPEATED, events) == XKB_SUCCESS);
+            if (tests[t].repeats) {
+                assert(check_events(events, tests[t].repeat.events,
+                                    tests[t].repeat.events_count));
+            } else {
+                assert(check_events(events, NULL, 0));
+            }
+        }
+        if (tests[t].directions & XKB_KEY_RELEASE) {
+            fprintf(stderr, "+++ Release +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_UP, events) == XKB_SUCCESS);
+            assert(check_events(events, tests[t].up.events,
+                                tests[t].up.events_count));
+        }
     }
 
     xkb_events_unref(events);
@@ -3816,6 +4255,7 @@ main(void)
     test_group_wrap(context);
     test_sticky_keys(context);
     test_redirect_key(context);
+    test_mouse_keys(context);
     test_overlays(context);
     test_modifiers_tweak(context);
     test_shortcuts_tweak(context);
