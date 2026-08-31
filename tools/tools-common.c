@@ -1435,7 +1435,7 @@ tools_set_shortcuts_mask(const struct xkb_machine_options *options,
         .mods_affect = mods,
         .mods = mods
     };
-    return (xkb_machine_builder_update_shortcut_layout(builder, &update) !=
+    return (xkb_machine_builder_update_shortcut_layout(builder, &update) ==
             XKB_SUCCESS);
 }
 
