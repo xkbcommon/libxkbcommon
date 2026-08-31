@@ -737,6 +737,7 @@ test_key_iterator(void)
         context, XKB_KEYMAP_FORMAT_TEXT_V1, "xkb_keymap {};"
     );
 
+    // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
     //! [xkb_keymap_key_iterator_new_example]
     enum xkb_error_code error;
     struct xkb_keymap_key_iterator_config config = {
@@ -760,6 +761,7 @@ test_key_iterator(void)
     }
     xkb_keymap_key_iterator_unref(iter);
     //! [xkb_keymap_key_iterator_new_example]
+    // NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
     /* Reject invalid flags */
     config.flags = UINT32_MAX;

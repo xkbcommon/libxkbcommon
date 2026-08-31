@@ -4325,7 +4325,7 @@ Action type, as encoded in the XKB protocol
 <tr>
 <th>`data`</th>
 <td>byte array or a string of *exactly 7 bytes*</td>
-<td>"0000000"</td>
+<td>`{0,0,0,0,0,0,0}`</td>
 <td>Raw byte encoding of the action following the XKB protocol</td>
 </tr>
 </tbody>
