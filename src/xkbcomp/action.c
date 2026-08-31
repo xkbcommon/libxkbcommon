@@ -478,7 +478,7 @@ HandleMovePtr(const struct xkb_keymap_info *keymap_info,
               ExprDef **value_ptr)
 {
     struct xkb_context * restrict const ctx = keymap_info->keymap.ctx;
-    struct xkb_pointer_action *act = &action->ptr;
+    struct xkb_pointer_motion_action *act = &action->ptr;
 
     if (field == ACTION_FIELD_X || field == ACTION_FIELD_Y) {
         int64_t val = 0;

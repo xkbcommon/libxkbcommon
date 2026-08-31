@@ -312,13 +312,7 @@ struct xkb_pointer_default_action {
     int8_t value;
 };
 
-struct xkb_switch_screen_action {
-    enum xkb_action_type type;
-    enum xkb_action_flags flags;
-    int8_t screen;
-};
-
-struct xkb_pointer_action {
+struct xkb_pointer_motion_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
     int16_t x;
@@ -330,6 +324,12 @@ struct xkb_pointer_button_action {
     enum xkb_action_flags flags;
     uint8_t count;
     uint8_t button;
+};
+
+struct xkb_switch_screen_action {
+    enum xkb_action_type type;
+    enum xkb_action_flags flags;
+    int8_t screen;
 };
 
 struct xkb_redirect_key_action {
@@ -378,7 +378,7 @@ union xkb_action {
     struct xkb_controls_action ctrls;
     struct xkb_pointer_default_action dflt;
     struct xkb_switch_screen_action screen;
-    struct xkb_pointer_action ptr;
+    struct xkb_pointer_motion_action ptr;
     struct xkb_pointer_button_action btn;
     struct xkb_redirect_key_action redirect;
     struct xkb_private_action priv;
