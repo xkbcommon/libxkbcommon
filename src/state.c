@@ -1059,6 +1059,20 @@ xkb_filter_pointer_move_func(struct xkb_server_state *state,
     return XKB_FILTER_CONSUME;
 }
 
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static void
+xkb_filter_pointer_button_new(struct xkb_server_state *state,
+                              struct xkb_events *events,
+                              struct xkb_filter *filter);
+
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static bool
+xkb_filter_pointer_button_func(struct xkb_server_state *state,
+                               struct xkb_events *events,
+                               struct xkb_filter *filter,
+                               const struct xkb_key *key,
+                               enum xkb_key_direction direction);
+
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
                             struct xkb_events *events);
@@ -1272,6 +1286,8 @@ static const struct {
                                   xkb_filter_group_lock_func },
     [ACTION_TYPE_PTR_MOVE]    = { xkb_filter_pointer_move_new,
                                   xkb_filter_pointer_move_func },
+    [ACTION_TYPE_PTR_BUTTON]  = { xkb_filter_pointer_button_new,
+                                  xkb_filter_pointer_button_func },
     [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
@@ -4093,4 +4109,84 @@ xkb_state_update_event(struct xkb_state *base_state,
     } else {
         return 0;
     }
+}
+
+static void
+append_pointer_button(struct xkb_events * restrict events,
+                      struct xkb_filter * restrict filter,
+                      enum xkb_pointer_button_direction direction,
+                      uint8_t count)
+{
+    darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
+        .type = XKB_EVENT_TYPE_POINTER_BUTTON,
+        .pointer_button = {
+            .size = sizeof(((struct xkb_event*)0)->pointer_button),
+            .button = filter->priv,
+            .direction = direction,
+            .count = count,
+        }
+    });
+}
+
+static void
+xkb_filter_pointer_button_new(struct xkb_server_state *state,
+                              struct xkb_events *events,
+                              struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
+        filter->func = NULL;
+        return;
+    }
+
+    struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+    /* Resolve button */
+    const xkb_pointer_button_index_t button =
+        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
+            ? sm->mouse.default_button
+            : filter->action.btn.button;
+    filter->priv = button;
+
+    const enum xkb_pointer_button_direction direction
+        = filter->action.btn.count
+        ? XKB_POINTER_BUTTON_CLICK
+        : XKB_POINTER_BUTTON_DOWN;
+    const uint8_t count
+        = filter->action.btn.count
+        ? filter->action.btn.count
+        : 1;
+    append_pointer_button(events, filter, direction, count);
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+}
+
+static bool
+xkb_filter_pointer_button_func(struct xkb_server_state *state,
+                               struct xkb_events *events,
+                               struct xkb_filter *filter,
+                               const struct xkb_key *key,
+                               enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+    case XKB_KEY_DOWN:
+        filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
+        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
+    }
+
+    if (!filter->action.btn.count)
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_UP, 1);
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
 }
