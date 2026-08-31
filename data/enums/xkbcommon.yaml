@@ -113,6 +113,8 @@ xkb_keyboard_control_flags:
     value: 128
   - name: XKB_KEYBOARD_CONTROL_OVERLAY8
     value: 256
+  - name: XKB_KEYBOARD_CONTROL_MOUSE_KEYS
+    value: 16384
 xkb_pointer_motion_flags:
   - name: XKB_POINTER_MOTION_NO_FLAGS
     value: 0

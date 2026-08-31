@@ -2959,6 +2959,19 @@ enum xkb_keyboard_control_flags {
      * @since 1.14.0
      */
     XKB_KEYBOARD_CONTROL_OVERLAY8 = (1 << 8),
+    /**
+     * Enable **mouse keys** for controling the mouse functions from the
+     * keyboard.
+     *
+     * When mouse keys are enabled, all keys with [pointer actions] bound to
+     * them generate pointer events instead of normal key press and release
+     * events.
+     *
+     * @since 1.14.0
+     *
+     * [pointer actions]: @ref mouse-emulation-actions
+     */
+    XKB_KEYBOARD_CONTROL_MOUSE_KEYS = (1 << 14),
 };
 
 /**

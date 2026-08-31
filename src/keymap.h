@@ -151,13 +151,13 @@ enum xkb_action_controls {
     CONTROL_OVERLAY6 = (1 << 6),
     CONTROL_OVERLAY7 = (1 << 7),
     CONTROL_OVERLAY8 = (1 << 8),
+    CONTROL_MOUSE_KEYS = (1 << 14),
 
     /* Private API */
     CONTROL_GROUPS_WRAP = (1 << 9),
     CONTROL_REPEAT = (1 << 10),
     CONTROL_SLOW = (1 << 11),
     CONTROL_DEBOUNCE = (1 << 12),
-    CONTROL_MOUSE_KEYS = (1 << 14),
     CONTROL_MOUSE_KEYS_ACCEL = (1 << 15),
     CONTROL_AX = (1 << 16),
     CONTROL_AX_TIMEOUT = (1 << 17),
@@ -225,6 +225,12 @@ static_assert(
     (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY7 &&
     CONTROL_OVERLAY8 ==
     (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_OVERLAY8,
+    "Private value should match public API"
+);
+
+static_assert(
+    CONTROL_MOUSE_KEYS ==
+    (enum xkb_action_controls) XKB_KEYBOARD_CONTROL_MOUSE_KEYS,
     "Private value should match public API"
 );
 
