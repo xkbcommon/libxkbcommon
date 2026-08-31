@@ -319,11 +319,32 @@ struct xkb_pointer_motion_action {
     int16_t y;
 };
 
+typedef uint8_t xkb_pointer_button_index_t;
+typedef uint8_t xkb_pointer_button_mask_t;
+
+enum {
+    XKB_POINTER_BUTTON_INDEX_WIDTH =
+        sizeof(xkb_pointer_button_index_t) * CHAR_BIT,
+    XKB_POINTER_BUTTON_INDEX_MAX =
+        (1 << XKB_POINTER_BUTTON_INDEX_WIDTH) - 1,
+    XKB_POINTER_BUTTON_MASK_WIDTH =
+        sizeof(xkb_pointer_button_mask_t) * CHAR_BIT,
+    XKB_POINTER_BUTTON_DEFAULT = 0,
+    XKB_POINTER_BUTTON_MIN = 1,
+    XKB_POINTER_BUTTON_MAX = 5,
+};
+
+static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_INDEX_MAX,
+              "xkb_pointer_button_index_t cannot store button indices");
+
+static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
+              "xkb_pointer_button_mask_t cannot store button mask");
+
 struct xkb_pointer_button_action {
     enum xkb_action_type type;
     enum xkb_action_flags flags;
     uint8_t count;
-    uint8_t button;
+    xkb_pointer_button_index_t button;
 };
 
 struct xkb_switch_screen_action {
