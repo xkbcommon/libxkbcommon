@@ -589,7 +589,13 @@ HandlePtrBtn(const struct xkb_keymap_info *keymap_info,
                 : PARSER_RECOVERABLE_ERROR;
         }
 
-        act->count = (uint8_t) val;
+        /*
+         * NOTE: `count` is parsed but ignored. It seems an oversight in
+         * X.Org’s xkbcomp, since `SA_LockPtrBtn` has no `count` parameter.
+         * See: https://xorg.freedesktop.org/archive/current/doc/kbproto/xkbproto.html#:~:text=SA_LockPtrBtn
+         */
+        if (action->type != ACTION_TYPE_PTR_LOCK)
+            act->count = (uint8_t) val;
         return PARSER_SUCCESS;
     }
 

@@ -265,6 +265,7 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire,
         action->type = ACTION_TYPE_PTR_LOCK;
 
         action->btn.button = wire->lockptrbtn.button;
+        action->btn.count = 0;
 
         if (wire->lockptrbtn.flags & XCB_XKB_SA_ISO_LOCK_FLAG_NO_LOCK)
             action->btn.flags |= ACTION_LOCK_NO_LOCK;
