@@ -171,7 +171,7 @@ struct xkb_machine;
 struct xkb_state;
 
 /**
- * A number used to represent a physical key on a keyboard.
+ * A number used to represent a **physical key** on a keyboard.
  *
  * A standard PC-compatible keyboard might have 102 keys.  An appropriate
  * keymap would assign each of them a keycode, by which the user should
@@ -197,7 +197,8 @@ struct xkb_state;
  * xkb_keycode_t keycode_A = KEY_A + 8;
  * @endcode
  *
- * @sa xkb_keycode_is_legal_ext() xkb_keycode_is_legal_x11()
+ * @sa `xkb_keycode_is_legal_ext()`
+ * @sa `xkb_keycode_is_legal_x11()`
  */
 typedef uint32_t xkb_keycode_t;
 
@@ -267,11 +268,17 @@ typedef uint32_t xkb_keysym_t;
  *
  * Layouts are also called *groups* by XKB.
  *
- * @sa xkb_keymap::xkb_keymap_num_layouts()
- * @sa xkb_keymap::xkb_keymap_num_layouts_for_key()
+ * @sa `xkb_keymap::xkb_keymap_num_layouts()`
+ * @sa `xkb_keymap::xkb_keymap_num_layouts_for_key()`
+ * @sa `::XKB_LAYOUT_INVALID`
+ * @sa `xkb_layout_mask_t`
  */
 typedef uint32_t xkb_layout_index_t;
-/** A mask of layout indices. */
+/**
+ * A mask of layout indices.
+ *
+ * @sa `xkb_layout_index_t`
+ */
 typedef uint32_t xkb_layout_mask_t;
 
 /**
@@ -285,6 +292,8 @@ typedef uint32_t xkb_layout_mask_t;
  * many such combinations are possible (see `xkb_mod_index_t`).
  *
  * Level indices are consecutive.  The first level has index 0.
+ *
+ * @sa `::XKB_LEVEL_INVALID`
  */
 typedef uint32_t xkb_level_index_t;
 
@@ -310,6 +319,7 @@ typedef uint32_t xkb_level_index_t;
  * header file.  Modifier names are case-sensitive.
  *
  * @sa `xkb_keymap::xkb_keymap_num_mods()`
+ * @sa `::XKB_MOD_INVALID`
  * @sa `xkb_mod_mask_t`
  */
 typedef uint32_t xkb_mod_index_t;
@@ -329,6 +339,7 @@ typedef uint32_t xkb_mod_index_t;
  *
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask()`
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask2()`
+ * @sa `xkb_mod_index_t`
  *
  * [real modifiers]: @ref real-modifier-def
  * [virtual modifiers]: @ref virtual-modifier-def
@@ -361,23 +372,53 @@ typedef uint32_t xkb_mod_mask_t;
  * LEDs are also called *indicators* by XKB.
  *
  * @sa `xkb_keymap::xkb_keymap_num_leds()`
+ * @sa `::XKB_LED_INVALID`
+ * @sa `xkb_led_mask_t`
  */
 typedef uint32_t xkb_led_index_t;
-/** A mask of LED indices. */
+/**
+ * A mask of LED indices.
+ *
+ * @sa `xkb_led_index_t`
+ */
 typedef uint32_t xkb_led_mask_t;
 
-/** Invalid keycode */
+/**
+ * Invalid keycode
+ *
+ * @sa `xkb_keycode_t`
+ */
 #define XKB_KEYCODE_INVALID (0xffffffff)
-/** Invalid layout index */
+/**
+ * Invalid layout index
+ *
+ * @sa `xkb_layout_index_t`
+ */
 #define XKB_LAYOUT_INVALID  (0xffffffff)
-/** Invalid level index */
+/**
+ * Invalid level index
+ *
+ * @sa `xkb_level_index_t`
+ */
 #define XKB_LEVEL_INVALID   (0xffffffff)
-/** Invalid modifier index */
+/**
+ * Invalid modifier index
+ *
+ * @sa `xkb_mod_index_t`
+ */
 #define XKB_MOD_INVALID     (0xffffffff)
-/** Invalid LED index */
+/**
+ * Invalid LED index
+ *
+ * @sa `xkb_led_index_t`
+ */
 #define XKB_LED_INVALID     (0xffffffff)
 
-/** Maximum legal keycode */
+/**
+ * Maximum legal keycode
+ *
+ * @sa `xkb_keycode_t`
+ */
 #define XKB_KEYCODE_MAX     (0xffffffff - 1)
 
 /**
@@ -548,7 +589,7 @@ struct xkb_rmlvo_builder;
 
 /**
  * @enum xkb_rmlvo_builder_flags
- * Flags for `xkb_rmlvo_builder_new()`.
+ * Flags for `xkb_rmlvo_builder::xkb_rmlvo_builder_new()`.
  *
  * @since 1.11.0
  */
@@ -1779,7 +1820,7 @@ enum xkb_keymap_serialize_flags {
      *
      * @since 1.14.0
      *
-     * [virtual modifiers]: @ref virtual-modifier-def
+     * [virtual modifier]: @ref virtual-modifier-def
      */
     XKB_KEYMAP_SERIALIZE_EXPLICIT_VMODS = (1 << 4),
     /**
@@ -1834,11 +1875,15 @@ struct xkb_keymap_serialize_config {
      */
     uint32_t format;
     /**
-     * Mask of layouts to serialize.
+     * [Mask of layouts] to serialize.
      *
      * If `0`, then all the keymap layouts are serialized.
      *
+     * @sa `xkb_layout_mask_t`
+     *
      * @since 1.14.0
+     *
+     * [Mask of layouts]: @ref xkb_layout_mask_t
      */
     xkb_layout_mask_t layouts;
 };
@@ -1912,13 +1957,15 @@ struct xkb_keymap_serialize_result {
  * @param[in,out] result   Result of the serialization.
  *
  * @pre @p config must point to a zero-initialized struct with
- * [`size`](@ref xkb_keymap_serialize_config::size) set to `sizeof(*config)`.
+ * [`size`](@ref xkb_keymap_serialize_config::size) set per
+ * @ref abi-struct-contract.
  *
  * @pre @p result must point to a zero-initialized struct with
- * [`size`](@ref xkb_keymap_serialize_result::size) set to `sizeof(*result)`.
+ * [`size`](@ref xkb_keymap_serialize_result::size) set per
+ * @ref abi-struct-contract.
  *
  * @invariant The library writes only to fields of @p result that fall
- * within `result->size`.
+ * within [`result->size`](@ref xkb_keymap_serialize_result::size).
  *
  * @post If the return value is `::XKB_SUCCESS`, the caller is responsible
  * for freeing [`result->serialized`][serialized].
@@ -2683,11 +2730,15 @@ enum xkb_event_type {
     /**
      * **Key _down_** event
      *
+     * @sa `xkb_event::xkb_event_get_keycode()`
+     *
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_KEY_DOWN = 1,
     /**
      * **Key _repeated_** event
+     *
+     * @sa `xkb_event::xkb_event_get_keycode()`
      *
      * @since 1.14.0
      */
@@ -2695,11 +2746,15 @@ enum xkb_event_type {
     /**
      * **Key _up_** event
      *
+     * @sa `xkb_event::xkb_event_get_keycode()`
+     *
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_KEY_UP,
     /**
      * **Components** change event
+     *
+     * @sa `xkb_event::xkb_event_get_changed_components()`
      *
      * @since 1.14.0
      */
@@ -2985,7 +3040,7 @@ enum xkb_keyboard_control_flags {
 /**
  * Serialization of the *boolean* [global keyboard controls]
  * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE` .
+ * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE`.
  *
  * @param[in] event      The event object to process.
  * @param[in] components A mask of the keyboard control state components to
@@ -3010,7 +3065,7 @@ xkb_event_serialize_enabled_controls(const struct xkb_event *event,
 /**
  * Serialization of the [modifiers](@ref xkb_mod_mask_t)
  * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE` .
+ * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE`.
  *
  * @param[in] event      The event object to process.
  * @param[in] components A mask of the modifier state components to serialize.
@@ -3035,7 +3090,7 @@ xkb_event_serialize_mods(const struct xkb_event *event,
 /**
  * Serialization of the [layout](@ref xkb_layout_index_t)
  * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE` .
+ * `::XKB_EVENT_TYPE_COMPONENTS_CHANGE`.
  *
  * @param[in] event      The event object to process.
  * @param[in] components A mask of the layout state components to serialize.
@@ -3586,7 +3641,7 @@ xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder);
 
 /**
  * @enum xkb_a11y_flags
- * Flags for `xkb_machine_builder_a11y_update`.
+ * Flags for `xkb_machine_builder_a11y_update::flags`.
  *
  * These flags configure the accessibility (*a11y*) features.
  *
@@ -4240,9 +4295,11 @@ struct xkb_state_components_update {
 
 /**
  * @enum xkb_layout_out_of_range_policy
- * Policies defining how to bring out-of-range layout indices into range.
+ * Policies defining how to bring out-of-range [layout indices] into range.
  *
  * @since 1.14.0
+ *
+ * [layout indices]: @ref xkb_layout_index_t
  */
 enum xkb_layout_out_of_range_policy {
     /**
@@ -4252,8 +4309,10 @@ enum xkb_layout_out_of_range_policy {
      */
     XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
     /**
+     * @parblock
      * Clamp into range, i.e. invalid indices are corrected to the closest
-     * valid bound (0 or highest layout index).
+     * valid bound (0 or highest [layout index](@ref xkb_layout_index_t)).
+     * @endparblock
      *
      * @since 1.14.0
      */
@@ -4326,10 +4385,14 @@ struct xkb_layout_policy_update {
      */
     uint32_t policy;
     /**
-     * Layout index to redirect to when `policy` is
+     * [Layout index to redirect] to when `policy` is
      * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
      *
+     * @sa xkb_layout_index_t
+     *
      * @since 1.14.0
+     *
+     * [Layout index to redirect]: @ref xkb_layout_index_t
      */
     xkb_layout_index_t redirect;
 };
