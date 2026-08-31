@@ -49,7 +49,7 @@ enum action_field {
     ACTION_FIELD_GROUP,
     ACTION_FIELD_X,
     ACTION_FIELD_Y,
-    ACTION_FIELD_ACCEL,
+    ACTION_FIELD_REPEAT,
     ACTION_FIELD_BUTTON,
     ACTION_FIELD_VALUE,
     ACTION_FIELD_CONTROLS,
@@ -97,9 +97,9 @@ static const LookupEntry fieldStrings[] = {
     { "group",            ACTION_FIELD_GROUP           },
     { "x",                ACTION_FIELD_X               },
     { "y",                ACTION_FIELD_Y               },
-    { "accel",            ACTION_FIELD_ACCEL           },
-    { "accelerate",       ACTION_FIELD_ACCEL           },
-    { "repeat",           ACTION_FIELD_ACCEL           },
+    { "repeat",           ACTION_FIELD_REPEAT          },
+    { "accel",            ACTION_FIELD_REPEAT          },
+    { "accelerate",       ACTION_FIELD_REPEAT          },
     { "button",           ACTION_FIELD_BUTTON          },
     { "value",            ACTION_FIELD_VALUE           },
     { "controls",         ACTION_FIELD_CONTROLS        },
@@ -517,7 +517,7 @@ HandleMovePtr(const struct xkb_keymap_info *keymap_info,
 
         return PARSER_SUCCESS;
     }
-    else if (field == ACTION_FIELD_ACCEL) {
+    else if (field == ACTION_FIELD_REPEAT) {
         return CheckBooleanFlag(ctx, keymap_info->strict, action->type, field,
                                 ACTION_REPEAT, array_ndx, value, &act->flags);
     }

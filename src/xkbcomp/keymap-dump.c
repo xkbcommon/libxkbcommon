@@ -771,7 +771,7 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
                   action->ptr.x,
                   (!(action->ptr.flags & ACTION_ABSOLUTE_Y) && action->ptr.y >= 0) ? "+" : "",
                   action->ptr.y,
-                  (action->ptr.flags & ACTION_REPEAT) ? "" : ",!accel",
+                  (action->ptr.flags & ACTION_REPEAT) ? "" : ",!repeat",
                   suffix);
         break;
 
