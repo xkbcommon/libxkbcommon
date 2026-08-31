@@ -470,6 +470,7 @@ xkb_filter_group_lock_func(struct xkb_server_state *state,
 
 static bool
 xkb_action_breaks_latch(const union xkb_action *action,
+                        enum xkb_action_controls controls,
                         enum xkb_internal_action_flags flag,
                         xkb_mod_mask_t mask)
 {
@@ -484,6 +485,9 @@ xkb_action_breaks_latch(const union xkb_action *action,
     case ACTION_TYPE_TERMINATE:
     case ACTION_TYPE_REDIRECT_KEY:
         return true;
+    case ACTION_TYPE_PTR_MOVE:
+    case ACTION_TYPE_PTR_DEFAULT:
+        return !(controls & CONTROL_MOUSE_KEYS);
     case ACTION_TYPE_INTERNAL:
         return (action->internal.flags & flag) &&
                ((action->internal.clear_latched_mods & mask) == mask);
@@ -578,6 +582,7 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
                  */
                 for (xkb_action_count_t k = 0; k < count; k++) {
                     if (xkb_action_breaks_latch(&(actions[k]),
+                                                state->base.components.controls,
                                                 INTERNAL_BREAKS_GROUP_LATCH,
                                                 0)) {
                         latch = NO_LATCH;
@@ -623,6 +628,7 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
                     continue;
                 }
                 else if (xkb_action_breaks_latch(&(actions[k]),
+                                                 state->base.components.controls,
                                                  INTERNAL_BREAKS_GROUP_LATCH,
                                                  0)) {
                     /* Breaks the latch */
@@ -865,6 +871,7 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
                  */
                 for (xkb_action_count_t k = 0; k < count; k++) {
                     if (xkb_action_breaks_latch(&(actions[k]),
+                                                state->base.components.controls,
                                                 INTERNAL_BREAKS_MOD_LATCH,
                                                 filter->action.mods.mods.mask)) {
                         latch = NO_LATCH;
@@ -911,6 +918,7 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
                     return XKB_FILTER_CONSUME;
                 }
                 else if (xkb_action_breaks_latch(&(actions[k]),
+                                                 state->base.components.controls,
                                                  INTERNAL_BREAKS_MOD_LATCH,
                                                  filter->action.mods.mods.mask)) {
                     /* XXX: This may be totally broken, we might need to break the
