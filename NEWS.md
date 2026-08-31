@@ -265,6 +265,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_event::xkb_event_get_pointer_motion()`
   - `enum xkb_pointer_motion_flags` (new)
   - `struct xkb_event_pointer_motion` (new)
+  - `enum xkb_pointer_button_direction` (new)
   - `struct xkb_state`:
     - `xkb_state::xkb_state_update_event()`
 
