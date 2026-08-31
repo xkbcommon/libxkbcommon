@@ -797,7 +797,7 @@ struct xkb_keymap {
 };
 
 enum {
-    _LAST_XKB_EVENT_TYPE = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+    _LAST_XKB_EVENT_TYPE = XKB_EVENT_TYPE_POINTER_MOTION,
 };
 
 #define xkb_keys_foreach(iter, keymap) \

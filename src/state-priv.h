@@ -40,6 +40,7 @@ struct xkb_event {
             struct state_components components;
             enum xkb_state_component changed;
         } components;
+        struct xkb_event_pointer_motion pointer_motion;
     };
 };
 
@@ -69,6 +70,40 @@ assert_same_field(struct xkb_events_config, _v1, flags);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_events_config) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_event_pointer_motion
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_event_pointer_motion`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_event_pointer_motion_v1 {
+    uint32_t size;
+    uint32_t flags;
+    int32_t x;
+    int32_t y;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_event_pointer_motion, size, flags);
+assert_no_padding(struct xkb_event_pointer_motion, flags, x);
+assert_no_padding(struct xkb_event_pointer_motion, x, y);
+assert_no_padding(struct xkb_event_pointer_motion, y);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_event_pointer_motion) ==
+             sizeof(struct xkb_event_pointer_motion_v1), "");
+assert_same_field(struct xkb_event_pointer_motion, _v1, size);
+assert_same_field(struct xkb_event_pointer_motion, _v1, flags);
+assert_same_field(struct xkb_event_pointer_motion, _v1, x);
+assert_same_field(struct xkb_event_pointer_motion, _v1, y);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_event_pointer_motion) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
@@ -302,6 +337,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                            \
     const struct xkb_events_config *:                               \
         sizeof(struct xkb_events_config_v1),                        \
+    struct xkb_event_pointer_motion *:                              \
+        sizeof(struct xkb_event_pointer_motion_v1),                 \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -321,6 +358,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                            \
     const struct xkb_events_config *:                               \
         sizeof(struct xkb_events_config_v1),                        \
+    struct xkb_event_pointer_motion *:                              \
+        sizeof(struct xkb_event_pointer_motion_v1),                 \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -340,6 +379,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                         \
     const struct xkb_events_config *:                            \
         sizeof(struct xkb_events_config),                        \
+    struct xkb_event_pointer_motion *:                           \
+        sizeof(struct xkb_event_pointer_motion),                 \
     const struct xkb_state_update *:                             \
         sizeof(struct xkb_state_update),                         \
     const struct xkb_state_components_update *:                  \
@@ -365,6 +406,11 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
 static_assert(
     xkb_versioned_struct_size_v1(((const struct xkb_events_config *)NULL)) <=
     xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_v1(((struct xkb_event_pointer_motion *)NULL)) <=
+    xkb_versioned_struct_size_min(((struct xkb_event_pointer_motion *)NULL)),
     ""
 );
 static_assert(
@@ -402,6 +448,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)) <=
     sizeof(const struct xkb_events_config),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_min(((struct xkb_event_pointer_motion *)NULL)) <=
+    sizeof(struct xkb_event_pointer_motion),
     ""
 );
 static_assert(

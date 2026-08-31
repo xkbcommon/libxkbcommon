@@ -758,9 +758,13 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                     tools_print_state_changes(prefix, state, changed, options);
                 break;
             }
+            case XKB_EVENT_TYPE_POINTER_MOTION: {
+                // TODO
+                break;
+            }
             default: {
-                static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
-                              XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+                static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
+                              XKB_EVENT_TYPE_POINTER_MOTION ==
                               (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                               "Missing event type");
             }

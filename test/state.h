@@ -155,10 +155,13 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
         return memcmp(&event1->components, &event2->components,
                       sizeof(event1->components)) == 0;
+    case XKB_EVENT_TYPE_POINTER_MOTION:
+        return memcmp(&event1->pointer_motion, &event2->pointer_motion,
+                      sizeof(event1->pointer_motion)) == 0;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
-                      XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+        static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
+                      XKB_EVENT_TYPE_POINTER_MOTION ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
         return false;
@@ -199,10 +202,17 @@ print_event(const char *prefix, const struct xkb_event *event)
                 event->components.components.leds,
                 event->components.components.controls);
         break;
+    case XKB_EVENT_TYPE_POINTER_MOTION:
+        fprintf(stderr,
+                "type: pointer motion; "
+                "x: %"PRId32"; y: %"PRId32"; flags: 0x%x\n",
+                event->pointer_motion.x, event->pointer_motion.y,
+                event->pointer_motion.flags);
+        break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE == 4 &&
-                      XKB_EVENT_TYPE_COMPONENTS_CHANGE ==
+        static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
+                      XKB_EVENT_TYPE_POINTER_MOTION ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
     }
