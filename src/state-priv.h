@@ -33,6 +33,7 @@ struct state_components {
 };
 
 struct xkb_event {
+    struct xkb_context *ctx;
     enum xkb_event_type type;
     union {
         xkb_keycode_t keycode;
