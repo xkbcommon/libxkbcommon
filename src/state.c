@@ -1000,7 +1000,7 @@ append_pointer_move(struct xkb_events *events,
         flags |= XKB_POINTER_MOTION_ABSOLUTE_X;
     if (filter->action.ptr.flags & ACTION_ABSOLUTE_Y)
         flags |= XKB_POINTER_MOTION_ABSOLUTE_Y;
-    if (filter->action.ptr.flags & ACTION_ACCEL)
+    if (filter->action.ptr.flags & ACTION_REPEAT)
         flags |= XKB_POINTER_MOTION_REPEATS;
     darray_append(events->queue, (struct xkb_event) {
         .ctx = events->ctx, /* borrowed from events */
@@ -1047,7 +1047,7 @@ xkb_filter_pointer_move_func(struct xkb_server_state *state,
         append_pointer_move(events, filter);
         return XKB_FILTER_CONSUME;
     case XKB_KEY_REPEATED:
-        if (filter->action.ptr.flags & ACTION_ACCEL)
+        if (filter->action.ptr.flags & ACTION_REPEAT)
             append_pointer_move(events, filter);
         return XKB_FILTER_CONSUME;
     default:
