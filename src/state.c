@@ -1247,22 +1247,27 @@ xkb_filter_apply_all(struct xkb_server_state *state,
         filter = xkb_filter_new(state);
         filter->key = key;
         filter->action = actions[k];
-        if (state->base.components.controls & CONTROL_STICKY_KEYS) {
-            if (filter->action.type == ACTION_TYPE_MOD_SET) {
+
+        switch (filter->action.type) {
+        case ACTION_TYPE_MOD_SET:
+            if (state->base.components.controls & CONTROL_STICKY_KEYS) {
                 /* Convert modifier set action to a latch */
                 filter->action.type = ACTION_TYPE_MOD_LATCH;
                 if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                     filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
                 }
-            } else if (filter->action.type == ACTION_TYPE_GROUP_SET) {
+            }
+            break;
+        case ACTION_TYPE_GROUP_SET:
+            if (state->base.components.controls & CONTROL_STICKY_KEYS) {
                 /* Convert group set action to a latch */
                 filter->action.type = ACTION_TYPE_GROUP_LATCH;
                 if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                     filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
                 }
             }
-        }
-        if (filter->action.type == ACTION_TYPE_REDIRECT_KEY) {
+            break;
+        case ACTION_TYPE_REDIRECT_KEY:
             // FIXME: this is not efficient to resolve mods here each time
             filter->action.redirect.affect = mod_mask_get_effective(
                 state->base.keymap, filter->action.redirect.affect
@@ -1270,6 +1275,8 @@ xkb_filter_apply_all(struct xkb_server_state *state,
             filter->action.redirect.mods = mod_mask_get_effective(
                 state->base.keymap, filter->action.redirect.mods
             );
+            break;
+        default: ;
         }
         filter->func = filter_action_funcs[filter->action.type].func;
         filter_action_funcs[filter->action.type].new(state, events, filter);
