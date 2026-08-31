@@ -42,6 +42,7 @@ struct xkb_event {
             enum xkb_state_component changed;
         } components;
         struct xkb_event_pointer_motion pointer_motion;
+        struct xkb_event_pointer_button pointer_button;
     };
 };
 
@@ -105,6 +106,43 @@ assert_same_field(struct xkb_event_pointer_motion, _v1, y);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_event_pointer_motion) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
+ * xkb_event_pointer_button
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_event_pointer_button`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_event_pointer_button_v1 {
+    uint32_t size;
+    uint32_t button;
+    uint8_t direction;
+    uint8_t count;
+    uint8_t reserved0[2];
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_event_pointer_button, size, button);
+assert_no_padding(struct xkb_event_pointer_button, button, direction);
+assert_no_padding(struct xkb_event_pointer_button, direction, count);
+assert_no_padding(struct xkb_event_pointer_button, count, reserved0);
+assert_no_padding(struct xkb_event_pointer_button, reserved0);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_event_pointer_button) ==
+              sizeof(struct xkb_event_pointer_button_v1), "");
+assert_same_field(struct xkb_event_pointer_button, _v1, size);
+assert_same_field(struct xkb_event_pointer_button, _v1, button);
+assert_same_field(struct xkb_event_pointer_button, _v1, direction);
+assert_same_field(struct xkb_event_pointer_button, _v1, count);
+assert_same_field(struct xkb_event_pointer_button, _v1, reserved0);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_event_pointer_button) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
@@ -340,6 +378,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_events_config_v1),                        \
     struct xkb_event_pointer_motion *:                              \
         sizeof(struct xkb_event_pointer_motion_v1),                 \
+    struct xkb_event_pointer_button *:                              \
+        sizeof(struct xkb_event_pointer_button_v1),                 \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -361,6 +401,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_events_config_v1),                        \
     struct xkb_event_pointer_motion *:                              \
         sizeof(struct xkb_event_pointer_motion_v1),                 \
+    struct xkb_event_pointer_button *:                              \
+        sizeof(struct xkb_event_pointer_button_v1),                 \
     const struct xkb_state_update *:                                \
         sizeof(struct xkb_state_update_v1),                         \
     const struct xkb_state_components_update *:                     \
@@ -382,6 +424,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_events_config),                        \
     struct xkb_event_pointer_motion *:                           \
         sizeof(struct xkb_event_pointer_motion),                 \
+    struct xkb_event_pointer_button *:                           \
+        offsetof(struct xkb_event_pointer_button, reserved0),    \
     const struct xkb_state_update *:                             \
         sizeof(struct xkb_state_update),                         \
     const struct xkb_state_components_update *:                  \
@@ -412,6 +456,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_v1(((struct xkb_event_pointer_motion *)NULL)) <=
     xkb_versioned_struct_size_min(((struct xkb_event_pointer_motion *)NULL)),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_v1(((struct xkb_event_pointer_button *)NULL)) <=
+    xkb_versioned_struct_size_min(((struct xkb_event_pointer_button *)NULL)),
     ""
 );
 static_assert(
@@ -454,6 +503,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_min(((struct xkb_event_pointer_motion *)NULL)) <=
     sizeof(struct xkb_event_pointer_motion),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_min(((struct xkb_event_pointer_button*)NULL)) <=
+    sizeof(struct xkb_event_pointer_button),
     ""
 );
 static_assert(

@@ -71,6 +71,8 @@ xkb_event_type:
     value: 4
   - name: XKB_EVENT_TYPE_POINTER_MOTION
     value: 5
+  - name: XKB_EVENT_TYPE_POINTER_BUTTON
+    value: 6
 xkb_state_component:
   - name: XKB_STATE_MODS_DEPRESSED
     value: 1

@@ -44,6 +44,8 @@ static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE >= 0 &&
               XKB_EVENT_TYPE_COMPONENTS_CHANGE < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_POINTER_MOTION >= 0 &&
               XKB_EVENT_TYPE_POINTER_MOTION < UINT32_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_POINTER_BUTTON >= 0 &&
+              XKB_EVENT_TYPE_POINTER_BUTTON < UINT32_WIDTH, "");
 static_assert(XKB_POINTER_BUTTON_DOWN >= 0 &&
               XKB_POINTER_BUTTON_DOWN < UINT32_WIDTH, "");
 static_assert(XKB_POINTER_BUTTON_UP >= 0 &&
@@ -129,6 +131,7 @@ enum xkb_enumerations_values {
         | (1u << XKB_EVENT_TYPE_KEY_UP)
         | (1u << XKB_EVENT_TYPE_COMPONENTS_CHANGE)
         | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
+        | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
     ,
     XKB_STATE_COMPONENT_VALUES
         = XKB_STATE_MODS_DEPRESSED
@@ -298,6 +301,7 @@ static const uint32_t xkb_event_type_values[] = {
     XKB_EVENT_TYPE_KEY_UP,
     XKB_EVENT_TYPE_COMPONENTS_CHANGE,
     XKB_EVENT_TYPE_POINTER_MOTION,
+    XKB_EVENT_TYPE_POINTER_BUTTON,
 };
 #endif
 
