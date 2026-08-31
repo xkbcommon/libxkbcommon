@@ -304,6 +304,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 - Added suport for [mouse keys](@ref XKB_KEYBOARD_CONTROL_MOUSE_KEYS).
   The following actions are now effectual when using the `xkb_machine` API:
   - [`MovePointer()`](@ref move-pointer-action)
+  - [`PointerButton()`](@ref pointer-button-action)
   ([#915](https://github.com/xkbcommon/libxkbcommon/issues/915))
 - Added complete support for [keyboard overlays](@ref key-behavior-overlay):
   - [keymap format v1](@ref XKB_KEYMAP_FORMAT_TEXT_V1) is limited to

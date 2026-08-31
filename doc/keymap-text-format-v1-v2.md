@@ -3426,8 +3426,8 @@ The following table provide an overview of the available actions:
 | ^        | [`LockControls`][LockControls] |       | Lock the standard XKB controls     |
 | [Keyboard emulation action] | [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code |
 | [Mouse emulation actions] | [`MovePointer`][MovePointer] | `MovePtr`        | Simulate a mouse pointer motion |
-| [Legacy action] | `PointerButton`     | `PtrBtn`         | Simulate a mouse button press      |
-| ^        | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
+| ^        | [`PointerButton`][PointerButton] | `PtrBtn`         | Simulate a mouse button press |
+| [Legacy action] | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
 | ^        | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
 | ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
 | ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
@@ -4221,6 +4221,7 @@ modifiers at the time of the release, changed as described on the key press.
 [Mouse emulation actions]: @ref mouse-emulation-actions
 [mouse keys]: @ref XKB_KEYBOARD_CONTROL_MOUSE_KEYS
 [MovePointer]: @ref move-pointer-action
+[PointerButton]: @ref pointer-button-action
 
 <dl>
 <dt>`MovePointer` @anchor move-pointer-action<dt>
@@ -4313,9 +4314,143 @@ repetion either:
 - relying on key repetition, or
 - ignoring key repetition and setting its own timer mechanism.
 </dd>
+
+<dt>`PointerButton` @anchor pointer-button-action</dt>
+<dt>`PtrBtn`</dt>
+<dd>
+Simulate a mouse button press
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`button`</th>
+<td></td>
+<td>
+Button identifier:
+- integer 1..5
+- named constants:
+  - `default`
+  - `button1..button5`
+</td>
+<td>`default`</td>
+<td>
+The mouse button to simulate.
+</td>
+</tr>
+<tr>
+<th>`count`</th>
+<td></td>
+<td>8-bit unsigned integer</td>
+<td>0</td>
+<td>
+The repeat counter.
+</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [mouse keys] is enabled, it generates a [pointer button event]
+  instead of the usual [key press event].
+
+  <table>
+  <caption>Properties of [pointer button event] on key press</caption>
+  <thead>
+  <tr>
+  <th>[`PointerButton`][PointerButton]</th>
+  <th colspan="2">`xkb_event_pointer_button`</th>
+  </tr>
+  <tr>
+  <th>`count`</th>
+  <th>[`direction`](@ref xkb_event_pointer_button::direction)</th>
+  <th>[`count`](@ref xkb_event_pointer_button::count)</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <th>0</th>
+  <td>`::XKB_POINTER_BUTTON_DOWN`</td>
+  <td>1</td>
+  </tr>
+  <tr>
+  <th>\> 0</th>
+  <td>`::XKB_POINTER_BUTTON_CLICK`</td>
+  <td>`count`</td>
+  </tr>
+  </tbody>
+  </table>
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [mouse keys] is enabled, it has no effect.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [mouse keys] is enabled, no [key release event] is generated
+  and a [pointer button event] is generated only if `count` is 0.
+
+  <table>
+  <caption>Properties of [pointer button event] on key release</caption>
+  <thead>
+  <tr>
+  <th>[`PointerButton`][PointerButton]</th>
+  <th colspan="2">`xkb_event_pointer_button`</th>
+  </tr>
+  <tr>
+  <th>`count`</th>
+  <th>[`direction`](@ref xkb_event_pointer_button::direction)</th>
+  <th>[`count`](@ref xkb_event_pointer_button::count)</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+  <th>0</th>
+  <td>`::XKB_POINTER_BUTTON_UP`</td>
+  <td>1</td>
+  </tr>
+  <tr>
+  <th>\> 0</th>
+  <td colspan="2">*(no event)*</td>
+  </tr>
+  </tbody>
+  </table>
+- Otherwise it generates the usual [key release event].
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
 </dl>
 
 [pointer motion event]: @ref XKB_EVENT_TYPE_POINTER_MOTION
+[pointer button event]: @ref XKB_EVENT_TYPE_POINTER_BUTTON
 [key press event]: @ref XKB_EVENT_TYPE_KEY_DOWN
 [key repeated event]: @ref XKB_EVENT_TYPE_KEY_REPEATED
 [key release event]: @ref XKB_EVENT_TYPE_KEY_UP
@@ -4331,16 +4466,6 @@ and validated but have no effect. This allows to use keymaps defined in
 #### Pointer actions
 
 <dl>
-<dt>`PointerButton`</dt>
-<dt>`PtrBtn`</dt>
-<dd>
-Simulate a mouse button press
-
-@todo PointerButton parameters
-<!-- blank required by Doxygen -->
-
-</dd>
-
 <dt>`LockPointerButton`</dt>
 <dt>`LockPointerBtn`</dt>
 <dt>`LockPtrButton`</dt>
