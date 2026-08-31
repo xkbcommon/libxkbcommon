@@ -780,8 +780,10 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         /* fallthrough */
     case ACTION_TYPE_PTR_BUTTON:
         write_buf(buf, "%s%s(button=", prefix, type);
-        if (action->btn.button > 0 && action->btn.button <= 5)
-            write_buf(buf, "%u", action->btn.button);
+        static_assert(XKB_POINTER_BUTTON_DEFAULT < XKB_POINTER_BUTTON_MIN, "");
+        if (action->btn.button > XKB_POINTER_BUTTON_DEFAULT &&
+            action->btn.button <= XKB_POINTER_BUTTON_MAX)
+            write_buf(buf, "%"PRIu8, action->btn.button);
         else
             copy_to_buf(buf, "default");
         if (action->btn.count)
@@ -793,7 +795,7 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
 
     case ACTION_TYPE_PTR_DEFAULT:
         write_buf(buf, "%s%s(", prefix, type);
-        write_buf(buf, "affect=button,button=%s%d",
+        write_buf(buf, "affect=button,button=%s%"PRId8,
                   (!(action->dflt.flags & ACTION_ABSOLUTE_SWITCH) && action->dflt.value >= 0) ? "+" : "",
                   action->dflt.value);
         write_buf(buf, ")%s", suffix);

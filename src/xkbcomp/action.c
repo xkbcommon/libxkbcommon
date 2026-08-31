@@ -542,15 +542,20 @@ HandlePtrBtn(const struct xkb_keymap_info *keymap_info,
             return ReportActionNotArray(ctx, action->type, field,
                                         keymap_info->strict);
 
-        if (!ExprResolveButton(ctx, value, &btn))
+        if (!ExprResolveButton(ctx, value, &btn)) {
+            static_assert(XKB_POINTER_BUTTON_MIN == 1 &&
+                          XKB_POINTER_BUTTON_MAX == 5, "invalid message");
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "integer (range 1..5)",
                                   keymap_info->strict);
+        }
 
-        if (btn < 0 || btn > 5) {
+        static_assert(XKB_POINTER_BUTTON_DEFAULT < XKB_POINTER_BUTTON_MIN, "");
+        if (btn < XKB_POINTER_BUTTON_DEFAULT || btn > XKB_POINTER_BUTTON_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Button must specify default or be in the range 1..5; "
-                    "Illegal button value %"PRId64" ignored\n", btn);
+                    "Button must specify default or be in the range %d..%d; "
+                    "Illegal button value %"PRId64" ignored\n",
+                    XKB_POINTER_BUTTON_MIN, XKB_POINTER_BUTTON_MAX, btn);
             return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
                 ? PARSER_FATAL_ERROR
                 : PARSER_RECOVERABLE_ERROR;
@@ -638,20 +643,25 @@ HandleSetPtrDflt(const struct xkb_keymap_info *keymap_info,
             button = value;
         }
 
-        if (!ExprResolveButton(ctx, button, &btn))
+        if (!ExprResolveButton(ctx, button, &btn)) {
+            static_assert(XKB_POINTER_BUTTON_MIN == 1 &&
+                          XKB_POINTER_BUTTON_MAX == 5, "invalid message");
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "integer (range 1..5)",
                                   keymap_info->strict);
+        }
 
-        if (btn < 0 || btn > 5) {
+        static_assert(XKB_POINTER_BUTTON_DEFAULT < XKB_POINTER_BUTTON_MIN, "");
+        if (btn < XKB_POINTER_BUTTON_DEFAULT || btn > XKB_POINTER_BUTTON_MAX) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "New default button value must be in the range 1..5; "
-                    "Illegal default button value %"PRId64" ignored\n", btn);
+                    "New default button value must be in the range %d..%d; "
+                    "Illegal default button value %"PRId64" ignored\n",
+                    XKB_POINTER_BUTTON_MIN, XKB_POINTER_BUTTON_MAX, btn);
             return (keymap_info->strict & PARSER_NO_FIELD_TYPE_MISMATCH)
                 ? PARSER_FATAL_ERROR
                 : PARSER_RECOVERABLE_ERROR;
         }
-        if (btn == 0) {
+        if (btn == XKB_POINTER_BUTTON_DEFAULT) {
             log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
                     "Cannot set default pointer button to \"default\"; "
                     "Illegal default button setting ignored\n");
