@@ -4043,6 +4043,27 @@ xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
+enum xkb_error_code
+xkb_event_get_pointer_button(const struct xkb_event * restrict event,
+                             struct xkb_event_pointer_button * restrict button)
+{
+    if (event->type != XKB_EVENT_TYPE_POINTER_BUTTON)
+        return XKB_ERROR_INVALID;
+
+    /* Check ABI compatibility */
+    enum xkb_error_code error = xkb_check_state_abi(button);
+    if (error) {
+        xkb_log_abi_error(event->ctx, __func__, error);
+        return error;
+    }
+
+    button->button = event->pointer_button.button;
+    button->direction = event->pointer_button.direction;
+    button->count = event->pointer_button.count;
+
+    return XKB_SUCCESS;
+}
+
 enum xkb_state_component
 xkb_state_update_event(struct xkb_state *base_state,
                        const struct xkb_event *event)
