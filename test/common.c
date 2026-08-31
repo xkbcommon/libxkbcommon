@@ -103,12 +103,13 @@ consume_events(struct xkb_machine *sm,
             xkb_state_update_event(state, event);
             break;
         case XKB_EVENT_TYPE_POINTER_MOTION:
+        case XKB_EVENT_TYPE_POINTER_BUTTON:
             /* Pointer events do not update the base state */
             break;
         default:
             {} /* Label followed by declaration requires C23 */
-            static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
-                          XKB_EVENT_TYPE_POINTER_MOTION ==
+            static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+                          XKB_EVENT_TYPE_POINTER_BUTTON ==
                           (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                           "Missing state event type");
             /* ignore */

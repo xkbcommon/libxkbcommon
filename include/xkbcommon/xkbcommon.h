@@ -2712,6 +2712,14 @@ enum xkb_event_type {
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_POINTER_MOTION,
+    /**
+     * **Pointer _button_** event
+     *
+     * @sa `xkb_event::xkb_event_get_pointer_motion()`
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_POINTER_BUTTON,
 };
 
 /**
@@ -3195,6 +3203,55 @@ enum xkb_pointer_button_direction {
     /** The pointer button was *clicked* (pressed then released). */
     XKB_POINTER_BUTTON_CLICK = ( XKB_POINTER_BUTTON_UP
                                | XKB_POINTER_BUTTON_DOWN),
+};
+
+/**
+ * @struct xkb_event_pointer_button
+ * @ingroup abi-struct-contract
+ *
+ * Description of a pointer button action.
+ *
+ * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`
+ *
+ * @since 1.14.0
+ */
+struct xkb_event_pointer_button {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * Button index
+     *
+     * @since 1.14.0
+     */
+    uint32_t button;
+    /**
+     * Button [direction](@ref xkb_pointer_button_direction)
+     *
+     * @ref xkb_pointer_button_direction
+     *
+     * @since 1.14.0
+     */
+    uint8_t direction;
+    /**
+     * Button count
+     *
+     * @since 1.14.0
+     */
+    uint8_t count;
+    /**
+     * @private
+     *
+     * Reserved for future extensions.
+     *
+     * @pre Must be set to `0` by the caller.
+     */
+    uint8_t reserved0[2];
 };
 
 /**

@@ -158,10 +158,13 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_POINTER_MOTION:
         return memcmp(&event1->pointer_motion, &event2->pointer_motion,
                       sizeof(event1->pointer_motion)) == 0;
+    case XKB_EVENT_TYPE_POINTER_BUTTON:
+        return memcmp(&event1->pointer_button, &event2->pointer_button,
+                      sizeof(event1->pointer_button)) == 0;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
-                      XKB_EVENT_TYPE_POINTER_MOTION ==
+        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+                      XKB_EVENT_TYPE_POINTER_BUTTON ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
         return false;
@@ -209,10 +212,17 @@ print_event(const char *prefix, const struct xkb_event *event)
                 event->pointer_motion.x, event->pointer_motion.y,
                 event->pointer_motion.flags);
         break;
+    case XKB_EVENT_TYPE_POINTER_BUTTON:
+        fprintf(stderr,
+                "type: pointer button; direction: %"PRIu16"; "
+                "button: %"PRIu32"; count: %"PRIu16"\n",
+                event->pointer_button.direction, event->pointer_button.button,
+                event->pointer_button.count);
+        break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_MOTION == 5 &&
-                      XKB_EVENT_TYPE_POINTER_MOTION ==
+        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+                      XKB_EVENT_TYPE_POINTER_BUTTON ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
     }
