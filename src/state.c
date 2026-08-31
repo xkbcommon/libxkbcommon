@@ -1073,6 +1073,20 @@ xkb_filter_pointer_button_func(struct xkb_server_state *state,
                                const struct xkb_key *key,
                                enum xkb_key_direction direction);
 
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static void
+xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
+                                   struct xkb_events *events,
+                                   struct xkb_filter *filter);
+
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static bool
+xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
+                                    struct xkb_events *events,
+                                    struct xkb_filter *filter,
+                                    const struct xkb_key *key,
+                                    enum xkb_key_direction direction);
+
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
                             struct xkb_events *events);
@@ -1288,6 +1302,8 @@ static const struct {
                                   xkb_filter_pointer_move_func },
     [ACTION_TYPE_PTR_BUTTON]  = { xkb_filter_pointer_button_new,
                                   xkb_filter_pointer_button_func },
+    [ACTION_TYPE_PTR_LOCK]    = { xkb_filter_pointer_lock_button_new,
+                                  xkb_filter_pointer_lock_button_func },
     [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
@@ -2931,6 +2947,8 @@ struct xkb_machine {
     struct {
         /** Default pointer button */
         xkb_pointer_button_index_t default_button;
+        /** Mask of the locked buttons */
+        xkb_pointer_button_mask_t locked_buttons;
     } mouse;
 };
 
@@ -4186,6 +4204,113 @@ xkb_filter_pointer_button_func(struct xkb_server_state *state,
 
     if (!filter->action.btn.count)
         append_pointer_button(events, filter, XKB_POINTER_BUTTON_UP, 1);
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
+struct xkb_filter_pointer_lock_button_priv {
+    uint32_t button:31;
+#ifdef _WIN32
+    uint32_t locked:1; // MSVC requires matching types to pack bitfields
+#else
+    bool locked:1;
+#endif
+};
+
+enum {
+    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH =
+        sizeof(struct xkb_filter_pointer_lock_button_priv) * CHAR_BIT,
+    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX =
+        (UINT64_C(1) << XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH) - 1
+};
+
+static_assert(sizeof(struct xkb_filter_pointer_lock_button_priv) ==
+              sizeof(((struct xkb_filter*)0)->priv),
+              "");
+static_assert((uint32_t)XKB_POINTER_BUTTON_MAX < (uint32_t)XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX,
+              "xkb_filter_pointer_lock_button_priv cannot store button");
+
+static void
+xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
+                                   struct xkb_events *events,
+                                   struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
+        filter->func = NULL;
+        return;
+    }
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+    /* Resolve button */
+    const xkb_pointer_button_index_t button =
+        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
+            ? sm->mouse.default_button
+            : filter->action.btn.button;
+
+    static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
+                  "invalid UINTx_C() macro");
+    static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
+                  "invalid left shift");
+    const xkb_pointer_button_mask_t mask = (UINT8_C(1) << button);
+
+    const bool locked = (sm->mouse.locked_buttons & mask);
+
+    if (!locked && !(filter->action.btn.flags & ACTION_LOCK_NO_LOCK)) {
+        sm->mouse.locked_buttons |= mask;
+        filter->priv = button;
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_DOWN, 1);
+    }
+
+    struct xkb_filter_pointer_lock_button_priv *priv =
+        (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
+    priv->button = button,
+    priv->locked = locked;
+}
+
+static bool
+xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
+                                    struct xkb_events *events,
+                                    struct xkb_filter *filter,
+                                    const struct xkb_key *key,
+                                    enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events || state->base.mode != SERVER_STATE)
+        return XKB_FILTER_CONTINUE;
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+    case XKB_KEY_DOWN:
+        filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
+        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
+    }
+
+    const struct xkb_filter_pointer_lock_button_priv *priv =
+        (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
+
+    if (priv->locked && !(filter->action.btn.flags & ACTION_LOCK_NO_UNLOCK)) {
+        struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+        static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
+                    "invalid UINTx_C() macro");
+        static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
+                    "invalid left shift");
+        const xkb_pointer_button_mask_t mask = (UINT8_C(1) << priv->button);
+
+        sm->mouse.locked_buttons &= ~mask;
+        filter->priv = priv->button;
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_UP, 1);
+    }
 
     filter->func = NULL;
     return XKB_FILTER_CONSUME;
