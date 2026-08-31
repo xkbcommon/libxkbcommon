@@ -1267,6 +1267,17 @@ xkb_filter_apply_all(struct xkb_server_state *state,
                 }
             }
             break;
+        case ACTION_TYPE_PTR_MOVE:
+        case ACTION_TYPE_PTR_BUTTON:
+        case ACTION_TYPE_PTR_LOCK:
+        case ACTION_TYPE_PTR_DEFAULT:
+            if (!(state->base.components.controls & CONTROL_MOUSE_KEYS)) {
+                /* Convert pointer actions to NoAction */
+                assert(!filter_action_funcs[ACTION_TYPE_NONE].new);
+                filter->func = NULL;
+                continue;
+            }
+            break;
         case ACTION_TYPE_REDIRECT_KEY:
             // FIXME: this is not efficient to resolve mods here each time
             filter->action.redirect.affect = mod_mask_get_effective(
