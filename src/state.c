@@ -3950,6 +3950,27 @@ xkb_event_serialize_layout(const struct xkb_event *event,
         : XKB_LAYOUT_INVALID;
 }
 
+enum xkb_error_code
+xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
+                             struct xkb_event_pointer_motion * restrict motion)
+{
+    if (event->type != XKB_EVENT_TYPE_POINTER_MOTION)
+        return XKB_ERROR_INVALID;
+
+    /* Check ABI compatibility */
+    enum xkb_error_code error = xkb_check_state_abi(motion);
+    if (error) {
+        xkb_log_abi_error(event->ctx, __func__, error);
+        return error;
+    }
+
+    motion->flags = event->pointer_motion.flags;
+    motion->x = event->pointer_motion.x;
+    motion->y = event->pointer_motion.y;
+
+    return XKB_SUCCESS;
+}
+
 enum xkb_state_component
 xkb_state_update_event(struct xkb_state *base_state,
                        const struct xkb_event *event)
