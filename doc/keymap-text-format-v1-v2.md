@@ -4225,7 +4225,7 @@ modifiers at the time of the release, changed as described on the key press.
 and validated but have no effect. This allows to use keymaps defined in
 <code>[xkeyboard-config]</code> for both X11 and Wayland.
 
-#### Pointer actions
+#### Pointer actions {#mouse-emulation-actions}
 
 <dl>
 <dt>`MovePointer`<dt>
