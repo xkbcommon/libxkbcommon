@@ -747,6 +747,37 @@ tools_print_pointer_motion(const char * restrict prefix,
     }
 }
 
+static void
+tools_print_pointer_button(const char * restrict prefix,
+                           const struct xkb_event_pointer_button * restrict button,
+                           enum print_state_options options)
+{
+    if (prefix)
+        printf("%s", prefix);
+
+    if (options & PRINT_UNILINE) {
+        printf("ptr button ");
+        printf("[ %10"PRIu32" ] ", button->button);
+        printf("[ %s ] ",
+               (button->direction == XKB_POINTER_BUTTON_DOWN
+                ? "down "
+                : (button->direction == XKB_POINTER_BUTTON_UP
+                    ? " up  "
+                    : "click")));
+        printf("[ %3"PRIu8" ]\n", button->count);
+    } else {
+        printf("ptr button:\n");
+        printf(INDENT "button:    %"PRIu32"\n", button->button);
+        printf(INDENT "direction: %s\n",
+               (button->direction == XKB_POINTER_BUTTON_DOWN
+                ? "down"
+                : (button->direction == XKB_POINTER_BUTTON_UP
+                    ? "up"
+                    : "click")));
+        printf(INDENT "count:     %"PRIu8"\n", button->count);
+    }
+}
+
 #undef INDENT
 
 void
@@ -811,7 +842,18 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_BUTTON: {
-                // TODO
+                struct xkb_event_pointer_button button = {
+                    .size = sizeof(button)
+                };
+                const enum xkb_error_code error =
+                    xkb_event_get_pointer_button(event, &button);
+                if (error == XKB_SUCCESS) {
+                    tools_print_pointer_button(prefix, &button, options);
+                } else {
+                    fprintf(stderr,
+                            "ERROR: cannot process event type %d; error code: %d\n",
+                            event_type, error);
+                }
                 break;
             }
             default: {
