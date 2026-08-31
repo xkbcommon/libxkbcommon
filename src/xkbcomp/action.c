@@ -602,10 +602,15 @@ HandlePtrBtn(const struct xkb_keymap_info *keymap_info,
     return ReportIllegal(ctx, action->type, field, keymap_info->strict);
 }
 
+enum {
+    SET_POINTER_DEFAULT_BUTTON_AFFECT_DEFAULT = 0,
+    _SET_POINTER_DEFAULT_BUTTON_AFFECT_NUM_ENTRIES
+};
+
 static const LookupEntry ptrDflts[] = {
-    { "dfltbtn", 1 },
-    { "defaultbutton", 1 },
-    { "button", 1 },
+    { "dfltbtn", SET_POINTER_DEFAULT_BUTTON_AFFECT_DEFAULT },
+    { "defaultbutton", SET_POINTER_DEFAULT_BUTTON_AFFECT_DEFAULT },
+    { "button", SET_POINTER_DEFAULT_BUTTON_AFFECT_DEFAULT },
     { NULL, 0 }
 };
 
@@ -629,6 +634,8 @@ HandleSetPtrDflt(const struct xkb_keymap_info *keymap_info,
         if (!ExprResolveEnum(ctx, value, &val, ptrDflts))
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "pointer component", keymap_info->strict);
+        static_assert(_SET_POINTER_DEFAULT_BUTTON_AFFECT_NUM_ENTRIES == 1,
+                      "affect has a single valid value and thus it is not stored");
         return PARSER_SUCCESS;
     }
     else if (field == ACTION_FIELD_BUTTON || field == ACTION_FIELD_VALUE) {
