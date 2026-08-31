@@ -77,7 +77,7 @@ InitActionsInfo(const struct xkb_keymap *keymap, ActionsInfo *info)
     /* Increment default button. */
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.flags = 0;
     info->actions[ACTION_TYPE_PTR_DEFAULT].dflt.value = 1;
-    info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_ACCEL;
+    info->actions[ACTION_TYPE_PTR_MOVE].ptr.flags = ACTION_REPEAT;
     info->actions[ACTION_TYPE_SWITCH_VT].screen.flags = ACTION_SAME_SCREEN;
     info->actions[ACTION_TYPE_REDIRECT_KEY].redirect.keycode =
         keymap->redirect_key_auto;
@@ -519,7 +519,7 @@ HandleMovePtr(const struct xkb_keymap_info *keymap_info,
     }
     else if (field == ACTION_FIELD_ACCEL) {
         return CheckBooleanFlag(ctx, keymap_info->strict, action->type, field,
-                                ACTION_ACCEL, array_ndx, value, &act->flags);
+                                ACTION_REPEAT, array_ndx, value, &act->flags);
     }
 
     return ReportIllegal(ctx, action->type, field, keymap_info->strict);

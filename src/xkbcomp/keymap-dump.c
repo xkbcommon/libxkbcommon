@@ -771,7 +771,7 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
                   action->ptr.x,
                   (!(action->ptr.flags & ACTION_ABSOLUTE_Y) && action->ptr.y >= 0) ? "+" : "",
                   action->ptr.y,
-                  (action->ptr.flags & ACTION_ACCEL) ? "" : ",!accel",
+                  (action->ptr.flags & ACTION_REPEAT) ? "" : ",!accel",
                   suffix);
         break;
 
@@ -1003,7 +1003,7 @@ write_action_defaults(const struct xkb_keymap *keymap,
     case ACTION_TYPE_PTR_MOVE:
         assert(action->ptr.x == 0);
         assert(action->ptr.y == 0);
-        assert(action->ptr.flags == ACTION_ACCEL);
+        assert(action->ptr.flags == ACTION_REPEAT);
         /* Explicit sign to avoid setting ACTION_ABSOLUTE_SWITCH */
         write_buf(buf, PREFIX"%s.x = +0;\n", type);
         write_buf(buf, PREFIX"%s.y = +0;\n", type);
