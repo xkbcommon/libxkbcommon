@@ -3027,6 +3027,52 @@ xkb_event_serialize_layout(const struct xkb_event *event,
                            enum xkb_state_component components);
 
 /**
+ * @enum xkb_pointer_motion_flags
+ * Pointer motion flags for `xkb_event_pointer_motion`.
+ *
+ * @since 1.14.0
+ */
+enum xkb_pointer_motion_flags {
+    /**
+     * Do not apply any flags; the corresponding [pointer motion]&zwnj;:
+     * - has relative coordinates,
+     * - repeats.
+     *
+     * @since 1.14.0
+     *
+     * [pointer motion]: @ref xkb_event_pointer_motion
+     */
+    XKB_POINTER_MOTION_NO_FLAGS = 0,
+    /**
+     * The [pointer motion] repeats.
+     *
+     * @since 1.14.0
+     *
+     * [pointer motion]: @ref xkb_event_pointer_motion
+     *
+     */
+    XKB_POINTER_MOTION_REPEATS = (1 << 0),
+    /**
+     * The [x coordinate] is absolute.
+     *
+     * @since 1.14.0
+     *
+     * [x coordinate]: @ref xkb_event_pointer_motion::x
+     *
+     */
+    XKB_POINTER_MOTION_ABSOLUTE_X = (1 << 1),
+    /**
+     * The [y coordinate] is absolute.
+     *
+     * @since 1.14.0
+     *
+     * [y coordinate]: @ref xkb_event_pointer_motion::y
+     *
+     */
+    XKB_POINTER_MOTION_ABSOLUTE_Y  = (1 << 2),
+};
+
+/**
  * @struct xkb_events
  * Opaque keyboard event collection object.
  *
