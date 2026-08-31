@@ -586,8 +586,20 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 </tr>
 <!-- Keyboard emulation actions -->
 <tr>
-<th>Mouse emulation</th>
+<th rowspan="2">Mouse emulation</th>
 <th>[`MovePointer()`](@ref move-pointer-action)</th>
+<td>✅ Full support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
+- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+  the `xkb_machine` API.
+</details>
+</td>
+</tr>
+<tr>
+<th>[`PointerButton()`](@ref pointer-button-action)</th>
 <td>✅ Full support</td>
 <td colspan="2">
 <details>
@@ -600,12 +612,7 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 </tr>
 <!-- Legacy actions -->
 <tr>
-<th rowspan="6">Legacy action</th>
-<th>`PointerButton()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
+<th rowspan="5">Legacy action</th>
 <th>`LockPointerButton()`</th>
 <td>✅ Full support</td>
 <td colspan="2">⚠️ Parsing and serializing only, no API support</td>
