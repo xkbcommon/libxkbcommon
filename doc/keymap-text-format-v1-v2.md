@@ -3425,8 +3425,8 @@ The following table provide an overview of the available actions:
 | [Keyboard controls action] | [`SetControls`][SetControls] |         | Set the standard XKB controls      |
 | ^        | [`LockControls`][LockControls] |       | Lock the standard XKB controls     |
 | [Keyboard emulation action] | [`RedirectKey`][redirectkey] | `Redirect` | Emulate pressing a key with a different key code |
-| [Legacy action] | `MovePointer`| `MovePtr`        | Move the mouse pointer             |
-| ^        | `PointerButton`     | `PtrBtn`         | Simulate a mouse button press      |
+| [Mouse emulation actions] | [`MovePointer`][MovePointer] | `MovePtr`        | Simulate a mouse pointer motion |
+| [Legacy action] | `PointerButton`     | `PtrBtn`         | Simulate a mouse button press      |
 | ^        | `LockPointerButton` | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
 | ^        | `SetPointerDefault` | `SetPtrDflt`     | Set the default select button (???)|
 | ^        | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
@@ -4216,6 +4216,109 @@ modifiers at the time of the release, changed as described on the key press.
 </tbody>
 </table>
 
+### Mouse emulation actions {#mouse-emulation-actions}
+
+[Mouse emulation actions]: @ref mouse-emulation-actions
+[mouse keys]: @ref XKB_KEYBOARD_CONTROL_MOUSE_KEYS
+[MovePointer]: @ref move-pointer-action
+
+<dl>
+<dt>`MovePointer` @anchor move-pointer-action<dt>
+<dt>`MovePtr`</dt>
+<dd>
+Simulate a pointer motion
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`x`</th>
+<td></td>
+<td>Integer</td>
+<td>+0</td>
+<td>
+**X** coordinate (relative if explicitly signed, otherwise absolute if `Y`
+is not explicitly signed).
+</td>
+</tr>
+<tr>
+<th>`y`</th>
+<td></td>
+<td>Integer</td>
+<td>+0</td>
+<td>
+**Y** coordinate (relative if explicitly signed, otherwise absolute if `X`
+is not explicitly signed).
+</td>
+</tr>
+<tr>
+<th>`repeat`</th>
+<td>`accelerate`, `accel`</td>
+<td>boolean</td>
+<td>`true`</td>
+<td>Enable acceleration.</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [mouse keys] is enabled, it generates a [pointer motion event]
+  instead of the usual [key press event].
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [mouse keys] is enabled, it does not generates the usual
+  [key repeated event], and:
+  - if `repeat` is set, it generates a [pointer motion event];
+  - otherwise it does nothing.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [mouse keys] is enabled, it generates no event.
+- Otherwise it generates the usual [key release event].
+</td>
+</tr>
+</tbody>
+</table>
+
+@note Contrary to X11, xkbcommon does *not* set a timer to repeat the pointer
+motion if `repeat` is set. A Wayland compositor may implement motion
+repetion either:
+- relying on key repetition, or
+- ignoring key repetition and setting its own timer mechanism.
+</dd>
+</dl>
+
+[pointer motion event]: @ref XKB_EVENT_TYPE_POINTER_MOTION
+[key press event]: @ref XKB_EVENT_TYPE_KEY_DOWN
+[key repeated event]: @ref XKB_EVENT_TYPE_KEY_REPEATED
+[key release event]: @ref XKB_EVENT_TYPE_KEY_UP
 
 ### Legacy X11 actions {#legacy-x11-actions}
 
@@ -4225,19 +4328,9 @@ modifiers at the time of the release, changed as described on the key press.
 and validated but have no effect. This allows to use keymaps defined in
 <code>[xkeyboard-config]</code> for both X11 and Wayland.
 
-#### Pointer actions {#mouse-emulation-actions}
+#### Pointer actions
 
 <dl>
-<dt>`MovePointer`<dt>
-<dt>`MovePtr`</dt>
-<dd>
-Move the mouse pointer
-
-@todo MovePointer parameters
-<!-- blank required by Doxygen -->
-
-</dd>
-
 <dt>`PointerButton`</dt>
 <dt>`PtrBtn`</dt>
 <dd>
