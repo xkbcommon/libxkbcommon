@@ -991,6 +991,74 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
     return XKB_FILTER_CONTINUE;
 }
 
+static void
+append_pointer_move(struct xkb_events *events,
+                    struct xkb_filter *filter)
+{
+    enum xkb_pointer_motion_flags flags = 0;
+    if (filter->action.ptr.flags & ACTION_ABSOLUTE_X)
+        flags |= XKB_POINTER_MOTION_ABSOLUTE_X;
+    if (filter->action.ptr.flags & ACTION_ABSOLUTE_Y)
+        flags |= XKB_POINTER_MOTION_ABSOLUTE_Y;
+    if (filter->action.ptr.flags & ACTION_ACCEL)
+        flags |= XKB_POINTER_MOTION_REPEATS;
+    darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
+        .type = XKB_EVENT_TYPE_POINTER_MOTION,
+        .pointer_motion = {
+            .size = sizeof(((struct xkb_event*)0)->pointer_motion),
+            .flags = flags,
+            .x = filter->action.ptr.x,
+            .y = filter->action.ptr.y,
+        }
+    });
+}
+
+static void
+xkb_filter_pointer_move_new(struct xkb_server_state *state,
+                            struct xkb_events *events,
+                            struct xkb_filter *filter)
+{
+    if (!events) {
+        filter->func = NULL;
+        return;
+    }
+
+    assert(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS);
+    append_pointer_move(events, filter);
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+}
+
+static bool
+xkb_filter_pointer_move_func(struct xkb_server_state *state,
+                             struct xkb_events *events,
+                             struct xkb_filter *filter,
+                             const struct xkb_key *key,
+                             enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+    case XKB_KEY_DOWN:
+        filter->refcnt++;
+        append_pointer_move(events, filter);
+        return XKB_FILTER_CONSUME;
+    case XKB_KEY_REPEATED:
+        if (filter->action.ptr.flags & ACTION_ACCEL)
+            append_pointer_move(events, filter);
+        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
                             struct xkb_events *events);
@@ -1202,6 +1270,8 @@ static const struct {
                                   xkb_filter_group_latch_func },
     [ACTION_TYPE_GROUP_LOCK]  = { xkb_filter_group_lock_new,
                                   xkb_filter_group_lock_func },
+    [ACTION_TYPE_PTR_MOVE]    = { xkb_filter_pointer_move_new,
+                                  xkb_filter_pointer_move_func },
     [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,

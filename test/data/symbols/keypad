@@ -577,6 +577,11 @@ xkb_symbols "pointerkeys" {
     key <NMLK> { [ Num_Lock, Pointer_EnableKeys ] };
 };
 
+partial modifier_keys
+xkb_symbols "pointer-extra" {
+    key <I126> { [ Pointer_EnableKeys ] };
+};
+
 
 // Only numbers, operators and decimal separator,
 // as seen on keypad overlay on Japanese keyboard.
