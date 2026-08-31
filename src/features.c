@@ -113,6 +113,10 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         return is_supported_enum_value_mask(XKB_EVENT_TYPE_VALUES, value);
     case XKB_FEATURE_ENUM_KEY_DIRECTION:
         return is_supported_enum_value_mask(XKB_KEY_DIRECTION_VALUES, value);
+    case XKB_FEATURE_ENUM_POINTER_MOTION_FLAGS:
+        return is_supported_flag_value(
+            XKB_POINTER_MOTION_FLAGS_VALUES, true, value
+        );
     case XKB_FEATURE_ENUM_EVENTS_FLAGS:
         return is_supported_flag_value(
             XKB_EVENTS_FLAGS_VALUES, true, value

@@ -217,6 +217,12 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_KEY_DIRECTION = 27020,
     /**
+     * The enumeration @ref xkb_pointer_motion_flags
+     *
+     * @since 1.14.0
+     */
+    XKB_FEATURE_ENUM_POINTER_MOTION_FLAGS = 27040,
+    /**
      * The enumeration @ref xkb_events_flags
      *
      * @since 1.14.0
