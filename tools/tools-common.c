@@ -35,6 +35,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
+#include "xkbcommon/xkbcommon-errors.h"
 #include "tools-common.h"
 #include "src/compose/constants.h"
 #include "src/keysym.h"
@@ -710,6 +711,42 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
     }
 }
 
+static void
+tools_print_pointer_motion(const char * restrict prefix,
+                           const struct xkb_event_pointer_motion * restrict motion,
+                           enum print_state_options options)
+{
+    if (prefix)
+        printf("%s", prefix);
+
+    if (options & PRINT_UNILINE) {
+        printf("ptr motion [ ");
+        printf(((motion->flags & XKB_POINTER_MOTION_ABSOLUTE_X)
+                ? "%11"PRId32 : "%+11"PRId32),
+               motion->x);
+        printf(", ");
+        printf(((motion->flags & XKB_POINTER_MOTION_ABSOLUTE_Y)
+                ? "%-11"PRId32 : "%+-11"PRId32),
+               motion->y);
+        printf(" ] [ repeats: %s ]\n",
+               ((motion->flags & XKB_POINTER_MOTION_REPEATS)
+                   ? "true" : "false"));
+    } else {
+        printf("ptr motion:\n");
+        printf(INDENT "x:       ");
+        printf(((motion->flags & XKB_POINTER_MOTION_ABSOLUTE_X)
+                ? "%"PRId32 : "%+"PRId32),
+               motion->x);
+        printf("\n" INDENT "y:       ");
+        printf(((motion->flags & XKB_POINTER_MOTION_ABSOLUTE_Y)
+                ? "%"PRId32 : "%+"PRId32),
+               motion->y);
+        printf("\n" INDENT "repeats: %s\n",
+               ((motion->flags & XKB_POINTER_MOTION_REPEATS)
+                   ? "true" : "false"));
+    }
+}
+
 #undef INDENT
 
 void
@@ -759,7 +796,18 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_MOTION: {
-                // TODO
+                struct xkb_event_pointer_motion motion = {
+                    .size = sizeof(motion)
+                };
+                const enum xkb_error_code error =
+                    xkb_event_get_pointer_motion(event, &motion);
+                if (error == XKB_SUCCESS) {
+                    tools_print_pointer_motion(prefix, &motion, options);
+                } else {
+                    fprintf(stderr,
+                            "ERROR: cannot process event type %d; error code: %d\n",
+                            event_type, error);
+                }
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_BUTTON: {
