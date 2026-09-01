@@ -789,27 +789,23 @@ tools_print_events(const char *prefix, struct xkb_state *state,
 {
     const struct xkb_event *event;
     while ((event = xkb_events_next(events)) != NULL) {
-        const enum xkb_event_type event_type =
-            xkb_event_get_type(event);
+        const enum xkb_event_type event_type = xkb_event_get_type(event);
+        enum xkb_error_code error = XKB_SUCCESS;;
         switch (event_type) {
-            case XKB_EVENT_TYPE_KEY_DOWN:
-            case XKB_EVENT_TYPE_KEY_REPEATED:
-            case XKB_EVENT_TYPE_KEY_UP: {
-                const xkb_keycode_t kc = xkb_event_get_keycode(event);
-                const enum xkb_key_direction direction
-                    = (event_type == XKB_EVENT_TYPE_KEY_UP)
-                    ? XKB_KEY_UP
-                    : (event_type == XKB_EVENT_TYPE_KEY_REPEATED)
-                        ? XKB_KEY_REPEATED
-                        : XKB_KEY_DOWN;
+            case XKB_EVENT_TYPE_KEY: {
+                xkb_keycode_t kc;
+                enum xkb_key_direction direction;
+                error = xkb_event_get_keycode(event, &kc, &direction);
+                if (error != XKB_SUCCESS)
+                    goto event_error;
                 if (compose_state && direction == XKB_KEY_DOWN) {
                     const xkb_keysym_t keysym =
                         xkb_state_key_get_one_sym(state, kc);
                     xkb_compose_state_feed(compose_state, keysym);
                 }
                 tools_print_keycode_state(prefix, state, compose_state, kc,
-                                          direction, consumed_mode,
-                                          options);
+                                        direction, consumed_mode,
+                                        options);
                 if (compose_state) {
                     const enum xkb_compose_status status =
                         xkb_compose_state_get_status(compose_state);
@@ -830,37 +826,31 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 struct xkb_event_pointer_motion motion = {
                     .size = sizeof(motion)
                 };
-                const enum xkb_error_code error =
-                    xkb_event_get_pointer_motion(event, &motion);
-                if (error == XKB_SUCCESS) {
-                    tools_print_pointer_motion(prefix, &motion, options);
-                } else {
-                    fprintf(stderr,
-                            "ERROR: cannot process event type %d; error code: %d\n",
-                            event_type, error);
-                }
+                error = xkb_event_get_pointer_motion(event, &motion);
+                if (error != XKB_SUCCESS)
+                    goto event_error;
+                tools_print_pointer_motion(prefix, &motion, options);
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_BUTTON: {
                 struct xkb_event_pointer_button button = {
                     .size = sizeof(button)
                 };
-                const enum xkb_error_code error =
-                    xkb_event_get_pointer_button(event, &button);
-                if (error == XKB_SUCCESS) {
-                    tools_print_pointer_button(prefix, &button, options);
-                } else {
-                    fprintf(stderr,
-                            "ERROR: cannot process event type %d; error code: %d\n",
-                            event_type, error);
-                }
+                error = xkb_event_get_pointer_button(event, &button);
+                if (error != XKB_SUCCESS)
+                    goto event_error;
+                tools_print_pointer_button(prefix, &button, options);
                 break;
             }
             default: {
-                static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+                static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
                               XKB_EVENT_TYPE_POINTER_BUTTON ==
                               (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                               "Missing event type");
+            event_error:
+                fprintf(stderr,
+                        "ERROR: cannot process event type %d; error code: %d\n",
+                        event_type, error);
             }
         }
     }

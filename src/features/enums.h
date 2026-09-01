@@ -34,30 +34,26 @@ static_assert(XKB_KEYMAP_FORMAT_TEXT_V1 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V1 < UINT32_WIDTH, "");
 static_assert(XKB_KEYMAP_FORMAT_TEXT_V2 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V2 < UINT32_WIDTH, "");
-static_assert(XKB_EVENT_TYPE_KEY_DOWN >= 0 &&
-              XKB_EVENT_TYPE_KEY_DOWN < UINT32_WIDTH, "");
-static_assert(XKB_EVENT_TYPE_KEY_REPEATED >= 0 &&
-              XKB_EVENT_TYPE_KEY_REPEATED < UINT32_WIDTH, "");
-static_assert(XKB_EVENT_TYPE_KEY_UP >= 0 &&
-              XKB_EVENT_TYPE_KEY_UP < UINT32_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_KEY >= 0 &&
+              XKB_EVENT_TYPE_KEY < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_COMPONENTS_CHANGE >= 0 &&
               XKB_EVENT_TYPE_COMPONENTS_CHANGE < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_POINTER_MOTION >= 0 &&
               XKB_EVENT_TYPE_POINTER_MOTION < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_POINTER_BUTTON >= 0 &&
               XKB_EVENT_TYPE_POINTER_BUTTON < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_DOWN >= 0 &&
-              XKB_POINTER_BUTTON_DOWN < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_UP >= 0 &&
-              XKB_POINTER_BUTTON_UP < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_CLICK >= 0 &&
-              XKB_POINTER_BUTTON_CLICK < UINT32_WIDTH, "");
 static_assert(XKB_KEY_UP >= 0 &&
               XKB_KEY_UP < UINT32_WIDTH, "");
 static_assert(XKB_KEY_DOWN >= 0 &&
               XKB_KEY_DOWN < UINT32_WIDTH, "");
 static_assert(XKB_KEY_REPEATED >= 0 &&
               XKB_KEY_REPEATED < UINT32_WIDTH, "");
+static_assert(XKB_POINTER_BUTTON_DOWN >= 0 &&
+              XKB_POINTER_BUTTON_DOWN < UINT32_WIDTH, "");
+static_assert(XKB_POINTER_BUTTON_UP >= 0 &&
+              XKB_POINTER_BUTTON_UP < UINT32_WIDTH, "");
+static_assert(XKB_POINTER_BUTTON_CLICK >= 0 &&
+              XKB_POINTER_BUTTON_CLICK < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_WRAP >= 0 &&
               XKB_LAYOUT_OUT_OF_RANGE_WRAP < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_CLAMP >= 0 &&
@@ -126,12 +122,15 @@ enum xkb_enumerations_values {
         | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     ,
     XKB_EVENT_TYPE_VALUES
-        = (1u << XKB_EVENT_TYPE_KEY_DOWN)
-        | (1u << XKB_EVENT_TYPE_KEY_REPEATED)
-        | (1u << XKB_EVENT_TYPE_KEY_UP)
+        = (1u << XKB_EVENT_TYPE_KEY)
         | (1u << XKB_EVENT_TYPE_COMPONENTS_CHANGE)
         | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
         | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
+    ,
+    XKB_KEY_DIRECTION_VALUES
+        = (1u << XKB_KEY_UP)
+        | (1u << XKB_KEY_DOWN)
+        | (1u << XKB_KEY_REPEATED)
     ,
     XKB_STATE_COMPONENT_VALUES
         = XKB_STATE_MODS_DEPRESSED
@@ -180,11 +179,6 @@ enum xkb_enumerations_values {
         | XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS
         | XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK
         | XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
-    ,
-    XKB_KEY_DIRECTION_VALUES
-        = (1u << XKB_KEY_UP)
-        | (1u << XKB_KEY_DOWN)
-        | (1u << XKB_KEY_REPEATED)
     ,
     XKB_LAYOUT_OUT_OF_RANGE_POLICY_VALUES
         = (1u << XKB_LAYOUT_OUT_OF_RANGE_WRAP)
@@ -296,12 +290,18 @@ static const uint32_t xkb_keymap_key_iterator_flags_values[] = {
 
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_event_type_values[] = {
-    XKB_EVENT_TYPE_KEY_DOWN,
-    XKB_EVENT_TYPE_KEY_REPEATED,
-    XKB_EVENT_TYPE_KEY_UP,
+    XKB_EVENT_TYPE_KEY,
     XKB_EVENT_TYPE_COMPONENTS_CHANGE,
     XKB_EVENT_TYPE_POINTER_MOTION,
     XKB_EVENT_TYPE_POINTER_BUTTON,
+};
+#endif
+
+#ifdef ENABLE_PRIVATE_APIS
+static const uint32_t xkb_key_direction_values[] = {
+    XKB_KEY_UP,
+    XKB_KEY_DOWN,
+    XKB_KEY_REPEATED,
 };
 #endif
 
@@ -371,14 +371,6 @@ static const uint32_t xkb_a11y_flags_values[] = {
     XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS,
     XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
     XKB_A11Y_LATCH_SIMULTANEOUS_KEYS,
-};
-#endif
-
-#ifdef ENABLE_PRIVATE_APIS
-static const uint32_t xkb_key_direction_values[] = {
-    XKB_KEY_UP,
-    XKB_KEY_DOWN,
-    XKB_KEY_REPEATED,
 };
 #endif
 

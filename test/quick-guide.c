@@ -169,15 +169,14 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
         const enum xkb_event_type event_type =
             xkb_event_get_type(event);
         switch (event_type) {
-            case XKB_EVENT_TYPE_KEY_DOWN:
-            case XKB_EVENT_TYPE_KEY_REPEATED:
-            case XKB_EVENT_TYPE_KEY_UP: {
-                const xkb_keycode_t kc = xkb_event_get_keycode(event);
-                direction = (event_type == XKB_EVENT_TYPE_KEY_UP)
-                    ? XKB_KEY_UP
-                    : (XKB_EVENT_TYPE_KEY_REPEATED)
-                        ? XKB_KEY_REPEATED
-                        : XKB_KEY_DOWN;
+            case XKB_EVENT_TYPE_KEY: {
+                xkb_keycode_t kc = XKB_KEYCODE_INVALID;
+                error = xkb_event_get_keycode(event, &kc, &direction);
+                if (error != XKB_SUCCESS) {
+                    /* Handle error */
+                    // ...
+                    exit(EXIT_FAILURE);
+                }
                 // Send key event to clients
                 // ...
                 assert(kc != XKB_KEYCODE_INVALID);

@@ -1215,11 +1215,7 @@ append_redirect_key_events(struct xkb_server_state *state,
 
     darray_append(events->queue, (struct xkb_event) {
         .ctx = events->ctx, /* borrowed from events */
-        .type = (direction == XKB_KEY_UP)
-              ? XKB_EVENT_TYPE_KEY_UP
-              : (direction == XKB_KEY_REPEATED)
-                ? XKB_EVENT_TYPE_KEY_REPEATED
-                : XKB_EVENT_TYPE_KEY_DOWN,
+        .type = XKB_EVENT_TYPE_KEY,
         .key = {
             .keycode = redirect->keycode,
             .direction = direction
@@ -3906,11 +3902,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
          */
         darray_append(events->queue, (struct xkb_event) {
             .ctx = events->ctx, /* borrowed from events */
-            .type = (direction == XKB_KEY_UP)
-                ? XKB_EVENT_TYPE_KEY_UP
-                : (direction == XKB_KEY_REPEATED)
-                    ? XKB_EVENT_TYPE_KEY_REPEATED
-                    : XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = key->keycode,
                 .direction = direction
@@ -4030,16 +4022,18 @@ xkb_event_get_type(const struct xkb_event *event)
     return event->type;
 }
 
-xkb_keycode_t
-xkb_event_get_keycode(const struct xkb_event *event)
+enum xkb_error_code
+xkb_event_get_keycode(const struct xkb_event *event,
+                      xkb_keycode_t *keycode,
+                      enum xkb_key_direction *direction)
 {
     switch (event->type) {
-    case XKB_EVENT_TYPE_KEY_DOWN:
-    case XKB_EVENT_TYPE_KEY_REPEATED:
-    case XKB_EVENT_TYPE_KEY_UP:
-        return event->key.keycode;
+    case XKB_EVENT_TYPE_KEY:
+        *keycode = event->key.keycode;
+        *direction = event->key.direction;
+        return XKB_SUCCESS;
     default:
-        return XKB_KEYCODE_INVALID;
+        return XKB_ERROR_INVALID;
     }
 }
 
