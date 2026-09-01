@@ -2736,7 +2736,7 @@ enum xkb_event_type {
     /**
      * **State components** change event
      *
-     * @sa `xkb_event::xkb_event_get_changed_components()`
+     * @sa `xkb_event::xkb_event_serialize_components()`
      *
      * @since 1.14.0
      */
@@ -2932,26 +2932,6 @@ enum xkb_state_component {
      */
     XKB_STATE_CONTROLS = (1 << 9)
 };
-
-/**
- * Get the [state components](@ref xkb_state_component) changes corresponding
- * to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_STATE_COMPONENTS` .
- *
- * @param[in] event The event object to process.
- *
- * @pre The event must be of type `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- * Otherwise the result is *undefined*.
- *
- * @returns The corresponding mask of state components that have changed.
- * If nothing in the state has changed, returns 0.
- *
- * @since 1.14.0
- *
- * @memberof xkb_event
- */
-XKB_EXPORT enum xkb_state_component
-xkb_event_get_changed_components(const struct xkb_event *event);
 
 /**
  * @enum xkb_keyboard_control_flags
@@ -3187,79 +3167,43 @@ struct xkb_event_components {
 };
 
 /**
- * Serialization of the *boolean* [global keyboard controls]
- * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
+ * Serialization of the [state components] corresponding to a
+ * [state event][event] of type `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
  *
- * @param[in] event      The event object to process.
- * @param[in] components A mask of the keyboard control state components to
- * serialize. State components other than `::XKB_STATE_CONTROLS` are ignored.
+ * @param[in] event
+ *   The event object to process.
+ * @param[in,out] components
+ *   A pointer to an [event components] object to update with the [event].
  *
  * @pre The event must be of type `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- * Otherwise the result is *undefined*.
+ * Otherwise @p components is *not* updated.
  *
- * @returns The corresponding [control mask](@ref xkb_keyboard_control_flags)
- * representing the given components of the *boolean controls* state.
+ * @pre @p components must point to a zero-initialized struct with
+ * [`components->size`](@ref xkb_event_components::size) set per
+ * @ref abi-struct-contract.
+ *
+ * @invariant The library writes only to fields of @p components that fall
+ * within [`components->size`](@ref xkb_event_components::size).
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - Errors from ABI @ref abi-struct-resolution.
+ *
+ * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
+ * @sa `xkb_event_components`
  *
  * @since 1.14.0
  *
  * @memberof xkb_event
  *
- * [global keyboard controls]: @ref xkb_keyboard_control_flags
+ * [event]: @ref xkb_event
+ * [state components]: @ref xkb_state_component
+ * [event components]: @ref xkb_event_components
+ * [error code]: @ref xkb_error_code
  */
-XKB_EXPORT enum xkb_keyboard_control_flags
-xkb_event_serialize_enabled_controls(const struct xkb_event *event,
-                                     enum xkb_state_component components);
-
-/**
- * Serialization of the [modifiers](@ref xkb_mod_mask_t)
- * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- *
- * @param[in] event      The event object to process.
- * @param[in] components A mask of the modifier state components to serialize.
- * State components other than `XKB_STATE_MODS_*` are ignored.
- * If `::XKB_STATE_MODS_EFFECTIVE` is included, all other state components are
- * ignored.
- *
- * @pre The event must be of type `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- * Otherwise the result is *undefined*.
- *
- * @returns The corresponding [modifier mask](@ref xkb_mod_mask_t) representing
- * the given components of the *modifier* state.
- *
- * @since 1.14.0
- *
- * @memberof xkb_event
- */
-XKB_EXPORT xkb_mod_mask_t
-xkb_event_serialize_mods(const struct xkb_event *event,
-                         enum xkb_state_component components);
-
-/**
- * Serialization of the [layout](@ref xkb_layout_index_t)
- * corresponding to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- *
- * @param[in] event      The event object to process.
- * @param[in] components A mask of the layout state components to serialize.
- * State components other than `XKB_STATE_LAYOUT_*` are ignored.
- * If `::XKB_STATE_LAYOUT_EFFECTIVE` is included, all other state components are
- * ignored.
- *
- * @pre The event must be of type `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
- * Otherwise the result is *undefined*.
- *
- * @returns The corresponding [layout index](@ref xkb_layout_index_t)
- * representing the given components of the *layout* state.
- *
- * @since 1.14.0
- *
- * @memberof xkb_event
- */
-XKB_EXPORT xkb_layout_index_t
-xkb_event_serialize_layout(const struct xkb_event *event,
-                           enum xkb_state_component components);
+XKB_EXPORT enum xkb_error_code
+xkb_event_serialize_components(const struct xkb_event *event,
+                               struct xkb_event_components *components);
 
 /**
  * @enum xkb_pointer_motion_flags

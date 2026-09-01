@@ -10,6 +10,7 @@
 #include <stdalign.h>
 #include <stddef.h>
 
+#include "utils.h"
 #include "xkbcommon/xkbcommon.h"
 #include "abi-check.h"
 #include "keymap.h"
@@ -48,6 +49,10 @@ struct xkb_event {
         struct xkb_event_pointer_button pointer_button;
     };
 };
+
+XKB_EXPORT_PRIVATE xkb_led_mask_t
+xkb_state_serialize_leds(const struct xkb_state *state,
+                         enum xkb_state_component type);
 
 /******************************************************************************
  * xkb_events_config

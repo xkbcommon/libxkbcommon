@@ -177,35 +177,24 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                     // ...
                     exit(EXIT_FAILURE);
                 }
-                // Send key event to clients
+                /* Send key event to clients */
                 // ...
                 assert(kc != XKB_KEYCODE_INVALID);
                 break;
             }
             case XKB_EVENT_TYPE_STATE_COMPONENTS: {
-                const enum xkb_state_component changed =
-                    xkb_event_get_changed_components(event);
-                if (changed) {
-                    const xkb_mod_mask_t depressed_mods =
-                        xkb_event_serialize_mods(event, XKB_STATE_MODS_DEPRESSED);
-                    const xkb_mod_mask_t latched_mods =
-                        xkb_event_serialize_mods(event, XKB_STATE_MODS_LATCHED);
-                    const xkb_mod_mask_t locked_mods =
-                        xkb_event_serialize_mods(event, XKB_STATE_MODS_LOCKED);
-                    const xkb_layout_index_t depressed_layout =
-                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_DEPRESSED);
-                    const xkb_layout_index_t latched_layout =
-                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_LATCHED);
-                    const xkb_layout_index_t locked_layout =
-                        xkb_event_serialize_layout(event, XKB_STATE_LAYOUT_LOCKED);
-                    // Send modifiers event
+                struct xkb_event_components components = {
+                    .size = sizeof(components)
+                };
+                error = xkb_event_serialize_components(event, &components);
+                if (error != XKB_SUCCESS) {
+                    /* Handle error */
                     // ...
-                    (void)depressed_mods;
-                    (void)latched_mods;
-                    (void)locked_mods;
-                    (void)depressed_layout;
-                    (void)latched_layout;
-                    (void)locked_layout;
+                    exit(EXIT_FAILURE);
+                }
+                if (components.changed) {
+                    /* Send component changes to clients */
+                    // ...
                 }
                 break;
             }
@@ -219,7 +208,7 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                     // ...
                     exit(EXIT_FAILURE);
                 }
-                // Move cursor
+                /* Move cursor */
                 // ...
                 break;
             }

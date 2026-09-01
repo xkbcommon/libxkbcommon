@@ -523,17 +523,68 @@ update_key(struct xkb_machine *sm,
            bool use_machine, xkb_keycode_t key,
            enum xkb_key_direction direction)
 {
-    if (use_machine) {
-        assert(xkb_machine_process_key(sm, key, direction, events) == 0);
-        const struct xkb_event *event;
-        enum xkb_state_component changed = 0;
-        while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_event(state, event);
-        }
-        return changed;
-    } else {
+    if (!use_machine)
         return xkb_state_update_key(state, key, direction);
+
+    assert(xkb_machine_process_key(sm, key, direction, events) == 0);
+    const struct xkb_event *event;
+    enum xkb_state_component all_changes = 0;
+    while ((event = xkb_events_next(events))) {
+        const enum xkb_state_component changed =
+            xkb_state_update_event(state, event);
+        all_changes |= changed;
+
+        switch (xkb_event_get_type(event)) {
+        case XKB_EVENT_TYPE_STATE_COMPONENTS: {
+            struct xkb_event_components components = {
+                .size = sizeof(components)
+            };
+            const enum xkb_error_code error =
+                xkb_event_serialize_components(event, &components);
+            assert(error == XKB_SUCCESS);
+            assert_eq("changed", changed, components.changed, "%d");
+            assert_eq("depressed mods",
+                      xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED),
+                      components.depressed_mods, "0x%"PRIx32);
+            assert_eq("latched mods",
+                      xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED),
+                      components.latched_mods, "0x%"PRIx32);
+            assert_eq("locked mods",
+                      xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED),
+                      components.locked_mods, "0x%"PRIx32);
+            assert_eq("effective mods",
+                      xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE),
+                      components.mods, "0x%"PRIx32);
+            assert_eq("depressed layout",
+                      xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED),
+                      components.depressed_layout, "%"PRIu32);
+            assert_eq("latched layout",
+                      xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED),
+                      components.latched_layout, "%"PRIu32);
+            assert_eq("locked layout",
+                      xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED),
+                      components.locked_layout, "%"PRIu32);
+            assert_eq("effective layout",
+                      xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
+                      components.layout, "%"PRIu32);
+            assert_eq("LEDs",
+                      xkb_state_serialize_leds(state, XKB_STATE_LEDS),
+                      components.leds, "0x%"PRIx32);
+            assert_eq("controls",
+                      xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS),
+                      components.controls, "0x%x");
+            break;
+        }
+        default:
+            ; /* Label followed by declaration requires C23 */
+            static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
+                            XKB_EVENT_TYPE_POINTER_BUTTON ==
+                            (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                            "Missing state event type");
+            /* ignore */
+        }
     }
+    return all_changes;
 }
 
 static enum xkb_state_component
