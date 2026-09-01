@@ -3051,6 +3051,142 @@ enum xkb_keyboard_control_flags {
 };
 
 /**
+ * @struct xkb_event_components
+ * @ingroup abi-struct-contract
+ *
+ * Serialized [state components].
+ *
+ * @sa `enum xkb_state_component components`
+ * @sa `xkb_event::xkb_event_serialize_components()`
+ * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
+ *
+ * @since 1.14.0
+ *
+ * [state components]: @ref xkb_state_component
+ */
+struct xkb_event_components {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * Mask of the changed [state components].
+     *
+     * @sa `enum xkb_state_component`
+     *
+     * @since 1.14.0
+     *
+     * [state components]: @ref xkb_state_component
+     */
+    uint32_t changed;
+    /**
+     * Serialized *depressed* [modifiers].
+     *
+     * @sa `::XKB_STATE_MODS_DEPRESSED`
+     *
+     * @since 1.14.0
+     *
+     * [modifiers]: @ref xkb_mod_mask_t
+     */
+    xkb_mod_mask_t depressed_mods;
+    /**
+     * Serialized *latched* [modifiers].
+     *
+     * @sa `::XKB_STATE_MODS_LATCHED`
+     *
+     * @since 1.14.0
+     *
+     * [modifiers]: @ref xkb_mod_mask_t
+     */
+    xkb_mod_mask_t latched_mods;
+    /**
+     * Serialized *locked* [modifiers].
+     *
+     * @sa `::XKB_STATE_MODS_LOCKED`
+     *
+     * @since 1.14.0
+     *
+     * [modifiers]: @ref xkb_mod_mask_t
+     */
+    xkb_mod_mask_t locked_mods;
+    /**
+     * Serialized *effective* [modifiers].
+     *
+     * @sa `::XKB_STATE_MODS_EFFECTIVE`
+     *
+     * @since 1.14.0
+     *
+     * [modifiers]: @ref xkb_mod_mask_t
+     */
+    xkb_mod_mask_t mods;
+    /**
+     * Serialized *depressed* [layout].
+     *
+     * @sa `::XKB_STATE_LAYOUT_DEPRESSED`
+     *
+     * @since 1.14.0
+     *
+     * [layout]: @ref xkb_layout_index_t
+     */
+    xkb_layout_index_t depressed_layout;
+    /**
+     * Serialized *latched* [layout].
+     *
+     * @sa `::XKB_STATE_LAYOUT_LATCHED`
+     *
+     * @since 1.14.0
+     *
+     * [layout]: @ref xkb_layout_index_t
+     */
+    xkb_layout_index_t latched_layout;
+    /**
+     * Serialized *locked* [layout].
+     *
+     * @sa `::XKB_STATE_LAYOUT_LOCKED`
+     *
+     * @since 1.14.0
+     *
+     * [layout]: @ref xkb_layout_index_t
+     */
+    xkb_layout_index_t locked_layout;
+    /**
+     * Serialized *effective* [layout].
+     *
+     * @sa `::XKB_STATE_LAYOUT_EFFECTIVE`
+     *
+     * @since 1.14.0
+     *
+     * [layout]: @ref xkb_layout_index_t
+     */
+    xkb_layout_index_t layout;
+    /**
+     * Serialized [keyboard LEDs].
+     *
+     * @sa `::XKB_STATE_LEDS`
+     *
+     * @since 1.14.0
+     *
+     * [keyboard LEDs]: @ref xkb_led_mask_t
+     */
+    xkb_led_mask_t leds;
+    /**
+     * Serialized [keyboard controls].
+     *
+     * @sa `enum xkb_keyboard_control_flags`
+     * @sa `::XKB_STATE_CONTROLS`
+     *
+     * @since 1.14.0
+     *
+     * [keyboard controls]: @ref xkb_keyboard_control_flags
+     */
+    uint32_t controls;
+};
+
+/**
  * Serialization of the *boolean* [global keyboard controls]
  * corresponding to a [state event](@ref xkb_event) of type
  * `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
