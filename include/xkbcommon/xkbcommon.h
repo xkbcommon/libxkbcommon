@@ -207,7 +207,7 @@ typedef uint32_t xkb_keycode_t;
  *
  * A key, represented by a keycode, may generate different symbols according
  * to keyboard state.  For example, on a QWERTY keyboard, pressing the key
- * labled \<A\> generates the symbol ‘a’.  If the Shift key is held, it
+ * labeled \<A\> generates the symbol ‘a’.  If the Shift key is held, it
  * generates the symbol ‘A’.  If a different layout is used, say Greek,
  * it generates the symbol ‘α’.  And so on.
  *
@@ -2752,7 +2752,7 @@ enum xkb_event_type {
     /**
      * **Pointer _button_** event
      *
-     * @sa `xkb_event::xkb_event_get_pointer_motion()`
+     * @sa `xkb_event::xkb_event_get_pointer_button()`
      *
      * @since 1.14.0
      */
@@ -3036,7 +3036,7 @@ enum xkb_keyboard_control_flags {
      */
     XKB_KEYBOARD_CONTROL_OVERLAY8 = (1 << 8),
     /**
-     * Enable **mouse keys** for controling the mouse functions from the
+     * Enable **mouse keys** for controlling the mouse functions from the
      * keyboard.
      *
      * When mouse keys are enabled, all keys with [pointer actions] bound to
@@ -3225,7 +3225,7 @@ struct xkb_event_pointer_motion {
  * @param[in] event
  *   The event object to process.
  * @param[in,out] motion
- *   A pointer motion object to update with the [event].
+ *   A pointer to a [pointer motion] object to update with the [event].
  *
  * @pre The event must have the type `::XKB_EVENT_TYPE_POINTER_MOTION`.
  * Otherwise @p motion is *not* updated.
@@ -3241,7 +3241,8 @@ struct xkb_event_pointer_motion {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
  *
- * @sa xkb_event_pointer_motion
+ * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
+ * @sa `xkb_event_pointer_motion`
  *
  * @since 1.14.0
  *
@@ -3257,7 +3258,7 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
 
 /**
  * @enum xkb_pointer_button_direction
- * Specifies the direction of a button (press / release).
+ * Specifies the direction of a button (press/release).
  *
  * @sa `xkb_event_pointer_button`
  *
@@ -3279,6 +3280,7 @@ enum xkb_pointer_button_direction {
  *
  * Description of a pointer button action.
  *
+ * @sa `xkb_event::xkb_event_get_pointer_button()`
  * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`
  *
  * @since 1.14.0
@@ -3329,7 +3331,7 @@ struct xkb_event_pointer_button {
  * @param[in] event
  *   The event object to process.
  * @param[in,out] button
- *   A pointer button object to update with the [event].
+ *   A pointer to a [pointer button] object to update with the [event].
  *
  * @pre The event must have the type `::XKB_EVENT_TYPE_POINTER_BUTTON`.
  * Otherwise @p button is *not* updated.
@@ -3345,7 +3347,8 @@ struct xkb_event_pointer_button {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
  *
- * @sa xkb_event_pointer_button
+ * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`.
+ * @sa `xkb_event_pointer_button`
  *
  * @since 1.14.0
  *
