@@ -1220,7 +1220,10 @@ append_redirect_key_events(struct xkb_server_state *state,
               : (direction == XKB_KEY_REPEATED)
                 ? XKB_EVENT_TYPE_KEY_REPEATED
                 : XKB_EVENT_TYPE_KEY_DOWN,
-        .keycode = redirect->keycode
+        .key = {
+            .keycode = redirect->keycode,
+            .direction = direction
+        }
     });
 
     if (mask && changed) {
@@ -3908,7 +3911,10 @@ xkb_machine_process_key(struct xkb_machine *sm,
                 : (direction == XKB_KEY_REPEATED)
                     ? XKB_EVENT_TYPE_KEY_REPEATED
                     : XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = key->keycode
+            .key = {
+                .keycode = key->keycode,
+                .direction = direction
+            }
         });
     }
 
@@ -4031,7 +4037,7 @@ xkb_event_get_keycode(const struct xkb_event *event)
     case XKB_EVENT_TYPE_KEY_DOWN:
     case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
-        return event->keycode;
+        return event->key.keycode;
     default:
         return XKB_KEYCODE_INVALID;
     }

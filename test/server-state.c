@@ -1065,14 +1065,17 @@ test_redirect_key(struct xkb_context *ctx)
         struct test_events up;
     } tests[] = {
         {
-            .keycode = EVDEV_OFFSET + KEY_A,
+            .keycode = KEY_A + EVDEV_OFFSET,
             .repeats = false,
             .down = {
                 .events = {
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_A
+                        .key = {
+                            .keycode = KEY_A + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     }
                 },
                 .events_count = 1
@@ -1082,21 +1085,27 @@ test_redirect_key(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_A
+                        .key = {
+                            .keycode = KEY_A + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
             }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_S,
+            .keycode = KEY_S + EVDEV_OFFSET,
             .repeats = true,
             .down = {
                 .events = {
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_A
+                        .key = {
+                            .keycode = KEY_A + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     }
                 },
                 .events_count = 1
@@ -1106,14 +1115,17 @@ test_redirect_key(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_A
+                        .key = {
+                            .keycode = KEY_A + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
             }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_D,
+            .keycode = KEY_D + EVDEV_OFFSET,
             .repeats = true,
             .down = {
                 .events = {
@@ -1136,7 +1148,10 @@ test_redirect_key(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_S
+                        .key = {
+                            .keycode = KEY_S + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1178,7 +1193,10 @@ test_redirect_key(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_S
+                        .key = {
+                            .keycode = KEY_S + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1207,10 +1225,12 @@ test_redirect_key(struct xkb_context *ctx)
                 __func__, t, tests[t].keycode);
         assert(xkb_keymap_key_repeats(keymap, tests[t].keycode) ==
                tests[t].repeats);
+        fprintf(stderr, "+++ Key down +++\n");
         assert(xkb_machine_process_key(sm, tests[t].keycode,
                                        XKB_KEY_DOWN, events) == XKB_SUCCESS);
         assert(check_events(events, tests[t].down.events,
                             tests[t].down.events_count));
+        fprintf(stderr, "+++ Key repeat +++\n");
         assert(xkb_machine_process_key(sm, tests[t].keycode,
                                        XKB_KEY_REPEATED, events) == XKB_SUCCESS);
         if (tests[t].repeats) {
@@ -1218,10 +1238,13 @@ test_redirect_key(struct xkb_context *ctx)
             memcpy(ref, tests[t].down.events, sizeof(tests->down.events));
             ref[tests[t].down.events_count == 3].type =
                 XKB_EVENT_TYPE_KEY_REPEATED;
+            ref[tests[t].down.events_count == 3].key.direction =
+                XKB_KEY_REPEATED;
             assert(check_events(events, ref, tests[t].down.events_count));
         } else {
             assert(check_events(events, NULL, 0));
         }
+        fprintf(stderr, "+++ Key up +++\n");
         assert(xkb_machine_process_key(sm, tests[t].keycode,
                                        XKB_KEY_UP, events) == XKB_SUCCESS);
         assert(check_events(events, tests[t].up.events,
@@ -1277,7 +1300,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1285,7 +1308,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1308,7 +1334,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1318,7 +1347,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1340,7 +1372,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Deactivated: move pointer (breaks latch) */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .keycode = KEY_KP7 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1348,7 +1380,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KP7
+                        .key = {
+                            .keycode = KEY_KP7 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1370,7 +1405,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_KP7
+                        .key = {
+                            .keycode = KEY_KP7 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1380,7 +1418,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KP7
+                        .key = {
+                            .keycode = KEY_KP7 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
@@ -1389,7 +1430,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -1397,7 +1438,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1421,7 +1465,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1443,7 +1490,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Deactivated: button (breaks latch) */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP5,
+            .keycode = KEY_KP5 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1451,7 +1498,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KP5
+                        .key = {
+                            .keycode = KEY_KP5 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1473,7 +1523,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_KP5
+                        .key = {
+                            .keycode = KEY_KP5 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1483,7 +1536,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KP5
+                        .key = {
+                            .keycode = KEY_KP5 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
@@ -1492,7 +1548,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -1500,7 +1556,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1524,7 +1583,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1546,7 +1608,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Deactivated: lock button (breaks latch) */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP0,
+            .keycode = KEY_KP0 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1554,7 +1616,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KP0
+                        .key = {
+                            .keycode = KEY_KP0 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1576,7 +1641,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_KP0
+                        .key = {
+                            .keycode = KEY_KP0 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1586,7 +1654,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KP0
+                        .key = {
+                            .keycode = KEY_KP0 + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
@@ -1595,7 +1666,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -1603,7 +1674,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1627,7 +1701,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1649,7 +1726,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Deactivated: set default button (breaks latch) */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPASTERISK,
+            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1657,7 +1734,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KPASTERISK
+                        .key = {
+                            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1679,7 +1759,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_KPASTERISK
+                        .key = {
+                            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1689,7 +1772,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KPASTERISK
+                        .key = {
+                            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     }
                 },
                 .events_count = 1
@@ -1700,7 +1786,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Enable mouse keys
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS,
+            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -1708,7 +1794,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1730,7 +1819,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                 },
                 .events_count = 1
@@ -1739,7 +1831,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1747,7 +1839,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1771,7 +1866,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_REPEATED,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_REPEATED
+                        }
                     }
                 },
                 .events_count = 1
@@ -1781,7 +1879,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1809,7 +1910,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Motion */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .keycode = KEY_KP7 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1847,7 +1948,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: separate press/release */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP5,
+            .keycode = KEY_KP5 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1899,7 +2000,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -1907,7 +2008,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1932,7 +2036,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -1956,7 +2063,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: double click */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUS,
+            .keycode = KEY_KPPLUS + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -1994,7 +2101,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -2002,7 +2109,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2027,7 +2137,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2051,7 +2164,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: lock 1 */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP0,
+            .keycode = KEY_KP0 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2089,7 +2202,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -2097,7 +2210,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2122,7 +2238,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2146,7 +2265,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: unlock 1 */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPDOT,
+            .keycode = KEY_KPDOT + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2188,7 +2307,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button drag */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPEQUAL,
+            .keycode = KEY_KPEQUAL + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2210,7 +2329,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPEQUAL,
+            .keycode = KEY_KPEQUAL + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2234,7 +2353,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Latch LevelThree */
         {
-            .keycode = EVDEV_OFFSET + KEY_RIGHTALT,
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -2242,7 +2361,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2267,7 +2389,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_RIGHTALT
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2291,7 +2416,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: set default to 2 */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPASTERISK,
+            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2299,7 +2424,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUS,
+            .keycode = KEY_KPPLUS + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2335,7 +2460,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KP0,
+            .keycode = KEY_KP0 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2359,7 +2484,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: set default to 3 */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPMINUS,
+            .keycode = KEY_KPMINUS + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2367,7 +2492,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUS,
+            .keycode = KEY_KPPLUS + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2389,7 +2514,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPDOT,
+            .keycode = KEY_KPDOT + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2397,7 +2522,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 }, /* Cannot unlock button 3 */
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KP0,
+            .keycode = KEY_KP0 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2421,7 +2546,7 @@ test_mouse_keys(struct xkb_context *ctx)
 
         /* Button: set default to 2 */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPASTERISK,
+            .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2429,7 +2554,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPDOT,
+            .keycode = KEY_KPDOT + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2451,7 +2576,7 @@ test_mouse_keys(struct xkb_context *ctx)
             },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUS,
+            .keycode = KEY_KPPLUS + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2477,7 +2602,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Check disabling mouse keys control: press keys with pointer actions
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .keycode = KEY_KP7 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_PRESS,
             .down = {
@@ -2499,7 +2624,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KP5,
+            .keycode = KEY_KP5 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_PRESS,
             .down = {
@@ -2521,7 +2646,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPEQUAL,
+            .keycode = KEY_KPEQUAL + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2543,7 +2668,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 },
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPEQUAL,
+            .keycode = KEY_KPEQUAL + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_PRESS,
             .down = { .events_count = 0 },
@@ -2555,7 +2680,7 @@ test_mouse_keys(struct xkb_context *ctx)
              * This key is only tapped before deactivating mouse keys, in order
              * to check that locked buttons are reset at mouse key reactivation.
              */
-            .keycode = EVDEV_OFFSET + KEY_KPLEFTPAREN,
+            .keycode = KEY_KPLEFTPAREN + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = {
@@ -2581,7 +2706,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Check disabling mouse keys control: switch mouse keys off
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS,
+            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -2589,7 +2714,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     }
                 },
                 .events_count = 1
@@ -2599,7 +2727,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2622,7 +2753,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Check disabling mouse keys control: release keys with pointer actions
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KP7,
+            .keycode = KEY_KP7 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_RELEASE,
             .down = { .events_count = 0 },
@@ -2630,7 +2761,7 @@ test_mouse_keys(struct xkb_context *ctx)
             .up = { .events_count = 0 }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KP5,
+            .keycode = KEY_KP5 + EVDEV_OFFSET,
             .repeats = true,
             .directions = XKB_KEY_RELEASE,
             .down = { .events_count = 0 },
@@ -2652,7 +2783,7 @@ test_mouse_keys(struct xkb_context *ctx)
             }
         },
         {
-            .keycode = EVDEV_OFFSET + KEY_KPEQUAL,
+            .keycode = KEY_KPEQUAL + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_RELEASE,
             .down = { .events_count = 0 },
@@ -2678,7 +2809,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Check disabling mouse keys control: switch mouse keys on
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS,
+            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP,
             .down = {
@@ -2686,7 +2817,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_DOWN,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
                     },
                     {
                         .ctx = ctx,
@@ -2708,7 +2842,10 @@ test_mouse_keys(struct xkb_context *ctx)
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY_UP,
-                        .keycode = EVDEV_OFFSET + KEY_KPPLUSMINUS
+                        .key = {
+                            .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
+                            .direction = XKB_KEY_UP
+                        }
                     },
                 },
                 .events_count = 1
@@ -2719,7 +2856,7 @@ test_mouse_keys(struct xkb_context *ctx)
          * Check disabling mouse keys control: locked controls value
          */
         {
-            .keycode = EVDEV_OFFSET + KEY_KPLEFTPAREN,
+            .keycode = KEY_KPLEFTPAREN + EVDEV_OFFSET,
             .repeats = false,
             .directions = XKB_KEY_TAP | XKB_KEY_REPEAT,
             .down = { .events_count = 0 },
@@ -2989,7 +3126,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3034,7 +3174,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         },
     );
 
@@ -3045,7 +3188,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         }
     );
 
@@ -3056,7 +3202,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3110,7 +3259,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -3174,7 +3326,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_102ND + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_102ND + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3239,7 +3394,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3286,7 +3444,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         }
     );
 
@@ -3297,7 +3458,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_102ND + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_102ND + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -3398,7 +3562,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3445,7 +3612,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         },
         {
             .ctx = context,
@@ -3492,7 +3662,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -3736,7 +3909,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3821,7 +3997,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3885,7 +4064,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -3975,7 +4157,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4028,7 +4213,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Q + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Q + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4075,7 +4263,10 @@ test_shortcuts_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4237,7 +4428,7 @@ test_overlays(struct xkb_context *context)
             continue;
 
         assert(xkb_machine_process_key(
-            sm, EVDEV_OFFSET + KEY_J, keycode_tests[t].direction, events
+            sm, KEY_J + EVDEV_OFFSET, keycode_tests[t].direction, events
         ) == XKB_SUCCESS);
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
@@ -4388,7 +4579,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_LEFTALT + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_LEFTALT + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4427,7 +4621,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Y + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Y + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4466,7 +4663,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_Y + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Y + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         },
         {
             .ctx = context,
@@ -4505,7 +4705,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_Y + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Y + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -4570,7 +4773,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_Y + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Y + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4614,7 +4820,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_Y + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_Y + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -4642,7 +4851,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_BACKSPACE + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_BACKSPACE + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         }
     );
 
@@ -4669,7 +4881,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_LEFTALT + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_LEFTALT + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,
@@ -4752,7 +4967,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4832,7 +5050,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = context,
@@ -4905,7 +5126,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         },
         {
             .ctx = context,
@@ -4979,7 +5203,10 @@ test_modifiers_tweak(struct xkb_context *context)
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_COPY + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_COPY + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = context,

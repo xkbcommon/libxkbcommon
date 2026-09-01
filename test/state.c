@@ -813,7 +813,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_LEFTCTRL + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -844,7 +847,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_RIGHTALT + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -954,7 +960,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_LEFTCTRL + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_LEFTCTRL + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -998,7 +1007,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_RIGHTALT + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -1090,7 +1102,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -1115,7 +1130,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -1137,7 +1155,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -1161,7 +1182,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_CAPSLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -1191,7 +1215,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -1214,7 +1241,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         }
     );
     update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
@@ -1223,7 +1253,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -1245,7 +1278,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         },
         {
             .ctx = ctx,
@@ -1267,7 +1303,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         }
     );
     update_states(state, sm, KEY_NUMLOCK + EVDEV_OFFSET, XKB_KEY_UP);
@@ -1276,7 +1315,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_NUMLOCK + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         },
         {
             .ctx = ctx,
@@ -1305,7 +1347,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_5 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_5 + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         }
     );
     /* Ensure it does repeat */
@@ -1315,7 +1360,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_5 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_5 + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         }
     );
     update_states(state, sm, KEY_5 + EVDEV_OFFSET, XKB_KEY_UP);
@@ -1324,7 +1372,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_5 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_5 + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         }
     );
 
@@ -1342,7 +1393,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_DOWN,
-            .keycode = KEY_6 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_6 + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
         }
     );
     /* Ensure it does repeat */
@@ -1352,7 +1406,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_REPEATED,
-            .keycode = KEY_6 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_6 + EVDEV_OFFSET,
+                .direction = XKB_KEY_REPEATED
+            }
         }
     );
     update_states(state, sm, KEY_6 + EVDEV_OFFSET, XKB_KEY_UP);
@@ -1361,7 +1418,10 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         {
             .ctx = ctx,
             .type = XKB_EVENT_TYPE_KEY_UP,
-            .keycode = KEY_6 + EVDEV_OFFSET
+            .key = {
+                .keycode = KEY_6 + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
         }
     );
 
