@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "darray.h"
@@ -88,27 +89,44 @@ consume_events(struct xkb_machine *sm,
                xkb_keycode_t *kc)
 {
     const struct xkb_event *event;
+    enum xkb_error_code error;
     while ((event = xkb_events_next(events))) {
         switch (xkb_event_get_type(event)) {
-        case XKB_EVENT_TYPE_KEY_DOWN:
-        case XKB_EVENT_TYPE_KEY_REPEATED:
-        case XKB_EVENT_TYPE_KEY_UP:
-            *kc = xkb_event_get_keycode(event);
+        case XKB_EVENT_TYPE_KEY: {
+            enum xkb_key_direction direction;
+            error = xkb_event_get_keycode(event, kc, &direction);
+            assert(error == XKB_SUCCESS);
             if (flags & UNTIL_KEY_EVENT) {
                 /* Stop on key event */
                 return true;
             }
             break;
+        }
         case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+            // TODO: check error
             xkb_state_update_event(state, event);
             break;
-        case XKB_EVENT_TYPE_POINTER_MOTION:
-        case XKB_EVENT_TYPE_POINTER_BUTTON:
+        case XKB_EVENT_TYPE_POINTER_MOTION: {
+            struct xkb_event_pointer_motion motion = {
+                .size = sizeof(motion)
+            };
+            error = xkb_event_get_pointer_motion(event, &motion);
+            assert(error == XKB_SUCCESS);
             /* Pointer events do not update the base state */
             break;
+        }
+        case XKB_EVENT_TYPE_POINTER_BUTTON: {
+            struct xkb_event_pointer_button button = {
+                .size = sizeof(button)
+            };
+            error = xkb_event_get_pointer_button(event, &button);
+            assert(error == XKB_SUCCESS);
+            /* Pointer events do not update the base state */
+            break;
+        }
         default:
             {} /* Label followed by declaration requires C23 */
-            static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+            static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
                           XKB_EVENT_TYPE_POINTER_BUTTON ==
                           (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                           "Missing state event type");

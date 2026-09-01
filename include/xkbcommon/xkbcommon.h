@@ -2726,29 +2726,13 @@ struct xkb_event;
  */
 enum xkb_event_type {
     /**
-     * **Key _down_** event
+     * **Key** event
      *
      * @sa `xkb_event::xkb_event_get_keycode()`
      *
      * @since 1.14.0
      */
-    XKB_EVENT_TYPE_KEY_DOWN = 1,
-    /**
-     * **Key _repeated_** event
-     *
-     * @sa `xkb_event::xkb_event_get_keycode()`
-     *
-     * @since 1.14.0
-     */
-    XKB_EVENT_TYPE_KEY_REPEATED,
-    /**
-     * **Key _up_** event
-     *
-     * @sa `xkb_event::xkb_event_get_keycode()`
-     *
-     * @since 1.14.0
-     */
-    XKB_EVENT_TYPE_KEY_UP,
+    XKB_EVENT_TYPE_KEY = 1,
     /**
      * **Components** change event
      *
@@ -2790,26 +2774,57 @@ XKB_EXPORT enum xkb_event_type
 xkb_event_get_type(const struct xkb_event *event);
 
 /**
- * Get the keycode associated to a [state event](@ref xkb_event) of type
- * `::XKB_EVENT_TYPE_KEY_DOWN`, `::XKB_EVENT_TYPE_KEY_REPEATED` or
- * `::XKB_EVENT_TYPE_KEY_UP`.
+ * @enum xkb_key_direction
+ * Specifies the direction of the key (press / release) or a repetition.
+ */
+enum xkb_key_direction {
+    /** The key was *released*. */
+    XKB_KEY_UP,
+    /** The key was *pressed*. */
+    XKB_KEY_DOWN,
+    /**
+     * The key was *repeated*.
+     *
+     * This should be used by the compositor only if it handles key repetition
+     * itself.
+     *
+     * @since 1.14.0
+     */
+    XKB_KEY_REPEATED
+};
+
+/**
+ * Get the [keycode] and [direction] associated to a [state event][event]
+ * of type `::XKB_EVENT_TYPE_KEY`.
  *
- * @param[in] event The event object to process.
+ * @param[in]  event
+ *   The event object to process.
+ * @param[out] keycode
+ *   A pointer to store the [keycode] of the key event.
+ * @param[out] direction
+ *   A pointer to store the [direction] of the key event.
  *
- * @pre The event must be of one of the following types:
- * - `::XKB_EVENT_TYPE_KEY_DOWN`
- * - `::XKB_EVENT_TYPE_KEY_REPEATED`
- * - `::XKB_EVENT_TYPE_KEY_UP`
- * Otherwise the result is *undefined*.
+ * @pre The event must be `::XKB_EVENT_TYPE_KEY`.
+ * Otherwise the @p keycode and @p direction are *not* updated.
  *
- * @returns The keycode corresponding to the event.
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ *
+ * @sa `xkb_machine::xkb_machine_process_key()`
  *
  * @since 1.14.0
  *
  * @memberof xkb_event
+ *
+ * [keycode]: @ref xkb_keycode_t
+ * [direction]: @ref xkb_key_direction
+ * [event]: @ref xkb_event
+ * [error code]: @ref xkb_error_code
  */
-XKB_EXPORT xkb_keycode_t
-xkb_event_get_keycode(const struct xkb_event *event);
+XKB_EXPORT enum xkb_error_code
+xkb_event_get_keycode(const struct xkb_event *event,
+                      xkb_keycode_t *keycode,
+                      enum xkb_key_direction *direction);
 
 /**
  * @enum xkb_state_component
@@ -4054,26 +4069,6 @@ xkb_machine_unref(struct xkb_machine *machine);
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_machine_get_keymap(const struct xkb_machine *machine);
-
-/**
- * @enum xkb_key_direction
- * Specifies the direction of the key (press / release) or a repetition.
- */
-enum xkb_key_direction {
-    /** The key was *released*. */
-    XKB_KEY_UP,
-    /** The key was *pressed*. */
-    XKB_KEY_DOWN,
-    /**
-     * The key was *repeated*.
-     *
-     * This should be used by the compositor only if it handles key repetition
-     * itself.
-     *
-     * @since 1.14.0
-     */
-    XKB_KEY_REPEATED
-};
 
 /**
  * Process a key event – a pair ([keycode], [direction]) – through the XKB

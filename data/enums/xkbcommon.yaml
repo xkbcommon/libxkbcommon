@@ -61,18 +61,21 @@ xkb_keymap_key_iterator_flags:
   - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     value: 2
 xkb_event_type:
-  - name: XKB_EVENT_TYPE_KEY_DOWN
+  - name: XKB_EVENT_TYPE_KEY
     value: 1
-  - name: XKB_EVENT_TYPE_KEY_REPEATED
-    value: 2
-  - name: XKB_EVENT_TYPE_KEY_UP
-    value: 3
   - name: XKB_EVENT_TYPE_COMPONENTS_CHANGE
-    value: 4
+    value: 2
   - name: XKB_EVENT_TYPE_POINTER_MOTION
-    value: 5
+    value: 3
   - name: XKB_EVENT_TYPE_POINTER_BUTTON
-    value: 6
+    value: 4
+xkb_key_direction:
+  - name: XKB_KEY_UP
+    value: 0
+  - name: XKB_KEY_DOWN
+    value: 1
+  - name: XKB_KEY_REPEATED
+    value: 2
 xkb_state_component:
   - name: XKB_STATE_MODS_DEPRESSED
     value: 1
@@ -148,13 +151,6 @@ xkb_a11y_flags:
     value: 2
   - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
     value: 4
-xkb_key_direction:
-  - name: XKB_KEY_UP
-    value: 0
-  - name: XKB_KEY_DOWN
-    value: 1
-  - name: XKB_KEY_REPEATED
-    value: 2
 xkb_layout_out_of_range_policy:
   - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
     value: 0

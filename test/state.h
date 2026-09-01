@@ -148,9 +148,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     if (event1->type != event2->type)
         return false;
     switch (event1->type) {
-    case XKB_EVENT_TYPE_KEY_DOWN:
-    case XKB_EVENT_TYPE_KEY_REPEATED:
-    case XKB_EVENT_TYPE_KEY_UP:
+    case XKB_EVENT_TYPE_KEY:
         return event1->key.keycode == event2->key.keycode &&
                event1->key.direction == event2->key.direction;
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
@@ -164,7 +162,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
                       sizeof(event1->pointer_button)) == 0;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
                       XKB_EVENT_TYPE_POINTER_BUTTON ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
@@ -177,9 +175,7 @@ print_event(const char *prefix, const struct xkb_event *event)
 {
     fprintf(stderr, "%s", prefix);
     switch (event->type) {
-    case XKB_EVENT_TYPE_KEY_DOWN:
-    case XKB_EVENT_TYPE_KEY_REPEATED:
-    case XKB_EVENT_TYPE_KEY_UP:
+    case XKB_EVENT_TYPE_KEY:
         fprintf(stderr, "type: key %s; keycode: %"PRIu32"\n",
                 (event->key.direction == XKB_KEY_UP)
                     ? "up"
@@ -222,7 +218,7 @@ print_event(const char *prefix, const struct xkb_event *event)
         break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 6 &&
+        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
                       XKB_EVENT_TYPE_POINTER_BUTTON ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");

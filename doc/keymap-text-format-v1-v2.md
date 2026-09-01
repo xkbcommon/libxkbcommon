@@ -4658,9 +4658,9 @@ Legacy paramater: *do not use*.
 
 [pointer motion event]: @ref XKB_EVENT_TYPE_POINTER_MOTION
 [pointer button event]: @ref XKB_EVENT_TYPE_POINTER_BUTTON
-[key press event]: @ref XKB_EVENT_TYPE_KEY_DOWN
-[key repeated event]: @ref XKB_EVENT_TYPE_KEY_REPEATED
-[key release event]: @ref XKB_EVENT_TYPE_KEY_UP
+[key press event]: @ref XKB_EVENT_TYPE_KEY
+[key repeated event]: @ref XKB_EVENT_TYPE_KEY
+[key release event]: @ref XKB_EVENT_TYPE_KEY
 
 ### Legacy X11 actions {#legacy-x11-actions}
 

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include "abi-check.h"
 #include "config.h"
 #include "test-config.h"
 
@@ -17,6 +16,7 @@
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
 
+#include "abi-check.h"
 #include "context.h"
 #include "evdev-scancodes.h"
 #include "src/keysym.h"
@@ -1071,7 +1071,7 @@ test_redirect_key(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1084,7 +1084,7 @@ test_redirect_key(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1101,7 +1101,7 @@ test_redirect_key(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1114,7 +1114,7 @@ test_redirect_key(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1147,7 +1147,7 @@ test_redirect_key(struct xkb_context *ctx)
                     },
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_S + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1192,7 +1192,7 @@ test_redirect_key(struct xkb_context *ctx)
                     },
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_S + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1236,8 +1236,6 @@ test_redirect_key(struct xkb_context *ctx)
         if (tests[t].repeats) {
             struct xkb_event ref[ARRAY_SIZE(tests->down.events)] = {0};
             memcpy(ref, tests[t].down.events, sizeof(tests->down.events));
-            ref[tests[t].down.events_count == 3].type =
-                XKB_EVENT_TYPE_KEY_REPEATED;
             ref[tests[t].down.events_count == 3].key.direction =
                 XKB_KEY_REPEATED;
             assert(check_events(events, ref, tests[t].down.events_count));
@@ -1307,7 +1305,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1333,7 +1331,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1346,7 +1344,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1379,7 +1377,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP7 + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1404,7 +1402,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP7 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1417,7 +1415,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP7 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1437,7 +1435,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1464,7 +1462,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1497,7 +1495,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP5 + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1522,7 +1520,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP5 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1535,7 +1533,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP5 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1555,7 +1553,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1582,7 +1580,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1615,7 +1613,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP0 + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1640,7 +1638,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP0 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1653,7 +1651,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KP0 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1673,7 +1671,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1700,7 +1698,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1733,7 +1731,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1758,7 +1756,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1771,7 +1769,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1793,7 +1791,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1818,7 +1816,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -1838,7 +1836,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -1865,7 +1863,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_REPEATED,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
@@ -1878,7 +1876,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2007,7 +2005,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2035,7 +2033,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2108,7 +2106,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2136,7 +2134,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2209,7 +2207,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2237,7 +2235,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2360,7 +2358,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2388,7 +2386,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2713,7 +2711,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2726,7 +2724,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -2816,7 +2814,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_DOWN,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
@@ -2841,7 +2839,7 @@ test_mouse_keys(struct xkb_context *ctx)
                 .events = {
                     {
                         .ctx = ctx,
-                        .type = XKB_EVENT_TYPE_KEY_UP,
+                        .type = XKB_EVENT_TYPE_KEY,
                         .key = {
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
@@ -3125,7 +3123,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3173,7 +3171,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -3187,7 +3185,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -3201,7 +3199,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3258,7 +3256,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -3325,7 +3323,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_102ND + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3393,7 +3391,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3443,7 +3441,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -3457,7 +3455,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_102ND + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -3561,7 +3559,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3611,7 +3609,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -3661,7 +3659,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -3908,7 +3906,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -3996,7 +3994,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4063,7 +4061,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4156,7 +4154,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4212,7 +4210,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4262,7 +4260,7 @@ test_shortcuts_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4432,12 +4430,17 @@ test_overlays(struct xkb_context *context)
         ) == XKB_SUCCESS);
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
-            switch (xkb_event_get_type(event)) {
-            case XKB_EVENT_TYPE_KEY_DOWN:
-            case XKB_EVENT_TYPE_KEY_UP:
-                assert_eq("keycode", EVDEV_OFFSET + keycode_tests[t].kc,
-                          xkb_event_get_keycode(event), "%"PRIu32);
+            switch(xkb_event_get_type(event)) {
+            case XKB_EVENT_TYPE_KEY: {
+                xkb_keycode_t kc;
+                enum xkb_key_direction direction;
+                assert(xkb_event_get_keycode(event, &kc, &direction) == XKB_SUCCESS);
+                assert_eq("keycode", keycode_tests[t].kc + EVDEV_OFFSET,
+                          kc, "%"PRIu32);
+                assert_eq("direction", keycode_tests[t].direction,
+                          direction, "%d");
                 break;
+            }
             default:
                 ;
             }
@@ -4578,7 +4581,7 @@ test_modifiers_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_LEFTALT + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4620,7 +4623,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Y + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4662,7 +4665,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Y + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -4704,7 +4707,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Y + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -4772,7 +4775,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Y + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4819,7 +4822,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_Y + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -4850,7 +4853,7 @@ test_modifiers_tweak(struct xkb_context *context)
         events,
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_BACKSPACE + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -4880,7 +4883,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_LEFTALT + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -4966,7 +4969,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -5049,7 +5052,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -5125,7 +5128,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -5202,7 +5205,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
         {
             .ctx = context,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_COPY + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP

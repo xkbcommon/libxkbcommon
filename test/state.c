@@ -812,7 +812,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_LEFTCTRL + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -846,7 +846,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -959,7 +959,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_LEFTCTRL + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1006,7 +1006,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1101,7 +1101,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1129,7 +1129,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1154,7 +1154,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1181,7 +1181,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_CAPSLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1214,7 +1214,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1240,7 +1240,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -1252,7 +1252,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1277,7 +1277,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1302,7 +1302,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -1314,7 +1314,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_NUMLOCK + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1346,7 +1346,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_5 + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1359,7 +1359,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_5 + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -1371,7 +1371,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_5 + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
@@ -1392,7 +1392,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_DOWN,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_6 + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
@@ -1405,7 +1405,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_REPEATED,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_6 + EVDEV_OFFSET,
                 .direction = XKB_KEY_REPEATED
@@ -1417,7 +1417,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         events,
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_KEY_UP,
+            .type = XKB_EVENT_TYPE_KEY,
             .key = {
                 .keycode = KEY_6 + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
