@@ -624,7 +624,7 @@ enum xkb_rmlvo_builder_flags {
  *
  * [RMLVO]: @ref RMLVO-intro
  */
-XKB_EXPORT struct xkb_rmlvo_builder*
+XKB_EXPORT struct xkb_rmlvo_builder *
 xkb_rmlvo_builder_new(struct xkb_context *context,
                       const char *rules, const char *model,
                       enum xkb_rmlvo_builder_flags flags);
@@ -1829,8 +1829,6 @@ enum xkb_keymap_serialize_flags {
      * This is useful mainly for debugging, as it may increase considerably
      * the size of the serialization.
      *
-     * This is useful mainly for debugging.
-     *
      * @since 1.14.0
      */
     XKB_KEYMAP_SERIALIZE_EXPLICIT_KEY_VALUES = (1 << 5),
@@ -1939,7 +1937,7 @@ struct xkb_keymap_serialize_result {
  *
  * On success, returns a newly *allocated* serialized keymap in
  * [`result->serialized`][serialized], together with additional metadata.
- * It is suitable to use with `xkb_keymap_new_from_string2()`.
+ * It is suitable to use with `xkb_keymap_new_from_string()`.
  *
  * Use this function instead of `xkb_keymap_get_as_string()` or
  * `xkb_keymap_get_as_string2()` when more control on serializing
@@ -3863,7 +3861,7 @@ xkb_machine_builder_update_mods_remap(
  * @ingroup abi-struct-contract
  *
  * Update a layout substitution of the shortcut layout overrides for
- * `xkb_machine_builder::xkb_machine_builder_update()`
+ * `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`
  *
  * When any of the specified modifiers (see #mods and #mods_affect) is active,
  * the effective layout #source is substituted with layout #target in key
@@ -3957,8 +3955,7 @@ struct xkb_machine_builder_shortcut_layout_update {
 };
 
 /**
- * Update layout substitution of the shortcut layout overrides for
- * `xkb_machine_builder::xkb_machine_builder_update()`
+ * Update layout substitution of the shortcut layout overrides.
  *
  * @param[in,out] builder The `xkb_machine` builder object to modify.
  * @param[in]     update  Shortcut layout substitution update object.
@@ -5076,7 +5073,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  * usually it would be:
  * @code xkb_state_key_get_layout(state, key) @endcode
  *
- * @return The shift level index.  If the key or layout are invalid,
+ * @returns The shift level index.  If the key or layout are invalid,
  * returns `::XKB_LEVEL_INVALID`.
  *
  * @invariant If the returned level is valid, the following always holds:
