@@ -2488,6 +2488,15 @@ xkb_state_serialize_layout(struct xkb_state *state,
     return serialize_layout(&state->components, type);
 }
 
+xkb_led_mask_t
+xkb_state_serialize_leds(const struct xkb_state *state,
+                         enum xkb_state_component type)
+{
+    return (type & XKB_STATE_LEDS)
+        ? state->components.leds
+        : 0;
+}
+
 static inline enum xkb_keyboard_control_flags
 serialize_controls(const struct state_components *components,
                    enum xkb_state_component type)
@@ -4037,39 +4046,33 @@ xkb_event_get_keycode(const struct xkb_event *event,
     }
 }
 
-enum xkb_state_component
-xkb_event_get_changed_components(const struct xkb_event *event)
+enum xkb_error_code
+xkb_event_serialize_components(const struct xkb_event * restrict event,
+                               struct xkb_event_components * restrict components)
 {
-    return (event->type == XKB_EVENT_TYPE_STATE_COMPONENTS)
-        ? event->components.changed
-        : 0;
-}
+    if (event->type != XKB_EVENT_TYPE_STATE_COMPONENTS)
+        return XKB_ERROR_INVALID;
 
-enum xkb_keyboard_control_flags
-xkb_event_serialize_enabled_controls(const struct xkb_event *event,
-                                     enum xkb_state_component components)
-{
-    return (event->type == XKB_EVENT_TYPE_STATE_COMPONENTS)
-        ? serialize_controls(&event->components.components, components)
-        : 0;
-}
+    /* Check ABI compatibility */
+    const enum xkb_error_code error = xkb_check_state_abi(components);
+    if (error) {
+        xkb_log_abi_error(event->ctx, __func__, error);
+        return error;
+    }
 
-xkb_mod_mask_t
-xkb_event_serialize_mods(const struct xkb_event *event,
-                         enum xkb_state_component components)
-{
-    return (event->type == XKB_EVENT_TYPE_STATE_COMPONENTS)
-        ? serialize_mods(&event->components.components, components)
-        : 0;
-}
+    components->changed = (uint32_t)event->components.changed;
+    components->depressed_mods = event->components.components.base_mods;
+    components->latched_mods = event->components.components.latched_mods;
+    components->locked_mods = event->components.components.locked_mods;
+    components->mods = event->components.components.mods;
+    components->depressed_layout = event->components.components.base_group;
+    components->latched_layout = event->components.components.latched_group;
+    components->locked_layout = event->components.components.locked_group;
+    components->layout = event->components.components.group;
+    components->leds = event->components.components.leds;
+    components->controls = (uint32_t)event->components.components.controls;
 
-xkb_layout_index_t
-xkb_event_serialize_layout(const struct xkb_event *event,
-                           enum xkb_state_component components)
-{
-    return (event->type == XKB_EVENT_TYPE_STATE_COMPONENTS)
-        ? serialize_layout(&event->components.components, components)
-        : XKB_LAYOUT_INVALID;
+    return XKB_SUCCESS;
 }
 
 enum xkb_error_code
@@ -4080,7 +4083,7 @@ xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
         return XKB_ERROR_INVALID;
 
     /* Check ABI compatibility */
-    enum xkb_error_code error = xkb_check_state_abi(motion);
+    const enum xkb_error_code error = xkb_check_state_abi(motion);
     if (error) {
         xkb_log_abi_error(event->ctx, __func__, error);
         return error;
@@ -4101,7 +4104,7 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
         return XKB_ERROR_INVALID;
 
     /* Check ABI compatibility */
-    enum xkb_error_code error = xkb_check_state_abi(button);
+    const enum xkb_error_code error = xkb_check_state_abi(button);
     if (error) {
         xkb_log_abi_error(event->ctx, __func__, error);
         return error;

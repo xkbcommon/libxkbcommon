@@ -801,7 +801,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
 #define update_states(state1, sm, key, direction) do {                \
     xkb_state_update_key((state1), (key), (direction));               \
     assert(xkb_machine_process_key((sm), (key), (direction), (events))\
-           == 0);                                                     \
+           == XKB_SUCCESS);                                           \
 } while (0)
 
     /* LCtrl down */
