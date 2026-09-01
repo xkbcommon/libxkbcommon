@@ -590,7 +590,7 @@ test_state_modes(struct xkb_context *ctx)
         #ifndef _WIN32
         const struct xkb_event event = {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = tests[t].update_event.changed,
                 .components = tests[t].update_event.components,
@@ -820,7 +820,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .components = {
                     .base_mods = xkb_keymap_mod_get_mask2(keymap, ctrl),
@@ -854,7 +854,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .components = {
                     .base_mods = xkb_keymap_mod_get_mask2(keymap, ctrl)
@@ -967,7 +967,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .components = {
                     .base_mods = xkb_keymap_mod_get_mask2(keymap, alt),
@@ -1014,7 +1014,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .components = { .base_mods = 0, .mods = 0, },
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE
@@ -1109,7 +1109,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
                          | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
@@ -1137,7 +1137,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
                 .components = {
@@ -1162,7 +1162,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
                 .components = {
@@ -1189,7 +1189,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
                          | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
@@ -1222,7 +1222,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
                          | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,
@@ -1260,7 +1260,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
                 .components = {
@@ -1285,7 +1285,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED,
                 .components = {
@@ -1322,7 +1322,7 @@ test_update_key(struct xkb_context *ctx, struct xkb_keymap *keymap,
         },
         {
             .ctx = ctx,
-            .type = XKB_EVENT_TYPE_COMPONENTS_CHANGE,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
                 .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
                          | XKB_STATE_MODS_EFFECTIVE | XKB_STATE_LEDS,

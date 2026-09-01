@@ -182,7 +182,7 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 assert(kc != XKB_KEYCODE_INVALID);
                 break;
             }
-            case XKB_EVENT_TYPE_COMPONENTS_CHANGE: {
+            case XKB_EVENT_TYPE_STATE_COMPONENTS: {
                 const enum xkb_state_component changed =
                     xkb_event_get_changed_components(event);
                 if (changed) {

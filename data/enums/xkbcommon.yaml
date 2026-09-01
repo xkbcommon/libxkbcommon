@@ -63,7 +63,7 @@ xkb_keymap_key_iterator_flags:
 xkb_event_type:
   - name: XKB_EVENT_TYPE_KEY
     value: 1
-  - name: XKB_EVENT_TYPE_COMPONENTS_CHANGE
+  - name: XKB_EVENT_TYPE_STATE_COMPONENTS
     value: 2
   - name: XKB_EVENT_TYPE_POINTER_MOTION
     value: 3

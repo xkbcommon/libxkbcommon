@@ -102,7 +102,7 @@ consume_events(struct xkb_machine *sm,
             }
             break;
         }
-        case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+        case XKB_EVENT_TYPE_STATE_COMPONENTS:
             // TODO: check error
             xkb_state_update_event(state, event);
             break;
