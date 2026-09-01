@@ -815,7 +815,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 }
                 break;
             }
-            case XKB_EVENT_TYPE_COMPONENTS_CHANGE: {
+            case XKB_EVENT_TYPE_STATE_COMPONENTS: {
                 const enum xkb_state_component changed =
                     xkb_state_update_event(state, event);
                 if (report_state_changes && changed)

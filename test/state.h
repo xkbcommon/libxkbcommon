@@ -151,7 +151,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_KEY:
         return event1->key.keycode == event2->key.keycode &&
                event1->key.direction == event2->key.direction;
-    case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+    case XKB_EVENT_TYPE_STATE_COMPONENTS:
         return memcmp(&event1->components, &event2->components,
                       sizeof(event1->components)) == 0;
     case XKB_EVENT_TYPE_POINTER_MOTION:
@@ -184,7 +184,7 @@ print_event(const char *prefix, const struct xkb_event *event)
                         : "down",
                 event->key.keycode);
         break;
-    case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
+    case XKB_EVENT_TYPE_STATE_COMPONENTS:
         fprintf(stderr, "type: components; changed: 0x%x\n"
                 "\tgroup: %"PRId32" %"PRId32" %"PRId32" %"PRIu32"\n"
                 "\tmods: 0x%08"PRIx32" 0x%08"PRIx32" 0x%08"PRIx32" %08"PRIx32"\n"
