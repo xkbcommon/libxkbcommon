@@ -78,6 +78,64 @@ static_assert(sizeof(struct xkb_events_config) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
+ * xkb_event_components
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_event_components`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_event_components_v1 {
+    uint32_t size;
+    uint32_t changed;
+    xkb_mod_mask_t depressed_mods;
+    xkb_mod_mask_t latched_mods;
+    xkb_mod_mask_t locked_mods;
+    xkb_mod_mask_t mods;
+    xkb_layout_index_t depressed_layout;
+    xkb_layout_index_t latched_layout;
+    xkb_layout_index_t locked_layout;
+    xkb_layout_index_t layout;
+    xkb_led_mask_t leds;
+    uint32_t controls;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_event_components, size, changed);
+assert_no_padding(struct xkb_event_components, changed, depressed_mods);
+assert_no_padding(struct xkb_event_components, depressed_mods, latched_mods);
+assert_no_padding(struct xkb_event_components, latched_mods, locked_mods);
+assert_no_padding(struct xkb_event_components, locked_mods, mods);
+assert_no_padding(struct xkb_event_components, mods, depressed_layout);
+assert_no_padding(struct xkb_event_components, depressed_layout, latched_layout);
+assert_no_padding(struct xkb_event_components, latched_layout, locked_layout);
+assert_no_padding(struct xkb_event_components, locked_layout, layout);
+assert_no_padding(struct xkb_event_components, layout, leds);
+assert_no_padding(struct xkb_event_components, leds, controls);
+assert_no_padding(struct xkb_event_components, controls);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_event_components) ==
+              sizeof(struct xkb_event_components_v1), "");
+assert_same_field(struct xkb_event_components, _v1, size);
+assert_same_field(struct xkb_event_components, _v1, changed);
+assert_same_field(struct xkb_event_components, _v1, depressed_mods);
+assert_same_field(struct xkb_event_components, _v1, latched_mods);
+assert_same_field(struct xkb_event_components, _v1, locked_mods);
+assert_same_field(struct xkb_event_components, _v1, mods);
+assert_same_field(struct xkb_event_components, _v1, depressed_layout);
+assert_same_field(struct xkb_event_components, _v1, latched_layout);
+assert_same_field(struct xkb_event_components, _v1, locked_layout);
+assert_same_field(struct xkb_event_components, _v1, layout);
+assert_same_field(struct xkb_event_components, _v1, leds);
+assert_same_field(struct xkb_event_components, _v1, controls);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_event_components) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
  * xkb_event_pointer_motion
  *****************************************************************************/
 
@@ -101,7 +159,7 @@ assert_no_padding(struct xkb_event_pointer_motion, y);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_event_pointer_motion) ==
-             sizeof(struct xkb_event_pointer_motion_v1), "");
+              sizeof(struct xkb_event_pointer_motion_v1), "");
 assert_same_field(struct xkb_event_pointer_motion, _v1, size);
 assert_same_field(struct xkb_event_pointer_motion, _v1, flags);
 assert_same_field(struct xkb_event_pointer_motion, _v1, x);
@@ -379,6 +437,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                            \
     const struct xkb_events_config *:                               \
         sizeof(struct xkb_events_config_v1),                        \
+    struct xkb_event_components *:                                  \
+        sizeof(struct xkb_event_components_v1),                     \
     struct xkb_event_pointer_motion *:                              \
         sizeof(struct xkb_event_pointer_motion_v1),                 \
     struct xkb_event_pointer_button *:                              \
@@ -402,6 +462,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                            \
     const struct xkb_events_config *:                               \
         sizeof(struct xkb_events_config_v1),                        \
+    struct xkb_event_components *:                                  \
+        sizeof(struct xkb_event_components_v1),                     \
     struct xkb_event_pointer_motion *:                              \
         sizeof(struct xkb_event_pointer_motion_v1),                 \
     struct xkb_event_pointer_button *:                              \
@@ -425,6 +487,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
     (x),                                                         \
     const struct xkb_events_config *:                            \
         sizeof(struct xkb_events_config),                        \
+    struct xkb_event_components *:                               \
+        sizeof(struct xkb_event_components),                     \
     struct xkb_event_pointer_motion *:                           \
         sizeof(struct xkb_event_pointer_motion),                 \
     struct xkb_event_pointer_button *:                           \
@@ -454,6 +518,11 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
 static_assert(
     xkb_versioned_struct_size_v1(((const struct xkb_events_config *)NULL)) <=
     xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_v1(((struct xkb_event_components *)NULL)) <=
+    xkb_versioned_struct_size_min(((struct xkb_event_components *)NULL)),
     ""
 );
 static_assert(
@@ -501,6 +570,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_events_config *)NULL)) <=
     sizeof(const struct xkb_events_config),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_min(((struct xkb_event_components *)NULL)) <=
+    sizeof(struct xkb_event_components),
     ""
 );
 static_assert(
