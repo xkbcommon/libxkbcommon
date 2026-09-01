@@ -2143,7 +2143,7 @@ struct xkb_keymap_key_iterator_config {
  * @figure@figcaption
  * Intended use
  * @endfigcaption
- * @snippet "test/keymap.c" xkb_keymap_key_iterator_new_example
+ * @snippet{trimleft} "test/keymap.c" xkb_keymap_key_iterator_new_example
  * @endfigure
  *
  * @param[in] keymap
@@ -3799,7 +3799,7 @@ xkb_machine_builder_update_a11y(
  * @figure@figcaption
  * Example: remap `Control+Alt` to `LevelThree`.
  * @endfigcaption
- * @snippet "test/server-state.c" xkb_machine_builder_mods_remap_update_example
+ * @snippet{trimleft} "test/server-state.c" xkb_machine_builder_mods_remap_update_example
  * @endfigure
  *
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask()`
@@ -3872,21 +3872,21 @@ xkb_machine_builder_update_mods_remap(
  * Example: substitute layout #0 with layout #1 when any of the modifiers
  * `Control`, `Alt` and `Super` triggers shortcut overrides.
  * @endfigcaption
- * @snippet "test/server-state.c" shortcut_layout_update_example_1
+ * @snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_1
  * @endfigure
  *
  * @figure@figcaption
  * Example: all layouts will behave as if using the *first* layout any of the
  * modifiers `Control`, `Alt` and `Super` triggers shortcut overrides.
  * @endfigcaption
- * @snippet "test/server-state.c" shortcut_layout_update_example_2
+ * @snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_2
  * @endfigure
  *
  * @figure@figcaption
  * Example: substitute layout #0 with #2 for modifiers `Control` and `Alt`,
  * substitute layout #1 with #3 for modifier `Super`.
  * @endfigcaption
- * @snippet "test/server-state.c" shortcut_layout_update_example_3
+ * @snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_3
  * @endfigure
  *
  * @sa `xkb_layout_index_t`
