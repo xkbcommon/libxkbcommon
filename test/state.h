@@ -151,7 +151,8 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_KEY_DOWN:
     case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
-        return event1->keycode == event2->keycode;
+        return event1->key.keycode == event2->key.keycode &&
+               event1->key.direction == event2->key.direction;
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
         return memcmp(&event1->components, &event2->components,
                       sizeof(event1->components)) == 0;
@@ -180,12 +181,12 @@ print_event(const char *prefix, const struct xkb_event *event)
     case XKB_EVENT_TYPE_KEY_REPEATED:
     case XKB_EVENT_TYPE_KEY_UP:
         fprintf(stderr, "type: key %s; keycode: %"PRIu32"\n",
-                (event->type == XKB_EVENT_TYPE_KEY_UP)
+                (event->key.direction == XKB_KEY_UP)
                     ? "up"
-                    : event->type == XKB_EVENT_TYPE_KEY_REPEATED
+                    : event->key.direction == XKB_KEY_REPEATED
                         ? "repeat"
                         : "down",
-                event->keycode);
+                event->key.keycode);
         break;
     case XKB_EVENT_TYPE_COMPONENTS_CHANGE:
         fprintf(stderr, "type: components; changed: 0x%x\n"
