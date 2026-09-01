@@ -544,14 +544,14 @@ xkb_state_unref(state);
 There is no dedicated API, since the use cases are too diverse or niche.
 Nevertheless, the following snippet provide a minimal example to achieve it.
 
-@snippet "test/modifiers.c" xkb_keymap_mod_get_codes
+@snippet{trimleft} "test/modifiers.c" xkb_keymap_mod_get_codes
 
 #### How to use Windows-style `AltGr`, i.e. remap `Control+Alt` to `LevelThree`?
 
 @figure@figcaption
 Remap `Control+Alt` to `LevelThree`.
 @endfigcaption
-@snippet "test/server-state.c" xkb_machine_builder_mods_remap_update_example
+@snippet{trimleft} "test/server-state.c" xkb_machine_builder_mods_remap_update_example
 @endfigure
 
 #### How to use keyboard shortcuts from a different layout?
@@ -601,7 +601,7 @@ actually be configured with *2* layouts: the user layout then the shortcut layou
 Example: substitute layout #0 with layout #1 when any of the modifiers
 `Control`, `Alt` and `Super` triggers shortcut overrides.
 @endfigcaption
-@snippet "test/server-state.c" shortcut_layout_update_example_1
+@snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_1
 @endfigure
 </dd>
 <dt>*Multiple* layouts</dt>
@@ -613,7 +613,7 @@ all the layouts, typically using the first layout as the reference.
 Example: all layouts will behave as if using the *first* layout any of the
 modifiers `Control`, `Alt` and `Super` triggers shortcut overrides.
 @endfigcaption
-@snippet "test/server-state.c" shortcut_layout_update_example_2
+@snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_2
 @endfigure
 </dd>
 </dl>

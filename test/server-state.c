@@ -5135,28 +5135,28 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                                               NULL);
             assert(builder);
 
-/* Use another variable `keymap` for the snippet */
+            /* Use another variable `keymap` for the snippet */
 //! [shortcut_layout_update_example_1]
-struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+            struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
 
-const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
-const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
-const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
-const xkb_mod_mask_t mods = ctrl | alt | super;
+            const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+            const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+            const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+            const xkb_mod_mask_t mods = ctrl | alt | super;
 
-const struct xkb_machine_builder_shortcut_layout_update update = {
-    .size = sizeof(update),
-    .source = 0,
-    .target = 1,
-    .mods_affect = mods,
-    .mods = mods,
-};
-const enum xkb_error_code error =
-    xkb_machine_builder_update_shortcut_layout(builder, &update);
-if (error != XKB_SUCCESS) {
-    // handle error
-    assert(!"error");
-}
+            const struct xkb_machine_builder_shortcut_layout_update update = {
+                .size = sizeof(update),
+                .source = 0,
+                .target = 1,
+                .mods_affect = mods,
+                .mods = mods,
+            };
+            const enum xkb_error_code error =
+                xkb_machine_builder_update_shortcut_layout(builder, &update);
+            if (error != XKB_SUCCESS) {
+                // handle error
+                assert(!"error");
+            }
 //! [shortcut_layout_update_example_1]
         }
 
@@ -5171,31 +5171,31 @@ if (error != XKB_SUCCESS) {
                                               NULL);
             assert(builder);
 
-/* Use another variable `keymap` for the snippet */
+            /* Use another variable `keymap` for the snippet */
 //! [shortcut_layout_update_example_2]
-struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+            struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
 
-const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
-const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
-const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
-const xkb_mod_mask_t mods = ctrl | alt | super;
+            const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+            const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+            const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+            const xkb_mod_mask_t mods = ctrl | alt | super;
 
-const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
-for (xkb_layout_index_t source = num_layouts; source-- > 1;) {
-    const struct xkb_machine_builder_shortcut_layout_update update = {
-        .size = sizeof(update),
-        .source = source,
-        .target = 0,
-        .mods_affect = mods,
-        .mods = mods,
-    };
-    const enum xkb_error_code error =
-        xkb_machine_builder_update_shortcut_layout(builder, &update);
-    if (error != XKB_SUCCESS) {
-        // handle error
-        assert(!"error");
-    }
-}
+            const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
+            for (xkb_layout_index_t source = num_layouts; source-- > 1;) {
+                const struct xkb_machine_builder_shortcut_layout_update update = {
+                    .size = sizeof(update),
+                    .source = source,
+                    .target = 0,
+                    .mods_affect = mods,
+                    .mods = mods,
+                };
+                const enum xkb_error_code error =
+                    xkb_machine_builder_update_shortcut_layout(builder, &update);
+                if (error != XKB_SUCCESS) {
+                    // handle error
+                    assert(!"error");
+                }
+            }
 //! [shortcut_layout_update_example_2]
         }
 
@@ -5210,39 +5210,39 @@ for (xkb_layout_index_t source = num_layouts; source-- > 1;) {
                                               NULL);
             assert(builder);
 
-/* Use another variable `keymap` for the snippet */
+            /* Use another variable `keymap` for the snippet */
 //! [shortcut_layout_update_example_3]
-struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
+            struct xkb_keymap *keymap = xkb_machine_builder_get_keymap(builder);
 
-const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
-const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
-const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
+            const xkb_mod_mask_t ctrl = xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+            const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+            const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
 
-struct xkb_machine_builder_shortcut_layout_update update = {
-    .size = sizeof(update),
-    .source = 0,
-    .target = 2,
-    .mods_affect = ctrl | alt,
-    .mods = ctrl | alt,
-};
-enum xkb_error_code error =
-    xkb_machine_builder_update_shortcut_layout(builder, &update);
-if (error != XKB_SUCCESS) {
-    // handle error
-    assert(!"error");
-}
-update = (struct xkb_machine_builder_shortcut_layout_update) {
-    .size = sizeof(update),
-    .source = 1,
-    .target = 3,
-    .mods_affect = super,
-    .mods = super,
-};
-error = xkb_machine_builder_update_shortcut_layout(builder, &update);
-if (error != XKB_SUCCESS) {
-    // handle error
-    assert(!"error");
-}
+            struct xkb_machine_builder_shortcut_layout_update update = {
+                .size = sizeof(update),
+                .source = 0,
+                .target = 2,
+                .mods_affect = ctrl | alt,
+                .mods = ctrl | alt,
+            };
+            enum xkb_error_code error =
+                xkb_machine_builder_update_shortcut_layout(builder, &update);
+            if (error != XKB_SUCCESS) {
+                // handle error
+                assert(!"error");
+            }
+            update = (struct xkb_machine_builder_shortcut_layout_update) {
+                .size = sizeof(update),
+                .source = 1,
+                .target = 3,
+                .mods_affect = super,
+                .mods = super,
+            };
+            error = xkb_machine_builder_update_shortcut_layout(builder, &update);
+            if (error != XKB_SUCCESS) {
+                // handle error
+                assert(!"error");
+            }
 //! [shortcut_layout_update_example_3]
         }
 
