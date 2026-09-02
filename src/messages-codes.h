@@ -202,6 +202,8 @@ enum xkb_message_code {
     XKB_WARNING_UNSUPPORTED_SYMBOLS_FIELD = 711,
     /** The keymap has features unsupported in the target format */
     XKB_ERROR_INCOMPATIBLE_KEYMAP_TEXT_FORMAT = 742,
+    /** Unsupported `xkb_machine_flags` value */
+    XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS_ = 755,
     /** Cannot expand `%%i`: missing layout or variant in MLVO rule fields */
     XKB_ERROR_RULES_INVALID_LAYOUT_INDEX_PERCENT_EXPANSION = 762,
     /** The XKB syntax is invalid and the file cannot be parsed */
