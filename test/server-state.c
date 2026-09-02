@@ -2971,6 +2971,171 @@ test_mouse_keys(struct xkb_context *ctx)
     xkb_keymap_unref(keymap);
 }
 
+
+static void
+test_server_actions(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap =
+        test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V2,
+                           "evdev", "pc104", "us", "",
+                           "terminate:ctrl_alt_bksp");
+    assert(keymap);
+
+    const struct xkb_machine_builder_config config = {
+        .size = sizeof(config),
+        .builder_flags = XKB_MACHINE_BUILDER_NO_FLAGS,
+        .machine_flags = XKB_MACHINE_SERVER_ACTIONS,
+    };
+    struct xkb_machine_builder * const builder =
+        xkb_machine_builder_new(keymap, &config, NULL);
+    assert(builder);
+
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_builder_unref(builder);
+
+    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+
+    const xkb_mod_mask_t ctrl =
+        _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CTRL);
+    const xkb_mod_mask_t alt =
+        _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
+
+    const struct {
+        xkb_keycode_t keycode;
+        enum key_directions directions;
+        bool repeats;
+        struct test_events {
+            struct xkb_event events[2];
+            unsigned int events_count;
+        } down;
+        struct test_events repeat;
+        struct test_events up;
+    } tests[] = {
+        /*
+         * Terminate server
+         */
+
+        {
+            .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
+            .repeats = false,
+            .directions = XKB_KEY_PRESS,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY,
+                        .key = {
+                            .keycode = KEY_RIGHTCTRL + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .base_mods = ctrl,
+                                .mods = ctrl,
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
+        {
+            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+            .repeats = false,
+            .directions = XKB_KEY_PRESS,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_KEY,
+                        .key = {
+                            .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
+                            .direction = XKB_KEY_DOWN
+                        }
+                    },
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                        .components = {
+                            .changed = XKB_STATE_MODS_DEPRESSED
+                                     | XKB_STATE_MODS_EFFECTIVE,
+                            .components = {
+                                .base_mods = (ctrl | alt),
+                                .mods = (ctrl | alt),
+                            }
+                        }
+                    }
+                },
+                .events_count = 2
+            },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
+        {
+            .keycode = KEY_BACKSPACE + EVDEV_OFFSET,
+            .repeats = true,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEATED,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
+                    },
+                },
+                .events_count = 1
+            },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: #%zu, keycode: %"PRIu32" ***\n",
+                __func__, t, tests[t].keycode);
+        assert(xkb_keymap_key_repeats(keymap, tests[t].keycode) ==
+               tests[t].repeats);
+        if (tests[t].directions & XKB_KEY_PRESS) {
+            fprintf(stderr, "+++ Press +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_DOWN, events) == XKB_SUCCESS);
+            assert(check_events(events, tests[t].down.events,
+                                tests[t].down.events_count));
+        }
+        if (tests[t].directions & XKB_KEY_REPEAT) {
+            fprintf(stderr, "+++ Repeat +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_REPEATED, events) == XKB_SUCCESS);
+            if (tests[t].repeats) {
+                assert(check_events(events, tests[t].repeat.events,
+                                    tests[t].repeat.events_count));
+            } else {
+                assert(check_events(events, NULL, 0));
+            }
+        }
+        if (tests[t].directions & XKB_KEY_RELEASE) {
+            fprintf(stderr, "+++ Release +++\n");
+            assert(xkb_machine_process_key(sm, tests[t].keycode,
+                                        XKB_KEY_UP, events) == XKB_SUCCESS);
+            assert(check_events(events, tests[t].up.events,
+                                tests[t].up.events_count));
+        }
+    }
+
+    xkb_events_unref(events);
+    xkb_machine_unref(sm);
+    xkb_keymap_unref(keymap);
+}
+
 static void
 test_shortcuts_tweak(struct xkb_context *context)
 {
@@ -5651,6 +5816,7 @@ main(void)
     test_sticky_keys(context);
     test_redirect_key(context);
     test_mouse_keys(context);
+    test_server_actions(context);
     test_overlays(context);
     test_modifiers_tweak(context);
     test_shortcuts_tweak(context);
