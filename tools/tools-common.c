@@ -1153,6 +1153,17 @@ xkb_machine_options_free(struct xkb_machine_options *options)
 }
 
 static bool
+xkb_machine_options_update_flags(struct xkb_machine_options *options,
+                                 enum xkb_machine_flags flags, bool disable)
+{
+    if (disable)
+        options->machine_flags &= ~flags;
+    else
+        options->machine_flags |= flags;
+    return true;
+}
+
+static bool
 xkb_machine_options_update_boolean_ctrls(struct xkb_machine_options *options,
                                          enum xkb_keyboard_control_flags flags,
                                          bool disable)
@@ -1198,6 +1209,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK,
         CONTROL_FIELD_LATCH_SIMULTANEOUS,
         CONTROL_FIELD_MOUSE_KEYS,
+        CONTROL_FIELD_SERVER_ACTIONS,
         _NUM_CONTROL_FIELDS,
     };
 
@@ -1215,10 +1227,11 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         [CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK] = "sticky-keys-latch-to-lock",
         [CONTROL_FIELD_LATCH_SIMULTANEOUS] = "latch-simultaneous",
         [CONTROL_FIELD_MOUSE_KEYS] = "mouse-keys",
+        [CONTROL_FIELD_SERVER_ACTIONS] = "server-actions",
     };
 
-    static_assert(CONTROL_FIELD_MOUSE_KEYS == 12 &&
-                  CONTROL_FIELD_MOUSE_KEYS + 1 == _NUM_CONTROL_FIELDS &&
+    static_assert(CONTROL_FIELD_SERVER_ACTIONS == 13 &&
+                  CONTROL_FIELD_SERVER_ACTIONS + 1 == _NUM_CONTROL_FIELDS &&
                   ARRAY_SIZE(fields) == _NUM_CONTROL_FIELDS, "");
 
     const char *start = raw;
@@ -1325,11 +1338,16 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
                     options, XKB_KEYBOARD_CONTROL_MOUSE_KEYS, disable
                 );
                 break;
+            case CONTROL_FIELD_SERVER_ACTIONS:
+                ok = xkb_machine_options_update_flags(
+                    options, XKB_MACHINE_SERVER_ACTIONS, disable
+                );
+                break;
             default:
                 {} /* Label followed by declaration requires C23 */
                 static_assert(
-                    CONTROL_FIELD_MOUSE_KEYS == 12 &&
-                    CONTROL_FIELD_MOUSE_KEYS + 1 == _NUM_CONTROL_FIELDS,
+                    CONTROL_FIELD_SERVER_ACTIONS == 13 &&
+                    CONTROL_FIELD_SERVER_ACTIONS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );
                 ret = false;
@@ -1700,8 +1718,13 @@ struct xkb_machine_builder *
 xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
                                      const struct xkb_machine_options *options)
 {
+    const struct xkb_machine_builder_config config = {
+        .size = sizeof(config),
+        .builder_flags = XKB_MACHINE_BUILDER_NO_FLAGS,
+        .machine_flags = options->machine_flags,
+    };
     struct xkb_machine_builder * const builder =
-        xkb_machine_builder_new(keymap, NULL, NULL);
+        xkb_machine_builder_new(keymap, &config, NULL);
     if (!builder)
         return NULL;
 

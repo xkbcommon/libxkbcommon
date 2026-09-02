@@ -63,6 +63,7 @@ _xkbcli_controls() {
 		"overlay7:Overlay 7"
 		"overlay8:Overlay 8"
 		"mouse-keys:Mouse emulation"
+		"server-actions:Server actions"
 	)
 	local -a completed_controls=( ${${(s-,-)${words[CURRENT]#*=}}} )
 	local -a remaining_controls=( ${controls:#(${(~j.|.)completed_controls#[+-]}):*} )
