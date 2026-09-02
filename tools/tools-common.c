@@ -854,9 +854,12 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 /* No getter */
                 tools_print_terminate_server(prefix);
                 break;
+            case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
+                // TODO
+                break;
             default: {
-                static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
-                              XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
+                static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+                              XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                               (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                               "Missing event type");
             event_error:

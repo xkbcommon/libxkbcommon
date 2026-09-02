@@ -163,10 +163,14 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
         /* No parameters */
         return true;
+    case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
+        return memcmp(&event1->virtual_console, &event2->virtual_console,
+                      sizeof(event1->virtual_console)) == 0;
+        break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
-                      XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
+        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+                      XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
         return false;
@@ -223,10 +227,17 @@ print_event(const char *prefix, const struct xkb_event *event)
         /* No parameters */
         fprintf(stderr, "type: terminate server\n");
         break;
+    case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
+        fprintf(stderr,
+                "type: switch virtual console; value: %"PRId8"; "
+                "offset: %d\n",
+                event->virtual_console.index_or_offset,
+                event->virtual_console.is_offset);
+        break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
-                      XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
+        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+                      XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
     }

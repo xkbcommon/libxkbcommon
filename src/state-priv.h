@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stdalign.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "utils.h"
 #include "xkbcommon/xkbcommon.h"
@@ -47,6 +48,10 @@ struct xkb_event {
         } components;
         struct xkb_event_pointer_motion pointer_motion;
         struct xkb_event_pointer_button pointer_button;
+        struct {
+            int8_t index_or_offset;
+            bool is_offset;
+        } virtual_console;
     };
 };
 
