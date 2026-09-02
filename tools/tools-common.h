@@ -146,6 +146,7 @@ struct xkb_machine_options {
 
     /** Modifiers tweak */
     darray(struct xkb_machine_mods_raw_mapping) modifiers;
+    enum xkb_machine_flags machine_flags;
 };
 
 #define xkb_machine_options_new() {     \

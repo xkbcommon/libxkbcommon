@@ -458,7 +458,7 @@ usage(FILE *fp, char *progname)
             " --controls\n"
             "    Keyboard controls: sticky-keys, sticky-keys-no-simultaneous,\n"
             "    sticky-keys-latch-to-lock, latch-simultaneous, overlay{1-8},\n"
-            "    mouse-keys\n"
+            "    mouse-keys, server-actions\n"
             " --modifiers-mapping <MAPPING>\n"
             "    Remap the modifiers\n"
             " --shortcuts-mask <MASK>\n"
