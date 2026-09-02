@@ -786,6 +786,29 @@ tools_print_terminate_server(const char * restrict prefix)
     printf("terminate server\n");
 }
 
+static void
+tools_print_switch_virtual_console(const char * restrict prefix,
+                                   int8_t index_or_offset, bool is_offset,
+                                   enum print_state_options options)
+{
+    if (prefix)
+        printf("%s", prefix);
+
+    if (options & PRINT_UNILINE) {
+        printf("switch virtual console ");
+        printf((is_offset ? "[ %+4"PRId8" ] " : "[ %4"PRId8" ] "),
+               index_or_offset);
+
+    } else {
+        printf("switch virtual console:\n");
+        if (is_offset) {
+            printf(INDENT "offset: %+"PRId8"\n", index_or_offset);
+        } else {
+            printf(INDENT "index:  %"PRId8"\n", index_or_offset);
+        }
+    }
+}
+
 #undef INDENT
 
 void
@@ -854,9 +877,17 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 /* No getter */
                 tools_print_terminate_server(prefix);
                 break;
-            case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
-                // TODO
+            case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE: {
+                int8_t index_or_offset;
+                bool is_offset;
+                error = xkb_event_get_virtual_console(event, &index_or_offset,
+                                                      &is_offset);
+                if (error != XKB_SUCCESS)
+                    goto event_error;
+                tools_print_switch_virtual_console(prefix, index_or_offset,
+                                                   is_offset, options);
                 break;
+            }
             default: {
                 static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                               XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==

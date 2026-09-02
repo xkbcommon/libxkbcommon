@@ -2829,7 +2829,7 @@ enum xkb_key_direction {
  *   A pointer to store the [direction] of the key event.
  *
  * @pre The event must be `::XKB_EVENT_TYPE_KEY`.
- * Otherwise the @p keycode and @p direction are *not* updated.
+ * Otherwise @p keycode and @p direction are *not* updated.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
@@ -3465,6 +3465,37 @@ struct xkb_event_pointer_button {
 XKB_EXPORT enum xkb_error_code
 xkb_event_get_pointer_button(const struct xkb_event *event,
                              struct xkb_event_pointer_button *button);
+
+/**
+ * Get the virtual console index or offset associated to a [state event][event]
+ * of type `::XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE`.
+ *
+ * @param[in]  event
+ *   The event object to process.
+ * @param[out] index_or_offset
+ *   A pointer to store the absolute or relative virtual console target.
+ * @param[out] is_offset
+ *   A pointer to store whether @p index_or_offset is an *index* (`false`)
+ *   or an *offset* (`true`).
+ *
+ * @pre The event must be `::XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE`.
+ * Otherwise @p index_or_offset and @p is_offset are *not* updated.
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ *
+ * @sa `xkb_machine::xkb_machine_process_key()`
+ *
+ * @since 1.14.0
+ *
+ * @memberof xkb_event
+ *
+ * [event]: @ref xkb_event
+ * [error code]: @ref xkb_error_code
+ */
+XKB_EXPORT enum xkb_error_code
+xkb_event_get_virtual_console(const struct xkb_event *event,
+                              int8_t *index_or_offset, bool *is_offset);
 
 /**
  * @struct xkb_events

@@ -127,9 +127,14 @@ consume_events(struct xkb_machine *sm,
         case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
             /* No associated getter */
             break;
-        case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
-            // TODO
+        case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE: {
+            int8_t index_or_offset;
+            bool is_offset;
+            error = xkb_event_get_virtual_console(event, &index_or_offset,
+                                                  &is_offset);
+            assert(error == XKB_SUCCESS);
             break;
+        }
         default:
             {} /* Label followed by declaration requires C23 */
             static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
