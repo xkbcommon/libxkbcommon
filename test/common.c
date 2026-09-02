@@ -127,10 +127,13 @@ consume_events(struct xkb_machine *sm,
         case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
             /* No associated getter */
             break;
+        case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE:
+            // TODO
+            break;
         default:
             {} /* Label followed by declaration requires C23 */
-            static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
-                          XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
+            static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+                          XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                           (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                           "Missing state event type");
             /* ignore */

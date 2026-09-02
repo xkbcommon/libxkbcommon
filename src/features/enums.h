@@ -44,6 +44,8 @@ static_assert(XKB_EVENT_TYPE_POINTER_BUTTON >= 0 &&
               XKB_EVENT_TYPE_POINTER_BUTTON < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER >= 0 &&
               XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER < UINT32_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE >= 0 &&
+              XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE < UINT32_WIDTH, "");
 static_assert(XKB_KEY_UP >= 0 &&
               XKB_KEY_UP < UINT32_WIDTH, "");
 static_assert(XKB_KEY_DOWN >= 0 &&
@@ -129,6 +131,7 @@ enum xkb_enumerations_values {
         | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
         | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
         | (1u << XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER)
+        | (1u << XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
     ,
     XKB_KEY_DIRECTION_VALUES
         = (1u << XKB_KEY_UP)
@@ -302,6 +305,7 @@ static const uint32_t xkb_event_type_values[] = {
     XKB_EVENT_TYPE_POINTER_MOTION,
     XKB_EVENT_TYPE_POINTER_BUTTON,
     XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
+    XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
 };
 #endif
 

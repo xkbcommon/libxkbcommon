@@ -71,6 +71,8 @@ xkb_event_type:
     value: 4
   - name: XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER
     value: 5
+  - name: XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE
+    value: 6
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0
