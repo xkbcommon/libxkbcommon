@@ -3653,6 +3653,23 @@ enum xkb_machine_builder_flags {
 };
 
 /**
+ * @enum xkb_machine_flags
+ * Flags for `xkb_machine_builder_config::machine_flags`.
+ *
+ * @sa `xkb_machine_builder::xkb_machine_builder_new()`
+ *
+ * @since 1.14.0
+ */
+enum xkb_machine_flags {
+    /**
+     * Do not apply any flags.
+     *
+     * @since 1.14.0
+     */
+    XKB_MACHINE_NO_FLAGS = 0,
+};
+
+/**
  * Create a new `xkb_machine` builder object.
  * `xkb_machine` objects can then be created from the builder using
  * `xkb_machine::xkb_machine_new()`.
