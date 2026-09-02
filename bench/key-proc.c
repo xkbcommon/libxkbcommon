@@ -138,7 +138,7 @@ main(void)
      */
 
     struct xkb_machine_builder *builder =
-        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, NULL);
+        xkb_machine_builder_new(keymap, NULL, NULL);
     assert(builder);
     struct xkb_machine *sm = xkb_machine_new(builder, NULL);
     assert(sm);
