@@ -3097,6 +3097,26 @@ test_server_actions(struct xkb_context *ctx)
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
         },
+        {
+            .keycode = KEY_F1 + EVDEV_OFFSET,
+            .repeats = true,
+            .directions = XKB_KEY_TAP | XKB_KEY_REPEATED,
+            .down = {
+                .events = {
+                    {
+                        .ctx = ctx,
+                        .type = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
+                        .virtual_console = {
+                            .index_or_offset = 1,
+                            .is_offset = false
+                        }
+                    },
+                },
+                .events_count = 1
+            },
+            .repeat = { .events_count = 0 },
+            .up = { .events_count = 0 }
+        },
     };
 
     for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {

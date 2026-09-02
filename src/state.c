@@ -1113,6 +1113,20 @@ xkb_filter_terminate_server_func(struct xkb_server_state *state,
                                   const struct xkb_key *key,
                                   enum xkb_key_direction direction);
 
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static void
+xkb_filter_switch_virtual_console_new(struct xkb_server_state *state,
+                                      struct xkb_events *events,
+                                      struct xkb_filter *filter);
+
+/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static bool
+xkb_filter_switch_virtual_console_func(struct xkb_server_state *state,
+                                       struct xkb_events *events,
+                                       struct xkb_filter *filter,
+                                       const struct xkb_key *key,
+                                       enum xkb_key_direction direction);
+
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
                             struct xkb_events *events);
@@ -1333,6 +1347,8 @@ static const struct {
                                   xkb_filter_pointer_set_default_button_func },
     [ACTION_TYPE_TERMINATE]   = { xkb_filter_terminate_server_new,
                                   xkb_filter_terminate_server_func },
+    [ACTION_TYPE_SWITCH_VT]   = { xkb_filter_switch_virtual_console_new,
+                                  xkb_filter_switch_virtual_console_func },
     [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
@@ -4178,7 +4194,7 @@ xkb_event_get_virtual_console(const struct xkb_event * restrict event,
     if (event->type != XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
         return XKB_ERROR_INVALID;
 
-    *index_or_offset = event->virtual_console.index;
+    *index_or_offset = event->virtual_console.index_or_offset;
     *is_offset = event->virtual_console.is_offset;
 
     return XKB_SUCCESS;
@@ -4481,6 +4497,56 @@ xkb_filter_terminate_server_func(struct xkb_server_state *state,
                                  struct xkb_filter *filter,
                                  const struct xkb_key *key,
                                  enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+    case XKB_KEY_DOWN:
+        filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
+        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
+static void
+xkb_filter_switch_virtual_console_new(struct xkb_server_state *state,
+                                      struct xkb_events *events,
+                                      struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
+        filter->func = NULL;
+        return;
+    }
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
+        .type = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
+        .virtual_console = {
+            .index_or_offset = filter->action.screen.screen,
+            .is_offset = !(filter->action.screen.flags & ACTION_ABSOLUTE_SWITCH)
+        }
+    });
+}
+
+static bool
+xkb_filter_switch_virtual_console_func(struct xkb_server_state *state,
+                                       struct xkb_events *events,
+                                       struct xkb_filter *filter,
+                                       const struct xkb_key *key,
+                                       enum xkb_key_direction direction)
 {
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
