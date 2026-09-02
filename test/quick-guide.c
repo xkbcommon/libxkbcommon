@@ -75,8 +75,9 @@ new_keyboard(struct my_keyboard *keyboard, const struct xkb_rule_names *names)
      */
 
     enum xkb_error_code error;
+    struct xkb_machine_builder_config config = { .size = sizeof(config) };
     struct xkb_machine_builder *machine_builder =
-        xkb_machine_builder_new(keymap, XKB_MACHINE_BUILDER_NO_FLAGS, &error);
+        xkb_machine_builder_new(keymap, &config, &error);
     if (!machine_builder) {
         assert(error != XKB_SUCCESS);
         switch (error) {

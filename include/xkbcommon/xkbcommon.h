@@ -3623,7 +3623,7 @@ xkb_events_next(struct xkb_events *events);
  * Opaque builder object to configure an `xkb_machine`.
  *
  * Create with `xkb_machine_builder_new()`, configure with the
- * `xkb_machine_builder_*` functions, then build the state machine with
+ * `xkb_machine_builder_*()` functions, then build the state machine with
  * `xkb_machine::xkb_machine_new()`.
  * The builder object may be reused to create multiple `xkb_machine` objects
  * and destroyed when no longer needed. If a single `xkb_machine` object is
@@ -3632,6 +3632,7 @@ xkb_events_next(struct xkb_events *events);
  *
  * @since 1.14.0
  *
+ * @sa `struct xkb_machine_builder_config`
  * @sa `xkb_machine_builder::xkb_machine_builder_new()`
  * @sa `xkb_machine::xkb_machine_new()`
  */
@@ -3639,7 +3640,9 @@ struct xkb_machine_builder;
 
 /**
  * @enum xkb_machine_builder_flags
- * Flags for `xkb_machine_builder::xkb_machine_builder_new()`.
+ * Flags for `xkb_machine_builder_config::flags`.
+ *
+ * @sa `xkb_machine_builder::xkb_machine_builder_new()`
  *
  * @since 1.14.0
  */
@@ -3721,8 +3724,10 @@ struct xkb_machine_builder_config {
  *
  * @param[in] keymap
  *   The keymap which the state machine will use.
- * @param[in] flags
- *   Flags to control the builder behavior, or 0.
+ * @param[in] config
+ *   Configuration to control the builder behavior, or `NULL` for
+ *   the defaults: an `xkb_machine_builder_config` struct with `size`
+ *   set per @ref abi-struct-contract and all other fields zeroed.
  * @param[out] error
  *   Pointer to store the resulting [error code], or `NULL` if not needed.
  *
@@ -3732,10 +3737,13 @@ struct xkb_machine_builder_config {
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - Errors from ABI @ref abi-struct-resolution.
  * - `::XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS`
+ * - `::XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS`
  *
  * @since 1.14.0
  *
+ * @sa `struct xkb_machine_builder_config`
  * @sa `xkb_machine_builder_ref()`
  * @sa `xkb_machine_builder_unref()`
  * @sa `xkb_machine::xkb_machine_new()`
@@ -3746,7 +3754,7 @@ struct xkb_machine_builder_config {
  */
 XKB_EXPORT struct xkb_machine_builder *
 xkb_machine_builder_new(struct xkb_keymap *keymap,
-                        enum xkb_machine_builder_flags flags,
+                        const struct xkb_machine_builder_config *config,
                         enum xkb_error_code *error);
 
 /**

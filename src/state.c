@@ -2157,7 +2157,7 @@ xkb_state_update_mask(struct xkb_state *base_state,
      * in xkb_state_update_derived(), rather than for each component
      * separately.  That would allow to distinguish between "really"
      * depressed mods (would be in MODS_DEPRESSED) and indirectly
-     * depressed to to a mapping (would only be in MODS_EFFECTIVE).
+     * depressed to a mapping (would only be in MODS_EFFECTIVE).
      * However, the traditional behavior of xkb_state_update_key() is that
      * if a vmod is depressed, its mappings are depressed with it; so we're
      * expected to do the same here.  Also, LEDs (usually) look if a real
@@ -2974,6 +2974,8 @@ struct xkb_machine {
         /** Mask of the locked buttons */
         xkb_pointer_button_mask_t locked_buttons;
     } mouse;
+
+    enum xkb_machine_flags flags;
 };
 
 typedef darray(struct machine_mods_mapping) machine_mods_mappings;
@@ -2999,24 +3001,56 @@ struct xkb_machine_builder {
         darray(struct xkb_shortcuts_config_entry) entries;
     } shortcuts;
 
-    enum xkb_machine_builder_flags flags;
+    enum xkb_machine_flags machine_flags;
+    enum xkb_machine_builder_flags builder_flags;
     int refcnt;
 };
 
 struct xkb_machine_builder *
-xkb_machine_builder_new(struct xkb_keymap * restrict keymap,
-                        enum xkb_machine_builder_flags flags,
-                        enum xkb_error_code * restrict error)
+xkb_machine_builder_new(
+    struct xkb_keymap * restrict keymap,
+    const struct xkb_machine_builder_config * restrict config,
+    enum xkb_error_code * restrict error
+)
 {
-    const enum xkb_machine_builder_flags invalid_flags
-        = flags
+    /* Handle default configuration */
+    static const struct xkb_machine_builder_config default_config = {
+        .size = sizeof(default_config)
+    };
+    if (!config)
+        config = &default_config;
+
+    /* Check ABI compatibility */
+    const enum xkb_error_code error_ = xkb_check_state_abi(config);
+    if (error_) {
+        xkb_log_abi_error(keymap->ctx, __func__, error_);
+        if (error)
+            *error = error_;
+        return NULL;
+    }
+
+    /* Sanitize input */
+    const enum xkb_machine_builder_flags invalid_builder_flags
+        = config->builder_flags
         & ~(enum xkb_machine_builder_flags)XKB_MACHINE_BUILDER_FLAGS_VALUES;
-    if (invalid_flags) {
+    if (invalid_builder_flags) {
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_,
                      "unrecognized machine builder flags: 0x%x\n",
-                     invalid_flags);
+                     invalid_builder_flags);
         if (error)
             *error = XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS;
+        return NULL;
+    }
+
+    const enum xkb_machine_flags invalid_machine_flags
+        = (enum xkb_machine_flags)config->machine_flags
+        & ~(enum xkb_machine_flags)XKB_MACHINE_FLAGS_VALUES;
+    if (invalid_machine_flags) {
+        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS_,
+                     "unrecognized state machine flags: 0x%x\n",
+                     invalid_machine_flags);
+        if (error)
+            *error = XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS;
         return NULL;
     }
 
@@ -3032,7 +3066,8 @@ xkb_machine_builder_new(struct xkb_keymap * restrict keymap,
     *builder = (struct xkb_machine_builder) {
         .keymap = xkb_keymap_ref(keymap),
         .refcnt = 1,
-        .flags = flags,
+        .builder_flags = (enum xkb_machine_builder_flags)config->builder_flags,
+        .machine_flags = (enum xkb_machine_flags)config->machine_flags,
         .controls = {
             .a11y = {
                 .affect = XKB_A11Y_NO_FLAGS,
@@ -3429,6 +3464,7 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
     xkb_server_state_init(&machine->base, builder->keymap, SERVER_STATE,
                           builder->controls.a11y.affect,
                           builder->controls.a11y.flags);
+    machine->flags = builder->machine_flags;
 
     enum xkb_error_code error_;
     if ((error_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
@@ -3964,7 +4000,7 @@ xkb_events_new(struct xkb_context * restrict context,
         return NULL;
     }
 
-     /* Sanitize input */
+    /* Sanitize input */
     const uint32_t invalid_flags =
         (config->flags & ~(uint32_t)XKB_EVENTS_FLAGS_VALUES);
     if (invalid_flags) {
