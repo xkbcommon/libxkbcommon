@@ -237,6 +237,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
     - `xkb_machine::xkb_machine_process_synthetic()`
   - `enum xkb_machine_flags` (new)
   - `enum xkb_machine_builder_flags` (new)
+  - `struct xkb_machine_builder_config` (new)
   - `struct xkb_machine_builder` (new):
     - `xkb_machine_builder::xkb_machine_builder_new()`
     - `xkb_machine_builder::xkb_machine_builder_ref()`

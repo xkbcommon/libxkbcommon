@@ -3670,6 +3670,51 @@ enum xkb_machine_flags {
 };
 
 /**
+ * @struct xkb_machine_builder_config
+ * @ingroup abi-struct-contract
+ *
+ * Configuration for `xkb_machine_builder::xkb_machine_builder_new()`.
+ *
+ * @sa `xkb_machine_builder`
+ *
+ * @since 1.14.0
+ */
+struct xkb_machine_builder_config {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * [Flags] to control the behavior of [state machine builders], or `0`
+     * (`::XKB_MACHINE_BUILDER_NO_FLAGS`) for the default.
+     *
+     * @sa `xkb_machine_builder_flags`
+     *
+     * @since 1.14.0
+     *
+     * [Flags]: @ref xkb_machine_builder_flags
+     * [state machine builders]: @ref xkb_machine_builder
+     */
+    uint32_t builder_flags;
+    /**
+     * [Flags] to control the behavior of [state machines], or `0`
+     * (`::XKB_MACHINE_NO_FLAGS`) for the default.
+     *
+     * @sa `xkb_machine_flags`
+     *
+     * @since 1.14.0
+     *
+     * [Flags]: @ref xkb_machine_flags
+     * [state machines]: @ref xkb_machine
+     */
+    uint32_t machine_flags;
+};
+
+/**
  * Create a new `xkb_machine` builder object.
  * `xkb_machine` objects can then be created from the builder using
  * `xkb_machine::xkb_machine_new()`.
