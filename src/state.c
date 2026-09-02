@@ -4170,6 +4170,20 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
+enum xkb_error_code
+xkb_event_get_virtual_console(const struct xkb_event * restrict event,
+                              int8_t * restrict index_or_offset,
+                              bool * restrict is_offset)
+{
+    if (event->type != XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
+        return XKB_ERROR_INVALID;
+
+    *index_or_offset = event->virtual_console.index;
+    *is_offset = event->virtual_console.is_offset;
+
+    return XKB_SUCCESS;
+}
+
 enum xkb_state_component
 xkb_state_update_event(struct xkb_state *base_state,
                        const struct xkb_event *event)
