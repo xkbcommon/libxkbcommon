@@ -3429,9 +3429,9 @@ The following table provide an overview of the available actions:
 | ^        | [`PointerButton`][PointerButton] | `PtrBtn`         | Simulate a mouse button press |
 | ^        | [`LockPointerButton`][LockPointerButton] | `LockPtrBtn`     | Simulate a mouse button press, locked until the action’s key is pressed again. |
 | ^        | [`SetPointerDefault`][SetPointerDefault] | `SetPtrDflt`     | Set the default mouse button |
-| [Legacy action] | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the X server |
-| ^        | `SwitchScreen`      |                  | Switch virtual X screen            |
-| ^        | [`Private`][Private]|                  | Raw encoding of an action          |
+| [Server actions] | [`TerminateServer`][TerminateServer] | `Terminate` | Shut down the display server |
+| ^        | [`SwitchScreen`][SwitchScreen] |                  | Switch virtual X screen            |
+| [Legacy action] | [`Private`][Private]|                  | Raw encoding of an action          |
 | [Unsupported legacy action] | `ISOLock`           |                  | Convert ordinary modifier key actions into lock actions while this action is active |
 | ^        | `DeviceButton`      | `DevBtn`         | Emulate an event from an arbitrary input device such as a joystick |
 | ^        | `LockDeviceButton`  | `LockDevBtn`     | Emulate an event from an arbitrary input device such as a joystick |
@@ -4662,6 +4662,136 @@ Legacy paramater: *do not use*.
 [key repeated event]: @ref XKB_EVENT_TYPE_KEY
 [key release event]: @ref XKB_EVENT_TYPE_KEY
 
+### Server actions {#server-actions}
+
+[Server actions]: @ref server-actions
+[TerminateServer]: @ref terminate-server-action
+[SwitchScreen]: @ref terminate-server-action
+
+<dl>
+<dt>`TerminateServer` @anchor terminate-server-action</dt>
+<dd>
+Request to shut down the display server
+
+*No parameters.*
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [server actions] are enabled, it generates a [terminate display server]
+  event instead of the usual [key press event].
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [server actions] are enabled, it generates no event.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [server actions] is enabled, it generates no event.
+- Otherwise it generates the usual [key release event].
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+
+<dt>`SwitchScreen` @anchor switch-screen-action</dt>
+<dd>
+Requests a switch of the active *virtual console*
+
+<table>
+<caption>Parameters</caption>
+<thead>
+<tr>
+<th>Name</th>
+<th>Aliases</th>
+<th>Data type</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>`screen`</th>
+<td></td>
+<td>Integer −128..127</td>
+<td>+0</td>
+<td>
+Targeted virtual console:
+- *offset* to the current one if explicitly *signed* (e.g. `+1`, `-1`);
+- otherwise an *absolute* index (e.g. `1`).
+</td>
+</tr>
+<tr>
+<th>`same`</th>
+<td>`sameServer`</td>
+<td>boolean</td>
+<td>`true`</td>
+<td>
+@deprecated Historically distinguished switching to another sub-screen *within*
+the current X server from switching to a different virtual console.
+@deprecated Modern systems only support `same` = `false`.
+
+@note xkbcommon does not generates a [switch virtual console] if `same` = `true`;
+see the effect hereinafter for further details.
+</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<caption>Effects of the key input events</caption>
+<thead>
+<tr>
+<th>Input</th>
+<th>Effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>Key press</th>
+<td>
+- If [server actions] are enabled and `same` is `false`, it generates a
+  [switch virtual console] event instead of the usual [key press event].
+- Otherwise it generates the usual [key press event].
+</td>
+</tr>
+<tr>
+<th>Key repeat</th>
+<td>
+- If [server actions] is enabled and `same` is `false`, it generates no event.
+- Otherwise it generates the usual [key repeated event].
+</td>
+</tr>
+<tr>
+<th>Key release</th>
+<td>
+- If [server actions] and `same` is `false` is enabled, it generates no event.
+- Otherwise it generates the usual [key release event].
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+[terminate display server]: @ref XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER
+[switch virtual console]: @ref XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE
+
 ### Legacy X11 actions {#legacy-x11-actions}
 
 [legacy action]: @ref legacy-x11-actions
@@ -4669,26 +4799,6 @@ Legacy paramater: *do not use*.
 @attention The following legacy actions are kept for compatibility only: they are parsed
 and validated but have no effect. This allows to use keymaps defined in
 <code>[xkeyboard-config]</code> for both X11 and Wayland.
-
-#### Server actions
-
-[TerminateServer]: @ref terminate-server-action
-
-<dl>
-<dt>`TerminateServer` @anchor terminate-server-action</dt>
-<dd>
-Shut down the X server
-
-No parameters.
-</dd>
-<dt>`SwitchScreen`</dt>
-<dd>
-
-@todo SwitchScreen
-<!-- blank for Doxygen -->
-
-</dd>
-</dl>
 
 #### Private action {#private-action}
 
