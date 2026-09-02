@@ -634,19 +634,35 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 </details>
 </td>
 </tr>
+<!-- Display server actions -->
+<tr>
+<th rowspan="2">Display server actions</th>
+<th>[`TerminateServer()`](@ref terminate-server-action)</th>
+<td>✅ Full support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
+- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+  the `xkb_machine` API and enabling `::XKB_MACHINE_SERVER_ACTIONS`.
+</details>
+</td>
+</tr>
+<tr>
+<th>[`SwitchScreen()`](@ref switch-screen-action)</th>
+<td>✅ Full support</td>
+<td colspan="2">
+<details>
+<summary>✅ Full support (since 1.14)</summary>
+- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
+- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+  the `xkb_machine` API and enabling `::XKB_MACHINE_SERVER_ACTIONS`.
+</details>
+</td>
+</tr>
 <!-- Legacy actions -->
 <tr>
-<th rowspan="3">Legacy action</th>
-<th>`TerminateServer()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
-<th>`SwitchScreen()`</th>
-<td>✅ Full support</td>
-<td colspan="2">⚠️ Parsing and serializing only, no API support</td>
-</tr>
-<tr>
+<th rowspan="1">Legacy action</th>
 <th>`Private()`</th>
 <td>✅ Full support</td>
 <td colspan="2">⚠️ Parsing and serializing only, no API support</td>
