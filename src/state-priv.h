@@ -333,6 +333,37 @@ static_assert(sizeof(struct xkb_state_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
+ * xkb_machine_builder_config
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_machine_builder_config`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_machine_builder_config_v1 {
+    uint32_t size;
+    uint32_t builder_flags;
+    uint32_t machine_flags;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_machine_builder_config, size, builder_flags);
+assert_no_padding(struct xkb_machine_builder_config, builder_flags, machine_flags);
+assert_no_padding(struct xkb_machine_builder_config, machine_flags);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_machine_builder_config) ==
+              sizeof(struct xkb_machine_builder_config_v1), "");
+assert_same_field(struct xkb_machine_builder_config, _v1, size);
+assert_same_field(struct xkb_machine_builder_config, _v1, builder_flags);
+assert_same_field(struct xkb_machine_builder_config, _v1, machine_flags);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_machine_builder_config) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
  * xkb_machine_builder_a11y_update
  *****************************************************************************/
 
@@ -454,6 +485,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_state_components_update_v1),              \
     const struct xkb_layout_policy_update *:                        \
         sizeof(struct xkb_layout_policy_update_v1),                 \
+    const struct xkb_machine_builder_config *:                      \
+        sizeof(struct xkb_machine_builder_config_v1),               \
     const struct xkb_machine_builder_a11y_update *:                 \
         sizeof(struct xkb_machine_builder_a11y_update_v1),          \
     const struct xkb_machine_builder_mods_remap_update *:           \
@@ -479,6 +512,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_state_components_update_v1),              \
     const struct xkb_layout_policy_update *:                        \
         sizeof(struct xkb_layout_policy_update_v1),                 \
+    const struct xkb_machine_builder_config *:                      \
+        sizeof(struct xkb_machine_builder_config_v1),               \
     const struct xkb_machine_builder_a11y_update *:                 \
         sizeof(struct xkb_machine_builder_a11y_update_v1),          \
     const struct xkb_machine_builder_mods_remap_update *:           \
@@ -504,6 +539,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_state_components_update),              \
     const struct xkb_layout_policy_update *:                     \
         sizeof(struct xkb_layout_policy_update),                 \
+    const struct xkb_machine_builder_config *:                   \
+        sizeof(struct xkb_machine_builder_config),               \
     const struct xkb_machine_builder_a11y_update *:              \
         sizeof(struct xkb_machine_builder_a11y_update),          \
     const struct xkb_machine_builder_mods_remap_update *:        \
@@ -556,6 +593,11 @@ static_assert(
     ""
 );
 static_assert(
+    xkb_versioned_struct_size_v1(((const struct xkb_machine_builder_config *)NULL)) <=
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_config *)NULL)),
+    ""
+);
+static_assert(
     xkb_versioned_struct_size_v1(((const struct xkb_machine_builder_a11y_update *)NULL)) <=
     xkb_versioned_struct_size_min(((const struct xkb_machine_builder_a11y_update *)NULL)),
     ""
@@ -605,6 +647,11 @@ static_assert(
 static_assert(
     xkb_versioned_struct_size_min(((const struct xkb_layout_policy_update *)NULL)) <=
     sizeof(const struct xkb_layout_policy_update),
+    ""
+);
+static_assert(
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_config *)NULL)) <=
+    sizeof(const struct xkb_machine_builder_config),
     ""
 );
 static_assert(
