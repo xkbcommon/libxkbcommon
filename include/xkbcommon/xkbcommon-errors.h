@@ -192,6 +192,19 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS = 611,
     /**
+     * Unsupported `xkb_machine_flags` value
+     *
+     * Use the following to check if the linked libxkbcommon library supports a
+     * given flag:
+     *
+     * ```c
+     * xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_FLAGS, flag)
+     * ```
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS = 755,
+    /**
      * Unsupported keymap serialization flags
      *
      * See `::xkb_keymap_serialize_flags` for the list of valid flags.

@@ -668,6 +668,18 @@
   added: ALWAYS
   type: warning
   description: "Reference to an undefined keycode"
+- id: "unsupported-machine-flags"
+  code: 755
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: Unsupported `xkb_machine_flags` value
+  details: |
+    Use the following to check if the linked libxkbcommon library supports a given flag:
+
+    ```c
+    xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_FLAGS, flag)
+    ```
 - id: "invalid-expression-type"
   code: 784
   added: ALWAYS
