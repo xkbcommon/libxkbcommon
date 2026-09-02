@@ -37,6 +37,8 @@ xkb_feature:
     value: 24840
   - name: XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS
     value: 25200
+  - name: XKB_FEATURE_ENUM_MACHINE_FLAGS
+    value: 26200
   - name: XKB_FEATURE_ENUM_EVENT_TYPE
     value: 27000
   - name: XKB_FEATURE_ENUM_KEY_DIRECTION

@@ -142,6 +142,9 @@ xkb_events_flags:
 xkb_machine_builder_flags:
   - name: XKB_MACHINE_BUILDER_NO_FLAGS
     value: 0
+xkb_machine_flags:
+  - name: XKB_MACHINE_NO_FLAGS
+    value: 0
 xkb_a11y_flags:
   - name: XKB_A11Y_NO_FLAGS
     value: 0
