@@ -2757,6 +2757,12 @@ enum xkb_event_type {
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_POINTER_BUTTON,
+    /**
+     * **_Terminate_ display server** event
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
 };
 
 /**

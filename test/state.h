@@ -160,10 +160,13 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     case XKB_EVENT_TYPE_POINTER_BUTTON:
         return memcmp(&event1->pointer_button, &event2->pointer_button,
                       sizeof(event1->pointer_button)) == 0;
+    case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
+        /* No parameters */
+        return true;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
-                      XKB_EVENT_TYPE_POINTER_BUTTON ==
+        static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
+                      XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
         return false;
@@ -216,10 +219,14 @@ print_event(const char *prefix, const struct xkb_event *event)
                 event->pointer_button.direction, event->pointer_button.button,
                 event->pointer_button.count);
         break;
+    case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
+        /* No parameters */
+        fprintf(stderr, "type: terminate server\n");
+        break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
-                      XKB_EVENT_TYPE_POINTER_BUTTON ==
+        static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
+                      XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
                       (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                       "Missing state event type");
     }
