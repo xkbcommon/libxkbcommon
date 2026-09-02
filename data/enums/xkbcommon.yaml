@@ -69,6 +69,8 @@ xkb_event_type:
     value: 3
   - name: XKB_EVENT_TYPE_POINTER_BUTTON
     value: 4
+  - name: XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER
+    value: 5
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0

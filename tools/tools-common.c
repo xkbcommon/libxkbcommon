@@ -778,6 +778,14 @@ tools_print_pointer_button(const char * restrict prefix,
     }
 }
 
+static void
+tools_print_terminate_server(const char * restrict prefix)
+{
+    if (prefix)
+        printf("%s", prefix);
+    printf("terminate server\n");
+}
+
 #undef INDENT
 
 void
@@ -842,9 +850,13 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 tools_print_pointer_button(prefix, &button, options);
                 break;
             }
+            case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
+                /* No getter */
+                tools_print_terminate_server(prefix);
+                break;
             default: {
-                static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
-                              XKB_EVENT_TYPE_POINTER_BUTTON ==
+                static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
+                              XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
                               (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                               "Missing event type");
             event_error:

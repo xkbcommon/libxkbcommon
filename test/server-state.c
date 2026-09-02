@@ -583,10 +583,10 @@ update_key(struct xkb_machine *sm,
         }
         default:
             ; /* Label followed by declaration requires C23 */
-            static_assert(XKB_EVENT_TYPE_POINTER_BUTTON == 4 &&
-                            XKB_EVENT_TYPE_POINTER_BUTTON ==
-                            (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
-                            "Missing state event type");
+            static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER == 5 &&
+                          XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER ==
+                          (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                          "Missing state event type");
             /* ignore */
         }
     }
