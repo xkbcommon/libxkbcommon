@@ -179,6 +179,7 @@ enum xkb_enumerations_values {
     ,
     XKB_MACHINE_FLAGS_VALUES
         = XKB_MACHINE_NO_FLAGS
+        | XKB_MACHINE_SERVER_ACTIONS
     ,
     XKB_A11Y_FLAGS_VALUES
         = XKB_A11Y_NO_FLAGS
@@ -375,6 +376,7 @@ static const uint32_t xkb_machine_builder_flags_values[] = {
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_machine_flags_values[] = {
     XKB_MACHINE_NO_FLAGS,
+    XKB_MACHINE_SERVER_ACTIONS,
 };
 #endif
 

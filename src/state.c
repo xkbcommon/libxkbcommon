@@ -1101,6 +1101,18 @@ xkb_filter_pointer_set_default_button_func(struct xkb_server_state *state,
                                            const struct xkb_key *key,
                                            enum xkb_key_direction direction);
 
+static void
+xkb_filter_terminate_server_new(struct xkb_server_state *state,
+                                 struct xkb_events *events,
+                                 struct xkb_filter *filter);
+
+static bool
+xkb_filter_terminate_server_func(struct xkb_server_state *state,
+                                  struct xkb_events *events,
+                                  struct xkb_filter *filter,
+                                  const struct xkb_key *key,
+                                  enum xkb_key_direction direction);
+
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
                             struct xkb_events *events);
@@ -1319,6 +1331,8 @@ static const struct {
                                   xkb_filter_pointer_lock_button_func },
     [ACTION_TYPE_PTR_DEFAULT] = { xkb_filter_pointer_set_default_button_new,
                                   xkb_filter_pointer_set_default_button_func },
+    [ACTION_TYPE_TERMINATE]   = { xkb_filter_terminate_server_new,
+                                  xkb_filter_terminate_server_func },
     [ACTION_TYPE_CTRL_SET]    = { xkb_filter_ctrls_new,
                                   xkb_filter_ctrls_func },
     [ACTION_TYPE_CTRL_LOCK]   = { xkb_filter_ctrls_new,
@@ -3940,11 +3954,14 @@ xkb_machine_process_key(struct xkb_machine *sm,
 
     xkb_state_update_derived(&state->base);
 
+    /*
+     * Insert key event only if actions did not override it, e.g.:
+     * - RedirectKey() append its own key event;
+     * - MovePointer() and PointerButton() generate pointer events instead
+     *   of key events;
+     * - TerminateServer() generate a Server event instead of key events.
+     */
     if (state->update_flags & STATE_REQUIRE_KEY_EVENT) {
-        /*
-         * Append key event only if we did not generate it before with e.g.
-         * RedirectKey().
-         */
         darray_append(events->queue, (struct xkb_event) {
             .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_KEY,
@@ -4423,4 +4440,50 @@ xkb_filter_pointer_set_default_button_func(struct xkb_server_state *state,
 
     filter->func = NULL;
     return XKB_FILTER_CONTINUE;
+}
+
+static void
+xkb_filter_terminate_server_new(struct xkb_server_state *state,
+                                 struct xkb_events *events,
+                                 struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
+        filter->func = NULL;
+        return;
+    }
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
+        .type = XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
+    });
+}
+
+static bool
+xkb_filter_terminate_server_func(struct xkb_server_state *state,
+                                 struct xkb_events *events,
+                                 struct xkb_filter *filter,
+                                 const struct xkb_key *key,
+                                 enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+    case XKB_KEY_DOWN:
+        filter->refcnt++;
+        /* fallthrough */
+    case XKB_KEY_REPEATED:
+        return XKB_FILTER_CONSUME;
+    default:
+        if (--filter->refcnt > 0)
+            return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
 }
