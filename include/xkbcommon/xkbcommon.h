@@ -814,10 +814,45 @@ struct xkb_rule_names {
  * [KcCGST]: @ref KcCGST-intro
  */
 struct xkb_component_names {
+    /**
+     * Name of the [keycodes] component.
+     *
+     * @sa @ref the-xkb_keycodes-section ""
+     *
+     * [keycodes]: @ref config-keycodes-def
+     */
     char *keycodes;
+    /**
+     * Name of the [compatibility] component.
+     *
+     * @sa @ref the-xkb_compat-section ""
+     *
+     * [compatibility]: @ref config-compat-def
+     */
     char *compatibility;
+    /**
+     * Name of the [geometry] component.
+     *
+     * @sa @ref the-xkb_geometry-section ""
+     *
+     * [geometry]: @ref config-geometry-def
+     */
     char *geometry;
+    /**
+     * Name of the [symbols] component.
+     *
+     * @sa @ref the-xkb_symbols-section ""
+     *
+     * [symbols]: @ref config-symbols-def
+     */
     char *symbols;
+    /**
+     * Name of the [key types] component.
+     *
+     * @sa @ref the-xkb_types-section ""
+     *
+     * [key types]: @ref config-types-def
+     */
     char *types;
 };
 
