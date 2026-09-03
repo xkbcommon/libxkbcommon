@@ -2790,7 +2790,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * | Event type                                  | Getter |
  * | ------------------------------------------- | ------ |
  * | `::XKB_EVENT_TYPE_KEY`                      | `xkb_event::xkb_event_get_keycode()` |
- * | `::XKB_EVENT_TYPE_STATE_COMPONENTS`         | `xkb_event::xkb_event_serialize_components()` |
+ * | `::XKB_EVENT_TYPE_STATE_COMPONENTS`         | `xkb_event::xkb_event_get_components()` |
  * | `::XKB_EVENT_TYPE_POINTER_MOTION`           | `xkb_event::xkb_event_get_pointer_motion()` |
  * | `::XKB_EVENT_TYPE_POINTER_BUTTON`           | `xkb_event::xkb_event_get_pointer_button()` |
  * | `::XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER` | (no getter) |
@@ -2828,7 +2828,7 @@ enum xkb_event_type {
     /**
      * **State components** change event
      *
-     * @sa `xkb_event::xkb_event_serialize_components()`
+     * @sa `xkb_event::xkb_event_get_components()`
      *
      * @since 1.14.0
      */
@@ -3155,7 +3155,7 @@ enum xkb_keyboard_control_flags {
  * see @ref abi-struct-contract for further details.
  *
  * @sa `enum xkb_state_component`
- * @sa `xkb_event::xkb_event_serialize_components()`
+ * @sa `xkb_event::xkb_event_get_components()`
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
  *
  * @since 1.14.0
@@ -3319,7 +3319,7 @@ struct xkb_event_components {
  * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT enum xkb_error_code
-xkb_event_serialize_components(const struct xkb_event *event,
+xkb_event_get_components(const struct xkb_event *event,
                                struct xkb_event_components *components);
 
 /**

@@ -546,7 +546,7 @@ update_key(struct xkb_machine *sm,
                 .size = sizeof(components)
             };
             const enum xkb_error_code error =
-                xkb_event_serialize_components(event, &components);
+                xkb_event_get_components(event, &components);
             assert(error == XKB_SUCCESS);
             assert_eq("changed", changed, components.changed, "%d");
             assert_eq("depressed mods",
