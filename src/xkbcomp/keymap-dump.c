@@ -827,13 +827,13 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
         /* Can fail if the keycode was not initialized */
         if (key)
             write_buf(buf, "keycode=%s", KeyNameText(keymap->ctx, key->name));
-        if (action->redirect.affect) {
+        if (action->redirect.affect_mods) {
             xkb_mod_mask_t mask;
-            mask = (action->redirect.affect & action->redirect.mods);
+            mask = (action->redirect.affect_mods & action->redirect.mods);
             if (mask)
                 write_buf(buf, ",modifiers=%s",
                           ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, mask));
-            mask = (action->redirect.affect & ~action->redirect.mods);
+            mask = (action->redirect.affect_mods & ~action->redirect.mods);
             if (mask)
                 write_buf(buf, ",clearMods=%s",
                           ModMaskText(keymap->ctx, MOD_BOTH, &keymap->mods, mask));
@@ -1051,7 +1051,7 @@ write_action_defaults(const struct xkb_keymap *keymap,
 
     case ACTION_TYPE_REDIRECT_KEY:
         assert(action->redirect.keycode == keymap->redirect_key_auto);
-        assert(action->redirect.affect == 0);
+        assert(action->redirect.affect_mods == 0);
         assert(action->redirect.mods == 0);
         write_buf(buf, PREFIX"%s.keycode = auto;\n", type);
         write_buf(buf, PREFIX"%s.modifiers = 0;\n", type);

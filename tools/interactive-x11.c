@@ -175,7 +175,7 @@ update_keymap(struct keyboard *kbd)
         const struct xkb_state_components_update components_update = {
             .size = sizeof(components_update),
             .components = XKB_STATE_CONTROLS,
-            .affect_controls = machine_options.controls.boolean.affect,
+            .affect_controls = machine_options.controls.boolean.affect_flags,
             .controls = machine_options.controls.boolean.flags,
         };
         const struct xkb_state_update update = {

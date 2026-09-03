@@ -168,7 +168,7 @@ action_equal(const union xkb_action *a, const union xkb_action *b)
                 a->ctrls.ctrls == b->ctrls.ctrls);
     case ACTION_TYPE_REDIRECT_KEY:
         return (a->redirect.keycode == b->redirect.keycode &&
-                a->redirect.affect == b->redirect.affect &&
+                a->redirect.affect_mods == b->redirect.affect_mods &&
                 a->redirect.mods == b->redirect.mods);
     case ACTION_TYPE_UNSUPPORTED_LEGACY:
     case ACTION_TYPE_UNKNOWN:

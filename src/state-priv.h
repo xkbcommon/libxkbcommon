@@ -379,20 +379,20 @@ static_assert(sizeof(struct xkb_machine_builder_config) * 30 <=
  */
 struct xkb_machine_builder_a11y_update_v1 {
     uint32_t size;
-    uint32_t affect;
+    uint32_t affect_flags;
     uint32_t flags;
 };
 
 /* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_machine_builder_a11y_update, size, affect);
-assert_no_padding(struct xkb_machine_builder_a11y_update, affect, flags);
+assert_no_padding(struct xkb_machine_builder_a11y_update, size, affect_flags);
+assert_no_padding(struct xkb_machine_builder_a11y_update, affect_flags, flags);
 assert_no_padding(struct xkb_machine_builder_a11y_update, flags);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_machine_builder_a11y_update) ==
               sizeof(struct xkb_machine_builder_a11y_update_v1), "");
 assert_same_field(struct xkb_machine_builder_a11y_update, _v1, size);
-assert_same_field(struct xkb_machine_builder_a11y_update, _v1, affect);
+assert_same_field(struct xkb_machine_builder_a11y_update, _v1, affect_flags);
 assert_same_field(struct xkb_machine_builder_a11y_update, _v1, flags);
 
 /* Ensure reasonable margin to the upper size limit */
@@ -445,15 +445,15 @@ struct xkb_machine_builder_shortcut_layout_update_v1 {
     uint32_t size;
     xkb_layout_index_t source;
     xkb_layout_index_t target;
-    xkb_mod_mask_t mods_affect;
+    xkb_mod_mask_t affect_mods;
     xkb_mod_mask_t mods;
 };
 
 /* Ensure there is no implicit padding */
 assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, size, source);
 assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, source, target);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, target, mods_affect);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, mods_affect, mods);
+assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, target, affect_mods);
+assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, affect_mods, mods);
 assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, mods);
 
 /* Current version is 1 */
@@ -462,7 +462,7 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) ==
 assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, size);
 assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, source);
 assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, target);
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, mods_affect);
+assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, affect_mods);
 assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, mods);
 
 /* Ensure reasonable margin to the upper size limit */

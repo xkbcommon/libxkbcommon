@@ -379,7 +379,7 @@ struct xkb_redirect_key_action {
      * `xkb_action` union type.
      */
     /** Affected virtual modifiers */
-    xkb_mod_mask_t affect;
+    xkb_mod_mask_t affect_mods;
     /** State of the affected virtual modifiers */
     xkb_mod_mask_t mods;
 };

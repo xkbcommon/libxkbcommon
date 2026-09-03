@@ -830,7 +830,7 @@ HandleRedirectKey(const struct xkb_keymap_info *keymap_info,
         if (flags)
             return ReportMismatch(ctx, XKB_ERROR_WRONG_FIELD_TYPE, action->type,
                                   field, "modifier mask", keymap_info->strict);
-        act->affect |= m;
+        act->affect_mods |= m;
         if (field == ACTION_FIELD_MODIFIERS)
             act->mods |= m;
         else

@@ -474,7 +474,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             const struct xkb_state_components_update components = {
                 .size = sizeof(components),
                 .components = XKB_STATE_CONTROLS,
-                .affect_controls = machine_options.controls.boolean.affect,
+                .affect_controls = machine_options.controls.boolean.affect_flags,
                 .controls = machine_options.controls.boolean.flags,
             };
             const struct xkb_state_update update = {
@@ -511,7 +511,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                 const struct xkb_state_components_update components = {
                     .size = sizeof(components),
                     .components = XKB_STATE_CONTROLS,
-                    .affect_controls = machine_options.controls.boolean.affect,
+                    .affect_controls = machine_options.controls.boolean.affect_flags,
                     .controls = machine_options.controls.boolean.flags,
                 };
                 const struct xkb_state_update update = {
