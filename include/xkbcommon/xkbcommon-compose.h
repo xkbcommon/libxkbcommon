@@ -253,7 +253,7 @@ xkb_compose_table_new_from_file(struct xkb_context *context,
  * This is just like xkb_compose_table_new_from_file(), but instead of
  * a file, gets the table as one enormous string.
  *
- * @see xkb_compose_table_new_from_file()
+ * @sa xkb_compose_table_new_from_file()
  * @memberof xkb_compose_table
  */
 XKB_EXPORT struct xkb_compose_table *
@@ -560,7 +560,7 @@ xkb_compose_state_reset(struct xkb_compose_state *state);
 /**
  * Get the current status of the compose state machine.
  *
- * @see xkb_compose_status
+ * @sa xkb_compose_status
  * @memberof xkb_compose_state
  **/
 XKB_EXPORT enum xkb_compose_status

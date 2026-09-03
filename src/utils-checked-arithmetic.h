@@ -52,7 +52,7 @@
  * they define `__STRICT_ANSI__` and GCC extensions aren't really ANSI.
  * Instead, you'll get a pretty good pure C11 and C++11 implementation.
  *
- * @see https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
+ * @sa https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3096.pdf
  * @version 1.0 (2024-12-07)
  */
 

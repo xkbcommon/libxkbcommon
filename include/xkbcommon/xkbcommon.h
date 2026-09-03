@@ -846,9 +846,9 @@ struct xkb_component_names {
  *
  * @sa [Introduction to RMLVO][RMLVO]
  * @sa [Introduction to KcCGST][KcCGST]
- * @sa xkb_rule_names
- * @sa xkb_component_names
- * @sa xkb_keymap::xkb_keymap_new_from_names2()
+ * @sa `xkb_rule_names`
+ * @sa `xkb_component_names`
+ * @sa `xkb_keymap::xkb_keymap_new_from_names2()`
  *
  * @since 1.9.0
  *
