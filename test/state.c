@@ -598,7 +598,9 @@ test_state_modes(struct xkb_context *ctx)
         };
         #endif
         RUN_ISOLATED(code, changed,
-            changed = xkb_state_update_event(state, &event);
+            const enum xkb_error_code error_ =
+                xkb_state_update_event(state, &event, &changed);
+            assert(error_ == XKB_SUCCESS);
             /* Avoid Valgrind false positive */
             xkb_state_unref(state);
             xkb_keymap_unref(keymap);

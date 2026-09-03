@@ -518,18 +518,20 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                     .size = sizeof(update),
                     .components = &components,
                 };
+                error = xkb_machine_process_synthetic(seat->machine, &update,
+                                                      seat->events);
                 // FIXME: handle error
-                xkb_machine_process_synthetic(seat->machine, &update,
-                                              seat->events);
+                (void)error;
                 const struct xkb_event *event;
                 while ((event = xkb_events_next(seat->events))) {
-                    xkb_state_update_event(seat->state, event);
+                    error = xkb_state_update_event(seat->state, event, NULL);
+                    // FIXME: handle error
+                    (void)error;
                 }
             } else {
                 fprintf(stderr,
                         "%s: ERROR: Failed to create XKB event queue! "
-                        "Code: 0x%x\n",
-                        seat->name_str, error);
+                        "Code: 0x%x\n", seat->name_str, error);
             }
         }
     }

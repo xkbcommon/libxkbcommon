@@ -3320,7 +3320,7 @@ struct xkb_event_components {
  */
 XKB_EXPORT enum xkb_error_code
 xkb_event_get_components(const struct xkb_event *event,
-                               struct xkb_event_components *components);
+                         struct xkb_event_components *components);
 
 /**
  * @enum xkb_pointer_motion_flags
@@ -5057,23 +5057,36 @@ xkb_state_update_mask(struct xkb_state *state,
  * `xkb_machine::xkb_machine_process_synthetic()` into this
  * function to keep the observable state in sync.
  *
- * @param[in,out] state The keyboard state object.
- * @param[in]     event The state event to update from.
+ * @param[in,out] state
+ *   The keyboard state object.
+ * @param[in] event
+ *   The state event to update from.
+ * @param[out] changed
+ *   A pointer to the mask of state components that have changed as a result
+ *   of the update, or `NULL` to ignore.  If nothing in the state has changed,
+ *   the mask is set to 0.
  *
- * @important If @p state was not created with `::XKB_STATE_MODE_SERVER_QUERY`
- * or `xkb_state_new()`, the call is *rejected* without updating the state,
- * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
- * The return value is `0` in this case, which is indistinguishable from
- * a no-op update.
+ * @pre @p state must be created with `::XKB_STATE_MODE_SERVER_QUERY` or
+ * `xkb_state_new()`, otherwise the call is *rejected* without updating
+ * the state, and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
  *
- * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
+ * @returns
+ * - `::XKB_SUCCESS` on success;
+ * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
+ *   was not created with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`.
+ * - Otherwise another [error code](@ref xkb_error_code).
+ *
+ * @note This function returns an error code rather than a state component
+ * delta (unlike other `xkb_state_update_*()` functions), in order to align
+ * with `xkb_state_update_synthetic()` API. The delta is optionally available
+ * via the @p changed parameter.
  *
  * @since 1.14.0
  */
-XKB_EXPORT enum xkb_state_component
+XKB_EXPORT enum xkb_error_code
 xkb_state_update_event(struct xkb_state *state,
-                       const struct xkb_event *event);
+                       const struct xkb_event *event,
+                       enum xkb_state_component *changed);
 
 /**
  * Update the keyboard state to reflect a given key being pressed or
@@ -5171,7 +5184,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * - Otherwise another [error code](@ref xkb_error_code).
  *
  * @note This function returns an error code rather than a state component
- * delta (unlike the other `xkb_state_update_*` functions), in order to align
+ * delta (unlike other `xkb_state_update_*()` functions), in order to align
  * with the `xkb_machine::xkb_machine_process_synthetic()` API. The delta
  * is optionally available via the @p changed parameter.
  *
