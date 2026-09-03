@@ -155,11 +155,15 @@ keyboard_new(struct dirent *ent,
         .components = &components,
     };
     if (use_events_api) {
+        enum xkb_error_code error =
+            xkb_machine_process_synthetic(machine, &update, events);
         // FIXME: handle error
-        xkb_machine_process_synthetic(machine, &update, events);
+        (void)error;
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
-            xkb_state_update_event(state, event);
+            error = xkb_state_update_event(state, event, NULL);
+            // FIXME: handle error
+            (void)error;
         }
     } else {
         // FIXME: handle error

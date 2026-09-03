@@ -536,8 +536,10 @@ update_key(struct xkb_machine *sm,
     const struct xkb_event *event;
     enum xkb_state_component all_changes = 0;
     while ((event = xkb_events_next(events))) {
-        const enum xkb_state_component changed =
-            xkb_state_update_event(state, event);
+        enum xkb_state_component changed;
+        enum xkb_error_code error =
+            xkb_state_update_event(state, event, &changed);
+        assert(error == XKB_SUCCESS);
         all_changes |= changed;
 
         switch (xkb_event_get_type(event)) {
@@ -545,8 +547,7 @@ update_key(struct xkb_machine *sm,
             struct xkb_event_components components = {
                 .size = sizeof(components)
             };
-            const enum xkb_error_code error =
-                xkb_event_get_components(event, &components);
+            error = xkb_event_get_components(event, &components);
             assert(error == XKB_SUCCESS);
             assert_eq("changed", changed, components.changed, "%d");
             assert_eq("depressed mods",
@@ -606,11 +607,15 @@ update_controls(struct xkb_machine *sm,
                                                    affect, controls)
                == XKB_SUCCESS);
         const struct xkb_event *event;
-        enum xkb_state_component changed = 0;
+        enum xkb_state_component changed_acc = 0;
         while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_event(state, event);
+            enum xkb_state_component changed;
+            const enum xkb_error_code error =
+                xkb_state_update_event(state, event, &changed);
+            assert(error == XKB_SUCCESS);
+            changed_acc = changed;
         }
-        return changed;
+        return changed_acc;
     } else {
         return xkb_state_update_enabled_controls(state, affect, controls);
     }
@@ -721,8 +726,11 @@ test_group_wrap(struct xkb_context *ctx)
             .components = &components,
         };
         assert(xkb_machine_process_synthetic(sm, &req, events) == XKB_SUCCESS);
-        while ((event = xkb_events_next(events)))
-            xkb_state_update_event(state, event);
+        while ((event = xkb_events_next(events))) {
+            const enum xkb_error_code error =
+                xkb_state_update_event(state, event, NULL);
+            assert(error == XKB_SUCCESS);
+        }
         assert_eq("unexpected effective group", tests[t].expected_group,
                   xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
                   "%"PRIu32);

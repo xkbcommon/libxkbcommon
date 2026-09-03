@@ -60,11 +60,11 @@ bench_modern_api(struct xkb_machine *sm,
         const int ret = xkb_machine_process_key(sm, keycode, direction, events);
         acc_ret += (unsigned long)ret;
 
-        enum xkb_state_component changed = 0;
         while ((event = xkb_events_next(events))) {
-            changed |= xkb_state_update_event(state, event);
+            enum xkb_state_component changed = 0;
+            (void)xkb_state_update_event(state, event, &changed);
+            acc_changed += (unsigned long)changed;
         }
-        acc_changed += (unsigned long)changed;
 
         if (keys[keycode]) {
             const xkb_keysym_t keysym =

@@ -821,7 +821,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
     const struct xkb_event *event;
     while ((event = xkb_events_next(events)) != NULL) {
         const enum xkb_event_type event_type = xkb_event_get_type(event);
-        enum xkb_error_code error = XKB_SUCCESS;;
+        enum xkb_error_code error = XKB_SUCCESS;
         switch (event_type) {
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;
@@ -847,8 +847,10 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 break;
             }
             case XKB_EVENT_TYPE_STATE_COMPONENTS: {
-                const enum xkb_state_component changed =
-                    xkb_state_update_event(state, event);
+                enum xkb_state_component changed;
+                error = xkb_state_update_event(state, event, &changed);
+                if (error != XKB_SUCCESS)
+                    goto event_error;
                 if (report_state_changes && changed)
                     tools_print_state_changes(prefix, state, changed, options);
                 break;

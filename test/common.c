@@ -90,8 +90,16 @@ consume_events(struct xkb_machine *sm,
 {
     const struct xkb_event *event;
     enum xkb_error_code error;
+    enum xkb_state_component changed;
     while ((event = xkb_events_next(events))) {
-        switch (xkb_event_get_type(event)) {
+        const enum xkb_event_type type = xkb_event_get_type(event);
+
+        /* Only components events may update the base state */
+        error = xkb_state_update_event(state, event, &changed);
+        assert(error == XKB_SUCCESS);
+        assert(type == XKB_EVENT_TYPE_STATE_COMPONENTS || !changed);
+
+        switch (type) {
         case XKB_EVENT_TYPE_KEY: {
             enum xkb_key_direction direction;
             error = xkb_event_get_keycode(event, kc, &direction);
@@ -102,17 +110,20 @@ consume_events(struct xkb_machine *sm,
             }
             break;
         }
-        case XKB_EVENT_TYPE_STATE_COMPONENTS:
-            // TODO: check error
-            xkb_state_update_event(state, event);
+        case XKB_EVENT_TYPE_STATE_COMPONENTS: {
+            struct xkb_event_components components = {
+                .size = sizeof(components)
+            };
+            error = xkb_event_get_components(event, &components);
+            assert(error == XKB_SUCCESS);
             break;
+        }
         case XKB_EVENT_TYPE_POINTER_MOTION: {
             struct xkb_event_pointer_motion motion = {
                 .size = sizeof(motion)
             };
             error = xkb_event_get_pointer_motion(event, &motion);
             assert(error == XKB_SUCCESS);
-            /* Pointer events do not update the base state */
             break;
         }
         case XKB_EVENT_TYPE_POINTER_BUTTON: {
@@ -121,7 +132,6 @@ consume_events(struct xkb_machine *sm,
             };
             error = xkb_event_get_pointer_button(event, &button);
             assert(error == XKB_SUCCESS);
-            /* Pointer events do not update the base state */
             break;
         }
         case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:

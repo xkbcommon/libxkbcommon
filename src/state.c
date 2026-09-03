@@ -4117,7 +4117,7 @@ xkb_event_get_keycode(const struct xkb_event *event,
 
 enum xkb_error_code
 xkb_event_get_components(const struct xkb_event * restrict event,
-                               struct xkb_event_components * restrict components)
+                         struct xkb_event_components * restrict components)
 {
     if (event->type != XKB_EVENT_TYPE_STATE_COMPONENTS)
         return XKB_ERROR_INVALID;
@@ -4200,18 +4200,19 @@ xkb_event_get_virtual_console(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
-enum xkb_state_component
-xkb_state_update_event(struct xkb_state *base_state,
-                       const struct xkb_event *event)
+enum xkb_error_code
+xkb_state_update_event(struct xkb_state * restrict base_state,
+                       const struct xkb_event * restrict event,
+                       enum xkb_state_component * restrict changed)
 {
     /* Guard against server-only state */
     assert(base_state->mode == SERVER_COMPANION ||
            base_state->mode == LEGACY_MIXED_STATE);
     if (base_state->mode != SERVER_COMPANION &&
         base_state->mode != LEGACY_MIXED_STATE) {
-        log_err(base_state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE,
+        log_err(base_state->keymap->ctx, XKB_ERROR_UNEXPECTED_STATE_MODE_,
                 "%s: Unexpected state type %d\n", __func__, base_state->mode);
-        return 0;
+        return XKB_ERROR_UNEXPECTED_STATE_MODE;
     }
 
     struct xkb_client_state * const state =
@@ -4224,11 +4225,14 @@ xkb_state_update_event(struct xkb_state *base_state,
          * Recompute the changes instead of using the event value, because we do
          * not know if the event’s queue and the state are synced.
          */
-        return get_state_component_changes(&prev_components,
-                                           &state->base.components);
+        if (changed)
+            *changed = get_state_component_changes(&prev_components,
+                                                   &state->base.components);
     } else {
-        return 0;
+        if (changed)
+            *changed = 0;
     }
+    return XKB_SUCCESS;
 }
 
 static void
