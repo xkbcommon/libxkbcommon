@@ -81,6 +81,8 @@ xkb_key_direction:
   - name: XKB_KEY_REPEATED
     value: 2
 xkb_state_component:
+  - name: XKB_STATE_NO_COMPONENT
+    value: 0
   - name: XKB_STATE_MODS_DEPRESSED
     value: 1
   - name: XKB_STATE_MODS_LATCHED

@@ -139,7 +139,8 @@ enum xkb_enumerations_values {
         | (1u << XKB_KEY_REPEATED)
     ,
     XKB_STATE_COMPONENT_VALUES
-        = XKB_STATE_MODS_DEPRESSED
+        = XKB_STATE_NO_COMPONENT
+        | XKB_STATE_MODS_DEPRESSED
         | XKB_STATE_MODS_LATCHED
         | XKB_STATE_MODS_LOCKED
         | XKB_STATE_MODS_EFFECTIVE
@@ -319,6 +320,7 @@ static const uint32_t xkb_key_direction_values[] = {
 
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_state_component_values[] = {
+    XKB_STATE_NO_COMPONENT,
     XKB_STATE_MODS_DEPRESSED,
     XKB_STATE_MODS_LATCHED,
     XKB_STATE_MODS_LOCKED,

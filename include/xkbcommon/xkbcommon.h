@@ -2962,6 +2962,16 @@ xkb_event_get_keycode(const struct xkb_event *event,
  */
 enum xkb_state_component {
     /**
+     * Represents the *empty* set of state components.
+     *
+     * This is the identity value for state component bitmask operations.
+     * It corresponds also to the result of updates operation when the state
+     * components remain unchanged.
+     *
+     * @since 1.14.0
+     */
+    XKB_STATE_NO_COMPONENT = 0,
+    /**
      * @parblock
      * [Depressed modifiers], i.e. a key is physically holding them.
      * @endparblock
@@ -5025,7 +5035,8 @@ xkb_state_get_keymap(struct xkb_state *state);
  * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
+ * the update.  If nothing in the state has changed, returns 0
+ * (`::XKB_STATE_NO_COMPONENT`).
  *
  * @sa `xkb_state_component`
  * @sa `xkb_state_update_synthetic()`
@@ -5064,7 +5075,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * @param[out] changed
  *   A pointer to the mask of state components that have changed as a result
  *   of the update, or `NULL` to ignore.  If nothing in the state has changed,
- *   the mask is set to 0.
+ *   the mask is set to 0 (`::Add XKB_STATE_NO_COMPONENT`).
  *
  * @pre @p state must be created with `::XKB_STATE_MODE_SERVER_QUERY` or
  * `xkb_state_new()`, otherwise the call is *rejected* without updating
@@ -5123,7 +5134,8 @@ xkb_state_update_event(struct xkb_state *state,
  * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
+ * the update.  If nothing in the state has changed, returns 0
+ * (`::XKB_STATE_NO_COMPONENT`).
  *
  * @sa `xkb_state_update_mask()`
  *
@@ -5171,7 +5183,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * @param[out] changed
  *   A pointer to the mask of state components that have changed as a result of
  *   the update, or `NULL` to ignore.  If nothing in the state has changed, the
- *   mask is set to 0.
+ *   mask is set to 0 (`::XKB_STATE_NO_COMPONENT`).
  *
  * @pre @p update must point to a zero-initialized struct with
  * [`update->size`](@ref xkb_state_update::size) set per
@@ -5246,7 +5258,8 @@ xkb_state_update_synthetic(struct xkb_state *state,
  * a no-op update.
  *
  * @returns A mask of state components that have changed as a result of
- * the update.  If nothing in the state has changed, returns 0.
+ * the update.  If nothing in the state has changed, returns 0
+ * (`::XKB_STATE_NO_COMPONENT`).
  *
  * @sa `xkb_state_update_synthetic()`
  *

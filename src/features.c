@@ -85,7 +85,7 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         );
     case XKB_FEATURE_ENUM_STATE_COMPONENT:
         return is_supported_flag_value(
-            XKB_STATE_COMPONENT_VALUES, false, value
+            XKB_STATE_COMPONENT_VALUES, true, value
         );
     case XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY:
         return is_supported_enum_value_mask(XKB_LAYOUT_OUT_OF_RANGE_POLICY_VALUES, value);
