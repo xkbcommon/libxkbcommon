@@ -485,9 +485,11 @@ typedef uint32_t xkb_led_mask_t;
  *
  * When initializing an extensible structure, callers **must**:
  * - Set `size` to `sizeof()` of the structure.
- * - Zero every reserved field, e.g. using `memset()` or by omitting
- *   them from a designated initializer (structures are padded explicitly).
+ * - Zero every reserved field, e.g. by omitting them from a designated
+ *   initializer (structures are padded explicitly) or using `memset()`.
  *
+ * @figure
+ * @figcaption Example with omitted initializer @endfigcaption
  * ```c
  * struct Example example = {
  *     .size = sizeof(example),
@@ -498,6 +500,17 @@ typedef uint32_t xkb_led_mask_t;
  *     // .reserved1 is zeroed automatically
  * };
  * ```
+ * @endfigure
+ *
+ * @figure
+ * @figcaption Example with `memset()` @endfigcaption
+ * ```c
+ * struct Example example;
+ * memset(&example, 0, sizeof(example));
+ * example.size = sizeof(example);
+ * example.a = …;
+ * ```
+ * @endfigure
  *
  * @section abi-struct-resolution Version resolution
  *
@@ -1840,6 +1853,9 @@ enum xkb_keymap_serialize_flags {
  *
  * Serialization configuration for `xkb_keymap::xkb_keymap_serialize()`.
  *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
+ *
  * @sa `::xkb_keymap_serialize_result`
  * @since 1.14.0
  */
@@ -1890,7 +1906,10 @@ struct xkb_keymap_serialize_config {
  * @struct xkb_keymap_serialize_result
  * @ingroup abi-struct-contract
  *
- * Result of `xkb_keymap::xkb_keymap_serialize()`
+ * Result of `xkb_keymap::xkb_keymap_serialize()`.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `::xkb_keymap_serialize_config`
  * @since 1.14.0
@@ -2112,6 +2131,9 @@ enum xkb_keymap_key_iterator_flags {
  * @ingroup abi-struct-contract
  *
  * Options for creating a new `xkb_keymap_key_iterator`.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
  *
@@ -3068,6 +3090,9 @@ enum xkb_keyboard_control_flags {
  *
  * Serialized [state components].
  *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
+ *
  * @sa `enum xkb_state_component`
  * @sa `xkb_event::xkb_event_serialize_components()`
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
@@ -3289,6 +3314,9 @@ enum xkb_pointer_motion_flags {
  *
  * Description of a pointer motion.
  *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
+ *
  * @sa `xkb_pointer_motion_flags`
  * @sa `xkb_event::xkb_event_get_pointer_motion()`
  * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
@@ -3405,6 +3433,9 @@ enum xkb_pointer_button_direction {
  * @ingroup abi-struct-contract
  *
  * Description of a pointer button action.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_event::xkb_event_get_pointer_button()`
  * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`
@@ -3567,6 +3598,11 @@ enum xkb_events_flags {
  * @ingroup abi-struct-contract
  *
  * Configuration for `xkb_events::xkb_events_new()`.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
+ *
+ * @sa `xkb_events::xkb_events_new()`
  *
  * @since 1.14.0
  */
@@ -3766,6 +3802,9 @@ enum xkb_machine_flags {
  * @ingroup abi-struct-contract
  *
  * Configuration for `xkb_machine_builder::xkb_machine_builder_new()`.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_machine_builder`
  *
@@ -3976,7 +4015,10 @@ enum xkb_a11y_flags {
  * @ingroup abi-struct-contract
  *
  * Accessibility update for
- * `xkb_machine_builder::xkb_machine_builder_update_a11y()`
+ * `xkb_machine_builder::xkb_machine_builder_update_a11y()`.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_a11y_flags`
  * @sa `xkb_machine_builder::xkb_machine_builder_update_a11y()`
@@ -4038,7 +4080,7 @@ xkb_machine_builder_update_a11y(
  * @ingroup abi-struct-contract
  *
  * Modifiers remapping update for
- * `xkb_machine_builder::xkb_machine_builder_update_mods_remap()`
+ * `xkb_machine_builder::xkb_machine_builder_update_mods_remap()`.
  *
  * Remap a modifier combination, e.g. to make `Control+Alt` act as
  * `LevelThree` (`AltGr`). This helps improve *compatibility* across platforms.
@@ -4058,6 +4100,9 @@ xkb_machine_builder_update_a11y(
  * @endfigcaption
  * @snippet{trimleft} "test/server-state.c" xkb_machine_builder_mods_remap_update_example
  * @endfigure
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_keymap::xkb_keymap_mod_get_mask()`
  * @sa `xkb_machine_builder::xkb_machine_builder_update_mods_remap()`
@@ -4145,6 +4190,9 @@ xkb_machine_builder_update_mods_remap(
  * @endfigcaption
  * @snippet{trimleft} "test/server-state.c" shortcut_layout_update_example_3
  * @endfigure
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_layout_index_t`
  * @sa @ref modifiers-encoding
@@ -4371,32 +4419,8 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * - `::XKB_STATE_LAYOUT_LOCKED`  → `locked_layout`
  * - `::XKB_STATE_CONTROLS`       → `affect_controls`, `controls`
  *
- * @note This struct uses a **size-based versioning** scheme to allow
- * forward and compatibility between callers and the library:
- * <dl>
- * <dt>Older callers (smaller struct)</dt>
- * <dd>
- *   Trailing fields unknown to the caller default to zero in the library.
- * </dd>
- * <dt>Newer callers (larger struct)</dt>
- * <dd>
- *   Accepted only if all trailing bytes unknown to the library are zero.
- * </dd>
- * </dl>
- *
- * @pre The struct MUST be initialized with `memset()` before setting any
- * fields:
- * ```c
- * struct xkb_state_components_update update;
- * memset(&update, 0, sizeof(update));
- * update.size = sizeof(update);
- * update.components = …;
- * ```
- *
- * @invariant #size MUST be explicitly set to
- * `sizeof(struct xkb_state_components_update)`.
- * @invariant All bytes of the struct, including padding, MUST remain zero
- * except for *explicitly* assigned fields.
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @since 1.14.0
  *
@@ -4567,32 +4591,8 @@ enum xkb_layout_out_of_range_policy {
  * If `policy` is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
  * the target layout index; otherwise `redirect` is ignored.
  *
- * @note This struct uses a **size-based versioning** scheme to allow
- * forward and backward compatibility between callers and the library:
- * <dl>
- * <dt>Older callers (smaller struct)</dt>
- * <dd>
- *   Trailing fields unknown to the caller default to zero in the library.
- * </dd>
- * <dt>Newer callers (larger struct)</dt>
- * <dd>
- *   Accepted only if all trailing bytes unknown to the library are zero.
- * </dd>
- * </dl>
- *
- * @pre The struct MUST be initialized with `memset()` before setting any
- * fields:
- * ```c
- * struct xkb_layout_policy_update update;
- * memset(&update, 0, sizeof(update));
- * update.size = sizeof(update);
- * update.policy = …;
- * ```
- *
- * @invariant #size MUST be explicitly set to
- * `sizeof(struct xkb_layout_policy_update)`.
- * @invariant All bytes of the struct, including padding, MUST remain zero
- * except for *explicitly* assigned fields.
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @since 1.14.0
  *
@@ -4646,31 +4646,8 @@ struct xkb_layout_policy_update {
  *
  * A `NULL` pointer means “not set / no change”.
  *
- * @note This struct uses a **size-based versioning** scheme to allow
- * forward and backward compatibility between callers and the library:
- * <dl>
- * <dt>Older callers (smaller struct)</dt>
- * <dd>
- *   Trailing fields unknown to the caller default to zero in the library.
- * </dd>
- * <dt>Newer callers (larger struct)</dt>
- * <dd>
- *   Accepted only if all trailing bytes unknown to the library are zero.
- * </dd>
- * </dl>
- *
- * @pre The struct MUST be initialized with `memset()` before setting any
- * fields:
- * ```c
- * struct xkb_state_update update;
- * memset(&update, 0, sizeof(update));
- * update.size = sizeof(update);
- * update.components = …;
- * ```
- *
- * @invariant #size MUST be explicitly set to `sizeof(struct xkb_state_update)`.
- * @invariant All bytes of the struct, including padding, MUST remain zero
- * except for *explicitly* assigned fields.
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
  *
  * @sa `xkb_state::xkb_state_update_synthetic()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
