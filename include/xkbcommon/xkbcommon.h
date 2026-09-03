@@ -1265,10 +1265,10 @@ xkb_context_get_user_data(struct xkb_context *context);
  *
  *   @warning Do not modify the system XKB root files, because they will be
  *   overwritten by any update of the `xkeyboard-config`/`xkb-data` package.
- * - Since 1.12.2: if the previous path failed, it fallbacks to the *legacy X11
- *   path* defined at compilation time (usually `/usr/share/X11/xkb`). This
- *   fallback is skipped is `XKB_CONFIG_ROOT` is explicitly set to an empty
- *   string.
+ * - Since 1.12.2: if the previous path failed, it falls back to the *legacy
+ *   X11 path* defined at compilation time (usually `/usr/share/X11/xkb`).
+ *   This fallback is skipped if `XKB_CONFIG_ROOT` is explicitly set to an
+ *   empty string.
  * </dd>
  * </dl>
  *
@@ -4988,7 +4988,7 @@ xkb_state_get_keymap(struct xkb_state *state);
  * @sa `xkb_state_update_synthetic()`
  * @sa `xkb_state_update_event()`
  *
- * @since 1.14.0: Reject call if the [stade mode](@ref xkb_state_mode)
+ * @since 1.14.0: Reject call if the [state mode](@ref xkb_state_mode)
  * is incorrect.
  */
 XKB_EXPORT enum xkb_state_component
@@ -5071,7 +5071,7 @@ xkb_state_update_event(struct xkb_state *state,
  *
  * @sa `xkb_state_update_mask()`
  *
- * @since 1.14.0: Reject call if the [stade mode](@ref xkb_state_mode)
+ * @since 1.14.0: Reject call if the [state mode](@ref xkb_state_mode)
  * is incorrect.
  */
 XKB_EXPORT enum xkb_state_component
@@ -5194,7 +5194,7 @@ xkb_state_update_synthetic(struct xkb_state *state,
  *
  * @sa `xkb_state_update_synthetic()`
  *
- * @since 1.14.0: Reject call if the [stade mode](@ref xkb_state_mode)
+ * @since 1.14.0: Reject call if the [state mode](@ref xkb_state_mode)
  * is incorrect.
  */
 XKB_EXPORT enum xkb_state_component
@@ -5270,7 +5270,7 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
 
 /**
  * Get the Unicode/UTF-32 codepoint obtained from pressing a particular
- * key in a a given keyboard state.
+ * key in a given keyboard state.
  * @memberof xkb_state
  *
  * @param[in]  state  The keyboard state object.
@@ -5490,7 +5490,7 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * given modifiers.
  * @param[in] match The manner by which to match the state against the
  * given modifiers.
- * @param[in] ...   The set of of modifier names to test, terminated by a `NULL`
+ * @param[in] ...   The set of modifier names to test, terminated by a `NULL`
  * argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
@@ -5548,7 +5548,7 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * given modifiers.
  * @param[in] match The manner by which to match the state against the
  * given modifiers.
- * @param[in] ...   The set of of modifier indices to test, terminated by a
+ * @param[in] ...   The set of modifier indices to test, terminated by a
  * `::XKB_MOD_INVALID` argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of

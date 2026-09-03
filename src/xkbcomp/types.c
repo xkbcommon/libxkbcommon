@@ -770,7 +770,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
      * “The X Keyboard Extension: Protocol Specification”:
      * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#canonical_key_types
      *
-     * In the Xorg ecosystem, any missing canonical type fallbacks to a default
+     * In the Xorg ecosystem, any missing canonical type falls back to a default
      * type supplied by libX11’s `XkbInitCanonicalKeyTypes()`, e.g. in xkbcomp.
      *
      * libxkbcommon does not require these types per se: it only requires that
@@ -797,7 +797,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
      * xkeyboard-config and custom keymaps usually include these types too. So
      * to circumvent the issues of Xorg, it should suffice that libxkbcommon
      * ensures to never discard the canonical key types, if present, and continue
-     * to delegate the (unlikely) type fallbacks to xkbcomp.
+     * to delegate the (unlikely) type falls back to xkbcomp.
      */
 
     /*
