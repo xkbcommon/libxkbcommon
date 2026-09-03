@@ -543,6 +543,9 @@ update_key(struct xkb_machine *sm,
         all_changes |= changed;
 
         switch (xkb_event_get_type(event)) {
+        case XKB_EVENT_TYPE_INVALID:
+            assert(!"invalid event");
+            break;
         case XKB_EVENT_TYPE_STATE_COMPONENTS: {
             struct xkb_event_components components = {
                 .size = sizeof(components)
@@ -4681,6 +4684,9 @@ test_overlays(struct xkb_context *context)
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
             switch(xkb_event_get_type(event)) {
+            case XKB_EVENT_TYPE_INVALID:
+                assert(!"invalid event");
+                break;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;
                 enum xkb_key_direction direction;

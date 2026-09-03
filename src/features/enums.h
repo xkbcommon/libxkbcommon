@@ -34,6 +34,8 @@ static_assert(XKB_KEYMAP_FORMAT_TEXT_V1 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V1 < UINT32_WIDTH, "");
 static_assert(XKB_KEYMAP_FORMAT_TEXT_V2 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V2 < UINT32_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_INVALID >= 0 &&
+              XKB_EVENT_TYPE_INVALID < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY >= 0 &&
               XKB_EVENT_TYPE_KEY < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_STATE_COMPONENTS >= 0 &&
@@ -126,7 +128,8 @@ enum xkb_enumerations_values {
         | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     ,
     XKB_EVENT_TYPE_VALUES
-        = (1u << XKB_EVENT_TYPE_KEY)
+        = (1u << XKB_EVENT_TYPE_INVALID)
+        | (1u << XKB_EVENT_TYPE_KEY)
         | (1u << XKB_EVENT_TYPE_STATE_COMPONENTS)
         | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
         | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
@@ -301,6 +304,7 @@ static const uint32_t xkb_keymap_key_iterator_flags_values[] = {
 
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_event_type_values[] = {
+    XKB_EVENT_TYPE_INVALID,
     XKB_EVENT_TYPE_KEY,
     XKB_EVENT_TYPE_STATE_COMPONENTS,
     XKB_EVENT_TYPE_POINTER_MOTION,
