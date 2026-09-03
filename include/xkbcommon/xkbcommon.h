@@ -844,13 +844,13 @@ struct xkb_component_names {
  *
  * @returns `true` if the [RMLVO] names could be resolved, `false` otherwise.
  *
- * @since 1.9.0
- *
  * @sa [Introduction to RMLVO][RMLVO]
  * @sa [Introduction to KcCGST][KcCGST]
  * @sa xkb_rule_names
  * @sa xkb_component_names
  * @sa xkb_keymap::xkb_keymap_new_from_names2()
+ *
+ * @since 1.9.0
  *
  * [RMLVO]: @ref RMLVO-intro
  * [KcCGST]: @ref KcCGST-intro
@@ -3904,10 +3904,11 @@ xkb_machine_builder_ref(struct xkb_machine_builder *builder);
  *
  * @param[in] builder The `xkb_machine` builder. If it is `NULL`, this function
  *                    does nothing.
- * @since 1.14.0
  *
  * @sa `xkb_machine_builder_new()`
  * @sa `xkb_machine_builder_ref()`
+ *
+ * @since 1.14.0
  */
 XKB_EXPORT void
 xkb_machine_builder_unref(struct xkb_machine_builder *builder);
@@ -3952,6 +3953,7 @@ enum xkb_a11y_flags {
      * simultaneously.
      *
      * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
+     *
      * @since 1.14.0
      *
      * [sticky keys]: @ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
@@ -3965,6 +3967,7 @@ enum xkb_a11y_flags {
      * then unlock it by pressing it one more time.
      *
      * @sa `::XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS`
+     *
      * @since 1.14.0
      *
      * [latch]: @ref latched-mod-def
@@ -4296,9 +4299,9 @@ xkb_machine_builder_update_shortcut_layout(
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  *
- * @since 1.14.0
- *
  * @sa `xkb_machine_builder::xkb_machine_builder_new()`
+ *
+ * @since 1.14.0
  *
  * [error code]: @ref xkb_error_code
  */
