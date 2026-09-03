@@ -803,7 +803,7 @@ libxkbcommon [1.12.0] – 2025-10-10
   [xkeyboard-config](https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config)
   installed package, in case [multiple versions](https://xkeyboard-config.freedesktop.org/doc/versioning/)
   are installed in parallel.
-  If no such package is found, it fallbacks to the historical X11 directory, as previously.
+  If no such package is found, it falls back to the historical X11 directory, as previously.
 
 
 libxkbcommon [1.11.0] – 2025-08-08
