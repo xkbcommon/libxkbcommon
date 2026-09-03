@@ -2818,13 +2818,21 @@ struct xkb_event;
  */
 enum xkb_event_type {
     /**
+     * **Invalid** event.
+     *
+     * This is *not* a real event type but an *error* indicator.
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_INVALID = 0,
+    /**
      * **Key** event
      *
      * @sa `xkb_event::xkb_event_get_keycode()`
      *
      * @since 1.14.0
      */
-    XKB_EVENT_TYPE_KEY = 1,
+    XKB_EVENT_TYPE_KEY,
     /**
      * **State components** change event
      *
@@ -2881,7 +2889,7 @@ enum xkb_event_type {
  *
  * @param[in] event The event to process.
  *
- * @returns The event’s type.
+ * @returns The event’s type on success, otherwise `::XKB_EVENT_TYPE_INVALID`.
  *
  * @since 1.14.0
  */

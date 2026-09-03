@@ -61,6 +61,8 @@ xkb_keymap_key_iterator_flags:
   - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
     value: 2
 xkb_event_type:
+  - name: XKB_EVENT_TYPE_INVALID
+    value: 0
   - name: XKB_EVENT_TYPE_KEY
     value: 1
   - name: XKB_EVENT_TYPE_STATE_COMPONENTS

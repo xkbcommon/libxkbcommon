@@ -823,6 +823,9 @@ tools_print_events(const char *prefix, struct xkb_state *state,
         const enum xkb_event_type event_type = xkb_event_get_type(event);
         enum xkb_error_code error = XKB_SUCCESS;
         switch (event_type) {
+            case XKB_EVENT_TYPE_INVALID:
+                error = XKB_ERROR_INVALID;
+                goto event_error;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;
                 enum xkb_key_direction direction;

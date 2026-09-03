@@ -148,6 +148,9 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
     if (event1->type != event2->type)
         return false;
     switch (event1->type) {
+    case XKB_EVENT_TYPE_INVALID:
+        /* No parameters */
+        return true;
     case XKB_EVENT_TYPE_KEY:
         return event1->key.keycode == event2->key.keycode &&
                event1->key.direction == event2->key.direction;
@@ -182,6 +185,9 @@ print_event(const char *prefix, const struct xkb_event *event)
 {
     fprintf(stderr, "%s", prefix);
     switch (event->type) {
+    case XKB_EVENT_TYPE_INVALID:
+        fprintf(stderr, "type: invalid\n");
+        break;
     case XKB_EVENT_TYPE_KEY:
         fprintf(stderr, "type: key %s; keycode: %"PRIu32"\n",
                 (event->key.direction == XKB_KEY_UP)

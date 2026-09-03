@@ -170,6 +170,10 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
         const enum xkb_event_type event_type =
             xkb_event_get_type(event);
         switch (event_type) {
+            case XKB_EVENT_TYPE_INVALID:
+                /* Report error */
+                // ...
+                exit(EXIT_FAILURE);
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc = XKB_KEYCODE_INVALID;
                 error = xkb_event_get_keycode(event, &kc, &direction);

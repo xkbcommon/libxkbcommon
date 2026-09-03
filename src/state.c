@@ -4108,12 +4108,11 @@ xkb_event_get_keycode(const struct xkb_event *event,
                       xkb_keycode_t *keycode,
                       enum xkb_key_direction *direction)
 {
-    switch (event->type) {
-    case XKB_EVENT_TYPE_KEY:
+    if (event->type == XKB_EVENT_TYPE_KEY) {
         *keycode = event->key.keycode;
         *direction = event->key.direction;
         return XKB_SUCCESS;
-    default:
+    } else {
         return XKB_ERROR_INVALID;
     }
 }

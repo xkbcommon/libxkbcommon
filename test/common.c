@@ -100,6 +100,9 @@ consume_events(struct xkb_machine *sm,
         assert(type == XKB_EVENT_TYPE_STATE_COMPONENTS || !changed);
 
         switch (type) {
+        case XKB_EVENT_TYPE_INVALID:
+            assert(!"invalid event");
+            break;
         case XKB_EVENT_TYPE_KEY: {
             enum xkb_key_direction direction;
             error = xkb_event_get_keycode(event, kc, &direction);
@@ -151,7 +154,7 @@ consume_events(struct xkb_machine *sm,
                           XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                           (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
                           "Missing state event type");
-            /* ignore */
+            assert(!"unhandled event");
         }
     }
     return true;
