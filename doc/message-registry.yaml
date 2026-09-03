@@ -76,7 +76,7 @@
 
     [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
 
-    @see keysyms
+    @sa keysyms
 - id: "unsupported-state-mode"
   code: 86
   type: error

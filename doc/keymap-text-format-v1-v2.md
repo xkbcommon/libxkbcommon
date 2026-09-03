@@ -32,9 +32,9 @@ See @ref xkbcommon-compatibility "" for further information.
 </dd>
 </dl>
 
-@see For an overview of the role of this format, please see “@ref xkb-the-config ""”.
+@sa For an overview of the role of this format, please see “@ref xkb-the-config ""”.
 
-@see For examples of keymaps in this format, please see “@ref custom-configuration ""”.
+@sa For examples of keymaps in this format, please see “@ref custom-configuration ""”.
 For further examples see [xkeyboard-config], the standard database of keyboard
 configuration data.
 
@@ -416,17 +416,17 @@ illustrated in the [diagram hereinafter](@ref xkb-keymap-components-diagram):
   an [RMLVO configuration][RMLVO] and its corresponding
   <strong>[KcCGST components][KcCGST]</strong> files.
 
-  @see xkb_keymap::xkb_keymap_new_from_names2
+  @sa xkb_keymap::xkb_keymap_new_from_names2
 
-  @see [xkeyboard-config] for the implementation of the *standard* keymap
+  @sa [xkeyboard-config] for the implementation of the *standard* keymap
   configuration database.
 
-  @see “@ref custom-configuration ""” to add a *custom* layout or option.
+  @sa “@ref custom-configuration ""” to add a *custom* layout or option.
 - __Client:__ Load the active keymap from the server, then handle update events
   sent by the server. The <strong>[complete keymap]</strong> is directly
   available in a _self-contained_ file.
 
-  @see xkb_keymap::xkb_keymap_new_from_string
+  @sa xkb_keymap::xkb_keymap_new_from_string
 
 @anchor xkb-keymap-components-diagram
 @dotfile xkb-keymap-components "XKB text format use cases"

@@ -190,7 +190,7 @@ See: Appendix A [“KEYSYM Encoding”][encoding] of the X Window System Protoco
 
 [encoding]: https://www.x.org/releases/current/doc/xproto/x11protocol.html#keysym_encoding
 
-@see keysyms
+@sa keysyms
 
 
 ### XKB-086 – Unsupported state mode {#XKB-086}
