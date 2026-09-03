@@ -4102,12 +4102,12 @@ struct xkb_machine_builder_a11y_update {
      *
      * [accessibility flags]: @ref xkb_a11y_flags
      */
-    uint32_t affect;
+    uint32_t affect_flags;
     /**
      * Mask of [accessibility flags] to set or unset.
      *
-     * Flags in #affect but not in #flags are cleared.
-     * Flags outside #affect are not changed.
+     * Flags in #affect_flags but not in #flags are cleared.
+     * Flags outside #affect_flags are not changed.
      *
      * @since 1.14.0
      *
@@ -4243,7 +4243,7 @@ xkb_machine_builder_update_mods_remap(
  * Update a layout substitution of the shortcut layout overrides for
  * `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`
  *
- * When any of the specified modifiers (see #mods and #mods_affect) is active,
+ * When any of the specified modifiers (see #mods and #affect_mods) is active,
  * the effective layout #source is substituted with layout #target in key
  * processing. This ensures a consistent user experience with keyboard
  * shortcuts across the layouts.
@@ -4299,7 +4299,7 @@ struct xkb_machine_builder_shortcut_layout_update {
     xkb_layout_index_t source;
     /**
      * Target layout to substitute to #source when any of the specified
-     * modifiers (see #mods and #mods_affect) are active.
+     * modifiers (see #mods and #affect_mods) are active.
      *
      * If set to `::XKB_LAYOUT_INVALID` or #source, then the substitution is
      * deactivated for layout #source.
@@ -4310,7 +4310,7 @@ struct xkb_machine_builder_shortcut_layout_update {
     /**
      * Modifiers affected by the update, using their [encoding].
      *
-     * If set to `0`, then #mods_affect and #mods are ignored.
+     * If set to `0`, then #affect_mods and #mods are ignored.
      *
      * See #mods.
      *
@@ -4318,16 +4318,16 @@ struct xkb_machine_builder_shortcut_layout_update {
      *
      * [encoding]: @ref modifiers-encoding
      */
-    xkb_mod_mask_t mods_affect;
+    xkb_mod_mask_t affect_mods;
     /**
      * Modifiers triggering the layout substitution, using their [encoding].
      *
      * - If there was no previous mapping (#source, #target):
-     *   - Modifiers in both #mods_affect and #mods are set.
+     *   - Modifiers in both #affect_mods and #mods are set.
      * - Otherwise:
-     *   - Previous modifiers in #mods_affect but not in #mods are cleared.
-     *   - Previous modifiers outside #mods_affect are left unchanged.
-     *   - Modifiers in #mods_affect and #mods but not in previous modifiers
+     *   - Previous modifiers in #affect_mods but not in #mods are cleared.
+     *   - Previous modifiers outside #affect_mods are left unchanged.
+     *   - Modifiers in #affect_mods and #mods but not in previous modifiers
      *     are added.
      *
      * @since 1.14.0

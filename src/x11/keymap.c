@@ -325,9 +325,11 @@ translate_action(union xkb_action *action, const xcb_xkb_action_t *wire,
          * vmod values. Real modifiers are fine though. See:
          * https://gitlab.freedesktop.org/xorg/proto/xorgproto/-/merge_requests/105
          */
-        action->redirect.affect = translate_mods(wire->redirect.mask,
-                                                 wire->redirect.vmodsMaskLow,
-                                                 wire->redirect.vmodsMaskHigh);
+        action->redirect.affect_mods = translate_mods(
+            wire->redirect.mask,
+            wire->redirect.vmodsMaskLow,
+            wire->redirect.vmodsMaskHigh
+        );
         action->redirect.mods = translate_mods(wire->redirect.realModifiers,
                                                wire->redirect.vmodsLow,
                                                wire->redirect.vmodsHigh);

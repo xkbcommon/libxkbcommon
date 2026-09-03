@@ -212,24 +212,24 @@ test_machine_builder(struct xkb_context *ctx)
 
     /* Valid flags */
     static_assert(XKB_A11Y_NO_FLAGS == 0, "default flags");
-    a11y_update.affect = XKB_A11Y_NO_FLAGS;
+    a11y_update.affect_flags = XKB_A11Y_NO_FLAGS;
     a11y_update.flags = XKB_A11Y_NO_FLAGS;
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) == XKB_SUCCESS);
 
     /* Invalid flags */
-    a11y_update.affect = -1000;
+    a11y_update.affect_flags = -1000;
     a11y_update.flags = 0;
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    a11y_update.affect = 0;
+    a11y_update.affect_flags = 0;
     a11y_update.flags = -1000;
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    a11y_update.affect = 1000;
+    a11y_update.affect_flags = 1000;
     a11y_update.flags = 0;
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
-    a11y_update.affect = 0;
+    a11y_update.affect_flags = 0;
     a11y_update.flags = 1000;
     assert(xkb_machine_builder_update_a11y(builder, &a11y_update) ==
            XKB_ERROR_UNSUPPORTED_A11Y_FLAGS);
@@ -1014,7 +1014,7 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(sm_builder);
     const struct xkb_machine_builder_a11y_update a11y_update = {
         .size = sizeof(a11y_update),
-        .affect = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
+        .affect_flags = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
         .flags = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK
     };
     assert(xkb_machine_builder_update_a11y(sm_builder, &a11y_update) ==
@@ -3192,7 +3192,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     update.target = 0;
     assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
     update.source = XKB_LAYOUT_INVALID;
-    update.mods_affect = ctrl;
+    update.affect_mods = ctrl;
     update.mods = ctrl;
     assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
 
@@ -5626,7 +5626,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .size = sizeof(update),
                 .source = 0,
                 .target = 1,
-                .mods_affect = mods,
+                .affect_mods = mods,
                 .mods = mods,
             };
             const enum xkb_error_code error =
@@ -5662,7 +5662,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                     .size = sizeof(update),
                     .source = source,
                     .target = 0,
-                    .mods_affect = mods,
+                    .affect_mods = mods,
                     .mods = mods,
                 };
                 const enum xkb_error_code error =
@@ -5696,7 +5696,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .size = sizeof(update),
                 .source = 0,
                 .target = 2,
-                .mods_affect = ctrl | alt,
+                .affect_mods = ctrl | alt,
                 .mods = ctrl | alt,
             };
             enum xkb_error_code error =
@@ -5709,7 +5709,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .size = sizeof(update),
                 .source = 1,
                 .target = 3,
-                .mods_affect = super,
+                .affect_mods = super,
                 .mods = super,
             };
             error = xkb_machine_builder_update_shortcut_layout(builder, &update);

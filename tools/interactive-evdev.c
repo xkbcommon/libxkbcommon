@@ -147,7 +147,7 @@ keyboard_new(struct dirent *ent,
     const struct xkb_state_components_update components = {
         .size = sizeof(components),
         .components = XKB_STATE_CONTROLS,
-        .affect_controls = options->controls.boolean.affect,
+        .affect_controls = options->controls.boolean.affect_flags,
         .controls = options->controls.boolean.flags,
     };
     const struct xkb_state_update update = {

@@ -130,11 +130,11 @@ struct xkb_machine_mods_raw_mapping {
 struct xkb_machine_options {
     struct {
         struct {
-            enum xkb_keyboard_control_flags affect;
+            enum xkb_keyboard_control_flags affect_flags;
             enum xkb_keyboard_control_flags flags;
         } boolean; /**< Initial boolean controls */
         struct {
-            enum xkb_a11y_flags affect;
+            enum xkb_a11y_flags affect_flags;
             enum xkb_a11y_flags flags;
         } a11y; /**< Initial A11Y flags */
     } controls;

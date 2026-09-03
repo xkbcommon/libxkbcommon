@@ -1174,7 +1174,7 @@ xkb_machine_options_update_boolean_ctrls(struct xkb_machine_options *options,
         options->controls.boolean.flags &= ~flags;
     else
         options->controls.boolean.flags |= flags;
-    options->controls.boolean.affect |= flags;
+    options->controls.boolean.affect_flags |= flags;
     return true;
 }
 
@@ -1187,7 +1187,7 @@ xkb_machine_options_update_a11y_flags(struct xkb_machine_options *options,
         options->controls.a11y.flags &= ~flags;
     else
         options->controls.a11y.flags |= flags;
-    options->controls.a11y.affect |= flags;
+    options->controls.a11y.affect_flags |= flags;
     return true;
 }
 
@@ -1585,7 +1585,7 @@ tools_set_shortcuts_mask(const struct xkb_machine_options *options,
     const struct xkb_machine_builder_shortcut_layout_update update = {
         .size = sizeof(update),
         .source = XKB_LAYOUT_INVALID,
-        .mods_affect = mods,
+        .affect_mods = mods,
         .mods = mods
     };
     return (xkb_machine_builder_update_shortcut_layout(builder, &update) ==
@@ -1732,7 +1732,7 @@ xkb_machine_builder_new_from_options(struct xkb_keymap *keymap,
 
     const struct xkb_machine_builder_a11y_update a11y_update = {
         .size = sizeof(a11y_update),
-        .affect = options->controls.a11y.affect,
+        .affect_flags = options->controls.a11y.affect_flags,
         .flags = options->controls.a11y.flags
     };
     if ((unsigned)(xkb_machine_builder_update_a11y(builder, &a11y_update) !=

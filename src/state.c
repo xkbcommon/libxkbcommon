@@ -1204,7 +1204,7 @@ append_redirect_key_events(struct xkb_server_state *state,
                            enum xkb_key_direction direction)
 {
     enum xkb_state_component changed = 0;
-    const xkb_mod_mask_t mask = redirect->affect;
+    const xkb_mod_mask_t mask = redirect->affect_mods;
 
     /*
      * Reference state: find the last state update in the queue, otherwise
@@ -1446,8 +1446,8 @@ xkb_filter_apply_all(struct xkb_server_state *state,
             break;
         case ACTION_TYPE_REDIRECT_KEY:
             // FIXME: this is not efficient to resolve mods here each time
-            filter->action.redirect.affect = mod_mask_get_effective(
-                state->base.keymap, filter->action.redirect.affect
+            filter->action.redirect.affect_mods = mod_mask_get_effective(
+                state->base.keymap, filter->action.redirect.affect_mods
             );
             filter->action.redirect.mods = mod_mask_get_effective(
                 state->base.keymap, filter->action.redirect.mods
@@ -1723,7 +1723,7 @@ xkb_state_update_derived(struct xkb_state *state)
 
 static void
 state_update_enabled_controls(struct xkb_server_state *state,
-                              enum xkb_keyboard_control_flags affect,
+                              enum xkb_keyboard_control_flags affect_controls,
                               enum xkb_keyboard_control_flags controls,
                               struct xkb_events *events)
 {
@@ -1734,10 +1734,13 @@ state_update_enabled_controls(struct xkb_server_state *state,
      * Enable using the public API with the all the Control values, except
      * the internal ones, if any.
      */
-    affect = affect & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN;
-    state->base.components.controls &= (enum xkb_action_controls)~affect;
+    affect_controls =
+        ( affect_controls
+        & (enum xkb_keyboard_control_flags)CONTROL_ALL_BOOLEAN );
+    state->base.components.controls &=
+        (enum xkb_action_controls)~affect_controls;
     state->base.components.controls |=
-        (enum xkb_action_controls)(controls & affect);
+        (enum xkb_action_controls)(controls & affect_controls);
 
     if (had_sticky_keys &&
         !(state->base.components.controls & CONTROL_STICKY_KEYS)) {
@@ -3017,7 +3020,7 @@ struct xkb_machine_builder {
     struct {
         /** Accessibility flags */
         struct {
-            enum xkb_a11y_flags affect;
+            enum xkb_a11y_flags affect_flags;
             enum xkb_a11y_flags flags;
         } a11y;
     } controls;
@@ -3100,7 +3103,7 @@ xkb_machine_builder_new(
         .machine_flags = (enum xkb_machine_flags)config->machine_flags,
         .controls = {
             .a11y = {
-                .affect = XKB_A11Y_NO_FLAGS,
+                .affect_flags = XKB_A11Y_NO_FLAGS,
                 .flags = XKB_A11Y_NO_FLAGS,
             },
         },
@@ -3159,10 +3162,10 @@ xkb_machine_builder_update_a11y(
     const enum xkb_a11y_flags invalid_flags =
         ~(enum xkb_a11y_flags)XKB_A11Y_FLAGS_VALUES;
 
-    if (update->affect & invalid_flags) {
+    if (update->affect_flags & invalid_flags) {
         log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_,
                 "%s: unrecognized A11Y affected flags: %#x\n",
-                __func__, update->affect & invalid_flags);
+                __func__, update->affect_flags & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
     if (update->flags & invalid_flags) {
@@ -3172,9 +3175,9 @@ xkb_machine_builder_update_a11y(
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
 
-    builder->controls.a11y.affect |= update->affect;
-    builder->controls.a11y.flags &= ~update->affect;
-    builder->controls.a11y.flags |= (update->flags & update->affect);
+    builder->controls.a11y.affect_flags |= update->affect_flags;
+    builder->controls.a11y.flags &= ~update->affect_flags;
+    builder->controls.a11y.flags |= (update->flags & update->affect_flags);
 
     return XKB_SUCCESS;
 }
@@ -3251,10 +3254,10 @@ xkb_machine_builder_update_shortcut_layout(
 
     /* Check the modifiers against the keymap */
     const xkb_mod_mask_t invalid = ~keymap->canonical_state_mask;
-    if ((update->mods_affect & invalid)) {
+    if ((update->affect_mods & invalid)) {
         log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
                 "%s: Invalid affected modifiers: 0x%"PRIx32"\n",
-                __func__, update->mods_affect);
+                __func__, update->affect_mods);
         return XKB_ERROR_UNSUPPORTED_MODIFIER_MASK;
     }
     if ((update->mods & invalid)) {
@@ -3316,9 +3319,9 @@ xkb_machine_builder_update_shortcut_layout(
             continue;
         }
 
-        if (update->mods_affect) {
-            entry->mods &= ~update->mods_affect;
-            entry->mods |= (update->mods_affect & update->mods);
+        if (update->affect_mods) {
+            entry->mods &= ~update->affect_mods;
+            entry->mods |= (update->affect_mods & update->mods);
         }
 
         if (update->source != XKB_LAYOUT_INVALID) {
@@ -3492,7 +3495,7 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
     }
 
     xkb_server_state_init(&machine->base, builder->keymap, SERVER_STATE,
-                          builder->controls.a11y.affect,
+                          builder->controls.a11y.affect_flags,
                           builder->controls.a11y.flags);
     machine->flags = builder->machine_flags;
 
@@ -3671,7 +3674,7 @@ do_remap_modifiers(const struct machine_modifiers_config * restrict mappings,
         return -1;
 
     const struct xkb_key_type * const type = key->groups[layout].type;
-    xkb_mod_mask_t affect = 0;
+    xkb_mod_mask_t affect_mods = 0;
     xkb_mod_mask_t mods = 0;
     for (darray_size_t m = 0; m < mappings->mappings_num; m++) {
         const struct machine_mods_mapping * const mapping =
@@ -3679,21 +3682,21 @@ do_remap_modifiers(const struct machine_modifiers_config * restrict mappings,
         if (/* Skip not matching active mods */
             (mapping->source & state->components.mods) == mapping->source &&
             /* Skip overlap with previous active mappings */
-            !(mapping->source & affect) &&
+            !(mapping->source & affect_mods) &&
             /* Skip if the key type uses some of the source modifiers */
             !(mapping->source & type->mods.mask)) {
-            affect |= mappings->mappings[m].source;
+            affect_mods |= mappings->mappings[m].source;
             mods |= mappings->mappings[m].target;
         }
     }
 
-    if (!affect)
+    if (!affect_mods)
         return -1;
 
     struct xkb_state new = *state;
-    new.components.base_mods = (new.components.base_mods & ~affect) | mods;
-    new.components.latched_mods = (new.components.latched_mods & ~affect);
-    new.components.locked_mods = (new.components.locked_mods & ~affect);
+    new.components.base_mods = (new.components.base_mods & ~affect_mods) | mods;
+    new.components.latched_mods = (new.components.latched_mods & ~affect_mods);
+    new.components.locked_mods = (new.components.locked_mods & ~affect_mods);
     xkb_state_update_derived(&new);
 
     ssize_t event_idx = -1;
