@@ -187,7 +187,7 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 struct xkb_event_components components = {
                     .size = sizeof(components)
                 };
-                error = xkb_event_serialize_components(event, &components);
+                error = xkb_event_get_components(event, &components);
                 if (error != XKB_SUCCESS) {
                     /* Handle error */
                     // ...

@@ -260,7 +260,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `struct xkb_event` (new):
     - `xkb_event::xkb_event_get_type()`
     - `xkb_event::xkb_event_get_keycode()`
-    - `xkb_event::xkb_event_serialize_components()`
+    - `xkb_event::xkb_event_get_components()`
     - `xkb_event::xkb_event_get_pointer_motion()`
     - `xkb_event::xkb_event_get_pointer_button()`
     - `xkb_event::xkb_event_get_virtual_console()`

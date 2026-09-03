@@ -4116,7 +4116,7 @@ xkb_event_get_keycode(const struct xkb_event *event,
 }
 
 enum xkb_error_code
-xkb_event_serialize_components(const struct xkb_event * restrict event,
+xkb_event_get_components(const struct xkb_event * restrict event,
                                struct xkb_event_components * restrict components)
 {
     if (event->type != XKB_EVENT_TYPE_STATE_COMPONENTS)

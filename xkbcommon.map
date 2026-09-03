@@ -182,6 +182,6 @@ global:
     xkb_event_get_pointer_motion;
     xkb_event_get_pointer_button;
     xkb_event_get_virtual_console;
-    xkb_event_serialize_components;
+    xkb_event_get_components;
     xkb_utf8_to_keysym;
 } V_1.12.0;
