@@ -93,7 +93,7 @@ Some additional resources are:
 
   Some keysyms have a canonical name for convenience. The complete list of
   canonical names is defined in `xkbcommon/xkbcommon-keysyms.h` and
-  conveniently consultable at @ref predefined-keysyms.
+  conveniently consultable at @ref predefined-keysyms "".
 
   Common types of keysyms are:
 
@@ -113,7 +113,7 @@ Some additional resources are:
 
   @sa [xkb_symbols] for further details on binding keysyms to keycodes.
   @sa [Keysym syntax](@ref keysym-syntax)
-  @sa @ref predefined-keysyms
+  @sa @ref predefined-keysyms ""
   </dd>
   <dt><a name="modifier-def">Modifier</a></dt>
   <dd>
@@ -559,7 +559,7 @@ They are grouped in [keymap component files][keymap component file] to form a
     <td>
     A translation of symbolic [key codes][keycode] into actual [key symbols][keysyms]
     (*keysyms*).
-    @sa @ref predefined-keysyms
+    @sa @ref predefined-keysyms ""
     </td>
   </tr>
   <tr>
@@ -903,8 +903,8 @@ If no section name is provided, the [default map] is looked up.
 
 The path is usually relative to its corresponding directory in an XKB
 configuration: e.g. given the configuration directory `<XKB>`, files of
-section type `xkb_symbols` are looked up in `<XKB>/symbols`. Since 1.11,
-the paths can also be absolute or use **%-expansion**:
+section type [`xkb_symbols`][xkb_symbols] are looked up in `<XKB>/symbols`.
+Since 1.11, the paths can also be absolute or use **%-expansion**:
 @anchor keymap-include-percent-expansion
 
 <!--
@@ -1181,7 +1181,7 @@ Given the same file `symbols/B` of the previous example, the following section:
 </table>
 
 
-## The “xkb_keymap” block {#the-xkb_keymap-block}
+## The `xkb_keymap` block {#the-xkb_keymap-block}
 
 A <strong>[keymap file]</strong> consists of a single top-level `xkb_keymap`
 block, under which are nested the following sections:
@@ -1278,7 +1278,7 @@ marked as a default, the first map in the file is the *implicit* default. Only
 
 ### Symbols flags
 
-Additionally, `xkb_symbols` may also have the following flags:
+Additionally, [`xkb_symbols`][xkb_symbols] may also have the following flags:
 
 <dl>
 <dt><code>alphanumeric_keys</code>@anchor section-flag-alphanum</dt>
@@ -1299,7 +1299,7 @@ a complete keyboard.
 At present, except for `default` (see: [default map]), none of the flags affect
 key processing in libxkbcommon, and only serve as *metadata*.
 
-## The “xkb_keycodes” section {#the-xkb_keycodes-section}
+## The `xkb_keycodes` section {#the-xkb_keycodes-section}
 
 This is the simplest [section] type, and is the first one to be
 compiled. The purpose of this is mostly to map between the
@@ -1393,22 +1393,22 @@ index. The LED may be referred by this name later in the
 
 @todo `virtual` flag
 
-## The “xkb_types” section {#the-xkb_types-section}
+## The `xkb_types` section {#the-xkb_types-section}
 
 <!--
 Ivan Pascal’s doc:
 https://web.archive.org/web/20190724070654/http://pascal.tsu.ru/en/xkb/gram-types.html
 -->
 
-This [section] is the second to be processed, after `xkb_keycodes`.
-However, it is completely independent and could have been the first to
-be processed (it does not refer to specific keys as specified in the
-`xkb_keycodes` section).
+This [section] is the second to be processed, after
+[`xkb_keycodes`][xkb_keycodes]. However, it is completely independent
+and could have been the first to be processed (it does not refer to specific
+keys as specified in the [`xkb_keycodes`][xkb_keycodes] section).
 
 This section defines [key types], which, given a key and a keyboard
 state (i.e. modifier state and group), determine the [shift level] to
 be used in translating the key to [keysyms]. These types are assigned
-to each group in each key, in the `xkb_symbols` section.
+to each group in each key, in the [`xkb_symbols`][xkb_symbols] section.
 
 Key types are called this way because, in a way, they really describe
 the “type” of the key (or more correctly, a specific group of the
@@ -1890,10 +1890,10 @@ The following table compares the mappings of various key types for the modifiers
 </details>
 
 
-## The “xkb_compat” section {#the-xkb_compat-section}
+## The `xkb_compat` section {#the-xkb_compat-section}
 
-This [section] is the third to be processed, after `xkb_keycodes` and
-`xkb_types`.
+This [section] is the third to be processed, after
+[`xkb_keycodes`][xkb_keycodes] and [`xkb_types`][xkb_types].
 
 ### Interpret statements {#interpret-statements}
 
@@ -1976,8 +1976,8 @@ or set the key’s repeat setting. You should note the following:
   setting is ignored when applied to other levels.
 
 - If one of the above fields was set directly for a key in
-  `xkb_symbols`, the explicit setting takes precedence over the
-  interpret.
+  [`xkb_symbols`][xkb_symbols], the explicit setting takes
+  precedence over the interpret.
 
 The body of the statement may include statements of the following
 forms (all of which are optional):
@@ -2036,8 +2036,8 @@ Statements of the form:
 
 This statement specifies the behavior and binding of the LED (AKA
 [indicator]) with the given name (“Shift Lock” above). The name should
-have been declared previously in the `xkb_keycodes` section (see
-[LED name][indicator name] statement), and given an index there.
+have been declared previously in the [`xkb_keycodes`][xkb_keycodes] section
+(see [LED name][indicator name] statement), and given an index there.
 If it wasn’t, it is created with the next free index.
 
 The body of the statement describes the conditions of the keyboard
@@ -2133,7 +2133,7 @@ One may change the default values of the following statements:
   E.g. `setMods.clearLocks= True;`.
 
 
-## The “xkb_symbols” section {#the-xkb_symbols-section}
+## The `xkb_symbols` section {#the-xkb_symbols-section}
 
 <!--
 Ivan Pascal’s doc:
@@ -2142,8 +2142,9 @@ https://web.archive.org/web/20190723233834/http://pascal.tsu.ru/en/xkb/gram-symb
 
 <!-- TODO complete this section -->
 
-This [section] is the fourth to be processed, after `xkb_keycodes`,
-`xkb_types` and `xkb_compat`.
+This [section] is the fourth to be processed, after
+[`xkb_keycodes`][xkb_keycodes], [`xkb_types`][xkb_types] and
+[`xkb_compat`][xkb_compat].
 
 Statements of the form:
 
@@ -2175,8 +2176,8 @@ Statements of the form:
     key <AD01> { ... };
 
 defines the *key description* of the [keycode] `<AD01>` and is the main type
-of record of the `xkb_symbols` section. The possible keycodes are defined in the
-[`xkb_keycodes`](@ref the-xkb_keycodes-section) section.
+of record of the [`xkb_symbols`][xkb_symbols] section. The possible keycodes
+are defined in the [`xkb_keycodes`][xkb_keycodes] section.
 
 A key description consists of:
 
@@ -2381,8 +2382,8 @@ section, but may be also set directly:
 </dl>
 
 @warning Using multiple groups in *symbols* files is not recommended, because
-some tools rely on the assumption that an `xkb_symbols` section only affect a
-single group. It is fine with a *keymap* file though.
+some tools rely on the assumption that an [`xkb_symbols`][xkb_symbols] section
+only affect a single group. It is fine with a *keymap* file though.
 
 @note In what follows we assume the common use case with a *single* group, which
 benefits from a special syntax. See the section @ref key-groups "Multiple groups"
@@ -2645,8 +2646,8 @@ statement only defines the Group3 of a mapping:
     key <AD01> { [], [], [ q, Q ] };
 
 @warning Using multiple groups in *symbols* files is not recommended, because
-some tools rely on the assumption that an `xkb_symbols` section only affect a
-single group. It is fine with a *keymap* file though.
+some tools rely on the assumption that an [`xkb_symbols`][xkb_symbols] section
+only affect a single group. It is fine with a *keymap* file though.
 
 #### Virtual modifiers {#key-virtual-modifiers}
 
@@ -3340,7 +3341,7 @@ In order to define and use a modifier, one must:
 3. Bind it to a [keycode] in the
     <code>[xkb_symbols]</code> section:
 
-    1. Map [keysyms] used in the `xkb_compat` section hereinabove.
+    1. Map [keysyms] used in the [`xkb_compat`][xkb_compat] section hereinabove.
     2. Bind [real modifiers] to keys using these keysyms with
        `modifier_map`.
 
@@ -3350,8 +3351,8 @@ In order to define and use a modifier, one must:
 
     _Note:_ One can optionally bind directly a virtual modifier to a
     key using `virtualmodifiers` instead of doing it in the
-    `xkb_compat` section. But the recommended way is to use the
-    `xkb_compat` section.
+    [`xkb_compat`][xkb_compat] section. But the recommended way is to
+    use the [`xkb_compat`][xkb_compat] section.
 
     ```c
     // Shift: defined in pc symbols
@@ -4886,7 +4887,7 @@ but *not validated* and are then completely *ignored*.
 
 @todo `ActionMessage`
 
-## The “xkb_geometry” section {#the-xkb_geometry-section}
+## The `xkb_geometry` section {#the-xkb_geometry-section}
 
 This section aims to describe the *physical* layout of a keyboard and its main
 use case is to produce a picture of the keyboard via e.g. the `xkbprint` program.
