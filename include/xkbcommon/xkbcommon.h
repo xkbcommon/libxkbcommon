@@ -1986,14 +1986,22 @@ struct xkb_keymap_serialize_result {
  * @post Otherwise, [`result->serialized`][serialized] is set to `NULL` and
  * all fields of @p result beyond it are left unspecified.
  *
- * @returns `::XKB_SUCCESS` on success; otherwise an
- * [error code](@ref xkb_error_code).
+ * @returns `::XKB_SUCCESS` on success; otherwise an [error code].
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - `::XKB_ERROR_UNSUPPORTED_KEYMAP_SERIALIZATION_FLAGS`
+ * - ::`XKB_ERROR_UNSUPPORTED_KEYMAP_FORMAT`
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
+ * - `::XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED`
  *
  * @since 1.14.0
  *
  * [format]: @ref xkb_keymap_serialize_config::format
  * [layouts]: @ref xkb_keymap_serialize_config::layouts
  * [serialized]: @ref xkb_keymap_serialize_result::serialized
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT enum xkb_error_code
 xkb_keymap_serialize(const struct xkb_keymap *keymap,
@@ -2176,13 +2184,17 @@ struct xkb_keymap_key_iterator_config {
  * @param[out] error
  *     Pointer to store the resulting [error code], or `NULL` if not needed.
  *
+ * @pre @p config must point to a zero-initialized struct with
+ * [`config->size`](@ref xkb_keymap_key_iterator_config::size) set per
+ * @ref abi-struct-contract.
+ *
  * @returns A new keys iterator, or `NULL` on failure.
  *
  * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
- * - Errors from ABI @ref abi-struct-resolution.
  * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
  *
  * @sa `xkb_keymap_key_iterator`
@@ -3252,8 +3264,8 @@ struct xkb_event_components {
  * within [`components->size`](@ref xkb_event_components::size).
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
  * @sa `xkb_event_components`
@@ -3386,8 +3398,8 @@ struct xkb_event_pointer_motion {
  * within [`motion->size`](@ref xkb_event_pointer_motion::size).
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
  * @sa `xkb_event_pointer_motion`
@@ -3508,8 +3520,8 @@ struct xkb_event_pointer_button {
  * within [`button->size`](@ref xkb_event_pointer_button::size).
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`.
  * @sa `xkb_event_pointer_button`
@@ -3646,13 +3658,17 @@ struct xkb_events_config {
  * @param[out] error
  *   Pointer to store the resulting [error code], or `NULL` if not needed.
  *
+ * @pre @p config must point to a zero-initialized struct with
+ * [`config->size`](@ref xkb_events_config::size) set per
+ * @ref abi-struct-contract.
+ *
  * @returns A new [event] collection, or `NULL` on failure.
-  *
+ *
  * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
- * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS`
  *
  * @sa `xkb_events_config`
@@ -3861,13 +3877,17 @@ struct xkb_machine_builder_config {
  * @param[out] error
  *   Pointer to store the resulting [error code], or `NULL` if not needed.
  *
+ * @pre @p config must point to a zero-initialized struct with
+ * [`config->size`](@ref xkb_machine_builder_config::size) set per
+ * @ref abi-struct-contract.
+ *
  * @returns A new `xkb_machine` builder object, or `NULL` on failure.
  *
  * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
- * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS`
  * - `::XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS`
  *
@@ -4062,11 +4082,20 @@ struct xkb_machine_builder_a11y_update {
  * @param[in,out] builder The `xkb_machine` builder object to modify.
  * @param[in]     update  Accessibility update object.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @pre @p update must point to a zero-initialized struct with
+ * [`update->size`](@ref xkb_machine_builder_a11y_update::size) set per
+ * @ref abi-struct-contract.
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code].
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution
+ * - `::XKB_ERROR_UNSUPPORTED_A11Y_FLAGS`
  *
  * @sa `xkb_machine_builder_a11y_update`
  *
  * @since 1.14.0
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT enum xkb_error_code
 xkb_machine_builder_update_a11y(
@@ -4146,7 +4175,15 @@ struct xkb_machine_builder_mods_remap_update {
  * @param[in,out] builder The `xkb_machine` builder object to modify.
  * @param[in]     update  Modifiers remapping update object.
  *
+ * @pre @p update must point to a zero-initialized struct with
+ * [`update->size`](@ref xkb_machine_builder_mods_remap_update::size)
+ * set per @ref abi-struct-contract.
+ *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - `::XKB_ERROR_UNSUPPORTED_MODIFIER_MASK`
  *
  * @since 1.14.0
  */
@@ -4264,11 +4301,22 @@ struct xkb_machine_builder_shortcut_layout_update {
  * @param[in,out] builder The `xkb_machine` builder object to modify.
  * @param[in]     update  Shortcut layout substitution update object.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @pre @p update must point to a zero-initialized struct with
+ * [`update->size`](@ref xkb_machine_builder_shortcut_layout_update::size)
+ * set per @ref abi-struct-contract.
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code].
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ * - `::XKB_ERROR_UNSUPPORTED_MODIFIER_MASK`
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
  *
  * @sa `xkb_machine_builder_shortcut_layout_update`
  *
  * @since 1.14.0
+ *
+ * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT enum xkb_error_code
 xkb_machine_builder_update_shortcut_layout(
@@ -4715,11 +4763,18 @@ struct xkb_state_update {
  *
  * @param[in,out] machine The XKB [state machine] object.
  * @param[in]     update  The update to apply.
- *                        Must have `xkb_state_update::size` set.
  * @param[out]    events  The event batch to collect events into. It will be
  *                        reset before collecting.
  *
+ * @pre @p update must point to a zero-initialized struct with
+ * [`update->size`](@ref xkb_state_update::size) set per
+ * @ref abi-struct-contract.
+ *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY`
  *
  * @sa `xkb_state_update`
  * @sa `xkb_machine_process_key()`
@@ -5053,12 +5108,18 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * restricted set of libxkbcommon features.  Since 1.14.0, prefer `xkb_machine`
  * for new server applications to enable the full feature set.
  *
- * @param[in,out] state   The keyboard state object.
- * @param[in]     update  The update to apply.
- *                        Must have `xkb_state_update::size` set.
- * @param[out]    changed A pointer to store the mask of state components that
- *                        have changed as a result of the update, or `NULL` to
- *                        ignore. Set to 0 if nothing in the state has changed.
+ * @param[in,out] state
+ *   The keyboard state object.
+ * @param[in] update
+ *   The update to apply.
+ * @param[out] changed
+ *   A pointer to the mask of state components that have changed as a result of
+ *   the update, or `NULL` to ignore.  If nothing in the state has changed, the
+ *   mask is set to 0.
+ *
+ * @pre @p update must point to a zero-initialized struct with
+ * [`update->size`](@ref xkb_state_update::size) set per
+ * @ref abi-struct-contract.
  *
  * @returns
  * - `::XKB_SUCCESS` on success;
