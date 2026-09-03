@@ -238,8 +238,8 @@ typedef uint32_t xkb_keycode_t;
  *
  * @ingroup keysyms
  * @sa `::XKB_KEYSYM_MAX`
- * @sa @ref keysym-encoding
- * @sa @ref predefined-keysyms
+ * @sa @ref keysym-encoding ""
+ * @sa @ref predefined-keysyms ""
  */
 typedef uint32_t xkb_keysym_t;
 
@@ -868,8 +868,8 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * Utility functions related to [*keysyms*](@ref xkb_keysym_t) (short for
  * “key symbols”).
  *
- * @sa keysym-encoding
- * @sa predefined-keysyms
+ * @sa @ref keysym-encoding ""
+ * @sa @ref predefined-keysyms ""
  *
  * @{
  */
@@ -994,6 +994,7 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  * have an associated keysym constant (`XKB_KEY_*`).
  *
  * @sa `xkb_keysym_to_utf8()`
+ * @sa `xkb_utf32_to_keysym()`
  *
  * @since 1.14.0
  */
@@ -1015,6 +1016,8 @@ xkb_utf8_to_keysym(const char *buffer, size_t size);
  * Therefore, prefer to use `xkb_state::xkb_state_key_get_utf8()` if possible.
  *
  * @sa `xkb_state::xkb_state_key_get_utf8()`
+ * @sa `xkb_utf8_to_keysym()`
+ * @sa `xkb_keysym_to_utf32()`
  */
 XKB_EXPORT int
 xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
@@ -1030,6 +1033,8 @@ xkb_keysym_to_utf8(xkb_keysym_t keysym, char *buffer, size_t size);
  * Therefore, prefer to use `xkb_state::xkb_state_key_get_utf32()` if possible.
  *
  * @sa `xkb_state::xkb_state_key_get_utf32()`
+ * @sa `xkb_utf32_to_keysym()`
+ * @sa `xkb_keysym_to_utf8()`
  */
 XKB_EXPORT uint32_t
 xkb_keysym_to_utf32(xkb_keysym_t keysym);
@@ -1049,6 +1054,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * have an associated keysym constant (`XKB_KEY_*`).
  *
  * @sa `xkb_keysym_to_utf32()`
+ * @sa `xkb_utf8_to_keysym()`
  *
  * @since 1.0.0
  * @since 1.9.0: Enable support for all noncharacters.
@@ -4184,6 +4190,8 @@ struct xkb_machine_builder_mods_remap_update {
  * - Errors from ABI @ref abi-struct-resolution.
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_MODIFIER_MASK`
+ *
+ * @sa `struct xkb_machine_builder_mods_remap_update`
  *
  * @since 1.14.0
  */
