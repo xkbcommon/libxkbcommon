@@ -4795,15 +4795,15 @@ see the effect hereinafter for further details.
 ### Legacy X11 actions {#legacy-x11-actions}
 
 [legacy action]: @ref legacy-x11-actions
+[Private]: @ref private-action
 
 @attention The following legacy actions are kept for compatibility only: they are parsed
 and validated but have no effect. This allows to use keymaps defined in
 <code>[xkeyboard-config]</code> for both X11 and Wayland.
 
-#### Private action {#private-action}
-
-[Private]: @ref private-action
-
+<dl>
+<dt>`Private` @anchor private-action</dt>
+<dd>
 Raw encoding of an action. Aimed to support arbitrary action unknown to the XKB
 compiler.
 
@@ -4842,13 +4842,15 @@ Action type, as encoded in the XKB protocol
 Examples:
 - `Private(type=123, data="abcdefg");`
 - `Private(type=123, data[1]=0, data[2]=100, data[3]=12);`
+</dd>
+</dl>
 
 ### Unsupported legacy X11 actions {#unsupported-legacy-x11-actions}
 
 [unsupported legacy action]: @ref unsupported-legacy-x11-actions
 
 @attention The following legacy actions are **unsupported**: they are parsed
-and but *not validated* and are then completely *ignored*.
+but *not validated* and are then completely *ignored*.
 
 #### ISO lock
 

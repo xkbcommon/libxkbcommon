@@ -448,7 +448,7 @@ typedef uint32_t xkb_led_mask_t;
  * @brief Explains how extensible structures maintain ABI compatibility
  * across library releases.
  *
- * To guarantee long-term forward and backward compatibility of the ABI,
+ * To guarantee long-term backward and forward compatibility of the ABI,
  * functions across this library accept **extensible structures** that
  * share a common **ABI contract**.
  *
@@ -2182,7 +2182,7 @@ xkb_keymap_key_iterator_new(
 );
 
 /**
- * Take a new reference on an keymap’s [keys] [iterator] object.
+ * Take a new reference on a keymap’s [keys] [iterator] object.
  *
  * @note The [iterator]’s cursor is a *shared* state: advancing it via
  * `xkb_keymap_key_iterator_next()` through *any* reference advances it
@@ -2205,7 +2205,7 @@ XKB_EXPORT struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter);
 
 /**
- * Release a reference on an keymap’s [keys] [iterator],
+ * Release a reference on a keymap’s [keys] [iterator],
  * and possibly free it.
  *
  * @param[in] iter
@@ -2693,7 +2693,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
 
 /**
  * @struct xkb_event
- * Opaque keyboard state event object.
+ * Opaque keyboard **state event** object.
  *
  * Events are produced by `xkb_machine::xkb_machine_process_key()` and
  * `xkb_machine::xkb_machine_process_synthetic()` and collected into an
@@ -2701,8 +2701,16 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * action within a frame.
  *
  * Inspect the event type with `xkb_event::xkb_event_get_type()`, then extract
- * data with the appropriate `xkb_event::xkb_event_get_*()` or
- * `xkb_event::xkb_event_serialize_*()` functions.
+ * data with the appropriate function:
+ *
+ * | Event type                                  | Getter |
+ * | ------------------------------------------- | ------ |
+ * | `::XKB_EVENT_TYPE_KEY`                      | `xkb_event::xkb_event_get_keycode()` |
+ * | `::XKB_EVENT_TYPE_STATE_COMPONENTS`         | `xkb_event::xkb_event_serialize_components()` |
+ * | `::XKB_EVENT_TYPE_POINTER_MOTION`           | `xkb_event::xkb_event_get_pointer_motion()` |
+ * | `::XKB_EVENT_TYPE_POINTER_BUTTON`           | `xkb_event::xkb_event_get_pointer_button()` |
+ * | `::XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER` | (no getter) |
+ * | `::XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE`   | `xkb_event::xkb_event_get_virtual_console()` |
  *
  * @warning Event pointers are only valid until the next call to
  * `xkb_machine::xkb_machine_process_key()` or
@@ -2711,7 +2719,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  *
  * @since 1.14.0
  *
- * @sa `xkb_event_type`
+ * @sa `enum xkb_event_type`
  * @sa `xkb_events`
  */
 struct xkb_event;
@@ -3060,7 +3068,7 @@ enum xkb_keyboard_control_flags {
  *
  * Serialized [state components].
  *
- * @sa `enum xkb_state_component components`
+ * @sa `enum xkb_state_component`
  * @sa `xkb_event::xkb_event_serialize_components()`
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
  *
@@ -3213,7 +3221,7 @@ struct xkb_event_components {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  * - Errors from ABI @ref abi-struct-resolution.
  *
- * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`.
+ * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
  * @sa `xkb_event_components`
  *
  * @since 1.14.0
@@ -3369,13 +3377,27 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
  * @since 1.14.0
  */
 enum xkb_pointer_button_direction {
-    /** The pointer button was *pressed*. */
+    /**
+     * The pointer button was *pressed*.
+     *
+     * @since 1.14.0
+     */
     XKB_POINTER_BUTTON_DOWN = (1 << 0),
-    /** The pointer button was *released*. */
+    /**
+     * The pointer button was *released*.
+     *
+     * @since 1.14.0
+     */
     XKB_POINTER_BUTTON_UP = (1 << 1),
-    /** The pointer button was *clicked* (pressed then released). */
+    /**
+     * The pointer button was *clicked* (pressed then released).
+     *
+     * Equals `XKB_POINTER_BUTTON_DOWN | XKB_POINTER_BUTTON_UP`.
+     *
+     * @since 1.14.0
+     */
     XKB_POINTER_BUTTON_CLICK = ( XKB_POINTER_BUTTON_UP
-                               | XKB_POINTER_BUTTON_DOWN),
+                               | XKB_POINTER_BUTTON_DOWN ),
 };
 
 /**
@@ -3979,7 +4001,7 @@ struct xkb_machine_builder_a11y_update {
      */
     uint32_t affect;
     /**
-     * Mask of [accessibility flags] to to set or unset.
+     * Mask of [accessibility flags] to set or unset.
      *
      * Flags in #affect but not in #flags are cleared.
      * Flags outside #affect are not changed.
@@ -4160,7 +4182,7 @@ struct xkb_machine_builder_shortcut_layout_update {
      */
     xkb_layout_index_t target;
     /**
-     * Modifiers to affected by the update, using their [encoding].
+     * Modifiers affected by the update, using their [encoding].
      *
      * If set to `0`, then #mods_affect and #mods are ignored.
      *
