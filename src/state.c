@@ -2057,7 +2057,7 @@ state_update_layout_policy(struct xkb_server_state *state,
                     update->redirect;
             } else {
                 log_err(state->base.keymap->ctx,
-                        XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX,
+                        XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
                         "Layout policy: "
                         "unsupported layout index %"PRIu32" > %"PRIu32"\n",
                         update->redirect + 1, state->base.keymap->num_groups);
@@ -2068,7 +2068,7 @@ state_update_layout_policy(struct xkb_server_state *state,
         return XKB_SUCCESS;
     } else {
         log_err(state->base.keymap->ctx,
-                XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY,
+                XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY_,
                 "Unsupported layout policy: %d\n", update->policy);
         return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
     }
@@ -3160,13 +3160,13 @@ xkb_machine_builder_update_a11y(
         ~(enum xkb_a11y_flags)XKB_A11Y_FLAGS_VALUES;
 
     if (update->affect & invalid_flags) {
-        log_err(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_,
                 "%s: unrecognized A11Y affected flags: %#x\n",
                 __func__, update->affect & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
     }
     if (update->flags & invalid_flags) {
-        log_err(builder->keymap->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(builder->keymap->ctx, XKB_ERROR_UNSUPPORTED_A11Y_FLAGS_,
                 "%s: unrecognized A11Y flags: %#x\n",
                 __func__, update->flags & invalid_flags);
         return XKB_ERROR_UNSUPPORTED_A11Y_FLAGS;
