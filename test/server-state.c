@@ -269,7 +269,7 @@ test_initial_derived_values(struct xkb_context *ctx)
 
 /* ABI checks */
 static void
-test_state_update(struct xkb_context *ctx)
+test_state_update_abi(struct xkb_context *ctx)
 {
     struct xkb_keymap * const keymap = test_compile_rules(
         ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
@@ -519,6 +519,85 @@ test_state_update(struct xkb_context *ctx)
     xkb_events_unref(events);
     xkb_machine_unref(sm);
     xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
+static void
+test_state_update_basics(struct xkb_context *ctx)
+{
+    struct xkb_keymap * const keymap = test_compile_rules(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
+        "pc104", "pc", NULL, NULL
+    );
+    assert(keymap);
+
+    struct xkb_machine_builder *builder =
+        xkb_machine_builder_new(keymap, NULL, NULL);
+    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_builder_unref(builder);
+
+    /* Unconsummed events: xkb_machine_process_key */
+    struct xkb_events * events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+    enum xkb_error_code error = xkb_machine_process_key(
+        sm, KEY_A + EVDEV_OFFSET, XKB_KEY_DOWN, events
+    );
+    assert(error == XKB_SUCCESS);
+    /* Events are not consumed before next call */
+    error = xkb_machine_process_key(
+        sm, KEY_A + EVDEV_OFFSET, XKB_KEY_UP, events
+    );
+    assert(error == XKB_SUCCESS);
+    /* Press event is lost */
+    struct xkb_event event = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_KEY,
+        .key = { .keycode = KEY_A + EVDEV_OFFSET, .direction = XKB_KEY_UP }
+    };
+    check_events_(events, event); /* only 1 event */
+    xkb_events_unref(events);
+
+    /* Unconsummed events: xkb_machine_process_synthetic */
+    events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+    struct xkb_state_components_update components_update = {
+        .size = sizeof(components_update),
+        .components = XKB_STATE_MODS_LATCHED,
+        .affect_latched_mods = UINT32_MAX,
+        .latched_mods = 0x1,
+        /* unused until setting the XKB_STATE_MODS_LOCKED */
+        .affect_locked_mods = UINT32_MAX,
+        .locked_mods = 0x4
+    };
+    const struct xkb_state_update state_update = {
+        .size = sizeof(state_update),
+        .components = &components_update
+    };
+    error = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(error == XKB_SUCCESS);
+    /* Events are not consumed before next call */
+    components_update.components = XKB_STATE_MODS_LOCKED;
+    error = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(error == XKB_SUCCESS);
+    /* First component event is lost */
+    event = (struct xkb_event) {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+        .components = {
+            .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
+            .components = {
+                .latched_mods = 0x1,
+                .locked_mods = 0x4,
+                .mods = 0x5
+            }
+        }
+    };
+    check_events_(events, event); /* only 1 event */
+    xkb_events_unref(events);
+
+
+    xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
 
@@ -5843,9 +5922,11 @@ main(void)
            error == XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS);
     struct xkb_events *events = xkb_events_new(context, NULL, &error);
     assert(events && error == XKB_SUCCESS);
+    assert(!xkb_events_next(events));
     xkb_events_unref(events);
 
-    test_state_update(context);
+    test_state_update_abi(context);
+    test_state_update_basics(context);
     test_group_wrap(context);
     test_sticky_keys(context);
     test_redirect_key(context);

@@ -3650,6 +3650,9 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
     // TODO: use a *transaction* mechanism: either the whole update succeeds
     //       or rollback
 
+    darray_size(events->queue) = 0;
+    events->next = 0;
+
     /* Update parametrized controls first */
     if (update->layout_policy) {
         error = state_update_layout_policy(state, update->layout_policy);
