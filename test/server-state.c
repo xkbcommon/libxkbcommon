@@ -646,12 +646,13 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, NULL, NULL);
     assert(builder);
 
-    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
-    assert(sm);
+    enum xkb_error_code error;
+    struct xkb_machine * const sm = xkb_machine_new(builder, &error);
+    assert(sm && error == XKB_SUCCESS);
     xkb_machine_builder_unref(builder);
 
-    struct xkb_state * const state = xkb_state_new(keymap);
-    assert(state);
+    struct xkb_state * const state = xkb_state_new_from_machine(sm, &error);
+    assert(state && error == XKB_SUCCESS);
 
     struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
@@ -730,8 +731,7 @@ test_group_wrap(struct xkb_context *ctx)
         };
         assert(xkb_machine_process_synthetic(sm, &req, events) == XKB_SUCCESS);
         while ((event = xkb_events_next(events))) {
-            const enum xkb_error_code error =
-                xkb_state_update_event(state, event, NULL);
+            error = xkb_state_update_event(state, event, NULL);
             assert(error == XKB_SUCCESS);
         }
         assert_eq("unexpected effective group", tests[t].expected_group,
@@ -1027,7 +1027,7 @@ test_sticky_keys(struct xkb_context *ctx)
     xkb_machine_builder_unref(sm_builder);
     events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
-    state = xkb_state_new(keymap);
+    state = xkb_state_new_from_machine(sm, NULL);
     assert(state);
     update_controls(sm, events, state, true,
                     XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
