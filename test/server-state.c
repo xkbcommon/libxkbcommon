@@ -527,15 +527,14 @@ test_state_update_basics(struct xkb_context *ctx)
 {
     struct xkb_keymap * const keymap = test_compile_rules(
         ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
-        "pc104", "pc", NULL, NULL
+        "pc104", "pc,pc,pc", NULL, NULL
     );
     assert(keymap);
 
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, NULL, NULL);
-    struct xkb_machine * const sm = xkb_machine_new(builder, NULL);
+    struct xkb_machine * sm = xkb_machine_new(builder, NULL);
     assert(sm);
-    xkb_machine_builder_unref(builder);
 
     /* Unconsummed events: xkb_machine_process_key */
     struct xkb_events * events = xkb_events_new(ctx, NULL, NULL);
@@ -558,22 +557,106 @@ test_state_update_basics(struct xkb_context *ctx)
     check_events_(events, event); /* only 1 event */
     xkb_events_unref(events);
 
-    /* Unconsummed events: xkb_machine_process_synthetic */
+    /* Check components update mask */
     events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     struct xkb_state_components_update components_update = {
         .size = sizeof(components_update),
-        .components = XKB_STATE_MODS_LATCHED,
+        .components = 0,
+        /* unused until setting the proper component mask */
         .affect_latched_mods = UINT32_MAX,
         .latched_mods = 0x1,
-        /* unused until setting the XKB_STATE_MODS_LOCKED */
         .affect_locked_mods = UINT32_MAX,
-        .locked_mods = 0x4
+        .locked_mods = 0x4,
+        .latched_layout = 1,
+        .locked_layout = 1,
+        .affect_controls = 0xffff,
+        .controls = (uint32_t)XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
     };
     const struct xkb_state_update state_update = {
         .size = sizeof(state_update),
         .components = &components_update
     };
+    const xkb_led_index_t led = _xkb_keymap_led_get_index(keymap, "Group 2");
+    const xkb_led_mask_t leds = (UINT32_C(1) << led);
+    event = (struct xkb_event) {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_NONE,
+        .components = {
+            .changed = XKB_STATE_MODS_LATCHED | XKB_STATE_MODS_LOCKED
+                     | XKB_STATE_MODS_EFFECTIVE
+                     | XKB_STATE_LAYOUT_LATCHED | XKB_STATE_LAYOUT_LOCKED
+                     | XKB_STATE_LAYOUT_EFFECTIVE
+                     | XKB_STATE_LEDS
+                     | XKB_STATE_CONTROLS,
+            .components = {
+                .latched_mods = components_update.latched_mods,
+                .locked_mods = components_update.locked_mods,
+                .mods = components_update.latched_mods
+                      | components_update.locked_mods,
+                .latched_group = components_update.latched_layout,
+                .locked_group = components_update.locked_layout,
+                .group = components_update.latched_layout
+                       + components_update.locked_layout,
+                .leds = leds,
+                .controls = components_update.controls,
+            }
+        }
+    };
+    struct xkb_state * const state1 =
+        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER, &error);
+    assert(state1 && error == XKB_SUCCESS);
+    enum xkb_state_component changed = 0;
+    error = xkb_state_update_synthetic(state1, &state_update, &changed);
+    assert(error == XKB_SUCCESS && !changed);
+    error = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(error == XKB_SUCCESS);
+    check_events_(events, event); /* No update because unset components mask  */
+
+    components_update.components = event.components.changed;
+    error = xkb_state_update_synthetic(state1, &state_update, &changed);
+    assert(error == XKB_SUCCESS && changed == event.components.changed);
+    error = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(error == XKB_SUCCESS);
+    event.type = XKB_EVENT_TYPE_STATE_COMPONENTS;
+    check_events_(events, event);
+    struct xkb_state * const state2 = xkb_state_new_from_machine(sm, &error);
+    assert(state2 && error == XKB_SUCCESS);
+
+    struct xkb_state * states[] = {state1, state2};
+    for (size_t s = 0; s < ARRAY_SIZE(states); s++) {
+        struct xkb_state * const state = states[s];
+        assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == 0);
+        assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) ==
+            event.components.components.latched_mods);
+        assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) ==
+            event.components.components.locked_mods);
+        assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) ==
+            event.components.components.mods);
+        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) ==
+            (xkb_layout_index_t)event.components.components.latched_group);
+        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) ==
+            (xkb_layout_index_t)event.components.components.locked_group);
+        assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE) ==
+            event.components.components.group);
+        assert(xkb_state_serialize_leds(state, XKB_STATE_LEDS) ==
+            event.components.components.leds);
+        assert(xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS) ==
+            (enum xkb_keyboard_control_flags)event.components.components.controls);
+    }
+
+    xkb_state_unref(state1);
+    xkb_state_unref(state2);
+    xkb_events_unref(events);
+    xkb_machine_unref(sm);
+
+    /* Unconsummed events: xkb_machine_process_synthetic */
+    sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+    components_update.components = XKB_STATE_MODS_LATCHED;
     error = xkb_machine_process_synthetic(sm, &state_update, events);
     assert(error == XKB_SUCCESS);
     /* Events are not consumed before next call */
@@ -585,19 +668,21 @@ test_state_update_basics(struct xkb_context *ctx)
         .ctx = ctx,
         .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
         .components = {
+            /* Only locked mods are updated */
             .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
             .components = {
-                .latched_mods = 0x1,
-                .locked_mods = 0x4,
-                .mods = 0x5
+                .latched_mods = components_update.latched_mods,
+                .locked_mods = components_update.locked_mods,
+                .mods = components_update.latched_mods
+                      | components_update.locked_mods,
             }
         }
     };
     check_events_(events, event); /* only 1 event */
     xkb_events_unref(events);
-
-
     xkb_machine_unref(sm);
+
+    xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
 

@@ -1961,7 +1961,8 @@ state_update_latched_locked(
     /* Update locks */
     const xkb_mod_mask_t affect_locked_mods =
         resolve_to_canonical_mods(state->base.keymap, update->affect_locked_mods);
-    if (affect_locked_mods) {
+    if ((update->components & XKB_STATE_MODS_LOCKED) &&
+        affect_locked_mods) {
         const xkb_mod_mask_t locked_mods =
             resolve_to_canonical_mods(state->base.keymap, update->locked_mods);
         state->base.components.locked_mods &= ~affect_locked_mods;
@@ -1974,7 +1975,8 @@ state_update_latched_locked(
     /* Update latches */
     const xkb_mod_mask_t affect_latched_mods =
         resolve_to_canonical_mods(state->base.keymap, update->affect_latched_mods);
-    if (affect_latched_mods) {
+    if ((update->components & XKB_STATE_MODS_LATCHED) &&
+        affect_latched_mods) {
         const xkb_mod_mask_t latched_mods =
             resolve_to_canonical_mods(state->base.keymap, update->latched_mods);
         update_latch_modifiers(state, events, affect_latched_mods, latched_mods);
@@ -2135,9 +2137,11 @@ xkb_state_update_synthetic(struct xkb_state * base_state,
         const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
-        state_update_enabled_controls(state,
-                                      components->affect_controls,
-                                      components->controls, NULL);
+        if (components->components & XKB_STATE_CONTROLS) {
+            state_update_enabled_controls(state,
+                                          components->affect_controls,
+                                          components->controls, NULL);
+        }
 
         state_update_latched_locked(state, components, NULL);
     }
@@ -3664,9 +3668,11 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
         const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
-        state_update_enabled_controls(state,
-                                      components->affect_controls,
-                                      components->controls, events);
+        if (components->components & XKB_STATE_CONTROLS) {
+            state_update_enabled_controls(state,
+                                          components->affect_controls,
+                                          components->controls, events);
+        }
 
         state_update_latched_locked(state, components, events);
     }
