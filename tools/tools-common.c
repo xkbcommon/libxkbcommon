@@ -367,7 +367,7 @@ print_controls(struct xkb_state *state, bool verbose) {
     );
 
     const enum xkb_keyboard_control_flags ctrls =
-        xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS);
+        xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
 
     if (verbose)
         printf("0x%08x ", ctrls);
@@ -676,7 +676,7 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
                         XKB_CONSUMED_MODE_XKB /* unused*/, false);
         if (changed & XKB_STATE_LEDS)
             printf("leds ");
-        if (changed & XKB_STATE_CONTROLS)
+        if (changed & XKB_STATE_CONTROLS_EFFECTIVE)
             printf("controls ");
         printf("]\n");
     } else {
@@ -703,7 +703,7 @@ tools_print_state_changes(const char *prefix, struct xkb_state *state,
             printf("\n");
         }
 
-        if (changed & XKB_STATE_CONTROLS) {
+        if (changed & XKB_STATE_CONTROLS_EFFECTIVE) {
             printf(INDENT "Controls: ");
             print_controls(state, true);
             printf("\n");

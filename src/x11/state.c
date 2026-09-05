@@ -35,7 +35,7 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
     /* NOTE: Use the public API with private enum values */
     const struct xkb_state_components_update components = {
         .size = sizeof(components),
-        .components = XKB_STATE_CONTROLS,
+        .components = XKB_STATE_CONTROLS_EFFECTIVE,
         .affect_controls = (enum xkb_keyboard_control_flags) controls,
         .controls = (enum xkb_keyboard_control_flags) controls,
     };

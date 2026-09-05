@@ -2964,6 +2964,8 @@ xkb_event_get_keycode(const struct xkb_event *event,
  *
  * In XKB, the `DEPRESSED` components are also known as *base*.
  *
+ * @remark Values `0x200..0x800` are reserved for future use.
+ *
  * [modifier]: @ref modifier-def
  * [layout]: @ref layout-def
  * [indicator]: @ref indicator-def
@@ -3057,13 +3059,13 @@ enum xkb_state_component {
      */
     XKB_STATE_LEDS = (1 << 8),
     /**
-     * Effective [keyboard controls]
+     * Effective [keyboard controls].
      *
      * @since 1.14.0
      *
      * [keyboard controls]: @ref xkb_keyboard_control_flags
      */
-    XKB_STATE_CONTROLS = (1 << 9)
+    XKB_STATE_CONTROLS_EFFECTIVE = (1 << 12),
 };
 
 /**
@@ -3294,7 +3296,7 @@ struct xkb_event_components {
      * Serialized [keyboard controls].
      *
      * @sa `enum xkb_keyboard_control_flags`
-     * @sa `::XKB_STATE_CONTROLS`
+     * @sa `::XKB_STATE_CONTROLS_EFFECTIVE`
      *
      * @since 1.14.0
      *
@@ -4515,11 +4517,11 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * `xkb_machine::xkb_machine_process_synthetic()`.
  *
  * Which fields are considered is determined by `components`:
- * - `::XKB_STATE_MODS_LATCHED`   → `affect_latched_mods`, `latched_mods`
- * - `::XKB_STATE_MODS_LOCKED`    → `affect_locked_mods`, `locked_mods`
- * - `::XKB_STATE_LAYOUT_LATCHED` → `latched_layout`
- * - `::XKB_STATE_LAYOUT_LOCKED`  → `locked_layout`
- * - `::XKB_STATE_CONTROLS`       → `affect_controls`, `controls`
+ * - `::XKB_STATE_MODS_LATCHED`       → `affect_latched_mods`, `latched_mods`
+ * - `::XKB_STATE_MODS_LOCKED`        → `affect_locked_mods`, `locked_mods`
+ * - `::XKB_STATE_LAYOUT_LATCHED`     → `latched_layout`
+ * - `::XKB_STATE_LAYOUT_LOCKED`      → `locked_layout`
+ * - `::XKB_STATE_CONTROLS_EFFECTIVE` → `affect_controls`, `controls`
  *
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
@@ -4545,7 +4547,7 @@ struct xkb_state_components_update {
      * - `::XKB_STATE_MODS_LOCKED`
      * - `::XKB_STATE_LAYOUT_LATCHED`
      * - `::XKB_STATE_LAYOUT_LOCKED`
-     * - `::XKB_STATE_CONTROLS`
+     * - `::XKB_STATE_CONTROLS_EFFECTIVE`
      *
      * Other components are ignored.
      *
@@ -4628,7 +4630,7 @@ struct xkb_state_components_update {
      * Mask of boolean [keyboard controls] to affect.
      *
      * Only controls present in this mask are considered when updating
-     * `controls`. Only considered if `::XKB_STATE_CONTROLS` is set in
+     * `controls`. Only considered if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in
      * `components`.
      *
      * @sa `xkb_keyboard_control_flags`
@@ -4642,7 +4644,7 @@ struct xkb_state_components_update {
      * Mask of boolean [keyboard controls] to enable or disable.
      *
      * Only controls in `affect_controls` are considered. Only considered
-     * if `::XKB_STATE_CONTROLS` is set in `components`.
+     * if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in `components`.
      *
      * @sa `xkb_keyboard_control_flags`
      *
@@ -5503,7 +5505,7 @@ enum xkb_state_match {
  *
  * @param[in] state      The keyboard state.
  * @param[in] components A mask of the keyboard control state components to
- * serialize. State components other than `::XKB_STATE_CONTROLS` are ignored.
+ * serialize. State components other than `::XKB_STATE_CONTROLS_EFFECTIVE` are ignored.
  *
  * @returns A `xkb_keyboard_control_flags` mask representing the enabled
  * keyboard controls for the given @p components.

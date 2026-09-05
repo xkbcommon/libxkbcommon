@@ -473,7 +473,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         } else if (use_local_state && !use_events_api) {
             const struct xkb_state_components_update components = {
                 .size = sizeof(components),
-                .components = XKB_STATE_CONTROLS,
+                .components = XKB_STATE_CONTROLS_EFFECTIVE,
                 .affect_controls = machine_options.controls.boolean.affect_flags,
                 .controls = machine_options.controls.boolean.flags,
             };
@@ -510,7 +510,7 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
             if (seat->events) {
                 const struct xkb_state_components_update components = {
                     .size = sizeof(components),
-                    .components = XKB_STATE_CONTROLS,
+                    .components = XKB_STATE_CONTROLS_EFFECTIVE,
                     .affect_controls = machine_options.controls.boolean.affect_flags,
                     .controls = machine_options.controls.boolean.flags,
                 };

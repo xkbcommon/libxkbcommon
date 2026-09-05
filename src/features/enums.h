@@ -152,7 +152,7 @@ enum xkb_enumerations_values {
         | XKB_STATE_LAYOUT_LOCKED
         | XKB_STATE_LAYOUT_EFFECTIVE
         | XKB_STATE_LEDS
-        | XKB_STATE_CONTROLS
+        | XKB_STATE_CONTROLS_EFFECTIVE
     ,
     XKB_KEYBOARD_CONTROL_FLAGS_VALUES
         = XKB_KEYBOARD_CONTROL_NO_FLAGS
@@ -334,7 +334,7 @@ static const uint32_t xkb_state_component_values[] = {
     XKB_STATE_LAYOUT_LOCKED,
     XKB_STATE_LAYOUT_EFFECTIVE,
     XKB_STATE_LEDS,
-    XKB_STATE_CONTROLS,
+    XKB_STATE_CONTROLS_EFFECTIVE,
 };
 #endif
 

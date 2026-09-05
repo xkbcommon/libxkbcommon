@@ -457,7 +457,7 @@ struct xkb_sym_interpret {
 
 enum {XKB_STATE_COMPONENT_WIDTH = (sizeof(enum xkb_state_component) * CHAR_BIT)};
 static_assert(
-    (UINT64_C(1) << XKB_STATE_COMPONENT_WIDTH) - 1 > XKB_STATE_CONTROLS,
+    (UINT64_C(1) << XKB_STATE_COMPONENT_WIDTH) - 1 > XKB_STATE_CONTROLS_EFFECTIVE,
     "Cannot encode xkb_led::pending_groups"
 );
 
