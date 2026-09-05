@@ -270,6 +270,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `enum xkb_pointer_button_direction` (new)
   - `struct xkb_event_pointer_button` (new)
   - `struct xkb_state`:
+    - `xkb_state::xkb_state_new_from_machine()`
     - `xkb_state::xkb_state_update_event()`
 
   This is the recommended API for **server** applications. It enables the full

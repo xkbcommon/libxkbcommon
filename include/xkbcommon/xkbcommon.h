@@ -84,7 +84,7 @@ struct xkb_keymap;
  * @ingroup state
  * Opaque XKB state machine object.
  *
- * `xkb_machine` is a [Mealy machine]<!-- -->: it is a finite-state machine that
+ * `xkb_machine` is a [Mealy machine]&zwnj;: it is a finite-state machine that
  * takes a stream of raw key events – a pair ([keycode], [direction]) – as input,
  * and produces a stream of atomic [XKB events](@ref xkb_event) as output. Output
  * depends on *both* the input and the current internal state (active modifiers,
@@ -93,14 +93,14 @@ struct xkb_keymap;
  * This is the authoritative object for *server-side* XKB processing.
  *
  * @note To query the resulting keyboard state (active modifiers, current
- * layout, LED states, etc.), pair this object with an `xkb_state` updated via
+ * layout, LED states, etc.), pair this object with an `xkb_state` created via
+ * `xkb_state::xkb_state_new_from_machine()` and updated via
  * `xkb_state::xkb_state_update_event()`. The `xkb_state` object is the
  * *observable state* of the machine and provides the full query API.
  *
  * See @ref server-client-state for details.
  *
- * See the [example for a Wayland server](@ref quick-guide-wayland-server)
- * in the quick guide.
+ * See the [example for a Wayland server] in the quick guide.
  *
  * @since 1.14.0
  *
@@ -108,6 +108,7 @@ struct xkb_keymap;
  * [keycode]: @ref xkb_keycode_t
  * [direction]: @ref xkb_key_direction
  * [keyboard events]: @ref xkb_event
+ * [example for a Wayland server]: @ref quick-guide-wayland-server
  */
 struct xkb_machine;
 
@@ -4958,6 +4959,46 @@ XKB_EXPORT struct xkb_state *
 xkb_state_new_with_mode(struct xkb_keymap *keymap,
                         enum xkb_state_mode mode,
                         enum xkb_error_code *error);
+
+/**
+ * Create a new keyboard state object as an observer of an `xkb_machine`.
+ * @memberof xkb_state
+ *
+ * Constructor for *server* applications using the `xkb_machine` API:
+ * - state mode set to `::XKB_STATE_MODE_SERVER_QUERY`;
+ * - keymap referenced from @p machine’s keymap;
+ * - initialized with @p machine’s state.
+ * See @ref server-client-state for further information.
+ *
+ * @note The created state must be kept in sync with the machine using
+ * `xkb_state_update_event()`.
+ *
+ * @note The returned state is independent of the machine’s lifetime.
+ *
+ * @param[in] machine
+ *   The [state machine] whose keymap the new state will use.
+ * @param[out] error
+ *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ *
+ * @returns A new keyboard state object, or `NULL` on failure.
+ *
+ * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * on *success* or to an [error code] corresponding to the failure.
+ * Possible errors are:
+ * - `::XKB_ERROR_ALLOCATION_FAILURE`
+ *
+ * @sa `xkb_state_new_with_mode()`
+ * @sa `::XKB_STATE_MODE_SERVER_QUERY`
+ * @sa `xkb_machine`
+ *
+ * @since 1.14.0
+ *
+ * [state machine]: @ref xkb_machine
+ * [error code]: @ref xkb_error_code
+ */
+XKB_EXPORT struct xkb_state *
+xkb_state_new_from_machine(const struct xkb_machine *machine,
+                           enum xkb_error_code *error);
 
 /**
  * Create a new keyboard state object.

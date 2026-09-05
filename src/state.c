@@ -3556,6 +3556,38 @@ xkb_machine_get_state(struct xkb_machine *sm)
     return (struct xkb_state *)sm;
 }
 
+struct xkb_state *
+xkb_state_new_from_machine(const struct xkb_machine * restrict machine,
+                           enum xkb_error_code * restrict error)
+{
+    /* Creation */
+    enum xkb_error_code error_;
+    struct xkb_state * const state = xkb_state_new_with_mode(
+        machine->base.base.keymap,
+        XKB_STATE_MODE_SERVER_QUERY,
+        &error_
+    );
+    if (error_ != XKB_SUCCESS) {
+        if (error)
+            *error = error_;
+        return NULL;
+    }
+
+    assert(state->mode == SERVER_COMPANION);
+    assert(state->refcnt == 1);
+
+    /* Copy machine’s state */
+    *state = machine->base.base;
+
+    /* Restore previous values */
+    state->mode = SERVER_COMPANION;
+    state->refcnt = 1;
+
+    if (error)
+        *error = XKB_SUCCESS;
+    return state;
+}
+
 static void
 machine_update_overlays(struct xkb_machine *sm)
 {
