@@ -4478,9 +4478,10 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @since 1.14.0
+ * @sa `struct xkb_state_update`
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
- * @sa `xkb_state_update`
+ * @since 1.14.0
  */
 struct xkb_state_components_update {
     /**
@@ -4503,7 +4504,7 @@ struct xkb_state_components_update {
      *
      * Other components are ignored.
      *
-     * @sa `xkb_state_component`
+     * @sa `enum xkb_state_component`
      *
      * @since 1.14.0
      */
@@ -4512,8 +4513,8 @@ struct xkb_state_components_update {
      * Mask of [latched modifiers] to affect.
      *
      * Only modifiers present in this mask are considered when updating
-     * `latched_mods`. Only considered if `::XKB_STATE_MODS_LATCHED` is
-     * set in `components`.
+     * `#latched_mods`. Only considered if `::XKB_STATE_MODS_LATCHED` is
+     * set in `#components`.
      *
      * @since 1.14.0
      *
@@ -4523,8 +4524,8 @@ struct xkb_state_components_update {
     /**
      * Modifiers to set as [latched] or unlatched.
      *
-     * Only modifiers in `affect_latched_mods` are considered. Only
-     * considered if `::XKB_STATE_MODS_LATCHED` is set in `components`.
+     * Only modifiers in `#affect_latched_mods` are considered. Only
+     * considered if `::XKB_STATE_MODS_LATCHED` is set in `#components`.
      *
      * @since 1.14.0
      *
@@ -4535,8 +4536,8 @@ struct xkb_state_components_update {
      * Mask of [locked modifiers] to affect.
      *
      * Only modifiers present in this mask are considered when updating
-     * `locked_mods`. Only considered if `::XKB_STATE_MODS_LOCKED` is
-     * set in `components`.
+     * `#locked_mods`. Only considered if `::XKB_STATE_MODS_LOCKED` is
+     * set in `#components`.
      *
      * @since 1.14.0
      *
@@ -4546,8 +4547,8 @@ struct xkb_state_components_update {
     /**
      * Modifiers to set as [locked] or unlocked.
      *
-     * Only modifiers in `affect_locked_mods` are considered. Only
-     * considered if `::XKB_STATE_MODS_LOCKED` is set in `components`.
+     * Only modifiers in `#affect_locked_mods` are considered. Only
+     * considered if `::XKB_STATE_MODS_LOCKED` is set in `#components`.
      *
      * @since 1.14.0
      *
@@ -4559,7 +4560,7 @@ struct xkb_state_components_update {
      *
      * May be out of range (including negative); the layout is brought into
      * range according to the current out-of-range layout policy. Only
-     * considered if `::XKB_STATE_LAYOUT_LATCHED` is set in `components`.
+     * considered if `::XKB_STATE_LAYOUT_LATCHED` is set in `#components`.
      *
      * @sa `xkb_layout_index_t`
      *
@@ -4571,7 +4572,7 @@ struct xkb_state_components_update {
      *
      * May be out of range (including negative); the layout is brought into
      * range according to the current out-of-range layout policy. Only
-     * considered if `::XKB_STATE_LAYOUT_LOCKED` is set in `components`.
+     * considered if `::XKB_STATE_LAYOUT_LOCKED` is set in `#components`.
      *
      * @sa `xkb_layout_index_t`
      *
@@ -4582,10 +4583,10 @@ struct xkb_state_components_update {
      * Mask of boolean [keyboard controls] to affect.
      *
      * Only controls present in this mask are considered when updating
-     * `controls`. Only considered if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in
-     * `components`.
+     * `#controls`. Only considered if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in
+     * `#components`.
      *
-     * @sa `xkb_keyboard_control_flags`
+     * @sa `enum xkb_keyboard_control_flags`
      *
      * @since 1.14.0
      *
@@ -4595,10 +4596,10 @@ struct xkb_state_components_update {
     /**
      * Mask of boolean [keyboard controls] to enable or disable.
      *
-     * Only controls in `affect_controls` are considered. Only considered
-     * if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in `components`.
+     * Only controls in `#affect_controls` are considered. Only considered
+     * if `::XKB_STATE_CONTROLS_EFFECTIVE` is set in `#components`.
      *
-     * @sa `xkb_keyboard_control_flags`
+     * @sa `enum xkb_keyboard_control_flags`
      *
      * @since 1.14.0
      *
@@ -4610,6 +4611,9 @@ struct xkb_state_components_update {
 /**
  * @enum xkb_layout_out_of_range_policy
  * Policies defining how to bring out-of-range [layout indices] into range.
+ *
+ * @sa `struct xkb_state_update`
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
  *
@@ -4650,8 +4654,10 @@ enum xkb_layout_out_of_range_policy {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_layout_out_of_range_policy`
+ * @sa `enum xkb_layout_out_of_range_policy`
  * @sa `xkb_state_update::layout_policy`
+ * @sa `struct xkb_state_update`
+ * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
  */
@@ -4707,8 +4713,8 @@ struct xkb_layout_policy_update {
  *
  * @sa `xkb_state::xkb_state_update_synthetic()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
- * @sa `xkb_state_components_update`
- * @sa `xkb_layout_policy_update`
+ * @sa `struct xkb_state_components_update`
+ * @sa `struct xkb_layout_policy_update`
  *
  * @since 1.14.0
  */
@@ -4792,7 +4798,9 @@ struct xkb_state_update {
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY`
  *
- * @sa `xkb_state_update`
+ * @sa `struct xkb_state_update`
+ * @sa `struct xkb_state_components_update`
+ * @sa `struct xkb_layout_policy_update`
  * @sa `xkb_machine_process_key()`
  *
  * @since 1.14.0
@@ -5078,7 +5086,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * @param[out] changed
  *   A pointer to the mask of state components that have changed as a result
  *   of the update, or `NULL` to ignore.  If nothing in the state has changed,
- *   the mask is set to 0 (`::Add XKB_STATE_NO_COMPONENT`).
+ *   the mask is set to 0 (`::XKB_STATE_NO_COMPONENT`).
  *
  * @pre @p state must be created with `::XKB_STATE_MODE_SERVER_QUERY` or
  * `xkb_state_new()`, otherwise the call is *rejected* without updating
@@ -5187,6 +5195,12 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *   A pointer to the mask of state components that have changed as a result of
  *   the update, or `NULL` to ignore.  If nothing in the state has changed, the
  *   mask is set to 0 (`::XKB_STATE_NO_COMPONENT`).
+ *
+ * @important If @p state was not created with `::XKB_STATE_MODE_SERVER` or
+ * `xkb_state_new()`, the call is *rejected* without updating the state,
+ * and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * The return value is `0` in this case, which is indistinguishable from
+ * a no-op update.
  *
  * @pre @p update must point to a zero-initialized struct with
  * [`update->size`](@ref xkb_state_update::size) set per
