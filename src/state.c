@@ -405,7 +405,7 @@ get_state_component_changes(const struct state_components *a,
     if (a->leds != b->leds)
         mask |= XKB_STATE_LEDS;
     if (a->controls != b->controls)
-        mask |= XKB_STATE_CONTROLS;
+        mask |= XKB_STATE_CONTROLS_EFFECTIVE;
 
     return mask;
 }
@@ -2137,7 +2137,7 @@ xkb_state_update_synthetic(struct xkb_state * base_state,
         const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
-        if (components->components & XKB_STATE_CONTROLS) {
+        if (components->components & XKB_STATE_CONTROLS_EFFECTIVE) {
             state_update_enabled_controls(state,
                                           components->affect_controls,
                                           components->controls, NULL);
@@ -2538,7 +2538,7 @@ static inline enum xkb_keyboard_control_flags
 serialize_controls(const struct state_components *components,
                    enum xkb_state_component type)
 {
-    return (type & XKB_STATE_CONTROLS)
+    return (type & XKB_STATE_CONTROLS_EFFECTIVE)
         /*
          * Enable using the public API with the all the Controls values, except
          * the internal ones, if any.
@@ -2964,15 +2964,6 @@ struct xkb_machine {
 
     /** Keyboard overlays handling */
     struct {
-        /** Current enabled overlays mask */
-        xkb_overlay_mask_t enabled;
-        /**
-         * Activation order of the overlay
-         *
-         * Overlays indices are stored 1-indexed in nibbles: the lowest
-         * nibble corresponds to the latest activated index.
-         */
-        uint32_t order;
         /**
          * Current overlaid keys
          *
@@ -2981,6 +2972,15 @@ struct xkb_machine {
          * corresponding key release.
          */
         darray(struct xkb_overlaid_key) keys;
+        /**
+         * Activation order of the overlay
+         *
+         * Overlays indices are stored 1-indexed in nibbles: the lowest
+         * nibble corresponds to the latest activated index.
+         */
+        uint32_t order;
+        /** Current enabled overlays mask */
+        xkb_overlay_mask_t enabled;
     } overlays;
 
     /** Configuration */
@@ -3668,7 +3668,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
         const struct xkb_state_components_update * const components =
             update->components;
         /* Update boolean controls first */
-        if (components->components & XKB_STATE_CONTROLS) {
+        if (components->components & XKB_STATE_CONTROLS_EFFECTIVE) {
             state_update_enabled_controls(state,
                                           components->affect_controls,
                                           components->controls, events);
@@ -3684,7 +3684,7 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
     );
     if (changed) {
         // TODO: latch controls
-        if (changed & XKB_STATE_CONTROLS)
+        if (changed & XKB_STATE_CONTROLS_EFFECTIVE)
             machine_update_overlays(sm);
 
         /* Create event only if some component actually changed */
@@ -4041,7 +4041,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
         &previous_components, &state->base.components
     );
     if (changed) {
-        if (changed & XKB_STATE_CONTROLS)
+        if (changed & XKB_STATE_CONTROLS_EFFECTIVE)
             machine_update_overlays(sm);
 
         darray_append(events->queue, (struct xkb_event) {

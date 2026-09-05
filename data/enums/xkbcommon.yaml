@@ -103,8 +103,8 @@ xkb_state_component:
     value: 128
   - name: XKB_STATE_LEDS
     value: 256
-  - name: XKB_STATE_CONTROLS
-    value: 512
+  - name: XKB_STATE_CONTROLS_EFFECTIVE
+    value: 4096
 xkb_keyboard_control_flags:
   - name: XKB_KEYBOARD_CONTROL_NO_FLAGS
     value: 0
