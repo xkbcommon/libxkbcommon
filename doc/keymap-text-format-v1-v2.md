@@ -2219,7 +2219,7 @@ Press and release events are processed normally.
 <dt>Overlays @anchor key-behavior-overlay</dt>
 <dd>
 A *keyboard overlay* allows some subset of the keyboard to report *alternate keycodes*
-when the corresponding [overlay control](@ref XKB_KEYBOARD_CONTROL_OVERLAY1) is
+when the corresponding [overlay control](@ref overlay-1) is
 enabled.
 
 For example a keyboard overlay can be used to *simulate* a numeric or editing
@@ -2331,9 +2331,9 @@ Given the following activation sequence:
 </table>
 
 [Key behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Behavior
-[Overlay1]: @ref XKB_KEYBOARD_CONTROL_OVERLAY1
-[Overlay2]: @ref XKB_KEYBOARD_CONTROL_OVERLAY2
-[Overlay8]: @ref XKB_KEYBOARD_CONTROL_OVERLAY8
+[Overlay1]: @ref overlay-1
+[Overlay2]: @ref overlay-2
+[Overlay8]: @ref overlay-8
 [keyboard controls]: @ref xkb_keyboard_control_flags
 [keymap formats]: @ref xkb_keymap_format
 <!-- blank required by Doxygen -->
@@ -4003,28 +4003,34 @@ Set the standard XKB controls
 <td>
 Mask of the following enumeration:
 
-- `RepeatKeys`
-- `Repeat`
-- `AutoRepeat`
-- `SlowKeys`
-- `BounceKeys`
-- `StickyKeys`
-- `MouseKeys`
-- `MouseKeysAccel`
-- `AccessXKeys`
-- `AccessXTimeout`
-- `AccessXFeedback`
-- `AudibleBell`
-- `IgnoreGroupLock`
-- [`Overlay1`](@ref XKB_KEYBOARD_CONTROL_OVERLAY1)
-- [`Overlay2`](@ref XKB_KEYBOARD_CONTROL_OVERLAY2)
-- Requires `::XKB_KEYMAP_FORMAT_TEXT_V2` and version 1.14+
-  - [`Overlay3`](@ref XKB_KEYBOARD_CONTROL_OVERLAY3)
-  - [`Overlay4`](@ref XKB_KEYBOARD_CONTROL_OVERLAY4)
-  - [`Overlay5`](@ref XKB_KEYBOARD_CONTROL_OVERLAY5)
-  - [`Overlay6`](@ref XKB_KEYBOARD_CONTROL_OVERLAY6)
-  - [`Overlay7`](@ref XKB_KEYBOARD_CONTROL_OVERLAY7)
-  - [`Overlay8`](@ref XKB_KEYBOARD_CONTROL_OVERLAY8)
+@figure
+@figcaption
+Enumeration of keyboard controls @anchor keyboard-controls-enumeration
+@endfigcaption
+| Control name     | Comment |
+| ---------------- | ------- |
+| [`StickyKeys`](@ref XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) | |
+| [`Overlay1`](@ref key-behavior-overlay) @anchor overlay-1 | Effectual since version 1.14 |
+| [`Overlay2`](@ref key-behavior-overlay) @anchor overlay-2 | Effectual since version 1.14 |
+| [`Overlay3`](@ref key-behavior-overlay) | Requires `::XKB_KEYMAP_FORMAT_TEXT_V2` and version 1.14+ |
+| [`Overlay4`](@ref key-behavior-overlay) | ^ |
+| [`Overlay5`](@ref key-behavior-overlay) | ^ |
+| [`Overlay6`](@ref key-behavior-overlay) | ^ |
+| [`Overlay7`](@ref key-behavior-overlay) | ^ |
+| [`Overlay8`](@ref key-behavior-overlay) @anchor overlay-8 | ^ |
+| [`MouseKeys`](@ref XKB_KEYBOARD_CONTROL_MOUSE_KEYS) | Effectual since version 1.14 |
+| `RepeatKeys`     | Not effectual |
+| `Repeat`         | ^             |
+| `AutoRepeat`     | ^             |
+| `SlowKeys`       | ^             |
+| `BounceKeys`     | ^             |
+| `MouseKeysAccel` | ^             |
+| `AccessXKeys`    | ^             |
+| `AccessXTimeout` | ^             |
+| `AccessXFeedback`| ^             |
+| `AudibleBell`    | ^             |
+| `IgnoreGroupLock`| ^             |
+@endfigure
 
 Plus 2 special values:
 - `all`
