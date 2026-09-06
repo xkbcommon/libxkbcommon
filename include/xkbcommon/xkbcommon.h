@@ -3115,7 +3115,7 @@ enum xkb_keyboard_control_flags {
      *
      * [pointer actions]: @ref mouse-emulation-actions
      */
-    XKB_KEYBOARD_CONTROL_MOUSE_KEYS = (1 << 14),
+    XKB_KEYBOARD_CONTROL_MOUSE_KEYS = (1 << 1),
 };
 
 /**

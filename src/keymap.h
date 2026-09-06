@@ -132,7 +132,7 @@ enum xkb_action_flags {
 };
 
 enum {
-    CONTROL_OVERLAY1_LOG2 = 1,
+    CONTROL_OVERLAY1_LOG2 = 23,
     CONTROL_OVERLAY2_LOG2,
     CONTROL_OVERLAY3_LOG2,
     CONTROL_OVERLAY4_LOG2,
@@ -155,17 +155,11 @@ enum xkb_action_controls {
     CONTROL_NONE = 0,
     /* Public API */
     CONTROL_STICKY_KEYS = (1 << 0),
-    CONTROL_MOUSE_KEYS = (1 << 14),
+    CONTROL_MOUSE_KEYS = (1 << 1),
+
+    /* Range (1 << 2) .. (1 << 8) for future public controls */
 
     /* Private API */
-    CONTROL_OVERLAY1 = (1 << CONTROL_OVERLAY1_LOG2),
-    CONTROL_OVERLAY2 = (1 << CONTROL_OVERLAY2_LOG2),
-    CONTROL_OVERLAY3 = (1 << CONTROL_OVERLAY3_LOG2),
-    CONTROL_OVERLAY4 = (1 << CONTROL_OVERLAY4_LOG2),
-    CONTROL_OVERLAY5 = (1 << CONTROL_OVERLAY5_LOG2),
-    CONTROL_OVERLAY6 = (1 << CONTROL_OVERLAY6_LOG2),
-    CONTROL_OVERLAY7 = (1 << CONTROL_OVERLAY7_LOG2),
-    CONTROL_OVERLAY8 = (1 << CONTROL_OVERLAY8_LOG2),
     CONTROL_GROUPS_WRAP = (1 << 9),
     CONTROL_REPEAT = (1 << 10),
     CONTROL_SLOW = (1 << 11),
@@ -176,6 +170,16 @@ enum xkb_action_controls {
     CONTROL_AX_FEEDBACK = (1 << 18),
     CONTROL_BELL = (1 << 19),
     CONTROL_IGNORE_GROUP_LOCK = (1 << 20),
+    CONTROL_OVERLAY1 = (1 << CONTROL_OVERLAY1_LOG2),
+    CONTROL_OVERLAY2 = (1 << CONTROL_OVERLAY2_LOG2),
+    CONTROL_OVERLAY3 = (1 << CONTROL_OVERLAY3_LOG2),
+    CONTROL_OVERLAY4 = (1 << CONTROL_OVERLAY4_LOG2),
+    CONTROL_OVERLAY5 = (1 << CONTROL_OVERLAY5_LOG2),
+    CONTROL_OVERLAY6 = (1 << CONTROL_OVERLAY6_LOG2),
+    CONTROL_OVERLAY7 = (1 << CONTROL_OVERLAY7_LOG2),
+    CONTROL_OVERLAY8 = (1 << CONTROL_OVERLAY8_LOG2),
+
+    _LAST_CONTROL = CONTROL_OVERLAY8,
 
     /**
      * All the XKB Controls. If we ever introduce *internal* controls, this mask
@@ -205,6 +209,8 @@ enum xkb_action_controls {
 };
 
 static_assert(sizeof(enum xkb_action_controls) >= 3, "truncated enum");
+static_assert((uint32_t)_LAST_CONTROL < (UINT32_C(1) << 31),
+              "Cannot ensure enum portability");
 
 static inline enum xkb_action_controls
 format_boolean_controls(enum xkb_keymap_format format)
