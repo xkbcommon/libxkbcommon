@@ -1495,7 +1495,7 @@ write_key(const struct xkb_keymap *keymap,
 
         const xkb_overlay_index_t overlay_max =
             format_max_overlays(config->format);
-        static_assert(XKB_OVERLAY_MAX == 8, "invalid right shift");
+        static_assert(XKB_OVERLAY_COUNT == 8, "invalid right shift");
         const xkb_overlay_mask_t valid =
             (xkb_overlay_mask_t)((1u << overlay_max) - 1u);
         remaining &= valid;
