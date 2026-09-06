@@ -1218,6 +1218,11 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         _NUM_CONTROL_FIELDS,
     };
 
+    static_assert((enum control_field)XKB_OVERLAY_MIN == CONTROL_FIELD_OVERLAY1,
+                  "Missing fields or invalid encoding");
+    static_assert((enum control_field)XKB_OVERLAY_MAX == CONTROL_FIELD_OVERLAY8,
+                  "Missing fields or invalid encoding");
+
     static const char * fields[] = {
         [CONTROL_FIELD_OVERLAY1] = "overlay1",
         [CONTROL_FIELD_OVERLAY2] = "overlay2",
@@ -1289,30 +1294,30 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
             case CONTROL_FIELD_OVERLAY8: {
                 static_assert(CONTROL_FIELD_OVERLAY1 == 0, "");
                 static_assert(
-                    XKB_KEYBOARD_CONTROL_OVERLAY1 ==
-                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY1),
+                    CONTROL_OVERLAY1 ==
+                    (CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY1),
                     ""
                 );
                 static_assert(CONTROL_FIELD_OVERLAY2 == 1, "");
                 static_assert(
-                    XKB_KEYBOARD_CONTROL_OVERLAY2 ==
-                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY2),
+                    CONTROL_OVERLAY2 ==
+                    (CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY2),
                     ""
                 );
                 static_assert(CONTROL_FIELD_OVERLAY3 == 2, "");
                 static_assert(
-                    XKB_KEYBOARD_CONTROL_OVERLAY3 ==
-                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY3),
+                    CONTROL_OVERLAY3 ==
+                    (CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY3),
                     ""
                 );
                 static_assert(CONTROL_FIELD_OVERLAY8 == 7, "");
                 static_assert(
-                    XKB_KEYBOARD_CONTROL_OVERLAY8 ==
-                    (XKB_KEYBOARD_CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY8),
+                    CONTROL_OVERLAY8 ==
+                    (CONTROL_OVERLAY1 << CONTROL_FIELD_OVERLAY8),
                     ""
                 );
                 const enum xkb_keyboard_control_flags flag =
-                    XKB_KEYBOARD_CONTROL_OVERLAY1 << type;
+                    CONTROL_OVERLAY1 << type;
                 ok = xkb_machine_options_update_boolean_ctrls(
                     options, flag, disable
                 );
