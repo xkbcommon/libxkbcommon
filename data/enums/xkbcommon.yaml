@@ -111,7 +111,7 @@ xkb_keyboard_control_flags:
   - name: XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
     value: 1
   - name: XKB_KEYBOARD_CONTROL_MOUSE_KEYS
-    value: 16384
+    value: 2
 xkb_pointer_motion_flags:
   - name: XKB_POINTER_MOTION_NO_FLAGS
     value: 0
