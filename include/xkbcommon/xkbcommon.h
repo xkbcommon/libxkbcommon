@@ -142,8 +142,8 @@ struct xkb_machine;
  * [Mealy machine] that processes keyboard input; `xkb_state` is its
  * *observable state*, exposing the query API.
  *
- * Use the constructor `xkb_state_new_with_mode()` with
- * `::XKB_STATE_MODE_SERVER_QUERY`.
+ * Use the constructor `xkb_state_new_from_machine()` (mode:
+ * `::XKB_STATE_MODE_SERVER_QUERY`).
  *
  * See [examples](@ref quick-guide-wayland-server) in the quick guide.
  * </dd>
@@ -2714,8 +2714,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  *
  * The observable state of the machine is exposed via a companion `xkb_state`
  * object:
- * - Create it with `xkb_state::xkb_state_new_with_mode()` using
- *   `::XKB_STATE_MODE_SERVER_QUERY`.
+ * - Create it with `xkb_state::xkb_state_new_from_machine()`.
  * - Update it with `xkb_state::xkb_state_update_event()`.
  * - Query it (keysyms, modifiers, layout, LEDs) via the `xkb_state` query API.
  *
@@ -4850,9 +4849,9 @@ enum xkb_state_mode {
      * Use this mode for an observable state companion to an `xkb_machine` in
      * *server* applications using the `xkb_machine` API.
      *
-     * This is the *recommended* mode for new server applications, as it creates
-     * `xkb_state` objects with much *smaller* memory footprint than with
-     * `xkb_state::xkb_state_new()`.
+     * This is the *recommended* mode for new server applications using the
+     * `xkb_machine` API, as it creates `xkb_state` objects with much *smaller*
+     * memory footprint than with `xkb_state::xkb_state_new()`.
      *
      * @important `xkb_state` objects created with this mode cannot be used
      * with the following API:
@@ -4860,6 +4859,14 @@ enum xkb_state_mode {
      * - `xkb_state::xkb_state_update_key()`
      * - `xkb_state::xkb_state_update_synthetic()`
      * - `xkb_state::xkb_state_update_latched_locked()` *(deprecated)*
+     *
+     * @warning Do not pass this value to `xkb_state::xkb_state_new_with_mode()`
+     * directly: the result would not be initialized from an `xkb_machine`’s
+     * current state, and cannot be brought back into sync afterward if the
+     * machine already processed events.
+     * Use `xkb_state::xkb_state_new_from_machine()` instead.
+     *
+     * @sa `xkb_state::xkb_state_new_from_machine()`
      *
      * @since 1.14.0
      *
@@ -5088,9 +5095,10 @@ xkb_state_update_mask(struct xkb_state *state,
  *   of the update, or `NULL` to ignore.  If nothing in the state has changed,
  *   the mask is set to 0 (`::XKB_STATE_NO_COMPONENT`).
  *
- * @pre @p state must be created with `::XKB_STATE_MODE_SERVER_QUERY` or
- * `xkb_state_new()`, otherwise the call is *rejected* without updating
- * the state, and the misuse is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
+ * @pre @p state must be created with `xkb_state_new_from_machine()`
+ * (i.e. with mode `::XKB_STATE_MODE_SERVER_QUERY`) or `xkb_state_new()`,
+ * otherwise the call is *rejected* without updating the state and the misuse
+ * is logged as `::XKB_ERROR_UNEXPECTED_STATE_MODE`.
  *
  * @returns
  * - `::XKB_SUCCESS` on success;
@@ -5102,6 +5110,8 @@ xkb_state_update_mask(struct xkb_state *state,
  * delta (unlike other `xkb_state_update_*()` functions), in order to align
  * with `xkb_state_update_synthetic()` API. The delta is optionally available
  * via the @p changed parameter.
+ *
+ * @sa `xkb_state_new_from_machine()`
  *
  * @since 1.14.0
  */
