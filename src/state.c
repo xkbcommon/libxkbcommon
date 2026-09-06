@@ -3601,7 +3601,7 @@ machine_update_overlays(struct xkb_machine *sm)
      */
 
     const xkb_overlay_mask_t mask =
-        OVERLAYS_FROM_CONTROLS(sm->base.base.components.controls);
+        overlays_from_controls(sm->base.base.components.controls);
     xkb_overlay_mask_t added = mask & ~sm->overlays.enabled;
 
     /* Remove overlays no longer enabled and keep relative order */
@@ -3898,7 +3898,7 @@ process_overlayable_key(struct xkb_machine *sm,
         if (key->overlays & sm->overlays.enabled) {
             /* Some relevant overlay is active */
             for (uint32_t stack = sm->overlays.order; stack; stack >>= 4) {
-                static_assert(XKB_OVERLAY_MAX == 8, "");
+                static_assert(XKB_OVERLAY_COUNT == 8, "");
                 const xkb_overlay_index_t overlay = (stack & 0xf) - 1;
                 const xkb_overlay_mask_t mask =
                     (xkb_overlay_mask_t)(1u << overlay);

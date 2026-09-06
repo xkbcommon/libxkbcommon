@@ -4731,7 +4731,7 @@ test_overlays(struct xkb_context *context)
     for (size_t t = 0; t < ARRAY_SIZE(controls_tests); t++) {
         fprintf(stderr, "------\n*** %s: controls #%zu ***\n", __func__, t);
         assert_eq("", controls_tests[t].overlays,
-                  (uint8_t)OVERLAYS_FROM_CONTROLS(controls_tests[t].controls),
+                  overlays_from_controls(controls_tests[t].controls),
                   "0x%02x");
     }
 
