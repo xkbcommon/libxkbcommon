@@ -168,6 +168,8 @@ struct xkb_machine;
  * See @ref server-client-state and @ref xkb_state_mode for further details.
  *
  * [Mealy machine]: https://en.wikipedia.org/wiki/Mealy_machine
+ * [keycode]: @ref xkb_keycode_t
+ * [direction]: @ref xkb_key_direction
  */
 struct xkb_state;
 
@@ -194,9 +196,9 @@ struct xkb_state;
  * Historically, the XKB protocol restricts these names to at most 4 (ASCII)
  * characters, but this library does not share this limit.
  *
- * @code
+ * ```c
  * xkb_keycode_t keycode_A = KEY_A + 8;
- * @endcode
+ * ```
  *
  * @sa `xkb_keycode_is_legal_ext()`
  * @sa `xkb_keycode_is_legal_x11()`
@@ -434,13 +436,13 @@ typedef uint32_t xkb_led_mask_t;
 
 /**
  * Test whether a value is a valid extended keycode.
- * @sa xkb_keycode_t
+ * @sa `xkb_keycode_t`
  **/
 #define xkb_keycode_is_legal_ext(key) ((key) <= XKB_KEYCODE_MAX)
 
 /**
  * Test whether a value is a valid X11 keycode.
- * @sa xkb_keycode_t
+ * @sa `xkb_keycode_t`
  */
 #define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
@@ -635,7 +637,8 @@ enum xkb_rmlvo_builder_flags {
  *
  * @returns A `xkb_rmlvo_builder`, or `NULL` if the compilation failed.
  *
- * @sa `xkb_rule_names` for a detailed description of @p rules and @p model.
+ * @sa `struct xkb_rule_names` for a detailed description of @p rules and
+ * @p model.
  *
  * @since 1.11.0
  *
@@ -882,8 +885,8 @@ struct xkb_component_names {
  *
  * @sa [Introduction to RMLVO][RMLVO]
  * @sa [Introduction to KcCGST][KcCGST]
- * @sa `xkb_rule_names`
- * @sa `xkb_component_names`
+ * @sa `struct xkb_rule_names`
+ * @sa `struct xkb_component_names`
  * @sa `xkb_keymap::xkb_keymap_new_from_names2()`
  *
  * @since 1.9.0
@@ -1654,7 +1657,7 @@ enum xkb_keymap_format {
  * the compilation failed.
  *
  * @sa `xkb_keymap_new_from_names2()`
- * @sa `xkb_rmlvo_builder`
+ * @sa `struct xkb_rmlvo_builder`
  *
  * @since 1.11.0
  * @since 1.14.0 Parser is lenient by default.
@@ -1676,7 +1679,7 @@ xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
  * @deprecated Use `xkb_keymap_new_from_names2()` instead.
  *
  * @sa `xkb_keymap_new_from_names2()`
- * @sa `xkb_rule_names`
+ * @sa `struct xkb_rule_names`
  * @sa `xkb_keymap_new_from_rmlvo()`
  *
  * @since 1.11.0: Deprecated
@@ -1706,7 +1709,7 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * @returns A keymap compiled according to the [RMLVO] names, or `NULL` if
  * the compilation failed.
  *
- * @sa `xkb_rule_names`
+ * @sa `struct xkb_rule_names`
  * @sa `xkb_keymap_new_from_rmlvo()`
  *
  * @since 1.11.0
@@ -1891,7 +1894,7 @@ enum xkb_keymap_serialize_flags {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_keymap_serialize_result`
+ * @sa `struct xkb_keymap_serialize_result`
  *
  * @since 1.14.0
  */
@@ -1907,7 +1910,7 @@ struct xkb_keymap_serialize_config {
     /**
      * Mask of [serialization flags].
      *
-     * @sa `xkb_keymap_serialize_flags`
+     * @sa `enum xkb_keymap_serialize_flags`
      *
      * @since 1.14.0
      *
@@ -1917,7 +1920,7 @@ struct xkb_keymap_serialize_config {
     /**
      * Target [keymap format].
      *
-     * @sa `xkb_keymap_format`
+     * @sa `enum xkb_keymap_format`
      *
      * @since 1.14.0
      *
@@ -1947,7 +1950,7 @@ struct xkb_keymap_serialize_config {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `::xkb_keymap_serialize_config`
+ * @sa `struct xkb_keymap_serialize_config`
  *
  * @since 1.14.0
  */
@@ -2239,8 +2242,8 @@ struct xkb_keymap_key_iterator_config {
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
  *
- * @sa `xkb_keymap_key_iterator`
- * @sa `xkb_keymap_key_iterator_flags`
+ * @sa `struct xkb_keymap_key_iterator`
+ * @sa `enum xkb_keymap_key_iterator_flags`
  * @sa `xkb_keymap_key_iterator_next()`
  * @sa `xkb_keymap_key_iterator_ref()`
  * @sa `xkb_keymap_key_iterator_unref()`
@@ -2342,7 +2345,8 @@ typedef void
  * If a keymap is sparse, this function may be called fewer than
  * (max_keycode - min_keycode + 1) times with success.
  *
- * @sa `xkb_keymap_key_iterator`, which offers more control on the iteration.
+ * @sa `struct xkb_keymap_key_iterator`, which offers more control on the
+ * iteration.
  * @sa `xkb_keymap_min_keycode()`
  * @sa `xkb_keymap_max_keycode()`
  * @sa `xkb_keycode_t`
@@ -2393,7 +2397,7 @@ xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
  * Get the number of modifiers in the keymap.
  * @memberof xkb_keymap
  *
- * @sa xkb_mod_index_t
+ * @sa `xkb_mod_index_t`
  */
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_num_mods(struct xkb_keymap *keymap);
@@ -2404,7 +2408,7 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap);
  *
  * @returns The name.  If the index is invalid, returns `NULL`.
  *
- * @sa xkb_mod_index_t
+ * @sa `xkb_mod_index_t`
  */
 XKB_EXPORT const char *
 xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
@@ -2416,7 +2420,7 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * @returns The index.  If no modifier with this name exists, returns
  * `::XKB_MOD_INVALID`.
  *
- * @sa xkb_mod_index_t
+ * @sa `xkb_mod_index_t`
  */
 XKB_EXPORT xkb_mod_index_t
 xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
@@ -2462,7 +2466,7 @@ xkb_keymap_mod_get_mask2(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * @memberof xkb_keymap
  *
  * @sa `xkb_layout_index_t`
- * @sa `xkb_rule_names`
+ * @sa `struct xkb_rule_names`
  * @sa `xkb_keymap_num_layouts_for_key()`
  */
 XKB_EXPORT xkb_layout_index_t
@@ -2475,8 +2479,7 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap);
  * @returns The name.  If the index is invalid, or the layout does not have
  * a name, returns `NULL`.
  *
- * @sa xkb_layout_index_t
- *     For notes on layout names.
+ * @sa `xkb_layout_index_t` for notes on layout names.
  */
 XKB_EXPORT const char *
 xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
@@ -2503,7 +2506,7 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
  * this range, you need the handle this case when calling functions such as
  * `xkb_keymap_led_get_name()` or `xkb_state::xkb_state_led_index_is_active()`.
  *
- * @sa xkb_led_index_t
+ * @sa `xkb_led_index_t`
  */
 XKB_EXPORT xkb_led_index_t
 xkb_keymap_num_leds(struct xkb_keymap *keymap);
@@ -2541,7 +2544,7 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
  * @returns The number of layouts corresponding to the given key if it is valid
  * in the given keymap, otherwise 0 if the key is undefined or unbound.
  *
- * @sa xkb_layout_index_t
+ * @sa `xkb_layout_index_t`
  */
 XKB_EXPORT xkb_layout_index_t
 xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
@@ -2555,7 +2558,7 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
  * back into range in a manner consistent with
  * `xkb_state::xkb_state_key_get_layout()`.
  *
- * @sa xkb_level_index_t
+ * @sa `xkb_level_index_t`
  */
 XKB_EXPORT xkb_level_index_t
 xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
@@ -2802,7 +2805,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * same state machine. Do not store them beyond that point.
  *
  * @sa `enum xkb_event_type`
- * @sa `xkb_events`
+ * @sa `struct xkb_events`
  *
  * @since 1.14.0
  */
@@ -3281,7 +3284,7 @@ struct xkb_event_components {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
- * @sa `xkb_event_components`
+ * @sa `struct xkb_event_components`
  *
  * @since 1.14.0
  *
@@ -3349,7 +3352,7 @@ enum xkb_pointer_motion_flags {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_pointer_motion_flags`
+ * @sa `enum xkb_pointer_motion_flags`
  * @sa `xkb_event::xkb_event_get_pointer_motion()`
  * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
  *
@@ -3367,7 +3370,7 @@ struct xkb_event_pointer_motion {
     /**
      * [Motions flags](@ref xkb_pointer_motion_flags)
      *
-     * @sa xkb_pointer_motion_flags
+     * @sa `enum xkb_pointer_motion_flags`
      *
      * @since 1.14.0
      */
@@ -3415,7 +3418,7 @@ struct xkb_event_pointer_motion {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
- * @sa `xkb_event_pointer_motion`
+ * @sa `struct xkb_event_pointer_motion`
  *
  * @since 1.14.0
  *
@@ -3431,7 +3434,7 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
  * @enum xkb_pointer_button_direction
  * Specifies the direction of a button (press/release).
  *
- * @sa `xkb_event_pointer_button`
+ * @sa `struct xkb_event_pointer_button`
  *
  * @since 1.14.0
  */
@@ -3491,7 +3494,7 @@ struct xkb_event_pointer_button {
     /**
      * Button [direction](@ref xkb_pointer_button_direction)
      *
-     * @sa @ref xkb_pointer_button_direction
+     * @sa `enum xkb_pointer_button_direction`
      *
      * @since 1.14.0
      */
@@ -3537,7 +3540,7 @@ struct xkb_event_pointer_button {
  * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`.
- * @sa `xkb_event_pointer_button`
+ * @sa `struct xkb_event_pointer_button`
  *
  * @since 1.14.0
  *
@@ -3648,7 +3651,7 @@ struct xkb_events_config {
      * [Flags] to control the behavior of [events collections], or `0`
      * (`::XKB_EVENTS_NO_FLAGS`) for the default.
      *
-     * @sa `xkb_events_flags`
+     * @sa `enum xkb_events_flags`
      *
      * @since 1.14.0
      *
@@ -3684,7 +3687,7 @@ struct xkb_events_config {
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS`
  *
- * @sa `xkb_events_config`
+ * @sa `struct xkb_events_config`
  * @sa `xkb_events_ref()`
  * @sa `xkb_events_unref()`
  * @sa `xkb_events_next()`
@@ -3836,7 +3839,7 @@ enum xkb_machine_flags {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_machine_builder`
+ * @sa `struct xkb_machine_builder`
  *
  * @since 1.14.0
  */
@@ -3853,7 +3856,7 @@ struct xkb_machine_builder_config {
      * [Flags] to control the behavior of [state machine builders], or `0`
      * (`::XKB_MACHINE_BUILDER_NO_FLAGS`) for the default.
      *
-     * @sa `xkb_machine_builder_flags`
+     * @sa `enum xkb_machine_builder_flags`
      *
      * @since 1.14.0
      *
@@ -3865,7 +3868,7 @@ struct xkb_machine_builder_config {
      * [Flags] to control the behavior of [state machines], or `0`
      * (`::XKB_MACHINE_NO_FLAGS`) for the default.
      *
-     * @sa `xkb_machine_flags`
+     * @sa `enum xkb_machine_flags`
      *
      * @since 1.14.0
      *
@@ -4053,7 +4056,7 @@ enum xkb_a11y_flags {
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_a11y_flags`
+ * @sa `enum xkb_a11y_flags`
  * @sa `xkb_machine_builder::xkb_machine_builder_update_a11y()`
  *
  * @since 1.14.0
@@ -4104,7 +4107,7 @@ struct xkb_machine_builder_a11y_update {
  * - Errors from ABI @ref abi-struct-resolution
  * - `::XKB_ERROR_UNSUPPORTED_A11Y_FLAGS`
  *
- * @sa `xkb_machine_builder_a11y_update`
+ * @sa `struct xkb_machine_builder_a11y_update`
  *
  * @since 1.14.0
  *
@@ -4327,7 +4330,7 @@ struct xkb_machine_builder_shortcut_layout_update {
  * - `::XKB_ERROR_UNSUPPORTED_MODIFIER_MASK`
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
  *
- * @sa `xkb_machine_builder_shortcut_layout_update`
+ * @sa `struct xkb_machine_builder_shortcut_layout_update`
  *
  * @since 1.14.0
  *
@@ -4477,7 +4480,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `struct xkb_state_update`
+ * @sa `struct struct xkb_state_update`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
@@ -4672,7 +4675,7 @@ struct xkb_layout_policy_update {
     /**
      * [Policy] to use to handle out-of-range layout indices.
      *
-     * @sa `xkb_layout_out_of_range_policy`
+     * @sa `enum xkb_layout_out_of_range_policy`
      *
      * @since 1.14.0
      *
@@ -4683,7 +4686,7 @@ struct xkb_layout_policy_update {
      * [Layout index to redirect] to when `policy` is
      * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
      *
-     * @sa xkb_layout_index_t
+     * @sa `xkb_layout_index_t`
      *
      * @since 1.14.0
      *
@@ -4737,7 +4740,7 @@ struct xkb_state_update {
     /**
      * Components updates, or `NULL` for no change.
      *
-     * @sa `xkb_state_component`
+     * @sa `enum xkb_state_component`
      *
      * @since 1.14.0
      */
@@ -4745,7 +4748,7 @@ struct xkb_state_update {
     /**
      * Out-of-range layout policy update, or `NULL` for no change.
      *
-     * @sa `xkb_layout_out_of_range_policy`
+     * @sa `enum xkb_layout_out_of_range_policy`
      *
      * @since 1.14.0
      */
@@ -4917,7 +4920,7 @@ enum xkb_state_mode {
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_STATE_MODE`
  *
- * @sa `xkb_state_mode`
+ * @sa `enum xkb_state_mode`
  *
  * @since 1.14.0
  *
@@ -4958,7 +4961,7 @@ xkb_state_new_with_mode(struct xkb_keymap *keymap,
  *
  * @sa `xkb_state_new_with_mode()`
  * @sa `::XKB_STATE_MODE_SERVER_QUERY`
- * @sa `xkb_machine`
+ * @sa `struct xkb_machine`
  *
  * @since 1.14.0
  *
@@ -5056,7 +5059,7 @@ xkb_state_get_keymap(struct xkb_state *state);
  * the update.  If nothing in the state has changed, returns 0
  * (`::XKB_STATE_NO_COMPONENT`).
  *
- * @sa `xkb_state_component`
+ * @sa `enum xkb_state_component`
  * @sa `xkb_state_update_synthetic()`
  * @sa `xkb_state_update_event()`
  *
@@ -5227,7 +5230,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * with the `xkb_machine::xkb_machine_process_synthetic()` API. The delta
  * is optionally available via the @p changed parameter.
  *
- * @sa `xkb_state_update`
+ * @sa `struct xkb_state_update`
  * @sa `xkb_state_update_key()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
@@ -5401,7 +5404,7 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
  *
  * This function performs Capitalization @ref keysym-transformations.
  *
- * @sa xkb_state_key_get_syms()
+ * @sa `xkb_state_key_get_syms()`
  */
 XKB_EXPORT xkb_keysym_t
 xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
@@ -5880,7 +5883,7 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
  * If multiple layouts in the keymap have this name, the one with the lowest
  * index is tested.
  *
- * @sa xkb_layout_index_t
+ * @sa `xkb_layout_index_t`
  */
 XKB_EXPORT int
 xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
@@ -5898,7 +5901,7 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
  * @returns 1 if the layout is active, 0 if it is not.  If the layout index
  * is not valid in the keymap, returns -1.
  *
- * @sa xkb_layout_index_t
+ * @sa `xkb_layout_index_t`
  */
 XKB_EXPORT int
 xkb_state_layout_index_is_active(struct xkb_state *state,
@@ -5915,7 +5918,7 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
  * @returns 1 if the LED is active, 0 if it not.  If no LED with this name
  * exists in the keymap, returns -1.
  *
- * @sa xkb_led_index_t
+ * @sa `xkb_led_index_t`
  */
 XKB_EXPORT int
 xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
@@ -5930,7 +5933,7 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
  * @returns 1 if the LED is active, 0 if it not.  If the LED index is not
  * valid in the keymap, returns -1.
  *
- * @sa xkb_led_index_t
+ * @sa `xkb_led_index_t`
  */
 XKB_EXPORT int
 xkb_state_led_index_is_active(struct xkb_state *state, xkb_led_index_t idx);
