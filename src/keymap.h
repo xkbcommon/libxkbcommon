@@ -325,6 +325,14 @@ overlays_from_controls(enum xkb_action_controls controls)
     );
 }
 
+static inline enum xkb_action_controls
+overlays_to_controls(xkb_overlay_mask_t overlays)
+{
+    return (enum xkb_action_controls)(
+        (overlays & XKB_OVERLAY_ALL) << CONTROL_OVERLAY1_LOG2
+    );
+}
+
 static inline xkb_overlay_index_t
 format_max_overlays(enum xkb_keymap_format format)
 {
