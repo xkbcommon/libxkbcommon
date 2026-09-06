@@ -149,7 +149,7 @@ struct xkb_machine;
  * </dd>
  * <dt>Legacy *server* API</dt>
  * <dd>
- * `xkb_state` is a [Mealy machine]<!-- -->: it is a finite-state machine that
+ * `xkb_state` is a [Mealy machine]&zwnj;: it is a finite-state machine that
  * takes a stream of raw key events – a pair ([keycode], [direction]) – as input,
  * and produces `xkb_state_component` delta with the previous state. Output
  * depends on *both* the input and the current internal state (active modifiers,
@@ -617,7 +617,7 @@ enum xkb_rmlvo_builder_flags {
      *
      * @since 1.11.0
      */
-    XKB_RMLVO_BUILDER_NO_FLAGS = 0
+    XKB_RMLVO_BUILDER_NO_FLAGS = 0,
 };
 
 /**
@@ -635,7 +635,7 @@ enum xkb_rmlvo_builder_flags {
  * as the default.  Otherwise the system default is used.
  * @param[in] flags   Optional flags for the builder, or 0.
  *
- * @returns A `xkb_rmlvo_builder`, or `NULL` if the compilation failed.
+ * @returns A `xkb_rmlvo_builder`, or `NULL` if the creation failed.
  *
  * @sa `struct xkb_rule_names` for a detailed description of @p rules and
  * @p model.
@@ -660,6 +660,7 @@ xkb_rmlvo_builder_new(struct xkb_context *context,
  * @param[in]     options       An array of options to apply only to this
  *                              layout, or `NULL` if there is no such options.
  * @param[in]     options_len   The length of @p options.
+ *                              Must be 0 if @p options is NULL.
  *
  * @note The options are only effectual if the corresponding ruleset has the
  * proper rules to handle them as *layout-specific* options.
@@ -934,7 +935,7 @@ xkb_components_names_from_rules(struct xkb_context *context,
  * <dd>
  * If the **Control** [modifier] is active and was not consumed by the
  * translation process, the string produced is transformed to its matching
- * [ASCII control character]<!-- --> (if applicable). Keysyms are not affected.
+ * [ASCII control character]&zwnj; (if applicable). Keysyms are not affected.
  *
  * This is described in:
  * https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Interpreting_the_Control_Modifier
@@ -982,7 +983,7 @@ enum xkb_keysym_flags {
     /** Do not apply any flags. */
     XKB_KEYSYM_NO_FLAGS = 0,
     /** Find keysym by case-insensitive search. */
-    XKB_KEYSYM_CASE_INSENSITIVE = (1 << 0)
+    XKB_KEYSYM_CASE_INSENSITIVE = (1 << 0),
 };
 
 /**
@@ -1021,8 +1022,9 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  *
  * @param[in] buffer A buffer to read the UTF-8 encoded codepoint from.
  * @param[in] size   Capacity of @p buffer.
- * @returns The keysym corresponding to the specified Unicode
- * codepoint, or `XKB_KEY_NoSymbol` if there is none.
+ *
+ * @returns The keysym corresponding to the specified Unicode codepoint, or
+ * `XKB_KEY_NoSymbol` if is there is none or if the input is invalid.
  *
  * This function is the inverse of `xkb_keysym_to_utf8()`. In cases
  * where a single codepoint corresponds to multiple keysyms, returns
@@ -1199,7 +1201,7 @@ enum xkb_context_flags {
      *
      * @since 1.5.0
      */
-    XKB_CONTEXT_NO_SECURE_GETENV = (1 << 2)
+    XKB_CONTEXT_NO_SECURE_GETENV = (1 << 2),
 };
 
 /**
@@ -1250,7 +1252,7 @@ xkb_context_set_user_data(struct xkb_context *context, void *user_data);
  * Retrieves stored user data from the context.
  * @memberof xkb_context
  *
- * @param[in,out] context The context object.
+ * @param[in] context The context object.
  *
  * @returns The stored user data.  If the user data wasn’t set, or the
  * passed in context is `NULL`, returns `NULL`.
@@ -1393,7 +1395,7 @@ enum xkb_log_level {
     XKB_LOG_LEVEL_ERROR = 20,    /**< Log all errors. */
     XKB_LOG_LEVEL_WARNING = 30,  /**< Log warnings and errors. */
     XKB_LOG_LEVEL_INFO = 40,     /**< Log information, warnings, and errors. */
-    XKB_LOG_LEVEL_DEBUG = 50     /**< Log everything. */
+    XKB_LOG_LEVEL_DEBUG = 50,    /**< Log everything. */
 };
 
 /**
@@ -1504,7 +1506,7 @@ enum xkb_keymap_compile_flags {
      *
      * @since 1.14.0
      */
-    XKB_KEYMAP_COMPILE_STRICT_MODE = (1 << 0)
+    XKB_KEYMAP_COMPILE_STRICT_MODE = (1 << 0),
 };
 
 /** @} */
@@ -1634,7 +1636,7 @@ enum xkb_keymap_format {
      *
      * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
      */
-    XKB_KEYMAP_FORMAT_TEXT_V2 = 2
+    XKB_KEYMAP_FORMAT_TEXT_V2 = 2,
 };
 
 /**
@@ -2577,16 +2579,19 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * buffer passed is too small, some of the possible modifier combinations
  * will not be returned.
  *
- * @param[in] keymap      The keymap.
- * @param[in] key         The keycode of the key.
- * @param[in] layout      The layout for which to get modifiers.
- * @param[in] level       The shift level in the layout for which to get the
- * modifiers. This should be smaller than:
- * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
- * @param[out] masks_out  A buffer in which the requested masks should be
- * stored.
- * @param[in] masks_size The capacity of the buffer pointed to by
- * @p masks_out.
+ * @param[in] keymap
+ *   The keymap.
+ * @param[in] key
+ *   The keycode of the key.
+ * @param[in] layout
+ *   The layout for which to get modifiers.
+ * @param[in] level
+ *   The shift level in the layout for which to get the modifiers.
+ *   This should be smaller than: `xkb_keymap_num_levels_for_key(keymap, key)`.
+ * @param[out] masks_out
+ *   A buffer in which the requested masks should be stored.
+ * @param[in] masks_size
+ *   The capacity of the buffer pointed to by @p masks_out.
  *
  * If @c layout is out of range for this key (that is, larger or equal to
  * the value returned by `xkb_keymap_num_layouts_for_key()`), it is brought
@@ -2622,15 +2627,18 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
  * and shift level are not derived from the keyboard state but are instead
  * specified explicitly.
  *
- * @param[in] keymap    The keymap.
- * @param[in] key       The keycode of the key.
- *
- * @param[in] layout    The layout for which to get the keysyms.
- * @param[in] level     The shift level in the layout for which to get the
- * keysyms. This should be smaller than:
- * @code xkb_keymap_num_levels_for_key(keymap, key) @endcode
- * @param[out] syms_out An immutable array of keysyms corresponding to the
- * key in the given layout and shift level.
+ * @param[in] keymap
+ *   The keymap.
+ * @param[in] key
+ *   The keycode of the key.
+ * @param[in] layout
+ *   The layout for which to get the keysyms.
+ * @param[in] level
+ *   The shift level in the layout for which to get the keysyms.
+ *   This should be smaller than: `xkb_keymap_num_levels_for_key(keymap, key)`.
+ * @param[out] syms_out
+ *   An immutable array of keysyms corresponding to the key in the given layout
+ *   and shift level.
  *
  * If @c layout is out of range for this key (that is, larger or equal to
  * the value returned by `xkb_keymap_num_layouts_for_key()`), it is brought
@@ -2711,7 +2719,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * This is the recommended API for **server** applications. It enables the full
  * feature set that libxkbcommon supports.
  *
- * `xkb_machine` is a [Mealy machine]<!-- -->: it is a finite-state machine that takes a
+ * `xkb_machine` is a [Mealy machine]&zwnj;: it is a finite-state machine that takes a
  * stream of raw key events – a pair ([keycode], [direction]) – as input, and
  * produces a stream of atomic [XKB events](@ref xkb_event) as output.
  *
@@ -2725,8 +2733,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * components changes, such as key press/release events, so that it enables
  * handling most of the XKB [key actions](@ref key-action-def).
  *
- * See the [example for a Wayland server](@ref quick-guide-wayland-server)
- * in the quick guide.
+ * See the [example for a Wayland server] in the quick guide.
  *
  * @since 1.14.0
  * </dd>
@@ -2776,6 +2783,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * [keyboard events]: @ref xkb_event
  * [event batch]: @ref xkb_events
  * [event]: @ref xkb_event
+ * [example for a Wayland server]: @ref quick-guide-wayland-server
  */
 
 /**
@@ -2916,7 +2924,7 @@ enum xkb_key_direction {
      *
      * @since 1.14.0
      */
-    XKB_KEY_REPEATED
+    XKB_KEY_REPEATED,
 };
 
 /**
@@ -3622,7 +3630,7 @@ enum xkb_events_flags {
      * [event collection]: @ref xkb_events
      * [events]: @ref xkb_event
      */
-    XKB_EVENTS_NO_FLAGS = 0
+    XKB_EVENTS_NO_FLAGS = 0,
 };
 
 /**
@@ -4642,7 +4650,7 @@ enum xkb_layout_out_of_range_policy {
      *
      * @since 1.14.0
      */
-    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT
+    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
 };
 
 /**
@@ -5421,9 +5429,9 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
  * layout at all, returns `::XKB_LAYOUT_INVALID`.
  *
  * @invariant If the returned layout is valid, the following always holds:
- * @code
+ * ```c
  * xkb_state_key_get_layout(state, key) < xkb_keymap_num_layouts_for_key(keymap, key)
- * @endcode
+ * ```
  */
 XKB_EXPORT xkb_layout_index_t
 xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
@@ -5433,21 +5441,22 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  * layout.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] key The keycode of the key.
- * @param[in] layout The layout for which to get the shift level.  This must be
- * smaller than:
- * @code xkb_keymap_num_layouts_for_key(keymap, key) @endcode
- * usually it would be:
- * @code xkb_state_key_get_layout(state, key) @endcode
+ * @param[in] state
+ *   The keyboard state.
+ * @param[in] key
+ *   The keycode of the key.
+ * @param[in] layout
+ *   The layout for which to get the shift level.
+ *   This must be smaller than: `xkb_keymap_num_layouts_for_key(keymap, key)`.
+ *   Usually it would be: `xkb_state_key_get_layout(state, key)`
  *
  * @returns The shift level index.  If the key or layout are invalid,
  * returns `::XKB_LEVEL_INVALID`.
  *
  * @invariant If the returned level is valid, the following always holds:
- * @code
+ * ```c
  * xkb_state_key_get_level(state, key, layout) < xkb_keymap_num_levels_for_key(keymap, key, layout)
- * @endcode
+ * ```c
  */
 XKB_EXPORT xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
@@ -5471,7 +5480,7 @@ enum xkb_state_match {
      * modifier not specified in the arguments is active.
      * @endparblock
      */
-    XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16)
+    XKB_STATE_MATCH_NON_EXCLUSIVE = (1 << 16),
 };
 
 /**
@@ -5768,7 +5777,7 @@ enum xkb_consumed_mode {
      *   the key when it is the only active modifier are different from the
      *   keysyms produced when no modifiers are active.
      */
-    XKB_CONSUMED_MODE_GTK
+    XKB_CONSUMED_MODE_GTK,
 };
 
 /**
