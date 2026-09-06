@@ -4711,7 +4711,9 @@ test_shortcuts_tweak(struct xkb_context *context)
 static void
 test_overlays(struct xkb_context *context)
 {
-    /* Check controls → overlay mask conversion */
+    /*
+     * Check controls → overlay mask conversion
+     */
     static const struct {
         enum xkb_action_controls controls;
         xkb_overlay_mask_t overlays;
@@ -4735,7 +4737,9 @@ test_overlays(struct xkb_context *context)
                   "0x%02x");
     }
 
-    /* Check overlapping overlays */
+    /*
+     * Check overlapping overlays
+     */
     struct xkb_keymap * const keymap = test_compile_file(
         context, XKB_KEYMAP_FORMAT_TEXT_V2,
         GOLDEN_TESTS_OUTPUTS "overlays-v2-2.xkb");
@@ -4750,11 +4754,135 @@ test_overlays(struct xkb_context *context)
     struct xkb_events * events = xkb_events_new(context, NULL, NULL);
     assert(events);
 
+    /*
+     * Updates via key actions
+     */
+    static const struct {
+        uint32_t overlays;
+        xkb_keycode_t kc_in;
+        xkb_keycode_t kc_out;
+        enum key_directions direction;
+    } actions_tests[] = {
+        /* No overlay */
+        { 0x00, KEY_J, KEY_J, XKB_KEY_TAP },
+        { 0x00, KEY_J, KEY_J, XKB_KEY_PRESS },
+        /* Overlay enabled while key pressed: no effect */
+        { 0x01, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x01, KEY_J, KEY_J, XKB_KEY_RELEASE },
+        /* Overlay enabled before and after key press: effectual */
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_TAP },
+        /* Overlay enabled before key press and disable before release : effectual */
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_PRESS },
+        { 0x00, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x00, KEY_J, KEY_KP1, XKB_KEY_RELEASE },
+        /* Key does not belong to overlay: not effect */
+        // TODO
+        // { 0x80, KEY_J, KEY_J, XKB_KEY_TAP },
+        /* Overlay activation order matters */
+        { 0x01, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x03, KEY_2, KEY_2, XKB_KEY_TAP },
+        { 0x03, KEY_J, KEY_LEFT, XKB_KEY_TAP },
+        { 0x03, KEY_J, KEY_LEFT, XKB_KEY_PRESS },
+        { 0x01, KEY_2, KEY_2, XKB_KEY_TAP },
+        { 0x01, KEY_J, KEY_LEFT, XKB_KEY_RELEASE },
+        { 0x03, KEY_2, KEY_2, XKB_KEY_TAP },
+        { 0x03, KEY_J, KEY_LEFT, XKB_KEY_PRESS },
+        { 0x02, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x02, KEY_J, KEY_LEFT, XKB_KEY_RELEASE },
+        { 0x03, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x03, KEY_J, KEY_KP1, XKB_KEY_TAP },
+        { 0x07, KEY_3, KEY_3, XKB_KEY_TAP },
+        { 0x07, KEY_J, KEY_F1, XKB_KEY_TAP },
+        { 0x0f, KEY_4, KEY_4, XKB_KEY_TAP },
+        { 0x0f, KEY_J, KEY_F10, XKB_KEY_TAP },
+        { 0x0b, KEY_3, KEY_3, XKB_KEY_TAP },
+        { 0x0b, KEY_J, KEY_F10, XKB_KEY_TAP },
+        { 0x09, KEY_2, KEY_2, XKB_KEY_TAP },
+        { 0x09, KEY_J, KEY_F10, XKB_KEY_TAP },
+        { 0x01, KEY_4, KEY_4, XKB_KEY_TAP },
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_TAP },
+        /* Multiple physical keys with same keycode */
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_PRESS },
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_PRESS },   /* key still uses overlay 1 */
+        { 0x00, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x00, KEY_J, KEY_KP1, XKB_KEY_RELEASE }, /* key still uses overlay 1 */
+        { 0x00, KEY_J, KEY_KP1, XKB_KEY_RELEASE }, /* key still uses overlay 1 */
+        { 0x00, KEY_J, KEY_J, XKB_KEY_PRESS },
+        { 0x01, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x01, KEY_J, KEY_J, XKB_KEY_PRESS },     /* No effect: key already down */
+        { 0x01, KEY_J, KEY_J, XKB_KEY_RELEASE },   /* No effect: all keys must be epressed */
+        { 0x01, KEY_J, KEY_J, XKB_KEY_RELEASE },   /* No effect: all keys must be epressed */
+        { 0x01, KEY_J, KEY_KP1, XKB_KEY_PRESS },
+        { 0x00, KEY_1, KEY_1, XKB_KEY_TAP },
+        { 0x02, KEY_2, KEY_2, XKB_KEY_TAP },
+        { 0x02, KEY_J, KEY_KP1, XKB_KEY_PRESS },   /* key still uses overlay 1 */
+        { 0x02, KEY_J, KEY_KP1, XKB_KEY_RELEASE }, /* key still uses overlay 1 */
+        { 0x02, KEY_J, KEY_KP1, XKB_KEY_RELEASE }, /* key still uses overlay 1 */
+        { 0x00, KEY_2, KEY_2, XKB_KEY_TAP },
+    };
+    uint32_t previous = 0x00;
+    for (size_t t = 0; t < ARRAY_SIZE(actions_tests); t++) {
+        fprintf(stderr, "------\n*** %s: key actions #%zu ***\n", __func__, t);
+
+        const bool changed = (actions_tests[t].overlays != previous);
+
+        struct xkb_event event1 = {
+            .ctx = context,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = actions_tests[t].kc_out + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
+        };
+        const struct xkb_event event2 = {
+            .ctx = context,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_CONTROLS_EFFECTIVE,
+                .components = {
+                    .controls = overlays_to_controls(actions_tests[t].overlays),
+                },
+            }
+        };
+
+        const uint32_t added = (actions_tests[t].overlays & ~previous);
+
+        if (actions_tests[t].direction & XKB_KEY_PRESS) {
+            assert(xkb_machine_process_key(
+                sm, actions_tests[t].kc_in + EVDEV_OFFSET, XKB_KEY_DOWN, events
+            ) == XKB_SUCCESS);
+            if (changed && added) {
+                check_events_(events, event1, event2);
+            } else {
+                check_events_(events, event1);
+            }
+        }
+
+        assert(!(actions_tests[t].direction & XKB_KEY_REPEAT));
+
+        if (actions_tests[t].direction & XKB_KEY_RELEASE) {
+            assert(xkb_machine_process_key(
+                sm, actions_tests[t].kc_in + EVDEV_OFFSET, XKB_KEY_UP, events
+            ) == XKB_SUCCESS);
+            event1.key.direction = XKB_KEY_UP;
+            if (changed && !added) {
+                check_events_(events, event1, event2);
+            } else {
+                check_events_(events, event1);
+            }
+        }
+
+        previous = actions_tests[t].overlays;
+    }
+
+    /*
+     * Updates via API
+     */
     static const struct {
         enum xkb_keyboard_control_flags controls;
         xkb_keycode_t kc;
         enum xkb_key_direction direction;
-    } keycode_tests[] = {
+    } api_tests[] = {
         /* No overlay */
         { 0, KEY_J, XKB_KEY_DOWN },
         { 0, KEY_J, XKB_KEY_UP },
@@ -4832,18 +4960,18 @@ test_overlays(struct xkb_context *context)
         { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
         { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
     };
+    for (size_t t = 0; t < ARRAY_SIZE(api_tests); t++) {
+        fprintf(stderr, "------\n*** %s: API #%zu ***\n", __func__, t);
 
-    for (size_t t = 0; t < ARRAY_SIZE(keycode_tests); t++) {
-        fprintf(stderr, "------\n*** %s: keycodes #%zu ***\n", __func__, t);
         assert(xkb_machine_update_enabled_controls(
-                sm, events, 0xffff, keycode_tests[t].controls
+                sm, events, 0xffff, api_tests[t].controls
         ) == XKB_SUCCESS);
 
-        if (!keycode_tests[t].kc)
+        if (!api_tests[t].kc)
             continue;
 
         assert(xkb_machine_process_key(
-            sm, KEY_J + EVDEV_OFFSET, keycode_tests[t].direction, events
+            sm, KEY_J + EVDEV_OFFSET, api_tests[t].direction, events
         ) == XKB_SUCCESS);
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
@@ -4855,9 +4983,9 @@ test_overlays(struct xkb_context *context)
                 xkb_keycode_t kc;
                 enum xkb_key_direction direction;
                 assert(xkb_event_get_keycode(event, &kc, &direction) == XKB_SUCCESS);
-                assert_eq("keycode", keycode_tests[t].kc + EVDEV_OFFSET,
+                assert_eq("keycode", api_tests[t].kc + EVDEV_OFFSET,
                           kc, "%"PRIu32);
-                assert_eq("direction", keycode_tests[t].direction,
+                assert_eq("direction", api_tests[t].direction,
                           direction, "%d");
                 break;
             }
