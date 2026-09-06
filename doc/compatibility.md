@@ -399,9 +399,9 @@ Rational:
 </table>
 
 [Indicator behaviors]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#:~:text=IM_LEDDrivesKB
-[Overlay1]: @ref XKB_KEYBOARD_CONTROL_OVERLAY1
-[Overlay2]: @ref XKB_KEYBOARD_CONTROL_OVERLAY2
-[Overlay8]: @ref XKB_KEYBOARD_CONTROL_OVERLAY8
+[Overlay1]: @ref overlay-1
+[Overlay2]: @ref overlay-2
+[Overlay8]: @ref overlay-8
 [Overlapping overlays]: @ref overlapping-overlays
 
 
