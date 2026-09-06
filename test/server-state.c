@@ -4732,9 +4732,11 @@ test_overlays(struct xkb_context *context)
 
     for (size_t t = 0; t < ARRAY_SIZE(controls_tests); t++) {
         fprintf(stderr, "------\n*** %s: controls #%zu ***\n", __func__, t);
-        assert_eq("", controls_tests[t].overlays,
-                  overlays_from_controls(controls_tests[t].controls),
-                  "0x%02x");
+        const xkb_overlay_mask_t overlays =
+            overlays_from_controls(controls_tests[t].controls);
+        assert_eq("", controls_tests[t].overlays, overlays, "0x%02x");
+        enum xkb_action_controls controls = overlays_to_controls(overlays);
+        assert_eq("", (controls & controls_tests[t].controls), controls, "0x%02x");
     }
 
     /*
@@ -4879,93 +4881,108 @@ test_overlays(struct xkb_context *context)
      * Updates via API
      */
     static const struct {
-        enum xkb_keyboard_control_flags controls;
+        xkb_overlay_mask_t overlays;
         xkb_keycode_t kc;
         enum xkb_key_direction direction;
     } api_tests[] = {
         /* No overlay */
-        { 0, KEY_J, XKB_KEY_DOWN },
-        { 0, KEY_J, XKB_KEY_UP },
-        { 0, KEY_J, XKB_KEY_DOWN },
+        { 0x00, KEY_J, XKB_KEY_DOWN },
+        { 0x00, KEY_J, XKB_KEY_UP },
+        { 0x00, KEY_J, XKB_KEY_DOWN },
         /* Overlay enabled while key pressed: no effect */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_J, XKB_KEY_UP },
+        { 0x01, KEY_J, XKB_KEY_UP },
         /* Overlay enabled before and after key press: effectual */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_UP },
+        { 0x01, KEY_KP1, XKB_KEY_DOWN },
+        { 0x01, KEY_KP1, XKB_KEY_UP },
         /* Overlay enabled before key press and disable before release : effectual */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
-        { 0, KEY_KP1, XKB_KEY_UP },
+        { 0x01, KEY_KP1, XKB_KEY_DOWN },
+        { 0x00, KEY_KP1, XKB_KEY_UP },
         /* Key does not belong to overlay: not effect */
-        { XKB_KEYBOARD_CONTROL_OVERLAY8, KEY_J, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY8, KEY_J, XKB_KEY_UP },
+        { 0x80, KEY_J, XKB_KEY_DOWN },
+        { 0x80, KEY_J, XKB_KEY_UP },
         /* Overlay activation order matters */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, 0, 0 },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_LEFT, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_UP },
+        { 0x01, 0, 0 },
+        { 0x03, KEY_LEFT, XKB_KEY_DOWN },
+        { 0x03, KEY_LEFT, XKB_KEY_UP },
+        { 0x03, KEY_LEFT, XKB_KEY_DOWN },
+        { 0x01, KEY_LEFT, XKB_KEY_UP },
+        { 0x03, KEY_LEFT, XKB_KEY_DOWN },
+        { 0x02, KEY_LEFT, XKB_KEY_UP },
         /* If multiple overlays are activated simultaneously, they are stacked
          * in ascending order */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2,
-          KEY_KP1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2,
-          KEY_KP1, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_LEFT, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4 |
-          XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_F10, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4 |
-          XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_F10, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
-          XKB_KEYBOARD_CONTROL_OVERLAY4 | XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_F10, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
-          XKB_KEYBOARD_CONTROL_OVERLAY4 | XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_F10, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_KP1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY8,
-          KEY_KP1, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3,
-          KEY_F1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3,
-          KEY_F1, XKB_KEY_UP },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2 | XKB_KEYBOARD_CONTROL_OVERLAY3 |
-          XKB_KEYBOARD_CONTROL_OVERLAY4, 0, 0},
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4,
-          KEY_KP1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1 | XKB_KEYBOARD_CONTROL_OVERLAY2 |
-          XKB_KEYBOARD_CONTROL_OVERLAY3 | XKB_KEYBOARD_CONTROL_OVERLAY4,
-          KEY_KP1, XKB_KEY_UP },
+        { 0x03, KEY_KP1, XKB_KEY_DOWN },
+        { 0x03, KEY_KP1, XKB_KEY_UP },
+        { 0x02, KEY_LEFT, XKB_KEY_DOWN },
+        { 0x02, KEY_LEFT, XKB_KEY_UP },
+        { 0x8f, KEY_F10, XKB_KEY_DOWN },
+        { 0x8f, KEY_F10, XKB_KEY_UP },
+        { 0x8e, KEY_F10, XKB_KEY_DOWN },
+        { 0x8e, KEY_F10, XKB_KEY_UP },
+        { 0x87, KEY_KP1, XKB_KEY_DOWN },
+        { 0x87, KEY_KP1, XKB_KEY_UP },
+        { 0x06, KEY_F1, XKB_KEY_DOWN },
+        { 0x06, KEY_F1, XKB_KEY_UP },
+        { 0x0e, 0, 0},
+        { 0x0f, KEY_KP1, XKB_KEY_DOWN },
+        { 0x0f, KEY_KP1, XKB_KEY_UP },
         /* Multiple physical keys with same keycode */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
-        { 0, KEY_KP1, XKB_KEY_DOWN }, /* key still uses overlay 1 */
-        { 0, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
-        { 0, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
-        { 0, KEY_J, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_J, XKB_KEY_DOWN }, /* No effect: key already down */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_J, XKB_KEY_UP },   /* No effect: all keys must be depressed */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_J, XKB_KEY_UP },   /* No effect: all keys must be depressed */
-        { XKB_KEYBOARD_CONTROL_OVERLAY1, KEY_KP1, XKB_KEY_DOWN },
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_KP1, XKB_KEY_DOWN }, /* key still uses overlay 1 */
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
-        { XKB_KEYBOARD_CONTROL_OVERLAY2, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
+        { 0x01, KEY_KP1, XKB_KEY_DOWN },
+        { 0x00, KEY_KP1, XKB_KEY_DOWN }, /* key still uses overlay 1 */
+        { 0x00, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
+        { 0x00, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
+        { 0x00, KEY_J, XKB_KEY_DOWN },
+        { 0x01, KEY_J, XKB_KEY_DOWN }, /* No effect: key already down */
+        { 0x01, KEY_J, XKB_KEY_UP },   /* No effect: all keys must be depressed */
+        { 0x01, KEY_J, XKB_KEY_UP },   /* No effect: all keys must be depressed */
+        { 0x01, KEY_KP1, XKB_KEY_DOWN },
+        { 0x02, KEY_KP1, XKB_KEY_DOWN }, /* key still uses overlay 1 */
+        { 0x02, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
+        { 0x02, KEY_KP1, XKB_KEY_UP },   /* key still uses overlay 1 */
     };
+    previous = 0x00;
     for (size_t t = 0; t < ARRAY_SIZE(api_tests); t++) {
         fprintf(stderr, "------\n*** %s: API #%zu ***\n", __func__, t);
 
-        assert(xkb_machine_update_enabled_controls(
-                sm, events, 0xffff, api_tests[t].controls
-        ) == XKB_SUCCESS);
+        const enum xkb_action_controls controls =
+            overlays_to_controls(api_tests[t].overlays);
+
+        const struct xkb_state_components_update components_update = {
+            .size = sizeof(components_update),
+            .components = XKB_STATE_CONTROLS_EFFECTIVE,
+            .affect_controls = UINT32_MAX,
+            .controls = (uint32_t)controls,
+        };
+        const struct xkb_state_update state_update = {
+            .size = sizeof(state_update),
+            .components = &components_update,
+        };
+        assert(xkb_machine_process_synthetic(sm, &state_update, events) ==
+               XKB_SUCCESS);
+
+        const bool changed = (api_tests[t].overlays != previous);
+        struct xkb_event event = {
+            .ctx = context,
+            .type = changed ? XKB_EVENT_TYPE_STATE_COMPONENTS : XKB_EVENT_TYPE_NONE,
+            .components = {
+                .changed = changed ? XKB_STATE_CONTROLS_EFFECTIVE : 0,
+                .components = { .controls = controls },
+            },
+        };
+        check_events_(events, event);
+        if (xkb_event_get_type(&event) == XKB_EVENT_TYPE_STATE_COMPONENTS) {
+            assert(changed);
+            struct xkb_event_components components = {
+                .size = sizeof(components),
+            };
+            assert(xkb_event_get_components(&event, &components) ==
+                   XKB_SUCCESS);
+            assert_eq("controls component", components.controls,
+                      (uint32_t)controls, "%08"PRIx32);
+        } else {
+            assert(!changed);
+        }
+
+        previous = api_tests[t].overlays;
 
         if (!api_tests[t].kc)
             continue;
@@ -4973,26 +4990,15 @@ test_overlays(struct xkb_context *context)
         assert(xkb_machine_process_key(
             sm, KEY_J + EVDEV_OFFSET, api_tests[t].direction, events
         ) == XKB_SUCCESS);
-        const struct xkb_event *event;
-        while ((event = xkb_events_next(events))) {
-            switch(xkb_event_get_type(event)) {
-            case XKB_EVENT_TYPE_INVALID:
-                assert(!"invalid event");
-                break;
-            case XKB_EVENT_TYPE_KEY: {
-                xkb_keycode_t kc;
-                enum xkb_key_direction direction;
-                assert(xkb_event_get_keycode(event, &kc, &direction) == XKB_SUCCESS);
-                assert_eq("keycode", api_tests[t].kc + EVDEV_OFFSET,
-                          kc, "%"PRIu32);
-                assert_eq("direction", api_tests[t].direction,
-                          direction, "%d");
-                break;
-            }
-            default:
-                ;
-            }
-        }
+        event = (struct xkb_event) {
+            .ctx = context,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = api_tests[t].kc + EVDEV_OFFSET,
+                .direction = api_tests[t].direction,
+            },
+        };
+        check_events_(events, event);
     }
 
     xkb_events_unref(events);
