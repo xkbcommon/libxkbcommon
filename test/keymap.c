@@ -859,6 +859,9 @@ test_key_iterator(void)
             config.flags = (uint32_t)flags[f];
             iter = xkb_keymap_key_iterator_new(keymap, &config, &error);
             assert(iter && error == XKB_SUCCESS);
+            config.flags = -1;
+            assert(xkb_keymap_key_iterator_reset(iter, &config) ==
+                   XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
 
             const bool ascending =
                 !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
@@ -870,31 +873,38 @@ test_key_iterator(void)
             const xkb_keycode_t * const keycodes = (skip_unbound)
                 ? tests[t].keys_bound
                 : tests[t].keys_all;
-            size_t count = 0;
-            size_t index = (skip_unbound)
-                ? ((ascending) ? 0 : tests[t].num_keys_bound - 1)
-                : ((ascending) ? 0 : tests[t].num_keys_all - 1);
-            xkb_keycode_t current = 0;
-            xkb_keycode_t previous = (ascending)
-                ? 0
-                : XKB_KEYCODE_INVALID;
 
-            while ((current = xkb_keymap_key_iterator_next(iter)) !=
-                   XKB_KEYCODE_INVALID) {
-                assert(count < expected_count);
-                assert(current == keycodes[index]);
-                assert((ascending && current > previous) ^
-                       (!ascending && current < previous));
+            enum { NEW, RESET };
+            for (int i = NEW; i <= RESET; i++) {
+                size_t count = 0;
+                size_t index = (skip_unbound)
+                    ? ((ascending) ? 0 : tests[t].num_keys_bound - 1)
+                    : ((ascending) ? 0 : tests[t].num_keys_all - 1);
+                xkb_keycode_t current = 0;
+                xkb_keycode_t previous = (ascending)
+                    ? 0
+                    : XKB_KEYCODE_INVALID;
 
-                count++;
-                if (ascending)
-                    index++;
-                else
-                    index--;
-                previous = current;
+                while ((current = xkb_keymap_key_iterator_next(iter)) !=
+                    XKB_KEYCODE_INVALID) {
+                    assert(count < expected_count);
+                    assert(current == keycodes[index]);
+                    assert((ascending && current > previous) ^
+                        (!ascending && current < previous));
+
+                    count++;
+                    if (ascending)
+                        index++;
+                    else
+                        index--;
+                    previous = current;
+                }
+
+                assert(count == expected_count);
+
+                assert(xkb_keymap_key_iterator_reset(iter, NULL) ==
+                       XKB_SUCCESS);
             }
-
-            assert(count == expected_count);
 
             xkb_keymap_key_iterator_unref(iter);
         }

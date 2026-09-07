@@ -692,6 +692,62 @@ struct xkb_keymap_key_iterator {
     bool skip_unbound;
 };
 
+static enum xkb_error_code
+keymap_key_iterator_config_check(
+    struct xkb_context * restrict ctx,
+    const char *func,
+    const struct xkb_keymap_key_iterator_config * restrict config
+)
+{
+    /* Check ABI compatibility */
+    const enum xkb_error_code abi_error = xkb_check_keymap_abi(config);
+    if (abi_error) {
+        xkb_log_abi_error(ctx, func, abi_error);
+        return abi_error;
+    }
+
+    /* Sanitize input */
+    const uint32_t invalid_flags =
+        (config->flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
+    if (invalid_flags) {
+        log_err(ctx, XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_,
+                "%s: Unsupported keymap iterator flags: 0x%"PRIx32"\n",
+                func, invalid_flags);
+        return XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS;
+    }
+
+    return XKB_SUCCESS;
+}
+
+static void
+keymap_key_iterator_init(
+    struct xkb_keymap_key_iterator * restrict iter,
+    const struct xkb_keymap_key_iterator_config * restrict config
+)
+{
+    if (iter->keymap->num_keys == 0) {
+        iter->next = NULL;
+        iter->min = NULL;
+        iter->max = NULL;
+        return;
+    }
+
+    iter->skip_unbound = (config->flags & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
+    iter->increment = (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
+        ? -1
+        : 1;
+    iter->min = (iter->keymap->num_keys_low)
+        ? &iter->keymap->keys[iter->keymap->min_key_code]
+        : &iter->keymap->keys[0];
+    iter->max = &iter->keymap->keys[iter->keymap->num_keys - 1];
+
+    if (iter->increment < 0) {
+        iter->next = iter->max;
+    } else {
+        iter->next = iter->min;
+    }
+}
+
 struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_new(
     struct xkb_keymap * restrict keymap,
@@ -706,24 +762,12 @@ xkb_keymap_key_iterator_new(
     if (!config)
         config = &default_config;
 
-    /* Check ABI compatibility */
-    const enum xkb_error_code abi_error = xkb_check_keymap_abi(config);
-    if (abi_error) {
-        xkb_log_abi_error(keymap->ctx, __func__, abi_error);
+    /* Check input */
+    const enum xkb_error_code error_ =
+        keymap_key_iterator_config_check(keymap->ctx, __func__, config);
+    if (error_ != XKB_SUCCESS) {
         if (error)
-            *error = abi_error;
-        return NULL;
-    }
-
-    /* Sanitize input */
-    const uint32_t invalid_flags =
-        (config->flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
-    if (invalid_flags) {
-        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_,
-                     "Unsupported keymap iterator flags: 0x%"PRIx32"\n",
-                     invalid_flags);
-        if (error)
-            *error = XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS;
+            *error = error_;
         return NULL;
     }
 
@@ -742,29 +786,33 @@ xkb_keymap_key_iterator_new(
     iter->keymap = xkb_keymap_ref(keymap);
     iter->refcnt = 1;
 
-    if (keymap->num_keys == 0) {
+    keymap_key_iterator_init(iter, config);
+
+    return iter;
+}
+
+enum xkb_error_code
+xkb_keymap_key_iterator_reset(
+    struct xkb_keymap_key_iterator * restrict iter,
+    const struct xkb_keymap_key_iterator_config * restrict config
+)
+{
+    if (config) {
+        const enum xkb_error_code error = keymap_key_iterator_config_check(
+            iter->keymap->ctx, __func__, config
+        );
+        if (error != XKB_SUCCESS)
+            return error;
+        keymap_key_iterator_init(iter, config);
+    } else if (iter->keymap->num_keys == 0) {
         iter->next = NULL;
-        iter->min = NULL;
-        iter->max = NULL;
-        return iter;
-    }
-
-    iter->skip_unbound = (config->flags & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
-    iter->increment = (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
-        ? -1
-        : 1;
-    iter->min = (keymap->num_keys_low)
-        ? &iter->keymap->keys[keymap->min_key_code]
-        : &iter->keymap->keys[0];
-    iter->max = &iter->keymap->keys[iter->keymap->num_keys - 1];
-
-    if (iter->increment < 0) {
+    } else if (iter->increment < 0) {
         iter->next = iter->max;
     } else {
         iter->next = iter->min;
     }
 
-    return iter;
+    return XKB_SUCCESS;
 }
 
 struct xkb_keymap_key_iterator *
