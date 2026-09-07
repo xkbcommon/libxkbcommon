@@ -255,6 +255,15 @@ typedef uint32_t xkb_keysym_t;
  *
  * Layout indices are consecutive.  The first layout has index 0.
  *
+ * The maximum number of layouts depends on the [keymap format]:
+ *
+ * <dl>
+ * <dt>`::XKB_KEYMAP_FORMAT_TEXT_V1`</dt>
+ * <dd>**4** (for [X11 compatibility]).</dd>
+ * <dt>`::XKB_KEYMAP_FORMAT_TEXT_V2`</dt>
+ * <dd>**32** (maximum allowed by `xkb_layout_mask_t`).</dd>
+ * </dl>
+ *
  * Each layout is not required to have a name, and the names are not
  * guaranteed to be unique (though they are usually provided and unique).
  * Therefore, it is not safe to use the name as a unique identifier for a
@@ -275,6 +284,9 @@ typedef uint32_t xkb_keysym_t;
  * @sa `xkb_keymap::xkb_keymap_num_layouts_for_key()`
  * @sa `::XKB_LAYOUT_INVALID`
  * @sa `xkb_layout_mask_t`
+ *
+ * [keymap format]: @ref xkb_keymap_format
+ * [X11 compatibility]: @ref xkb-compatibility
  */
 typedef uint32_t xkb_layout_index_t;
 /**
@@ -1097,7 +1109,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * @sa `xkb_keysym_to_utf32()`
  * @sa `xkb_utf8_to_keysym()`
  *
- * @since 1.0.0
+ * @since 1.0.0: Initial implementation.
  * @since 1.9.0: Enable support for all noncharacters.
  */
 XKB_EXPORT xkb_keysym_t
@@ -1661,8 +1673,8 @@ enum xkb_keymap_format {
  * @sa `xkb_keymap_new_from_names2()`
  * @sa `struct xkb_rmlvo_builder`
  *
- * @since 1.11.0
- * @since 1.14.0 Parser is lenient by default.
+ * @since 1.11.0: Initial implementation.
+ * @since 1.14.0: Parser is lenient by default.
  *
  * [RMLVO]: @ref RMLVO-intro
  */
@@ -1687,7 +1699,7 @@ xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
  * @since 1.11.0: Deprecated
  * @since 1.11.0: Use internally `::XKB_KEYMAP_FORMAT_TEXT_V2` instead of
  * `::XKB_KEYMAP_FORMAT_TEXT_V1`
- * @since 1.14.0 Parser is lenient by default.
+ * @since 1.14.0: Parser is lenient by default.
  *
  * [RMLVO]: @ref RMLVO-intro
  */
@@ -1714,8 +1726,8 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * @sa `struct xkb_rule_names`
  * @sa `xkb_keymap_new_from_rmlvo()`
  *
- * @since 1.11.0
- * @since 1.14.0 Parser is lenient by default.
+ * @since 1.11.0: Initial implementation
+ * @since 1.14.0: Parser is lenient by default.
  *
  * [RMLVO]: @ref RMLVO-intro
  */
@@ -1742,7 +1754,7 @@ xkb_keymap_new_from_names2(struct xkb_context *context,
  * top level `%xkb_keymap` section, which in turn contains other required
  * sections.
  *
- * @since 1.14.0 Parser is lenient by default.
+ * @since 1.14.0: Parser is lenient by default.
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
@@ -1761,7 +1773,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  *
  * @sa `xkb_keymap_new_from_file()`
  *
- * @since 1.14.0 Parser is lenient by default.
+ * @since 1.14.0: Parser is lenient by default.
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
@@ -1780,8 +1792,8 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  *
  * @sa `xkb_keymap_new_from_string()`
  *
- * @since 0.3.0
- * @since 1.14.0 Parser is lenient by default.
+ * @since 0.3.0: Initial implementation
+ * @since 1.14.0: Parser is lenient by default.
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_buffer(struct xkb_context *context, const char *buffer,
@@ -2298,7 +2310,6 @@ xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter);
  *
  * @since 1.14.0
  *
- *
  * [keys]: @ref xkb_keycode_t
  * [iterator]: @ref xkb_keymap_key_iterator
  */
@@ -2335,8 +2346,8 @@ xkb_keymap_key_iterator_next(struct xkb_keymap_key_iterator *iter);
  * @memberof xkb_keymap_key_iterator
  *
  * @note The [iterator]’s cursor and configuration are *shared* state:
-* resetting or reconfiguring it via *any* reference affects *every*
-* reference to the same iterator.
+ * resetting or reconfiguring it via *any* reference affects *every*
+ * reference to the same iterator.
  *
  * @param[in,out] iter
  *   The [iterator] to reset.
@@ -2663,9 +2674,7 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
                                   size_t masks_size);
 
 /**
- *
  * Get the keysyms obtained from pressing a key in a given layout and
- *
  * shift level.
  * @memberof xkb_keymap
  *
@@ -4534,7 +4543,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `struct struct xkb_state_update`
+ * @sa `struct xkb_state_update`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
@@ -4918,11 +4927,13 @@ enum xkb_state_mode {
      * - `xkb_state::xkb_state_update_latched_locked()` *(deprecated)*
      *
      * @warning Do not pass this value to `xkb_state::xkb_state_new_with_mode()`
-     * directly: the result would not be initialized from an `xkb_machine`’s
+     * directly, unless the corresponding `xkb_machine` has not processed any
+     * input event yet: the result would not be initialized from the machine’s
      * current state, and cannot be brought back into sync afterward if the
      * machine already processed events.
      * Use `xkb_state::xkb_state_new_from_machine()` instead.
      *
+     * @sa `struct xkb_machine`
      * @sa `xkb_state::xkb_state_new_from_machine()`
      *
      * @since 1.14.0
@@ -5083,8 +5094,8 @@ xkb_state_get_keymap(struct xkb_state *state);
  * Update a keyboard state from a set of explicit masks.
  * @memberof xkb_state
  *
- * This entry point is intended for *client* applications; see @ref
- * server-client-state for details. *Server* applications should use
+ * This entry point is intended for *client* applications; see
+ * @ref server-client-state for details. *Server* applications should use
  * either the recommended modern `xkb_machine` API with the corresponding
  * `xkb_state_update_event()` or the legacy `xkb_state_update_synthetic()`
  * API instead.
@@ -5160,7 +5171,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * @returns
  * - `::XKB_SUCCESS` on success;
  * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
- *   was not created with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`.
+ *   was not created with `::XKB_STATE_MODE_SERVER_QUERY` or `xkb_state_new()`.
  * - Otherwise another [error code](@ref xkb_error_code).
  *
  * @note This function returns an error code rather than a state component
@@ -5385,7 +5396,7 @@ xkb_state_update_latched_locked(struct xkb_state *state,
  *
  * This function performs Capitalization @ref keysym-transformations.
  *
- * @since 1.9.0 This function now performs @ref keysym-transformations.
+ * @since 1.9.0: This function now performs @ref keysym-transformations.
  */
 XKB_EXPORT int
 xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
@@ -5412,8 +5423,8 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * You may safely pass `NULL` and 0 to @p buffer and @p size to find the
  * required size (without the `NULL`-byte).
  *
- * This function performs Capitalization and Control @ref
- * keysym-transformations.
+ * This function performs *Capitalization* and *Control*
+ * @ref keysym-transformations "".
  *
  * @since 0.4.1
  */
@@ -5432,8 +5443,8 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
  * @returns The UTF-32 representation for the key, if it consists of only
  * a single codepoint.  Otherwise, returns 0.
  *
- * This function performs Capitalization and Control @ref
- * keysym-transformations.
+ * This function performs *Capitalization* and *Control*
+ * @ref keysym-transformations "".
  *
  * @since 0.4.1
  */
@@ -5534,8 +5545,8 @@ enum xkb_state_match {
  * server side of serialization.
  * @memberof xkb_state
  *
- * This entry point is intended for *server* applications; see @ref
- * server-client-state for details.
+ * This entry point is intended for *server* applications;
+ * see @ref server-client-state "" for details.
  *
  * @param[in] state      The keyboard state.
  * @param[in] components A mask of the keyboard control state components to
@@ -5557,9 +5568,9 @@ xkb_state_serialize_controls(const struct xkb_state *state,
  * used on the server side of serialization.
  * @memberof xkb_state
  *
- * This entry point is intended for *server* applications; see @ref
- * server-client-state for details. *Client* applications should use the
- * `xkb_state_mod_*_is_active` API.
+ * This entry point is intended for *server* applications;
+ * see @ref server-client-state "" for details.
+ * *Client* applications should use the `xkb_state_mod_*_is_active` API.
  *
  * @warning The serialization is lossy and will not survive round trips.
  * It must only be used to feed *client* state objects created with either
@@ -5584,9 +5595,9 @@ xkb_state_serialize_mods(struct xkb_state *state,
  * used on the server side of serialization.
  * @memberof xkb_state
  *
- * This entry point is intended for *server* applications; see @ref
- * server-client-state for details. *Client* applications should use the
- * xkb_state_layout_*_is_active API.
+ * This entry point is intended for *server* applications;
+ * see @ref server-client-state "" for details.
+ * *Client* applications should use the `xkb_state_layout_*_is_active` API.
  *
  * @warning The serialization is lossy and will not survive round trips.
  * It must only be used to feed *client* state objects created with either

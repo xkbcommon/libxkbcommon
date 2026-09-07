@@ -86,8 +86,8 @@ struct rxkb_option_group;
 /**
  * @struct rxkb_option
  *
- * Opaque struct representing an XKB option. Options are grouped inside an @ref
- * rxkb_option_group.
+ * Opaque struct representing an XKB option. Options are grouped inside an
+ * @ref rxkb_option_group.
  */
 struct rxkb_option;
 
@@ -119,8 +119,8 @@ struct rxkb_iso3166_code;
 /**
  * Describes the popularity of an item. Historically, some highly specialized or
  * experimental definitions are excluded from the default list and shipped in
- * separate files. If these extra definitions are loaded (see @ref
- * RXKB_CONTEXT_LOAD_EXOTIC_RULES), the popularity of the item is set
+ * separate files. If these extra definitions are loaded
+ * (see `::RXKB_CONTEXT_LOAD_EXOTIC_RULES`), the popularity of the item is set
  * accordingly.
  *
  * If the exotic items are not loaded, all items will have the standard
@@ -317,8 +317,8 @@ rxkb_context_get_user_data(struct rxkb_context *ctx);
  * rxkb_context_parse(ctx, `evdev`);
  * ```
  *
- * The above example reflects the default behavior unless @ref
- * RXKB_CONTEXT_NO_DEFAULT_INCLUDES is provided.
+ * The above example reflects the default behavior unless
+ * `::RXKB_CONTEXT_NO_DEFAULT_INCLUDES` is provided.
  *
  * Loading of the files is in **reverse order**, i.e. the last path appended is
  * loaded first - in this case the ``/usr/share/X11/xkb`` path.
