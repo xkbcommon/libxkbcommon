@@ -11,7 +11,10 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - generate *sequences of [events](@ref xkb_event)* corresponding to *atomic* state changes;
   - support events other than state components changes.
 
-  New features include: [keyboard overlays], full support for [`RedirectKey()`](@ref redirect-key-action),
+  New features include: [keyboard overlays], full support for
+  [keyboard emulation](@ref redirect-key-action) /
+  [mouse emulation](@ref mouse-emulation-actions) /
+  [server actions](@ref server-actions),
   selecting a [reference layout for keyboard shortcuts],
   making [`Control+Alt` act as `AltGr`][modifier-remapping] (improving *compatibility*
   across platforms), and much more!
@@ -109,6 +112,16 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 [modifier maps]: @ref modmap-statement
 [keymap format v1]: @ref ::XKB_KEYMAP_FORMAT_TEXT_V1
 [keymap format v2]: @ref ::XKB_KEYMAP_FORMAT_TEXT_V2
+
+
+# Rules text format
+
+## New
+
+- Added [`multiple`](@ref rules-layout-index-multiple) as a special layout index.
+  It is the dual of [`single`](@ref rules-layout-index-single): it matches layouts at
+  any position, but only if there are *at least 2 layouts*.
+
 
 ## API
 
@@ -369,6 +382,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   [xkeyboard-config] does not ship such configurations.
 - Fixed the include statement of the default section, which could be broken in some custom configurations.
 - Fixed include statements silently accepting invalid group indices.
+- rules: Fixed parsing `+` as `<some>`.
+- rules: Fixed token right boundaries for `=`, `*` and extended wild cards.
 
 
 ## Tools
