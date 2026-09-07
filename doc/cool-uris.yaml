@@ -27,6 +27,7 @@ functions_d.html: []
 functions_e.html: []
 functions_f.html: []
 functions_func.html: []
+functions_g.html: []
 functions_k.html: []
 functions_l.html: []
 functions_m.html: []
@@ -140,9 +141,10 @@ structxkb__state__update.html: []
 todo.html: []
 topics.html:
 - modules.html
-xkb-intro.html: []
-xkbcommon-compatibility.html:
+xkb-compatibility.html:
 - md_doc_compat.html
+- xkbcommon-compatibility.html
+xkb-intro.html: []
 xkbcommon-compose_8h.html: []
 xkbcommon-errors_8h.html: []
 xkbcommon-features_8h.html: []

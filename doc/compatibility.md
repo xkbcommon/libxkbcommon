@@ -1,4 +1,4 @@
-# XKB Compatibility {#xkbcommon-compatibility}
+# XKB Compatibility {#xkb-compatibility}
 
 @tableofcontents{html:2}
 

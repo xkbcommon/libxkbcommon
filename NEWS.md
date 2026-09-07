@@ -880,7 +880,7 @@ although future iterations should be backward-compatible. See the
 - Enable using absolute paths and `%`-expansion variables for including
   *keymap components*, in the same fashion than the *rules* files.
 
-[compatibility page]: https://xkbcommon.org/doc/current/xkbcommon-compatibility.html
+[compatibility page]: https://xkbcommon.org/doc/current/xkb-compatibility.html
 [XKB protocol key actions]: https://www.x.org/releases/current/doc/kbproto/xkbproto.html#Key_Actions
 [xkeyboard-config-74]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/issues/74
 [xserver-258]: https://gitlab.freedesktop.org/xorg/xserver/-/issues/258

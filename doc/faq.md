@@ -16,7 +16,7 @@ See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 
 <dl>
 <dt>Features</dt>
-<dd>See @ref xkbcommon-compatibility "".</dd>
+<dd>See @ref xkb-compatibility "".</dd>
 <dt>Tools</dt>
 <dd>See @ref legacy-x-tools-replacement "".</dd>
 </dl>
