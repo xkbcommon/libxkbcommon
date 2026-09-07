@@ -3249,9 +3249,9 @@ xkb_machine_builder_update_mods_remap(
 }
 
 enum xkb_error_code
-xkb_machine_builder_update_shortcut_layout(
+xkb_machine_builder_update_shortcut_override(
     struct xkb_machine_builder * restrict builder,
-    const struct xkb_machine_builder_shortcut_layout_update * restrict update
+    const struct xkb_machine_builder_shortcut_override_update * restrict update
 )
 {
     struct xkb_keymap *keymap = builder->keymap;

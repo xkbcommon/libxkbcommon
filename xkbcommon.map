@@ -167,7 +167,7 @@ global:
     xkb_machine_builder_ref;
     xkb_machine_builder_update_a11y;
     xkb_machine_builder_update_mods_remap;
-    xkb_machine_builder_update_shortcut_layout;
+    xkb_machine_builder_update_shortcut_override;
     xkb_machine_builder_unref;
     xkb_machine_new;
     xkb_machine_ref;

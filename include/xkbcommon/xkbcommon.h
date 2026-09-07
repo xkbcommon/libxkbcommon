@@ -4266,11 +4266,11 @@ xkb_machine_builder_update_mods_remap(
 );
 
 /**
- * @struct xkb_machine_builder_shortcut_layout_update
+ * @struct xkb_machine_builder_shortcut_override_update
  * @ingroup abi-struct-contract
  *
  * Update a layout substitution of the shortcut layout overrides for
- * `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`
+ * `xkb_machine_builder::xkb_machine_builder_update_shortcut_override()`
  *
  * When any of the specified modifiers (see #mods and #affect_mods) is active,
  * the effective layout #source is substituted with layout #target in key
@@ -4303,11 +4303,11 @@ xkb_machine_builder_update_mods_remap(
  *
  * @sa `xkb_layout_index_t`
  * @sa @ref modifiers-encoding
- * @sa `xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`
+ * @sa `xkb_machine_builder::xkb_machine_builder_update_shortcut_override()`
  *
  * @since 1.14.0
  */
-struct xkb_machine_builder_shortcut_layout_update {
+struct xkb_machine_builder_shortcut_override_update {
     /**
      * Size of this structure in bytes.
      *
@@ -4374,7 +4374,7 @@ struct xkb_machine_builder_shortcut_layout_update {
  * @param[in]     update  Shortcut layout substitution update object.
  *
  * @pre @p update must point to a zero-initialized struct with
- * [`update->size`](@ref xkb_machine_builder_shortcut_layout_update::size)
+ * [`update->size`](@ref xkb_machine_builder_shortcut_override_update::size)
  * set per @ref abi-struct-contract.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code].
@@ -4384,16 +4384,16 @@ struct xkb_machine_builder_shortcut_layout_update {
  * - `::XKB_ERROR_UNSUPPORTED_MODIFIER_MASK`
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
  *
- * @sa `struct xkb_machine_builder_shortcut_layout_update`
+ * @sa `struct xkb_machine_builder_shortcut_override_update`
  *
  * @since 1.14.0
  *
  * [error code]: @ref xkb_error_code
  */
 XKB_EXPORT enum xkb_error_code
-xkb_machine_builder_update_shortcut_layout(
+xkb_machine_builder_update_shortcut_override(
     struct xkb_machine_builder *builder,
-    const struct xkb_machine_builder_shortcut_layout_update *update
+    const struct xkb_machine_builder_shortcut_override_update *update
 );
 
 /**

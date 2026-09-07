@@ -122,7 +122,7 @@ to encourage developers to implement the relevant [API][shortcuts-api].
 </dd>
 </dl>
 
-[shortcuts-api]: @ref xkb_machine_builder::xkb_machine_builder_update_shortcut_layout
+[shortcuts-api]: @ref xkb_machine_builder::xkb_machine_builder_update_shortcut_override
 [keycodes]: @ref keycode-def
 [keysyms]: @ref keysym-def
 
@@ -584,7 +584,7 @@ keyboard database, [xkeyboard-config].
 ##### Custom and consistent shortcuts behavior using libxkbcommon
 
 Since libxkbcommon 1.14, tweaking the keyboard shortcuts can be achieved by using
-`xkb_machine_builder::xkb_machine_builder_update_shortcut_layout()`.
+`xkb_machine_builder::xkb_machine_builder_update_shortcut_override()`.
 
 Set the layout to use for shortcuts for each relevant layout. There are 2 typical
 use cases:

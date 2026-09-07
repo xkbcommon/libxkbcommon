@@ -1590,13 +1590,13 @@ tools_set_shortcuts_mask(const struct xkb_machine_options *options,
     if (!tools_parse_mod_mask(keymap, &options->shortcuts.mask,
                              "shortcut modifier mask", &mods))
         return false;
-    const struct xkb_machine_builder_shortcut_layout_update update = {
+    const struct xkb_machine_builder_shortcut_override_update update = {
         .size = sizeof(update),
         .source = XKB_LAYOUT_INVALID,
         .affect_mods = mods,
         .mods = mods
     };
-    return (xkb_machine_builder_update_shortcut_layout(builder, &update) ==
+    return (xkb_machine_builder_update_shortcut_override(builder, &update) ==
             XKB_SUCCESS);
 }
 
@@ -1706,13 +1706,13 @@ tools_set_shortcuts_mappings(const struct xkb_machine_options *options,
     darray_enumerate(source, target, options->shortcuts.mappings) {
         if (*target == XKB_LAYOUT_INVALID)
             continue;
-        const struct xkb_machine_builder_shortcut_layout_update update = {
+        const struct xkb_machine_builder_shortcut_override_update update = {
             .size = sizeof(update),
             .source = source,
             .target = *target,
         };
         const enum xkb_error_code error =
-            xkb_machine_builder_update_shortcut_layout(builder, &update);
+            xkb_machine_builder_update_shortcut_override(builder, &update);
         if (error != XKB_SUCCESS) {
             fprintf(stderr,
                     "ERROR %d: cannot add shortcuts layout mapping: "
