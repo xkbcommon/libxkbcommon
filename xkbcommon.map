@@ -161,7 +161,7 @@ global:
     xkb_state_new_from_machine;
     xkb_state_update_event;
     xkb_state_update_synthetic;
-    xkb_state_serialize_enabled_controls;
+    xkb_state_serialize_controls;
     xkb_machine_builder_new;
     xkb_machine_builder_get_keymap;
     xkb_machine_builder_ref;
