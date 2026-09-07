@@ -58,7 +58,7 @@ xkb_keymap_key_iterator_flags:
     value: 0
   - name: XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
     value: 1
-  - name: XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
+  - name: XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND
     value: 2
 xkb_event_type:
   - name: XKB_EVENT_TYPE_INVALID

@@ -849,9 +849,9 @@ test_key_iterator(void)
         static const enum xkb_keymap_key_iterator_flags flags[] = {
             XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
             XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER,
-            XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND,
+            XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND,
             XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER |
-            XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND,
+            XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND,
         };
         for (size_t f = 0; f < ARRAY_SIZE(flags); f++) {
             fprintf(stderr, "------\n*** %s: #%zu, flags: 0x%x ***\n",
@@ -866,7 +866,7 @@ test_key_iterator(void)
             const bool ascending =
                 !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
             const bool skip_unbound =
-                (flags[f] & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
+                !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND);
             size_t expected_count = (skip_unbound)
                 ? tests[t].num_keys_bound
                 : tests[t].num_keys_all;

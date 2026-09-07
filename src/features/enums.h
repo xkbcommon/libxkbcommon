@@ -125,7 +125,7 @@ enum xkb_enumerations_values {
     XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES
         = XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS
         | XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
-        | XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND
+        | XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND
     ,
     XKB_EVENT_TYPE_VALUES
         = (1u << XKB_EVENT_TYPE_INVALID)
@@ -290,7 +290,7 @@ static const uint32_t xkb_keymap_serialize_flags_values[] = {
 static const uint32_t xkb_keymap_key_iterator_flags_values[] = {
     XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
     XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER,
-    XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND,
+    XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND,
 };
 #endif
 

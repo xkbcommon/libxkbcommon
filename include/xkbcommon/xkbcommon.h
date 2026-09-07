@@ -2170,7 +2170,7 @@ enum xkb_keymap_key_iterator_flags {
     /**
      * Do not apply any flags:
      * - iterate keys in *ascending* order;
-     * - iterate all keys, even if unbound (i.e. with no group).
+     * - iterate only *bound* keys, i.e. keys with some group.
      *
      * @since 1.14.0
      */
@@ -2183,12 +2183,12 @@ enum xkb_keymap_key_iterator_flags {
     XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER = (1 << 0),
     /**
      * @parblock
-     * Skip *unbound* keys, i.e. keys with no groups.
+     * Iterate all keys, including *unbound* keys, i.e. keys with no groups.
      * @endparblock
      *
      * @since 1.14.0
      */
-    XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND = (1 << 1),
+    XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND = (1 << 1),
 };
 
 /**

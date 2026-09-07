@@ -732,7 +732,7 @@ keymap_key_iterator_init(
         return;
     }
 
-    iter->skip_unbound = (config->flags & XKB_KEYMAP_KEY_ITERATOR_SKIP_UNBOUND);
+    iter->skip_unbound = !(config->flags & XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND);
     iter->increment = (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
         ? -1
         : 1;
