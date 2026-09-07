@@ -5503,8 +5503,8 @@ enum xkb_state_match {
  * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
 XKB_EXPORT enum xkb_keyboard_control_flags
-xkb_state_serialize_enabled_controls(const struct xkb_state *state,
-                                     enum xkb_state_component components);
+xkb_state_serialize_controls(const struct xkb_state *state,
+                             enum xkb_state_component components);
 
 /**
  * The counterpart to `xkb_state::xkb_state_update_mask()` for modifiers, to be

@@ -642,7 +642,7 @@ test_state_update_basics(struct xkb_context *ctx)
             event.components.components.group);
         assert(xkb_state_serialize_leds(state, XKB_STATE_LEDS) ==
             event.components.components.leds);
-        assert(xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE) ==
+        assert(xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE) ==
                (enum xkb_keyboard_control_flags)event.components.components.controls);
     }
 
@@ -745,7 +745,7 @@ update_key(struct xkb_machine *sm,
                       xkb_state_serialize_leds(state, XKB_STATE_LEDS),
                       components.leds, "0x%"PRIx32);
             assert_eq("controls",
-                      xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE),
+                      xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE),
                       components.controls, "0x%x");
             break;
         }
@@ -940,7 +940,7 @@ test_sticky_keys(struct xkb_context *ctx)
     enum xkb_keyboard_control_flags controls;
     enum xkb_state_component changed;
 
-    controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+    controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
     assert(controls == 0);
 
     enum sticky_key_activation {
@@ -975,7 +975,7 @@ test_sticky_keys(struct xkb_context *ctx)
             changed = update_key(sm, events, state, use_events,
                                  KEY_F2 + EVDEV_OFFSET, XKB_KEY_DOWN);
             assert(changed == XKB_STATE_CONTROLS_EFFECTIVE);
-            controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+            controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
             assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
             changed = update_key(sm, events, state, use_events,
                                  KEY_F2 + EVDEV_OFFSET, XKB_KEY_UP);
@@ -986,7 +986,7 @@ test_sticky_keys(struct xkb_context *ctx)
                                       XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
                                       XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
             assert(changed == XKB_STATE_CONTROLS_EFFECTIVE);
-            controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+            controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
             assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
             break;
         }
@@ -997,11 +997,11 @@ test_sticky_keys(struct xkb_context *ctx)
                 XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
             );
             assert(changed == XKB_STATE_CONTROLS_EFFECTIVE);
-            controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+            controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
             assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
             break;
         }
-        controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+        controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
         assert(controls == XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS);
 
         /* Latch shift (sticky) */
@@ -1148,7 +1148,7 @@ test_sticky_keys(struct xkb_context *ctx)
                                XKB_STATE_LEDS));
             break;
         }
-        controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+        controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
         assert(controls == 0);
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == 0);
@@ -1164,7 +1164,7 @@ test_sticky_keys(struct xkb_context *ctx)
         mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
         assert(mods == 0);
 
-        controls = xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+        controls = xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
         assert(controls == 0);
     }
 

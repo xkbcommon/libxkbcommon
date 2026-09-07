@@ -214,7 +214,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 - Added `xkb_state::xkb_state_update_synthetic()` for out-of-band updates.
 - Added API to change controls of the keyboard state:
   - new enumeration `xkb_keyboard_control_flags`
-  - new function `xkb_state::xkb_state_serialize_enabled_controls()`
+  - new function `xkb_state::xkb_state_serialize_controls()`
   - new member `XKB_STATE_CONTROLS_EFFECTIVE` in the `xkb_state_component` enumeration.
 - Added support for the <strong>[sticky keys]</strong> accessibility feature.
   ([#596](https://github.com/xkbcommon/libxkbcommon/issues/596))

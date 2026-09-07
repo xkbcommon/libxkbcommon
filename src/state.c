@@ -2549,8 +2549,8 @@ serialize_controls(const struct state_components *components,
 }
 
 enum xkb_keyboard_control_flags
-xkb_state_serialize_enabled_controls(const struct xkb_state *state,
-                                     enum xkb_state_component type)
+xkb_state_serialize_controls(const struct xkb_state *state,
+                             enum xkb_state_component type)
 {
     return serialize_controls(&state->components, type);
 }

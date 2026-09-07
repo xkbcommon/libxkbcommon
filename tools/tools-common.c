@@ -367,7 +367,7 @@ print_controls(struct xkb_state *state, bool verbose) {
     );
 
     const enum xkb_keyboard_control_flags ctrls =
-        xkb_state_serialize_enabled_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
+        xkb_state_serialize_controls(state, XKB_STATE_CONTROLS_EFFECTIVE);
 
     if (verbose)
         printf("0x%08x ", ctrls);
