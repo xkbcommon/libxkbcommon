@@ -196,6 +196,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_ref()`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_unref()`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_next()`
+  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_reset()`
 
   It has the following pros over `xkb_keymap::xkb_keymap_key_for_each()`:
   - lazy (i.e. on-demand);
