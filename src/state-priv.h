@@ -433,15 +433,15 @@ static_assert(sizeof(struct xkb_machine_builder_mods_remap_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
- * xkb_machine_builder_shortcut_layout_update
+ * xkb_machine_builder_shortcut_override_update
  *****************************************************************************/
 
 /**
- * Version 1 of `xkb_machine_builder_shortcut_layout_update`, used for ABI check only
+ * Version 1 of `xkb_machine_builder_shortcut_override_update`, used for ABI check only
  *
  * @since 1.14.0
  */
-struct xkb_machine_builder_shortcut_layout_update_v1 {
+struct xkb_machine_builder_shortcut_override_update_v1 {
     uint32_t size;
     xkb_layout_index_t source;
     xkb_layout_index_t target;
@@ -450,23 +450,23 @@ struct xkb_machine_builder_shortcut_layout_update_v1 {
 };
 
 /* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, size, source);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, source, target);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, target, affect_mods);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, affect_mods, mods);
-assert_no_padding(struct xkb_machine_builder_shortcut_layout_update, mods);
+assert_no_padding(struct xkb_machine_builder_shortcut_override_update, size, source);
+assert_no_padding(struct xkb_machine_builder_shortcut_override_update, source, target);
+assert_no_padding(struct xkb_machine_builder_shortcut_override_update, target, affect_mods);
+assert_no_padding(struct xkb_machine_builder_shortcut_override_update, affect_mods, mods);
+assert_no_padding(struct xkb_machine_builder_shortcut_override_update, mods);
 
 /* Current version is 1 */
-static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) ==
-              sizeof(struct xkb_machine_builder_shortcut_layout_update_v1), "");
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, size);
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, source);
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, target);
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, affect_mods);
-assert_same_field(struct xkb_machine_builder_shortcut_layout_update, _v1, mods);
+static_assert(sizeof(struct xkb_machine_builder_shortcut_override_update) ==
+              sizeof(struct xkb_machine_builder_shortcut_override_update_v1), "");
+assert_same_field(struct xkb_machine_builder_shortcut_override_update, _v1, size);
+assert_same_field(struct xkb_machine_builder_shortcut_override_update, _v1, source);
+assert_same_field(struct xkb_machine_builder_shortcut_override_update, _v1, target);
+assert_same_field(struct xkb_machine_builder_shortcut_override_update, _v1, affect_mods);
+assert_same_field(struct xkb_machine_builder_shortcut_override_update, _v1, mods);
 
 /* Ensure reasonable margin to the upper size limit */
-static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
+static_assert(sizeof(struct xkb_machine_builder_shortcut_override_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
@@ -496,8 +496,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_machine_builder_a11y_update_v1),          \
     const struct xkb_machine_builder_mods_remap_update *:           \
         sizeof(struct xkb_machine_builder_mods_remap_update_v1),    \
-    const struct xkb_machine_builder_shortcut_layout_update *:      \
-        sizeof(struct xkb_machine_builder_shortcut_layout_update_v1)\
+    const struct xkb_machine_builder_shortcut_override_update *:      \
+        sizeof(struct xkb_machine_builder_shortcut_override_update_v1)\
 )
 
 /** Minimal *current* valid size of the struct */
@@ -523,8 +523,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_machine_builder_a11y_update_v1),          \
     const struct xkb_machine_builder_mods_remap_update *:           \
         sizeof(struct xkb_machine_builder_mods_remap_update_v1),    \
-    const struct xkb_machine_builder_shortcut_layout_update *:      \
-        sizeof(struct xkb_machine_builder_shortcut_layout_update_v1)\
+    const struct xkb_machine_builder_shortcut_override_update *:      \
+        sizeof(struct xkb_machine_builder_shortcut_override_update_v1)\
 )
 
 /** Offset of the last meaningful field of the current struct */
@@ -550,8 +550,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_layout_update) * 30 <=
         sizeof(struct xkb_machine_builder_a11y_update),          \
     const struct xkb_machine_builder_mods_remap_update *:        \
         sizeof(struct xkb_machine_builder_mods_remap_update),    \
-    const struct xkb_machine_builder_shortcut_layout_update *:   \
-        sizeof(struct xkb_machine_builder_shortcut_layout_update)\
+    const struct xkb_machine_builder_shortcut_override_update *:   \
+        sizeof(struct xkb_machine_builder_shortcut_override_update)\
 )
 
 #define xkb_check_state_abi(x) xkb_check_versioned_struct_size( \
@@ -613,8 +613,8 @@ static_assert(
     ""
 );
 static_assert(
-    xkb_versioned_struct_size_v1(((const struct xkb_machine_builder_shortcut_layout_update *)NULL)) <=
-    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_shortcut_layout_update *)NULL)),
+    xkb_versioned_struct_size_v1(((const struct xkb_machine_builder_shortcut_override_update *)NULL)) <=
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_shortcut_override_update *)NULL)),
     ""
 );
 
@@ -670,8 +670,8 @@ static_assert(
     ""
 );
 static_assert(
-    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_shortcut_layout_update *)NULL)) <=
-    sizeof(const struct xkb_machine_builder_shortcut_layout_update),
+    xkb_versioned_struct_size_min(((const struct xkb_machine_builder_shortcut_override_update *)NULL)) <=
+    sizeof(const struct xkb_machine_builder_shortcut_override_update),
     ""
 );
 

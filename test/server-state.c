@@ -3349,19 +3349,19 @@ test_shortcuts_tweak(struct xkb_context *context)
         xkb_machine_builder_new(keymap, NULL, NULL);
     assert(builder);
 
-    struct xkb_machine_builder_shortcut_layout_update update = {
+    struct xkb_machine_builder_shortcut_override_update update = {
         .size = sizeof(update),
     };
     update.source = 1;
     update.target = 2;
-    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
+    assert(xkb_machine_builder_update_shortcut_override(builder, &update) == XKB_SUCCESS);
     update.source = 3;
     update.target = 0;
-    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
+    assert(xkb_machine_builder_update_shortcut_override(builder, &update) == XKB_SUCCESS);
     update.source = XKB_LAYOUT_INVALID;
     update.affect_mods = ctrl;
     update.mods = ctrl;
-    assert(xkb_machine_builder_update_shortcut_layout(builder, &update) == XKB_SUCCESS);
+    assert(xkb_machine_builder_update_shortcut_override(builder, &update) == XKB_SUCCESS);
 
     struct xkb_machine * sm = xkb_machine_new(builder, NULL);
     assert(sm);
@@ -5926,7 +5926,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
             const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
             const xkb_mod_mask_t mods = ctrl | alt | super;
 
-            const struct xkb_machine_builder_shortcut_layout_update update = {
+            const struct xkb_machine_builder_shortcut_override_update update = {
                 .size = sizeof(update),
                 .source = 0,
                 .target = 1,
@@ -5934,7 +5934,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .mods = mods,
             };
             const enum xkb_error_code error =
-                xkb_machine_builder_update_shortcut_layout(builder, &update);
+                xkb_machine_builder_update_shortcut_override(builder, &update);
             if (error != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
@@ -5962,7 +5962,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
 
             const xkb_layout_index_t num_layouts = xkb_keymap_num_layouts(keymap);
             for (xkb_layout_index_t source = num_layouts; source-- > 1;) {
-                const struct xkb_machine_builder_shortcut_layout_update update = {
+                const struct xkb_machine_builder_shortcut_override_update update = {
                     .size = sizeof(update),
                     .source = source,
                     .target = 0,
@@ -5970,7 +5970,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                     .mods = mods,
                 };
                 const enum xkb_error_code error =
-                    xkb_machine_builder_update_shortcut_layout(builder, &update);
+                    xkb_machine_builder_update_shortcut_override(builder, &update);
                 if (error != XKB_SUCCESS) {
                     // handle error
                     assert(!"error");
@@ -5996,7 +5996,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
             const xkb_mod_mask_t alt = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
             const xkb_mod_mask_t super = xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_SUPER);
 
-            struct xkb_machine_builder_shortcut_layout_update update = {
+            struct xkb_machine_builder_shortcut_override_update update = {
                 .size = sizeof(update),
                 .source = 0,
                 .target = 2,
@@ -6004,19 +6004,19 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .mods = ctrl | alt,
             };
             enum xkb_error_code error =
-                xkb_machine_builder_update_shortcut_layout(builder, &update);
+                xkb_machine_builder_update_shortcut_override(builder, &update);
             if (error != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
             }
-            update = (struct xkb_machine_builder_shortcut_layout_update) {
+            update = (struct xkb_machine_builder_shortcut_override_update) {
                 .size = sizeof(update),
                 .source = 1,
                 .target = 3,
                 .affect_mods = super,
                 .mods = super,
             };
-            error = xkb_machine_builder_update_shortcut_layout(builder, &update);
+            error = xkb_machine_builder_update_shortcut_override(builder, &update);
             if (error != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
