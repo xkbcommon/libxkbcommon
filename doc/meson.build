@@ -32,6 +32,7 @@ doxygen_input = [
     'doc/keysym-encoding.md',
     'doc/license.md',
     'doc/message-registry.md',
+    'doc/naming-conventions-prose.md',
     'doc/packaging-keyboard-layouts.md',
     'doc/quick-guide.md',
     'doc/release-notes.md',
