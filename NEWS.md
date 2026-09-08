@@ -455,6 +455,8 @@ xkbcommon [1.14.0-beta1] – 2026-07-22
 
 - Raised minimal meson version requirement to 1.4.0.
   ([#954](https://github.com/xkbcommon/libxkbcommon/issues/954))
+- Fixed the Meson project name from “libxkbcommon” to “xkbcommon”.
+  ([#953](https://github.com/xkbcommon/libxkbcommon/issues/954))
 
 ### New
 
