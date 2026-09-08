@@ -1,5 +1,5 @@
 project(
-    'libxkbcommon',
+    'xkbcommon',
     'c',
     version: '1.14.0-beta1',
     default_options: [
