@@ -29,9 +29,7 @@ if not KEYSYMS_NAMES_HEADER.is_file():
 
 # Parse commands
 parser = argparse.ArgumentParser(description="Generate C file to handle keysym names")
-parser.add_argument(
-    "c_header", type=Path, help="Path to the xkbcommon keysym header"
-)
+parser.add_argument("c_header", type=Path, help="Path to the xkbcommon keysym header")
 parser.add_argument("gperf", type=Path, help="Path to the gperf file")
 args = parser.parse_args()
 
