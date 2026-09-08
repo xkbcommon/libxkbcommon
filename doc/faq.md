@@ -76,7 +76,7 @@ See @ref packaging-keyboard-layouts.
 There are some issues with *modifier-only* shortcuts: see [this bug report][#420].
 
 This can be fixed by using the new parameter <code>[lockOnRelease]</code> in
-`LockGroup()`, available since libxkbcommon 1.11. This will be done at some
+`LockGroup()`, available since xkbcommon 1.11. This will be done at some
 point in [xkeyboard-config].
 
 ```diff
@@ -100,7 +100,7 @@ for other configurations. These fallbacks may not match users’ expectations no
 even be consistent across applications. See @ref the-keyboard-shortcuts-mess ""
 for some examples.
 
-Since version 1.14, libxkbcommon offers a [dedicated API][shortcuts-api]
+Since version 1.14, xkbcommon offers a [dedicated API][shortcuts-api]
 for *Wayland* compositors, which enables to customize the layouts to use for
 keyboard shortcuts.
 
@@ -140,7 +140,7 @@ keyboard models in the XKB configuration to avoid vendor-specific mappings.
 </dd>
 <dt>There is an issue with your keyboard layout database</dt>
 <dd>
-libxkbcommon may not be able to load your configuration due to an issue
+xkbcommon may not be able to load your configuration due to an issue
 (file not found, syntax error, unsupported keysym, etc.). Please use our
 [debugging tools] to get further information.
 
@@ -162,11 +162,11 @@ further information.
 Please use our [debugging tools] to ensure that it is specific to the
 application.
 </dd>
-<dt>Your keyboard layout uses features not supported by libxkbcommon</dt>
+<dt>Your keyboard layout uses features not supported by xkbcommon</dt>
 <dd>See: [compatibility](./compatibility.md)</dd>
 <dt>None of the previous</dt>
 <dd>
-If none of the previous is conclusive, then this may an issue with libxkbcommon.
+If none of the previous is conclusive, then this may an issue with xkbcommon.
 Please use our [debugging tools] to provide the maximum information (setup,
 log, expected/got results) and file a [bug report]!
 </dd>
@@ -513,12 +513,12 @@ The [virtual modifiers] encoding, (also: mappings to [real modifiers] in X11
 jargon) is an implementation detail.
 However, some applications may require it in order to interface with legacy code.
 
-##### libxkbcommon ≥ 1.10
+##### xkbcommon ≥ 1.10
 
 Use the dedicated functions `xkb_keymap::xkb_keymap_mod_get_mask()` (since 1.10)
 and `xkb_keymap::xkb_keymap_mod_get_mask2()` (since 1.11).
 
-##### libxkbcommon ≤ 1.9
+##### xkbcommon ≤ 1.9
 
 Use the following snippet:
 
@@ -581,9 +581,9 @@ achievable with modern XKB features (e.g. multiple actions per level), this is
 non-trivial and it does not scale well, thus preventing support in the standard
 keyboard database, [xkeyboard-config].
 
-##### Custom and consistent shortcuts behavior using libxkbcommon
+##### Custom and consistent shortcuts behavior using xkbcommon
 
-Since libxkbcommon 1.14, tweaking the keyboard shortcuts can be achieved by using
+Since xkbcommon 1.14, tweaking the keyboard shortcuts can be achieved by using
 `xkb_machine_builder::xkb_machine_builder_update_shortcut_override()`.
 
 Set the layout to use for shortcuts for each relevant layout. There are 2 typical

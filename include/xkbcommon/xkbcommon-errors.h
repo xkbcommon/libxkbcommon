@@ -77,8 +77,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_state_mode` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given mode:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * mode:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_STATE_MODE, flag)
@@ -90,8 +90,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_keymap_key_iterator_flags` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
@@ -103,8 +103,8 @@ enum xkb_error_code {
     /**
      * The given layout out-of-range policy is not supported
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
@@ -116,7 +116,7 @@ enum xkb_error_code {
     /**
      * Layout index is not supported
      *
-     * libxkbcommon supports different *layout index* ranges, depending on the
+     * xkbcommon supports different *layout index* ranges, depending on the
      * target
      * *keymap format*:
      * - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..4
@@ -142,8 +142,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_a11y_flags` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
@@ -181,8 +181,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_events_flags` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_EVENTS_FLAGS, flag)
@@ -194,8 +194,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_machine_flags` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_FLAGS, flag)
@@ -224,8 +224,8 @@ enum xkb_error_code {
     /**
      * Unsupported `xkb_machine_builder_flags` value
      *
-     * Use the following to check if the linked libxkbcommon library supports a
-     * given flag:
+     * Use the following to check if the linked libxkbcommon supports a given
+     * flag:
      *
      * ```c
      * xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS, flag)

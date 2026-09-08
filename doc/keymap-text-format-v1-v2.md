@@ -9,7 +9,7 @@ NOTE:
   syntax highlighting.
 -->
 
-This document describes the following [keymap] formats, as implemented by libxkbcommon:
+This document describes the following [keymap] formats, as implemented by xkbcommon:
 
 <dl>
 <dt>
@@ -365,7 +365,7 @@ Some additional resources are:
 
   Depending of the context, a keymap may refer to:
 
-  - the software object defined and managed by libxkbcommon;
+  - the software object defined and managed by xkbcommon;
   - the text configuration used to create this software object.
 
   See @ref keymap-components-intro and [xkb_keymap] for further details.
@@ -873,9 +873,9 @@ Legacy merge mode for keycodes. Its purpose is to allow to assign the same key
 name to multiple key codes, which is not allowed otherwise. This is unfortunately
 poorly documented and not used in xkeyboard-config. The xkblib specification
 implies that this was part of the overlay functionality, which is currently not
-supported by libxkbcommon.
+supported by xkbcommon.
 
-@warning This merge mode is not supported by libxkbcommon and is ignored.
+@warning This merge mode is not supported by xkbcommon and is ignored.
 </dd>
 </dl>
 
@@ -948,7 +948,7 @@ The *extra* system-wide XKB directory of the corresponding [component]
 
 [component]: @ref keymap-components-table
 
-@warning Absolute paths and `%`-expansion are supported by libxkbcommon but not
+@warning Absolute paths and `%`-expansion are supported by xkbcommon but not
 by the legacy X11 tools.
 
 The `include` keyword uses the *default* [merge mode]. The following keywords
@@ -1240,8 +1240,7 @@ section types:
   [xkb_symbols] sections and *can* contain [xkb_geometry] section.
 </div>
 Since such distinction is purely semantic and would have niche use cases lost to
-history, these compound sections are treated equally as `xkb_keymap` in
-libxkbcommon.
+history, these compound sections are treated equally as `xkb_keymap` in xkbcommon.
 
 <!-- TODO: there might be several sections of the same type: explain syntax and how they are selected -->
 <!-- TODO: sections may be named -->
@@ -1297,7 +1296,7 @@ If no `*_keys` flags are supplied, then the symbols section is assumed to cover
 a complete keyboard.
 
 At present, except for `default` (see: [default map]), none of the flags affect
-key processing in libxkbcommon, and only serve as *metadata*.
+key processing in xkbcommon, and only serve as *metadata*.
 
 ## The `xkb_keycodes` section {#the-xkb_keycodes-section}
 
@@ -1566,7 +1565,7 @@ xkb_symbols {
 @endfigure
 
 <!--
-Feature removed in libxkbcommon
+Feature removed in xkbcommon
 
 ### Set default values
 
@@ -2206,7 +2205,7 @@ Key behaviors are used to *simulate* any of these types of keys.
 can be optionally *prefixed* by `permanent` to indicate an *unmodifiable*
 physical, electrical or software driver characteristic of a key.
 @note The `permanent` flag indicates a characteristic of the underlying system
-that libxkbcommon cannot affect, so libxkbcommon treats all permanent behaviors
+that xkbcommon cannot affect, so xkbcommon treats all permanent behaviors
 as if they were [*default*](@ref key-behavior-default) and *ignore* the
 corresponding parameters.
 <!-- blank required by Doxygen -->
@@ -2239,7 +2238,7 @@ keycodes corresponding to their bottom-right label. E.g.:
 @image html numeric-keypad-overlay.svg width=100%
 @endfigure
 
-libxkbcommon supports *effectful* keyboard overlays since version 1.14.0. The
+xkbcommon supports *effectful* keyboard overlays since version 1.14.0. The
 differences between [keymap formats] is presented in the
 table hereinafter:
 
@@ -2414,7 +2413,7 @@ keysym when some modifiers are not [consumed](@ref consumed-modifiers).
 @remark Trailing `NoSymbol` are dropped.
 
 @anchor key-multiple-symbols-per-level As an extension to the XKB legacy format,
-libxkbcommon supports multiple key symbols and actions per level (the latter
+xkbcommon supports multiple key symbols and actions per level (the latter
 since version 1.8.0):
 
 ```c
@@ -2708,11 +2707,11 @@ Bind a [*real* modifier](@ref real-modifier) to a key, e.g.:
 modifier_map Control { <LCTL>, Control_L };
 ```
 
-The formats `::XKB_KEYMAP_FORMAT_TEXT_V1` (all libxkbcommon versions) and
-`::XKB_KEYMAP_FORMAT_TEXT_V2` (libxkbcommon < 1.14) accepts only a *single
+The formats `::XKB_KEYMAP_FORMAT_TEXT_V1` (all xkbcommon versions) and
+`::XKB_KEYMAP_FORMAT_TEXT_V2` (xkbcommon < 1.14) accepts only a *single
 [X11 core modifier][core modifier]*.
 
-Since libxkbcommon 1.14, any modifier *mask* expression can be used in `::XKB_KEYMAP_FORMAT_TEXT_V2`:
+Since xkbcommon 1.14, any modifier *mask* expression can be used in `::XKB_KEYMAP_FORMAT_TEXT_V2`:
 
 <dl>
 <dt>[X11 core modifiers][core modifier]</dt>
@@ -2807,7 +2806,7 @@ They are the modifiers that are *not* predefined. They require an
 
 Note that in X11, the maximum of virtual modifiers is **16** (see
 `XkbNumVirtualMods`), whereas up to **24** virtual modifiers can be defined in
-libxkbcommon, for a total of **32** modifiers (real + virtual).
+xkbcommon, for a total of **32** modifiers (real + virtual).
 </dd>
 </dl>
 
@@ -2992,7 +2991,7 @@ keyboard state. The keyboard state represents active modifiers with the bitwise
 OR of the encoding of each active modifiers.
 
 @note Display servers may use a different encoding in their protocols:
-- **Wayland protocol:** use the same *32-bit* encoding as libxkbcommon and
+- **Wayland protocol:** use the same *32-bit* encoding as xkbcommon and
   support its full range of modifiers.
 - **X11 protocol:** use a *8-bit* encoding. It supports only using
   [real modifiers](@ref real-modifier) to encode
@@ -3217,14 +3216,14 @@ implementations are recommended to **avoid *numeric* modifier masks** and to
 **use virtual modifiers *names* whenever possible** when serializing the keymap.
 This avoids *leaking* the indices of the modifiers.
 
-#### xkbcomp and libxkbcommon implementations {#xkbcommon-vmod-encoding}
+#### xkbcomp and xkbcommon implementations {#xkbcommon-vmod-encoding}
 
 @attention This section is not part of the keymap text format specification and
-presents libxkbcommon’s *implementation details* that may change, solely for the
+presents xkbcommon’s *implementation details* that may change, solely for the
 purpose of informing other XKB implementation.
 **Users should not rely on this!**
 
-Both X11 xkbcomp and libxkbcommon currently implement modifiers indices as follow:
+Both X11 xkbcomp and xkbcommon currently implement modifiers indices as follow:
 
 1. Real modifiers have the following indices: @anchor real-modifier-indices
    | Name      | Index |
@@ -3252,7 +3251,7 @@ Both X11 xkbcomp and libxkbcommon currently implement modifiers indices as follo
 @note It suffices to declare all virtual modifiers in [xkb_types] \(or if empty,
 whatever non-empty section afterwards, in the order specified above) in their
 ascending indices order to use virtual modifiers indices
-**compatible with libxkbcommon**.
+**compatible with xkbcommon**.
 
 ### Example: define and use a modifier, step by step
 
@@ -3465,7 +3464,7 @@ No parameters.
 
 No parameters.
 
-@note This is a libxkbcommon *extension*. In order to maintain backward-compatibility,
+@note This is an xkbcommon *extension*. In order to maintain backward-compatibility,
 it serializes to `LockControls(controls=none,affect=neither)`.
 
 @since 1.10.0
@@ -4816,7 +4815,7 @@ compiler.
 
 @warning This assumes that the corresponding action’s C `struct` is laid out in
 memory exactly as described in the XKB specification and libraries. However,
-libxkbcommon have changed these `struct`s in various ways, so this assumption is
+xkbcommon have changed these `struct`s in various ways, so this assumption is
 no longer true and the actions defined in the XKB protocol are unsupported.
 
 <table>
@@ -4898,7 +4897,7 @@ but *not validated* and are then completely *ignored*.
 This section aims to describe the *physical* layout of a keyboard and its main
 use case is to produce a picture of the keyboard via e.g. the `xkbprint` program.
 
-@warning libxkbcommon does not support this section: while it can parse the
+@warning xkbcommon does not support this section: while it can parse the
 syntax, it does not interpret it; the section is simply dropped so there is no
 API to query it and the keymap serialization does not contain it.
 

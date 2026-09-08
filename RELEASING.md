@@ -1,4 +1,4 @@
-# How to make a libxkbcommon release
+# How to make an xkbcommon release
 
 ### Prerequisites
 
@@ -44,7 +44,7 @@
 - [ ] Send an email to the wayland-devel@lists.freedesktop.org mailing list, using this template:
 
 ```
-Subject: [ANNOUNCE] libxkbcommon MAJOR.MINOR.PATCH
+Subject: [ANNOUNCE] xkbcommon MAJOR.MINOR.PATCH
 
 <NEWS & comments for this release>
 

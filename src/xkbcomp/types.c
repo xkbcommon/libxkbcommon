@@ -773,19 +773,19 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
      * In the Xorg ecosystem, any missing canonical type falls back to a default
      * type supplied by libX11’s `XkbInitCanonicalKeyTypes()`, e.g. in xkbcomp.
      *
-     * libxkbcommon does not require these types per se: it only requires that
+     * xkbcommon does not require these types per se: it only requires that
      * all *used* types — explicit (`type="…"`) or implicit (automatic types) —
      * are defined, with the exception that if no key type at all is defined,
      * then a default `ONE_LEVEL` type is provided.
      *
-     * libxkbcommon also does not require any particular order of these key
+     * xkbcommon also does not require any particular order of these key
      * types, because they are retrieved using their name instead of their index.
      *
-     * Since 1.12 (31900860c65b88e4d10ad7dd00377e2815cca0f6), libxkbcommon drops
+     * Since 1.12 (31900860c65b88e4d10ad7dd00377e2815cca0f6), xkbcommon drops
      * any *unused* key type at serialization by default. Some layouts with 4+
      * levels may not require e.g. the `TWO_LEVEL` nor the `ALPHABETIC` types.
      *
-     * In theory, libxkbcommon would not care of the presence of the canonical
+     * In theory, xkbcommon would not care of the presence of the canonical
      * key types and could delegate the property check, fallback and ordering
      * work to xkbcomp, as it is the case in Xorg’s Xwayland. However the
      * fallback implementation is buggy:
@@ -795,7 +795,7 @@ CopyKeyTypesToKeymap(struct xkb_keymap *keymap, KeyTypesInfo *info)
      *
      * The canonical key types are always present in the keymap generated from
      * xkeyboard-config and custom keymaps usually include these types too. So
-     * to circumvent the issues of Xorg, it should suffice that libxkbcommon
+     * to circumvent the issues of Xorg, it should suffice that xkbcommon
      * ensures to never discard the canonical key types, if present, and continue
      * to delegate the (unlikely) type falls back to xkbcomp.
      */

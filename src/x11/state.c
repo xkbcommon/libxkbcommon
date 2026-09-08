@@ -110,7 +110,7 @@ xkb_x11_state_new_from_device(struct xkb_keymap *keymap,
 
     /*
      * Use the legacy state mode for compatibility, as there is no plan
-     * to change the libxkbcommon X11 API.
+     * to change the xkbcommon-x11 API.
      */
     struct xkb_state * const state = xkb_state_new(keymap);
     if (!state)

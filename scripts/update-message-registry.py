@@ -371,7 +371,7 @@ generate_parser = subparsers.add_parser("generate", help="Generate files")
 
 args = parser.parse_args()
 
-# Read some constants from libxkbcommon that we need
+# Read some constants from xkbcommon that we need
 constants = read_constants(
     Path(__file__).parent.parent / "src" / "keymap.h",
     (

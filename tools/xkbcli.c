@@ -26,7 +26,7 @@ usage(void)
            "Commands:\n"
 #if HAVE_XKBCLI_INFO
            "  info\n"
-           "    Print information about libxkbcommon configuration\n"
+           "    Print information about xkbcommon configuration\n"
            "\n"
 #endif
 #if HAVE_XKBCLI_LIST

@@ -38,7 +38,7 @@ parser.add_argument(
     "c_header",
     type=Path,
     default=DEFAULT_HEADER,
-    help="Path to the libxkbcommon keysym header",
+    help="Path to the xkbcommon keysym header",
 )
 parser.add_argument(
     "--age",

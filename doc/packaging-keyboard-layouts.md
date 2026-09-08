@@ -90,8 +90,8 @@ In this example:
 
 ## Instructions for keyboard layout packagers
 
-1. Add a dependency to `libxkbcommon` 1.13+ and `xkeyboard-config` 2.45+ using
-   their pkg-config files. The `libxkbcommon` dependency will be necessary until
+1. Add a dependency to `xkbcommon` 1.13+ and `xkeyboard-config` 2.45+ using
+   their pkg-config files. The `xkbcommon` dependency will be necessary until
    xkeyboard-config ships a pkg-config file with the needed variables (see
    hereinafter).
 2. Remove any installation step that modifies the `xkeyboard-config` directories,
@@ -103,7 +103,7 @@ In this example:
    <dl>
    <dt><code>XKB_CONFIG_UNVERSIONED_EXTENSIONS_PATH</code></dt>
    <dd>
-   Set from the variable `xkb_unversioned_extensions_path` from the libxkbcommon
+   Set from the variable `xkb_unversioned_extensions_path` from the xkbcommon
    or xkeyboard-config pkg-config file
    </dd>
    <dt><code>PACKAGE_NAME</code></dt>

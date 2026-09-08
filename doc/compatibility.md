@@ -3,7 +3,7 @@
 @tableofcontents{html:2}
 
 This page presents the differences between the [XKB 1.0 specification][XKB Protocol]
-implemented in current X servers and its implementation in libxkbcommon.
+implemented in current X servers and its implementation in xkbcommon.
 
 xkbcommon has *removed* support for some parts of the specification which
 introduced unnecessary complications.  Many of these removals were in fact
@@ -47,7 +47,7 @@ Wayland support requires the XWayland compatibility layer.
 <td colspan="2">
 <details>
 <summary>✅ Full support</summary>
-libxkbcommon is the *reference* implementation of the keyboard keymap handling
+xkbcommon is the *reference* implementation of the keyboard keymap handling
 (parsing/serializing, state) for Wayland.
 </details>
 </td>
@@ -324,8 +324,8 @@ the [corresponding actions](@ref compatibility-key-actions).
 <td>
 <details>
 <summary>⚠️ Partial support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing overlays 1-2 only.
-- libxkbcommon ≥ 1.14: Supported. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing overlays 1-2 only.
+- xkbcommon ≥ 1.14: Supported. Note that the API support requires using
   the `xkb_machine` API.
   - Only **2** overlays
   - [Disjoint overlays][Overlapping overlays]
@@ -334,8 +334,8 @@ the [corresponding actions](@ref compatibility-key-actions).
 <td>
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing overlays 1-2 only.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing overlays 1-2 only.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
   - **8** overlays
   - [Overlapping overlays]
@@ -546,8 +546,8 @@ Rational:
 <td colspan="2">
 <details>
 <summary>⚠️ Partial support</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support
-- libxkbcommon ≥ 1.14: API support for a limited number of controls:
+- xkbcommon \< 1.14: Parsing and serializing only, no API support
+- xkbcommon ≥ 1.14: API support for a limited number of controls:
   see `xkb_keyboard_control_flags`.
 </details>
 </td>
@@ -558,8 +558,8 @@ Rational:
 <td colspan="2">
 <details>
 <summary>⚠️ Partial support</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support
-- libxkbcommon ≥ 1.14: API support for a limited number of controls:
+- xkbcommon \< 1.14: Parsing and serializing only, no API support
+- xkbcommon ≥ 1.14: API support for a limited number of controls:
   see `xkb_keyboard_control_flags`.
 </details>
 </td>
@@ -578,8 +578,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing only.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing only.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
 </details>
 </td>
@@ -592,8 +592,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
 </details>
 </td>
@@ -604,8 +604,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
 </details>
 </td>
@@ -616,8 +616,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
 </details>
 </td>
@@ -628,8 +628,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API.
 </details>
 </td>
@@ -642,8 +642,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API and enabling `::XKB_MACHINE_SERVER_ACTIONS`.
 </details>
 </td>
@@ -654,8 +654,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <td colspan="2">
 <details>
 <summary>✅ Full support (since 1.14)</summary>
-- libxkbcommon \< 1.14: Parsing and serializing only, no API support.
-- libxkbcommon ≥ 1.14: Full support. Note that the API support requires using
+- xkbcommon \< 1.14: Parsing and serializing only, no API support.
+- xkbcommon ≥ 1.14: Full support. Note that the API support requires using
   the `xkb_machine` API and enabling `::XKB_MACHINE_SERVER_ACTIONS`.
 </details>
 </td>
@@ -787,7 +787,7 @@ Note that contrary to `First`, `Last` cannot be used as an *array* index, i.e.
 <!-- NOTE: It may only work if using the RMLVO API with *one* layout -->
 
 These constants are parsed but never used for *serialization*, in order to
-maintain compatibility with xkbcomp and older libxkbcommon versions.
+maintain compatibility with xkbcomp and older xkbcommon versions.
 </details>
 </td>
 </tr>

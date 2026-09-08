@@ -22,7 +22,7 @@
 /**
  * @defgroup real-modifier-names Real modifiers names
  *
- * [*Real* modifiers][real modifier] names are hardcoded in libxkbcommon.
+ * [*Real* modifiers][real modifier] names are hardcoded in xkbcommon.
  *
  * [real modifier]: @ref real-modifier-def
  *
