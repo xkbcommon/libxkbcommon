@@ -850,7 +850,7 @@ write_action(const struct xkb_keymap *keymap, enum xkb_keymap_format format,
     case ACTION_TYPE_VOID:
 void_action:
         /*
-         * VoidAction() is a libxkbcommon extension.
+         * VoidAction() is an xkbcommon extension.
          * Use LockControls as a backward-compatible fallback.
          * We cannot serialize it to `NoAction()`, as it would be dropped in
          * e.g. the context of multiple actions.
@@ -1277,7 +1277,7 @@ write_keysyms(const struct xkb_keymap *keymap,
 
         /*
          * NOTE: Use `NoSymbol` even without pretty output, for compatibility
-         * with xkbcomp and libxkbcommon < 1.12
+         * with xkbcomp and xkbcommon < 1.12
          */
 
         if (num_syms == 1) {
@@ -1399,7 +1399,7 @@ write_key(const struct xkb_keymap *keymap,
 
     /*
      * NOTE: we use key->explicit and not key->group[i].explicit_actions, in
-     * order to have X11 and the previous versions of libxkbcommon (without this
+     * order to have X11 and the previous versions of xkbcommon (without this
      * group property) parse the keymap as intended, by setting explicitly for
      * this key all actions in all groups.
      *
@@ -1595,7 +1595,7 @@ write_key(const struct xkb_keymap *keymap,
                 explicit ||
                 /* Group has symbols but no explicit actions and key has explicit
                  * actions in another group: ensure compatibility with xkbcomp
-                 * and all libxkbcommon versions */
+                 * and all xkbcommon versions */
                 (key->groups[group].explicit_symbols &&
                  explicit_actions && some_interprets) ||
                 /* Group has implicit actions but no interpret can set them, so

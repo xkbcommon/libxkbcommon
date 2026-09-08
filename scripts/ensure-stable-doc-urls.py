@@ -59,7 +59,7 @@ REDIRECTION_PAGE_TEMPLATE = Template(
         <div id="top">
             <div id="titlearea" style="padding: 1em 0 1em 0.5em;">
                 <div id="projectname">
-                    libxkbcommon
+                    xkbcommon
                 </div>
             </div>
         </div>

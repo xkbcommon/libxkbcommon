@@ -96,7 +96,7 @@ We can see which keysym we got, and get its name:
 
 @snippet{trimleft} "test/quick-guide.c" quick-guide-client-keysym-name-example
 
-libxkbcommon also supports an extension to the classic XKB, whereby a
+xkbcommon also supports an extension to the classic XKB, whereby a
 single event can result in multiple keysyms. Here’s how to use it:
 
 @snippet{trimleft} "test/quick-guide.c" quick-guide-client-keysyms-example

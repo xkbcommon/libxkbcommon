@@ -1,4 +1,4 @@
-libxkbcommon consists of three shared libraries, libxkbcommon (the main
+xkbcommon consists of three shared libraries, libxkbcommon (the main
 library), libxkbcommon-x11 (an addon library for XCB clients) and libxkbregistry
 (a library to list available RMLVO options).
 

@@ -6,7 +6,7 @@
 
 /*
  * Copied from /usr/include/linux/input.h from Linux 3.16, for use
- * in libxkbcommon. Modified to only contain scancode definitions.
+ * in xkbcommon. Modified to only contain scancode definitions.
  */
 
 /*

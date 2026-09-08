@@ -201,7 +201,7 @@ See: Appendix A [“KEYSYM Encoding”][encoding] of the X Window System Protoco
   <dt>Summary</dt><dd>Unsupported `xkb_state_mode` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given mode:
+Use the following to check if the linked libxkbcommon supports a given mode:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_STATE_MODE, flag)
@@ -290,7 +290,7 @@ key <AB08> {[ comma, semicolon, periodcentered, multiply ]};
   <dt>Summary</dt><dd>Unsupported `xkb_keymap_key_iterator_flags` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
@@ -369,7 +369,7 @@ xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
   <dt>Summary</dt><dd>The given layout out-of-range policy is not supported</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
@@ -384,14 +384,14 @@ xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
   <dt>Summary</dt><dd>The statement is unknown</dd>
 </dl>
 
-libxkbcommon encountered an unknown statement and either:
+xkbcommon encountered an unknown statement and either:
 - rejected it (strict mode);
 - accepted but discarded it in order to provide forward-compatibility (lenient mode).
 
 Please check if:
 - it is a typo;
 - the [keymap format](@ref xkb_keymap_format) used for parsing is correct;
-- the statement is supported in a [newer version of libxkbcommon](release-notes.md).
+- the statement is supported in a [newer version of xkbcommon](release-notes.md).
 
 
 ### XKB-237 – Unsupported layout index {#XKB-237}
@@ -402,7 +402,7 @@ Please check if:
   <dt>Summary</dt><dd>Layout index is not supported</dd>
 </dl>
 
-libxkbcommon supports different *layout index* ranges, depending on the target
+xkbcommon supports different *layout index* ranges, depending on the target
 *keymap format*:
 - `::XKB_KEYMAP_FORMAT_TEXT_V1`: 1..4
 - `::XKB_KEYMAP_FORMAT_TEXT_V2`: 1..32
@@ -581,7 +581,7 @@ for further information.
   <dt>Summary</dt><dd>Unsupported `xkb_a11y_flags` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_A11Y_FLAGS, flag)
@@ -879,7 +879,7 @@ Unicode code point in hexadecimal format in the range `1‥0x10ffff`.
   <dt>Summary</dt><dd>Unsupported `xkb_events_flags` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_EVENTS_FLAGS, flag)
@@ -1013,7 +1013,7 @@ See @ref keymap-support "" for further details.
   <dt>Summary</dt><dd>Unsupported `xkb_machine_flags` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_FLAGS, flag)
@@ -1160,7 +1160,7 @@ using fields unknown to this version.
   <dt>Summary</dt><dd>Unsupported `xkb_machine_builder_flags` value</dd>
 </dl>
 
-Use the following to check if the linked libxkbcommon library supports a given flag:
+Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
 xkb_feature_supported(XKB_FEATURE_ENUM_MACHINE_BUILDER_FLAGS, flag)

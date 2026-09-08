@@ -816,7 +816,7 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
         /*
          * NOTE: `first` and `last` group constants are never used for
          *       serialization, in order to maintain compatibility with
-         *       xkbcomp and older libxkbcommon versions.
+         *       xkbcomp and older xkbcommon versions.
          */
         .lookup = {
             .groupIndexNames = {

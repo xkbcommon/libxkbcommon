@@ -1,7 +1,7 @@
 # Custom configuration {#custom-configuration}
 
 This page describes how to add a *custom* keyboard layout or option so that it
-will be parsed by libxkbcommon.
+will be parsed by xkbcommon.
 
 @attention 👋 First time hacking your keyboard layout?
 
@@ -29,7 +29,7 @@ locations. See @ref xkb-data-locations "" for further details.
 propose a dedicated GUI to configure it. Please consult the corresponding
 configuration.
 
-@warning The instructions of this page requires libxkbcommon as keymap compiler
+@warning The instructions of this page requires xkbcommon as keymap compiler
 and **does not work in _X11_** sessions, because X servers have hard-coded paths.
 Check your session type in the “information” or “about” screen of you desktop
 environment, or execute the following command: `echo $XDG_SESSION_TYPE`.
@@ -124,7 +124,7 @@ If everything worked, you now have a working custom keyboard layout named `test`
 
 1. The layout needs to be moved to `$XDG_CONFIG_HOME/xkb/symbols/test` –
    where `$XDG_CONFIG_HOME` is usually `$HOME/.config` – so it is in the
-   *default* libxkbcommon [include paths](@ref xkb-data-locations).
+   *default* xkbcommon [include paths](@ref xkb-data-locations).
 2. Enabling the keyboard layout depends on your environment. On desktop
    environments (e.g. GNOME, KDE), the GUI configuration tools require a
    further step: see @ref discoverable-layouts "". Other configuration methods
@@ -154,12 +154,12 @@ tools of your desktop environment
 </dl>
 
 @note It is advised to try configurations safely in user-space using a
-*dedicated directory* that is not in the libxkbcommon default paths (e.g. *not*
+*dedicated directory* that is not in the xkbcommon default paths (e.g. *not*
 `$XDG_CONFIG_HOME`); see “@ref testing-custom-config ""” for further details.
 
 ## XKB data locations
 
-libxkbcommon searches the following paths for XKB configuration files:
+xkbcommon searches the following paths for XKB configuration files:
 
 <table>
 <caption>XKB lookup paths</caption>
@@ -230,7 +230,7 @@ overwritten by any update of the `xkeyboard-config` (also: `xkb-data`) package.
 A keymap created with `xkb_keymap::xkb_keymap_new_from_names2()` will look up
 those paths in order until the required data is found.
 
-@note Where libxkbcommon runs in a privileged context (e.g. as `root`), only the
+@note Where xkbcommon runs in a privileged context (e.g. as `root`), only the
 system path is available (`<xkb-config-root>`).
 
 @note The rest of the page assumes configuring a *user* configuration; it can
@@ -239,7 +239,7 @@ with `<sysconfdir>` in the file locations (see in the table above).
 
 Each directory should have one or more of the following subdirectories:
 - [`compat`](@ref config-compat-def)
-- [`geometry`](@ref config-geometry-def) (libxkbcommon ignores this directory)
+- [`geometry`](@ref config-geometry-def) (xkbcommon ignores this directory)
 - [`keycodes`](@ref config-keycodes-def)
 - [`rules`](@ref config-rules-def)
 - [`symbols`](@ref config-symbols-def)
@@ -266,8 +266,8 @@ Due to how XKB is configured, there is no such thing as a “layout” in XKB
 itself, or, indeed, any of the rules, models, variant, options ([RMLVO]) described
 in `struct xkb_rule_names`. [RMLVO] names are merely lookup keys in the
 rules file provided by [xkeyboard-config] to map to the correct keycode, compat,
-geometry (ignored by libxkbcommon), symbols and types ([KcCGST]). The [KcCGST]
-data is the one used by XKB and libxkbcommon to map keys to actual symbols.
+geometry (ignored by xkbcommon), symbols and types ([KcCGST]). The [KcCGST]
+data is the one used by XKB and xkbcommon to map keys to actual symbols.
 
 [RMLVO]: @ref RMLVO-intro
 [KcCGST]: @ref KcCGST-intro
@@ -407,7 +407,7 @@ file or section name.
 the *sequential* processing of the rules. In the example, `custom:foo` will
 *always* be applied *before* `custom:baz` and both options will *always* be
 applied *after* the system ones, even if the order is different in the [RMLVO]
-configuration passed to libxkbcommon (e.g. with `xkbcli`). See the
+configuration passed to xkbcommon (e.g. with `xkbcli`). See the
 [related section][options-order] in the rules documentation for further details.
 
 [options-order]: @ref irrelevant-options-order
@@ -457,7 +457,7 @@ for the example in @ref custom-layout "".
 
 ### Compatibility
 
-@attention For **libxkbcommon \< 1.9**, the custom file must contain an
+@attention For **xkbcommon \< 1.9**, the custom file must contain an
 *explicit default* section if the system file has one, else it may break the
 keyboard setup by including a section of the custom file instead of the system
 one. The custom default section should enforce that the system default section
@@ -481,8 +481,8 @@ xkb_symbols "broccoli" {
 ```
 @endfigure
 
-For **libxkbcommon ≥ 1.9** an explicit default section is not required
-anymore: libxkbcommon will look up for the proper default section in the XKB
+For **xkbcommon ≥ 1.9** an explicit default section is not required
+anymore: xkbcommon will look up for the proper default section in the XKB
 paths:
 @figure@figcaption
 Content of `$XDG_CONFIG_HOME/xkb/symbols/us`
@@ -519,13 +519,13 @@ See the @ref keymap-include-percent-expansion "corresponding documentation".
 
 ## Discoverable layouts {#discoverable-layouts}
 
-@warning The below requires `libxkbregistry` as XKB lookup tool and
+@warning The below requires `xkbregistry` as XKB lookup tool and
 **does not work where clients parse the XML file directly**.
 
 The above sections apply only to the data files and require that the user knows
 about the existence of the new entries. To make custom entries discoverable by
 the configuration tools (e.g. the GNOME Control Center), the new entries must
-also be added to the XML file that is parsed by `libxkbregistry`. In most cases,
+also be added to the XML file that is parsed by `xkbregistry`. In most cases,
 this is the `evdev.xml` file in the rules directory.
 
 The following tags are required:
@@ -634,7 +634,7 @@ Content of `$XDG_CONFIG_HOME/xkb/rules/evdev.xml`
 ```
 @endfigure
 
-The default behavior of `libxkbregistry` ensures that the new layout and options
+The default behavior of `xkbregistry` ensures that the new layout and options
 are added to the system-provided layouts and options.
 
 For details on the XML format, see the DTD in `<xkb-config-root>/rules/xkb.dtd`

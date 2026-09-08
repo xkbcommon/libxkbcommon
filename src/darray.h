@@ -7,7 +7,7 @@
 #include "config.h"
 
 /* Originally taken from: https://ccodearchive.net/info/darray.html
- * But modified for libxkbcommon. */
+ * But modified for xkbcommon. */
 
 #include <stdlib.h>
 #include <string.h>

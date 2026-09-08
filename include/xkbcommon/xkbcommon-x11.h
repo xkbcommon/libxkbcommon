@@ -15,7 +15,7 @@ extern "C" {
 
 /**
  * @file
- * libxkbcommon-x11 API - Additional X11 support for xkbcommon.
+ * xkbcommon-x11 API - Additional X11 support for xkbcommon.
  */
 
 /**
@@ -35,7 +35,7 @@ extern "C" {
  * so, it queries the XKB X11 extension using the xcb-xkb library.  It
  * can be used as a replacement for Xlib’s keyboard handling.
  *
- * Following is an example workflow using libxkbcommon-x11.  A complete
+ * Following is an example workflow using xkbcommon-x11.  A complete
  * example may be found in the `tools/interactive-x11.c` file in the
  * xkbcommon source repository.  On startup:
  *

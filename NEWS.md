@@ -1,5 +1,5 @@
-libxkbcommon [1.14.0-beta1] – 2026-07-22
-========================================
+xkbcommon [1.14.0-beta1] – 2026-07-22
+=====================================
 
 [1.14.0-beta1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.14.0-beta1
 
@@ -403,7 +403,7 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 </dd>
 <dt>`xkbcli info`</dt>
 <dd>
-- Added *new* tool `xkbcli info` to print information about libxkbcommon configuration,
+- Added *new* tool `xkbcli info` to print information about xkbcommon configuration,
   for debugging purposes.
 </dd>
 <dt>`xkbcli compile-keymap`</dt>
@@ -473,8 +473,8 @@ libxkbcommon [1.14.0-beta1] – 2026-07-22
 [1.13.2 – 1.14.0-beta1 changelog](https://github.com/xkbcommon/libxkbcommon/compare/xkbcommon-1.13.2...xkbcommon-1.14.0-beta1)
 
 
-libxkbcommon [1.13.2] – 2026-05-30
-==================================
+xkbcommon [1.13.2] – 2026-05-30
+===============================
 
 [1.13.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.2
 
@@ -514,7 +514,7 @@ libxkbcommon [1.13.2] – 2026-05-30
 
 ### New
 
-- Added new tool `xkbcli info` to print information about libxkbcommon configuration,
+- Added new tool `xkbcli info` to print information about xkbcommon configuration,
   for debugging purposes.
 
 
@@ -525,8 +525,8 @@ libxkbcommon [1.13.2] – 2026-05-30
 - Raised minimal meson version requirement to 1.4.0.
   ([#954](https://github.com/xkbcommon/libxkbcommon/issues/954))
 
-libxkbcommon [1.13.1] – 2025-12-03
-==================================
+xkbcommon [1.13.1] – 2025-12-03
+===============================
 
 [1.13.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.13.1
 
@@ -538,8 +538,8 @@ libxkbcommon [1.13.1] – 2025-12-03
   ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
 
 
-libxkbcommon [1.13.0] – 2025-11-05
-==================================
+xkbcommon [1.13.0] – 2025-11-05
+===============================
 
 > [!note]
 > The highlight of this release is the introduction of the XKB **extensions directories**,
@@ -627,8 +627,8 @@ libxkbcommon [1.13.0] – 2025-11-05
   See @ref packaging-keyboard-layouts "" for further details.
 
 
-libxkbcommon [1.12.4] – 2025-12-03
-==================================
+xkbcommon [1.12.4] – 2025-12-03
+===============================
 
 [1.12.4]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.4
 
@@ -640,8 +640,8 @@ libxkbcommon [1.12.4] – 2025-12-03
   ([#934](https://github.com/xkbcommon/libxkbcommon/issues/934))
 
 
-libxkbcommon [1.12.3] – 2025-10-29
-==================================
+xkbcommon [1.12.3] – 2025-10-29
+===============================
 
 [1.12.3]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.3
 
@@ -677,8 +677,8 @@ libxkbcommon [1.12.3] – 2025-10-29
   ([#885](https://github.com/xkbcommon/libxkbcommon/issues/885)).
 
 
-libxkbcommon [1.12.2] – 2025-10-20
-==================================
+xkbcommon [1.12.2] – 2025-10-20
+===============================
 
 [1.12.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.2
 
@@ -698,8 +698,8 @@ libxkbcommon [1.12.2] – 2025-10-20
 
 [xkeyboard-config 2.45]: https://xkeyboard-config.freedesktop.org/blog/2-45-release/#build-system
 
-libxkbcommon [1.12.1] – 2025-10-17
-==================================
+xkbcommon [1.12.1] – 2025-10-17
+===============================
 
 [1.12.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.1
 
@@ -709,7 +709,7 @@ libxkbcommon [1.12.1] – 2025-10-17
 
 - X11: Added a fix to circumvent libX11 and xserver improperly handling missing
   XKB canonical key types. The fix prevents triggering an error when retrieving
-  such keymap using libxkbcommon-x11.
+  such keymap using xkbcommon-x11.
 
 
 ## Tools
@@ -721,13 +721,13 @@ libxkbcommon [1.12.1] – 2025-10-17
   Contributed by Jan Alexander Steffens
 
 
-libxkbcommon [1.12.0] – 2025-10-10
-==================================
+xkbcommon [1.12.0] – 2025-10-10
+===============================
 
 > [!note]
 > The highlight of this release is the performance improvements for keymap handling:
 > - about 1.6× speedup at *serializing* with default options;
-> - about 1.7× speedup at *parsing* keymaps serialized by libxkbcommon, otherwise
+> - about 1.7× speedup at *parsing* keymaps serialized by xkbcommon, otherwise
 >   at least 1.1×.
 
 [1.12.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.12.0
@@ -821,8 +821,8 @@ libxkbcommon [1.12.0] – 2025-10-10
   If no such package is found, it falls back to the historical X11 directory, as previously.
 
 
-libxkbcommon [1.11.0] – 2025-08-08
-==================================
+xkbcommon [1.11.0] – 2025-08-08
+===============================
 
 > [!note]
 > The highlight of this release is the introduction of a new keymap text format,
@@ -932,7 +932,7 @@ although future iterations should be backward-compatible. See the
 ### New
 
 - Added the new keymap format `::XKB_KEYMAP_FORMAT_TEXT_V2`, which enables
-  libxkbcommon’s extensions incompatible with X11.
+  xkbcommon’s extensions incompatible with X11.
 
   Note that *fallback* mechanisms ensure that it is possible to parse using one
   format and serialize using another.
@@ -945,7 +945,7 @@ although future iterations should be backward-compatible. See the
 
   **Client applications** should use the previous `::XKB_KEYMAP_FORMAT_TEXT_V1`
   to parse keymaps, at least for now. They may use `::XKB_KEYMAP_FORMAT_TEXT_V2`
-  only if used with a Wayland compositor using the same version of libxkbcommon
+  only if used with a Wayland compositor using the same version of xkbcommon
   *and* serializing to the new format. This precaution will be necessary until
   the new format is stabilized.
 - Added `xkb_keymap_new_from_names2()` as an alternative to `xkb_keymap_new_from_names()`,
@@ -1049,8 +1049,8 @@ although future iterations should be backward-compatible. See the
 
 
 
-libxkbcommon [1.10.0] – 2025-05-21
-==================================
+xkbcommon [1.10.0] – 2025-05-21
+===============================
 
 [1.10.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.10.0
 
@@ -1098,7 +1098,7 @@ libxkbcommon [1.10.0] – 2025-05-21
 - Added `VoidAction()` action to match the keysym pair `NoSymbol`/`VoidSymbol`.
   It enables erasing a previous action and breaks latches.
 
-  This is a libxkbcommon extension. When serializing it will be converted to
+  This is an xkbcommon extension. When serializing it will be converted to
   `LockControls(controls=none,affect=neither)` for backward compatibility.
   ([#622](https://github.com/xkbcommon/libxkbcommon/issues/622))
 - Improved syntax errors in XKB files to include the expected/got tokens.
@@ -1127,8 +1127,8 @@ libxkbcommon [1.10.0] – 2025-05-21
 - Required bison ≥ 3.6.
 
 
-libxkbcommon [1.9.2] – 2025-05-07
-=================================
+xkbcommon [1.9.2] – 2025-05-07
+==============================
 
 [1.9.2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.2
 
@@ -1144,8 +1144,8 @@ libxkbcommon [1.9.2] – 2025-05-07
   ([#758](https://github.com/xkbcommon/libxkbcommon/issues/758))
 
 
-libxkbcommon [1.9.1] – 2025-05-02
-=================================
+xkbcommon [1.9.1] – 2025-05-02
+==============================
 
 [1.9.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.1
 
@@ -1158,8 +1158,8 @@ libxkbcommon [1.9.1] – 2025-05-02
   ([#740](https://github.com/xkbcommon/libxkbcommon/issues/740))
 
 
-libxkbcommon [1.9.0] – 2025-04-26
-=================================
+xkbcommon [1.9.0] – 2025-04-26
+==============================
 
 [1.9.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.9.0
 
@@ -1178,14 +1178,14 @@ libxkbcommon [1.9.0] – 2025-04-26
     ```c
     key <> { [a, A, NoSymbol] };
     ```
-  - Compilation with libxkbcommon \< 1.9.0:
+  - Compilation with xkbcommon \< 1.9.0:
     ```c
     key <> {
       type= "FOUR_LEVEL_SEMIALPHABETIC",
       [a, A, NoSymbol, NoSymbol]
     };
     ```
-  - Compilation with libxkbcommon ≥ 1.9.0:
+  - Compilation with xkbcommon ≥ 1.9.0:
     ```c
     key <> {
       type= "ALPHABETIC",
@@ -1271,11 +1271,11 @@ libxkbcommon [1.9.0] – 2025-04-26
   also exists in the XKB *system* directory.
 
   Example: if one creates a custom variant `my_variant` in the file
-  `$XDG_CONFIG_HOME/xkb/symbols/us`, then *before* libxkbcommon 1.9.0 every
+  `$XDG_CONFIG_HOME/xkb/symbols/us`, then *before* xkbcommon 1.9.0 every
   statement loading the *default* map of the `us` file, `include "us"`, would
   wrongly resolve including `us(my_variant)` from the *user* configuration
   directory instead of `us(basic)` from the XKB *system* directory. Starting
-  from libxkbcommon 1.9.0, `include "us"` would correctly resolve to the system
+  from xkbcommon 1.9.0, `include "us"` would correctly resolve to the system
   file, unless `$XDG_CONFIG_HOME/xkb/symbols/us` contains an *explicit default*
   section. ([#726](https://github.com/xkbcommon/libxkbcommon/issues/726))
 - Fixed floating-point number parsing failling on locales that use a decimal
@@ -1292,8 +1292,8 @@ libxkbcommon [1.9.0] – 2025-04-26
 
   Unaffected API:
   - `xkb_keymap_new_from_names()`: none of the components loaded use
-    floating-point number. libxkbcommon does not load *geometry* files.
-  - `libxkbcommon-x11`: no such parsing is involved.
+    floating-point number. xkbcommon does not load *geometry* files.
+  - `xkbcommon-x11`: no such parsing is involved.
 - Fixed the handling of empty keys. Previously keys with no symbols nor actions
   would simply be skipped entirely. E.g. in the following:
 
@@ -1329,8 +1329,8 @@ libxkbcommon [1.9.0] – 2025-04-26
 - Honor user locale in all tools.
 
 
-libxkbcommon [1.8.1] – 2025-03-12
-=================================
+xkbcommon [1.8.1] – 2025-03-12
+==============================
 
 [1.8.1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.8.1
 
@@ -1365,8 +1365,8 @@ libxkbcommon [1.8.1] – 2025-03-12
   ([#628](https://github.com/xkbcommon/libxkbcommon/issues/628))
 
 
-libxkbcommon [1.8.0] – 2025-02-04
-=================================
+xkbcommon [1.8.0] – 2025-02-04
+==============================
 
 [1.8.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.8.0
 
@@ -1510,7 +1510,7 @@ libxkbcommon [1.8.0] – 2025-02-04
 
 - `xkb_keymap_new_from_names()`: Allow only one group per key in symbols sections.
   While the original issue was [fixed in `xkeyboard-config`][xkeyboard-config-253]
-  project, the previous handling in `libxkbcommon` of extra key groups was deemed
+  project, the previous handling in `xkbcommon` of extra key groups was deemed
   unintuitive.
 
   [xkeyboard-config-253]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/merge_requests/253
@@ -1630,8 +1630,8 @@ libxkbcommon [1.8.0] – 2025-02-04
   ([#481](https://github.com/xkbcommon/libxkbcommon/issues/481))
 
 
-libxkbcommon [1.7.0] – 2024-03-24
-=================================
+xkbcommon [1.7.0] – 2024-03-24
+==============================
 
 [1.7.0]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.7.0
 
@@ -1748,8 +1748,8 @@ Build system
 
 - Documentation is no longer built by default; it requires `-Denable-docs=true`.
 
-libxkbcommon 1.6.0 – 2023-10-08
-==================
+xkbcommon 1.6.0 – 2023-10-08
+============================
 
 API
 ---
@@ -1903,8 +1903,8 @@ Build system
 
 - Improve Windows compilation.
 
-libxkbcommon 1.5.0 – 2023-01-02
-==================
+xkbcommon 1.5.0 – 2023-01-02
+============================
 
 - Add `xkb_context` flag `XKB_CONTEXT_NO_SECURE_GETENV` and `rxkb_context` flag
   `RXKB_CONTEXT_NO_SECURE_GETENV`.
@@ -1933,8 +1933,8 @@ libxkbcommon 1.5.0 – 2023-01-02
   `XKB_CONTEXT_NO_SECURE_GETENV`
   `RXKB_CONTEXT_NO_SECURE_GETENV`
 
-libxkbcommon 1.4.1 – 2022-05-21
-==================
+xkbcommon 1.4.1 – 2022-05-21
+============================
 
 - Fix compose sequence overriding (common prefix) not working correctly.
   Regressed in 1.2.0.
@@ -1947,8 +1947,8 @@ libxkbcommon 1.4.1 – 2022-05-21
 
   Contributed by Sam Lantinga and Simon Ser.
 
-libxkbcommon 1.4.0 – 2022-02-04
-==================
+xkbcommon 1.4.0 – 2022-02-04
+============================
 
 - Add `enable-tools` option to Meson build (on by default) to allow disabling
   the `xkbcli` tools.
@@ -1959,22 +1959,22 @@ libxkbcommon 1.4.0 – 2022-02-04
 
   Contributed by Peter Hutterer.
 
-- In libxkbregistry, variants now inherit iso639, iso3166 and brief from parent
+- In xkbregistry, variants now inherit iso639, iso3166 and brief from parent
   layout if omitted.
 
   Contributed by M Hickford.
 
-- In libxkbregistry, don’t call `xmlCleanupParser()` - it’s not supposed to
+- In xkbregistry, don’t call `xmlCleanupParser()` - it’s not supposed to
   be called by libraries.
 
   Contributed by Peter Hutterer.
 
-- In libxkbregistry, skip over invalid ISO-639 or ISO-3166 entries.
+- In xkbregistry, skip over invalid ISO-639 or ISO-3166 entries.
 
   Contributed by Peter Hutterer.
 
-libxkbcommon 1.3.1 – 2021-09-10
-==================
+xkbcommon 1.3.1 – 2021-09-10
+============================
 
 - In `xkbcli interactive-x11`, use the Esc keysym instead of the Esc keycode
   for quitting.
@@ -1989,8 +1989,8 @@ libxkbcommon 1.3.1 – 2021-09-10
 
   Reported by Zack Weinberg. Tested by Uli Schlachter.
 
-libxkbcommon 1.3.0 – 2021-05-01
-==================
+xkbcommon 1.3.0 – 2021-05-01
+============================
 
 - Change `xkbcli list` to output YAML, instead of the previous ad-hoc format.
 
@@ -2021,15 +2021,15 @@ libxkbcommon 1.3.0 – 2021-05-01
 
   Contributed by Adrian Perez de Castro.
 
-libxkbcommon 1.2.1 – 2021-04-07
-==================
+xkbcommon 1.2.1 – 2021-04-07
+============================
 
 - Fix `xkb_x11_keymap_new_from_device()` failing when the keymap contains key
   types with missing level names, like the one used by the `numpad:mac` option
   in [xkeyboard-config]. Regressed in 1.2.0.
 
-libxkbcommon 1.2.0 – 2021-04-03
-==================
+xkbcommon 1.2.0 – 2021-04-03
+============================
 
 - `xkb_x11_keymap_new_from_device()` is much faster. It now performs only 2
   roundtrips to the X server, instead of dozens (in first-time calls).
@@ -2054,8 +2054,8 @@ libxkbcommon 1.2.0 – 2021-04-03
 
 - The build now requires a C11 compiler (uses anonymous structs/unions).
 
-libxkbcommon 1.1.0 – 2021-02-27
-==================
+xkbcommon 1.1.0 – 2021-02-27
+============================
 
 - Publish the `xkb-format-text-v1.md` file in the HTML documentation. This file
   existed for a long time but only in the Git repository.
@@ -2073,8 +2073,8 @@ libxkbcommon 1.1.0 – 2021-02-27
 - New API:
   Too many `XKB_KEY_*` definitions to list here.
 
-libxkbcommon 1.0.3 – 2020-11-23
-==================
+xkbcommon 1.0.3 – 2020-11-23
+============================
 
 - Fix (hopefully) a segfault in `xkb_x11_keymap_new_from_device()` in some
   unclear situation (bug introduced in 1.0.2).
@@ -2082,8 +2082,8 @@ libxkbcommon 1.0.3 – 2020-11-23
 - Fix keymaps created with `xkb_x11_keymap_new_from_device()` don’t have level
   names (bug introduced in 0.8.0).
 
-libxkbcommon 1.0.2 – 2020-11-20
-==================
+xkbcommon 1.0.2 – 2020-11-20
+============================
 
 - Fix a bug where a keysym that cannot be resolved in a keymap gets compiled to
   a garbage keysym. Now it is set to `XKB_KEY_NoSymbol` instead.
@@ -2092,8 +2092,8 @@ libxkbcommon 1.0.2 – 2020-11-20
   same `xkb_context()`.
 
 
-libxkbcommon 1.0.1 – 2020-09-11
-==================
+xkbcommon 1.0.1 – 2020-09-11
+============================
 
 - Fix the `tool-option-parsing` test failing.
 
@@ -2103,13 +2103,13 @@ libxkbcommon 1.0.1 – 2020-09-11
 
 - Some portability and test isolation fixes.
 
-libxkbcommon 1.0.0 – 2020-09-05
-==================
+xkbcommon 1.0.0 – 2020-09-05
+============================
 
 Note: this release is API and ABI compatible with previous releases –the
 major version bump is only an indication of stability.
 
-- Add libxkbregistry as configure-time optional library. libxkbregistry is a C
+- Add xkbregistry as configure-time optional library. xkbregistry is a C
   library that lists available XKB models, layouts and variants for a given
   ruleset. This is a separate library (`libxkbregistry.so`, pkgconfig file
   `xkbregistry.pc`) and aimed at tools that provide a listing of available
@@ -2222,8 +2222,8 @@ major version bump is only an indication of stability.
   `XKB_KEY_XF86FullScreen`
 
 
-libxkbcommon 0.10.0 – 2020-01-18
-===================
+xkbcommon 0.10.0 – 2020-01-18
+=============================
 
 - (security) Fix quadratic complexity in the XKB file parser. See commit
   message 7c42945e04a2107827a057245298dedc0475cc88 for details.
@@ -2299,15 +2299,15 @@ libxkbcommon 0.10.0 – 2020-01-18
   (released 1987).
 
 
-libxkbcommon 0.9.1 – 2019-10-19
-==================
+xkbcommon 0.9.1 – 2019-10-19
+============================
 
 - Fix context creation failing when run in privileged processes as defined by
   `secure_getenv(3)`, e.g. GDM.
 
 
-libxkbcommon 0.9.0 – 2019-10-19
-==================
+xkbcommon 0.9.0 – 2019-10-19
+============================
 
 - Move `~/.xkb` to before `XKB_CONFIG_ROOT` (the system XKB path, usually
   `/usr/share/X11/xkb`) in the default include path. This enables the user
@@ -2332,16 +2332,16 @@ libxkbcommon 0.9.0 – 2019-10-19
 - Port the `interactive-wayland` test program to the stable version of `xdg-shell`.
 
 
-libxkbcommon 0.8.4 – 2019-02-22
-==================
+xkbcommon 0.8.4 – 2019-02-22
+============================
 
 - Fix build of xkbcommon-x11 static library with meson.
 
 - Fix building using meson from the tarball generated by autotools.
 
 
-libxkbcommon 0.8.3 – 2019-02-08
-==================
+xkbcommon 0.8.3 – 2019-02-08
+============================
 
 - Fix build of static libraries with meson.
   (Future note: xkbcommon-x11 was *not* fixed in this release.)
@@ -2351,8 +2351,8 @@ libxkbcommon 0.8.3 – 2019-02-08
   `XKB_KEY_XF86RotationLockToggle`
 
 
-libxkbcommon 0.8.2 – 2018-08-05
-==================
+xkbcommon 0.8.2 – 2018-08-05
+============================
 
 - Fix various problems found with fuzzing (see commit messages for
   more details):
@@ -2361,8 +2361,8 @@ libxkbcommon 0.8.2 – 2018-08-05
       in the XKB text format parser.
 
 
-libxkbcommon 0.8.1 – 2018-08-03
-==================
+xkbcommon 0.8.1 – 2018-08-03
+============================
 
 - Fix various problems found in the meson build (see commit messages for more
   details):
@@ -2398,8 +2398,8 @@ libxkbcommon 0.8.1 – 2018-08-03
   `xkb_keysym_to_utf32()`.
 
 
-libxkbcommon 0.8.0 – 2017-12-15
-==================
+xkbcommon 0.8.0 – 2017-12-15
+============================
 
 - Added `xkb_keysym_to_{upper,lower}` to perform case-conversion directly on
   keysyms. This is useful in some odd cases, but working with the Unicode
@@ -2420,8 +2420,8 @@ libxkbcommon 0.8.0 – 2017-12-15
 
 [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/
 
-libxkbcommon 0.7.2 – 2017-08-04
-==================
+xkbcommon 0.7.2 – 2017-08-04
+============================
 
 - Added a Meson build system as an alternative to existing autotools build
   system.
@@ -2466,8 +2466,8 @@ libxkbcommon 0.7.2 – 2017-08-04
   `XKB_KEY_XF86AudioPreset`
 
 
-libxkbcommon 0.7.1 – 2017-01-18
-==================
+xkbcommon 0.7.1 – 2017-01-18
+============================
 
 - Fixed various reported problems when the current locale is `tr_TR.UTF-8`.
 
@@ -2480,8 +2480,8 @@ libxkbcommon 0.7.1 – 2017-01-18
 - Fixed compilation in NetBSD.
 
 
-libxkbcommon 0.7.0 – 2016-11-11
-==================
+xkbcommon 0.7.0 – 2016-11-11
+============================
 
 - Added support for different “modes” of calculating consumed modifiers.
   The existing mode, based on the XKB standard, has proven to be
@@ -2503,16 +2503,16 @@ libxkbcommon 0.7.0 – 2016-11-11
   `xkb_state_mod_index_is_consumed2()`
 
 
-libxkbcommon 0.6.1 – 2016-04-08
-==================
+xkbcommon 0.6.1 – 2016-04-08
+============================
 
 - Added LICENSE to distributed files in tarball releases.
 
 - Minor typo fix in `xkb_keymap_get_as_string()` documentation.
 
 
-libxkbcommon 0.6.0 – 2016-03-16
-==================
+xkbcommon 0.6.0 – 2016-03-16
+============================
 
 - If the `XKB_CONFIG_ROOT` environment variable is set, it is used as the XKB
   configuration root instead of the path determined at build time.
@@ -2534,8 +2534,8 @@ libxkbcommon 0.6.0 – 2016-03-16
   `xkb_keymap_key_get_name()`
 
 
-libxkbcommon 0.5.0 – 2014-10-18
-==================
+xkbcommon 0.5.0 – 2014-10-18
+============================
 
 - Added support for Compose/dead keys in a new module (included in
   libxkbcommon). See the documentation or the
@@ -2579,8 +2579,8 @@ libxkbcommon 0.5.0 – 2014-10-18
   `xkb_compose_*`
 
 
-libxkbcommon 0.4.3 – 2014-08-19
-==================
+xkbcommon 0.4.3 – 2014-08-19
+============================
 
 - Fixed a bug which caused `xkb_x11_keymap_new_from_device()` to misrepresent
   modifiers for some keymaps.
@@ -2603,8 +2603,8 @@ libxkbcommon 0.4.3 – 2014-08-19
   The fix required changes which are currently incompatible with byacc.
 
 
-libxkbcommon 0.4.2 – 2014-05-15
-==================
+xkbcommon 0.4.2 – 2014-05-15
+============================
 
 - Fixed a bug where explicitly passing `--enable-x11` to `./configure` would
   in fact disable it (regressed in 0.4.1).
@@ -2626,8 +2626,8 @@ libxkbcommon 0.4.2 – 2014-05-15
   size cannot exceed the required size.
 
 
-libxkbcommon 0.4.1 – 2014-03-27
-==================
+xkbcommon 0.4.1 – 2014-03-27
+============================
 
 - Converted README to markdown and added a Quick Guide to the
   documentation, which breezes through the most common parts of
@@ -2670,8 +2670,8 @@ libxkbcommon 0.4.1 – 2014-03-27
 - Bug fixes.
 
 
-libxkbcommon 0.4.0 – 2014-02-02
-==================
+xkbcommon 0.4.0 – 2014-02-02
+============================
 
 - Add a new add-on library, `xkbcommon-x11`, to support creating keymaps
   with the XKB X11 protocol, by querying the X server directly.
@@ -2697,8 +2697,8 @@ libxkbcommon 0.4.0 – 2014-02-02
   `xkb_x11_*` types and functions, `XKB_X11_*` constants.
 
 
-libxkbcommon 0.3.2 – 2013-11-22
-==================
+xkbcommon 0.3.2 – 2013-11-22
+============================
 
 - Log messages from the library now look like `xkbcommon: ERROR` by
   default, instead of xkbcomp-like `Error:   `.
@@ -2719,8 +2719,8 @@ libxkbcommon 0.3.2 – 2013-11-22
 - Bug fixes.
 
 
-libxkbcommon 0.3.1 – 2013-06-03
-==================
+xkbcommon 0.3.1 – 2013-06-03
+============================
 
 - Replace the flex scanner with a hand-written one. flex is no longer
   a build requirement.
@@ -2731,8 +2731,8 @@ libxkbcommon 0.3.1 – 2013-06-03
   `xkb_keymap_key_for_each()`
 
 
-libxkbcommon 0.3.0 – 2013-04-01
-==================
+xkbcommon 0.3.0 – 2013-04-01
+============================
 
 - Allow passing NULL to `*_unref()` functions; do nothing instead of
   crashing.

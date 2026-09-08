@@ -82,7 +82,7 @@ _xkbcli_controls() {
 _xkbcli_commands() {
 	local -a commands=(
 		'list:list available rules, models, layouts, variants and options'
-		'info:print information about libxkbcommon configuration'
+		'info:print information about xkbcommon configuration'
 		'interactive:interactive debugger for XKB keymaps'
 		'interactive-wayland:interactive debugger for XKB keymaps for Wayland'
 		'interactive-x11:interactive debugger for XKB keymaps for X11'

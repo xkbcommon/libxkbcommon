@@ -119,7 +119,7 @@ if XKEYBOARD_CONFIG_ROOT == ''
     endif
 endif
 
-# The XKB config root for libxkbcommon
+# The XKB config root for xkbcommon
 XKB_CONFIG_ROOT = get_option('xkb-config-root')
 if XKB_CONFIG_ROOT == ''
     if XKEYBOARD_CONFIG_ROOT != ''

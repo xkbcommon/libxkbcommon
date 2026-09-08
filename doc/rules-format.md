@@ -12,7 +12,7 @@ components.
 
 @tableofcontents{html:2}
 
-`libxkbcommon`’s keymap compiler `xkbcomp` uses the `xkb_component_names`
+`xkbcommon`’s keymap compiler uses the `xkb_component_names`
 struct internally, which maps directly to [include statements] of the
 appropriate [sections] \(called [KcCGST] for short):
 
@@ -261,7 +261,7 @@ or %%H seems to do the job though.
         `/usr/share/X11/xkb/rules`).
     </dd>
   </dl>
-  **Note:** This feature is supported by libxkbcommon but not by the legacy X11
+  **Note:** This feature is supported by xkbcommon but not by the legacy X11
   tools.
 
 - @anchor rules-extended-layout-indices

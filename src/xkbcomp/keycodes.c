@@ -788,7 +788,7 @@ HandleAliasDef(KeyNamesInfo *info, const KeyAliasDef *def, bool report)
                 /*
                  * Note that we override the key even if the alias is proved
                  * invalid afterwards. This would be a bug in the keycodes
-                 * files or rules, not libxkbcommon.
+                 * files or rules, not xkbcommon.
                  */
                 keycode_store_delete_key(&info->keycodes, match_name);
             } else {

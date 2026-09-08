@@ -44,11 +44,11 @@ extern "C" {
 
 /**
  * @file
- * Main libxkbcommon API.
+ * Main xkbcommon API.
  *
  * @brief Core API for keyboard keymap compilation and state processing.
  *
- * This header provides the primary public API for libxkbcommon. It exposes
+ * This header provides the primary public API for xkbcommon. It exposes
  * facilities for:
  */
 
@@ -275,7 +275,7 @@ typedef uint32_t xkb_keysym_t;
  * names are not present in a compiled keymap.
  *
  * If the user selects layouts from a list generated from the XKB registry
- * (using libxkbregistry or directly), and this metadata is needed later on, it
+ * (using xkbregistry or directly), and this metadata is needed later on, it
  * is recommended to store it along with the keymap.
  *
  * Layouts are also called *groups* by XKB.
@@ -1548,7 +1548,7 @@ enum xkb_keymap_compile_flags {
  * <thead>
  * <tr>
  * <th colspan="2">Protocol</th>
- * <th colspan="2">libxkbcommon keymap format</th>
+ * <th colspan="2">xkbcommon keymap format</th>
  * </tr>
  * <tr>
  * <th>Name</th>
@@ -1591,7 +1591,7 @@ enum xkb_keymap_compile_flags {
  * At the time of writing (July 2025), the Wayland <code>[xkb_v1]</code> keymap
  * format is only defined as “libxkbcommon compatible”. In theory it enables
  * flexibility, but the set of supported features varies depending on the
- * libxkbcommon version and libxkbcommon keymap format used. Unfortunately there
+ * xkbcommon version and xkbcommon keymap format used. Unfortunately there
  * is currently no Wayland API for keymap format *negotiation*.
  *
  * Therefore the **recommended** serialization format is
@@ -2772,7 +2772,7 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * <dt>`xkb_machine`: the *server* API</dt>
  * <dd>
  * This is the recommended API for **server** applications. It enables the full
- * feature set that libxkbcommon supports.
+ * feature set that xkbcommon supports.
  *
  * `xkb_machine` is a [Mealy machine]&zwnj;: it is a finite-state machine that takes a
  * stream of raw key events – a pair ([keycode], [direction]) – as input, and
@@ -3135,7 +3135,7 @@ enum xkb_state_component {
 
 /**
  * @enum xkb_keyboard_control_flags
- * _Boolean_ **global keyboard controls**, which affect the way libxkbcommon
+ * _Boolean_ **global keyboard controls**, which affect the way xkbcommon
  * handles the keyboard as a whole.
  *
  * This enumeration is bit-maskable.
@@ -5209,7 +5209,7 @@ xkb_state_update_event(struct xkb_state *state,
  * conventional behavior.
  *
  * @note This is the legacy server entry point and only supports a restricted
- * set of libxkbcommon features.  Since 1.14.0, prefer `xkb_machine` for new
+ * set of xkbcommon features.  Since 1.14.0, prefer `xkb_machine` for new
  * server applications to enable the full feature set.
  *
  * @param[in,out] state     The keyboard state object.
@@ -5262,7 +5262,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * @endparblock
  *
  * @note This entry point serves the legacy server use case and only supports a
- * restricted set of libxkbcommon features.  Since 1.14.0, prefer `xkb_machine`
+ * restricted set of xkbcommon features.  Since 1.14.0, prefer `xkb_machine`
  * for new server applications to enable the full feature set.
  *
  * @param[in,out] state
