@@ -57,8 +57,6 @@ struct keyboard {
 };
 
 static bool terminate;
-static enum xkb_keymap_compile_flags compile_flags =
-    (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
 #ifdef KEYMAP_DUMP
 static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
               "Out of sync usage()");
@@ -66,6 +64,8 @@ static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 #else
+static enum xkb_keymap_compile_flags compile_flags =
+    (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
 static bool detect_repeat = false;
 static bool use_events_api = true;
 static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
@@ -523,11 +523,11 @@ usage(FILE *fp, char *progname)
 #ifndef KEYMAP_DUMP
                 " [--uniline] [--multiline] [--consumed-mode={xkb|gtk}] [--no-state-report]"
 #endif
-                " [--format FORMAT] [--strict]"
+                " [--format FORMAT]"
 #ifdef KEYMAP_DUMP
                 " [--no-pretty] [--drop-unused]"
 #else
-                " [--enable-compose]"
+                " [--strict] [--enable-compose]"
                 " [--local-state] [--legacy-state-api true|false]"
                 " [--controls CONTROLS] [--modifiers-mapping MAPPING]"
                 " [--shortcuts-mask MASK] [--shortcuts-mapping]"
@@ -635,11 +635,11 @@ main(int argc, char *argv[])
         {"version",              no_argument,            0, 'V'},
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
-        {"strict",               no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
 #ifdef KEYMAP_DUMP
         {"no-pretty",            no_argument,            0, OPT_KEYMAP_NO_PRETTY},
         {"drop-unused",          no_argument,            0, OPT_KEYMAP_DROP_UNUSED},
 #else
+        {"strict",               no_argument,            0, OPT_KEYMAP_STRICT_PARSER},
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
@@ -688,9 +688,7 @@ main(int argc, char *argv[])
                 goto invalid_usage;
             }
             break;
-        case OPT_KEYMAP_STRICT_PARSER:
-            compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
-            break;
+
 #ifdef KEYMAP_DUMP
         case OPT_KEYMAP_NO_PRETTY:
             serialize_flags &= ~XKB_KEYMAP_SERIALIZE_PRETTY;
@@ -699,6 +697,9 @@ main(int argc, char *argv[])
             serialize_flags &= ~XKB_KEYMAP_SERIALIZE_KEEP_UNUSED;
             break;
 #else
+        case OPT_KEYMAP_STRICT_PARSER:
+            compile_flags |= XKB_KEYMAP_COMPILE_STRICT_MODE;
+            break;
         case OPT_COMPOSE:
             with_compose = true;
             break;
