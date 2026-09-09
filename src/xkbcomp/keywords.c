@@ -1,3 +1,4 @@
+// NOLINTBEGIN
 /* ANSI-C code produced by gperf version 3.3 */
 /* Command-line: gperf src/xkbcomp/keywords.gperf  */
 /* Computed positions: -k'5,$' */
@@ -415,3 +416,4 @@ keyword_to_token(const char *string, size_t len)
         return -1;
     return kt->tok;
 }
+// NOLINTEND

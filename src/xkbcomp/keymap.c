@@ -202,9 +202,11 @@ ApplyInterpsToKey(struct xkb_keymap *keymap, struct xkb_key *key)
             darray_enumerate(k, interp_iter, interprets) {
                 interp = *interp_iter;
                 /* Infer default key behaviours from the base level. */
-                if (group == 0 && level == 0)
-                    if (!(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
-                        key->repeats = true;
+                if (group == 0 && level == 0 &&
+                    !(key->explicit & EXPLICIT_REPEAT) && interp->repeat)
+                {
+                    key->repeats = true;
+                }
 
                 if ((group == 0 && level == 0) || !interp->level_one_only) {
                     static_assert((uint32_t)DEFAULT_INTERPRET_VMOD ==

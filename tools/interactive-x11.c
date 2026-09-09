@@ -56,7 +56,6 @@ struct keyboard {
     int32_t device_id;
 };
 
-static bool terminate;
 #ifdef KEYMAP_DUMP
 static_assert(DEFAULT_OUTPUT_KEYMAP_FORMAT == XKB_KEYMAP_USE_ORIGINAL_FORMAT,
               "Out of sync usage()");
@@ -64,6 +63,7 @@ static enum xkb_keymap_format keymap_format = DEFAULT_OUTPUT_KEYMAP_FORMAT;
 static enum xkb_keymap_serialize_flags serialize_flags =
     (enum xkb_keymap_serialize_flags) DEFAULT_KEYMAP_SERIALIZE_FLAGS;
 #else
+static bool terminate = false;
 static enum xkb_keymap_compile_flags compile_flags =
     (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
 static bool detect_repeat = false;
@@ -247,7 +247,6 @@ init_kbd(struct keyboard *kbd, xcb_connection_t *conn, uint8_t first_xkb_event,
                                            serialize_flags);
     fprintf(stdout, "%s", dump);
     free(dump);
-    terminate = true;
     return 0;
 #endif
 

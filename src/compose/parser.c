@@ -491,12 +491,11 @@ parse_string_literal(struct xkb_context *ctx, const char *string)
     struct scanner s;
     union lvalue val;
     scanner_init(&s, ctx, string, strlen(string), "(unnamed)", NULL);
-    switch (lex(&s, &val)) {
-        case TOK_STRING:
-            return strdup(val.string.str);
-        default:
-            fprintf(stderr, "ERROR: %s\n", s.s);
-            return NULL;
+    if (lex(&s, &val) == TOK_STRING) {
+        return strdup(val.string.str);
+    } else {
+        fprintf(stderr, "ERROR: %s\n", s.s);
+        return NULL;
     }
 }
 
@@ -550,6 +549,7 @@ err_file:
     return ok;
 }
 
+// NOLINTBEGIN(readability-trivial-switch)
 static bool
 parse(struct xkb_compose_table *table, struct scanner *s,
       unsigned int include_depth)
@@ -784,6 +784,7 @@ skip:
 finished:
     return true;
 }
+// NOLINTEND(readability-trivial-switch)
 
 bool
 parse_string(struct xkb_compose_table *table, const char *string, size_t len,

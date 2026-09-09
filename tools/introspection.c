@@ -228,6 +228,7 @@ print_yaml(struct xkb_context *ctx,
     printf("path: \"%s\"\n", (is_stdin_path(path) ? "stdin" : path));
     printf("sections:");
     bool has_sections = false;
+    // NOLINTNEXTLINE(bugprone-assignment-in-selection-statement)
     while ((ok = xkb_file_iterator_next(iter, &section)) && section) {
         has_sections = true;
         printf("\n- type: %s", xkb_file_type_name(section->file_type));
@@ -262,6 +263,7 @@ print_resolved_path(struct xkb_context *ctx,
         printf("---\n");
     }
     printf("path: \"%s\"\n", (is_stdin_path(path) ? "stdin" : path));
+    // NOLINTNEXTLINE(bugprone-assignment-in-selection-statement)
     while ((ok = xkb_file_iterator_next(iter, &section)) && section) {
         printf("type: %s\n", xkb_file_type_name(section->file_type));
         printf("section: \"%s\"\n",
@@ -400,6 +402,7 @@ print_dot(struct xkb_context *ctx,
     unsigned int idx = 0;
     bool is_composite_file = false;
 
+    // NOLINTNEXTLINE(bugprone-assignment-in-selection-statement)
     while ((ok = xkb_file_iterator_next(iter, &section)) && section) {
         if (idx == 0) {
             /* Check if this is a composite file */
@@ -679,6 +682,7 @@ print_rdf(struct xkb_context *ctx,
            (isempty(map) ? "" : map));
 
     unsigned int index = 0;
+    // NOLINTNEXTLINE(bugprone-assignment-in-selection-statement)
     while ((ok = xkb_file_iterator_next(iter, &section)) && section) {
         if (section->file_type == FILE_TYPE_KEYMAP)
             is_composite_file = true;

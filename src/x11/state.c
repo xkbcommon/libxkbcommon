@@ -60,6 +60,7 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
     return true;
 }
 
+// NOLINTNEXTLINE(readability-avoid-unconditional-preprocessor-if)
 #if 0
 // TODO: currently unused
 static enum xkb_a11y_flags

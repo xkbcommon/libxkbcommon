@@ -10,6 +10,7 @@ Checks:
   - -bugprone-assignment-in-if-condition
   - -bugprone-reserved-identifier
   - -bugprone-multi-level-implicit-pointer-conversion
+  - -bugprone-signed-bitwise # currently too noisy with enum values
   - modernize-*
   - -modernize-use-nullptr
   - -modernize-macro-to-enum
@@ -27,6 +28,7 @@ Checks:
   - -readability-isolate-declaration
   - -readability-inconsistent-declaration-parameter-name
   - -readability-math-missing-parentheses
+  - -readability-trailing-comma
   - google-*
   - -google-readability-braces-around-statements
   - -google-readability-todo

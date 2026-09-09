@@ -738,6 +738,8 @@ test_key_iterator(void)
     );
 
     // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
+    // NOLINTBEGIN(readability-redundant-nested-if)
+    // NOLINTBEGIN(readability-trivial-switch)
     //! [xkb_keymap_key_iterator_new_example]
     enum xkb_error_code error;
     struct xkb_keymap_key_iterator_config config = {
@@ -761,6 +763,8 @@ test_key_iterator(void)
     }
     xkb_keymap_key_iterator_unref(iter);
     //! [xkb_keymap_key_iterator_new_example]
+    // NOLINTEND(readability-trivial-switch)
+    // NOLINTEND(readability-redundant-nested-if)
     // NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
     /* Reject invalid flags */

@@ -589,8 +589,12 @@ test_pure_virtual_modifiers(struct xkb_context *context)
 {
     struct xkb_keymap *keymap;
 
-    /* Test definition of >20 pure virtual modifiers.
-     * We overcome the X11 limit of 16 virtual modifiers. */
+    // NOLINTBEGIN(bugprone-invalid-enum-default-initialization)
+
+    /*
+     * Test definition of >20 pure virtual modifiers.
+     * We overcome the X11 limit of 16 virtual modifiers.
+     */
     struct {
         const char* path;
         enum xkb_keymap_format formats[2];
@@ -605,6 +609,8 @@ test_pure_virtual_modifiers(struct xkb_context *context)
             .formats = { XKB_KEYMAP_FORMAT_TEXT_V2 }
         }
     };
+    // NOLINTEND(bugprone-invalid-enum-default-initialization)
+
     for (unsigned int k = 0; k < ARRAY_SIZE(keymaps); k++) {
     for (unsigned int f = 0; f < ARRAY_SIZE(keymaps[k].formats); f++) {
         if (!keymaps[k].formats[f])

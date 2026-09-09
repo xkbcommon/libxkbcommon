@@ -1926,6 +1926,7 @@ gettok(struct matcher *m, struct scanner *s)
     return lex(s, &m->val);
 }
 
+// NOLINTBEGIN(readability-trivial-switch)
 static bool
 matcher_match(struct matcher *m, struct scanner *s,
               unsigned int include_depth,
@@ -2115,6 +2116,7 @@ state_error:
 error:
     return false;
 }
+// NOLINTEND(readability-trivial-switch)
 
 static bool
 read_rules_file(struct xkb_context *ctx,

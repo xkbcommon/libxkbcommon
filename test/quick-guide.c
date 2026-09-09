@@ -20,6 +20,9 @@
 
 #undef EVDEV_OFFSET
 
+// NOLINTBEGIN(readability-trivial-switch)
+// NOLINTBEGIN(readability-redundant-nested-if)
+
 enum wl_keyboard_key_state {
 	/**
 	 * key is not pressed
@@ -550,3 +553,6 @@ main(void)
 
     return EXIT_SUCCESS;
 }
+
+// NOLINTEND(readability-redundant-nested-if)
+// NOLINTEND(readability-trivial-switch)
