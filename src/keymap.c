@@ -256,7 +256,8 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
     return keymap;
 }
 
-/* Check ABI compatibility */
+/** Check ABI compatibility */
+// NOLINTBEGIN(bugprone-assignment-in-selection-statement)
 static enum xkb_error_code
 check_keymap_serialize_abi(
     struct xkb_context * restrict ctx,
@@ -272,6 +273,7 @@ check_keymap_serialize_abi(
     }
     return error;
 }
+// NOLINTEND(bugprone-assignment-in-selection-statement)
 
 enum xkb_error_code
 xkb_keymap_serialize(const struct xkb_keymap *keymap,

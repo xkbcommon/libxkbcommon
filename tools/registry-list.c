@@ -120,11 +120,11 @@ main(int argc, char **argv)
             }
         }
 
-        if (load_defaults) {
-            if (!rxkb_context_include_path_append_default(ctx)) {
-                fprintf(stderr, "Failed to include default paths.\n");
-                goto err;
-            }
+        if (load_defaults &&
+            !rxkb_context_include_path_append_default(ctx))
+        {
+            fprintf(stderr, "Failed to include default paths.\n");
+            goto err;
         }
     }
     if (!rxkb_context_parse(ctx, ruleset)) {

@@ -110,12 +110,11 @@ resolve_name(struct xkb_context *ctx, const char *filename,
                 match = strndup(right, right_len);
                 break;
             }
-        }
-        else if (direction == RIGHT_TO_LEFT) {
-            if (right_len == name_len && memcmp(right, name, right_len) == 0) {
-                match = strndup(left, left_len);
-                break;
-            }
+        } else if (direction == RIGHT_TO_LEFT &&
+                   right_len == name_len &&
+                   memcmp(right, name, right_len) == 0) {
+            match = strndup(left, left_len);
+            break;
         }
     }
 

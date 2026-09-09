@@ -115,13 +115,13 @@ check_copy_to_buf(struct buf *buf, const char* source, size_t len)
         return true;
 
     const size_t available = buf->alloc - buf->size;
-    if (len >= available) {
+    if (len >= available &&
         /* len + 1 (terminating NULL) */
-        if (!do_realloc(buf, len + 1)) {
-            free(buf->buf);
-            buf->buf = NULL;
-            return false;
-        }
+        !do_realloc(buf, len + 1))
+    {
+        free(buf->buf);
+        buf->buf = NULL;
+        return false;
     }
 
     memcpy(buf->buf + buf->size, source, len);
@@ -1232,11 +1232,14 @@ write_compat(const struct xkb_keymap * restrict keymap,
         *some_interp = false;
 
     const struct xkb_led *led;
-    xkb_leds_foreach(led, keymap)
-        if (led->which_groups || led->groups || led->which_mods ||
-            led->mods.mods || led->ctrls)
-            if (!write_led_map(keymap, format, defaults, buf, led))
-                return false;
+    xkb_leds_foreach(led, keymap) {
+        if ((led->which_groups || led->groups ||
+             led->which_mods || led->mods.mods || led->ctrls) &&
+            !write_led_map(keymap, format, defaults, buf, led))
+        {
+            return false;
+        }
+    }
 
     copy_to_buf(buf, "};\n\n");
 
@@ -1882,13 +1885,13 @@ write_symbols(const struct xkb_keymap *keymap,
     const struct xkb_key *key;
     xkb_keys_foreach(key, keymap) {
         /* Skip keys with no explicit values */
-        if (key->explicit) {
-            if (!write_key(keymap, config, substitutions, max_groups,
-                           some_interp, drop_interprets, explicit_key_values,
-                           pretty, buf, &buf2, key)) {
-                free(buf2.buf);
-                return false;
-            }
+        if (key->explicit &&
+            !write_key(keymap, config, substitutions, max_groups, some_interp,
+                       drop_interprets, explicit_key_values, pretty, buf,
+                       &buf2, key))
+        {
+            free(buf2.buf);
+            return false;
         }
     }
     free(buf2.buf);
@@ -1907,10 +1910,12 @@ write_keymap(const struct xkb_keymap *keymap,
              struct buf *buf, struct xkb_keymap_serialize_result *result)
 {
     key_name_substitutions substitutions = darray_new();
-    if (config->format == XKB_KEYMAP_FORMAT_TEXT_V1) {
-        if (!rename_long_keys(keymap, &substitutions))
-            return false;
+    if (config->format == XKB_KEYMAP_FORMAT_TEXT_V1 &&
+        !rename_long_keys(keymap, &substitutions))
+    {
+        return false;
     }
+
     const key_name_substitutions * const substitutions_ptr =
         (darray_empty(substitutions)) ? NULL : &substitutions;
 

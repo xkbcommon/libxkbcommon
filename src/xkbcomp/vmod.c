@@ -101,18 +101,18 @@ bool
 HandleVModDef(struct xkb_context *ctx, struct xkb_mod_set *mods, VModDef *stmt)
 {
     xkb_mod_mask_t mapping = 0;
-    if (stmt->value) {
+    if (stmt->value &&
         /*
          * This is a statement such as 'virtualModifiers NumLock = Mod1';
          * it initialize the vmod-to-real-mod[s] mapping before going
          * through modifier_map.
          */
-        if (!ExprResolveModMask(ctx, stmt->value, MOD_REAL, mods, &mapping)) {
-            log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
-                    "Declaration of %s ignored\n",
-                    xkb_atom_text(ctx, stmt->name));
-            return false;
-        }
+        !ExprResolveModMask(ctx, stmt->value, MOD_REAL, mods, &mapping))
+    {
+        log_err(ctx, XKB_LOG_MESSAGE_NO_ID,
+                "Declaration of %s ignored\n",
+                xkb_atom_text(ctx, stmt->name));
+        return false;
     }
 
     xkb_mod_index_t vmod;
