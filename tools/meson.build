@@ -230,12 +230,21 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''',
         wayland_scanner_code_gen.process(xdg_decoration_xml),
         wayland_scanner_client_header_gen.process(xdg_decoration_xml),
     ]
+    wayland_extra_protocols_lib = static_library(
+        'wayland_extra_protocols',
+        [xdg_shell_sources, xdg_decoration_sources],
+        include_directories: include_directories('.'),
+        dependencies: [wayland_client_dep],
+    )
+    wayland_extra_protocols_dep = declare_dependency(
+        link_with: wayland_extra_protocols_lib,
+        include_directories: wayland_extra_protocols_lib.private_dir_include(),
+    )
+
     executable(
         'xkbcli-interactive-wayland',
         'interactive-wayland.c',
-        xdg_shell_sources,
-        xdg_decoration_sources,
-        dependencies: [tools_dep, wayland_client_dep],
+        dependencies: [tools_dep, wayland_client_dep, wayland_extra_protocols_dep],
         install: true,
         install_dir: dir_libexec,
     )
@@ -245,9 +254,7 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''',
     executable(
         'xkbcli-dump-keymap-wayland',
         'interactive-wayland.c',
-        xdg_shell_sources,
-        xdg_decoration_sources,
-        dependencies: [tools_dep, wayland_client_dep],
+        dependencies: [tools_dep, wayland_client_dep, wayland_extra_protocols_dep],
         c_args: ['-DKEYMAP_DUMP'],
         install: true,
         install_dir: dir_libexec,

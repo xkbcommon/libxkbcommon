@@ -19,18 +19,18 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <wayland-client.h>
+#include <wayland-util.h>
+
+#include "xdg-shell-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
+
 #include "xkbcommon/xkbcommon-errors.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/utils.h"
 #include "src/keymap-formats.h"
 #include "tools-common.h"
-
-#include <wayland-client.h>
-#include "wayland-client-protocol.h"
-#include "xdg-shell-client-protocol.h"
-#include "xdg-decoration-unstable-v1-client-protocol.h"
-#include <wayland-util.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
