@@ -79,14 +79,29 @@ doc_gen = custom_target(
     build_by_default: true,
 )
 
+fix_nested_links = find_program(
+    meson.project_source_root() / 'scripts' / 'fix-nested-links.py',
+)
+doc_fix = custom_target(
+    'doxygen-post',
+    input: [doc_gen],
+    output: 'html-post',  # Fake: trick meson to rebuild
+    command: [
+        fix_nested_links,
+        meson.current_build_dir() / 'html/release-notes.html',
+    ],
+    install: false,
+    build_by_default: true,
+)
+
 if get_option('enable-cool-uris')
     ensure_stable_urls = find_program(
         meson.project_source_root() / 'scripts' / 'ensure-stable-doc-urls.py',
     )
     custom_target(
         'cool-uris',
-        input: [doc_gen, meson.current_source_dir() / 'cool-uris.yaml'],
-        output: 'html-xtra',
+        input: [doc_gen, doc_fix, meson.current_source_dir() / 'cool-uris.yaml'],
+        output: 'html-xtra',  # Fake: trick meson to rebuild
         command: [
             ensure_stable_urls,
             'generate-redirections',

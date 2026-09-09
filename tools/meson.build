@@ -244,7 +244,11 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''',
     executable(
         'xkbcli-interactive-wayland',
         'interactive-wayland.c',
-        dependencies: [tools_dep, wayland_client_dep, wayland_extra_protocols_dep],
+        dependencies: [
+            tools_dep,
+            wayland_client_dep,
+            wayland_extra_protocols_dep,
+        ],
         install: true,
         install_dir: dir_libexec,
     )
@@ -254,7 +258,11 @@ You can disable the Wayland xkbcli programs with -Denable-wayland=false.''',
     executable(
         'xkbcli-dump-keymap-wayland',
         'interactive-wayland.c',
-        dependencies: [tools_dep, wayland_client_dep, wayland_extra_protocols_dep],
+        dependencies: [
+            tools_dep,
+            wayland_client_dep,
+            wayland_extra_protocols_dep,
+        ],
         c_args: ['-DKEYMAP_DUMP'],
         install: true,
         install_dir: dir_libexec,
