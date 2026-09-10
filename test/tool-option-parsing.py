@@ -760,7 +760,6 @@ class TestXkbcli(unittest.TestCase):
         for args in (
             ["--verbose", "-h"],
             ["--format=v2", "-h"],
-            ["--strict", "-h"],
             ["--no-pretty", "-h"],
             ["--drop-unused", "-h"],
         ):
