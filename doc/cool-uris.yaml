@@ -8,6 +8,7 @@ __optional__:
 - doxygen_crawl.html
 - meson_options.html
 annotated.html: []
+building-xkbcommon.html: []
 classes.html: []
 custom-configuration.html:
 - user-configuration.html
@@ -102,6 +103,7 @@ md_doc_2quick-guide.html:
 meson_options.html: []
 packaging-keyboard-layouts.html: []
 pages.html: []
+prose-naming-conventions.html: []
 release-notes.html: []
 rule-file-format.html:
 - md_doc_rules_format.html
