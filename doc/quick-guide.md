@@ -1,4 +1,4 @@
-# Quick Guide
+# Quick Guide {#quick-guide-library}
 
 @tableofcontents{html:2}
 

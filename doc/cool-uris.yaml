@@ -98,12 +98,13 @@ index.html: []
 keymap-text-format-v1-v2.html:
 - keymap-text-format-v1.html
 - md_doc_keymap_format_text_v1.html
-md_doc_2quick-guide.html:
-- md_doc_quick_guide.html
 meson_options.html: []
 packaging-keyboard-layouts.html: []
 pages.html: []
 prose-naming-conventions.html: []
+quick-guide-library.html:
+- md_doc_quick_guide.html
+- md_doc_2quick-guide.html
 release-notes.html: []
 rule-file-format.html:
 - md_doc_rules_format.html

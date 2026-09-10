@@ -2,7 +2,7 @@ PROJECT_NAME           = @PACKAGE_NAME@
 
 PROJECT_NUMBER         = @PACKAGE_VERSION@
 
-PROJECT_BRIEF          = Library implementing the XKB specification for parsing \
+PROJECT_BRIEF          = Reference library implementing the XKB specification for parsing \
                          keyboard descriptions and handling keyboard state
 
 OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
@@ -55,6 +55,8 @@ IGNORE_PREFIX          = xkb_ \
                          rxkb_ \
                          RXKB_
 
+LAYOUT_FILE            = doc/DoxygenLayout.xml
+
 DISABLE_INDEX          = NO
 
 GENERATE_TREEVIEW      = NO
@@ -64,6 +66,10 @@ FULL_SIDEBAR           = NO
 HTML_EXTRA_STYLESHEET  = doc/doxygen-extra.css
 
 HTML_COLORSTYLE        = TOGGLE
+
+HTML_COLORSTYLE_SAT    = 90
+
+HTML_COLORSTYLE_GAMMA  = 60
 
 TIMESTAMP              = NO
 
