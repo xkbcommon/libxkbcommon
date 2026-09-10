@@ -67,7 +67,7 @@ endforeach
 docdir = get_option('datadir') / 'doc' / meson.project_name()
 doc_gen = custom_target(
     'doxygen',
-    input: [doxyfile] + relative_doxygen_input,
+    input: [doxyfile] + relative_doxygen_input + ['DoxygenLayout.xml'],
     output: 'html',
     command: [
         doxygen_wrapper,
