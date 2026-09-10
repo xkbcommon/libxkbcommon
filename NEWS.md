@@ -1,7 +1,7 @@
-xkbcommon [1.14.0-beta1] – 2026-07-22
+xkbcommon [1.14.0-beta2] – 2026-09-10
 =====================================
 
-[1.14.0-beta1]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.14.0-beta1
+[1.14.0-beta2]: https://github.com/xkbcommon/libxkbcommon/tree/xkbcommon-1.14.0-beta2
 
 @note The highlights of this release are:
 - A new `xkb_machine` keyboard state API specifically designed for *server* applications.
@@ -474,6 +474,7 @@ xkbcommon [1.14.0-beta1] – 2026-07-22
 ## Full changelog
 
 [1.13.2 → 1.14.0-beta1](https://github.com/xkbcommon/libxkbcommon/compare/xkbcommon-1.13.2...xkbcommon-1.14.0-beta1)
+[1.14.0-beta1 → 1.14.0-beta2](https://github.com/xkbcommon/libxkbcommon/compare/xkbcommon-1.14.0-beta1...xkbcommon-1.14.0-beta2)
 
 
 xkbcommon [1.13.2] – 2026-05-30
