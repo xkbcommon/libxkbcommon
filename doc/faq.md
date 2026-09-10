@@ -21,7 +21,7 @@ See: [terminology](./keymap-text-format-v1-v2.md#terminology).
 <dd>See @ref legacy-x-tools-replacement "".</dd>
 </dl>
 
-## Keyboard layouts
+## Keyboard layouts {#faq-keyboard-layouts}
 
 ### Is there a quick guide?
 
@@ -503,7 +503,7 @@ xkbcli interactive-x11
 </dd>
 </dl>
 
-## API
+## API {#faq-api}
 
 ### Modifiers
 

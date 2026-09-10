@@ -26,6 +26,13 @@ key events into characters and actions.
 See [Introduction to XKB][XKB] for the essentials of XKB concepts and how a
 keymap is built.
 
+### Features
+
+xkbcommon implements <em>most of the [XKB] specification</em>, except for
+some obscure features. xkbcommon has *notable additions* that lift hard-coded limitation of the X11 Protocol (e.g. keycodes and modifiers).
+
+See the [Compatibility](doc/compatibility.md) page for further details.
+
 ### Using the library
 
 <dl>
@@ -38,7 +45,13 @@ keymap is built.
 
 [API Documentation](https://xkbcommon.org/doc/current/topics.html)
 </dt>
-<dd>Full API reference</dd>
+<dd>
+Full API reference.
+
+While libxkbcommon’s API is somewhat derived from the classic XKB API as found
+in <code>X11/extensions/XKB.h</code> and friends, it has been substantially
+reworked to expose fewer internal details to clients.
+</dd>
 <dt>
 
 [Release notes](doc/release-notes.md)
@@ -46,7 +59,7 @@ keymap is built.
 <dd>History of the xkbcommon changes by version</dd>
 <dt>
 
-[FAQ](doc/faq.md#api)
+[FAQ](doc/faq.md#faq-api)
 </dt>
 <dd>Frequently Asked Questions</dd>
 </dl>
@@ -66,12 +79,17 @@ keymap is built.
 <dd>Documentation of keymap components and keymap text syntax</dd>
 <dt>
 
-[Tools](./README.md#tools)
+[Tools](doc/debugging.md)
 </dt>
-<dd>Introduction to the `xkbcli` application</dd>
+<dd>
+<!--! @rawHtml -->
+xkbcommon offers a set of <abbr title="Command-Line Interface">CLI</abbr>
+tools, grouped under the <code>xkbcli</code> application.
+<!--! @endRawHtml -->
+</dd>
 <dt>
 
-[FAQ](doc/faq.md)
+[FAQ](doc/faq.md#faq-keyboard-layouts)
 </dt>
 <dd>Frequently Asked Questions</dd>
 </dl>
@@ -88,23 +106,6 @@ meson test -C build
 
 See the [building](doc/building.md) guide for dependencies and configuration options.
 
-## API
-
-While libxkbcommon’s API is somewhat derived from the classic XKB API as found
-in `X11/extensions/XKB.h` and friends, it has been substantially reworked to
-expose fewer internal details to clients.
-
-See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
-
-## Tools
-
-<!--! @rawHtml -->
-xkbcommon offers a set of <abbr title="Command-Line Interface">CLI</abbr>
-tools, grouped under the <code>xkbcli</code> application.
-<!--! @endRawHtml -->
-
-See the [debugging](doc/debugging.md) page for the detailed list of tools.
-
 ## Layouts database
 
 xkbcommon *does not distribute a keyboard layout dataset itself*, other than
@@ -119,12 +120,6 @@ data.
 [xkeyboard-config-home]: https://www.freedesktop.org/wiki/Software/XKeyboardConfig
 [xkeyboard-config-repo]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
 [libX11]: https://gitlab.freedesktop.org/xorg/lib/libx11
-
-## Compatibility with X11
-
-xkbcommon is compatible with X11, except for some obscure features.
-
-See the [Compatibility](doc/compatibility.md) page for further details.
 
 ## Development
 
