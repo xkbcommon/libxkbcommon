@@ -30,8 +30,8 @@ Please [report any issue](https://github.com/xkbcommon/libxkbcommon/issues).
 <tr>
 <th colspan="2">Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -414,8 +414,8 @@ Rational:
 <th>Type</th>
 <th>Action</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -706,8 +706,8 @@ parameter is not supported: the default value is 0, an invalid X11 keycode.
 <tr>
 <th>Feature</th>
 <th>X11 (xkbcomp)</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -902,8 +902,8 @@ Multiple groups per symbol section is supported when parsing a [KcCGST] keymap.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
@@ -959,8 +959,8 @@ Obsolete legacy file format tied to X11 ecosystem.
 <tr>
 <th>Feature</th>
 <th>X11</th>
-<th>xkbcommon ([v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1))</th>
-<th>xkbcommon ([v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2))</th>
+<th>xkbcommon [v1 format](@ref XKB_KEYMAP_FORMAT_TEXT_V1)</th>
+<th>xkbcommon [v2 format](@ref XKB_KEYMAP_FORMAT_TEXT_V2)</th>
 </tr>
 </thead>
 <tbody>
