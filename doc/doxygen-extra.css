@@ -1,6 +1,35 @@
+html {
+    --xkb-link-color-mix: 20%;
+}
+
 html.dark-mode {
     --page-background-color: #000410;
     --fragment-background-color: #192027;
+    --table-cell-border-color: oklch(
+        from var(--table-header-background-color)
+        clamp(0, l * 0.9, 1) c h
+    );
+    --xkb-link-color-mix: 80%;
+}
+
+span.tt {
+    color: var(--fragment-foreground-color);
+}
+
+th a, th a.el, .contents th a {
+    color: color-mix(
+        in oklch,
+        var(--page-link-color) var(--xkb-link-color-mix),
+        contrast-color(var(--table-header-background-color))
+    );
+}
+
+th a:visited, th a.el:visited, .contents th a:visited {
+    color: color-mix(
+        in oklch,
+        var(--page-visited-link-color) var(--xkb-link-color-mix),
+        contrast-color(var(--table-header-background-color))
+    );
 }
 
 div#top, div.header, div.contents {
@@ -9,7 +38,7 @@ div#top, div.header, div.contents {
     max-width: 960px;
 }
 
-.footer {
+#nav-path, .footer {
     display: none;
 }
 
