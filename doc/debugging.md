@@ -2,34 +2,77 @@
 
 ## Available tools
 
-xkbcommon provides multiple tools for debugging. Please consult the manual pages
-`man xkbcli` for the complete documentation of each tool.
+<!--! @rawHtml -->
+xkbcommon provides multiple <abbr title="Command-Line Interface">CLI</abbr>
+tools for debugging, grouped under the <code>xkbcli</code> application.
+Please consult the manual pages `man xkbcli` for the complete documentation
+of each tool.
+<!--! @endRawHtml -->
 
 @note These tools may not be installed by default; please ensure you have the
 `libxkbcommon-tools` package installed.
 
-### Basic tools
+<dl>
+<dt>`xkbcli interactive`</dt>
+<dd>
+Test your configuration interactively. It chooses the appropriate backend based
+on the session type. Alternatively you may select explicitly the backend:
 
-- Interactive:
-  - `xkbcli interactive` to test your current configuration by detecting the
-    session type.
-  - `xkbcli interactive-x11` to test your current configuration in an *X11* session.
-  - `xkbcli interactive-wayland` to test your current configuration in a *Wayland*
-    session.
-  You may want to use the flag `--enable-compose` if your layouts use dead keys.
-- `xkbcli how-to-type`: to find the key combinations to type in order to get a
-  specific character or keysym.
+<dl>
+<dt>`xkbcli interactive-wayland`</dt>
+<dd>Test in a *Wayland* session.</dd>
+<dt>`xkbcli interactive-x11`</dt>
+<dd>Test in an *X11* session.</dd>
+<dt>`xkbcli interactive-evdev`</dt>
+<dd>
+Test raw input events directly.
+This requires access to the `/dev/input/event*` devices, you may need to add your
+user to the `input` group or run as root.
+</dd>
+</dl>
 
-### Advanced tools
+> [!TIP]
+> You may want to use the flag `--enable-compose` if your layouts use dead keys.
+</dd>
 
-- `xkbcli interactive-evdev`: to test a configuration without affecting your
-  current configuration. This requires access to the `/dev/input/event*` devices,
-  you may need to add your user to the `input` group or run as root.
-- `xkbcli compile-keymap`: to check the resulting compiled keymap for some
-  configuration. Use the options `--explicit-*` to force the corresponding values
-  to be explicit. This is especially useful to debug [compatibility interpretations].
-- `xkbcli compile-compose`: to check the resulting Compose file.
-- `xkbcli info`: to print information about xkbcommon configuration.
+<dt>`xkbcli dump-keymap`</dt>
+<dd>
+Dump an XKB keymap from a display server. It chooses the appropriate backend based
+on the session type. Alternatively you may select explicitly the backend:
+
+<dl>
+<dt>`xkbcli dump-keymap-wayland`</dt>
+<dd>Dump an XKB keymap from a *Wayland* compositor.</dd>
+<dt>`xkbcli dump-keymap-x11`</dt>
+<dd>Dump an XKB keymap from an *X11* server.</dd>
+</dl>
+
+</dd>
+
+<dt>`xkbcli how-to-type`</dt>
+<dd>
+Find the required key combinations to produce a specific character or keysym.
+</dd>
+
+<dt>`xkbcli list`</dt>
+<dd>List available layouts, variants, and options provided by an XKB database.</dd>
+
+<dt>`xkbcli compile-keymap`</dt>
+<dd>
+Compile a keymap and inspect its properties.
+
+> [!TIP]
+> Use the options `--explicit-*` to force the corresponding values to be explicit.
+> This is especially useful to debug [compatibility interpretations].
+</dd>
+
+<dt>`xkbcli compile-compose`</dt>
+<dd>
+Compile [Compose](@ref compose) files.</dd>
+
+<dt>`xkbcli info`</dt>
+<dd>Print information about xkbcommon configuration.</dd>
+</dl>
 
 [compatibility interpretations]: @ref interpret-statements
 
