@@ -100,34 +100,10 @@ See the [API Documentation](https://xkbcommon.org/doc/current/topics.html).
 
 <!--! @rawHtml -->
 xkbcommon offers a set of <abbr title="Command-Line Interface">CLI</abbr>
-<code>tools</code>, grouped under the <code>xkbcli</code> application:
+tools, grouped under the <code>xkbcli</code> application.
 <!--! @endRawHtml -->
 
-<dl>
-<dt><code>xkbcli compile-keymap</code></dt>
-<dd>Compile an XKB keymap</dd>
-<dt><code>xkbcli compile-compose</code></dt>
-<dd>Compile a compose file</dd>
-<dt><code>xkbcli how-to-type</code></dt>
-<dd>Show how to type a given Unicode codepoint</dd>
-<dt><code>xkbcli interactive-wayland</code></dt>
-<dd>Interactive debugger for XKB keymaps for Wayland</dd>
-<dt><code>xkbcli interactive-x11</code></dt>
-<dd>Interactive debugger for XKB keymaps for X11</dd>
-<dt><code>xkbcli interactive-evdev</code></dt>
-<dd>Interactive debugger for XKB keymaps for evdev</dd>
-<dt><code>xkbcli dump-keymap-wayland</code></dt>
-<dd>Dump an XKB keymap from a Wayland compositor</dd>
-<dt><code>xkbcli dump-keymap-x11</code></dt>
-<dd>Dump an XKB keymap from an X server</dd>
-<dt><code>xkbcli list</code></dt>
-<dd>List available layouts and more</dd>
-<dt><code>xkbcli info</code></dt>
-<dd>Print information about xkbcommon configuration, for debugging purposes</dd>
-</dl>
-
-It may require the installation of the package `libxkbcommon-tools` or similar
-name.
+See the [debugging](doc/debugging.md) page for the detailed list of tools.
 
 ## Layouts database
 
