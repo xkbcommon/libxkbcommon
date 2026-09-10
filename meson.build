@@ -1,7 +1,7 @@
 project(
     'xkbcommon',
     'c',
-    version: '1.14.0-beta1',
+    version: '1.14.0-beta2',
     default_options: [
         'c_std=c11',
         'build.c_std=c11',
