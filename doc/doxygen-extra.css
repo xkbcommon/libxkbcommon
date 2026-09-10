@@ -12,6 +12,13 @@ html.dark-mode {
     --xkb-link-color-mix: 80%;
 }
 
+#projectlogo img {
+    display: block;
+    max-height: 56px;
+    width: auto;
+    margin: 0.3rem;
+}
+
 span.tt {
     color: var(--fragment-foreground-color);
 }

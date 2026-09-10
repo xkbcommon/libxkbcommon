@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="443.21686mm"
+   height="439.63638mm"
+   viewBox="0 0 443.21687 439.63637"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title23">Experimental xkbcommon icon</title>
+  <defs
+     id="defs1">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4-6">
+      <path
+         d="m 43789.101,10411.801 c 114.8,-323.8 -17.8,-683.5005 -315.4,-855.3005 -1094.2,-631.8 -3657.4,-2111.6001 -4908.7,-2834.1001 -441,-254.6 -984.3,-254.6 -1425.2,0 -1251.8,722.7 -3816.4,2203.4001 -4909.9,2834.7001 -297.1,171.5 -429.8,530.4005 -315.9,853.9005 386.1,1096.3 1206.4,3425.5 1206.4,3425.5 l 9509.5,-156.3 c 0,0 782.4,-2206 1159.2,-3268.4 z"
+         id="path4-9" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-563.82589,103.2138)">
+    <g
+       id="g23"
+       transform="translate(-153.32619,535.52918)">
+      <path
+         style="fill:#1256a7;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 938.50313,-358.01263 172.90437,-121.9874 39.6273,85 -6.1745,30 -194.49627,157.50001 -12.34897,-5 z"
+         id="path18" />
+      <path
+         style="fill:#1763c0;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 765.61753,-503.01263 172.8856,145 -0.48807,150.51261 -206.35719,-153.01261 -3.08724,-42.5 z"
+         id="path19" />
+      <path
+         id="path20"
+         d="m 1148.2143,-398.79199 c 4.0499,15.80741 -0.6279,33.36739 -11.1266,41.75436 -38.6009,30.84345 -129.0249,103.08491 -173.16798,138.35619 -15.5575,12.42917 -34.72392,12.42917 -50.2779,0 -44.16073,-35.28105 -134.6341,-107.56641 -173.21035,-138.38548 -10.48102,-8.37233 -15.1624,-25.89327 -11.14425,-41.68601 13.62075,-53.51958 45.72141,-106.34294 45.72141,-106.34294 l 330.20567,5.48741 c 0,0 29.7074,48.95183 43,100.81647 z"
+         style="display:inline;fill:none;fill-opacity:1;stroke:#000000;stroke-width:21.1667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         id="path21"
+         d="M 37852.5,9342.2984 V 6485.8761 Z"
+         style="fill:none;stroke:#000000;stroke-width:510.047;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1"
+         transform="matrix(0.03527778,0,0,-0.04881839,-396.56777,109.49526)"
+         clip-path="url(#clipPath4-6)" />
+      <path
+         id="path22"
+         d="m 289.3625,-290.69595 c 7.77523,6.21457 12.56948,17.69665 12.56948,30.12583 0,12.42916 -4.79425,23.91611 -12.56948,30.13069 -38.70676,30.92159 -97.84998,78.17288 -131.19451,104.81308 -15.55398,12.42918 -34.7204,12.42918 -50.2779,0 -33.344565,-26.6402 -92.4842,-73.89149 -131.191,-104.81308 -7.77875,-6.21458 -12.56945,-17.70153 -12.56945,-30.13069 0,-12.42918 4.7907,-23.91126 12.56945,-30.12583 38.7068,-30.92645 97.846435,-78.17775 131.191,-104.81795 15.5575,-12.42913 34.72392,-12.42913 50.2779,0 33.34453,26.6402 92.48775,73.8915 131.19451,104.81795 z"
+         style="fill:#1c71d8;fill-opacity:1;stroke:#000000;stroke-width:21.1667;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;stroke-dasharray:none;stroke-opacity:1"
+         transform="translate(805.75174,-223.65425)" />
+    </g>
+  </g>
+  <metadata
+     id="metadata1">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+        <dc:title>Experimental xkbcommon icon</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Pierre Le Marre</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:date>2026-09-10</dc:date>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

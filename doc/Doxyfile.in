@@ -5,6 +5,10 @@ PROJECT_NUMBER         = @PACKAGE_VERSION@
 PROJECT_BRIEF          = Reference library implementing the XKB specification for parsing \
                          keyboard descriptions and handling keyboard state
 
+PROJECT_LOGO           = doc/img/logo.svg
+
+PROJECT_ICON           = doc/img/icon.svg
+
 OUTPUT_DIRECTORY       = @OUTPUT_DIRECTORY@
 
 SITEMAP_URL            = https://xkbcommon.org/doc/@PACKAGE_VERSION@/
