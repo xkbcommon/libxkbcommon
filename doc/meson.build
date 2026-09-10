@@ -27,6 +27,8 @@ doxygen_input = [
     'doc/diagrams/xkb-types-explanation.dot',
     'doc/doxygen-extra.css',
     'doc/faq.md',
+    'doc/img/icon.svg',
+    'doc/img/logo.svg',
     'doc/img/numeric-keypad-overlay.svg',
     'doc/introduction-to-xkb.md',
     'doc/keymap-text-format-v1-v2.md',
