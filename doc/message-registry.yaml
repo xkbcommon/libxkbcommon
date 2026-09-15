@@ -124,6 +124,12 @@
         ```c
         key <AB08> {[ comma, semicolon, periodcentered, multiply ]};
         ```
+- id: "event-type-mismatch"
+  code: 113
+  type: error
+  visibility: public
+  added: 1.14.0
+  description: "Event getter does not match the event’s type"
 - id: "undeclared-virtual-modifier"
   code: 123
   added: ALWAYS

@@ -2998,7 +2998,7 @@ enum xkb_key_direction {
  * Otherwise @p keycode and @p direction are *not* updated.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - `::XKB_ERROR_EVENT_TYPE_MISMATCH` if the [event] type is incorrect.
  *
  * @sa `xkb_machine::xkb_machine_process_key()`
  *
@@ -3344,7 +3344,7 @@ struct xkb_event_components {
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
  * - Errors from ABI @ref abi-struct-resolution.
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - `::XKB_ERROR_EVENT_TYPE_MISMATCH` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_STATE_COMPONENTS`
  * @sa `struct xkb_event_components`
@@ -3478,7 +3478,7 @@ struct xkb_event_pointer_motion {
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
  * - Errors from ABI @ref abi-struct-resolution.
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - `::XKB_ERROR_EVENT_TYPE_MISMATCH` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_MOTION`
  * @sa `struct xkb_event_pointer_motion`
@@ -3597,7 +3597,7 @@ struct xkb_event_pointer_button {
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
  * - Errors from ABI @ref abi-struct-resolution.
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - `::XKB_ERROR_EVENT_TYPE_MISMATCH` if the [event] type is incorrect.
  *
  * @sa `::XKB_EVENT_TYPE_POINTER_BUTTON`.
  * @sa `struct xkb_event_pointer_button`
@@ -3629,7 +3629,7 @@ xkb_event_get_pointer_button(const struct xkb_event *event,
  * Otherwise @p index_or_offset and @p is_offset are *not* updated.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an [error code]&zwnj;:
- * - `::XKB_ERROR_INVALID` if the [event] type is incorrect.
+ * - `::XKB_ERROR_EVENT_TYPE_MISMATCH` if the [event] type is incorrect.
  *
  * @sa `xkb_machine::xkb_machine_process_key()`
  *
