@@ -4599,7 +4599,7 @@ Button:
 - named constant: `button1..button5`
 - either absolute (no sign) or relative (`+`/`-` sign)
 </td>
-<td>`+button1`</td>
+<td>`+1`</td>
 <td>
 The mouse button to set as default or button delta.
 </td>

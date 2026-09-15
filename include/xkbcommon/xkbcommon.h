@@ -3369,8 +3369,8 @@ xkb_event_get_components(const struct xkb_event *event,
 enum xkb_pointer_motion_flags {
     /**
      * Do not apply any flags; the corresponding [pointer motion]&zwnj;:
-     * - has relative coordinates,
-     * - repeats.
+     * - has *relative* coordinates,
+     * - does not repeat.
      *
      * @since 1.14.0
      *
@@ -5513,7 +5513,7 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  * @invariant If the returned level is valid, the following always holds:
  * ```c
  * xkb_state_key_get_level(state, key, layout) < xkb_keymap_num_levels_for_key(keymap, key, layout)
- * ```c
+ * ```
  */
 XKB_EXPORT xkb_level_index_t
 xkb_state_key_get_level(struct xkb_state *state, xkb_keycode_t key,
