@@ -30,6 +30,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_UNSUPPORTED_STATE_MODE_, "Unsupported state mode"},
     {XKB_WARNING_ILLEGAL_KEYCODE_ALIAS, "Illegal keycode alias"},
     {XKB_WARNING_UNRECOGNIZED_KEYSYM, "Unrecognized keysym"},
+    {XKB_ERROR_EVENT_TYPE_MISMATCH_, "Event type mismatch"},
     {XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER, "Undeclared virtual modifier"},
     {XKB_ERROR_INSUFFICIENT_BUFFER_SIZE, "Insufficient buffer size"},
     {XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS_, "Unsupported key iterator flags"},

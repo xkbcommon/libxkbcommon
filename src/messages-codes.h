@@ -78,6 +78,8 @@ enum xkb_message_code {
     XKB_WARNING_ILLEGAL_KEYCODE_ALIAS = 101,
     /** Warn on unrecognized keysyms */
     XKB_WARNING_UNRECOGNIZED_KEYSYM = 107,
+    /** Event getter does not match the event’s type */
+    XKB_ERROR_EVENT_TYPE_MISMATCH_ = 113,
     /** A virtual modifier is used before being declared */
     XKB_ERROR_UNDECLARED_VIRTUAL_MODIFIER = 123,
     /** A buffer has an insufficient size */

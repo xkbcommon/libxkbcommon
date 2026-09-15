@@ -88,6 +88,12 @@ enum xkb_error_code {
      */
     XKB_ERROR_UNSUPPORTED_STATE_MODE = 86,
     /**
+     * Event getter does not match the event’s type
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_EVENT_TYPE_MISMATCH = 113,
+    /**
      * Unsupported `xkb_keymap_key_iterator_flags` value
      *
      * Use the following to check if the linked libxkbcommon supports a given

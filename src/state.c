@@ -4157,7 +4157,7 @@ xkb_event_get_keycode(const struct xkb_event *event,
         *direction = event->key.direction;
         return XKB_SUCCESS;
     } else {
-        return XKB_ERROR_INVALID;
+        return XKB_ERROR_EVENT_TYPE_MISMATCH;
     }
 }
 
@@ -4166,7 +4166,7 @@ xkb_event_get_components(const struct xkb_event * restrict event,
                          struct xkb_event_components * restrict components)
 {
     if (event->type != XKB_EVENT_TYPE_STATE_COMPONENTS)
-        return XKB_ERROR_INVALID;
+        return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
     const enum xkb_error_code error = xkb_check_state_abi(components);
@@ -4195,7 +4195,7 @@ xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
                              struct xkb_event_pointer_motion * restrict motion)
 {
     if (event->type != XKB_EVENT_TYPE_POINTER_MOTION)
-        return XKB_ERROR_INVALID;
+        return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
     const enum xkb_error_code error = xkb_check_state_abi(motion);
@@ -4216,7 +4216,7 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
                              struct xkb_event_pointer_button * restrict button)
 {
     if (event->type != XKB_EVENT_TYPE_POINTER_BUTTON)
-        return XKB_ERROR_INVALID;
+        return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
     const enum xkb_error_code error = xkb_check_state_abi(button);
@@ -4238,7 +4238,7 @@ xkb_event_get_virtual_console(const struct xkb_event * restrict event,
                               bool * restrict is_offset)
 {
     if (event->type != XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
-        return XKB_ERROR_INVALID;
+        return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     *index_or_offset = event->virtual_console.index_or_offset;
     *is_offset = event->virtual_console.is_offset;
