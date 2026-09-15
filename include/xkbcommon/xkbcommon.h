@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <xkbcommon/xkbcommon-errors.h>
+#include <xkbcommon/xkbcommon-status.h>
 #include <xkbcommon/xkbcommon-names.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 
@@ -2060,9 +2060,9 @@ struct xkb_keymap_serialize_result {
  * [layouts]: @ref xkb_keymap_serialize_config::layouts
  * [serialized]: @ref xkb_keymap_serialize_result::serialized
  *
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_keymap_serialize(const struct xkb_keymap *keymap,
                      const struct xkb_keymap_serialize_config *config,
                      struct xkb_keymap_serialize_result *result);
@@ -2240,8 +2240,8 @@ struct xkb_keymap_key_iterator_config {
  *     Configuration to control the iterator behavior, or `NULL` for the
  *     defaults: an `xkb_keymap_key_iterator_config` struct with `size`
  *     set per @ref abi-struct-contract and all other fields zeroed.
- * @param[out] error
- *     Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *     Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @pre @p config must point to a zero-initialized struct with
  * [`config->size`](@ref xkb_keymap_key_iterator_config::size) set per
@@ -2249,7 +2249,7 @@ struct xkb_keymap_key_iterator_config {
  *
  * @returns A new keys iterator, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution
@@ -2265,13 +2265,14 @@ struct xkb_keymap_key_iterator_config {
  *
  * @since 1.14.0
  *
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_new(
     struct xkb_keymap *keymap,
     const struct xkb_keymap_key_iterator_config *config,
-    enum xkb_error_code *error
+    enum xkb_status *status
 );
 
 /**
@@ -2376,10 +2377,10 @@ xkb_keymap_key_iterator_next(struct xkb_keymap_key_iterator *iter);
  *
  * [keys]: @ref xkb_keycode_t
  * [iterator]: @ref xkb_keymap_key_iterator
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  * [construction]: @ref xkb_keymap_key_iterator_new
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_keymap_key_iterator_reset(
     struct xkb_keymap_key_iterator *iter,
     const struct xkb_keymap_key_iterator_config *config
@@ -3007,9 +3008,9 @@ enum xkb_key_direction {
  * [keycode]: @ref xkb_keycode_t
  * [direction]: @ref xkb_key_direction
  * [event]: @ref xkb_event
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_event_get_keycode(const struct xkb_event *event,
                       xkb_keycode_t *keycode,
                       enum xkb_key_direction *direction);
@@ -3354,9 +3355,9 @@ struct xkb_event_components {
  * [event]: @ref xkb_event
  * [state components]: @ref xkb_state_component
  * [event components]: @ref xkb_event_components
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_event_get_components(const struct xkb_event *event,
                          struct xkb_event_components *components);
 
@@ -3487,9 +3488,9 @@ struct xkb_event_pointer_motion {
  *
  * [pointer motion]: @ref xkb_event_pointer_motion
  * [event]: @ref xkb_event
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_event_get_pointer_motion(const struct xkb_event *event,
                              struct xkb_event_pointer_motion *motion);
 
@@ -3606,9 +3607,9 @@ struct xkb_event_pointer_button {
  *
  * [pointer button]: @ref xkb_event_pointer_button
  * [event]: @ref xkb_event
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_event_get_pointer_button(const struct xkb_event *event,
                              struct xkb_event_pointer_button *button);
 
@@ -3636,9 +3637,9 @@ xkb_event_get_pointer_button(const struct xkb_event *event,
  * @since 1.14.0
  *
  * [event]: @ref xkb_event
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_event_get_virtual_console(const struct xkb_event *event,
                               int8_t *index_or_offset, bool *is_offset);
 
@@ -3731,8 +3732,8 @@ struct xkb_events_config {
  *   Configuration to control the collection behavior, or `NULL` for
  *   the defaults: an `xkb_events_config` struct with `size` set per
  *   @ref abi-struct-contract and all other fields zeroed.
- * @param[out] error
- *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @pre @p config must point to a zero-initialized struct with
  * [`config->size`](@ref xkb_events_config::size) set per
@@ -3740,7 +3741,7 @@ struct xkb_events_config {
  *
  * @returns A new [event] collection, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution.
@@ -3756,12 +3757,13 @@ struct xkb_events_config {
  * @since 1.14.0
  *
  * [event]: @ref xkb_event
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_events *
 xkb_events_new(struct xkb_context *context,
                const struct xkb_events_config *config,
-               enum xkb_error_code *error);
+               enum xkb_status *status);
 
 /**
  * Take a new reference on an [event](@ref xkb_event) collection object.
@@ -3950,8 +3952,8 @@ struct xkb_machine_builder_config {
  *   Configuration to control the builder behavior, or `NULL` for
  *   the defaults: an `xkb_machine_builder_config` struct with `size`
  *   set per @ref abi-struct-contract and all other fields zeroed.
- * @param[out] error
- *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @pre @p config must point to a zero-initialized struct with
  * [`config->size`](@ref xkb_machine_builder_config::size) set per
@@ -3959,7 +3961,7 @@ struct xkb_machine_builder_config {
  *
  * @returns A new `xkb_machine` builder object, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution.
@@ -3974,12 +3976,13 @@ struct xkb_machine_builder_config {
  *
  * @since 1.14.0
  *
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_machine_builder *
 xkb_machine_builder_new(struct xkb_keymap *keymap,
                         const struct xkb_machine_builder_config *config,
-                        enum xkb_error_code *error);
+                        enum xkb_status *status);
 
 /**
  * Take a new reference on an `xkb_machine` builder object.
@@ -4171,9 +4174,9 @@ struct xkb_machine_builder_a11y_update {
  *
  * @since 1.14.0
  *
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_machine_builder_update_a11y(
     struct xkb_machine_builder *builder,
     const struct xkb_machine_builder_a11y_update *update
@@ -4255,7 +4258,7 @@ struct xkb_machine_builder_mods_remap_update {
  * [`update->size`](@ref xkb_machine_builder_mods_remap_update::size)
  * set per @ref abi-struct-contract.
  *
- * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code].
  * Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution.
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
@@ -4264,8 +4267,10 @@ struct xkb_machine_builder_mods_remap_update {
  * @sa `struct xkb_machine_builder_mods_remap_update`
  *
  * @since 1.14.0
+ *
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_machine_builder_update_mods_remap(
     struct xkb_machine_builder *builder,
     const struct xkb_machine_builder_mods_remap_update *update
@@ -4394,9 +4399,9 @@ struct xkb_machine_builder_shortcut_override_update {
  *
  * @since 1.14.0
  *
- * [error code]: @ref xkb_error_code
+ * [error code]: @ref xkb_status
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_machine_builder_update_shortcut_override(
     struct xkb_machine_builder *builder,
     const struct xkb_machine_builder_shortcut_override_update *update
@@ -4415,12 +4420,12 @@ xkb_machine_builder_update_shortcut_override(
  * @param[in] builder
  *   The [builder](@ref xkb_machine_builder) object from which
  *   to create the state machine.
- * @param[out] error
- *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @returns A new keyboard state machine object, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
@@ -4429,11 +4434,12 @@ xkb_machine_builder_update_shortcut_override(
  *
  * @since 1.14.0
  *
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_machine *
 xkb_machine_new(const struct xkb_machine_builder *builder,
-                enum xkb_error_code *error);
+                enum xkb_status *status);
 
 /**
  * Take a new reference on a `xkb_machine` object.
@@ -4515,7 +4521,7 @@ xkb_machine_get_keymap(const struct xkb_machine *machine);
  * [keyboard events]: @ref xkb_event
  * [event batch]: @ref xkb_events
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_machine_process_key(struct xkb_machine *machine,
                         xkb_keycode_t key, enum xkb_key_direction direction,
                         struct xkb_events *events);
@@ -4871,7 +4877,7 @@ struct xkb_synthetic_update {
  * [keyboard events]: @ref xkb_event
  * [event batch]: @ref xkb_events
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_machine_process_synthetic(struct xkb_machine *machine,
                               const struct xkb_synthetic_update *update,
                               struct xkb_events *events);
@@ -4971,12 +4977,12 @@ enum xkb_state_mode {
  *   The keymap which the state will use.
  * @param[in] mode
  *   The [state mode][mode] to use.
- * @param[out] error
- *     Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *     Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @returns A new keyboard state object, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
@@ -4987,12 +4993,13 @@ enum xkb_state_mode {
  * @since 1.14.0
  *
  * [mode]: @ref xkb_state_mode
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_state *
 xkb_state_new_with_mode(struct xkb_keymap *keymap,
                         enum xkb_state_mode mode,
-                        enum xkb_error_code *error);
+                        enum xkb_status *status);
 
 /**
  * Create a new keyboard state object as an observer of an `xkb_machine`.
@@ -5011,12 +5018,12 @@ xkb_state_new_with_mode(struct xkb_keymap *keymap,
  *
  * @param[in] machine
  *   The [state machine] whose keymap the new state will use.
- * @param[out] error
- *   Pointer to store the resulting [error code], or `NULL` if not needed.
+ * @param[out] status
+ *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @returns A new keyboard state object, or `NULL` on failure.
  *
- * @post if `error` is not `NULL`, `*error` is set to `::XKB_SUCCESS`
+ * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
  * Possible errors are:
  * - `::XKB_ERROR_ALLOCATION_FAILURE`
@@ -5028,11 +5035,12 @@ xkb_state_new_with_mode(struct xkb_keymap *keymap,
  * @since 1.14.0
  *
  * [state machine]: @ref xkb_machine
- * [error code]: @ref xkb_error_code
+ * [status code]: @ref xkb_status
+ * [error code]: @ref xkb_status
  */
 XKB_EXPORT struct xkb_state *
 xkb_state_new_from_machine(const struct xkb_machine *machine,
-                           enum xkb_error_code *error);
+                           enum xkb_status *status);
 
 /**
  * Create a new keyboard state object.
@@ -5169,7 +5177,7 @@ xkb_state_update_mask(struct xkb_state *state,
  * - `::XKB_SUCCESS` on success;
  * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
  *   was not created with `::XKB_STATE_MODE_SERVER_QUERY` or `xkb_state_new()`.
- * - Otherwise another [error code](@ref xkb_error_code).
+ * - Otherwise another [error code](@ref xkb_status).
  *
  * @note This function returns an error code rather than a state component
  * delta (unlike other `xkb_state_update_*()` functions), in order to align
@@ -5180,7 +5188,7 @@ xkb_state_update_mask(struct xkb_state *state,
  *
  * @since 1.14.0
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_state_update_event(struct xkb_state *state,
                        const struct xkb_event *event,
                        enum xkb_state_component *changed);
@@ -5285,7 +5293,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * - `::XKB_SUCCESS` on success;
  * - `::XKB_ERROR_UNEXPECTED_STATE_MODE` without updating the state if @p state
  *   was not created with `::XKB_STATE_MODE_SERVER` or `xkb_state_new()`.
- * - Otherwise another [error code](@ref xkb_error_code).
+ * - Otherwise another [error code](@ref xkb_status).
  *
  * @note This function returns an error code rather than a state component
  * delta (unlike other `xkb_state_update_*()` functions), in order to align
@@ -5298,7 +5306,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  *
  * @since 1.14.0
  */
-XKB_EXPORT enum xkb_error_code
+XKB_EXPORT enum xkb_status
 xkb_state_update_synthetic(struct xkb_state *state,
                            const struct xkb_synthetic_update *update,
                            enum xkb_state_component *changed);

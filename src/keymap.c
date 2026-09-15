@@ -258,7 +258,7 @@ xkb_keymap_new_from_file(struct xkb_context *ctx,
 
 /** Check ABI compatibility */
 // NOLINTBEGIN(bugprone-assignment-in-selection-statement)
-static enum xkb_error_code
+static enum xkb_status
 check_keymap_serialize_abi(
     struct xkb_context * restrict ctx,
     const char * restrict func,
@@ -266,25 +266,25 @@ check_keymap_serialize_abi(
     const struct xkb_keymap_serialize_result * restrict result
 )
 {
-    enum xkb_error_code error;
-    if ((error = xkb_check_keymap_abi(config)) ||
-        (error = xkb_check_keymap_abi(result))) {
-        xkb_log_abi_error(ctx, func, error);
+    enum xkb_status status;
+    if ((status = xkb_check_keymap_abi(config)) ||
+        (status = xkb_check_keymap_abi(result))) {
+        xkb_log_abi_error(ctx, func, status);
     }
-    return error;
+    return status;
 }
 // NOLINTEND(bugprone-assignment-in-selection-statement)
 
-enum xkb_error_code
+enum xkb_status
 xkb_keymap_serialize(const struct xkb_keymap *keymap,
                      const struct xkb_keymap_serialize_config *config,
                      struct xkb_keymap_serialize_result *result)
 {
     /* Check ABI compatibility */
-    const enum xkb_error_code error =
+    const enum xkb_status status =
         check_keymap_serialize_abi(keymap->ctx, __func__, config, result);
-    if (error)
-        return error;
+    if (status != XKB_SUCCESS)
+        return status;
 
     struct xkb_keymap_serialize_config new_config = *config;
 
@@ -694,7 +694,7 @@ struct xkb_keymap_key_iterator {
     bool skip_unbound;
 };
 
-static enum xkb_error_code
+static enum xkb_status
 keymap_key_iterator_config_check(
     struct xkb_context * restrict ctx,
     const char *func,
@@ -702,7 +702,7 @@ keymap_key_iterator_config_check(
 )
 {
     /* Check ABI compatibility */
-    const enum xkb_error_code abi_error = xkb_check_keymap_abi(config);
+    const enum xkb_status abi_error = xkb_check_keymap_abi(config);
     if (abi_error) {
         xkb_log_abi_error(ctx, func, abi_error);
         return abi_error;
@@ -754,7 +754,7 @@ struct xkb_keymap_key_iterator *
 xkb_keymap_key_iterator_new(
     struct xkb_keymap * restrict keymap,
     const struct xkb_keymap_key_iterator_config * restrict config,
-    enum xkb_error_code * restrict error
+    enum xkb_status * restrict status
 )
 {
     /* Handle default configuration */
@@ -765,11 +765,11 @@ xkb_keymap_key_iterator_new(
         config = &default_config;
 
     /* Check input */
-    const enum xkb_error_code error_ =
+    const enum xkb_status status_ =
         keymap_key_iterator_config_check(keymap->ctx, __func__, config);
-    if (error_ != XKB_SUCCESS) {
-        if (error)
-            *error = error_;
+    if (status_ != XKB_SUCCESS) {
+        if (status)
+            *status = status_;
         return NULL;
     }
 
@@ -777,13 +777,13 @@ xkb_keymap_key_iterator_new(
     if (!iter) {
         log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                       "Could not allocate a keymap key iterator.\n");
-        if (error)
-            *error = XKB_ERROR_ALLOCATION_FAILURE;
+        if (status)
+            *status = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
     }
 
-    if (error)
-        *error = XKB_SUCCESS;
+    if (status)
+        *status = XKB_SUCCESS;
 
     iter->keymap = xkb_keymap_ref(keymap);
     iter->refcnt = 1;
@@ -793,18 +793,18 @@ xkb_keymap_key_iterator_new(
     return iter;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_keymap_key_iterator_reset(
     struct xkb_keymap_key_iterator * restrict iter,
     const struct xkb_keymap_key_iterator_config * restrict config
 )
 {
     if (config) {
-        const enum xkb_error_code error = keymap_key_iterator_config_check(
+        const enum xkb_status status = keymap_key_iterator_config_check(
             iter->keymap->ctx, __func__, config
         );
-        if (error != XKB_SUCCESS)
-            return error;
+        if (status != XKB_SUCCESS)
+            return status;
         keymap_key_iterator_init(iter, config);
     } else if (iter->keymap->num_keys == 0) {
         iter->next = NULL;

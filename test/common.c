@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "darray.h"
@@ -89,14 +89,14 @@ consume_events(struct xkb_machine *sm,
                xkb_keycode_t *kc)
 {
     const struct xkb_event *event;
-    enum xkb_error_code error;
+    enum xkb_status status;
     enum xkb_state_component changed;
     while ((event = xkb_events_next(events))) {
         const enum xkb_event_type type = xkb_event_get_type(event);
 
         /* Only components events may update the base state */
-        error = xkb_state_update_event(state, event, &changed);
-        assert(error == XKB_SUCCESS);
+        status = xkb_state_update_event(state, event, &changed);
+        assert(status == XKB_SUCCESS);
         assert(type == XKB_EVENT_TYPE_STATE_COMPONENTS || !changed);
 
         switch (type) {
@@ -105,8 +105,8 @@ consume_events(struct xkb_machine *sm,
             break;
         case XKB_EVENT_TYPE_KEY: {
             enum xkb_key_direction direction;
-            error = xkb_event_get_keycode(event, kc, &direction);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_keycode(event, kc, &direction);
+            assert(status == XKB_SUCCESS);
             if (flags & UNTIL_KEY_EVENT) {
                 /* Stop on key event */
                 return true;
@@ -117,24 +117,24 @@ consume_events(struct xkb_machine *sm,
             struct xkb_event_components components = {
                 .size = sizeof(components)
             };
-            error = xkb_event_get_components(event, &components);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_components(event, &components);
+            assert(status == XKB_SUCCESS);
             break;
         }
         case XKB_EVENT_TYPE_POINTER_MOTION: {
             struct xkb_event_pointer_motion motion = {
                 .size = sizeof(motion)
             };
-            error = xkb_event_get_pointer_motion(event, &motion);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_pointer_motion(event, &motion);
+            assert(status == XKB_SUCCESS);
             break;
         }
         case XKB_EVENT_TYPE_POINTER_BUTTON: {
             struct xkb_event_pointer_button button = {
                 .size = sizeof(button)
             };
-            error = xkb_event_get_pointer_button(event, &button);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_pointer_button(event, &button);
+            assert(status == XKB_SUCCESS);
             break;
         }
         case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
@@ -143,9 +143,9 @@ consume_events(struct xkb_machine *sm,
         case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE: {
             int8_t index_or_offset;
             bool is_offset;
-            error = xkb_event_get_virtual_console(event, &index_or_offset,
-                                                  &is_offset);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_virtual_console(event, &index_or_offset,
+                                                   &is_offset);
+            assert(status == XKB_SUCCESS);
             break;
         }
         default:

@@ -19,7 +19,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-features.h"
 
 #ifndef UINT32_WIDTH
@@ -444,7 +444,7 @@ static const uint32_t xkb_compose_feed_result_values[] = {
 };
 #endif
 
-static const uint32_t xkb_error_code_values[] = {
+static const uint32_t xkb_status_values[] = {
     (uint32_t)XKB_ERROR_INVALID,
     XKB_SUCCESS,
     XKB_ERROR_UNSUPPORTED_MODIFIER_MASK,
@@ -469,7 +469,7 @@ static const uint32_t xkb_error_code_values[] = {
 
 static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_FEATURE,
-    XKB_FEATURE_ENUM_ERROR_CODE,
+    XKB_FEATURE_ENUM_STATUS,
     XKB_FEATURE_ENUM_CONTEXT_FLAGS,
     XKB_FEATURE_ENUM_LOG_LEVEL,
     XKB_FEATURE_ENUM_KEYSYM_FLAGS,

@@ -13,9 +13,9 @@
 
 void
 xkb_log_abi_error(struct xkb_context * restrict ctx,
-                  const char * restrict func, enum xkb_error_code error)
+                  const char * restrict func, enum xkb_status status)
 {
-    switch (error) {
+    switch (status) {
     case XKB_ERROR_ABI_INVALID_STRUCT_SIZE:
         log_err(ctx, XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
                 "%s: ABI error: unsupported versioned struct\n", func);

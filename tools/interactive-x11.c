@@ -16,7 +16,7 @@
 #include <xcb/xkb.h>
 #include <xcb/xproto.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-x11.h"
 #include "xkbcommon/xkbcommon-compose.h"
@@ -201,16 +201,16 @@ update_keymap(struct keyboard *kbd)
                 if (!kbd->events)
                     return -1;
             }
-            enum xkb_error_code error = xkb_machine_process_synthetic(
+            enum xkb_status status = xkb_machine_process_synthetic(
                 kbd->machine, &update, kbd->events
             );
-            if (error != XKB_SUCCESS)
-                return error;
+            if (status != XKB_SUCCESS)
+                return status;
             const struct xkb_event *event;
             while ((event = xkb_events_next(kbd->events))) {
-                error = xkb_state_update_event(kbd->state, event, NULL);
-                if (error != XKB_SUCCESS)
-                    return error;
+                status = xkb_state_update_event(kbd->state, event, NULL);
+                if (status != XKB_SUCCESS)
+                    return status;
             }
         } else {
             return xkb_state_update_synthetic(kbd->state, &update, NULL);

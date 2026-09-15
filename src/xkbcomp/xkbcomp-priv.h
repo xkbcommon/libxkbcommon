@@ -127,7 +127,7 @@ struct xkb_keymap_info {
     pending_computation_array *pending_computations;
 };
 
-enum xkb_error_code
+enum xkb_status
 text_v1_keymap_serialize(
         const struct xkb_keymap *keymap,
         const struct xkb_keymap_serialize_config *config,

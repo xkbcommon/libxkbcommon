@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "context.h"
 #include "features/enums.h"
 #include "keymap.h"
@@ -61,7 +61,7 @@ error:
     return NULL;
 }
 
-static enum xkb_error_code
+static enum xkb_status
 rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
                             const char *option, xkb_layout_mask_t layouts)
 {
@@ -141,10 +141,10 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
 
     /* Append layout-specific options entries */
     for (size_t k = 0; k < options_len; k++) {
-        const enum xkb_error_code error =
+        const enum xkb_status status =
             rmlvo_builder_append_option(rmlvo, options[k], layout_mask);
 
-        if (error == XKB_ERROR_ALLOCATION_FAILURE)
+        if (status == XKB_ERROR_ALLOCATION_FAILURE)
             return false;
     }
 
@@ -155,10 +155,10 @@ bool
 xkb_rmlvo_builder_append_option(struct xkb_rmlvo_builder *rmlvo,
                                 const char *option)
 {
-    const enum xkb_error_code error = rmlvo_builder_append_option(
+    const enum xkb_status status = rmlvo_builder_append_option(
         rmlvo, option, (xkb_layout_mask_t)XKB_OPTION_LAYOUT_MASK_GLOBAL
     );
-    return (error == XKB_SUCCESS);
+    return (status == XKB_SUCCESS);
 }
 
 struct xkb_rmlvo_builder *

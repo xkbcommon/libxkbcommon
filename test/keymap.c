@@ -741,17 +741,17 @@ test_key_iterator(void)
     // NOLINTBEGIN(readability-redundant-nested-if)
     // NOLINTBEGIN(readability-trivial-switch)
     //! [xkb_keymap_key_iterator_new_example]
-    enum xkb_error_code error;
+    enum xkb_status status;
     struct xkb_keymap_key_iterator_config config = {
         .size = sizeof(config),
         .flags = XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
     };
     struct xkb_keymap_key_iterator *iter =
-        xkb_keymap_key_iterator_new(keymap, &config, &error);
+        xkb_keymap_key_iterator_new(keymap, &config, &status);
     if (!iter) {
         // handle errors
-        assert(error != XKB_SUCCESS);
-        switch(error) {
+        assert(status != XKB_SUCCESS);
+        switch(status) {
         // ...
         default:
             exit(EXIT_FAILURE);
@@ -769,8 +769,8 @@ test_key_iterator(void)
 
     /* Reject invalid flags */
     config.flags = UINT32_MAX;
-    assert(!xkb_keymap_key_iterator_new(keymap, &config, &error) &&
-           error == XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
+    assert(!xkb_keymap_key_iterator_new(keymap, &config, &status) &&
+           status == XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
 
     xkb_keymap_unref(keymap);
 
@@ -861,8 +861,8 @@ test_key_iterator(void)
             fprintf(stderr, "------\n*** %s: #%zu, flags: 0x%x ***\n",
                     __func__, t, flags[f]);
             config.flags = (uint32_t)flags[f];
-            iter = xkb_keymap_key_iterator_new(keymap, &config, &error);
-            assert(iter && error == XKB_SUCCESS);
+            iter = xkb_keymap_key_iterator_new(keymap, &config, &status);
+            assert(iter && status == XKB_SUCCESS);
             config.flags = -1;
             assert(xkb_keymap_key_iterator_reset(iter, &config) ==
                    XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
@@ -1037,7 +1037,7 @@ test_serialize_layouts_subset(bool update_output_files)
             .layouts = tests[t].layouts,
         };
         struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
-        const enum xkb_error_code ret =
+        const enum xkb_status ret =
             xkb_keymap_serialize(keymap, &config, &result);
         assert(ret ^ !!result.serialized);
         assert(ret ^ !!tests[t].expected);

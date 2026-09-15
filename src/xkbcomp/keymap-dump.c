@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 #include "atom.h"
@@ -1904,7 +1904,7 @@ write_symbols(const struct xkb_keymap *keymap,
     return true;
 }
 
-static enum xkb_error_code
+static enum xkb_status
 write_keymap(const struct xkb_keymap *keymap,
              const struct xkb_keymap_serialize_config *config,
              struct buf *buf, struct xkb_keymap_serialize_result *result)
@@ -1937,7 +1937,7 @@ write_keymap(const struct xkb_keymap *keymap,
     return ok ? XKB_SUCCESS : -1;
 }
 
-enum xkb_error_code
+enum xkb_status
 text_v1_keymap_serialize(
         const struct xkb_keymap *keymap,
         const struct xkb_keymap_serialize_config *config,
@@ -1946,12 +1946,12 @@ text_v1_keymap_serialize(
 {
     struct buf buf = { NULL, 0, 0 };
 
-    const enum xkb_error_code error =
+    const enum xkb_status status =
         write_keymap(keymap, config, &buf, result);
-    if (error != XKB_SUCCESS) {
+    if (status != XKB_SUCCESS) {
         free(buf.buf);
         result->serialized = NULL;
-        return error;
+        return status;
     }
 
     result->serialized = buf.buf;

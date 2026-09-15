@@ -1,6 +1,6 @@
-# Extracted Enums from: include/xkbcommon/xkbcommon-errors.h
+# Extracted Enums from: include/xkbcommon/xkbcommon-status.h
 
-xkb_error_code:
+xkb_status:
   - name: XKB_ERROR_INVALID
     value: -1
   - name: XKB_SUCCESS

@@ -3,7 +3,7 @@
 xkb_feature:
   - name: XKB_FEATURE_ENUM_FEATURE
     value: 1
-  - name: XKB_FEATURE_ENUM_ERROR_CODE
+  - name: XKB_FEATURE_ENUM_STATUS
     value: 1000
   - name: XKB_FEATURE_ENUM_CONTEXT_FLAGS
     value: 3200

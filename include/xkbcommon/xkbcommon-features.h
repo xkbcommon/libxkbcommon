@@ -103,11 +103,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_FEATURE = 1,
     /**
-     * The enumeration @ref xkb_error_code
+     * The enumeration @ref xkb_status
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_ERROR_CODE = 1000,
+    XKB_FEATURE_ENUM_STATUS = 1000,
     /**
      * The enumeration @ref xkb_context_flags
      *

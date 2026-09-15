@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
 
@@ -83,7 +83,7 @@ xkb_state_update_enabled_controls(struct xkb_state *state,
  *
  * [global keyboard controls]: @ref xkb_keyboard_control_flags
  */
-static enum xkb_error_code
+static enum xkb_status
 xkb_machine_update_enabled_controls(struct xkb_machine *machine,
                                     struct xkb_events *events,
                                     enum xkb_keyboard_control_flags affect,
@@ -145,7 +145,7 @@ xkb_machine_update_enabled_controls(struct xkb_machine *machine,
  *
  * @memberof xkb_machine
  */
-static enum xkb_error_code
+static enum xkb_status
 xkb_machine_update_latched_locked(struct xkb_machine *machine,
                                   struct xkb_events *events,
                                   xkb_mod_mask_t affect_latched_mods,
@@ -190,23 +190,23 @@ test_machine_builder(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, NULL, NULL);
     assert(builder);
     xkb_machine_builder_unref(builder);
-    enum xkb_error_code error;
-    builder = xkb_machine_builder_new(keymap, NULL, &error);
-    assert(builder && error == XKB_SUCCESS);
+    enum xkb_status status;
+    builder = xkb_machine_builder_new(keymap, NULL, &status);
+    assert(builder && status == XKB_SUCCESS);
     xkb_machine_builder_unref(builder);
     struct xkb_machine_builder_config config = { .size = sizeof(config) };
     config.builder_flags = UINT32_MAX;
     assert(!xkb_machine_builder_new(keymap, &config, NULL));
-    assert(!xkb_machine_builder_new(keymap, &config, &error) &&
-           error == XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS);
+    assert(!xkb_machine_builder_new(keymap, &config, &status) &&
+           status == XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS);
     config.builder_flags = 0;
     config.machine_flags = UINT32_MAX;
     assert(!xkb_machine_builder_new(keymap, &config, NULL));
-    assert(!xkb_machine_builder_new(keymap, &config, &error) &&
-           error == XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS);
+    assert(!xkb_machine_builder_new(keymap, &config, &status) &&
+           status == XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS);
     config.machine_flags = 0;
-    builder = xkb_machine_builder_new(keymap, &config, &error);
-    assert(builder && error == XKB_SUCCESS);
+    builder = xkb_machine_builder_new(keymap, &config, &status);
+    assert(builder && status == XKB_SUCCESS);
 
     struct xkb_machine_builder_a11y_update a11y_update = {
         .size = sizeof(a11y_update)
@@ -319,7 +319,7 @@ test_state_update_abi(struct xkb_context *ctx)
         } root;
         struct params components;
         struct params layout_policy;
-        enum xkb_error_code error;
+        enum xkb_status status;
     } tests[] = {
         /*
          * Too small
@@ -329,37 +329,37 @@ test_state_update_abi(struct xkb_context *ctx)
             .root = { 0, 0 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { 1, 0 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 0, .enabled = true },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 1, .enabled = true },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .size = 0, .enabled = true },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .size = 1, .enabled = true },
-            .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
+            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
 
         /*
@@ -370,7 +370,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -379,7 +379,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .enabled = true
             },
             .layout_policy = { .enabled = false },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -388,7 +388,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .size = sizeof(struct xkb_layout_policy_update),
                 .enabled = true
             },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
 
         /*
@@ -399,7 +399,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .root = { sizeof(struct xkb_synthetic_update), 0, .reserved0 = 1 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
 
         /*
@@ -410,7 +410,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .root = { sizeof(struct xkb_state_update_newer), 0 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -419,7 +419,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .enabled = true
             },
             .layout_policy = { .enabled = false },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -428,7 +428,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .size = sizeof(struct xkb_layout_policy_update_newer),
                 .enabled = true
             },
-            .error = XKB_SUCCESS,
+            .status = XKB_SUCCESS,
         },
 
         /*
@@ -442,7 +442,7 @@ test_state_update_abi(struct xkb_context *ctx)
             },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
             .root = {
@@ -451,7 +451,7 @@ test_state_update_abi(struct xkb_context *ctx)
             },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -461,7 +461,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .extra = (UINT32_C(1) << 31),
             },
             .layout_policy = { .enabled = false },
-            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
@@ -471,7 +471,7 @@ test_state_update_abi(struct xkb_context *ctx)
                 .size = sizeof(struct xkb_layout_policy_update_newer),
                 .extra = (UINT32_C(1) << 31),
             },
-            .error = XKB_ERROR_ABI_FORWARD_COMPAT,
+            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
     };
 
@@ -504,14 +504,14 @@ test_state_update_abi(struct xkb_context *ctx)
         };
         assert_eq(
             "xkb_state_update_synthetic",
-            tests[s].error,
+            tests[s].status,
             xkb_state_update_synthetic(state, (struct xkb_synthetic_update *)&update,
                                        NULL),
             "%d"
         );
         assert_eq(
             "xkb_machine_process_synthetic",
-            tests[s].error,
+            tests[s].status,
             xkb_machine_process_synthetic(sm, (struct xkb_synthetic_update *)&update,
                                           events),
             "%d"
@@ -541,15 +541,15 @@ test_state_update_basics(struct xkb_context *ctx)
     /* Unconsummed events: xkb_machine_process_key */
     struct xkb_events * events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
-    enum xkb_error_code error = xkb_machine_process_key(
+    enum xkb_status status = xkb_machine_process_key(
         sm, KEY_A + EVDEV_OFFSET, XKB_KEY_DOWN, events
     );
-    assert(error == XKB_SUCCESS);
+    assert(status == XKB_SUCCESS);
     /* Events are not consumed before next call */
-    error = xkb_machine_process_key(
+    status = xkb_machine_process_key(
         sm, KEY_A + EVDEV_OFFSET, XKB_KEY_UP, events
     );
-    assert(error == XKB_SUCCESS);
+    assert(status == XKB_SUCCESS);
     /* Press event is lost */
     struct xkb_event event = {
         .ctx = ctx,
@@ -606,24 +606,24 @@ test_state_update_basics(struct xkb_context *ctx)
         }
     };
     struct xkb_state * const state1 =
-        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER, &error);
-    assert(state1 && error == XKB_SUCCESS);
+        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER, &status);
+    assert(state1 && status == XKB_SUCCESS);
     enum xkb_state_component changed = 0;
-    error = xkb_state_update_synthetic(state1, &state_update, &changed);
-    assert(error == XKB_SUCCESS && !changed);
-    error = xkb_machine_process_synthetic(sm, &state_update, events);
-    assert(error == XKB_SUCCESS);
+    status = xkb_state_update_synthetic(state1, &state_update, &changed);
+    assert(status == XKB_SUCCESS && !changed);
+    status = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(status == XKB_SUCCESS);
     check_events_(events, event); /* No update because unset components mask  */
 
     components_update.components = event.components.changed;
-    error = xkb_state_update_synthetic(state1, &state_update, &changed);
-    assert(error == XKB_SUCCESS && changed == event.components.changed);
-    error = xkb_machine_process_synthetic(sm, &state_update, events);
-    assert(error == XKB_SUCCESS);
+    status = xkb_state_update_synthetic(state1, &state_update, &changed);
+    assert(status == XKB_SUCCESS && changed == event.components.changed);
+    status = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(status == XKB_SUCCESS);
     event.type = XKB_EVENT_TYPE_STATE_COMPONENTS;
     check_events_(events, event);
-    struct xkb_state * const state2 = xkb_state_new_from_machine(sm, &error);
-    assert(state2 && error == XKB_SUCCESS);
+    struct xkb_state * const state2 = xkb_state_new_from_machine(sm, &status);
+    assert(state2 && status == XKB_SUCCESS);
 
     struct xkb_state * states[] = {state1, state2};
     for (size_t s = 0; s < ARRAY_SIZE(states); s++) {
@@ -659,12 +659,12 @@ test_state_update_basics(struct xkb_context *ctx)
     events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
     components_update.components = XKB_STATE_MODS_LATCHED;
-    error = xkb_machine_process_synthetic(sm, &state_update, events);
-    assert(error == XKB_SUCCESS);
+    status = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(status == XKB_SUCCESS);
     /* Events are not consumed before next call */
     components_update.components = XKB_STATE_MODS_LOCKED;
-    error = xkb_machine_process_synthetic(sm, &state_update, events);
-    assert(error == XKB_SUCCESS);
+    status = xkb_machine_process_synthetic(sm, &state_update, events);
+    assert(status == XKB_SUCCESS);
     /* First component event is lost */
     event = (struct xkb_event) {
         .ctx = ctx,
@@ -703,9 +703,9 @@ update_key(struct xkb_machine *sm,
     enum xkb_state_component all_changes = 0;
     while ((event = xkb_events_next(events))) {
         enum xkb_state_component changed;
-        enum xkb_error_code error =
+        enum xkb_status status =
             xkb_state_update_event(state, event, &changed);
-        assert(error == XKB_SUCCESS);
+        assert(status == XKB_SUCCESS);
         all_changes |= changed;
 
         switch (xkb_event_get_type(event)) {
@@ -716,8 +716,8 @@ update_key(struct xkb_machine *sm,
             struct xkb_event_components components = {
                 .size = sizeof(components)
             };
-            error = xkb_event_get_components(event, &components);
-            assert(error == XKB_SUCCESS);
+            status = xkb_event_get_components(event, &components);
+            assert(status == XKB_SUCCESS);
             assert_eq("changed", changed, components.changed, "%d");
             assert_eq("depressed mods",
                       xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED),
@@ -779,9 +779,9 @@ update_controls(struct xkb_machine *sm,
         enum xkb_state_component changed_acc = 0;
         while ((event = xkb_events_next(events))) {
             enum xkb_state_component changed;
-            const enum xkb_error_code error =
+            const enum xkb_status status =
                 xkb_state_update_event(state, event, &changed);
-            assert(error == XKB_SUCCESS);
+            assert(status == XKB_SUCCESS);
             changed_acc = changed;
         }
         return changed_acc;
@@ -812,13 +812,13 @@ test_group_wrap(struct xkb_context *ctx)
         xkb_machine_builder_new(keymap, NULL, NULL);
     assert(builder);
 
-    enum xkb_error_code error;
-    struct xkb_machine * const sm = xkb_machine_new(builder, &error);
-    assert(sm && error == XKB_SUCCESS);
+    enum xkb_status status;
+    struct xkb_machine * const sm = xkb_machine_new(builder, &status);
+    assert(sm && status == XKB_SUCCESS);
     xkb_machine_builder_unref(builder);
 
-    struct xkb_state * const state = xkb_state_new_from_machine(sm, &error);
-    assert(state && error == XKB_SUCCESS);
+    struct xkb_state * const state = xkb_state_new_from_machine(sm, &status);
+    assert(state && status == XKB_SUCCESS);
 
     struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
@@ -897,8 +897,8 @@ test_group_wrap(struct xkb_context *ctx)
         };
         assert(xkb_machine_process_synthetic(sm, &req, events) == XKB_SUCCESS);
         while ((event = xkb_events_next(events))) {
-            error = xkb_state_update_event(state, event, NULL);
-            assert(error == XKB_SUCCESS);
+            status = xkb_state_update_event(state, event, NULL);
+            assert(status == XKB_SUCCESS);
         }
         assert_eq("unexpected effective group", tests[t].expected_group,
                   xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
@@ -5833,9 +5833,9 @@ test_xkb_machine_builder_mods_remap_update(struct xkb_context *context)
         .source = ctrl | alt,
         .target = level3
     };
-    const enum xkb_error_code error =
+    const enum xkb_status status =
         xkb_machine_builder_update_mods_remap(builder, &update);
-    if (error != XKB_SUCCESS) {
+    if (status != XKB_SUCCESS) {
         // handle error
         assert(!"error");
     }
@@ -5935,9 +5935,9 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .affect_mods = mods,
                 .mods = mods,
             };
-            const enum xkb_error_code error =
+            const enum xkb_status status =
                 xkb_machine_builder_update_shortcut_override(builder, &update);
-            if (error != XKB_SUCCESS) {
+            if (status != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
             }
@@ -5971,9 +5971,9 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                     .affect_mods = mods,
                     .mods = mods,
                 };
-                const enum xkb_error_code error =
+                const enum xkb_status status =
                     xkb_machine_builder_update_shortcut_override(builder, &update);
-                if (error != XKB_SUCCESS) {
+                if (status != XKB_SUCCESS) {
                     // handle error
                     assert(!"error");
                 }
@@ -6005,9 +6005,9 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .affect_mods = ctrl | alt,
                 .mods = ctrl | alt,
             };
-            enum xkb_error_code error =
+            enum xkb_status status =
                 xkb_machine_builder_update_shortcut_override(builder, &update);
-            if (error != XKB_SUCCESS) {
+            if (status != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
             }
@@ -6018,8 +6018,8 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
                 .affect_mods = super,
                 .mods = super,
             };
-            error = xkb_machine_builder_update_shortcut_override(builder, &update);
-            if (error != XKB_SUCCESS) {
+            status = xkb_machine_builder_update_shortcut_override(builder, &update);
+            if (status != XKB_SUCCESS) {
                 // handle error
                 assert(!"error");
             }
@@ -6133,16 +6133,16 @@ main(void)
     test_machine_builder(context);
     test_initial_derived_values(context);
 
-    enum xkb_error_code error;
+    enum xkb_status status;
     static const struct xkb_events_config config = {
         .size = sizeof(config),
         .flags = UINT32_MAX
     };
     assert(!xkb_events_new(context, &config, NULL));
-    assert(!xkb_events_new(context, &config, &error) &&
-           error == XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS);
-    struct xkb_events *events = xkb_events_new(context, NULL, &error);
-    assert(events && error == XKB_SUCCESS);
+    assert(!xkb_events_new(context, &config, &status) &&
+           status == XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS);
+    struct xkb_events *events = xkb_events_new(context, NULL, &status);
+    assert(events && status == XKB_SUCCESS);
     assert(!xkb_events_next(events));
     xkb_events_unref(events);
 

@@ -57,7 +57,7 @@ enum {
  * @returns `::XKB_SUCCESS` if the struct is valid and safe to use, otherwise
  * an error code indicating the kind of ABI violation.
  */
-static inline enum xkb_error_code
+static inline enum xkb_status
 xkb_check_versioned_struct_size_(size_t v1_size, size_t min_size,
                                  size_t callee_meaningful_bytes,
                                  size_t callee_size, size_t caller_size,
@@ -115,4 +115,4 @@ xkb_check_versioned_struct_size_(size_t v1_size, size_t min_size,
 
 void
 xkb_log_abi_error(struct xkb_context * restrict ctx,
-                  const char * restrict func, enum xkb_error_code error);
+                  const char * restrict func, enum xkb_status status);
