@@ -4529,7 +4529,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * Latched and locked state components for an out-of-band state update.
  *
  * Carries the modifier, layout and boolean controls assignments for
- * `xkb_state_update`.
+ * `xkb_synthetic_update`.
  * Used to update latched and locked modifiers and layouts atomically via
  * `xkb_machine::xkb_machine_process_synthetic()`.
  *
@@ -4543,7 +4543,7 @@ xkb_machine_process_key(struct xkb_machine *machine,
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `struct xkb_state_update`
+ * @sa `struct xkb_synthetic_update`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
@@ -4677,7 +4677,7 @@ struct xkb_state_components_update {
  * @enum xkb_layout_out_of_range_policy
  * Policies defining how to bring out-of-range [layout indices] into range.
  *
- * @sa `struct xkb_state_update`
+ * @sa `struct xkb_synthetic_update`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
@@ -4720,8 +4720,8 @@ enum xkb_layout_out_of_range_policy {
  * see @ref abi-struct-contract for further details.
  *
  * @sa `enum xkb_layout_out_of_range_policy`
- * @sa `xkb_state_update::layout_policy`
- * @sa `struct xkb_state_update`
+ * @sa `xkb_synthetic_update::layout_policy`
+ * @sa `struct xkb_synthetic_update`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
  * @since 1.14.0
@@ -4759,7 +4759,7 @@ struct xkb_layout_policy_update {
 };
 
 /**
- * @struct xkb_state_update
+ * @struct xkb_synthetic_update
  * @ingroup abi-struct-contract
  * Request to process an out-of-band atomic update through an `xkb_machine` or
  * `xkb_state`.
@@ -4783,7 +4783,7 @@ struct xkb_layout_policy_update {
  *
  * @since 1.14.0
  */
-struct xkb_state_update {
+struct xkb_synthetic_update {
     /**
      * Size of this structure in bytes.
      *
@@ -4854,7 +4854,7 @@ struct xkb_state_update {
  *                        reset before collecting.
  *
  * @pre @p update must point to a zero-initialized struct with
- * [`update->size`](@ref xkb_state_update::size) set per
+ * [`update->size`](@ref xkb_synthetic_update::size) set per
  * @ref abi-struct-contract.
  *
  * @returns `::XKB_SUCCESS` on success, otherwise an error code.
@@ -4863,7 +4863,7 @@ struct xkb_state_update {
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY`
  *
- * @sa `struct xkb_state_update`
+ * @sa `struct xkb_synthetic_update`
  * @sa `struct xkb_state_components_update`
  * @sa `struct xkb_layout_policy_update`
  * @sa `xkb_machine_process_key()`
@@ -4876,7 +4876,7 @@ struct xkb_state_update {
  */
 XKB_EXPORT enum xkb_error_code
 xkb_machine_process_synthetic(struct xkb_machine *machine,
-                              const struct xkb_state_update *update,
+                              const struct xkb_synthetic_update *update,
                               struct xkb_events *events);
 
 /**
@@ -5281,7 +5281,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * a no-op update.
  *
  * @pre @p update must point to a zero-initialized struct with
- * [`update->size`](@ref xkb_state_update::size) set per
+ * [`update->size`](@ref xkb_synthetic_update::size) set per
  * @ref abi-struct-contract.
  *
  * @returns
@@ -5295,7 +5295,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * with the `xkb_machine::xkb_machine_process_synthetic()` API. The delta
  * is optionally available via the @p changed parameter.
  *
- * @sa `struct xkb_state_update`
+ * @sa `struct xkb_synthetic_update`
  * @sa `xkb_state_update_key()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
@@ -5303,7 +5303,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  */
 XKB_EXPORT enum xkb_error_code
 xkb_state_update_synthetic(struct xkb_state *state,
-                           const struct xkb_state_update *update,
+                           const struct xkb_synthetic_update *update,
                            enum xkb_state_component *changed);
 
 /**

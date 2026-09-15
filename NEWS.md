@@ -300,7 +300,7 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   in the quick guide.
 - Enable the configuration of out-of-range layout handling using the
   following new API:
-  - `xkb_state_update::layout_policy`
+  - `xkb_synthetic_update::layout_policy`
   - `struct xkb_layout_policy_update`
   - `enum xkb_layout_out_of_range_policy`, with values:
     - `XKB_LAYOUT_OUT_OF_RANGE_WRAP`: wrap into range using integer

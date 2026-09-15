@@ -48,7 +48,7 @@ xkb_state_update_enabled_controls(struct xkb_state *state,
         .affect_controls = affect,
         .controls = controls,
     };
-    const struct xkb_state_update update = {
+    const struct xkb_synthetic_update update = {
         .size = sizeof(update),
         .components = &components,
     };
@@ -95,7 +95,7 @@ xkb_machine_update_enabled_controls(struct xkb_machine *machine,
         .affect_controls = affect,
         .controls = controls,
     };
-    const struct xkb_state_update update = {
+    const struct xkb_synthetic_update update = {
         .size = sizeof(update),
         .components = &components_update
     };
@@ -170,7 +170,7 @@ xkb_machine_update_latched_locked(struct xkb_machine *machine,
         .locked_mods = locked_mods,
         .locked_layout = locked_layout,
     };
-    const struct xkb_state_update update = {
+    const struct xkb_synthetic_update update = {
         .size = sizeof(update),
         .components = &components_update,
     };
@@ -289,7 +289,7 @@ test_state_update_abi(struct xkb_context *ctx)
 
     /* Simulate a new version with some new fields */
     struct xkb_state_update_newer {
-        struct xkb_state_update current;
+        struct xkb_synthetic_update current;
         uint64_t extra;
     };
     assert_no_padding(struct xkb_state_update_newer, current, extra);
@@ -336,25 +336,25 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 0, .enabled = true },
             .layout_policy = { .enabled = false },
             .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 1, .enabled = true },
             .layout_policy = { .enabled = false },
             .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .size = 0, .enabled = true },
             .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .size = 1, .enabled = true },
             .error = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
@@ -365,13 +365,13 @@ test_state_update_abi(struct xkb_context *ctx)
          */
 
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
             .error = XKB_SUCCESS,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = {
                 .size = sizeof(struct xkb_state_components_update),
                 .enabled = true
@@ -380,7 +380,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_SUCCESS,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = {
                 .size = sizeof(struct xkb_layout_policy_update),
@@ -394,7 +394,7 @@ test_state_update_abi(struct xkb_context *ctx)
          */
 
         {
-            .root = { sizeof(struct xkb_state_update), 0, .reserved0 = 1 },
+            .root = { sizeof(struct xkb_synthetic_update), 0, .reserved0 = 1 },
             .components = { .enabled = false },
             .layout_policy = { .enabled = false },
             .error = XKB_ERROR_ABI_FORWARD_COMPAT,
@@ -411,7 +411,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_SUCCESS,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = {
                 .size = sizeof(struct xkb_state_components_update_newer),
                 .enabled = true
@@ -420,7 +420,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_SUCCESS,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = {
                 .size = sizeof(struct xkb_layout_policy_update_newer),
@@ -452,7 +452,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = {
                 .enabled = true,
                 .size = sizeof(struct xkb_state_components_update_newer),
@@ -462,7 +462,7 @@ test_state_update_abi(struct xkb_context *ctx)
             .error = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
-            .root = { sizeof(struct xkb_state_update), 0 },
+            .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
             .layout_policy = {
                 .enabled = true,
@@ -503,14 +503,14 @@ test_state_update_abi(struct xkb_context *ctx)
         assert_eq(
             "xkb_state_update_synthetic",
             tests[s].error,
-            xkb_state_update_synthetic(state, (struct xkb_state_update *)&update,
+            xkb_state_update_synthetic(state, (struct xkb_synthetic_update *)&update,
                                        NULL),
             "%d"
         );
         assert_eq(
             "xkb_machine_process_synthetic",
             tests[s].error,
-            xkb_machine_process_synthetic(sm, (struct xkb_state_update *)&update,
+            xkb_machine_process_synthetic(sm, (struct xkb_synthetic_update *)&update,
                                           events),
             "%d"
         );
@@ -573,7 +573,7 @@ test_state_update_basics(struct xkb_context *ctx)
         .affect_controls = 0xffff,
         .controls = (uint32_t)XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
     };
-    const struct xkb_state_update state_update = {
+    const struct xkb_synthetic_update state_update = {
         .size = sizeof(state_update),
         .components = &components_update
     };
@@ -888,7 +888,7 @@ test_group_wrap(struct xkb_context *ctx)
             .components = XKB_STATE_LAYOUT_LOCKED,
             .locked_layout = (int32_t)tests[t].locked_group
         };
-        const struct xkb_state_update req = {
+        const struct xkb_synthetic_update req = {
             .size = sizeof(req),
             .layout_policy = &layout_policy,
             .components = &components,
@@ -4952,7 +4952,7 @@ test_overlays(struct xkb_context *context)
             .affect_controls = UINT32_MAX,
             .controls = (uint32_t)controls,
         };
-        const struct xkb_state_update state_update = {
+        const struct xkb_synthetic_update state_update = {
             .size = sizeof(state_update),
             .components = &components_update,
         };

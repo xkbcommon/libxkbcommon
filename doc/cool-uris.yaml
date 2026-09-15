@@ -143,7 +143,7 @@ structxkb__rmlvo__builder.html: []
 structxkb__rule__names.html: []
 structxkb__state.html: []
 structxkb__state__components__update.html: []
-structxkb__state__update.html: []
+structxkb__synthetic__update.html: []
 topics.html:
 - modules.html
 xkb-compatibility.html:

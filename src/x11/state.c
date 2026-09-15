@@ -39,7 +39,7 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
         .affect_controls = (enum xkb_keyboard_control_flags) controls,
         .controls = (enum xkb_keyboard_control_flags) controls,
     };
-    const struct xkb_state_update update = {
+    const struct xkb_synthetic_update update = {
         .size = sizeof(update),
         .components = &components,
     };

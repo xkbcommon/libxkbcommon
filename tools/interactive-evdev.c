@@ -150,7 +150,7 @@ keyboard_new(struct dirent *ent,
         .affect_controls = options->controls.boolean.affect_flags,
         .controls = options->controls.boolean.flags,
     };
-    const struct xkb_state_update update = {
+    const struct xkb_synthetic_update update = {
         .size = sizeof(update),
         .components = &components,
     };
