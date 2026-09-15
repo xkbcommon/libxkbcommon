@@ -2084,7 +2084,7 @@ state_update_layout_policy(struct xkb_server_state *state,
 static enum xkb_error_code
 check_state_update_abi_(struct xkb_context * restrict ctx,
                         const char * restrict func,
-                        const struct xkb_state_update * restrict update)
+                        const struct xkb_synthetic_update * restrict update)
 {
     enum xkb_error_code error = XKB_SUCCESS;
     if ((error = xkb_check_state_abi(update)) ||
@@ -2105,7 +2105,7 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
 
 enum xkb_error_code
 xkb_state_update_synthetic(struct xkb_state * base_state,
-                           const struct xkb_state_update * update,
+                           const struct xkb_synthetic_update * update,
                            enum xkb_state_component *changed)
 {
     /* Guard against client-only state */
@@ -3642,7 +3642,7 @@ machine_update_overlays(struct xkb_machine *sm)
 
 enum xkb_error_code
 xkb_machine_process_synthetic(struct xkb_machine *sm,
-                              const struct xkb_state_update *update,
+                              const struct xkb_synthetic_update *update,
                               struct xkb_events *events)
 {
     /* Check ABI compatibility */

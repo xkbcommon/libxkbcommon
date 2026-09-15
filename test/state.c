@@ -654,7 +654,7 @@ test_state_modes(struct xkb_context *ctx)
             .affect_locked_mods = tests[t].update_synthetic.components.locked_mods,
             .locked_mods = tests[t].update_synthetic.components.locked_mods,
         };
-        const struct xkb_state_update update = {
+        const struct xkb_synthetic_update update = {
             .size = sizeof(update),
             .components = &components_update
         };

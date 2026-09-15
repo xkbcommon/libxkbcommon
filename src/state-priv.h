@@ -300,15 +300,15 @@ static_assert(sizeof(struct xkb_layout_policy_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
- * xkb_state_update
+ * xkb_synthetic_update
  *****************************************************************************/
 
 /**
- * Version 1 of `xkb_state_update`, used for ABI check only
+ * Version 1 of `xkb_synthetic_update`, used for ABI check only
  *
  * @since 1.14.0
  */
-struct xkb_state_update_v1 {
+struct xkb_synthetic_update_v1 {
     uint32_t size;
     uint32_t reserved0;
     const struct xkb_state_components_update_v1 *components;
@@ -316,25 +316,25 @@ struct xkb_state_update_v1 {
 };
 
 /* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_state_update, size, reserved0);
-assert_no_padding(struct xkb_state_update, reserved0, components);
+assert_no_padding(struct xkb_synthetic_update, size, reserved0);
+assert_no_padding(struct xkb_synthetic_update, reserved0, components);
 // NOLINTBEGIN(bugprone-sizeof-expression)
-assert_no_padding(struct xkb_state_update, components, layout_policy);
-assert_no_padding(struct xkb_state_update, layout_policy);
+assert_no_padding(struct xkb_synthetic_update, components, layout_policy);
+assert_no_padding(struct xkb_synthetic_update, layout_policy);
 // NOLINTEND(bugprone-sizeof-expression)
 
 /* Current version is 1 */
-static_assert(sizeof(struct xkb_state_update) ==
-              sizeof(struct xkb_state_update_v1), "");
-assert_same_field(struct xkb_state_update, _v1, size);
-assert_same_field(struct xkb_state_update, _v1, reserved0);
+static_assert(sizeof(struct xkb_synthetic_update) ==
+              sizeof(struct xkb_synthetic_update_v1), "");
+assert_same_field(struct xkb_synthetic_update, _v1, size);
+assert_same_field(struct xkb_synthetic_update, _v1, reserved0);
 // NOLINTBEGIN(bugprone-sizeof-expression)
-assert_same_field(struct xkb_state_update, _v1, components);
-assert_same_field(struct xkb_state_update, _v1, layout_policy);
+assert_same_field(struct xkb_synthetic_update, _v1, components);
+assert_same_field(struct xkb_synthetic_update, _v1, layout_policy);
 // NOLINTEND(bugprone-sizeof-expression)
 
 /* Ensure reasonable margin to the upper size limit */
-static_assert(sizeof(struct xkb_state_update) * 30 <=
+static_assert(sizeof(struct xkb_synthetic_update) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
@@ -484,8 +484,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_override_update) * 30 <
         sizeof(struct xkb_event_pointer_motion_v1),                 \
     struct xkb_event_pointer_button *:                              \
         sizeof(struct xkb_event_pointer_button_v1),                 \
-    const struct xkb_state_update *:                                \
-        sizeof(struct xkb_state_update_v1),                         \
+    const struct xkb_synthetic_update *:                            \
+        sizeof(struct xkb_synthetic_update_v1),                     \
     const struct xkb_state_components_update *:                     \
         sizeof(struct xkb_state_components_update_v1),              \
     const struct xkb_layout_policy_update *:                        \
@@ -511,8 +511,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_override_update) * 30 <
         sizeof(struct xkb_event_pointer_motion_v1),                 \
     struct xkb_event_pointer_button *:                              \
         sizeof(struct xkb_event_pointer_button_v1),                 \
-    const struct xkb_state_update *:                                \
-        sizeof(struct xkb_state_update_v1),                         \
+    const struct xkb_synthetic_update *:                            \
+        sizeof(struct xkb_synthetic_update_v1),                     \
     const struct xkb_state_components_update *:                     \
         sizeof(struct xkb_state_components_update_v1),              \
     const struct xkb_layout_policy_update *:                        \
@@ -538,8 +538,8 @@ static_assert(sizeof(struct xkb_machine_builder_shortcut_override_update) * 30 <
         sizeof(struct xkb_event_pointer_motion),                 \
     struct xkb_event_pointer_button *:                           \
         offsetof(struct xkb_event_pointer_button, reserved0),    \
-    const struct xkb_state_update *:                             \
-        sizeof(struct xkb_state_update),                         \
+    const struct xkb_synthetic_update *:                         \
+        sizeof(struct xkb_synthetic_update),                     \
     const struct xkb_state_components_update *:                  \
         sizeof(struct xkb_state_components_update),              \
     const struct xkb_layout_policy_update *:                     \
@@ -583,8 +583,8 @@ static_assert(
     ""
 );
 static_assert(
-    xkb_versioned_struct_size_v1(((const struct xkb_state_update *)NULL)) <=
-    xkb_versioned_struct_size_min(((const struct xkb_state_update *)NULL)),
+    xkb_versioned_struct_size_v1(((const struct xkb_synthetic_update *)NULL)) <=
+    xkb_versioned_struct_size_min(((const struct xkb_synthetic_update *)NULL)),
     ""
 );
 static_assert(
@@ -640,8 +640,8 @@ static_assert(
     ""
 );
 static_assert(
-    xkb_versioned_struct_size_min(((const struct xkb_state_update *)NULL)) <=
-    sizeof(const struct xkb_state_update),
+    xkb_versioned_struct_size_min(((const struct xkb_synthetic_update *)NULL)) <=
+    sizeof(const struct xkb_synthetic_update),
     ""
 );
 static_assert(
