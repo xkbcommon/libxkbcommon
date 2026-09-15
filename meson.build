@@ -466,7 +466,7 @@ install_headers(
     'include/xkbcommon/xkbcommon.h',
     'include/xkbcommon/xkbcommon-compat.h',
     'include/xkbcommon/xkbcommon-compose.h',
-    'include/xkbcommon/xkbcommon-errors.h',
+    'include/xkbcommon/xkbcommon-status.h',
     'include/xkbcommon/xkbcommon-features.h',
     'include/xkbcommon/xkbcommon-keysyms.h',
     'include/xkbcommon/xkbcommon-names.h',

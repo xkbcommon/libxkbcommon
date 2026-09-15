@@ -8,7 +8,7 @@
 #include <limits.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcomp-priv.h"
 #include "text.h"
 #include "vmod.h"

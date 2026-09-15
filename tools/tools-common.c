@@ -35,7 +35,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "tools-common.h"
 #include "src/compose/constants.h"
 #include "src/keysym.h"
@@ -823,16 +823,16 @@ tools_print_events(const char *prefix, struct xkb_state *state,
     const struct xkb_event *event;
     while ((event = xkb_events_next(events)) != NULL) {
         const enum xkb_event_type event_type = xkb_event_get_type(event);
-        enum xkb_error_code error = XKB_SUCCESS;
+        enum xkb_status status = XKB_SUCCESS;
         switch (event_type) {
             case XKB_EVENT_TYPE_INVALID:
-                error = XKB_ERROR_INVALID;
+                status = XKB_ERROR_INVALID;
                 goto event_error;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;
                 enum xkb_key_direction direction;
-                error = xkb_event_get_keycode(event, &kc, &direction);
-                if (error != XKB_SUCCESS)
+                status = xkb_event_get_keycode(event, &kc, &direction);
+                if (status != XKB_SUCCESS)
                     goto event_error;
                 if (compose_state && direction == XKB_KEY_DOWN) {
                     const xkb_keysym_t keysym =
@@ -843,18 +843,18 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                                         direction, consumed_mode,
                                         options);
                 if (compose_state) {
-                    const enum xkb_compose_status status =
+                    const enum xkb_compose_status compose_status =
                         xkb_compose_state_get_status(compose_state);
-                    if (status == XKB_COMPOSE_CANCELLED ||
-                        status == XKB_COMPOSE_COMPOSED)
+                    if (compose_status == XKB_COMPOSE_CANCELLED ||
+                        compose_status == XKB_COMPOSE_COMPOSED)
                             xkb_compose_state_reset(compose_state);
                 }
                 break;
             }
             case XKB_EVENT_TYPE_STATE_COMPONENTS: {
                 enum xkb_state_component changed;
-                error = xkb_state_update_event(state, event, &changed);
-                if (error != XKB_SUCCESS)
+                status = xkb_state_update_event(state, event, &changed);
+                if (status != XKB_SUCCESS)
                     goto event_error;
                 if (report_state_changes && changed)
                     tools_print_state_changes(prefix, state, changed, options);
@@ -864,8 +864,8 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 struct xkb_event_pointer_motion motion = {
                     .size = sizeof(motion)
                 };
-                error = xkb_event_get_pointer_motion(event, &motion);
-                if (error != XKB_SUCCESS)
+                status = xkb_event_get_pointer_motion(event, &motion);
+                if (status != XKB_SUCCESS)
                     goto event_error;
                 tools_print_pointer_motion(prefix, &motion, options);
                 break;
@@ -874,8 +874,8 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 struct xkb_event_pointer_button button = {
                     .size = sizeof(button)
                 };
-                error = xkb_event_get_pointer_button(event, &button);
-                if (error != XKB_SUCCESS)
+                status = xkb_event_get_pointer_button(event, &button);
+                if (status != XKB_SUCCESS)
                     goto event_error;
                 tools_print_pointer_button(prefix, &button, options);
                 break;
@@ -887,9 +887,9 @@ tools_print_events(const char *prefix, struct xkb_state *state,
             case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE: {
                 int8_t index_or_offset;
                 bool is_offset;
-                error = xkb_event_get_virtual_console(event, &index_or_offset,
-                                                      &is_offset);
-                if (error != XKB_SUCCESS)
+                status = xkb_event_get_virtual_console(event, &index_or_offset,
+                                                       &is_offset);
+                if (status != XKB_SUCCESS)
                     goto event_error;
                 tools_print_switch_virtual_console(prefix, index_or_offset,
                                                    is_offset, options);
@@ -903,7 +903,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
             event_error:
                 fprintf(stderr,
                         "ERROR: cannot process event type %d; error code: %d\n",
-                        event_type, error);
+                        event_type, status);
             }
         }
     }
@@ -1713,12 +1713,12 @@ tools_set_shortcuts_mappings(const struct xkb_machine_options *options,
             .source = source,
             .target = *target,
         };
-        const enum xkb_error_code error =
+        const enum xkb_status status =
             xkb_machine_builder_update_shortcut_override(builder, &update);
-        if (error != XKB_SUCCESS) {
+        if (status != XKB_SUCCESS) {
             fprintf(stderr,
                     "ERROR %d: cannot add shortcuts layout mapping: "
-                    "%"PRIu32" -> %"PRIu32"\n", error, source + 1, *target + 1);
+                    "%"PRIu32" -> %"PRIu32"\n", status, source + 1, *target + 1);
             ret = false;
         }
     }

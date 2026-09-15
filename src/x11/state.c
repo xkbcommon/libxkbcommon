@@ -43,9 +43,9 @@ update_initial_state(struct xkb_state *state, xcb_connection_t *conn,
         .size = sizeof(update),
         .components = &components,
     };
-    const enum xkb_error_code error =
+    const enum xkb_status status =
         xkb_state_update_synthetic(state, &update, NULL);
-    if (error)
+    if (status != XKB_SUCCESS)
         return false;
 
     xkb_state_update_mask(state,

@@ -151,10 +151,10 @@ xkb-compatibility.html:
 - xkbcommon-compatibility.html
 xkb-intro.html: []
 xkbcommon-compose_8h.html: []
-xkbcommon-errors_8h.html: []
 xkbcommon-features_8h.html: []
 xkbcommon-keysyms_8h.html: []
 xkbcommon-names_8h.html: []
+xkbcommon-status_8h.html: []
 xkbcommon-x11_8h.html: []
 xkbcommon_8h.html: []
 xkbregistry_8h.html: []

@@ -67,7 +67,7 @@ class Version:
 
 
 Version.MIN_PUBLIC_VERSION = Version(1, 14, 0)
-"""The minimum version that exposed public error codes via `xkb_error_code` enum."""
+"""The minimum version that exposed public error codes via `xkb_status` enum."""
 
 
 @dataclass
@@ -114,7 +114,7 @@ class Entry:
     added: Version
     """Version of xkbcommon the message has been added in xkb_message_code"""
     added_public: Version | None
-    """Version of xkbcommon the message has been added in xkb_error_code"""
+    """Version of xkbcommon the message has been added in xkb_status"""
     removed: Version | None
     """Version of xkbcommon the message has been removed"""
     examples: tuple[Example, ...]
@@ -306,7 +306,7 @@ def generate(
         registry,
         jinja_env,
         args.root,
-        Path("include/xkbcommon/xkbcommon-errors.h"),
+        Path("include/xkbcommon/xkbcommon-status.h"),
         visibility=Visibility.Public,
         skip_removed=True,
     )

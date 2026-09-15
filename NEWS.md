@@ -146,7 +146,7 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   `xkbcommon-features.h`. They enable testing feature availability, which is
   useful when the library is dynamically linked.
   Currently they support only testing enumerations and their values.
-- Added `enum xkb_error_code` and the corresponding header `xkbcommon-errors.h`.
+- Added `enum xkb_status` and the corresponding header `xkbcommon-status.h`.
 
 #### Keysyms
 

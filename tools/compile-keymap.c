@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 #include "tools-common.h"
 #include "src/utils.h"
@@ -608,10 +608,10 @@ print_keymap(struct xkb_context *ctx,
         fprintf(stderr, "%s\n", success_text);
     } else {
         struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
-        const enum xkb_error_code error =
+        const enum xkb_status status =
             xkb_keymap_serialize(keymap, config, &result);
-        if (error != XKB_SUCCESS) {
-            fprintf(stderr, "ERROR %d: Couldn't get the keymap string\n", error);
+        if (status != XKB_SUCCESS) {
+            fprintf(stderr, "ERROR %d: Couldn't get the keymap string\n", status);
             ret = EXIT_FAILURE;
         } else {
             fputs(result.serialized, stdout);

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
 #include "xkbcommon/xkbcommon.h"
@@ -431,9 +431,9 @@ test_state_modes(struct xkb_context *ctx)
     );
     assert(keymap);
 
-    enum xkb_error_code error;
-    assert(!xkb_state_new_with_mode(keymap, 0xffff, &error) &&
-           error == XKB_ERROR_UNSUPPORTED_STATE_MODE);
+    enum xkb_status status;
+    assert(!xkb_state_new_with_mode(keymap, 0xffff, &status) &&
+           status == XKB_ERROR_UNSUPPORTED_STATE_MODE);
 
     enum { LEGACY_STATE_MODE = 0xff };
 
@@ -451,7 +451,7 @@ test_state_modes(struct xkb_context *ctx)
         struct components_entry {
             struct state_components components;
             enum xkb_state_component changed;
-            enum xkb_error_code error;
+            enum xkb_status status;
         } update_mask;
         struct components_entry update_event;
         enum xkb_state_component update_key;
@@ -478,7 +478,7 @@ test_state_modes(struct xkb_context *ctx)
                 .components = { .locked_mods = num },
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
                          | XKB_STATE_LEDS,
-                .error = 0,
+                .status = 0,
             },
         },
         {
@@ -500,7 +500,7 @@ test_state_modes(struct xkb_context *ctx)
                 .components = { .locked_mods = num },
                 /* wrong mode */
                 .changed = 0,
-                .error = XKB_ERROR_UNEXPECTED_STATE_MODE,
+                .status = XKB_ERROR_UNEXPECTED_STATE_MODE,
             },
         },
         {
@@ -522,7 +522,7 @@ test_state_modes(struct xkb_context *ctx)
                 .components = { .locked_mods = num },
                 /* wrong mode */
                 .changed = 0,
-                .error = XKB_ERROR_UNEXPECTED_STATE_MODE,
+                .status = XKB_ERROR_UNEXPECTED_STATE_MODE,
             },
         },
         {
@@ -545,7 +545,7 @@ test_state_modes(struct xkb_context *ctx)
                 .components = { .locked_mods = num },
                 .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE
                          | XKB_STATE_LEDS,
-                .error = 0,
+                .status = 0,
             },
         },
     };
@@ -554,13 +554,13 @@ test_state_modes(struct xkb_context *ctx)
         fprintf(stderr, "------\n*** %s: #%zu (mode: %d) ***\n",
                 __func__, t, tests[t].mode);
 
-        error = XKB_SUCCESS;
+        status = XKB_SUCCESS;
         struct xkb_state * const state =
             (tests[t].mode == (enum xkb_state_mode)LEGACY_STATE_MODE)
                 ? xkb_state_new(keymap)
-                : xkb_state_new_with_mode(keymap, tests[t].mode, &error);
+                : xkb_state_new_with_mode(keymap, tests[t].mode, &status);
         assert(state);
-        assert(error == XKB_SUCCESS);
+        assert(status == XKB_SUCCESS);
 
         enum xkb_state_component changed = 0;
         int code = EXIT_SUCCESS;
@@ -598,9 +598,9 @@ test_state_modes(struct xkb_context *ctx)
         };
         #endif
         RUN_ISOLATED(code, changed,
-            const enum xkb_error_code error_ =
+            const enum xkb_status status_ =
                 xkb_state_update_event(state, &event, &changed);
-            assert(error_ == XKB_SUCCESS);
+            assert(status_ == XKB_SUCCESS);
             /* Avoid Valgrind false positive */
             xkb_state_unref(state);
             xkb_keymap_unref(keymap);
@@ -661,10 +661,10 @@ test_state_modes(struct xkb_context *ctx)
 
         struct result {
             enum xkb_state_component changed;
-            enum xkb_error_code error;
+            enum xkb_status status;
         } r = { 0 };
         RUN_ISOLATED(code, r,
-            r.error = xkb_state_update_synthetic(state, &update, &r.changed);
+            r.status = xkb_state_update_synthetic(state, &update, &r.changed);
             /* Avoid Valgrind false positive */
             xkb_state_unref(state);
             xkb_keymap_unref(keymap);
@@ -672,7 +672,7 @@ test_state_modes(struct xkb_context *ctx)
         if (code != SKIP_TEST) {
             assert_eq("update_synthetic: code", EXIT_SUCCESS, code, "%d");
             assert_eq("update_synthetic: error",
-                      tests[t].update_synthetic.error, r.error, "%d");
+                      tests[t].update_synthetic.status, r.status, "%d");
             assert_eq("update_synthetic: changed",
                       tests[t].update_synthetic.changed, r.changed, "%d");
         }

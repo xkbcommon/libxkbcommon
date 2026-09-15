@@ -49,9 +49,9 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         return is_supported_enum_value_array(
             xkb_feature_values, ARRAY_SIZE(xkb_feature_values), value
         );
-    case XKB_FEATURE_ENUM_ERROR_CODE:
+    case XKB_FEATURE_ENUM_STATUS:
         return is_supported_enum_value_array(
-            xkb_error_code_values, ARRAY_SIZE(xkb_error_code_values), value
+            xkb_status_values, ARRAY_SIZE(xkb_status_values), value
         );
     case XKB_FEATURE_ENUM_CONTEXT_FLAGS:
         return is_supported_flag_value(

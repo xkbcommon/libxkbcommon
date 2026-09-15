@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-features.h"
 #include "abi-check.h"
 #include "darray.h"
@@ -1520,7 +1520,7 @@ xkb_state_new(struct xkb_keymap *keymap)
 struct xkb_state *
 xkb_state_new_with_mode(struct xkb_keymap * restrict keymap,
                         enum xkb_state_mode mode,
-                        enum xkb_error_code * restrict error)
+                        enum xkb_status * restrict status)
 {
     switch (mode) {
     case XKB_STATE_MODE_CLIENT:
@@ -1535,8 +1535,8 @@ xkb_state_new_with_mode(struct xkb_keymap * restrict keymap,
                       (unsigned)SERVER_COMPANION, "");
         xkb_client_state_init(state, keymap, (enum xkb_state_mode_internal)mode);
 
-        if (error)
-            *error = XKB_SUCCESS;
+        if (status)
+            *status = XKB_SUCCESS;
 
         return (struct xkb_state *)state;
     }
@@ -1547,23 +1547,23 @@ xkb_state_new_with_mode(struct xkb_keymap * restrict keymap,
 
         xkb_server_state_init(state, keymap, LEGACY_SERVER_STATE, 0, 0);
 
-        if (error)
-            *error = XKB_SUCCESS;
+        if (status)
+            *status = XKB_SUCCESS;
 
         return (struct xkb_state *)state;
     }
     default:
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_STATE_MODE_,
                      "Unsupported state mode: %u\n", mode);
-        if (error)
-            *error = XKB_ERROR_UNSUPPORTED_STATE_MODE;
+        if (status)
+            *status = XKB_ERROR_UNSUPPORTED_STATE_MODE;
         return NULL;
     }
 
     log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                   "Could not allocate a state object.\n");
-    if (error)
-        *error = XKB_ERROR_ALLOCATION_FAILURE;
+    if (status)
+        *status = XKB_ERROR_ALLOCATION_FAILURE;
     return NULL;
 }
 
@@ -2050,7 +2050,7 @@ clear_all_latches_and_locks(struct xkb_server_state *state,
     state_update_latched_locked(state, &update, events);
 }
 
-static enum xkb_error_code
+static enum xkb_status
 state_update_layout_policy(struct xkb_server_state *state,
                            const struct xkb_layout_policy_update *update)
 {
@@ -2081,29 +2081,29 @@ state_update_layout_policy(struct xkb_server_state *state,
 
 /** Check ABI compatibility */
 // NOLINTBEGIN(bugprone-assignment-in-selection-statement)
-static enum xkb_error_code
+static enum xkb_status
 check_state_update_abi_(struct xkb_context * restrict ctx,
                         const char * restrict func,
                         const struct xkb_synthetic_update * restrict update)
 {
-    enum xkb_error_code error = XKB_SUCCESS;
-    if ((error = xkb_check_state_abi(update)) ||
+    enum xkb_status status = XKB_SUCCESS;
+    if ((status = xkb_check_state_abi(update)) ||
         (update->reserved0 != 0 &&
-         (error = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
+         (status = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
         (update->components &&
-         (error = xkb_check_state_abi(update->components))) ||
+         (status = xkb_check_state_abi(update->components))) ||
         (update->layout_policy &&
-         (error = xkb_check_state_abi(update->layout_policy)))) {
-        xkb_log_abi_error(ctx, func, error);
+         (status = xkb_check_state_abi(update->layout_policy)))) {
+        xkb_log_abi_error(ctx, func, status);
     }
-    return error;
+    return status;
 }
 // NOLINTEND(bugprone-assignment-in-selection-statement)
 
 #define check_state_update_abi(ctx, update) \
     check_state_update_abi_(ctx, __func__, update)
 
-enum xkb_error_code
+enum xkb_status
 xkb_state_update_synthetic(struct xkb_state * base_state,
                            const struct xkb_synthetic_update * update,
                            enum xkb_state_component *changed)
@@ -2119,10 +2119,10 @@ xkb_state_update_synthetic(struct xkb_state * base_state,
         (struct xkb_server_state *)base_state;
 
     /* Check ABI compatibility */
-    enum xkb_error_code error = check_state_update_abi(state->base.keymap->ctx,
-                                                       update);
-    if (error)
-        return error;
+    enum xkb_status status = check_state_update_abi(state->base.keymap->ctx,
+                                                    update);
+    if (status != XKB_SUCCESS)
+        return status;
 
     const struct state_components previous_components = state->base.components;
 
@@ -2131,9 +2131,9 @@ xkb_state_update_synthetic(struct xkb_state * base_state,
 
     /* Update parametrized controls first */
     if (update->layout_policy) {
-        error = state_update_layout_policy(state, update->layout_policy);
-        if (error)
-            return error;
+        status = state_update_layout_policy(state, update->layout_policy);
+        if (status != XKB_SUCCESS)
+            return status;
     }
 
     if (update->components) {
@@ -3050,7 +3050,7 @@ struct xkb_machine_builder *
 xkb_machine_builder_new(
     struct xkb_keymap * restrict keymap,
     const struct xkb_machine_builder_config * restrict config,
-    enum xkb_error_code * restrict error
+    enum xkb_status * restrict status
 )
 {
     /* Handle default configuration */
@@ -3061,11 +3061,11 @@ xkb_machine_builder_new(
         config = &default_config;
 
     /* Check ABI compatibility */
-    const enum xkb_error_code error_ = xkb_check_state_abi(config);
-    if (error_) {
-        xkb_log_abi_error(keymap->ctx, __func__, error_);
-        if (error)
-            *error = error_;
+    const enum xkb_status status_ = xkb_check_state_abi(config);
+    if (status_) {
+        xkb_log_abi_error(keymap->ctx, __func__, status_);
+        if (status)
+            *status = status_;
         return NULL;
     }
 
@@ -3077,8 +3077,8 @@ xkb_machine_builder_new(
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS_,
                      "unrecognized machine builder flags: 0x%x\n",
                      invalid_builder_flags);
-        if (error)
-            *error = XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS;
+        if (status)
+            *status = XKB_ERROR_UNSUPPORTED_MACHINE_BUILDER_FLAGS;
         return NULL;
     }
 
@@ -3089,8 +3089,8 @@ xkb_machine_builder_new(
         log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS_,
                      "unrecognized state machine flags: 0x%x\n",
                      invalid_machine_flags);
-        if (error)
-            *error = XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS;
+        if (status)
+            *status = XKB_ERROR_UNSUPPORTED_MACHINE_FLAGS;
         return NULL;
     }
 
@@ -3098,8 +3098,8 @@ xkb_machine_builder_new(
     if (!builder) {
         log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                       "cannot allocate machine builder\n");
-        if (error)
-            *error = XKB_ERROR_ALLOCATION_FAILURE;
+        if (status)
+            *status = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
     }
 
@@ -3120,8 +3120,8 @@ xkb_machine_builder_new(
         },
     };
 
-    if (error)
-        *error = XKB_SUCCESS;
+    if (status)
+        *status = XKB_SUCCESS;
 
     return builder;
 }
@@ -3154,16 +3154,16 @@ xkb_machine_builder_get_keymap(const struct xkb_machine_builder *builder)
     return builder->keymap;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_machine_builder_update_a11y(
     struct xkb_machine_builder * restrict builder,
     const struct xkb_machine_builder_a11y_update * restrict update)
 {
     /* Check ABI compatibility */
-    enum xkb_error_code error = xkb_check_state_abi(update);
-    if (error) {
-        xkb_log_abi_error(builder->keymap->ctx, __func__, error);
-        return error;
+    enum xkb_status status = xkb_check_state_abi(update);
+    if (status != XKB_SUCCESS) {
+        xkb_log_abi_error(builder->keymap->ctx, __func__, status);
+        return status;
     }
 
     const enum xkb_a11y_flags invalid_flags =
@@ -3189,7 +3189,7 @@ xkb_machine_builder_update_a11y(
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_machine_builder_update_mods_remap(
     struct xkb_machine_builder * restrict builder,
     const struct xkb_machine_builder_mods_remap_update * restrict update
@@ -3251,7 +3251,7 @@ xkb_machine_builder_update_mods_remap(
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_machine_builder_update_shortcut_override(
     struct xkb_machine_builder * restrict builder,
     const struct xkb_machine_builder_shortcut_override_update * restrict update
@@ -3376,7 +3376,7 @@ cmp_mod_masks(const void *a, const void *b)
     return (m1 < m2) ? -1 : +1;
 }
 
-static enum xkb_error_code
+static enum xkb_status
 machine_set_mods(struct xkb_machine *sm,
                  const machine_mods_mappings *raw_mappings)
 {
@@ -3419,7 +3419,7 @@ machine_set_mods(struct xkb_machine *sm,
     return XKB_SUCCESS;
 }
 
-static enum xkb_error_code
+static enum xkb_status
 machine_set_shortcuts(
     struct xkb_machine * restrict sm,
     const struct xkb_shortcuts_config_options * restrict options
@@ -3490,14 +3490,14 @@ machine_set_shortcuts(
 
 struct xkb_machine *
 xkb_machine_new(const struct xkb_machine_builder * restrict builder,
-                enum xkb_error_code * restrict error)
+                enum xkb_status * restrict status)
 {
     struct xkb_machine * const machine = calloc(1, sizeof(*machine));
     if (!machine) {
         log_err_func1(builder->keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
                       "cannot allocate machine\n");
-        if (error)
-            *error = XKB_ERROR_ALLOCATION_FAILURE;
+        if (status)
+            *status = XKB_ERROR_ALLOCATION_FAILURE;
         return NULL;
     }
 
@@ -3506,19 +3506,19 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
                           builder->controls.a11y.flags);
     machine->flags = builder->machine_flags;
 
-    enum xkb_error_code error_;
-    if ((error_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
-        (error_ = machine_set_shortcuts(machine, &builder->shortcuts)) !=
+    enum xkb_status status_;
+    if ((status_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
+        (status_ = machine_set_shortcuts(machine, &builder->shortcuts)) !=
         XKB_SUCCESS) {
-        *error = error_;
+        *status = status_;
         goto error;
     }
 
     darray_init(machine->overlays.keys);
     machine->mouse.default_button = XKB_POINTER_BUTTON_MIN;
 
-    if (error)
-        *error = XKB_SUCCESS;
+    if (status)
+        *status = XKB_SUCCESS;
 
     return machine;
 
@@ -3565,18 +3565,18 @@ xkb_machine_get_state(struct xkb_machine *sm)
 
 struct xkb_state *
 xkb_state_new_from_machine(const struct xkb_machine * restrict machine,
-                           enum xkb_error_code * restrict error)
+                           enum xkb_status * restrict status)
 {
     /* Creation */
-    enum xkb_error_code error_;
+    enum xkb_status status_;
     struct xkb_state * const state = xkb_state_new_with_mode(
         machine->base.base.keymap,
         XKB_STATE_MODE_SERVER_QUERY,
-        &error_
+        &status_
     );
-    if (error_ != XKB_SUCCESS) {
-        if (error)
-            *error = error_;
+    if (status_ != XKB_SUCCESS) {
+        if (status)
+            *status = status_;
         return NULL;
     }
 
@@ -3590,8 +3590,8 @@ xkb_state_new_from_machine(const struct xkb_machine * restrict machine,
     state->mode = SERVER_COMPANION;
     state->refcnt = 1;
 
-    if (error)
-        *error = XKB_SUCCESS;
+    if (status)
+        *status = XKB_SUCCESS;
     return state;
 }
 
@@ -3640,16 +3640,16 @@ machine_update_overlays(struct xkb_machine *sm)
     sm->overlays.enabled = mask;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_machine_process_synthetic(struct xkb_machine *sm,
                               const struct xkb_synthetic_update *update,
                               struct xkb_events *events)
 {
     /* Check ABI compatibility */
-    enum xkb_error_code error =
+    enum xkb_status status =
         check_state_update_abi(sm->base.base.keymap->ctx, update);
-    if (error)
-        return error;
+    if (status != XKB_SUCCESS)
+        return status;
 
     struct xkb_server_state * const state = &sm->base;
     const struct state_components previous_components = state->base.components;
@@ -3662,9 +3662,9 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 
     /* Update parametrized controls first */
     if (update->layout_policy) {
-        error = state_update_layout_policy(state, update->layout_policy);
-        if (error)
-            return error;
+        status = state_update_layout_policy(state, update->layout_policy);
+        if (status != XKB_SUCCESS)
+            return status;
     }
 
     if (update->components) {
@@ -3952,7 +3952,7 @@ process_overlayable_key(struct xkb_machine *sm,
     return key;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_machine_process_key(struct xkb_machine *sm,
                         xkb_keycode_t kc, enum xkb_key_direction direction,
                         struct xkb_events *events)
@@ -4062,7 +4062,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
 struct xkb_events *
 xkb_events_new(struct xkb_context * restrict context,
                const struct xkb_events_config * restrict config,
-               enum xkb_error_code * restrict error)
+               enum xkb_status * restrict status)
 {
     /* Handle default configuration */
     static const struct xkb_events_config default_config = {
@@ -4072,11 +4072,11 @@ xkb_events_new(struct xkb_context * restrict context,
         config = &default_config;
 
     /* Check ABI compatibility */
-    const enum xkb_error_code abi_error = xkb_check_state_abi(config);
+    const enum xkb_status abi_error = xkb_check_state_abi(config);
     if (abi_error) {
         xkb_log_abi_error(context, __func__, abi_error);
-        if (error)
-            *error = abi_error;
+        if (status)
+            *status = abi_error;
         return NULL;
     }
 
@@ -4087,8 +4087,8 @@ xkb_events_new(struct xkb_context * restrict context,
         log_err_func(context, XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS_,
                      "unrecognized events collection flags: 0x%"PRIx32"\n",
                      invalid_flags);
-        if (error)
-            *error = XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS;
+        if (status)
+            *status = XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS;
         return NULL;
     }
 
@@ -4096,13 +4096,13 @@ xkb_events_new(struct xkb_context * restrict context,
     if (events == NULL) {
         log_err_func1(context, XKB_ERROR_ALLOCATION_FAILURE_,
                       "cannot allocate state events collection\n");
-        if (error)
-            *error = XKB_ERROR_ALLOCATION_FAILURE;
+        if (status)
+            *status = XKB_ERROR_ALLOCATION_FAILURE;
         return events;
     }
 
-    if (error)
-        *error = XKB_SUCCESS;
+    if (status)
+        *status = XKB_SUCCESS;
 
     events->ctx = xkb_context_ref(context);
     darray_init(events->queue);
@@ -4147,7 +4147,7 @@ xkb_event_get_type(const struct xkb_event *event)
     return event->type;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_event_get_keycode(const struct xkb_event *event,
                       xkb_keycode_t *keycode,
                       enum xkb_key_direction *direction)
@@ -4161,7 +4161,7 @@ xkb_event_get_keycode(const struct xkb_event *event,
     }
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_event_get_components(const struct xkb_event * restrict event,
                          struct xkb_event_components * restrict components)
 {
@@ -4169,10 +4169,10 @@ xkb_event_get_components(const struct xkb_event * restrict event,
         return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
-    const enum xkb_error_code error = xkb_check_state_abi(components);
-    if (error) {
-        xkb_log_abi_error(event->ctx, __func__, error);
-        return error;
+    const enum xkb_status status = xkb_check_state_abi(components);
+    if (status != XKB_SUCCESS) {
+        xkb_log_abi_error(event->ctx, __func__, status);
+        return status;
     }
 
     components->changed = (uint32_t)event->components.changed;
@@ -4190,7 +4190,7 @@ xkb_event_get_components(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
                              struct xkb_event_pointer_motion * restrict motion)
 {
@@ -4198,10 +4198,10 @@ xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
         return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
-    const enum xkb_error_code error = xkb_check_state_abi(motion);
-    if (error) {
-        xkb_log_abi_error(event->ctx, __func__, error);
-        return error;
+    const enum xkb_status status = xkb_check_state_abi(motion);
+    if (status != XKB_SUCCESS) {
+        xkb_log_abi_error(event->ctx, __func__, status);
+        return status;
     }
 
     motion->flags = event->pointer_motion.flags;
@@ -4211,7 +4211,7 @@ xkb_event_get_pointer_motion(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_event_get_pointer_button(const struct xkb_event * restrict event,
                              struct xkb_event_pointer_button * restrict button)
 {
@@ -4219,10 +4219,10 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
         return XKB_ERROR_EVENT_TYPE_MISMATCH;
 
     /* Check ABI compatibility */
-    const enum xkb_error_code error = xkb_check_state_abi(button);
-    if (error) {
-        xkb_log_abi_error(event->ctx, __func__, error);
-        return error;
+    const enum xkb_status status = xkb_check_state_abi(button);
+    if (status != XKB_SUCCESS) {
+        xkb_log_abi_error(event->ctx, __func__, status);
+        return status;
     }
 
     button->button = event->pointer_button.button;
@@ -4232,7 +4232,7 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_event_get_virtual_console(const struct xkb_event * restrict event,
                               int8_t * restrict index_or_offset,
                               bool * restrict is_offset)
@@ -4246,7 +4246,7 @@ xkb_event_get_virtual_console(const struct xkb_event * restrict event,
     return XKB_SUCCESS;
 }
 
-enum xkb_error_code
+enum xkb_status
 xkb_state_update_event(struct xkb_state * restrict base_state,
                        const struct xkb_event * restrict event,
                        enum xkb_state_component * restrict changed)

@@ -23,7 +23,7 @@
 
 #include <linux/input.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 
 #include "src/utils.h"
@@ -127,11 +127,11 @@ keyboard_new(struct dirent *ent,
             goto err_machine;
         }
 
-        enum xkb_error_code error;
-        events = xkb_events_new(ctx, NULL, &error);
+        enum xkb_status status;
+        events = xkb_events_new(ctx, NULL, &status);
         if (!events) {
             fprintf(stderr, "Couldn't create xkb events for %s; code: 0x%x\n",
-                    path, error);
+                    path, status);
             ret = -EFAULT;
             goto err_xkb_events;
         }
@@ -155,15 +155,15 @@ keyboard_new(struct dirent *ent,
         .components = &components,
     };
     if (use_events_api) {
-        enum xkb_error_code error =
+        enum xkb_status status =
             xkb_machine_process_synthetic(machine, &update, events);
         // FIXME: handle error
-        (void)error;
+        (void)status;
         const struct xkb_event *event;
         while ((event = xkb_events_next(events))) {
-            error = xkb_state_update_event(state, event, NULL);
+            status = xkb_state_update_event(state, event, NULL);
             // FIXME: handle error
-            (void)error;
+            (void)status;
         }
     } else {
         // FIXME: handle error

@@ -25,7 +25,7 @@
 #include "xdg-shell-client-protocol.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
 #include "src/utils.h"
@@ -505,8 +505,8 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
         }
         if (!seat->events && seat->machine) {
             /* Initialize the events queue */
-            enum xkb_error_code error;
-            seat->events = xkb_events_new(seat->inter->ctx, NULL, &error);
+            enum xkb_status status;
+            seat->events = xkb_events_new(seat->inter->ctx, NULL, &status);
             if (seat->events) {
                 const struct xkb_state_components_update components = {
                     .size = sizeof(components),
@@ -518,20 +518,20 @@ kbd_keymap(void *data, struct wl_keyboard *wl_kbd, uint32_t format,
                     .size = sizeof(update),
                     .components = &components,
                 };
-                error = xkb_machine_process_synthetic(seat->machine, &update,
+                status = xkb_machine_process_synthetic(seat->machine, &update,
                                                       seat->events);
                 // FIXME: handle error
-                (void)error;
+                (void)status;
                 const struct xkb_event *event;
                 while ((event = xkb_events_next(seat->events))) {
-                    error = xkb_state_update_event(seat->state, event, NULL);
+                    status = xkb_state_update_event(seat->state, event, NULL);
                     // FIXME: handle error
-                    (void)error;
+                    (void)status;
                 }
             } else {
                 fprintf(stderr,
                         "%s: ERROR: Failed to create XKB event queue! "
-                        "Code: 0x%x\n", seat->name_str, error);
+                        "Code: 0x%x\n", seat->name_str, status);
             }
         }
     }

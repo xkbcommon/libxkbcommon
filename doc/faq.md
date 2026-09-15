@@ -684,8 +684,8 @@ const struct xkb_keymap_serialize_config config = {
 
 struct xkb_keymap_serialize_result result = { .size = sizeof(result) };
 
-const xkb_error_code ret = xkb_keymap_serialize(keymap, &config, &result);
-if (ret == XKB_SUCCESS) {
+const xkb_status status = xkb_keymap_serialize(keymap, &config, &result);
+if (status == XKB_SUCCESS) {
     // send result.serialized
     …
 } else {

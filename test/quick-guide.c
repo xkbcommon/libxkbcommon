@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "xkbcommon/xkbcommon-errors.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 
@@ -77,33 +77,33 @@ new_keyboard(struct my_keyboard *keyboard, const struct xkb_rule_names *names)
      * Initialize the state machine
      */
 
-    enum xkb_error_code error;
+    enum xkb_status status;
     struct xkb_machine_builder_config config = { .size = sizeof(config) };
     struct xkb_machine_builder *machine_builder =
-        xkb_machine_builder_new(keymap, &config, &error);
+        xkb_machine_builder_new(keymap, &config, &status);
     if (!machine_builder) {
-        assert(error != XKB_SUCCESS);
-        switch (error) {
+        assert(status != XKB_SUCCESS);
+        switch (status) {
         // ...
         default:
             exit(EXIT_FAILURE);
         }
     }
-    struct xkb_machine *machine = xkb_machine_new(machine_builder, &error);
+    struct xkb_machine *machine = xkb_machine_new(machine_builder, &status);
     xkb_machine_builder_unref(machine_builder);
     if (!machine) {
-        assert(error != XKB_SUCCESS);
-        switch (error) {
+        assert(status != XKB_SUCCESS);
+        switch (status) {
         // ...
         default:
             exit(EXIT_FAILURE);
         }
     }
 
-    struct xkb_events *events = xkb_events_new(keyboard->ctx, NULL, &error);
+    struct xkb_events *events = xkb_events_new(keyboard->ctx, NULL, &status);
     if (!events) {
-        assert(error != XKB_SUCCESS);
-        switch (error) {
+        assert(status != XKB_SUCCESS);
+        switch (status) {
         // ...
         default:
             exit(EXIT_FAILURE);
@@ -155,10 +155,10 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
         : WL_KEYBOARD_KEY_STATE_REPEATED
             ? XKB_KEY_REPEATED
             : XKB_KEY_DOWN;
-    enum xkb_error_code error =
+    enum xkb_status status =
         xkb_machine_process_key(keyboard->machine, keycode, direction,
                                 keyboard->events);
-    if (error != XKB_SUCCESS) {
+    if (status != XKB_SUCCESS) {
         /* Handle error */
         // ...
         exit(EXIT_FAILURE);
@@ -179,8 +179,8 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 exit(EXIT_FAILURE);
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc = XKB_KEYCODE_INVALID;
-                error = xkb_event_get_keycode(event, &kc, &direction);
-                if (error != XKB_SUCCESS) {
+                status = xkb_event_get_keycode(event, &kc, &direction);
+                if (status != XKB_SUCCESS) {
                     /* Handle error */
                     // ...
                     exit(EXIT_FAILURE);
@@ -194,8 +194,8 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 struct xkb_event_components components = {
                     .size = sizeof(components)
                 };
-                error = xkb_event_get_components(event, &components);
-                if (error != XKB_SUCCESS) {
+                status = xkb_event_get_components(event, &components);
+                if (status != XKB_SUCCESS) {
                     /* Handle error */
                     // ...
                     exit(EXIT_FAILURE);
@@ -210,8 +210,8 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 struct xkb_event_pointer_motion motion = {
                     .size = sizeof(motion)
                 };
-                error = xkb_event_get_pointer_motion(event, &motion);
-                if (error != XKB_SUCCESS) {
+                status = xkb_event_get_pointer_motion(event, &motion);
+                if (status != XKB_SUCCESS) {
                     /* Handle error */
                     // ...
                     exit(EXIT_FAILURE);
@@ -224,9 +224,9 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 struct xkb_event_pointer_button button = {
                     .size = sizeof(button)
                 };
-                error = xkb_event_get_pointer_button(event, &button);
-                assert(error == XKB_SUCCESS);
-                if (error != XKB_SUCCESS) {
+                status = xkb_event_get_pointer_button(event, &button);
+                assert(status == XKB_SUCCESS);
+                if (status != XKB_SUCCESS) {
                     /* Handle error */
                     // ...
                     exit(EXIT_FAILURE);
@@ -407,7 +407,7 @@ test_client(void)
     struct xkb_keymap_serialize_result result = {
         .size = sizeof(result),
     };
-    enum xkb_error_code ret = xkb_keymap_serialize(keymap, &config, &result);
+    enum xkb_status ret = xkb_keymap_serialize(keymap, &config, &result);
     assert(ret == XKB_SUCCESS);
 
     xkb_keymap_unref(keymap);
@@ -419,14 +419,14 @@ test_client(void)
     free(result.serialized);
 
 //! [quick-guide-wayland-client-state-example]
-    enum xkb_error_code error;
+    enum xkb_status status;
     struct xkb_state *state;
 
-    state = xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT, &error);
+    state = xkb_state_new_with_mode(keymap, XKB_STATE_MODE_CLIENT, &status);
     if (!state) {
         /* Handle error */
-        assert(error != XKB_SUCCESS);
-        switch (error) {
+        assert(status != XKB_SUCCESS);
+        switch (status) {
         // ...
         default:
             exit(EXIT_FAILURE);
