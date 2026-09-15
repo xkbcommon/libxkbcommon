@@ -54,12 +54,10 @@ static_assert(XKB_KEY_DOWN >= 0 &&
               XKB_KEY_DOWN < UINT32_WIDTH, "");
 static_assert(XKB_KEY_REPEATED >= 0 &&
               XKB_KEY_REPEATED < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_DOWN >= 0 &&
-              XKB_POINTER_BUTTON_DOWN < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_UP >= 0 &&
-              XKB_POINTER_BUTTON_UP < UINT32_WIDTH, "");
-static_assert(XKB_POINTER_BUTTON_CLICK >= 0 &&
-              XKB_POINTER_BUTTON_CLICK < UINT32_WIDTH, "");
+static_assert(XKB_POINTER_BUTTON_RELEASED >= 0 &&
+              XKB_POINTER_BUTTON_RELEASED < UINT32_WIDTH, "");
+static_assert(XKB_POINTER_BUTTON_PRESSED >= 0 &&
+              XKB_POINTER_BUTTON_PRESSED < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_WRAP >= 0 &&
               XKB_LAYOUT_OUT_OF_RANGE_WRAP < UINT32_WIDTH, "");
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_CLAMP >= 0 &&
@@ -165,10 +163,9 @@ enum xkb_enumerations_values {
         | XKB_POINTER_MOTION_ABSOLUTE_X
         | XKB_POINTER_MOTION_ABSOLUTE_Y
     ,
-    XKB_POINTER_BUTTON_DIRECTION_VALUES
-        = (1u << XKB_POINTER_BUTTON_DOWN)
-        | (1u << XKB_POINTER_BUTTON_UP)
-        | (1u << XKB_POINTER_BUTTON_CLICK)
+    XKB_POINTER_BUTTON_STATE_VALUES
+        = (1u << XKB_POINTER_BUTTON_RELEASED)
+        | (1u << XKB_POINTER_BUTTON_PRESSED)
     ,
     XKB_EVENTS_FLAGS_VALUES
         = XKB_EVENTS_NO_FLAGS
@@ -348,10 +345,9 @@ static const uint32_t xkb_pointer_motion_flags_values[] = {
 #endif
 
 #ifdef ENABLE_PRIVATE_APIS
-static const uint32_t xkb_pointer_button_direction_values[] = {
-    XKB_POINTER_BUTTON_DOWN,
-    XKB_POINTER_BUTTON_UP,
-    XKB_POINTER_BUTTON_CLICK,
+static const uint32_t xkb_pointer_button_state_values[] = {
+    XKB_POINTER_BUTTON_RELEASED,
+    XKB_POINTER_BUTTON_PRESSED,
 };
 #endif
 
@@ -493,7 +489,7 @@ static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_EVENT_TYPE,
     XKB_FEATURE_ENUM_KEY_DIRECTION,
     XKB_FEATURE_ENUM_POINTER_MOTION_FLAGS,
-    XKB_FEATURE_ENUM_POINTER_BUTTON_DIRECTION,
+    XKB_FEATURE_ENUM_POINTER_BUTTON_STATE,
     XKB_FEATURE_ENUM_EVENTS_FLAGS,
     XKB_FEATURE_ENUM_COMPOSE_FORMAT,
     XKB_FEATURE_ENUM_COMPOSE_COMPILE_FLAGS,

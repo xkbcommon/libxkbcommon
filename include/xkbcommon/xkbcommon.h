@@ -3494,35 +3494,26 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
                              struct xkb_event_pointer_motion *motion);
 
 /**
- * @enum xkb_pointer_button_direction
+ * @enum xkb_pointer_button_state
  * Specifies the direction of a button (press/release).
  *
  * @sa `struct xkb_event_pointer_button`
  *
  * @since 1.14.0
  */
-enum xkb_pointer_button_direction {
-    /**
-     * The pointer button was *pressed*.
-     *
-     * @since 1.14.0
-     */
-    XKB_POINTER_BUTTON_DOWN = (1 << 0),
+enum xkb_pointer_button_state {
     /**
      * The pointer button was *released*.
      *
      * @since 1.14.0
      */
-    XKB_POINTER_BUTTON_UP = (1 << 1),
+    XKB_POINTER_BUTTON_RELEASED,
     /**
-     * The pointer button was *clicked* (pressed then released).
-     *
-     * Equals `XKB_POINTER_BUTTON_DOWN | XKB_POINTER_BUTTON_UP`.
+     * The pointer button was *pressed*.
      *
      * @since 1.14.0
      */
-    XKB_POINTER_BUTTON_CLICK = ( XKB_POINTER_BUTTON_UP
-                               | XKB_POINTER_BUTTON_DOWN ),
+    XKB_POINTER_BUTTON_PRESSED,
 };
 
 /**
@@ -3555,19 +3546,25 @@ struct xkb_event_pointer_button {
      */
     uint32_t button;
     /**
-     * Button [direction](@ref xkb_pointer_button_direction)
+     * Number of *clicks* reported in this single event.
      *
-     * @sa `enum xkb_pointer_button_direction`
-     *
-     * @since 1.14.0
-     */
-    uint8_t direction;
-    /**
-     * Button count
+     * - `0` denotes a plain press/release described in `#state`.
+     * - A value greater than `0` denotes a complete press-release cycle:
+     *   `1` for a single click, `2` for a double-click, etc.
      *
      * @since 1.14.0
      */
     uint8_t count;
+    /**
+     * Button [state](@ref xkb_pointer_button_state).
+     *
+     * Meaningful only when `#count` is `0`.
+     *
+     * @sa `enum xkb_pointer_button_state`
+     *
+     * @since 1.14.0
+     */
+    uint8_t state;
     /**
      * @private
      *

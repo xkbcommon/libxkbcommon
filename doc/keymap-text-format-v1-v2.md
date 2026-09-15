@@ -4391,20 +4391,20 @@ The repeat counter.
   </tr>
   <tr>
   <th>`count`</th>
-  <th>[`direction`](@ref xkb_event_pointer_button::direction)</th>
   <th>[`count`](@ref xkb_event_pointer_button::count)</th>
+  <th>[`state`](@ref xkb_event_pointer_button::state)</th>
   </tr>
   </thead>
   <tbody>
   <tr>
   <th>0</th>
-  <td>`::XKB_POINTER_BUTTON_DOWN`</td>
-  <td>1</td>
+  <td>0</td>
+  <td>`::XKB_POINTER_BUTTON_PRESSED`</td>
   </tr>
   <tr>
   <th>\> 0</th>
-  <td>`::XKB_POINTER_BUTTON_CLICK`</td>
   <td>`count`</td>
+  <td>(not meaningful)</td>
   </tr>
   </tbody>
   </table>
@@ -4433,15 +4433,15 @@ The repeat counter.
   </tr>
   <tr>
   <th>`count`</th>
-  <th>[`direction`](@ref xkb_event_pointer_button::direction)</th>
   <th>[`count`](@ref xkb_event_pointer_button::count)</th>
+  <th>[`state`](@ref xkb_event_pointer_button::state)</th>
   </tr>
   </thead>
   <tbody>
   <tr>
   <th>0</th>
-  <td>`::XKB_POINTER_BUTTON_UP`</td>
-  <td>1</td>
+  <td>0</td>
+  <td>`::XKB_POINTER_BUTTON_RELEASED`</td>
   </tr>
   <tr>
   <th>\> 0</th>
@@ -4536,10 +4536,10 @@ enumeration:
   - Otherwise it *locks* the mouse button `button` and
     generates the corresponding [pointer button event]&zwnj;:
     <dl>
-    <dt>[`direction`](@ref xkb_event_pointer_button::direction)</dt>
-    <dd>`::XKB_POINTER_BUTTON_DOWN`</dd>
     <dt>[`count`](@ref xkb_event_pointer_button::count)</dt>
-    <dd>1</dd>
+    <dd>0</dd>
+    <dt>[`state`](@ref xkb_event_pointer_button::state)</dt>
+    <dd>`::XKB_POINTER_BUTTON_PRESSED`</dd>
     </dl>
 - Otherwise it generates the usual [key press event].
 </td>
@@ -4560,10 +4560,10 @@ enumeration:
     `affect` is `unlock` or `both`, it *unlocks* `button` and
     generates the corresponding [pointer button event]&zwnj;:
     <dl>
-    <dt>[`direction`](@ref xkb_event_pointer_button::direction)</dt>
-    <dd>`::XKB_POINTER_BUTTON_UP`</dd>
     <dt>[`count`](@ref xkb_event_pointer_button::count)</dt>
-    <dd>1</dd>
+    <dd>0</dd>
+    <dt>[`state`](@ref xkb_event_pointer_button::state)</dt>
+    <dd>`::XKB_POINTER_BUTTON_RELEASED`</dd>
     </dl>
   - Otherwise it has no effect.
 - Otherwise it generates the usual [key release event].
