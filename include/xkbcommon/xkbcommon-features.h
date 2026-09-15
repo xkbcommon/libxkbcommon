@@ -229,11 +229,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_POINTER_MOTION_FLAGS = 27040,
     /**
-     * The enumeration @ref xkb_pointer_button_direction
+     * The enumeration @ref xkb_pointer_button_state
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_POINTER_BUTTON_DIRECTION = 27041,
+    XKB_FEATURE_ENUM_POINTER_BUTTON_STATE = 27041,
     /**
      * The enumeration @ref xkb_events_flags
      *

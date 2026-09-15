@@ -224,10 +224,10 @@ print_event(const char *prefix, const struct xkb_event *event)
         break;
     case XKB_EVENT_TYPE_POINTER_BUTTON:
         fprintf(stderr,
-                "type: pointer button; direction: %"PRIu16"; "
-                "button: %"PRIu32"; count: %"PRIu16"\n",
-                event->pointer_button.direction, event->pointer_button.button,
-                event->pointer_button.count);
+                "type: pointer button; button: %"PRIu32"; "
+                "count: %"PRIu8"; state: %"PRIu8"\n",
+                event->pointer_button.button,
+                event->pointer_button.count, event->pointer_button.state);
         break;
     case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
         /* No parameters */

@@ -4226,7 +4226,7 @@ xkb_event_get_pointer_button(const struct xkb_event * restrict event,
     }
 
     button->button = event->pointer_button.button;
-    button->direction = event->pointer_button.direction;
+    button->state = event->pointer_button.state;
     button->count = event->pointer_button.count;
 
     return XKB_SUCCESS;
@@ -4284,7 +4284,7 @@ xkb_state_update_event(struct xkb_state * restrict base_state,
 static void
 append_pointer_button(struct xkb_events * restrict events,
                       struct xkb_filter * restrict filter,
-                      enum xkb_pointer_button_direction direction,
+                      enum xkb_pointer_button_state button_state,
                       uint8_t count)
 {
     darray_append(events->queue, (struct xkb_event) {
@@ -4293,7 +4293,7 @@ append_pointer_button(struct xkb_events * restrict events,
         .pointer_button = {
             .size = sizeof(((struct xkb_event*)0)->pointer_button),
             .button = filter->priv,
-            .direction = direction,
+            .state = button_state,
             .count = count,
         }
     });
@@ -4319,15 +4319,10 @@ xkb_filter_pointer_button_new(struct xkb_server_state *state,
             : filter->action.btn.button;
     filter->priv = button;
 
-    const enum xkb_pointer_button_direction direction
-        = filter->action.btn.count
-        ? XKB_POINTER_BUTTON_CLICK
-        : XKB_POINTER_BUTTON_DOWN;
-    const uint8_t count
-        = filter->action.btn.count
-        ? filter->action.btn.count
-        : 1;
-    append_pointer_button(events, filter, direction, count);
+    const enum xkb_pointer_button_state button_state =
+        XKB_POINTER_BUTTON_PRESSED;
+    append_pointer_button(events, filter, button_state,
+                          filter->action.btn.count);
     state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
 }
 
@@ -4355,7 +4350,7 @@ xkb_filter_pointer_button_func(struct xkb_server_state *state,
     }
 
     if (!filter->action.btn.count)
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_UP, 1);
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
 
     filter->func = NULL;
     return XKB_FILTER_CONSUME;
@@ -4415,7 +4410,7 @@ xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
     if (!locked && !(filter->action.btn.flags & ACTION_LOCK_NO_LOCK)) {
         sm->mouse.locked_buttons |= mask;
         filter->priv = button;
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_DOWN, 1);
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_PRESSED, 0);
     }
 
     struct xkb_filter_pointer_lock_button_priv *priv =
@@ -4461,7 +4456,7 @@ xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
 
         sm->mouse.locked_buttons &= ~mask;
         filter->priv = priv->button;
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_UP, 1);
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
     }
 
     filter->func = NULL;

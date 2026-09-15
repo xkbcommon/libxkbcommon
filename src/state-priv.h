@@ -191,16 +191,16 @@ static_assert(sizeof(struct xkb_event_pointer_motion) * 30 <=
 struct xkb_event_pointer_button_v1 {
     uint32_t size;
     uint32_t button;
-    uint8_t direction;
     uint8_t count;
+    uint8_t state;
     uint8_t reserved0[2];
 };
 
 /* Ensure there is no implicit padding */
 assert_no_padding(struct xkb_event_pointer_button, size, button);
-assert_no_padding(struct xkb_event_pointer_button, button, direction);
-assert_no_padding(struct xkb_event_pointer_button, direction, count);
-assert_no_padding(struct xkb_event_pointer_button, count, reserved0);
+assert_no_padding(struct xkb_event_pointer_button, button, count);
+assert_no_padding(struct xkb_event_pointer_button, count, state);
+assert_no_padding(struct xkb_event_pointer_button, state, reserved0);
 assert_no_padding(struct xkb_event_pointer_button, reserved0);
 
 /* Current version is 1 */
@@ -208,8 +208,8 @@ static_assert(sizeof(struct xkb_event_pointer_button) ==
               sizeof(struct xkb_event_pointer_button_v1), "");
 assert_same_field(struct xkb_event_pointer_button, _v1, size);
 assert_same_field(struct xkb_event_pointer_button, _v1, button);
-assert_same_field(struct xkb_event_pointer_button, _v1, direction);
 assert_same_field(struct xkb_event_pointer_button, _v1, count);
+assert_same_field(struct xkb_event_pointer_button, _v1, state);
 assert_same_field(struct xkb_event_pointer_button, _v1, reserved0);
 
 /* Ensure reasonable margin to the upper size limit */

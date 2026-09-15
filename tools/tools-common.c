@@ -758,23 +758,25 @@ tools_print_pointer_button(const char * restrict prefix,
     if (options & PRINT_UNILINE) {
         printf("ptr button ");
         printf("[ %10"PRIu32" ] ", button->button);
-        printf("[ %s ] ",
-               (button->direction == XKB_POINTER_BUTTON_DOWN
-                ? "down "
-                : (button->direction == XKB_POINTER_BUTTON_UP
-                    ? " up  "
-                    : "click")));
-        printf("[ %3"PRIu8" ]\n", button->count);
+        if (button->count) {
+            printf("[ click: %3"PRIu8" ]\n", button->count);
+        } else {
+            printf("[  %s   ] ",
+                   (button->state == XKB_POINTER_BUTTON_RELEASED
+                    ? "release"
+                    : " press "));
+        }
     } else {
         printf("ptr button:\n");
-        printf(INDENT "button:    %"PRIu32"\n", button->button);
-        printf(INDENT "direction: %s\n",
-               (button->direction == XKB_POINTER_BUTTON_DOWN
-                ? "down"
-                : (button->direction == XKB_POINTER_BUTTON_UP
-                    ? "up"
-                    : "click")));
-        printf(INDENT "count:     %"PRIu8"\n", button->count);
+        printf(INDENT "button: %"PRIu32"\n", button->button);
+        if (button->count) {
+            printf(INDENT "click:  %"PRIu8"\n", button->count);
+        } else {
+            printf(INDENT "state:  %s\n",
+                   (button->state == XKB_POINTER_BUTTON_RELEASED
+                    ? "release"
+                    : "press"));
+        }
     }
 }
 

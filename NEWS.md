@@ -281,7 +281,7 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   - `struct xkb_event_components` (new)
   - `enum xkb_pointer_motion_flags` (new)
   - `struct xkb_event_pointer_motion` (new)
-  - `enum xkb_pointer_button_direction` (new)
+  - `enum xkb_pointer_button_state` (new)
   - `struct xkb_event_pointer_button` (new)
   - `struct xkb_state`:
     - `xkb_state::xkb_state_new_from_machine()`

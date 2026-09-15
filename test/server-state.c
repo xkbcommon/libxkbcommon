@@ -37,6 +37,8 @@ enum key_directions {
     XKB_KEY_TAP = XKB_KEY_PRESS | XKB_KEY_RELEASE,
 };
 
+#define XKB_POINTER_BUTTON_CLICK XKB_POINTER_BUTTON_PRESSED
+
 static enum xkb_state_component
 xkb_state_update_enabled_controls(struct xkb_state *state,
                                   enum xkb_keyboard_control_flags affect,
@@ -2189,8 +2191,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     },
                     {
@@ -2219,8 +2221,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2304,7 +2306,7 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_CLICK,
+                            .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
                     },
@@ -2405,8 +2407,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     },
                     {
@@ -2526,8 +2528,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2548,8 +2550,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2572,8 +2574,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2665,7 +2667,7 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_CLICK,
+                            .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
                     },
@@ -2701,8 +2703,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2733,7 +2735,7 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 3,
-                            .direction = XKB_POINTER_BUTTON_CLICK,
+                            .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
                     }
@@ -2763,8 +2765,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 3,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2797,8 +2799,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2817,7 +2819,7 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_CLICK,
+                            .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
                     }
@@ -2865,8 +2867,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2887,8 +2889,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -2921,8 +2923,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_DOWN,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_PRESSED,
+                            .count = 0,
                         }
                     }
                 },
@@ -3004,8 +3006,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -3026,8 +3028,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 2,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
@@ -3099,8 +3101,8 @@ test_mouse_keys(struct xkb_context *ctx)
                         .pointer_button = {
                             .size = sizeof(tests->down.events->pointer_button),
                             .button = 1,
-                            .direction = XKB_POINTER_BUTTON_UP,
-                            .count = 1,
+                            .state = XKB_POINTER_BUTTON_RELEASED,
+                            .count = 0,
                         }
                     }
                 },
