@@ -518,7 +518,7 @@ test_state_update_abi(struct xkb_context *ctx)
         );
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_state_unref(state);
     xkb_keymap_unref(keymap);
@@ -557,7 +557,7 @@ test_state_update_basics(struct xkb_context *ctx)
         .key = { .keycode = KEY_A + EVDEV_OFFSET, .direction = XKB_KEY_UP }
     };
     check_events_(events, event); /* only 1 event */
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
 
     /* Check components update mask */
     events = xkb_events_new(ctx, NULL, NULL);
@@ -650,7 +650,7 @@ test_state_update_basics(struct xkb_context *ctx)
 
     xkb_state_unref(state1);
     xkb_state_unref(state2);
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
 
     /* Unconsummed events: xkb_machine_process_synthetic */
@@ -681,7 +681,7 @@ test_state_update_basics(struct xkb_context *ctx)
         }
     };
     check_events_(events, event); /* only 1 event */
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
 
     xkb_machine_builder_unref(builder);
@@ -905,7 +905,7 @@ test_group_wrap(struct xkb_context *ctx)
                   "%"PRIu32);
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_state_unref(state);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
@@ -1171,7 +1171,7 @@ test_sticky_keys(struct xkb_context *ctx)
     }
 
     xkb_state_unref(state);
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
 
     /*
@@ -1242,7 +1242,7 @@ test_sticky_keys(struct xkb_context *ctx)
     assert(mods == 0);
 
     xkb_state_unref(state);
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
 
     xkb_keymap_unref(keymap);
@@ -1483,7 +1483,7 @@ test_redirect_key(struct xkb_context *ctx)
                             tests[t].up.events_count));
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -3143,7 +3143,7 @@ test_mouse_keys(struct xkb_context *ctx)
         }
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -3328,7 +3328,7 @@ test_server_actions(struct xkb_context *ctx)
         }
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -4705,7 +4705,7 @@ test_shortcuts_tweak(struct xkb_context *context)
     );
 
     xkb_machine_unref(sm);
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_builder_unref(builder);
     xkb_keymap_unref(keymap);
 }
@@ -5003,7 +5003,7 @@ test_overlays(struct xkb_context *context)
         check_events_(events, event);
     }
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -5800,7 +5800,7 @@ test_modifiers_tweak(struct xkb_context *context)
         },
     );
 
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
     xkb_machine_unref(sm);
     xkb_keymap_unref(keymap);
 }
@@ -6107,7 +6107,7 @@ test_machine_builder_shortcut_layout_update(struct xkb_context *context)
             KEY_Y        , BOTH, ys[example][1].unmatched, FINISH
         ));
 
-        xkb_events_unref(events);
+        xkb_events_destroy(events);
         xkb_machine_unref(sm);
         xkb_machine_builder_unref(builder);
         xkb_keymap_unref(keymap_);
@@ -6128,7 +6128,7 @@ main(void)
     xkb_state_unref(NULL);
     xkb_machine_unref(NULL);
     xkb_machine_builder_unref(NULL);
-    xkb_events_unref(NULL);
+    xkb_events_destroy(NULL);
 
     test_machine_builder(context);
     test_initial_derived_values(context);
@@ -6144,7 +6144,7 @@ main(void)
     struct xkb_events *events = xkb_events_new(context, NULL, &status);
     assert(events && status == XKB_SUCCESS);
     assert(!xkb_events_next(events));
-    xkb_events_unref(events);
+    xkb_events_destroy(events);
 
     test_state_update_abi(context);
     test_state_update_basics(context);

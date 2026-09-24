@@ -4044,10 +4044,11 @@ xkb_event_get_virtual_console(const struct xkb_event *event,
  * sequentially via `xkb_events_next()`. The collection is reset on each
  * `process_*` call.
  *
+ * @heap_single_ownership{xkb_events,xkb_context}
+ *
  * @sa `xkb_events_new()`
  * @sa `xkb_events_next()`
- * @sa `xkb_events_ref()`
- * @sa `xkb_events_unref()`
+ * @sa `xkb_events_destroy()`
  * @sa `xkb_machine::xkb_machine_process_key()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  *
@@ -4131,7 +4132,9 @@ struct xkb_events_config {
  * [`config->size`](@ref xkb_events_config::size) set per
  * @ref abi-struct-contract.
  *
- * @returns A new [event] collection, or `NULL` on failure.
+ * @returns A newly allocated [event] collection, or `NULL` on failure.
+ * The caller owns the returned object and must release it with
+ * `xkb_events_destroy()`.
  *
  * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
@@ -4141,8 +4144,7 @@ struct xkb_events_config {
  * - `::XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS`
  *
  * @sa `struct xkb_events_config`
- * @sa `xkb_events_ref()`
- * @sa `xkb_events_unref()`
+ * @sa `xkb_events_destroy()`
  * @sa `xkb_events_next()`
  * @sa `xkb_machine::xkb_machine_process_key()`
  *
@@ -4158,35 +4160,7 @@ xkb_events_new(struct xkb_context *context,
                enum xkb_status *status);
 
 /**
- * Take a new reference on an [event](@ref xkb_event) collection object.
- * @memberof xkb_events
- *
- * @note In case the collection is a **batch** of events, it is reset on each
- * `process_*` function call, such as `xkb_machine::xkb_machine_process_key()`
- * or `xkb_machine::xkb_machine_process_synthetic()`. A reference does not
- * preserve the collection’s contents: if the [machine] processes another
- * frame while a reference is held, the events visible through *every*
- * reference are replaced by that frame’s events. Do not hold a reference
- * past the next `process_*` call if you still need to read the current
- * frame's events.
- *
- * @param[in] events The collection to reference.
- *
- * @returns The passed-in collection.
- *
- * @sa `xkb_events_new()`
- * @sa `xkb_events_unref()`
- *
- * @since 1.14.0
- *
- * [machine]: @ref xkb_machine
- */
-XKB_EXPORT struct xkb_events *
-xkb_events_ref(struct xkb_events *events);
-
-/**
- * Release a reference on an [event] collection object,
- * and possibly free it.
+ * Free an [event] collection object.
  * @memberof xkb_events
  *
  * @param[in] events
@@ -4194,14 +4168,13 @@ xkb_events_ref(struct xkb_events *events);
  *     If it is `NULL`, this function does nothing.
  *
  * @sa `xkb_events_new()`
- * @sa `xkb_events_ref()`
  *
  * @since 1.14.0
  *
  * [event]: @ref xkb_event
  */
 XKB_EXPORT void
-xkb_events_unref(struct xkb_events *events);
+xkb_events_destroy(struct xkb_events *events);
 
 /**
  * Get the next [event] from an [event] collection.

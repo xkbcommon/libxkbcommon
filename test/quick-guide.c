@@ -135,7 +135,7 @@ new_keyboard(struct my_keyboard *keyboard, const struct xkb_rule_names *names)
 static int
 destroy_keyboard(struct my_keyboard *keyboard)
 {
-    xkb_events_unref(keyboard->events);
+    xkb_events_destroy(keyboard->events);
     xkb_machine_unref(keyboard->machine);
     xkb_keymap_unref(keyboard->keymap);
     xkb_context_unref(keyboard->ctx);
