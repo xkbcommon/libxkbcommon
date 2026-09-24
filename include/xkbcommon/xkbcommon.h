@@ -545,7 +545,7 @@ typedef uint32_t xkb_led_mask_t;
  * is *not retained* after the function returns.
  *
  * The corresponding argument is `const`-qualified for an <em>[immutable]</em>
- * borrow.
+ * borrow; exceptions are documented for legacy API.
  *
  * @note It is the **default** transfer mode for function **arguments**.
  * </td>
@@ -576,7 +576,7 @@ typedef uint32_t xkb_led_mask_t;
  * overriden or reallocated by the container.
  *
  * The corresponding argument is `const`-qualified for an <em>[immutable]</em>
- * borrow.
+ * borrow; exceptions are documented for legacy API.
  * </td>
  * <td>
  * <ul>
@@ -601,7 +601,7 @@ typedef uint32_t xkb_led_mask_t;
  * lifetime of the recipient.
  *
  * The corresponding argument or return is `const`-qualified to denote
- * an <em>[immutable]</em> borrow.
+ * an <em>[immutable]</em> borrow; exceptions are documented for legacy API.
  * </td>
  * <td>
  * <ul>
@@ -2360,7 +2360,9 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  * Get the compiled keymap as a string.
  * @memberof xkb_keymap
  *
- * @param[in] keymap The keymap to get as a string.
+ * @param[in] keymap
+ *   The keymap to get as a string.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] format The keymap format to use for the string.  You can pass
  * in the special value `::XKB_KEYMAP_USE_ORIGINAL_FORMAT` to use the format
  * from which the keymap was originally created. When used as an *interchange*
@@ -2401,7 +2403,8 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  *
  * @sa `xkb_keycode_t`
  *
@@ -2415,7 +2418,8 @@ xkb_keymap_min_keycode(struct xkb_keymap *keymap);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  *
  * @sa `xkb_keycode_t`
  *
@@ -2679,6 +2683,14 @@ typedef void
  * Run a specified function for every valid keycode in the keymap.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to iterate over.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
+ * @param[in] iter
+ *   The pointer to the function to call on each valid keycode.
+ * @param[in,out] data
+ *   Private data to use inside @p iter.
+ *
  * If a keymap is sparse, this function may be called fewer than
  * (max_keycode - min_keycode + 1) times with success.
  *
@@ -2701,8 +2713,11 @@ xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,
  * This function always returns the canonical name of the key (see
  * description in `xkb_keycode_t`).
  *
- * @param[in] keymap  The keymap to query.
- * @param[in] key     The key to query.
+ * @param[in] keymap
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
+ * @param[in] key
+ *   The key to query.
  *
  * @returns The key name. If no key with this keycode exists,
  * returns `NULL`.
@@ -2721,7 +2736,8 @@ xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
  * The name can be either a canonical name or an alias.
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] name
  *   The key name to look up.
  *
@@ -2740,7 +2756,8 @@ xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  *
  * @sa `xkb_mod_index_t`
  */
@@ -2752,7 +2769,8 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] idx
  *   The modifier index to look up.
  *
@@ -2768,7 +2786,8 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] name
  *   The modifier name to look up.
  *
@@ -2787,7 +2806,8 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
  * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] name
  *   The modifier name to look up.
  *
@@ -2810,7 +2830,8 @@ xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char *name);
  * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] idx
  *   The modifier index to look up.
  *
@@ -2831,7 +2852,8 @@ xkb_keymap_mod_get_mask2(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  *
  * @returns The keymap layout count.
  *
@@ -2847,7 +2869,8 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] idx
  *   The layout index to look up.
  *
@@ -2864,7 +2887,8 @@ xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] name
  *   The layout name to look up.
  *
@@ -2882,7 +2906,8 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  *
  * @returns The keymap LED count.
  *
@@ -2901,7 +2926,8 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] idx
  *   The LED index to look up.
  *
@@ -2915,7 +2941,8 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] name
  *   The LED name to look up.
  *
@@ -2933,8 +2960,11 @@ xkb_keymap_led_get_index(struct xkb_keymap *keymap, const char *name);
  * smaller.  It is the appropriate value to use when iterating over the
  * layouts of a key.
  *
- * @param[in] keymap  The keymap to query.
- * @param[in] key     The key to query.
+ * @param[in] keymap
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
+ * @param[in] key
+ *   The key to query.
  *
  * @returns The number of layouts corresponding to the given key if it is valid
  * in the given keymap, otherwise 0 if the key is undefined or unbound.
@@ -2949,7 +2979,8 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
  * @memberof xkb_keymap
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] key
  *   The key to query.
  * @param[in] layout
@@ -2983,7 +3014,8 @@ xkb_keymap_num_levels_for_key(struct xkb_keymap *keymap, xkb_keycode_t key,
  * will not be returned.
  *
  * @param[in] keymap
- *   The keymap.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] key
  *   The keycode of the key.
  * @param[in] layout
@@ -3029,7 +3061,8 @@ xkb_keymap_key_get_mods_for_level(struct xkb_keymap *keymap,
  * specified explicitly.
  *
  * @param[in] keymap
- *   The keymap.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] key
  *   The keycode of the key.
  * @param[in] layout
@@ -3057,7 +3090,6 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
                                  xkb_keycode_t key,
                                  xkb_layout_index_t layout,
                                  xkb_level_index_t level,
-
                                  const xkb_keysym_t **syms_out);
 
 /**
@@ -3073,7 +3105,8 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
  * is not generally useful or desired.
  *
  * @param[in] keymap
- *   The keymap to query.
+ *   The keymap to query.<br/>
+ *   @transfer_legacy_immutable_call{keymap}
  * @param[in] key
  *   The keycode of the key.
  *
@@ -5459,7 +5492,9 @@ xkb_state_unref(struct xkb_state *state);
  * Get the keymap which a keyboard state object is using.
  * @memberof xkb_state
  *
- * @param[in] state  The keyboard state object.
+ * @param[in] state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
  *
  * @returns The [borrowed] keymap which was passed to `xkb_state_new()` or
  * `xkb_state_new_with_mode()` when creating this state object.
@@ -5764,10 +5799,14 @@ xkb_state_update_latched_locked(struct xkb_state *state,
  * modifiers and shift level for the key, as determined by a keyboard
  * state.
  *
- * @param[in]  state    The keyboard state object.
- * @param[in]  key      The keycode of the key.
- * @param[out] syms_out An immutable array of keysyms corresponding the
- * key in the given keyboard state.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in]  key
+ *   The keycode of the key.
+ * @param[out] syms_out
+ *   An immutable array of keysyms corresponding the
+ *   key in the given keyboard state.
  *
  * As an extension to XKB, this function can return more than one keysym.
  * If you do not want to handle this case, you can use
@@ -5790,7 +5829,9 @@ xkb_state_key_get_syms(struct xkb_state *state, xkb_keycode_t key,
  * in a given keyboard state.
  * @memberof xkb_state
  *
- * @param[in]  state  The keyboard state object.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
  * @param[in]  key    The keycode of the key.
  * @param[out] buffer A buffer to write the string into.
  * @param[in]  size   Capacity of the buffer.
@@ -5820,8 +5861,11 @@ xkb_state_key_get_utf8(struct xkb_state *state, xkb_keycode_t key,
  * key in a given keyboard state.
  * @memberof xkb_state
  *
- * @param[in]  state  The keyboard state object.
- * @param[in]  key    The keycode of the key.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in]  key
+ *   The keycode of the key.
  *
  * @returns The UTF-32 representation for the key, if it consists of only
  * a single codepoint.  Otherwise, returns 0.
@@ -5844,8 +5888,11 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
  * multiple keysyms are returned (in which case this function is
  * preferred).
  *
- * @param[in]  state  The keyboard state object.
- * @param[in]  key    The keycode of the key.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in]  key
+ *   The keycode of the key.
  *
  * @returns The keysym.  If the key does not have exactly one keysym,
  * returns `XKB_KEY_NoSymbol`.
@@ -5861,8 +5908,11 @@ xkb_state_key_get_one_sym(struct xkb_state *state, xkb_keycode_t key);
  * Get the effective layout index for a key in a given keyboard state.
  * @memberof xkb_state
  *
- * @param[in]  state  The keyboard state object.
- * @param[in]  key    The keycode of the key.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in]  key
+ *   The keycode of the key.
  *
  * @returns The layout index for the key in the given keyboard state.  If
  * the given keycode is invalid, or if the key is not included in any
@@ -5882,7 +5932,8 @@ xkb_state_key_get_layout(struct xkb_state *state, xkb_keycode_t key);
  * @memberof xkb_state
  *
  * @param[in] state
- *   The keyboard state.
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
  * @param[in] key
  *   The keycode of the key.
  * @param[in] layout
@@ -5931,9 +5982,11 @@ enum xkb_state_match {
  * This entry point is intended for *server* applications;
  * see @ref server-client-state "" for details.
  *
- * @param[in] state      The keyboard state.
- * @param[in] components A mask of the keyboard control state components to
- * serialize. State components other than `::XKB_STATE_CONTROLS_EFFECTIVE` are ignored.
+ * @param[in] state
+ *   The keyboard state.
+ * @param[in] components
+ *   A mask of the keyboard control state components to serialize.
+ *   State components other than `::XKB_STATE_CONTROLS_EFFECTIVE` are ignored.
  *
  * @returns A `xkb_keyboard_control_flags` mask representing the enabled
  * keyboard controls for the given @p components.
@@ -5960,11 +6013,14 @@ xkb_state_serialize_controls(const struct xkb_state *state,
  * `::XKB_STATE_MODE_CLIENT` or `xkb_state_new()`, and must not be used to
  * update the *server* state.
  *
- * @param[in] state      The keyboard state.
- * @param[in] components A mask of the modifier state components to serialize.
- * State components other than `XKB_STATE_MODS_*` are ignored.
- * If `::XKB_STATE_MODS_EFFECTIVE` is included, all other state components are
- * ignored.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] components
+ *   A mask of the modifier state components to serialize.
+ *   State components other than `XKB_STATE_MODS_*` are ignored.
+ *   If `::XKB_STATE_MODS_EFFECTIVE` is included, all other state components
+ *   are ignored.
  *
  * @returns A `xkb_mod_mask_t` representing the given components of the
  * modifier state.
@@ -5987,11 +6043,14 @@ xkb_state_serialize_mods(struct xkb_state *state,
  * `::XKB_STATE_MODE_CLIENT` or `xkb_state_new()`, and must not be used to
  * update the *server* state.
  *
- * @param[in] state      The keyboard state.
- * @param[in] components A mask of the layout state components to serialize.
- * State components other than `XKB_STATE_LAYOUT_*` are ignored.
- * If `::XKB_STATE_LAYOUT_EFFECTIVE` is included, all other state components are
- * ignored.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] components
+ *   A mask of the layout state components to serialize.
+ *   State components other than `XKB_STATE_LAYOUT_*` are ignored.
+ *   If `::XKB_STATE_LAYOUT_EFFECTIVE` is included, all other state components
+ *   are ignored.
  *
  * @returns A layout index representing the given components of the
  * layout state.
@@ -6007,10 +6066,13 @@ xkb_state_serialize_layout(struct xkb_state *state,
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
- * @param[in]  state  The keyboard state object.
- * @param[in]  name   The modifier name, as a `NULL`-terminated string.
- * @param[in]  type   The component of the state against which to match the
- * given modifiers.
+ * @param[in]  state
+ *   The keyboard state object.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in]  name
+ *   The modifier name, as a `NULL`-terminated string.
+ * @param[in]  type
+ *   The component of the state against which to match the given modifiers.
  *
  * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
  * name does not exist in the keymap, returns -1.
@@ -6033,13 +6095,16 @@ xkb_state_mod_name_is_active(struct xkb_state *state, const char *name,
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
- * @param[in] state The keyboard state.
- * @param[in] type  The component of the state against which to match the
- * given modifiers.
- * @param[in] match The manner by which to match the state against the
- * given modifiers.
- * @param[in] ...   The set of modifier names to test, terminated by a `NULL`
- * argument (sentinel).
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] type
+ *   The component of the state against which to match the given modifiers.
+ * @param[in] match
+ *   The manner by which to match the state against the given modifiers.
+ * @param[in] ...
+ *   The set of modifier names to test, terminated by a `NULL` argument
+ *   (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
  * the modifier names do not exist in the keymap, returns -1. If @p match
@@ -6065,10 +6130,13 @@ xkb_state_mod_names_are_active(struct xkb_state *state,
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
- * @param[in] state The keyboard state.
- * @param[in] idx   The index of the modifier to test.
- * @param[in] type  The component of the state against which to match the
- * given modifiers.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] idx
+ *   The index of the modifier to test.
+ * @param[in] type
+ *   The component of the state against which to match the given modifiers.
  *
  * @returns 1 if the modifier is active, 0 if it is not.  If the modifier
  * index is invalid in the keymap, returns -1.
@@ -6091,13 +6159,16 @@ xkb_state_mod_index_is_active(struct xkb_state *state, xkb_mod_index_t idx,
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
- * @param[in] state The keyboard state.
- * @param[in] type  The component of the state against which to match the
- * given modifiers.
- * @param[in] match The manner by which to match the state against the
- * given modifiers.
- * @param[in] ...   The set of modifier indices to test, terminated by a
- * `::XKB_MOD_INVALID` argument (sentinel).
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] type
+ *   The component of the state against which to match the given modifiers.
+ * @param[in] match
+ *   The manner by which to match the state against the given modifiers.
+ * @param[in] ...
+ *   The set of modifier indices to test, terminated by a `::XKB_MOD_INVALID`
+ *   argument (sentinel).
  *
  * @returns 1 if the modifiers are active, 0 if they are not.  If any of
  * the modifier indices are invalid in the keymap, returns -1. If @p match
@@ -6224,15 +6295,19 @@ enum xkb_consumed_mode {
  * Get the mask of modifiers consumed by translating a given key.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] key   The keycode of the key.
- * @param[in] mode  The consumed modifiers mode to use;
- *                  see [enum description](@ref xkb_consumed_mode).
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] key
+ *   The keycode of the key.
+ * @param[in] mode
+ *   The consumed modifiers mode to use; see the [enum description].
  *
  * @returns a mask of the consumed [real modifiers] modifiers.
  *
  * @since 0.7.0
  *
+ * [enum description]: @ref xkb_consumed_mode
  * [real modifiers]: @ref real-modifier-def
  */
 XKB_EXPORT xkb_mod_mask_t
@@ -6255,7 +6330,9 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t key);
  * @warning For [virtual modifiers], this function may *overmatch* in case
  * there are virtual modifiers with overlapping mappings to [real modifiers].
  *
- * @param[in] state The keyboard state.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
  * @param[in] key   The keycode of the key.
  * @param[in] idx   The index of the modifier to check.
  * @param[in] mode  The consumed modifiers mode to use; see enum description.
@@ -6321,10 +6398,13 @@ xkb_state_mod_mask_remove_consumed(struct xkb_state *state, xkb_keycode_t key,
  * Test whether a layout is active in a given keyboard state by name.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] name  The layout name to test (`NULL`-terminated string).
- * @param[in] type  The component of the state against which to match the
- * given layout.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] name
+ *   The layout name to test (`NULL`-terminated string).
+ * @param[in] type
+ *   The component of the state against which to match the given layout.
  *
  * @returns 1 if the layout is active, 0 if it is not.  If no layout with
  * this name exists in the keymap, return -1.
@@ -6342,10 +6422,13 @@ xkb_state_layout_name_is_active(struct xkb_state *state, const char *name,
  * Test whether a layout is active in a given keyboard state by index.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] idx   The layout index to test.
- * @param[in] type  The component of the state against which to match the
- * given layout.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] idx
+ *   The layout index to test.
+ * @param[in] type
+ *   The component of the state against which to match the given layout.
  *
  * @returns 1 if the layout is active, 0 if it is not.  If the layout index
  * is not valid in the keymap, returns -1.
@@ -6361,8 +6444,11 @@ xkb_state_layout_index_is_active(struct xkb_state *state,
  * Test whether a LED is active in a given keyboard state by name.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] name  The LED name to test (`NULL`-terminated string).
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] name
+ *   The LED name to test (`NULL`-terminated string).
  *
  * @returns 1 if the LED is active, 0 if it not.  If no LED with this name
  * exists in the keymap, returns -1.
@@ -6376,8 +6462,11 @@ xkb_state_led_name_is_active(struct xkb_state *state, const char *name);
  * Test whether a LED is active in a given keyboard state by index.
  * @memberof xkb_state
  *
- * @param[in] state The keyboard state.
- * @param[in] idx   The LED index to test.
+ * @param[in] state
+ *   The keyboard state.<br/>
+ *   @transfer_legacy_immutable_call{state}
+ * @param[in] idx
+ *   The LED index to test.
  *
  * @returns 1 if the LED is active, 0 if it not.  If the LED index is not
  * valid in the keymap, returns -1.

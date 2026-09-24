@@ -113,6 +113,10 @@ ALIASES                += holds_ref{3}="**[Owns](@ref transfer-owned)** a refere
 ALIASES                += borrows{2}="**[Borrows](@ref transfer-retained)** the `\2` passed during initialization. ^^ ^^ \
                           @invariant The *borrowed* `\2` *must* remain \
                           valid for the entire lifetime of an `\1` instance."
+ALIASES                += transfer_legacy_immutable_call{1}="**[Borrowed](@ref transfer-call)** \
+                          for the duration of the function call. The parameter is semantically \
+                          `const`-qualified; however the signature cannot be fixed due to backward-compatibility. \
+                          @xrefitem legacy-immutable-borrow \"\" \"Legacy immutable borrows\" @p \1"
 ALIASES                += transfer_borrowed{1}="**[Borrowed](@ref transfer-retained):** \
                           \1 keeps a pointer to this parameter without taking ownership."
 ALIASES                += transfer_borrowed{2}="\1 **[borrows](@ref transfer-retained)** \2."
