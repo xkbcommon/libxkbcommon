@@ -1657,13 +1657,13 @@ enum xkb_keymap_format {
  */
 
 /**
- * Create a keymap from a [RMLVO] builder.
+ * Create a keymap from a [RMLVO] [builder].
  * @memberof xkb_keymap
  *
  * The primary keymap entry point: creates a new XKB keymap from a set of
  * [RMLVO] \(Rules + Model + Layouts + Variants + Options) names.
  *
- * @param[in] rmlvo   The [RMLVO] builder to use.  See `xkb_rmlvo_builder`.
+ * @param[in] rmlvo   The [RMLVO] [builder] to use.
  * @param[in] format  The text format of the keymap file to compile.
  * @param[in] flags   Optional flags for the keymap, or 0.
  *
@@ -1677,6 +1677,7 @@ enum xkb_keymap_format {
  * @since 1.14.0: Parser is lenient by default.
  *
  * [RMLVO]: @ref RMLVO-intro
+ * [builder]: @ref xkb_rmlvo_builder
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_keymap_new_from_rmlvo(const struct xkb_rmlvo_builder *rmlvo,
@@ -1768,6 +1769,15 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  * This is just like `xkb_keymap_new_from_file()`, but instead of a file, gets
  * the keymap as one enormous string.
  *
+ * @param[in] context
+ *   The context in which to create the keymap.
+ * @param[in] string
+ *   A `NUL`-terminated keymap string to compile.
+ * @param[in] format
+ *   The text format of the keymap file to compile.
+ * @param[in] flags
+ *   Optional flags for the keymap, or 0.
+ *
  * @returns A keymap compiled from the given string, or `NULL` if
  * the compilation failed.
  *
@@ -1786,6 +1796,17 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  *
  * This is just like `xkb_keymap_new_from_string()`, but takes a @p length
  * argument so the input string does not have to be zero-terminated.
+ *
+ * @param[in] context
+ *   The context in which to create the keymap.
+ * @param[in] buffer
+ *   A keymap buffer to compile.
+ * @param[in] length
+ *   The length of @p buffer.
+ * @param[in] format
+ *   The text format of the keymap file to compile.
+ * @param[in] flags
+ *   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled from the given buffer, or `NULL` if
  * the compilation failed.
@@ -2129,6 +2150,9 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
  * Get the minimum keycode in the keymap.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ *
  * @sa `xkb_keycode_t`
  *
  * @since 0.3.1
@@ -2139,6 +2163,9 @@ xkb_keymap_min_keycode(struct xkb_keymap *keymap);
 /**
  * Get the maximum keycode in the keymap.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
  *
  * @sa `xkb_keycode_t`
  *
@@ -2443,7 +2470,12 @@ xkb_keymap_key_get_name(struct xkb_keymap *keymap, xkb_keycode_t key);
  *
  * The name can be either a canonical name or an alias.
  *
- * @returns The keycode. If no key with this name exists,
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] name
+ *   The key name to look up.
+ *
+ * @returns The matching keycode. If no key with this name exists,
  * returns `::XKB_KEYCODE_INVALID`.
  *
  * @sa `xkb_keycode_t`
@@ -2457,6 +2489,9 @@ xkb_keymap_key_by_name(struct xkb_keymap *keymap, const char *name);
  * Get the number of modifiers in the keymap.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ *
  * @sa `xkb_mod_index_t`
  */
 XKB_EXPORT xkb_mod_index_t
@@ -2465,6 +2500,11 @@ xkb_keymap_num_mods(struct xkb_keymap *keymap);
 /**
  * Get the name of a modifier by index.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] idx
+ *   The modifier index to look up.
  *
  * @returns The name.  If the index is invalid, returns `NULL`.
  *
@@ -2476,6 +2516,11 @@ xkb_keymap_mod_get_name(struct xkb_keymap *keymap, xkb_mod_index_t idx);
 /**
  * Get the index of a modifier by name.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] name
+ *   The modifier name to look up.
  *
  * @returns The index.  If no modifier with this name exists, returns
  * `::XKB_MOD_INVALID`.
@@ -2490,6 +2535,11 @@ xkb_keymap_mod_get_index(struct xkb_keymap *keymap, const char *name);
  * @memberof xkb_keymap
  *
  * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] name
+ *   The modifier name to look up.
  *
  * @returns The encoding of a modifier.  Note that it may be 0 if the name does
  * not exist or if the modifier is not mapped.
@@ -2509,6 +2559,11 @@ xkb_keymap_mod_get_mask(struct xkb_keymap *keymap, const char *name);
  *
  * In X11 terminology it corresponds to the mapping to the <em>[real modifiers]</em>.
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] idx
+ *   The modifier index to look up.
+ *
  * @returns The encoding of a modifier.  Note that it may be 0 if the modifier is
  * not mapped.
  *
@@ -2525,6 +2580,11 @@ xkb_keymap_mod_get_mask2(struct xkb_keymap *keymap, xkb_mod_index_t idx);
  * Get the number of layouts in the keymap.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ *
+ * @returns The keymap layout count.
+ *
  * @sa `xkb_layout_index_t`
  * @sa `struct xkb_rule_names`
  * @sa `xkb_keymap_num_layouts_for_key()`
@@ -2535,6 +2595,11 @@ xkb_keymap_num_layouts(struct xkb_keymap *keymap);
 /**
  * Get the name of a layout by index.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] idx
+ *   The layout index to look up.
  *
  * @returns The name.  If the index is invalid, or the layout does not have
  * a name, returns `NULL`.
@@ -2548,6 +2613,11 @@ xkb_keymap_layout_get_name(struct xkb_keymap *keymap, xkb_layout_index_t idx);
  * Get the index of a layout by name.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] name
+ *   The layout name to look up.
+ *
  * @returns The index.  If no layout exists with this name, returns
  * `::XKB_LAYOUT_INVALID`.  If more than one layout in the keymap has this name,
  * returns the lowest index among them.
@@ -2560,6 +2630,11 @@ xkb_keymap_layout_get_index(struct xkb_keymap *keymap, const char *name);
 /**
  * Get the number of LEDs in the keymap.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ *
+ * @returns The keymap LED count.
  *
  * @warning The range [ 0...`xkb_keymap_num_leds()` ) includes all of the LEDs
  * in the keymap, but may also contain inactive LEDs.  When iterating over
@@ -2575,6 +2650,11 @@ xkb_keymap_num_leds(struct xkb_keymap *keymap);
  * Get the name of a LED by index.
  * @memberof xkb_keymap
  *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] idx
+ *   The LED index to look up.
+ *
  * @returns The name.  If the index is invalid, returns `NULL`.
  */
 XKB_EXPORT const char *
@@ -2583,6 +2663,11 @@ xkb_keymap_led_get_name(struct xkb_keymap *keymap, xkb_led_index_t idx);
 /**
  * Get the index of a LED by name.
  * @memberof xkb_keymap
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] name
+ *   The LED name to look up.
  *
  * @returns The index.  If no LED with this name exists, returns
  * `::XKB_LED_INVALID`.
@@ -2613,10 +2698,20 @@ xkb_keymap_num_layouts_for_key(struct xkb_keymap *keymap, xkb_keycode_t key);
  * Get the number of shift levels for a specific key and layout.
  * @memberof xkb_keymap
  *
- * If @c layout is out of range for this key (that is, larger or equal to
- * the value returned by `xkb_keymap_num_layouts_for_key()`), it is brought
- * back into range in a manner consistent with
- * `xkb_state::xkb_state_key_get_layout()`.
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] key
+ *   The key to query.
+ * @param[in] layout
+ *   The layout index to query.<br/>
+ *   If @p layout is out of range for this key (that is, larger or equal to
+ *   the value returned by `xkb_keymap_num_layouts_for_key()`), it is brought
+ *   back into range in a manner consistent with
+ *   `xkb_state::xkb_state_key_get_layout()`.
+ *
+ * @returns The number of shift levels corresponding to the given key and layout
+ * if they are valid in the given keymap, otherwise 0 if the key is undefined or
+ * unbound.
  *
  * @sa `xkb_level_index_t`
  */
@@ -2726,6 +2821,11 @@ xkb_keymap_key_get_syms_by_level(struct xkb_keymap *keymap,
  * there are keys which should not or do not need to be repeated.  For
  * example, repeating modifier keys such as Left/Right Shift or Caps Lock
  * is not generally useful or desired.
+ *
+ * @param[in] keymap
+ *   The keymap to query.
+ * @param[in] key
+ *   The keycode of the key.
  *
  * @returns 1 if the key should repeat, 0 otherwise.
  */
@@ -3496,7 +3596,7 @@ xkb_event_get_pointer_motion(const struct xkb_event *event,
 
 /**
  * @enum xkb_pointer_button_state
- * Specifies the direction of a button (press/release).
+ * Specifies the state of a button (pressed/released).
  *
  * @sa `struct xkb_event_pointer_button`
  *
@@ -3552,6 +3652,9 @@ struct xkb_event_pointer_button {
      * - `0` denotes a plain press/release described in `#state`.
      * - A value greater than `0` denotes a complete press-release cycle:
      *   `1` for a single click, `2` for a double-click, etc.
+     *
+     *   *Timing* considerations (e.g. durations between each atomic button
+     *   state change) are the responsibility of the display server.
      *
      * @since 1.14.0
      */
@@ -3648,7 +3751,7 @@ xkb_event_get_virtual_console(const struct xkb_event *event,
  * Opaque keyboard event collection object.
  *
  * An `xkb_events` batch collects [keyboard events](@ref xkb_event)
- * produced atomically by a single call to an `process_*` function such as
+ * produced atomically by a single call to a `process_*` function such as
  * `xkb_machine::xkb_machine_process_key()`. Events are consumed
  * sequentially via `xkb_events_next()`. The collection is reset on each
  * `process_*` call.
