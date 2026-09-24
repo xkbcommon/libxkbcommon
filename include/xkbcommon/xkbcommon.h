@@ -512,6 +512,175 @@ typedef uint32_t xkb_led_mask_t;
  *
  * </tbody>
  * </table>
+ *
+ * # Object transfer
+ *
+ * @important **xkbcommon *never* takes ownership of *caller*-allocated memory.**
+ * In particular, caller-provided buffers and strings are either [borrowed] for
+ * the duration of a function call or internally copied.
+ *
+ * @remark @anchor c-const-immutability Unlike languages such as Rust, C does
+ * not enforce immutability or borrowing rules. Users are expected to respect
+ * the intended immutability and lifetime guarantees documented by xkbcommon.
+ *
+ * [borrowed]: @ref transfer-call
+ *
+ * xkbcommon objects follow the following **transfer** rules:
+ *
+ * <table>
+ * <caption>Modes of object transfer</caption>
+ * <thead>
+ * <tr>
+ * <th>Mode</th>
+ * <th>Description</th>
+ * <th>Example text</th>
+ * </tr>
+ * </thead>
+ * <tbody>
+ *
+ * <tr>
+ * <th>*Call*-borrowed @anchor transfer-call</th>
+ * <td>
+ * The object is *borrowed* for the duration of the function call and
+ * is *not retained* after the function returns.
+ *
+ * The corresponding argument is `const`-qualified for an <em>[immutable]</em>
+ * borrow.
+ *
+ * @note It is the **default** transfer mode for function **arguments**.
+ * </td>
+ * <td>
+ * <ul>
+ * <li>
+ * ```c
+ * enum Baz foo_get_something(const struct Foo *foo);
+ * ```
+ * </li>
+ * <li>
+ * ```c
+ * enum xkb_status foo_do_something(struct Foo *foo);
+ * ```
+ * </li>
+ * </ul>
+ * *(no documentation text for the default argument transfer mode)*
+ * </td>
+ * </tr>
+ *
+ * <tr>
+ * <th>*Frame*-borrowed @anchor transfer-framed</th>
+ * <td>
+ * The object is *borrowed* for the lifetime of the corresponding **frame** and
+ * must *not* be retained.
+ *
+ * It is stricter than the lifetime of the frame *container*, as a frame can be
+ * overriden or reallocated by the container.
+ *
+ * The corresponding argument is `const`-qualified for an <em>[immutable]</em>
+ * borrow.
+ * </td>
+ * <td>
+ * <ul>
+ * <li>
+ * ```c
+ * const struct Bar* bar = foo_next(struct Foo *foo);
+ * ```
+ *
+ * > `bar` is only valid during the corresponding *frame* stored in `foo`.
+ * <!-- blank required by Doxygen -->
+ *
+ * </li>
+ * </ul>
+ * </td>
+ * </tr>
+ *
+ * <tr>
+ * <th>*Retained*-borrowed @anchor transfer-retained</th>
+ * <td>
+ * The recipient retains a borrowed pointer to the object without
+ * acquiring ownership. The object *must* remain valid for the entire
+ * lifetime of the recipient.
+ *
+ * The corresponding argument or return is `const`-qualified to denote
+ * an <em>[immutable]</em> borrow.
+ * </td>
+ * <td>
+ * <ul>
+ * <li>
+ * ```c
+ * struct Foo* foo_new(const struct Bar *bar);
+ * ```
+ *
+ * > @transfer_borrowed{Newly allocated `Foo` object,@p *bar}
+ * <!-- blank required by Doxygen -->
+ *
+ * </li>
+ * <li>
+ * ```c
+ * enum xkb_status foo_init(struct Foo *foo, const struct Bar *bar);
+ * ```
+ *
+ * > @transfer_borrowed{@p *foo,@p *bar}
+ * <!-- blank required by Doxygen -->
+ *
+ * </li>
+ * </ul>
+ * </td>
+ * </tr>
+ *
+ * <tr>
+ * <th>Owned @anchor transfer-owned</th>
+ * <td>
+ * Ownership of the object is *transferred* to the recipient.
+ * For a reference-counted type, this means the recipient owns one
+ * reference on the value.
+ *
+ * Such function arguments or return values are *never* `const`-qualified,
+ * because they need to modify the reference counter.
+ *
+ * @remark Reminder: xkbcommon *never* takes ownership of *caller*-allocated
+ * memory.
+ *
+ * @remark For a *reference-counted* parameter, the recipient’s reference keeps
+ * the parameter valid for the recipient’s entire lifetime; you may release your
+ * own reference once the call returns.
+ *
+ * @note *Owned* is the **default** mode for function **return values**.
+ * </td>
+ * <td>
+ * <ul>
+ * <li>
+ * ```c
+ * struct Foo* foo_new(enum foo_flags flags);
+ * ```
+ *
+ * *(no documentation text for the default return value transfer mode)*
+ * </li>
+ * <li>
+ * ```c
+ * struct Foo* foo_new(struct Bar *bar);
+ * ```
+ *
+ * > @transfer_owned{Newly allocated `Foo` object,@p *bar}
+ * <!-- blank required by Doxygen -->
+ *
+ * </li>
+ * <li>
+ * ```c
+ * enum xkb_status foo_set_bar(struct Foo *foo, struct Bar *bar);
+ * ```
+ *
+ * > @transfer_owned{@p foo,@p *bar}
+ * <!-- blank required by Doxygen -->
+ *
+ * </li>
+ * </ul>
+ * </td>
+ * </tr>
+ *
+ * </tbody>
+ * </table>
+ *
+ * [immutable]: @ref c-const-immutability
  */
 
 /**
@@ -694,16 +863,21 @@ enum xkb_rmlvo_builder_flags {
  * Create a new [RMLVO] builder.
  * @memberof xkb_rmlvo_builder
  *
- * @param[in] context The context in which to create the builder.
- * @param[in] rules   The ruleset.
- * If `NULL` or the empty string `""`, a default value is used.
- * If the `XKB_DEFAULT_RULES` environment variable is set, it is used
- * as the default.  Otherwise the system default is used.
- * @param[in] model   The keyboard model.
- * If `NULL` or the empty string `""`, a default value is used.
- * If the `XKB_DEFAULT_MODEL` environment variable is set, it is used
- * as the default.  Otherwise the system default is used.
- * @param[in] flags   Optional flags for the builder, or 0.
+ * @param[in] context
+ *   The context in which to create the builder.
+ *   @transfer_owned{the returned builder}
+ * @param[in] rules
+ *   The ruleset.
+ *   If `NULL` or the empty string `""`, a default value is used.
+ *   If the `XKB_DEFAULT_RULES` environment variable is set, it is used
+ *   as the default.  Otherwise the system default is used.
+ * @param[in] model
+ *   The keyboard model.
+ *   If `NULL` or the empty string `""`, a default value is used.
+ *   If the `XKB_DEFAULT_MODEL` environment variable is set, it is used
+ *   as the default.  Otherwise the system default is used.
+ * @param[in] flags
+ *   Optional flags for the builder, or 0.
  *
  * @returns A `xkb_rmlvo_builder`, or `NULL` if the creation failed.
  *
@@ -1312,8 +1486,11 @@ xkb_context_unref(struct xkb_context *context);
  * This may be useful in conjunction with `xkb_context_set_log_fn()`
  * or other callbacks.
  *
- * @param[in,out] context   The context object.
- * @param[in]     user_data User data object.
+ * @param[in,out] context
+ *   The context object.
+ * @param[in] user_data
+ *   User data object.
+ *   @transfer_borrowed{@p *context}
  */
 XKB_EXPORT void
 xkb_context_set_user_data(struct xkb_context *context, void *user_data);
@@ -1324,8 +1501,8 @@ xkb_context_set_user_data(struct xkb_context *context, void *user_data);
  *
  * @param[in] context The context object.
  *
- * @returns The stored user data.  If the user data wasn’t set, or the
- * passed in context is `NULL`, returns `NULL`.
+ * @returns **[Borrowed](@ref transfer-retained)** stored user data.  If the user
+ * data wasn’t set, or the passed-in context is `NULL`, returns `NULL`.
  *
  * This may be useful to access private user data from callbacks like a
  * custom logging function.
@@ -1523,9 +1700,12 @@ xkb_context_get_log_verbosity(struct xkb_context *context);
  * Set a custom function to handle logging messages.
  * @memberof xkb_context
  *
- * @param[in,out] context The context in which to use the set logging function.
- * @param[in]     log_fn  The function that will be called for logging messages.
- * Passing `NULL` restores the default function, which logs to stderr.
+ * @param[in,out] context
+ *   The context in which to use the set logging function.
+ * @param[in]     log_fn
+ *   The function that will be called for logging messages.
+ *   Passing `NULL` restores the default function, which logs to stderr.
+ *   @transfer_borrowed{@p *context}
  *
  * By default, log messages from this library are printed to stderr.  This
  * function allows you to replace the default behavior with a custom
@@ -1726,7 +1906,8 @@ enum xkb_keymap_format {
  * @param[in] flags   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled according to the [RMLVO] names, or `NULL` if
- * the compilation failed.
+ * the compilation failed. @transfer_owned{The returned keymap,
+ * the `xkb_context` associated with @p rmlvo}
  *
  * @sa `xkb_keymap_new_from_names2()`
  * @sa `struct xkb_rmlvo_builder`
@@ -1774,10 +1955,15 @@ xkb_keymap_new_from_names(struct xkb_context *context,
  * The primary keymap entry point: creates a new XKB keymap from a set of
  * [RMLVO] \(Rules + Model + Layouts + Variants + Options) names.
  *
- * @param[in] context The context in which to create the keymap.
- * @param[in] names   The [RMLVO] names to use.  See `xkb_rule_names`.
- * @param[in] format  The text format of the keymap file to compile.
- * @param[in] flags   Optional flags for the keymap, or 0.
+ * @param[in] context
+ *   The context in which to create the keymap.
+ *   @transfer_owned{the returned keymap}
+ * @param[in] names
+ *   The [RMLVO] names to use.  See `xkb_rule_names`.
+ * @param[in] format
+ *   The text format of the keymap file to compile.
+ * @param[in] flags
+ *   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled according to the [RMLVO] names, or `NULL` if
  * the compilation failed.
@@ -1800,10 +1986,15 @@ xkb_keymap_new_from_names2(struct xkb_context *context,
  * Create a keymap from a keymap file.
  * @memberof xkb_keymap
  *
- * @param[in] context The context in which to create the keymap.
- * @param[in] file    The keymap file to compile.
- * @param[in] format  The text format of the keymap file to compile.
- * @param[in] flags   Optional flags for the keymap, or 0.
+ * @param[in] context
+ *   The context in which to create the keymap.
+ *   @transfer_owned{the returned keymap}
+ * @param[in] file
+ *   The keymap file to compile.
+ * @param[in] format
+ *   The text format of the keymap file to compile.
+ * @param[in] flags
+ *   Optional flags for the keymap, or 0.
  *
  * @returns A keymap compiled from the given XKB keymap file, or `NULL` if
  * the compilation failed.
@@ -1829,6 +2020,7 @@ xkb_keymap_new_from_file(struct xkb_context *context, FILE *file,
  *
  * @param[in] context
  *   The context in which to create the keymap.
+ *   @transfer_owned{the returned keymap}
  * @param[in] string
  *   A `NUL`-terminated keymap string to compile.
  * @param[in] format
@@ -1857,6 +2049,7 @@ xkb_keymap_new_from_string(struct xkb_context *context, const char *string,
  *
  * @param[in] context
  *   The context in which to create the keymap.
+ *   @transfer_owned{the returned keymap}
  * @param[in] buffer
  *   A keymap buffer to compile.
  * @param[in] length
@@ -2176,11 +2369,10 @@ xkb_keymap_get_as_string(struct xkb_keymap *keymap,
  *
  * @returns The keymap as a `NULL`-terminated string, or `NULL` if unsuccessful.
  *
+ * @transfer_owned_allocated{string}
+ *
  * The returned string may be fed back into `xkb_keymap_new_from_string()`
  * to get the exact same keymap (possibly in another process, etc.).
- *
- * The returned string is *dynamically allocated* and should be freed by the
- * caller.
  *
  * @sa `xkb_keymap_serialize()`
  * @sa `xkb_keymap_get_as_string()`
@@ -3894,6 +4086,7 @@ struct xkb_events_config {
  *
  * @param[in] context
  *   The context in which to create the object.
+ *   @transfer_owned{the returned `xkb_events`}
  * @param[in] config
  *   Configuration to control the collection behavior, or `NULL` for
  *   the defaults: an `xkb_events_config` struct with `size` set per
@@ -3983,7 +4176,10 @@ xkb_events_unref(struct xkb_events *events);
  *
  * @param[in] events The [event] collection.
  *
- * @returns The next [event], or `NULL` if there are no more events to read.
+ * @returns The **[borrowed](@ref transfer-framed)** next [event],
+ * or `NULL` if there are no more events to read.
+ *
+ * @warning The event is only valid during the corresponding frame lifetime.
  *
  * @since 1.14.0
  *
@@ -4116,6 +4312,7 @@ struct xkb_machine_builder_config {
  *
  * @param[in] keymap
  *   The keymap which the state machine will use.
+ *   @transfer_borrowed{the returned `xkb_machine`}
  * @param[in] config
  *   Configuration to control the builder behavior, or `NULL` for
  *   the defaults: an `xkb_machine_builder_config` struct with `size`
@@ -4186,8 +4383,9 @@ xkb_machine_builder_unref(struct xkb_machine_builder *builder);
  *
  * @param[in] builder The state machine builder object.
  *
- * @returns The keymap which was passed to `xkb_machine_builder_new()` when
- * creating this `xkb_machine_builder` object.
+ * @returns The **[borrowed](@ref transfer-retained)** keymap which was passed
+ * to `xkb_machine_builder_new()` when creating this `xkb_machine_builder`
+ * object.
  *
  * @warning This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
@@ -4592,6 +4790,8 @@ xkb_machine_builder_update_shortcut_override(
  *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @returns A new keyboard state machine object, or `NULL` on failure.
+ * @transfer_owned{The returned `xkb_machine`,the `xkb_keymap` associated
+ * with @p builder}
  *
  * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
@@ -4639,7 +4839,8 @@ xkb_machine_unref(struct xkb_machine *machine);
  *
  * @param[in] machine The state machine.
  *
- * @returns The keymap which was used to create the `xkb_machine` object, i.e.
+ * @returns
+ * The [borrowed] keymap which was used to create the `xkb_machine` object, i.e.
  * the keymap passed to `xkb_machine_builder::xkb_machine_builder_new()` when
  * creating the corresponding [builder](@ref xkb_machine_builder) used in
  * `xkb_machine_new()`.
@@ -4647,6 +4848,8 @@ xkb_machine_unref(struct xkb_machine *machine);
  * @warning This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
  * lifetime of the `xkb_machine` object.
+ *
+ * [borrowed]: @ref transfer-retained
  *
  * @since 1.14.0
  */
@@ -5143,6 +5346,7 @@ enum xkb_state_mode {
  *
  * @param[in] keymap
  *   The keymap which the state will use.
+ *   @transfer_borrowed{the returned `xkb_state`}
  * @param[in] mode
  *   The [state mode][mode] to use.
  * @param[out] status
@@ -5190,6 +5394,8 @@ xkb_state_new_with_mode(struct xkb_keymap *keymap,
  *   Pointer to store the resulting [status code], or `NULL` if not needed.
  *
  * @returns A new keyboard state object, or `NULL` on failure.
+ * @transfer_owned{The returned `xkb_state`,the `xkb_keymap` associated with
+ * @p machine}
  *
  * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
  * on *success* or to an [error code] corresponding to the failure.
@@ -5220,7 +5426,9 @@ xkb_state_new_from_machine(const struct xkb_machine *machine,
  * `xkb_state::xkb_state_new_with_mode()` for new code, which enforces
  * correct API usage at runtime and optimal performance.
  *
- * @param[in] keymap The keymap which the state will use.
+ * @param[in] keymap
+ *   The keymap which the state will use.
+ *   @transfer_owned{the returned `xkb_state`}
  *
  * @returns A new keyboard state object, or `NULL` on failure.
  */
@@ -5253,12 +5461,14 @@ xkb_state_unref(struct xkb_state *state);
  *
  * @param[in] state  The keyboard state object.
  *
- * @returns The keymap which was passed to `xkb_state_new()` or
+ * @returns The [borrowed] keymap which was passed to `xkb_state_new()` or
  * `xkb_state_new_with_mode()` when creating this state object.
  *
  * @warning This function does not take a new reference on the keymap; you must
  * explicitly reference it yourself if you plan to use it beyond the
  * lifetime of the state.
+ *
+ * [borrowed]: @ref transfer-retained
  */
 XKB_EXPORT struct xkb_keymap *
 xkb_state_get_keymap(struct xkb_state *state);

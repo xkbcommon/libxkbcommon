@@ -104,16 +104,24 @@ ALIASES                += rawHtml="@htmlonly<!--"
 ALIASES                += endRawHtml="-->@endhtmlonly"
 
 ### Ownership transfer #########################################################
-ALIASES                += holds_ref{3}="**Owns** a reference to the `\2` \
+ALIASES                += holds_ref{3}="**[Owns](@ref transfer-owned)** a reference to the `\2` \
                           passed during initialization, kept for the entire lifetime of the \
                           `\1` instance and released when calling `\3()`. ^^ ^^ \
                           @invariant The *referenced* `\2` remains valid for the entire \
                           lifetime of an `\1` instance thanks to reference counting on `\2`. \
                           You may release your own reference as soon as the `\1` is created."
-ALIASES                += borrows{2}="**Borrows** the `\2` passed during initialization. ^^ ^^ \
+ALIASES                += borrows{2}="**[Borrows](@ref transfer-retained)** the `\2` passed during initialization. ^^ ^^ \
                           @invariant The *borrowed* `\2` *must* remain \
                           valid for the entire lifetime of an `\1` instance."
-
+ALIASES                += transfer_borrowed{1}="**[Borrowed](@ref transfer-retained):** \
+                          \1 keeps a pointer to this parameter without taking ownership."
+ALIASES                += transfer_borrowed{2}="\1 **[borrows](@ref transfer-retained)** \2."
+ALIASES                += transfer_owned{1}="**[Shared ownership](@ref transfer-owned)**: \
+                          \1 takes a new reference on this parameter."
+ALIASES                += transfer_owned{2}="\1 **[shares ownership](@ref transfer-owned)** \
+                                             of \2 via a new reference."
+ALIASES                += transfer_owned_allocated{1}="@post The returned \1 is *dynamically allocated* and \
+                                                       should be freed by the caller."
 ### Struct ownership ###########################################################
 ALIASES                += ownership{1}="@xrefitem ownership \"Ownership\" \
                           \"Ownership Reference\" \1"
