@@ -15,6 +15,10 @@ SITEMAP_URL            = https://xkbcommon.org/doc/@PACKAGE_VERSION@/
 
 BRIEF_MEMBER_DESC      = NO
 
+REPEAT_BRIEF           = YES
+
+ALWAYS_DETAILED_SEC    = YES
+
 JAVADOC_AUTOBRIEF      = YES
 
 OPTIMIZE_OUTPUT_FOR_C  = YES

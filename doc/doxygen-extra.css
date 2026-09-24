@@ -19,10 +19,6 @@ html.dark-mode {
     margin: 0.3rem;
 }
 
-span.tt {
-    color: var(--fragment-foreground-color);
-}
-
 th a, th a.el, .contents th a {
     color: color-mix(
         in oklch,
@@ -78,7 +74,7 @@ a[href^="https://"]::after
     display: inline-block;
 }
 
-code {
+code, span.tt {
     padding: .2em .4em;
     margin: 0;
     vertical-align: baseline;
