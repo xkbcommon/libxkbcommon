@@ -2432,18 +2432,32 @@ xkb_keymap_max_keycode(struct xkb_keymap *keymap);
  * @struct xkb_keymap_key_iterator
  * Iterator over a keymap’s keys.
  *
+ * @warning This struct should be considered **opaque:**
+ * *do not inspect nor modify its fields!*
+ *
+ * @transient_single_ownership{xkb_keymap_key_iterator,xkb_keymap}
+ *
  * @sa `xkb_keycode_t`
- * @sa `xkb_keymap_key_iterator_new()`
- * @sa `xkb_keymap_key_iterator_ref()`
- * @sa `xkb_keymap_key_iterator_unref()`
+ * @sa `xkb_keymap_key_iterator_init()`
  *
  * @since 1.14.0
  */
-struct xkb_keymap_key_iterator;
+struct xkb_keymap_key_iterator {
+    /**
+     * @private
+     * @opaque_field
+     */
+    const void *opaque0;
+    /**
+     * @private
+     * @opaque_field
+     */
+    const void *opaque1;
+};
 
 /**
  * @enum xkb_keymap_key_iterator_flags
- * Flags for `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`.
+ * Flags for `xkb_keymap_key_iterator_config::flags`.
  *
  * @since 1.14.0
  */
@@ -2476,12 +2490,12 @@ enum xkb_keymap_key_iterator_flags {
  * @struct xkb_keymap_key_iterator_config
  * @ingroup abi-struct-contract
  *
- * Options for creating a new `xkb_keymap_key_iterator`.
+ * Options for initializing an `xkb_keymap_key_iterator`.
  *
  * @note This struct uses a **size-based versioning**;
  * see @ref abi-struct-contract for further details.
  *
- * @sa `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
+ * @sa `xkb_keymap_key_iterator::xkb_keymap_key_iterator_init()`
  *
  * @since 1.14.0
  */
@@ -2506,97 +2520,49 @@ struct xkb_keymap_key_iterator_config {
 };
 
 /**
- * Create a new iterator over a keymap’s keys.
+ * Initialize an iterator over a keymap’s keys.
  * @memberof xkb_keymap_key_iterator
  *
  * @figure@figcaption
  * Intended use
  * @endfigcaption
- * @snippet{trimleft} "test/keymap.c" xkb_keymap_key_iterator_new_example
+ * @snippet{trimleft} "test/keymap.c" xkb_keymap_key_iterator_init_example
  * @endfigure
  *
+ * @param[in,out] iter
+ *   Pointer to the iterator to initialize.
  * @param[in] keymap
- *     The keymap to iterate over.
+ *   The keymap to iterate over.
+ *   @transfer_borrowed{@p iter}
  * @param[in] config
- *     Configuration to control the iterator behavior, or `NULL` for the
- *     defaults: an `xkb_keymap_key_iterator_config` struct with `size`
- *     set per @ref abi-struct-contract and all other fields zeroed.
- * @param[out] status
- *     Pointer to store the resulting [status code], or `NULL` if not needed.
+ *   Configuration to control the iterator behavior, or `NULL` for the
+ *   defaults: an `xkb_keymap_key_iterator_config` struct with `size`
+ *   set per @ref abi-struct-contract and all other fields zeroed.
  *
- * @pre @p config must point to a zero-initialized struct with
- * [`config->size`](@ref xkb_keymap_key_iterator_config::size) set per
+ * @pre If @p config is not `NULL`, it must point to a zero-initialized struct
+ * with [`config->size`](@ref xkb_keymap_key_iterator_config::size) set per
  * @ref abi-struct-contract.
  *
- * @returns A new keys iterator, or `NULL` on failure.
- *
- * @post if `status` is not `NULL`, `*status` is set to `::XKB_SUCCESS`
- * on *success* or to an [error code] corresponding to the failure.
- * Possible errors are:
+ * @returns `::XKB_SUCCESS` on success, otherwise an [error code]
+ * corresponding to the failure. Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution
- * - `::XKB_ERROR_ALLOCATION_FAILURE`
  * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
  *
  * @sa `struct xkb_keymap_key_iterator`
  * @sa `enum xkb_keymap_key_iterator_flags`
  * @sa `xkb_keymap_key_iterator_next()`
- * @sa `xkb_keymap_key_iterator_ref()`
- * @sa `xkb_keymap_key_iterator_unref()`
- * @sa `xkb_keymap_key_iterator_reset()`
  *
  * @since 1.14.0
  *
  * [status code]: @ref xkb_status
  * [error code]: @ref xkb_status
  */
-XKB_EXPORT struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_new(
-    struct xkb_keymap *keymap,
-    const struct xkb_keymap_key_iterator_config *config,
-    enum xkb_status *status
+XKB_EXPORT enum xkb_status
+xkb_keymap_key_iterator_init(
+    struct xkb_keymap_key_iterator *iter,
+    const struct xkb_keymap *keymap,
+    const struct xkb_keymap_key_iterator_config *config
 );
-
-/**
- * Take a new reference on a keymap’s [keys] [iterator] object.
- * @memberof xkb_keymap_key_iterator
- *
- * @note The [iterator]’s cursor is a *shared* state: advancing it via
- * `xkb_keymap_key_iterator_next()` through *any* reference advances it
- * for *every* reference to the same iterator.
- *
- * @param[in] iter The [iterator] to reference.
- *
- * @returns The passed-in [iterator].
- *
- * @sa `xkb_keymap_key_iterator_new()`
- * @sa `xkb_keymap_key_iterator_unref()`
- *
- * @since 1.14.0
- *
- * [keys]: @ref xkb_keycode_t
- * [iterator]: @ref xkb_keymap_key_iterator
- */
-XKB_EXPORT struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter);
-
-/**
- * Release a reference on a keymap’s [keys] [iterator], and possibly free it.
- * @memberof xkb_keymap_key_iterator
- *
- * @param[in] iter
- *     The iterator object.
- *     If it is `NULL`, this function does nothing.
- *
- * @sa `xkb_keymap_key_iterator_new()`
- * @sa `xkb_keymap_key_iterator_ref()`
- *
- * @since 1.14.0
- *
- * [keys]: @ref xkb_keycode_t
- * [iterator]: @ref xkb_keymap_key_iterator
- */
-XKB_EXPORT void
-xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter);
 
 /**
  * Get the next [keycode] from a keymap’s keys iterator.
@@ -2614,7 +2580,7 @@ xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter);
  * are no more entries.
  *
  * @sa `xkb_keycode_t`
- * @sa `xkb_keymap_key_iterator_reset()`
+ * @sa `xkb_keymap_key_iterator_init()`
  *
  * @since 1.14.0
  *
@@ -2622,50 +2588,6 @@ xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter);
  */
 XKB_EXPORT xkb_keycode_t
 xkb_keymap_key_iterator_next(struct xkb_keymap_key_iterator *iter);
-
-/**
- * Reset a keymap’s [keys] [iterator] to its initial position.
- * @memberof xkb_keymap_key_iterator
- *
- * @note The [iterator]’s cursor and configuration are *shared* state:
- * resetting or reconfiguring it via *any* reference affects *every*
- * reference to the same iterator.
- *
- * @param[in,out] iter
- *   The [iterator] to reset.
- * @param[in] config
- *   Configuration to control the iterator behavior, replacing the one
- *   used at [construction] or by a previous call, or `NULL` to keep the
- *   iterator’s current configuration unchanged and only reset the cursor
- *   position.
- *
- * @pre If @p config is not `NULL`, it must point to a zero-initialized struct
- * with [`config->size`](@ref xkb_keymap_key_iterator_config::size) set per
- * @ref abi-struct-contract.
- *
- * @returns `::XKB_SUCCESS` on success, otherwise an [error code]:
- * - Errors from ABI @ref abi-struct-resolution
- * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
- *
- * @post On *failure*, the iterator is left *unchanged*: neither the cursor
- * position nor the configuration are modified.
- *
- * @sa `struct xkb_keymap_key_iterator_config`
- * @sa `xkb_keymap_key_iterator_new()`
- * @sa `xkb_keymap_key_iterator_next()`
- *
- * @since 1.14.0
- *
- * [keys]: @ref xkb_keycode_t
- * [iterator]: @ref xkb_keymap_key_iterator
- * [error code]: @ref xkb_status
- * [construction]: @ref xkb_keymap_key_iterator_new
- */
-XKB_EXPORT enum xkb_status
-xkb_keymap_key_iterator_reset(
-    struct xkb_keymap_key_iterator *iter,
-    const struct xkb_keymap_key_iterator_config *config
-);
 
 /**
  * The iterator used by `xkb_keymap_key_for_each()`.
@@ -4318,7 +4240,7 @@ struct xkb_machine_builder_config {
  *
  * @param[in] keymap
  *   The keymap which the state machine will use.
- *   @transfer_borrowed{the returned `xkb_machine`}
+ *   @transfer_owned{the returned `xkb_machine`}
  * @param[in] config
  *   Configuration to control the builder behavior, or `NULL` for
  *   the defaults: an `xkb_machine_builder_config` struct with `size`

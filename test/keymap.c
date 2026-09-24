@@ -740,37 +740,35 @@ test_key_iterator(void)
     // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
     // NOLINTBEGIN(readability-redundant-nested-if)
     // NOLINTBEGIN(readability-trivial-switch)
-    //! [xkb_keymap_key_iterator_new_example]
+    //! [xkb_keymap_key_iterator_init_example]
     enum xkb_status status;
     struct xkb_keymap_key_iterator_config config = {
         .size = sizeof(config),
         .flags = XKB_KEYMAP_KEY_ITERATOR_NO_FLAGS,
     };
-    struct xkb_keymap_key_iterator *iter =
-        xkb_keymap_key_iterator_new(keymap, &config, &status);
-    if (!iter) {
-        // handle errors
-        assert(status != XKB_SUCCESS);
-        switch(status) {
-        // ...
-        default:
-            exit(EXIT_FAILURE);
-        }
+    struct xkb_keymap_key_iterator iter;
+    status = xkb_keymap_key_iterator_init(&iter, keymap, &config);
+    switch(status) {
+    case XKB_SUCCESS:
+        break;
+    // handle errors
+    // ...
+    default:
+        exit(EXIT_FAILURE);
     }
     xkb_keycode_t kc;
-    while ((kc = xkb_keymap_key_iterator_next(iter)) != XKB_KEYCODE_INVALID) {
+    while ((kc = xkb_keymap_key_iterator_next(&iter)) != XKB_KEYCODE_INVALID) {
         // ...
     }
-    xkb_keymap_key_iterator_unref(iter);
-    //! [xkb_keymap_key_iterator_new_example]
+    //! [xkb_keymap_key_iterator_init_example]
     // NOLINTEND(readability-trivial-switch)
     // NOLINTEND(readability-redundant-nested-if)
     // NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
     /* Reject invalid flags */
     config.flags = UINT32_MAX;
-    assert(!xkb_keymap_key_iterator_new(keymap, &config, &status) &&
-           status == XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
+    assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
+           XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
 
     xkb_keymap_unref(keymap);
 
@@ -858,14 +856,11 @@ test_key_iterator(void)
             XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND,
         };
         for (size_t f = 0; f < ARRAY_SIZE(flags); f++) {
-            fprintf(stderr, "------\n*** %s: #%zu, flags: 0x%x ***\n",
-                    __func__, t, flags[f]);
+            fprintf(stderr, "------\n*** %s: #%zu, flags: #%zu (0x%x) ***\n",
+                    __func__, t, f, flags[f]);
             config.flags = (uint32_t)flags[f];
-            iter = xkb_keymap_key_iterator_new(keymap, &config, &status);
-            assert(iter && status == XKB_SUCCESS);
-            config.flags = -1;
-            assert(xkb_keymap_key_iterator_reset(iter, &config) ==
-                   XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
+            assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
+                   XKB_SUCCESS);
 
             const bool ascending =
                 !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
@@ -889,12 +884,13 @@ test_key_iterator(void)
                     ? 0
                     : XKB_KEYCODE_INVALID;
 
-                while ((current = xkb_keymap_key_iterator_next(iter)) !=
-                    XKB_KEYCODE_INVALID) {
+                while ((current = xkb_keymap_key_iterator_next(&iter)) !=
+                        XKB_KEYCODE_INVALID)
+                {
                     assert(count < expected_count);
                     assert(current == keycodes[index]);
                     assert((ascending && current > previous) ^
-                        (!ascending && current < previous));
+                           (!ascending && current < previous));
 
                     count++;
                     if (ascending)
@@ -906,11 +902,9 @@ test_key_iterator(void)
 
                 assert(count == expected_count);
 
-                assert(xkb_keymap_key_iterator_reset(iter, NULL) ==
+                assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
                        XKB_SUCCESS);
             }
-
-            xkb_keymap_key_iterator_unref(iter);
         }
 
         xkb_keymap_unref(keymap);

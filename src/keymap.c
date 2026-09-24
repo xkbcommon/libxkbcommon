@@ -15,17 +15,19 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
-#include "context.h"
-#include "utils-numbers.h"
 #include "xkbcommon/xkbcommon.h"
 #include "abi-check.h"
 #include "atom.h"
+#include "context.h"
 #include "features/enums.h"
 #include "keymap.h"
 #include "keymap-priv.h"
 #include "messages-codes.h"
 #include "text.h"
+#include "util-mem.h"
+#include "utils-numbers.h"
 
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)
@@ -684,16 +686,6 @@ xkb_keymap_max_keycode(struct xkb_keymap *keymap)
     return keymap->max_key_code;
 }
 
-struct xkb_keymap_key_iterator {
-    const struct xkb_key *min;
-    const struct xkb_key *max;
-    const struct xkb_key *next;
-    struct xkb_keymap *keymap;
-    int refcnt;
-    int8_t increment;
-    bool skip_unbound;
-};
-
 static enum xkb_status
 keymap_key_iterator_config_check(
     struct xkb_context * restrict ctx,
@@ -721,40 +713,32 @@ keymap_key_iterator_config_check(
     return XKB_SUCCESS;
 }
 
-static void
-keymap_key_iterator_init(
-    struct xkb_keymap_key_iterator * restrict iter,
-    const struct xkb_keymap_key_iterator_config * restrict config
-)
-{
-    if (iter->keymap->num_keys == 0) {
-        iter->next = NULL;
-        iter->min = NULL;
-        iter->max = NULL;
-        return;
-    }
+static_assert(XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES <=
+              (int)XKB_POINTER_TAG_MASK,
+              "Cannot tag cursor pointer with flags");
 
-    iter->skip_unbound = !(config->flags & XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND);
-    iter->increment = (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER)
-        ? -1
-        : 1;
-    iter->min = (iter->keymap->num_keys_low)
-        ? &iter->keymap->keys[iter->keymap->min_key_code]
-        : &iter->keymap->keys[0];
-    iter->max = &iter->keymap->keys[iter->keymap->num_keys - 1];
-
-    if (iter->increment < 0) {
-        iter->next = iter->max;
-    } else {
-        iter->next = iter->min;
-    }
+#define iter_init_keymap(i, ptr, flags) {          \
+    (i)->opaque0 = xkb_pointer_tag((ptr), (flags));\
 }
+#define iter_get_keymap(i) (                                  \
+    (const struct xkb_keymap *)xkb_pointer_untag((i)->opaque0)\
+)
+#define iter_get_next(i) ((const struct xkb_key *)(i)->opaque1)
+#define iter_set_next(i, ptr) {(i)->opaque1 = (const void *)(ptr);}
+#define iter_get_descending_order(i) (                  \
+    xkb_pointer_get_tag((i)->opaque0) &                 \
+    (uintptr_t)XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER \
+)
+#define iter_get_include_unbound(i) (                  \
+    xkb_pointer_get_tag((i)->opaque0) &                \
+    (uintptr_t)XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND \
+)
 
-struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_new(
-    struct xkb_keymap * restrict keymap,
-    const struct xkb_keymap_key_iterator_config * restrict config,
-    enum xkb_status * restrict status
+enum xkb_status
+xkb_keymap_key_iterator_init(
+    struct xkb_keymap_key_iterator * restrict iter,
+    const struct xkb_keymap * restrict keymap,
+    const struct xkb_keymap_key_iterator_config * restrict config
 )
 {
     /* Handle default configuration */
@@ -765,103 +749,85 @@ xkb_keymap_key_iterator_new(
         config = &default_config;
 
     /* Check input */
-    const enum xkb_status status_ =
+    const enum xkb_status status =
         keymap_key_iterator_config_check(keymap->ctx, __func__, config);
-    if (status_ != XKB_SUCCESS) {
-        if (status)
-            *status = status_;
-        return NULL;
+    if (status != XKB_SUCCESS) {
+        return status;
     }
 
-    struct xkb_keymap_key_iterator * const iter = calloc(1, sizeof(*iter));
-    if (!iter) {
-        log_err_func1(keymap->ctx, XKB_ERROR_ALLOCATION_FAILURE_,
-                      "Could not allocate a keymap key iterator.\n");
-        if (status)
-            *status = XKB_ERROR_ALLOCATION_FAILURE;
-        return NULL;
+    /*
+     * Initialization
+     */
+
+    memset(iter, 0, sizeof(*iter));
+
+    /* Borrow keymap */
+    iter_init_keymap(iter, keymap, config->flags);
+
+    if (keymap->num_keys == 0) {
+        iter_set_next(iter, NULL);
+        return XKB_SUCCESS;
     }
 
-    if (status)
-        *status = XKB_SUCCESS;
-
-    iter->keymap = xkb_keymap_ref(keymap);
-    iter->refcnt = 1;
-
-    keymap_key_iterator_init(iter, config);
-
-    return iter;
-}
-
-enum xkb_status
-xkb_keymap_key_iterator_reset(
-    struct xkb_keymap_key_iterator * restrict iter,
-    const struct xkb_keymap_key_iterator_config * restrict config
-)
-{
-    if (config) {
-        const enum xkb_status status = keymap_key_iterator_config_check(
-            iter->keymap->ctx, __func__, config
-        );
-        if (status != XKB_SUCCESS)
-            return status;
-        keymap_key_iterator_init(iter, config);
-    } else if (iter->keymap->num_keys == 0) {
-        iter->next = NULL;
-    } else if (iter->increment < 0) {
-        iter->next = iter->max;
+    /* Borrow key */
+    struct xkb_key *next;
+    if (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER) {
+        next = &keymap->keys[keymap->num_keys - 1];
     } else {
-        iter->next = iter->min;
-    }
+        next = (keymap->num_keys_low)
+            ? &keymap->keys[keymap->min_key_code]
+            : &keymap->keys[0];
+    };
+    iter_set_next(iter, next);
 
     return XKB_SUCCESS;
-}
-
-struct xkb_keymap_key_iterator *
-xkb_keymap_key_iterator_ref(struct xkb_keymap_key_iterator *iter)
-{
-    assert(iter->refcnt > 0);
-    iter->refcnt++;
-    return iter;
-}
-
-void
-xkb_keymap_key_iterator_unref(struct xkb_keymap_key_iterator *iter)
-{
-    assert(!iter || iter->refcnt > 0);
-    if (!iter || --iter->refcnt > 0)
-        return;
-
-    xkb_keymap_unref(iter->keymap);
-    free(iter);
 }
 
 xkb_keycode_t
 xkb_keymap_key_iterator_next(struct xkb_keymap_key_iterator *iter)
 {
-    if (!iter->next)
+    const struct xkb_key *next = iter_get_next(iter);
+    if (!next)
         return XKB_KEYCODE_INVALID;
 
-    const struct xkb_key * next = iter->next;
+    const struct xkb_keymap *keymap = iter_get_keymap(iter);
+    assert(keymap->num_keys);
+
+    const bool descending = iter_get_descending_order(iter);
+    const bool skip_unbound = !iter_get_include_unbound(iter);
+    const struct xkb_key *last = descending
+        ? (keymap->num_keys_low)
+            ? &keymap->keys[keymap->min_key_code]
+            : &keymap->keys[0]
+        : &keymap->keys[keymap->num_keys - 1];
+    const ptrdiff_t step = descending ? -1 : 1;
 
     /* Skip undefined keys (no name) and optionally unbound keys */
-    while (next->name == XKB_ATOM_NONE ||
-           (iter->skip_unbound && (next->num_groups == 0))) {
-        next += iter->increment;
-        if (next < iter->min || next > iter->max) {
-            /* No key left */
-            iter->next = NULL;
+    for (;;) {
+        const bool iter_end = descending ? (next <= last) : (next >= last);
+        const bool skip = (
+            next->name == XKB_ATOM_NONE ||
+            (skip_unbound && (next->num_groups == 0))
+        );
+        if (!skip) {
+            const xkb_keycode_t ret = next->keycode;
+            iter_set_next(iter, iter_end ? NULL : next + step);
+            return ret;
+        }
+        if (iter_end) {
+            iter_set_next(iter, NULL);
             return XKB_KEYCODE_INVALID;
         }
+        next += step;
     }
-
-    const xkb_keycode_t ret = next->keycode;
-
-    next += iter->increment;
-    iter->next = (next < iter->min || next > iter->max) ? NULL : next;
-
-    return ret;
 }
+
+#undef iter_init_keymap
+#undef iter_get_keymap
+#undef iter_set_next
+#undef iter_get_next
+#undef iter_get_descending_order
+#undef iter_get_include_unbound
 
 void
 xkb_keymap_key_for_each(struct xkb_keymap *keymap, xkb_keymap_key_iter_t iter,

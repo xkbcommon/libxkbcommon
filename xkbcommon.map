@@ -151,11 +151,8 @@ global:
 V_1.14.0 {
 global:
     xkb_feature_supported;
-    xkb_keymap_key_iterator_new;
+    xkb_keymap_key_iterator_init;
     xkb_keymap_key_iterator_next;
-    xkb_keymap_key_iterator_ref;
-    xkb_keymap_key_iterator_unref;
-    xkb_keymap_key_iterator_reset;
     xkb_keymap_serialize;
     xkb_state_new_with_mode;
     xkb_state_new_from_machine;

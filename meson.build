@@ -223,6 +223,11 @@ if get_option('default-options') != ''
 else
     configh_data.set('DEFAULT_XKB_OPTIONS', 'NULL')
 endif
+have_max_align_t = cc.has_type(
+    'max_align_t',
+    prefix: [system_ext_define, '#include <stddef.h>']
+)
+configh_data.set10('HAVE_MAX_ALIGN_T', have_max_align_t)
 have_unistd_h = cc.has_header('unistd.h')
 configh_data.set10('HAVE_UNISTD_H', have_unistd_h)
 have_dirent_h = cc.has_header('dirent.h')

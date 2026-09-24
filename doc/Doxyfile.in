@@ -161,3 +161,6 @@ ALIASES                += transient_single_ownership{1}="@ownership{ \
 ALIASES                += transient_single_ownership{2}="@transient_single_ownership{\1,\1_init,\2}"
 ALIASES                += transient_single_ownership{3}="@transient_single_ownership{\2} ^^ ^^ \
                           @borrows{\1,\3}"
+
+### Opaque fields ##############################################################
+ALIASES                += opaque_field="@brief *Opaque* field: **do *not* inspect *nor* modify it!**"
