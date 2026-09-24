@@ -27,6 +27,8 @@ xkb_status:
     value: 399
   - name: XKB_ERROR_ABI_INVALID_STRUCT_SIZE
     value: 450
+  - name: XKB_ERROR_INVALID_KEYCODE
+    value: 538
   - name: XKB_ERROR_ALLOCATION_FAILURE
     value: 550
   - name: XKB_ERROR_UNSUPPORTED_EVENTS_FLAGS

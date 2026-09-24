@@ -183,6 +183,14 @@ enum xkb_status {
      */
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE = 450,
     /**
+     * Invalid keycode
+     *
+     * See `xkb_keycode_t` for the valid range of keycodes.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_INVALID_KEYCODE = 538,
+    /**
      * Cannot allocate memory
      *
      * @since 1.14.0
