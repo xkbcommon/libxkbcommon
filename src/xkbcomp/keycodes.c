@@ -721,7 +721,7 @@ static bool
 HandleKeycodeDef(KeyNamesInfo *info, KeycodeDef *stmt, bool report)
 {
     if (stmt->value < 0 || stmt->value > XKB_KEYCODE_MAX) {
-        log_err(info->ctx, XKB_LOG_MESSAGE_NO_ID,
+        log_err(info->ctx, XKB_ERROR_INVALID_KEYCODE_,
                 "Illegal keycode %"PRId64": must be between 0..%u; "
                 "Key ignored\n", stmt->value, XKB_KEYCODE_MAX);
         return false;

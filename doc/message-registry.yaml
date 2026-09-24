@@ -512,6 +512,16 @@
   added: ALWAYS
   type: warning
   description: "Conflicting definitions of a key name or alias"
+- id: "invalid-keycode"
+  code: 538
+  added:
+    internal: ALWAYS
+    public: 1.14.0
+  type: error
+  visibility: public
+  description: "Invalid keycode"
+  details: |
+    See `xkb_keycode_t` for the valid range of keycodes.
 - id: "invalid-file-encoding"
   code: 542
   added: 1.7.0

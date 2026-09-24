@@ -166,6 +166,8 @@ enum xkb_message_code {
     XKB_WARNING_EXTRA_SYMBOLS_IGNORED = 516,
     /** Conflicting definitions of a key name or alias */
     XKB_WARNING_CONFLICTING_KEY_NAME = 523,
+    /** Invalid keycode */
+    XKB_ERROR_INVALID_KEYCODE_ = 538,
     /** Invalid file encoding */
     XKB_ERROR_INVALID_FILE_ENCODING = 542,
     /** Cannot allocate memory */
