@@ -2,6 +2,8 @@
 #          Do not edit manually.
 Doxygen_List_deprecated.html:
 - deprecated.html
+Doxygen_List_ownership.html:
+- ownership.html
 Doxygen_List_todo.html:
 - todo.html
 __optional__:
@@ -84,6 +86,7 @@ group__led-names.html: []
 group__legacy-virtual-modifier-names.html: []
 group__logging.html: []
 group__modifier-names.html: []
+group__ownership-model.html: []
 group__predefined-keysyms.html: []
 group__real-modifier-names.html: []
 group__registry.html: []

@@ -63,6 +63,8 @@ extern "C" {
  * Objects are created in a specific context, and multiple contexts may
  * coexist simultaneously.  Objects from different contexts are completely
  * separated and do not share any memory or state.
+ *
+ * @ref_counted{xkb_context}
  */
 struct xkb_context;
 
@@ -76,6 +78,8 @@ struct xkb_context;
  *
  * A keymap is immutable after it is created (besides reference counts, etc.);
  * if you need to change it, you must create a new one.
+ *
+ * @ref_counted{xkb_keymap,xkb_context}
  */
 struct xkb_keymap;
 
@@ -101,6 +105,8 @@ struct xkb_keymap;
  * See @ref server-client-state for details.
  *
  * See the [example for a Wayland server] in the quick guide.
+ *
+ * @ref_counted{xkb_machine,xkb_keymap}
  *
  * @since 1.14.0
  *
@@ -166,6 +172,8 @@ struct xkb_machine;
  * </dl>
  *
  * See @ref server-client-state and @ref xkb_state_mode for further details.
+ *
+ * @ref_counted{xkb_state,xkb_keymap}
  *
  * [Mealy machine]: https://en.wikipedia.org/wiki/Mealy_machine
  * [keycode]: @ref xkb_keycode_t
@@ -459,6 +467,54 @@ typedef uint32_t xkb_led_mask_t;
 #define xkb_keycode_is_legal_x11(key) ((key) >= 8 && (key) <= 255)
 
 /**
+ * @defgroup ownership-model Ownership model
+ * Explain how xkbcommon handle object’s ownership
+ *
+ * @tableofcontents{html:2}
+ *
+ * # Types of ownership
+ *
+ * xkbcommon uses 3 types of **ownership**:
+ *
+ * <table>
+ * <caption>Types of ownership</caption>
+ * <thead>
+ * <tr>
+ * <th>Ownership</th>
+ * <th>Allocator</th>
+ * <th>Allocation</th>
+ * <th>References</th>
+ * <th>Examples</th>
+ * </tr>
+ * </thead>
+ * <tbody>
+ *
+ * <tr>
+ * <td rowspan="2">Exclusive @anchor exclusive-ownership</td>
+ * <td>User</td>
+ * <td>Stack / caller managed</td>
+ * <td>**None**</td>
+ * <td>`xkb_keymap_key_iterator`, `xkb_keymap_serialize_config`</td>
+ * </tr>
+ *
+ * <tr>
+ * <td rowspan="2">xkbcommon</td>
+ * <td rowspan="2">Heap</td>
+ * <td>**Exclusive** (sole owner)</td>
+ * <td>`xkb_events`</td>
+ * </tr>
+ *
+ * <tr>
+ * <td>Shared @anchor shared-ownership</td>
+ * <td>**Ref-counted**</td>
+ * <td>`xkb_context`, `xkb_keymap`</td>
+ * </tr>
+ *
+ * </tbody>
+ * </table>
+ */
+
+/**
  * @defgroup abi-struct-contract Extensible structure ABI contract
  *
  * @brief Explains how extensible structures maintain ABI compatibility
@@ -607,6 +663,8 @@ typedef uint32_t xkb_led_mask_t;
  * Opaque [RMLVO] configuration object.
  *
  * It denotes the configuration values by which a user picks a keymap.
+ *
+ * @ref_counted{xkb_rmlvo_builder,xkb_context}
  *
  * @sa [Introduction to RMLVO][RMLVO]
  * @sa @ref rules-api ""
@@ -2946,6 +3004,11 @@ xkb_keymap_key_repeats(struct xkb_keymap *keymap, xkb_keycode_t key);
  * @struct xkb_event
  * Opaque keyboard **state event** object.
  *
+ * @heap_item_single_ownership{xkb_events,An event is *valid only inside a
+ * frame*.}
+ *
+ * @todo Define what is a frame
+ *
  * Events are produced by `xkb_machine::xkb_machine_process_key()` and
  * `xkb_machine::xkb_machine_process_synthetic()` and collected into an
  * `xkb_events` batch. Each event represents one atomic state change or key
@@ -3940,6 +4003,8 @@ xkb_events_next(struct xkb_events *events);
  * and destroyed when no longer needed. If a single `xkb_machine` object is
  * built, then the builder may be destroyed immediately after
  * `xkb_machine::xkb_machine_new()` returns.
+ *
+ * @ref_counted{xkb_machine_builder,xkb_keymap}
  *
  * @sa `struct xkb_machine_builder_config`
  * @sa `xkb_machine_builder::xkb_machine_builder_new()`
