@@ -56,17 +56,19 @@
  * on each `process_*` call.
  *
  * @warning Not thread-safe. Must only be used from a single thread.
- * For multi-threaded use, we need a future `xkb_event` **queue** to
+ *
+ * @todo For multi-threaded use, we need a future `xkb_event` **queue** to
  * provide a thread-safe implementation (e.g. circular buffer).
  */
 struct xkb_events {
-    /**
-     * Read cursor for `xkb_events_next()`. Reset to 0 on each `process_*` call.
-     */
     struct xkb_context *ctx;
     darray(struct xkb_event) queue;
+    /**
+     * Read cursor for `xkb_events_next()`.
+     *
+     * Reset to 0 on each `process_*` call.
+     */
     darray_size_t next;
-    int refcnt;
 };
 
 struct xkb_server_state;
@@ -4107,23 +4109,13 @@ xkb_events_new(struct xkb_context * restrict context,
     events->ctx = xkb_context_ref(context);
     darray_init(events->queue);
     events->next = 0;
-    events->refcnt = 1;
-    return events;
-}
-
-struct xkb_events *
-xkb_events_ref(struct xkb_events *events)
-{
-    assert(events->refcnt > 0);
-    events->refcnt++;
     return events;
 }
 
 void
-xkb_events_unref(struct xkb_events *events)
+xkb_events_destroy(struct xkb_events *events)
 {
-    assert(!events || events->refcnt > 0);
-    if (!events || --events->refcnt > 0)
+    if (!events)
         return;
     darray_free(events->queue);
     xkb_context_unref(events->ctx);
