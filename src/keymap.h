@@ -969,6 +969,72 @@ XkbKey(const struct xkb_keymap *keymap, xkb_keycode_t kc)
     }
 }
 
+/**
+ * Returns the the next *defined* key (i.e. with a name) in the given
+ * direction, starting from kc (inclusive). I.e. the key with either:
+ * - the smallest keycode >= kc if ascending = true, or
+ * - the largest keycode <= kc if ascending = false.
+ *
+ * Returns NULL if no such key exists.
+ */
+static inline const struct xkb_key *
+xkb_keymap_get_next_defined_key(const struct xkb_keymap *keymap,
+                                bool ascending, xkb_keycode_t kc)
+{
+    /* Unsupported keycodes */
+    if (!keymap->num_keys || kc > XKB_KEYCODE_MAX) {
+        return NULL;
+    } else if (kc < keymap->min_key_code) {
+        kc = keymap->min_key_code;
+    } else if (kc > keymap->max_key_code) {
+        kc = keymap->max_key_code;
+    }
+
+    if (kc < keymap->num_keys_low) {
+        /* Low keycodes */
+        const struct xkb_key *key = &keymap->keys[kc];
+        if (ascending) {
+            const struct xkb_key *end = &keymap->keys[keymap->num_keys_low - 1];
+            while (key->name == XKB_ATOM_NONE && key < end) key++;
+        } else {
+            const struct xkb_key *end = &keymap->keys[keymap->min_key_code];
+            while (key->name == XKB_ATOM_NONE && key > end) key--;
+        }
+        return (key->name == XKB_ATOM_NONE) ? NULL : key;
+    } else {
+        /* High keycodes: use binary search */
+        xkb_keycode_t lower = keymap->num_keys_low
+            ? keymap->num_keys_low - 1 /* Last low keycode */
+            : 0;                       /* First high keycode */
+        xkb_keycode_t upper = keymap->num_keys - 1;
+        const struct xkb_key * candidate = NULL;
+        while (lower <= upper) {
+            const xkb_keycode_t mid = lower + (upper - lower) / 2;
+            const struct xkb_key * const key = &keymap->keys[mid];
+            if (key->keycode == kc) {
+                return key;
+            } else if (ascending) {
+                /* Looking for the *smallest* defined keycode >= kc */
+                if (key->keycode >= kc) {
+                    candidate = key;
+                    upper = mid - 1;
+                } else {
+                    lower = mid + 1;
+                }
+            } else {
+                /* Looking for the *smallest* defined keycode <= kc */
+                if (key->keycode <= kc) {
+                    candidate = key;
+                    lower = mid + 1;
+                } else if (key->keycode > kc) {
+                    upper = mid - 1;
+                }
+            }
+        }
+        return candidate;
+    }
+}
+
 static inline xkb_level_index_t
 XkbKeyNumLevels(const struct xkb_key *key, xkb_layout_index_t layout)
 {

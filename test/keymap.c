@@ -106,6 +106,269 @@ test_supported_formats(void)
 }
 
 static void
+test_xkb_key(void)
+{
+    struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
+    assert(context);
+
+    static_assert(XKB_KEYCODE_MAX_CONTIGUOUS == 0xfff, "Out-of-sync");
+    static const struct {
+        const char *keymap;
+        struct {
+            xkb_keycode_t target;
+            xkb_keycode_t exact;
+            xkb_keycode_t ascending;
+            xkb_keycode_t descending;
+        } keycodes[10];
+    } tests[] = {
+        {
+            .keymap = "xkb_keymap {};",
+            /* FIXME: seems silly to allocate 256 keycodes for an empty keymap! */
+            .keycodes = {
+                {
+                    .target = 0 /* min */,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = 3,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = 254,
+                    .exact = 254,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = 256,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS + 1,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = 0x2000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = 0x4000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+                {
+                    .target = XKB_KEYCODE_INVALID,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+            },
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <4> = 4;\n"
+                "    <2> = 2;\n"
+                "    <9> = 9;\n"
+                "  };\n"
+                "};",
+            .keycodes = {
+                {
+                    .target = 0 /* min */,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 2,
+                    .descending = 2,
+                },
+                {
+                    .target = 2,
+                    .exact = 2,
+                    .ascending = 2,
+                    .descending = 2,
+                },
+                {
+                    .target = 3,
+                    .exact = 3,
+                    .ascending = 4,
+                    .descending = 2,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS - 1,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS + 1,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = 0x2000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = 0x4000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 9,
+                    .descending = 9,
+                },
+                {
+                    .target = XKB_KEYCODE_INVALID,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+            },
+        },
+        {
+            .keymap =
+                "xkb_keymap {\n"
+                "  xkb_keycodes {\n"
+                "    <0x4000> = 0x4000;\n"
+                "    <0x2000> = 0x2000;\n"
+                "    <0x9000> = 0x9000;\n"
+                "  };\n"
+                "};",
+            .keycodes = {
+                {
+                    .target = 0 /* min */,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x2000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS - 1,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x2000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x2000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX_CONTIGUOUS + 1,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x2000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = 0x2000,
+                    .exact = 0x2000,
+                    .ascending = 0x2000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = 0x3000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x4000,
+                    .descending = 0x2000,
+                },
+                {
+                    .target = 0x4000,
+                    .exact = 0x4000,
+                    .ascending = 0x4000,
+                    .descending = 0x4000,
+                },
+                {
+                    .target = 0x10000,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x9000,
+                    .descending = 0x9000,
+                },
+                {
+                    .target = XKB_KEYCODE_MAX,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = 0x9000,
+                    .descending = 0x9000,
+                },
+                {
+                    .target = XKB_KEYCODE_INVALID,
+                    .exact = XKB_KEYCODE_INVALID,
+                    .ascending = XKB_KEYCODE_INVALID,
+                    .descending = XKB_KEYCODE_INVALID,
+                },
+            },
+        },
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        struct xkb_keymap *keymap = test_compile_string(
+            context, XKB_KEYMAP_FORMAT_TEXT_V1, tests[t].keymap
+        );
+        assert(keymap);
+
+        for (size_t k = 0; k < ARRAY_SIZE(tests[t].keycodes); k++) {
+            const xkb_keycode_t target = tests[t].keycodes[k].target;
+            fprintf(stderr,
+                    "------\n*** %s: #%zu, key count: %"PRIu32", "
+                    "target: #%zu (0x%"PRIx32") ***\n",
+                    __func__, t, keymap->num_keys, k, target);
+            const struct xkb_key *key;
+            xkb_keycode_t expected;
+            xkb_keycode_t got;
+            key = XkbKey(keymap, target);
+            got = key ? key->keycode : XKB_KEYCODE_INVALID;
+            expected = tests[t].keycodes[k].exact;
+            assert_eq("exact", expected, got, "0x%"PRIx32);
+            key = xkb_keymap_get_next_defined_key(keymap, true, target);
+            got = key ? key->keycode : XKB_KEYCODE_INVALID;
+            expected = tests[t].keycodes[k].ascending;
+            assert_eq("ascending", expected, got, "0x%"PRIx32);
+            key = xkb_keymap_get_next_defined_key(keymap, false, target);
+            got = key ? key->keycode : XKB_KEYCODE_INVALID;
+            expected = tests[t].keycodes[k].descending;
+            assert_eq("descending", expected, got, "0x%"PRIx32);
+        }
+
+        xkb_keymap_unref(keymap);
+    }
+
+    xkb_context_unref(context);
+}
+
+static void
 test_garbage_key(void)
 {
     struct xkb_context *context = test_get_context(CONTEXT_NO_FLAG);
@@ -1089,6 +1352,7 @@ main(int argc, char *argv[])
     }
 
     test_supported_formats();
+    test_xkb_key();
     test_garbage_key();
     test_keymap();
     test_no_extra_groups();
