@@ -205,11 +205,8 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   - `struct xkb_keymap_key_iterator`
   - `enum xkb_keymap_key_iterator_flags`
   - `struct xkb_keymap_key_iterator_config`
-  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_new()`
-  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_ref()`
-  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_unref()`
+  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_init()`
   - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_next()`
-  - `xkb_keymap_key_iterator::xkb_keymap_key_iterator_reset()`
 
   It has the following pros over `xkb_keymap::xkb_keymap_key_for_each()`:
   - lazy (i.e. on-demand);
