@@ -96,17 +96,20 @@ static_assert(sizeof(struct xkb_keymap_serialize_result) * 30 <=
 struct xkb_keymap_key_iterator_config_v1 {
     uint32_t size;
     uint32_t flags;
+    xkb_keycode_t start;
 };
 
 /* Ensure there is no implicit padding */
 assert_no_padding(struct xkb_keymap_key_iterator_config, size, flags);
-assert_no_padding(struct xkb_keymap_key_iterator_config, flags);
+assert_no_padding(struct xkb_keymap_key_iterator_config, flags, start);
+assert_no_padding(struct xkb_keymap_key_iterator_config, start);
 
 /* Current version is 1 */
 static_assert(sizeof(struct xkb_keymap_key_iterator_config) ==
               sizeof(struct xkb_keymap_key_iterator_config_v1), "");
 assert_same_field(struct xkb_keymap_key_iterator_config, _v1, size);
 assert_same_field(struct xkb_keymap_key_iterator_config, _v1, flags);
+assert_same_field(struct xkb_keymap_key_iterator_config, _v1, start);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_keymap_key_iterator_config) * 30 <=

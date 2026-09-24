@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "evdev-scancodes.h"
 #include "test.h"
@@ -1032,9 +1033,15 @@ test_key_iterator(void)
     config.flags = UINT32_MAX;
     assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
            XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS);
+    /* Reject invalid keycode */
+    config.flags = 0;
+    config.start = XKB_KEYCODE_INVALID;
+    assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
+           XKB_ERROR_INVALID_KEYCODE);
 
     xkb_keymap_unref(keymap);
 
+    static_assert(XKB_KEYCODE_MAX_CONTIGUOUS == 0xfff, "Out-of-sync");
     static const xkb_keycode_t test0_all[] = {1, 2, 9};
     static const xkb_keycode_t test0_bound[] = {2, 9};
     static const xkb_keycode_t test1_all[] = {0x1000, 0x2000, 0x9000};
@@ -1042,13 +1049,33 @@ test_key_iterator(void)
     static const xkb_keycode_t test2_all[] = {9, 0x1000, 0x2000};
     static const xkb_keycode_t test2_bound[] = {9, 0x2000};
 
+    enum { ITER_DEFAULT_START, ITER_EXPLICIT_START, _NUM_ITER_START_TYPES };
+    enum { ITER_ASCENDING, ITER_DESCENDING, _NUM_ITER_DIRECTIONS };
+    enum { ITER_ALL_KEYS, ITER_BOUND_KEYS, _NUM_ITER_KEY_BOUND_TYPES };
+
     static const struct {
         const char *keymap;
-        const xkb_keycode_t *keys_all;
-        const xkb_keycode_t *keys_bound;
-        size_t num_keys_all;
-        size_t num_keys_bound;
+        struct test_key_iterator {
+            struct test_key_iterator_direction {
+                const xkb_keycode_t *keys;
+                size_t keys_count;
+            } directions[_NUM_ITER_DIRECTIONS][_NUM_ITER_KEY_BOUND_TYPES];
+            xkb_keycode_t start;
+        } data[_NUM_ITER_START_TYPES];
     } tests[] = {
+        {
+            .keymap = "xkb_keymap {};",
+            .data = {
+                [ITER_DEFAULT_START] = {
+                    .start = 0,
+                    .directions = {{{0}}},
+                },
+                [ITER_EXPLICIT_START] = {
+                    .start = 2,
+                    .directions = {{{0}}},
+                },
+            },
+        },
         {
             .keymap =
                 "xkb_keymap {\n"
@@ -1062,10 +1089,58 @@ test_key_iterator(void)
                 "    key <9> {[9]};\n"
                 "  };\n"
                 "};",
-            .keys_all = test0_all,
-            .num_keys_all = ARRAY_SIZE(test0_all),
-            .keys_bound = test0_bound,
-            .num_keys_bound = ARRAY_SIZE(test0_bound),
+            .data = {
+                [ITER_DEFAULT_START] = {
+                    .start = 0,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test0_all,
+                                .keys_count = ARRAY_SIZE(test0_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test0_bound,
+                                .keys_count = ARRAY_SIZE(test0_bound),
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test0_all + ARRAY_SIZE(test0_all) - 1,
+                                .keys_count = ARRAY_SIZE(test0_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test0_bound + ARRAY_SIZE(test0_bound) - 1,
+                                .keys_count = ARRAY_SIZE(test0_bound),
+                            }
+                        },
+                    },
+                },
+                [ITER_EXPLICIT_START] = {
+                    .start = 2,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test0_all[1],
+                                .keys_count = 2,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test0_bound,
+                                .keys_count = ARRAY_SIZE(test0_bound),
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test0_all[1],
+                                .keys_count = 2,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test0_bound,
+                                .keys_count = 1,
+                            }
+                        },
+                    },
+                }
+            },
         },
         {
             .keymap =
@@ -1080,10 +1155,58 @@ test_key_iterator(void)
                 "    key <0x9000> {[9]};\n"
                 "  };\n"
                 "};",
-            .keys_all = test1_all,
-            .num_keys_all = ARRAY_SIZE(test1_all),
-            .keys_bound = test1_bound,
-            .num_keys_bound = ARRAY_SIZE(test1_bound),
+            .data = {
+                [ITER_DEFAULT_START] = {
+                    .start = 0,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test1_all,
+                                .keys_count = ARRAY_SIZE(test1_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test1_bound,
+                                .keys_count = ARRAY_SIZE(test1_bound),
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test1_all + ARRAY_SIZE(test1_all) - 1,
+                                .keys_count = ARRAY_SIZE(test1_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test1_bound + ARRAY_SIZE(test1_bound) - 1,
+                                .keys_count = ARRAY_SIZE(test1_bound),
+                            }
+                        },
+                    },
+                },
+                [ITER_EXPLICIT_START] = {
+                    .start = 0x4000,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test1_all[2],
+                                .keys_count = 1,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = &test1_bound[1],
+                                .keys_count = 1,
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test1_all[1],
+                                .keys_count = 2,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test1_bound,
+                                .keys_count = 1,
+                            }
+                        },
+                    },
+                }
+            },
         },
         {
             .keymap =
@@ -1098,10 +1221,58 @@ test_key_iterator(void)
                 "    key <9> {[9]};\n"
                 "  };\n"
                 "};",
-            .keys_all = test2_all,
-            .num_keys_all = ARRAY_SIZE(test2_all),
-            .keys_bound = test2_bound,
-            .num_keys_bound = ARRAY_SIZE(test2_bound),
+            .data = {
+                [ITER_DEFAULT_START] = {
+                    .start = 0,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test2_all,
+                                .keys_count = ARRAY_SIZE(test2_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test2_bound,
+                                .keys_count = ARRAY_SIZE(test2_bound),
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = test2_all + ARRAY_SIZE(test2_all) - 1,
+                                .keys_count = ARRAY_SIZE(test2_all),
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = test2_bound + ARRAY_SIZE(test2_bound) - 1,
+                                .keys_count = ARRAY_SIZE(test2_bound),
+                            }
+                        },
+                    },
+                },
+                [ITER_EXPLICIT_START] = {
+                    .start = 12,
+                    .directions = {
+                        [ITER_ASCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test2_all[1],
+                                .keys_count = 2,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = &test2_bound[1],
+                                .keys_count = 1,
+                            }
+                        },
+                        [ITER_DESCENDING] = {
+                            [ITER_ALL_KEYS] = {
+                                .keys = &test2_all[0],
+                                .keys_count = 1,
+                            },
+                            [ITER_BOUND_KEYS] = {
+                                .keys = &test2_bound[0],
+                                .keys_count = 1,
+                            }
+                        },
+                    },
+                }
+            },
         },
     };
 
@@ -1119,29 +1290,39 @@ test_key_iterator(void)
             XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND,
         };
         for (size_t f = 0; f < ARRAY_SIZE(flags); f++) {
-            fprintf(stderr, "------\n*** %s: #%zu, flags: #%zu (0x%x) ***\n",
-                    __func__, t, f, flags[f]);
-            config.flags = (uint32_t)flags[f];
-            assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
-                   XKB_SUCCESS);
+            config.flags = flags[f];
+            const bool ascending = !(
+                flags[f] &
+                XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
+            );
+            const bool skip_unbound = !(
+                flags[f] &
+                XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND
+            );
 
-            const bool ascending =
-                !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER);
-            const bool skip_unbound =
-                !(flags[f] & XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND);
-            size_t expected_count = (skip_unbound)
-                ? tests[t].num_keys_bound
-                : tests[t].num_keys_all;
-            const xkb_keycode_t * const keycodes = (skip_unbound)
-                ? tests[t].keys_bound
-                : tests[t].keys_all;
+            enum { NEW, RESET, WITH_START };
 
-            enum { NEW, RESET };
-            for (int i = NEW; i <= RESET; i++) {
+            const struct test_key_iterator * start_config[] = {
+                [NEW] = &tests[t].data[ITER_DEFAULT_START],
+                [RESET] = &tests[t].data[ITER_DEFAULT_START],
+                [WITH_START] = &tests[t].data[ITER_EXPLICIT_START],
+            };
+
+            for (int i = NEW; i <= WITH_START; i++) {
+                config.flags = flags[f];
+                config.start = start_config[i]->start;
+                fprintf(stderr,
+                        "------\n*** %s: #%zu, flags: #%zu (0x%x), "
+                        "config: #%d, start: %"PRIu32"  ***\n",
+                        __func__, t, f, config.flags, i, config.start);
+                assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
+                       XKB_SUCCESS);
+
+                const struct test_key_iterator_direction *test =
+                    &start_config[i]->directions[!ascending][skip_unbound];
+
                 size_t count = 0;
-                size_t index = (skip_unbound)
-                    ? ((ascending) ? 0 : tests[t].num_keys_bound - 1)
-                    : ((ascending) ? 0 : tests[t].num_keys_all - 1);
+                const xkb_keycode_t *current_expected = test->keys;
                 xkb_keycode_t current = 0;
                 xkb_keycode_t previous = (ascending)
                     ? 0
@@ -1150,23 +1331,20 @@ test_key_iterator(void)
                 while ((current = xkb_keymap_key_iterator_next(&iter)) !=
                         XKB_KEYCODE_INVALID)
                 {
-                    assert(count < expected_count);
-                    assert(current == keycodes[index]);
+                    assert(count < test->keys_count);
+                    assert_eq("Check keycode", *current_expected, current, "%"PRIu32);
                     assert((ascending && current > previous) ^
                            (!ascending && current < previous));
 
                     count++;
                     if (ascending)
-                        index++;
+                        current_expected++;
                     else
-                        index--;
+                        current_expected--;
                     previous = current;
                 }
 
-                assert(count == expected_count);
-
-                assert(xkb_keymap_key_iterator_init(&iter, keymap, &config) ==
-                       XKB_SUCCESS);
+                assert_eq("Final count", test->keys_count, count, "%zu");
             }
         }
 

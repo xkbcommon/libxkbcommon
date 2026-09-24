@@ -700,7 +700,7 @@ keymap_key_iterator_config_check(
         return abi_error;
     }
 
-    /* Sanitize input */
+    /* Sanitize input: flags */
     const uint32_t invalid_flags =
         (config->flags & ~(uint32_t)XKB_KEYMAP_KEY_ITERATOR_FLAGS_VALUES);
     if (invalid_flags) {
@@ -709,6 +709,10 @@ keymap_key_iterator_config_check(
                 func, invalid_flags);
         return XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS;
     }
+
+    /* Sanitize input: start */
+    if (config->start > XKB_KEYCODE_MAX)
+        return XKB_ERROR_INVALID_KEYCODE;
 
     return XKB_SUCCESS;
 }
@@ -770,13 +774,29 @@ xkb_keymap_key_iterator_init(
     }
 
     /* Borrow key */
-    struct xkb_key *next;
+    const struct xkb_key *next;
     if (config->flags & XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER) {
-        next = &keymap->keys[keymap->num_keys - 1];
+        if (!config->start || config->start > keymap->max_key_code) {
+            next = &keymap->keys[keymap->num_keys - 1];
+        } else {
+            /*
+             * May still fail *safely* if start < keymap->min_key_code:
+             * there will be simply no key to iterate over.
+             */
+            next = xkb_keymap_get_next_defined_key(keymap, false, config->start);
+        }
     } else {
-        next = (keymap->num_keys_low)
-            ? &keymap->keys[keymap->min_key_code]
-            : &keymap->keys[0];
+        if (!config->start || config->start < keymap->min_key_code) {
+            next = (keymap->num_keys_low)
+                ? &keymap->keys[keymap->min_key_code]
+                : &keymap->keys[0];
+        } else {
+            /*
+             * May still fail *safely* if start > keymap->max_key_code:
+             * there will be simply no key to iterate over.
+             */
+            next = xkb_keymap_get_next_defined_key(keymap, true, config->start);
+        }
     };
     iter_set_next(iter, next);
 
