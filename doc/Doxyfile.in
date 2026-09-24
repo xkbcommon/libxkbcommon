@@ -95,10 +95,57 @@ DOT_IMAGE_FORMAT       = svg
 
 IMAGE_PATH             = doc/img
 
-# Workaround HTML tags not supported by Doxygen
+### Workaround HTML tags not supported by Doxygen ##############################
 ALIASES                += figure="@htmlonly[block]<figure>@endhtmlonly"
 ALIASES                += endfigure="@htmlonly[block]</figure>@endhtmlonly"
 ALIASES                += figcaption="@htmlonly[block]<figcaption>@endhtmlonly"
 ALIASES                += endfigcaption="@htmlonly[block]</figcaption>@endhtmlonly"
 ALIASES                += rawHtml="@htmlonly<!--"
 ALIASES                += endRawHtml="-->@endhtmlonly"
+
+### Ownership transfer #########################################################
+ALIASES                += holds_ref{3}="**Owns** a reference to the `\2` \
+                          passed during initialization, kept for the entire lifetime of the \
+                          `\1` instance and released when calling `\3()`. ^^ ^^ \
+                          @invariant The *referenced* `\2` remains valid for the entire \
+                          lifetime of an `\1` instance thanks to reference counting on `\2`. \
+                          You may release your own reference as soon as the `\1` is created."
+ALIASES                += borrows{2}="**Borrows** the `\2` passed during initialization. ^^ ^^ \
+                          @invariant The *borrowed* `\2` *must* remain \
+                          valid for the entire lifetime of an `\1` instance."
+
+### Struct ownership ###########################################################
+ALIASES                += ownership{1}="@xrefitem ownership \"Ownership\" \
+                          \"Ownership Reference\" \1"
+ALIASES                += ref_counted{1}="@ref_counted{\1_new,\1_ref,\1_unref,}"
+ALIASES                += ref_counted{2}="@ref_counted{\1_new,\1_ref,\1_unref,\
+                                                       ^^ ^^ @holds_ref{\1,\2,\1_unref}}"
+ALIASES                += ref_counted{4}="@ownership{\
+                            **[_Shared_ ownership](@ref shared-ownership) using _reference counting_**. \
+                            Heap-allocated by `\1()`, which creates the *first* reference. \
+                            Take additional references with `\2()` and release each of them \
+                            with exactly one `\3()` call. The object is destroyed once its \
+                            last reference has been released.\4 \
+                          }"
+ALIASES                += heap_single_ownership{1}="@heap_single_ownership{\1_new,\1_destroy,}"
+ALIASES                += heap_single_ownership{2}="@heap_single_ownership{\1_new,\1_destroy,\
+                                                    ^^ ^^ @holds_ref{\1,\2,\1_destroy}}"
+ALIASES                += heap_single_ownership{3}="@ownership{\
+                            **[_Exclusive_ ownership](@ref exclusive-ownership)**. \
+                            *Heap-allocated* by `\1()` and freed exclusively by calling \
+                            exactly *once* `\2()`.\3 \
+                          }"
+ALIASES                += heap_item_single_ownership{1}="@heap_item_single_ownership{\1,}"
+ALIASES                += heap_item_single_ownership{2}="@ownership{\
+                            **[_Exclusive_ ownership](@ref exclusive-ownership)**. \
+                            *Heap-allocated* and owned by `\1`. \2 \
+                          }"
+ALIASES                += transient_single_ownership{1}="@ownership{ \
+                            **[_Exclusive_ ownership](@ref exclusive-ownership)**. Instances are allocated and \
+                            managed by the caller (typically on the *stack*) and \
+                            must be initialized using `\1()`. \
+                            No explicit destruction is required by xkbcommon. \
+                          }"
+ALIASES                += transient_single_ownership{2}="@transient_single_ownership{\1,\1_init,\2}"
+ALIASES                += transient_single_ownership{3}="@transient_single_ownership{\2} ^^ ^^ \
+                          @borrows{\1,\3}"
