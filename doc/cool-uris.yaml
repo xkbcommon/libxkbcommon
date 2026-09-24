@@ -2,6 +2,8 @@
 #          Do not edit manually.
 Doxygen_List_deprecated.html:
 - deprecated.html
+Doxygen_List_legacy-immutable-borrow.html:
+- legacy-immutable-borrow.html
 Doxygen_List_ownership.html:
 - ownership.html
 Doxygen_List_todo.html:
