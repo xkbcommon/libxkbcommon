@@ -2517,6 +2517,28 @@ struct xkb_keymap_key_iterator_config {
      * [Flags]: @ref xkb_keymap_key_iterator_flags
      */
     uint32_t flags;
+    /**
+     * [Keycode] to start the iteration from.
+     *
+     * This field is ignored if set to `0`, in which case it defaults to:
+     * - the *highest* keycode defined in the corresponding keymap if `#flags`
+     *   contains `::XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER`;
+     * - otherwise the *lowest* defined keycode in the keymap.
+     *
+     * @remark The resulting #start keycode is *not* guaranteed to be returned
+     * by `xkb_keymap_key_iterator::xkb_keymap_key_iterator_next()`: it depends
+     * on:
+     * - Whether the keycode is *valid* and the corresponding key is *defined*
+     *   (i.e. has a name), otherwise it falls back to the next defined key in
+     *   the specified direction, if any.
+     * - The rest of the configuration, e.g.
+     *   `::XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND`.
+     *
+     * @since 1.14.0
+     *
+     * [Keycode]: @ref xkb_keycode_t
+     */
+    xkb_keycode_t start;
 };
 
 /**
@@ -2547,6 +2569,7 @@ struct xkb_keymap_key_iterator_config {
  * corresponding to the failure. Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution
  * - `::XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS`
+ * - `::XKB_ERROR_INVALID_KEYCODE`
  *
  * @sa `struct xkb_keymap_key_iterator`
  * @sa `enum xkb_keymap_key_iterator_flags`
