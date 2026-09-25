@@ -16,15 +16,16 @@
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon-names.h"
 
-#include "abi-check.h"
-#include "context.h"
 #include "evdev-scancodes.h"
+#include "src/abi-check.h"
+#include "src/context.h"
+#include "src/features/enums.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
 #include "src/state-priv.h"
+#include "src/utils.h"
 #include "state.h"
 #include "test.h"
-#include "utils.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 
@@ -755,7 +756,7 @@ update_key(struct xkb_machine *sm,
             ; /* Label followed by declaration requires C23 */
             static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                           XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
-                          (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                          (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                           "Missing state event type");
             /* ignore */
         }

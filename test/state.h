@@ -11,6 +11,7 @@
 #include <assert.h>
 
 #include "xkbcommon/xkbcommon.h"
+#include "src/features/enums.h"
 #include "src/state-priv.h"
 #include "test.h"
 
@@ -174,7 +175,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
         {} /* Label followed by declaration requires C23 */
         static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                       XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
-                      (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                      (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                       "Missing state event type");
         return false;
     }
@@ -244,7 +245,7 @@ print_event(const char *prefix, const struct xkb_event *event)
         {} /* Label followed by declaration requires C23 */
         static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                       XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
-                      (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                      (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                       "Missing state event type");
     }
 }

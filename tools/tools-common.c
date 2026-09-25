@@ -38,6 +38,7 @@
 #include "xkbcommon/xkbcommon-status.h"
 #include "tools-common.h"
 #include "src/compose/constants.h"
+#include "src/features/enums.h"
 #include "src/keysym.h"
 #include "src/keymap.h"
 #include "src/messages-codes.h"
@@ -898,7 +899,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
             default: {
                 static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                               XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
-                              (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                              (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                               "Missing event type");
             event_error:
                 fprintf(stderr,
