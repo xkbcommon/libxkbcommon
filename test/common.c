@@ -29,6 +29,7 @@
 #include "test.h"
 #include "utils.h"
 #include "utils-paths.h"
+#include "src/features/enums.h"
 #include "src/keysym.h"
 #include "src/xkbcomp/rules.h"
 #include "src/utils-numbers.h"
@@ -152,7 +153,7 @@ consume_events(struct xkb_machine *sm,
             {} /* Label followed by declaration requires C23 */
             static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
                           XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
-                          (enum xkb_event_type) _LAST_XKB_EVENT_TYPE,
+                          (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                           "Missing state event type");
             assert(!"unhandled event");
         }
