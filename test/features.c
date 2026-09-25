@@ -90,6 +90,9 @@ test_libxkbcommon_enums(void)
             max = MAX(max, (int32_t)tests[t].values[v]);
         }
 
+        assert(min >= ENUM_LOWEST_VALUE);
+        assert(max <= ENUM_HIGHEST_VALUE);
+
         const enum xkb_feature feature = tests[t].feature;
         if (tests[t].properties & ENUM_FLAG) {
             /* Flag enum */
@@ -97,17 +100,18 @@ test_libxkbcommon_enums(void)
             /* Explicit zero */
             assert(has_zero ^ !xkb_feature_supported(feature, 0));
             /* No negative values */
-            assert(min >= 0);
+            static_assert(ENUM_LOWEST_FLAG_VALUE == 0, "");
+            assert(min >= ENUM_LOWEST_FLAG_VALUE);
             assert(!xkb_feature_supported(feature, (uint32_t)-1));
             assert(!xkb_feature_supported(feature, (uint32_t)INT_MIN));
             assert(!xkb_feature_supported(feature, (uint32_t)INT32_MIN));
             /* No high positive values */
-            #define ENUM_HIGHEST_VALUE XKB_STATE_MATCH_NON_EXCLUSIVE
-            assert(max <= ENUM_HIGHEST_VALUE);
+            assert(max <= ENUM_HIGHEST_FLAG_VALUE);
             /* Invalid mask */
-            static_assert(ENUM_HIGHEST_VALUE < (INT32_MAX >> 1), "");
-            assert(!xkb_feature_supported(feature, (ENUM_HIGHEST_VALUE << 1)));
-            #undef ENUM_HIGHEST_VALUE
+            static_assert(ENUM_HIGHEST_FLAG_VALUE < (INT32_MAX >> 1), "");
+            assert(!xkb_feature_supported(
+                feature, (uint32_t)(ENUM_HIGHEST_FLAG_VALUE << 1))
+            );
             if (max > 0) {
                 assert(!xkb_feature_supported(feature, (max << 1)));
                 assert(!xkb_feature_supported(feature, max | (max << 1)));
