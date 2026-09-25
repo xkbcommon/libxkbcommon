@@ -7,9 +7,10 @@
 import argparse
 import difflib
 import json
+import math
 import sys
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable, Optional, Sequence, Union
 
 import jinja2
 from clang.cindex import Config, CursorKind, Index
@@ -196,15 +197,62 @@ def update_command(args: argparse.Namespace) -> int:
     def is_flag(enum: str, values: Iterable[EnumConstant]) -> bool:
         return is_flag_like(values) and is_flag_name(enum)
 
+    def enum_min(enum: str, values: Sequence[EnumConstant]) -> EnumConstant:
+        if enum in IMPLICIT_FLAGS:
+            return {"name": "0 /* implicit minimum */", "value": 0}
+        else:
+            m = min(values, key=lambda v: v["value"])
+            assert m["value"] == 0 or not is_flag(enum, values), (enum, m)
+            return m
+
+    def enum_max(enum: str, values: Sequence[EnumConstant]) -> EnumConstant:
+        return max(values, key=lambda v: v["value"])
+
     jinja_env.globals["enum_name_from_feature"] = enum_name_from_feature
     jinja_env.globals["is_flag"] = is_flag
     jinja_env.globals["has_zero"] = lambda es: any(e["value"] == 0 for e in es)
     jinja_env.globals["has_values_mask"] = lambda es: all(
         e["value"] >= 0 and e["value"] < 16 for e in es
     )
+    jinja_env.globals["enum_min"] = enum_min
+    jinja_env.globals["enum_max"] = enum_max
+    jinja_env.globals["len"] = len
+
     enum_data: EnumData = {}
     for header_path in LIBXKBCOMMON_HEADERS:
         enum_data.update(enums[header_path])
+
+    enum_lowest_value = {"value": +math.inf, "name": "#error"}
+    enum_lowest_flag_value = {"value": +math.inf, "name": "#error"}
+    enum_highest_value = {"value": -math.inf, "name": "#error"}
+    enum_highest_flag_value = {"value": -math.inf, "name": "#error"}
+    for enum, values in enum_data.items():
+        enum_lowest_value = min(
+            enum_lowest_value,
+            enum_min(enum, values),
+            key=lambda v: v["value"],
+        )
+        enum_highest_value = max(
+            enum_highest_value,
+            enum_max(enum, values),
+            key=lambda v: v["value"],
+        )
+        if is_flag(enum, values):
+            enum_lowest_flag_value = min(
+                enum_lowest_flag_value,
+                enum_min(enum, values),
+                key=lambda v: v["value"],
+            )
+            enum_highest_flag_value = max(
+                enum_highest_flag_value,
+                enum_max(enum, values),
+                key=lambda v: v["value"],
+            )
+    jinja_env.globals["ENUM_LOWEST_VALUE"] = enum_lowest_value["name"]
+    jinja_env.globals["ENUM_HIGHEST_VALUE"] = enum_highest_value["name"]
+    jinja_env.globals["ENUM_LOWEST_FLAG_VALUE"] = enum_lowest_flag_value["name"]
+    jinja_env.globals["ENUM_HIGHEST_FLAG_VALUE"] = enum_highest_flag_value["name"]
+
     generate_c(
         env=jinja_env,
         root=ROOT,

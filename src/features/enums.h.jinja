@@ -50,15 +50,19 @@ enum xkb_enumerations_values {
     {% endfor %}
     ,
 {% endfor %}
+    ENUM_LOWEST_VALUE = {{ ENUM_LOWEST_VALUE }},
+    ENUM_LOWEST_FLAG_VALUE = {{ ENUM_LOWEST_FLAG_VALUE }},
+    ENUM_HIGHEST_VALUE = {{ ENUM_HIGHEST_VALUE }},
+    ENUM_HIGHEST_FLAG_VALUE = {{ ENUM_HIGHEST_FLAG_VALUE }},
 };
 
 /*
- * Explicit values of enumerations
+ * Explicit and implict values of enumerations
  */
 {% for enum, entries in enum_data.items() %}
-
 {% set require_private_api = is_flag(enum, entries) or has_values_mask(entries) %}
 {% if require_private_api %}
+
 #ifdef ENABLE_PRIVATE_APIS
 {% endif %}
 static const uint32_t {{ enum }}_values[] = {
@@ -69,4 +73,12 @@ static const uint32_t {{ enum }}_values[] = {
 {% if require_private_api %}
 #endif
 {% endif %}
+
+enum {{ enum }}_bounds {
+    _{{ enum | upper }}_MIN = {{ enum_min(enum, entries)["name"] }},
+    _{{ enum | upper }}_MAX = {{ enum_max(enum, entries)["name"] }},
+    {% if not is_flag(enum, entries) %}
+    _{{ enum | upper }}_NUM = {{ len(entries) }},
+    {% endif %}
+};
 {% endfor %}
