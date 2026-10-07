@@ -14,6 +14,7 @@
 
 #include "atom.h"
 #include "bench.h"
+#include "bench-utils.h"
 #include "darray.h"
 
 #define BENCHMARK_ITERATIONS 100
@@ -55,14 +56,18 @@ main(void)
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         table = atom_table_new();
-        assert(table);
+        if (!table)
+            exit(EXIT_FAILURE);
+        bench_opaque_input(table);
 
         darray_foreach(worditer, words) {
             atom = atom_intern(table, *worditer, strlen(*worditer) - 1, true);
-            assert(atom != XKB_ATOM_NONE);
+            if (atom == XKB_ATOM_NONE)
+                exit(EXIT_FAILURE);
 
             text = atom_text(table, atom);
-            assert(text != NULL);
+            if (!text)
+                exit(EXIT_FAILURE);
         }
 
         atom_table_free(table);

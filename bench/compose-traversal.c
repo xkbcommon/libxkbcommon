@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <string.h>
 #include <time.h>
 
@@ -13,13 +14,14 @@
 #include "../test/compose-iter.h"
 #include "../test/test.h"
 #include "bench.h"
+#include "bench-utils.h"
 
 #define BENCHMARK_ITERATIONS 1000
 
 static void
 compose_fn(struct xkb_compose_table_entry *entry, void *data)
 {
-    assert (entry);
+    *(uintptr_t *)data |= (uintptr_t)entry;
 }
 
 /* Benchmark compose traversal using:
@@ -40,11 +42,12 @@ main(int argc, char *argv[])
     bool use_foreach_impl = (argc > 1 && strcmp(argv[1], "foreach") == 0);
 
     ctx = test_get_context(CONTEXT_NO_FLAG);
-    assert(ctx);
+    if (!ctx)
+        exit(EXIT_FAILURE);
 
     path = test_get_path("locale/en_US.UTF-8/Compose");
     file = fopen(path, "rb");
-    if (file == NULL) {
+    if (!file) {
         perror(path);
         free(path);
         xkb_context_unref(ctx);
@@ -58,22 +61,28 @@ main(int argc, char *argv[])
                                             XKB_COMPOSE_FORMAT_TEXT_V1,
                                             XKB_COMPOSE_COMPILE_NO_FLAGS);
     fclose(file);
-    assert(table);
+    if (!table)
+        exit(EXIT_FAILURE);
 
+    uintptr_t acc = 0;
+    bench_opaque_input(table);
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         if (use_foreach_impl) {
-            xkb_compose_table_for_each(table, compose_fn, NULL);
+            xkb_compose_table_for_each(table, compose_fn, &acc);
         } else {
             struct xkb_compose_table_iterator *iter;
             struct xkb_compose_table_entry *entry;
             iter = xkb_compose_table_iterator_new(table);
+            if (!iter)
+                exit(EXIT_FAILURE);
             while ((entry = xkb_compose_table_iterator_next(iter))) {
-                assert (entry);
+                acc |= (uintptr_t)entry;
             }
             xkb_compose_table_iterator_free(iter);
         }
     }
+    bench_do_not_optimize(acc);
     bench_stop(&bench);
 
     xkb_compose_table_unref(table);

@@ -9,6 +9,7 @@
 
 #include "../test/test.h"
 #include "bench.h"
+#include "bench-utils.h"
 #include "xkbcommon/xkbcommon.h"
 
 #define BENCHMARK_ITERATIONS 1000
@@ -27,11 +28,13 @@ main(int argc, char *argv[])
 
     xkb_enable_quiet_logging(ctx);
 
+    bench_opaque_input(ctx);
     bench_start(&bench);
     for (i = 0; i < BENCHMARK_ITERATIONS; i++) {
         keymap = test_compile_rules(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "evdev",
                                     "pc104", "us", "", "");
-        assert(keymap);
+        if (!keymap)
+            exit(EXIT_FAILURE);
         xkb_keymap_unref(keymap);
     }
     bench_stop(&bench);

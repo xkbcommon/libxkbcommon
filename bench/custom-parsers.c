@@ -14,6 +14,7 @@
 #include "util-numbers.h"
 
 #include "bench.h"
+#include "bench-utils.h"
 
 static const double DEFAULT_STDEV = 0.05;
 
@@ -43,16 +44,34 @@ print_stats(double stdev, unsigned int max_iterations,
     bench_elapsed(bench, &total_elapsed);
     fprintf(stderr,
             "mean: %lld µs; stdev: %Lf%% (target: %f%%); "
-            "last run: parsed %u times in %ld.%06lds; "
-            "total time: %ld.%06lds\n", est->elapsed / 1000,
+            "last run: parsed %u times in %ld.%06llds; "
+            "total time: %ld.%06llds\n", bench_pico_to_micro_rounded(est->elapsed),
             (long double) est->stdev * 100.0 / (long double) est->elapsed,
-            stdev * 100,
-            max_iterations, elapsed->seconds, elapsed->nanoseconds / 1000,
-            total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
+            stdev * 100, max_iterations,
+            elapsed->seconds, bench_pico_to_micro(elapsed->picoseconds),
+            total_elapsed.seconds, bench_pico_to_micro(total_elapsed.picoseconds));
+}
+
+static int BENCH_NOINLINE
+bench_parse_hex_to_uint32_t(const char *s, size_t len, uint32_t *out)
+{
+    return parse_hex_to_uint32_t(s, len, out);
+}
+
+static int BENCH_NOINLINE
+bench_parse_dec_to_uint64_t(const char *s, size_t len, uint64_t *out)
+{
+    return parse_dec_to_uint64_t(s, len, out);
+}
+
+static int BENCH_NOINLINE
+bench_parse_hex_to_uint64_t(const char *s, size_t len, uint64_t *out)
+{
+    return parse_hex_to_uint64_t(s, len, out);
 }
 
 /* NOTE: Old parser, for comparison */
-static bool
+static bool BENCH_NOINLINE
 parse_keysym_hex(const char *s, uint32_t *out)
 {
     uint32_t result = 0;
@@ -186,16 +205,31 @@ main(int argc, char **argv)
      * 0x9B0C1D2E3F4A5B6C   0x6E7F8A9B0C1D2E3F   0x0F1A2B3C4D5E6F7A
      */
 
-    volatile uint32_t __attribute__((unused)) dummy32 = 0;
-    volatile uint64_t __attribute__((unused)) dummy64 = 0;
+    volatile uint32_t dummy32 = 0;
+    volatile uint64_t dummy64 = 0;
     unsigned int max_iterations;
 
     printf("*** parse_hex_to_uint32_t ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy32),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 uint32_t val = 0;
-                parse_hex_to_uint32_t(content + n, 8, &val);
+                bench_parse_hex_to_uint32_t(content + n, 8, &val);
                 dummy32 += val;
             }
         );
@@ -205,6 +239,21 @@ main(int argc, char **argv)
     printf("*** parse_keysym_hex ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy32),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 uint32_t val = 0;
                 parse_keysym_hex(content + n, &val);
@@ -217,9 +266,24 @@ main(int argc, char **argv)
     printf("*** parse_dec_to_uint64_t ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy64),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 uint64_t val = 0;
-                parse_dec_to_uint64_t(content + n, size - n, &val);
+                bench_parse_dec_to_uint64_t(content + n, size - n, &val);
                 dummy64 += val;
             }
         );
@@ -229,6 +293,21 @@ main(int argc, char **argv)
     printf("*** strtol, base 10 ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy64),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 dummy64 += (uint64_t)strtol(content + n, NULL, 10);
             }
@@ -240,9 +319,24 @@ main(int argc, char **argv)
     printf("*** parse_hex_to_uint64_t ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy64),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 uint64_t val = 0;
-                parse_hex_to_uint64_t(content + n, size - n, &val);
+                bench_parse_hex_to_uint64_t(content + n, size - n, &val);
                 dummy64 += val;
             }
         );
@@ -253,6 +347,21 @@ main(int argc, char **argv)
     printf("*** strtol, base 16 ***\n");
     bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(content),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(dummy64),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             for (size_t n = 0; n < size; n++) {
                 dummy64 += (uint64_t)strtol(content + n, NULL, 16);
             }

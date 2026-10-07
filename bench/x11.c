@@ -14,6 +14,7 @@
 #include "xkbcommon/xkbcommon-x11.h"
 
 #include "bench.h"
+#include "bench-utils.h"
 
 #define BENCHMARK_ITERATIONS 2500
 
@@ -59,6 +60,9 @@ main(void)
         goto err_conn;
     }
 
+    bench_opaque_input(ctx);
+    bench_opaque_input(conn);
+    bench_opaque_input(device_id);
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         struct xkb_keymap *keymap;
@@ -66,10 +70,12 @@ main(void)
 
         keymap = xkb_x11_keymap_new_from_device(ctx, conn, device_id,
                                                 XKB_KEYMAP_COMPILE_NO_FLAGS);
-        assert(keymap);
+        if (!keymap)
+            exit(EXIT_FAILURE);
 
         state = xkb_x11_state_new_from_device(keymap, conn, device_id);
-        assert(state);
+        if (!state)
+            exit(EXIT_FAILURE);
 
         xkb_state_unref(state);
         xkb_keymap_unref(keymap);

@@ -51,7 +51,7 @@ bench_start(struct bench *bench)
     (void) gettimeofday(&val, NULL);
     bench->start = (struct bench_time) {
         .seconds = val.tv_sec,
-        .nanoseconds = val.tv_usec * 1000,
+        .picoseconds = val.tv_usec * 1000000LL,
     };
 }
 
@@ -62,7 +62,7 @@ bench_stop(struct bench *bench)
     (void) gettimeofday(&val, NULL);
     bench->stop = (struct bench_time) {
         .seconds = val.tv_sec,
-        .nanoseconds = val.tv_usec * 1000,
+        .picoseconds = val.tv_usec * 1000000LL,
     };
 }
 
@@ -85,7 +85,7 @@ bench_start2(struct bench *bench)
 	(void) clock_gettime(best_clock, &t);
     bench->start = (struct bench_time) {
         .seconds = t.tv_sec,
-        .nanoseconds = t.tv_nsec,
+        .picoseconds = t.tv_nsec * 1000LL,
     };
 }
 
@@ -96,7 +96,7 @@ bench_stop2(struct bench *bench)
 	(void) clock_gettime(best_clock, &t);
     bench->stop = (struct bench_time) {
         .seconds = t.tv_sec,
-        .nanoseconds = t.tv_nsec,
+        .picoseconds = t.tv_nsec * 1000LL,
     };
 }
 #endif
@@ -105,9 +105,9 @@ void
 bench_elapsed(const struct bench *bench, struct bench_time *result)
 {
     result->seconds = bench->stop.seconds - bench->start.seconds;
-    result->nanoseconds = bench->stop.nanoseconds - bench->start.nanoseconds;
-    if (result->nanoseconds < 0) {
-        result->nanoseconds += 1000000000;
+    result->picoseconds = bench->stop.picoseconds - bench->start.picoseconds;
+    if (result->picoseconds < 0) {
+        result->picoseconds += 1000000000000LL;
         result->seconds--;
     }
 }
@@ -120,7 +120,9 @@ bench_elapsed_str(const struct bench *bench)
     int ret;
 
     bench_elapsed(bench, &elapsed);
-    ret = asprintf(&buf, "%ld.%06ld", elapsed.seconds, elapsed.nanoseconds / 1000);
+    ret = asprintf(&buf, "%ld.%06lld",
+                   elapsed.seconds,
+                   elapsed.picoseconds / 1000000);
     assert(ret >= 0);
 
     return buf;
@@ -129,32 +131,33 @@ bench_elapsed_str(const struct bench *bench)
 /* Utils for bench method adapted from: https://hackage.haskell.org/package/tasty-bench */
 
 #define fit(x1, x2) ((x1) / 5 + 2 * ((x2) / 5))
-#define sqr(x) ((x) * (x))
 
 static void
 predict(long long t1, long long t2, struct estimate *est)
 {
     const long long t = fit(t1, t2);
+    const long double d1 = (long double)(t1 - t);
+    const long double d2 = (long double)(t2 - 2 * t);
     est->elapsed = t;
-    est->stdev =
-        llroundl(sqrtl((long double)sqr(t1 - t) + (long double)sqr(t2 - 2 * t)));
+    est->stdev = llroundl(hypotl(d1, d2));
 }
 
 #define high(t, prec) ((t) + (prec))
-#define low(t, prec) ((t) - (prec))
-#define MIN_PRECISION 1000000 /* 1ms */
+#define low(t, prec) (((t) > (prec)) ? (t) - (prec) : 0)
+#define MIN_PRECISION 1000000000LL /* 1ms */
 
 void
-predictPerturbed(const struct bench_time *b1, const struct bench_time *b2,
-                 struct estimate *est)
+predict_perturbed(const struct bench_time *b1, const struct bench_time *b2,
+                  struct estimate *est)
 {
-    const long long t1 = bench_time_elapsed_nanoseconds(b1);
-    const long long t2 = bench_time_elapsed_nanoseconds(b2);
+    const long long t1 = bench_time_elapsed_picoseconds(b1);
+    const long long t2 = bench_time_elapsed_picoseconds(b2);
 
 #ifndef _WIN32
     struct timespec ts;
     (void) clock_getres(best_clock, &ts);
-    long long precision = MAX(ts.tv_sec * 1000000000 + ts.tv_nsec, MIN_PRECISION);
+    long long precision =
+        BENCH_MAX(ts.tv_sec * 1000000000000LL + ts.tv_nsec * 1000LL, MIN_PRECISION);
 #else
     long long precision = MIN_PRECISION;
 #endif
@@ -164,5 +167,5 @@ predictPerturbed(const struct bench_time *b1, const struct bench_time *b2,
     predict(t1, t2, est);
     predict(low(t1, precision), high(t2, precision), &est1);
     predict(high(t1, precision), low(t2, precision), &est2);
-    est->stdev = MAX(est1.stdev, est2.stdev);
+    est->stdev = BENCH_MAX(est1.stdev, est2.stdev);
 }

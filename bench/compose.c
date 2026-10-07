@@ -11,6 +11,7 @@
 
 #include "../test/test.h"
 #include "bench.h"
+#include "bench-utils.h"
 
 #define BENCHMARK_ITERATIONS 1000
 
@@ -38,13 +39,16 @@ main(void)
 
     xkb_enable_quiet_logging(ctx);
 
+    bench_opaque_input(ctx);
+    bench_opaque_input(file);
     bench_start(&bench);
     for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
         fseek(file, 0, SEEK_SET);
         table = xkb_compose_table_new_from_file(ctx, file, "",
                                                 XKB_COMPOSE_FORMAT_TEXT_V1,
                                                 XKB_COMPOSE_COMPILE_NO_FLAGS);
-        assert(table);
+        if (!table)
+            exit(EXIT_FAILURE);
         xkb_compose_table_unref(table);
     }
     bench_stop(&bench);
