@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <errno.h>
+#include <getopt.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -24,7 +25,94 @@
 
 #define DEFAULT_ITERATIONS 6000000
 
-enum { KEY_COUNT = 256 };
+static bool
+parse_uint(const char *name, unsigned int min, unsigned int max,
+           char *raw, unsigned long *val)
+{
+    errno = 0;
+    char *endp = raw;
+    *val = strtoul(raw, &endp, 10);
+    if (errno || raw == endp || *endp != '\0' || *val < min || *val > max) {
+        fprintf(stderr, "ERROR: invalid '%s' parameter. Valid range: %u..%u.\n",
+                name, min, max);
+        return false;
+    }
+    return true;
+}
+
+static void
+usage(FILE *fp, char **argv)
+{
+    fprintf(fp, "Usage: %s [OPTIONS]\n"
+           "\n"
+           "Benchmark key processing\n"
+           "\n"
+           "Options:\n"
+           " --help\n"
+           "    Print this help and exit\n"
+           " --iter[=ITER]\n"
+           "    Exact number of iterations to run\n"
+           "    (default: %u)\n"
+           "\n",
+           argv[0], DEFAULT_ITERATIONS);
+}
+
+static void
+parse_args(int argc, char **argv,
+           unsigned int *max_iterations)
+{
+    enum options {
+        OPT_ITERATIONS,
+    };
+
+    static struct option opts[] = {
+        {"help",             no_argument,            0, 'h'},
+        {"iter",             optional_argument,      0, OPT_ITERATIONS},
+        {0, 0, 0, 0},
+    };
+
+    for (;;) {
+        int c;
+        int option_idx = 0;
+        c = getopt_long(argc, argv, "h", opts, &option_idx);
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 'h':
+            usage(stdout, argv);
+            exit(EXIT_SUCCESS);
+        case OPT_ITERATIONS: {
+            /* Accept `--iter 100` in addition to `--iter=100` */
+            if (!optarg && optind < argc && argv[optind][0] != '-')
+                optarg = argv[optind++];
+            if (optarg) {
+                unsigned long raw;
+                if (!parse_uint("iter", 1, UINT_MAX, optarg, &raw)) {
+                    usage(stderr, argv);
+                    exit(EXIT_INVALID_USAGE);
+                } else {
+                    *max_iterations = (unsigned int)raw;
+                }
+            } else {
+                *max_iterations = DEFAULT_ITERATIONS;
+            }
+            break;
+        }
+        default:
+            usage(stderr, argv);
+            exit(EXIT_INVALID_USAGE);
+        }
+    }
+
+    /* Never silently ignore stray arguments */
+    if (optind < argc) {
+        fprintf(stderr, "ERROR: unexpected argument '%s'\n", argv[optind]);
+        usage(stderr, argv);
+        exit(EXIT_INVALID_USAGE);
+    }
+
+}
 
 static void
 report_iterations(unsigned int iterations,
@@ -38,6 +126,8 @@ report_iterations(unsigned int iterations,
             est->elapsed, iterations,
             total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
 }
+
+enum { KEY_COUNT = 256 };
 
 static unsigned long
 bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
@@ -159,8 +249,12 @@ bench_modern_api(unsigned int max_iterations,
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
+    unsigned int max_iterations = DEFAULT_ITERATIONS;
+
+    parse_args(argc, argv, &max_iterations);
+
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx)
         exit(EXIT_FAILURE);
@@ -197,13 +291,13 @@ main(void)
      * Legacy server state machine API
      */
     fprintf(stdout, "--- Legacy server API ---\n");
-    bench_legacy_api(DEFAULT_ITERATIONS, keymap);
+    bench_legacy_api(max_iterations, keymap);
 
     /*
      * Full server state machine API
      */
     fprintf(stdout, "--- Modern server API ---\n");
-    bench_modern_api(DEFAULT_ITERATIONS, ctx, keymap);
+    bench_modern_api(max_iterations, ctx, keymap);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
