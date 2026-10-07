@@ -25,7 +25,7 @@
 #include "test.h"
 #include "test/keysym.h"
 #include "utils.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {

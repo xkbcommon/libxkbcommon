@@ -27,7 +27,7 @@
 #include "keymap.h"
 #include "messages-codes.h"
 #include "text.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 #include "xkbcomp-priv.h"
 
 #define BUF_CHUNK_SIZE 4096

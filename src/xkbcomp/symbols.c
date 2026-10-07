@@ -32,7 +32,7 @@
 #include "messages-codes.h"
 #include "text.h"
 #include "utils.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 #include "util-mem.h"
 #include "vmod.h"
 #include "xkbcomp-priv.h"

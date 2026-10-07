@@ -25,8 +25,8 @@
 #include "scanner-utils.h"
 #include "darray.h"
 #include "utils.h"
-#include "utils-numbers.h"
-#include "utils-paths.h"
+#include "util-numbers.h"
+#include "util-paths.h"
 
 #define MAX_INCLUDE_DEPTH 5
 

@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "utils.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 #include "bench.h"
 

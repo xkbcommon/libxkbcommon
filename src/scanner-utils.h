@@ -15,7 +15,7 @@
 #include "darray.h"
 #include "messages-codes.h"
 #include "utils.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 #include "utf8.h"
 
 /* Point to some substring in the file; used to avoid copying. */

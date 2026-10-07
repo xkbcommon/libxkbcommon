@@ -21,7 +21,7 @@
 #include "test/keysym.h"
 #include "test.h"
 #include "utils.h"
-#include "utils-random.h"
+#include "util-random.h"
 
 #define GOLDEN_TESTS_OUTPUTS "keymaps/"
 

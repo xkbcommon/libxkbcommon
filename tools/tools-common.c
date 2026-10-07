@@ -43,7 +43,7 @@
 #include "src/keymap.h"
 #include "src/messages-codes.h"
 #include "src/utils.h"
-#include "src/utils-numbers.h"
+#include "src/util-numbers.h"
 #include "src/utf8-decoding.h"
 
 #if defined(_WIN32) && !defined(S_ISFIFO)

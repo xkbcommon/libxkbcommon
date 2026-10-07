@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "darray.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 #include "xkbcommon/xkbcommon.h"
 #include "src/xkbcomp/keymap-file-iterator.h"
 #include "src/xkbcomp/ast.h"

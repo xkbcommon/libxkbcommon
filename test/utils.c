@@ -15,10 +15,10 @@
 
 #include "test.h"
 #include "utils.h"
-#include "utils-numbers.h"
-#include "utils-paths.h"
-#include "utils-random.h"
-#include "test/utils-text.h"
+#include "util-numbers.h"
+#include "util-paths.h"
+#include "util-random.h"
+#include "test/util-text.h"
 
 static void
 test_string_functions(void)

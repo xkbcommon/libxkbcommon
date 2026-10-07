@@ -13,7 +13,7 @@
 #include "tools/tools-common.h"
 #include "bench.h"
 #include "utils.h"
-#include "utils-random.h"
+#include "util-random.h"
 
 #define BENCHMARK_ITERATIONS 3000000
 

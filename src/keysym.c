@@ -21,7 +21,7 @@
 #include "keysym-names.h"
 #include "utf8-decoding.h"
 #include "utils.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 static ssize_t
 find_keysym_index(xkb_keysym_t ks)

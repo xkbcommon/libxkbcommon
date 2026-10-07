@@ -11,7 +11,7 @@
 
 #include "utils.h"
 #include "keymap-formats.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 /* [WARNING] Must be in ascending order */
 static const enum xkb_keymap_format keymap_formats[] = {

@@ -16,8 +16,8 @@
 #include "text.h"
 #include "xkbcomp/ast.h"
 #include "utils.h"
-#include "utils-numbers.h"
-#include "utils-checked-arithmetic.h"
+#include "util-numbers.h"
+#include "util-checked-arithmetic.h"
 
 typedef bool (*IdentLookupFunc)(struct xkb_context *ctx, const void *priv,
                                 xkb_atom_t field, uint32_t *val_rtrn,

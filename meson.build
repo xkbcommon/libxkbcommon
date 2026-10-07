@@ -429,7 +429,7 @@ libxkbcommon_sources = [
     'src/utf8.c',
     'src/utf8-decoding.c',
     'src/utils.c',
-    'src/utils-paths.c',
+    'src/util-paths.c',
 ]
 libxkbcommon_link_args = []
 libxkbcommon_link_deps = []
