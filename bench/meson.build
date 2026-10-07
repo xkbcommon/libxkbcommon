@@ -17,7 +17,12 @@ benchmark(
 if cc.has_header_symbol('getopt.h', 'getopt_long', prefix: '#define _GNU_SOURCE')
     benchmark(
         'key-proc',
-        executable('key-proc', 'key-proc.c', dependencies: test_dep),
+        executable(
+            'key-proc',
+            'key-proc.c',
+            '../src/typing.c',
+            dependencies: test_dep,
+        ),
         env: bench_env,
     )
     benchmark(
