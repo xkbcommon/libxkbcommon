@@ -257,5 +257,11 @@ darray_next_alloc(darray_size_t alloc, darray_size_t need, size_t itemSize)
 #define darray_foreach_reverse(i, arr) \
     if ((arr).item && (arr).size) \
     for ((i) = &(arr).item[(arr).size - 1]; \
-         (arr).size > 0 && (i) >= &(arr).item[0]; \
+         (i) >= &(arr).item[0]; \
          (i)--)
+
+#define darray_enumerate_reverse(idx, val, arr) \
+    if ((arr).item && (arr).size) \
+    for ((idx) = (arr).size - 1, (val) = &(arr).item[(arr).size - 1]; \
+         (val) >= &(arr).item[0]; \
+         (idx)--, (val)--)
