@@ -22,73 +22,140 @@
 #include "utils.h"
 #include "util-random.h"
 
-#define BENCHMARK_ITERATIONS 3000000
+#define DEFAULT_ITERATIONS 6000000
 
-NOINLINE static void
-bench_legacy_api(struct xkb_state *state)
+enum { KEY_COUNT = 256 };
+
+static void
+report_iterations(unsigned int iterations,
+                  const struct bench *bench,
+                  const struct estimate *est)
 {
-    bool keys[256] = { 0 };
-    volatile unsigned long acc_changed = 0;
-    volatile unsigned long acc_keysym  = 0;
-
-    for (size_t i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        const xkb_keycode_t keycode = (random() % (255 - 9)) + 9;
-        const enum xkb_key_direction direction = (keys[keycode])
-                                               ? XKB_KEY_UP : XKB_KEY_DOWN;
-        const enum xkb_state_component changed =
-            xkb_state_update_key(state, keycode, direction);
-        acc_changed += (unsigned long)changed;
-
-        if (keys[keycode]) {
-            const xkb_keysym_t keysym =
-                xkb_state_key_get_one_sym(state, keycode);
-            acc_keysym += (unsigned long)keysym;
-        }
-
-        keys[keycode] = !keys[keycode];
-    }
-
-    (void)acc_changed;
-    (void)acc_keysym;
+    struct bench_time total_elapsed;
+    bench_elapsed(bench, &total_elapsed);
+    fprintf(stdout,
+            "mean: %lld ns; processed %u input events in %ld.%06lds\n",
+            est->elapsed, iterations,
+            total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
 }
 
-NOINLINE static void
-bench_modern_api(struct xkb_machine *sm,
-                 struct xkb_events *events,
-                 struct xkb_state *state)
+static unsigned long
+bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
 {
-    bool keys[256] = { 0 };
-    volatile unsigned long acc_ret = 0;
-    volatile unsigned long acc_changed = 0;
-    volatile unsigned long acc_keysym  = 0;
+    const xkb_keycode_t keycode = (random() % (KEY_COUNT - 1 - 9)) + 9;
+    const enum xkb_key_direction direction = (keys[keycode])
+                                           ? XKB_KEY_UP : XKB_KEY_DOWN;
+    const enum xkb_state_component changed =
+        xkb_state_update_key(state, keycode, direction);
+    unsigned long acc = (unsigned long)changed;
+
+    keys[keycode] = !keys[keycode];
+
+    if (keys[keycode]) {
+        const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
+        acc += (unsigned long)keysym;
+    }
+    return acc;
+}
+
+static void
+bench_legacy_api(unsigned int max_iterations, struct xkb_keymap *keymap)
+{
+    struct xkb_state *state = xkb_state_new(keymap);
+    if (!state)
+        exit(EXIT_FAILURE);
+
+    struct bench bench;
+    struct bench_time elapsed;
+    struct estimate est;
+    bool keys[KEY_COUNT] = { 0 };
+    volatile unsigned long acc = 0;
+
+    bench_start2(&bench);
+    for (size_t i = 0; i < max_iterations; i++) {
+        acc += bench_legacy_api_loop(keys, state);
+    }
+    bench_stop2(&bench);
+    bench_elapsed(&bench, &elapsed);
+    est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
+    est.stdev = 0;
+    report_iterations(max_iterations, &bench, &est);
+
+    (void)acc;
+
+    xkb_state_unref(state);
+}
+
+static unsigned long
+bench_modern_api_loop(bool * restrict keys,
+                      struct xkb_machine *sm,
+                      struct xkb_events *events,
+                      struct xkb_state *state)
+{
+    unsigned long acc = 0;
+    const xkb_keycode_t keycode = (random() % (KEY_COUNT - 1 - 9)) + 9;
+    const enum xkb_key_direction direction = (keys[keycode])
+                                           ? XKB_KEY_UP : XKB_KEY_DOWN;
+    const enum xkb_status ret =
+        xkb_machine_process_key(sm, keycode, direction, events);
+    acc += (unsigned long)ret;
+
     const struct xkb_event *event;
-
-    for (size_t i = 0; i < BENCHMARK_ITERATIONS; i++) {
-        const xkb_keycode_t keycode = (random() % (255 - 9)) + 9;
-        const enum xkb_key_direction direction = (keys[keycode])
-                                               ? XKB_KEY_UP : XKB_KEY_DOWN;
-        const enum xkb_status ret =
-            xkb_machine_process_key(sm, keycode, direction, events);
-        acc_ret += (unsigned long)ret;
-
-        while ((event = xkb_events_next(events))) {
-            enum xkb_state_component changed = 0;
-            (void)xkb_state_update_event(state, event, &changed);
-            acc_changed += (unsigned long)changed;
-        }
-
-        if (keys[keycode]) {
-            const xkb_keysym_t keysym =
-                xkb_state_key_get_one_sym(state, keycode);
-            acc_keysym += (unsigned long)keysym;
-        }
-
-        keys[keycode] = !keys[keycode];
+    while ((event = xkb_events_next(events))) {
+        enum xkb_state_component changed = 0;
+        (void)xkb_state_update_event(state, event, &changed);
+        acc += (unsigned long)changed;
     }
 
-    (void)acc_ret;
-    (void)acc_changed;
-    (void)acc_keysym;
+    keys[keycode] = !keys[keycode];
+
+    if (keys[keycode]) {
+        const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
+        acc += (unsigned long)keysym;
+    }
+    return acc;
+}
+
+static void
+bench_modern_api(unsigned int max_iterations,
+                 struct xkb_context *ctx, struct xkb_keymap *keymap)
+{
+    struct xkb_machine_builder *builder =
+        xkb_machine_builder_new(keymap, NULL, NULL);
+    if (!builder)
+        exit(EXIT_FAILURE);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
+    if (!sm)
+        exit(EXIT_FAILURE);
+    xkb_machine_builder_unref(builder);
+    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
+    if (!events)
+        exit(EXIT_FAILURE);
+    struct xkb_state *state = xkb_state_new(keymap);
+    if (!state)
+        exit(EXIT_FAILURE);
+
+    struct bench bench;
+    struct bench_time elapsed;
+    struct estimate est;
+    bool keys[KEY_COUNT] = { 0 };
+    volatile unsigned long acc = 0;
+
+    bench_start2(&bench);
+    for (size_t i = 0; i < max_iterations; i++) {
+        acc += bench_modern_api_loop(keys, sm, events, state);
+    }
+    bench_stop2(&bench);
+    bench_elapsed(&bench, &elapsed);
+    est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
+    est.stdev = 0;
+    report_iterations(max_iterations, &bench, &est);
+
+    (void)acc;
+
+    xkb_state_unref(state);
+    xkb_events_destroy(events);
+    xkb_machine_unref(sm);
 }
 
 int
@@ -103,13 +170,13 @@ main(void)
 
     struct xkb_keymap *keymap;
     if (is_pipe_or_regular_file(STDIN_FILENO)) {
-        fprintf(stderr, "Bench using keymap from stdin\n");
+        fprintf(stdout, "Bench using keymap from stdin\n");
         FILE *file = tools_read_stdin();
         if (!file)
             exit(EXIT_FAILURE);
         keymap = xkb_keymap_new_from_file(ctx, file, format, flags);
     } else {
-        fprintf(stderr, "Bench using keymap from fixed RMLVO\n");
+        fprintf(stdout, "Bench using keymap from fixed RMLVO\n");
         static const struct xkb_rule_names rmlvo = {
             .rules = "evdev",
             .model = "pc104",
@@ -126,65 +193,17 @@ main(void)
 
     srandom((unsigned) time(NULL));
 
-    struct bench bench;
-    struct bench_time elapsed;
-    long average;
-    char *elapsed_str;
-
     /*
      * Legacy server state machine API
      */
-
-    struct xkb_state *state = xkb_state_new(keymap);
-    if (!state)
-        exit(EXIT_FAILURE);
-
-    bench_start2(&bench);
-    bench_legacy_api(state);
-    bench_stop2(&bench);
-
-    xkb_state_unref(state);
-
-    bench_elapsed(&bench, &elapsed);
-    average = (bench_time_elapsed_nanoseconds(&elapsed)) / BENCHMARK_ITERATIONS;
-    elapsed_str = bench_elapsed_str(&bench);
-    fprintf(stdout, "Legacy server API: average=%ldns; %d iterations in %ss\n",
-            average, BENCHMARK_ITERATIONS, elapsed_str);
-    free(elapsed_str);
+    fprintf(stdout, "--- Legacy server API ---\n");
+    bench_legacy_api(DEFAULT_ITERATIONS, keymap);
 
     /*
      * Full server state machine API
      */
-
-    struct xkb_machine_builder *builder =
-        xkb_machine_builder_new(keymap, NULL, NULL);
-    if (!builder)
-        exit(EXIT_FAILURE);
-    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
-    if (!sm)
-        exit(EXIT_FAILURE);
-    xkb_machine_builder_unref(builder);
-    struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
-    if (!events)
-        exit(EXIT_FAILURE);
-    state = xkb_state_new(keymap);
-    if (!state)
-        exit(EXIT_FAILURE);
-
-    bench_start2(&bench);
-    bench_modern_api(sm, events, state);
-    bench_stop2(&bench);
-
-    xkb_state_unref(state);
-    xkb_events_destroy(events);
-    xkb_machine_unref(sm);
-
-    bench_elapsed(&bench, &elapsed);
-    average = (bench_time_elapsed_nanoseconds(&elapsed)) / BENCHMARK_ITERATIONS;
-    elapsed_str = bench_elapsed_str(&bench);
-    fprintf(stdout, "Modern server API: average=%ldns, %d iterations in %ss\n",
-            average, BENCHMARK_ITERATIONS, elapsed_str);
-    free(elapsed_str);
+    fprintf(stdout, "--- Modern server API ---\n");
+    bench_modern_api(DEFAULT_ITERATIONS, ctx, keymap);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
