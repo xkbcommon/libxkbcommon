@@ -25,6 +25,7 @@
 
 #define DEFAULT_ITERATIONS 6000000
 #define DEFAULT_WARM_UP (DEFAULT_ITERATIONS / 100)
+#define DEFAULT_STDEV 0.05
 
 enum api {
     API_NONE = 0,
@@ -64,24 +65,29 @@ usage(FILE *fp, char **argv)
            " --iter[=ITER]\n"
            "    Exact number of iterations to run\n"
            "    (default: %u)\n"
+           " --stdev[=STDEV]\n"
+           "    Target relative standard deviation (percentage) to reach\n"
+           "    (maximum acceptable; default: %f)\n"
            " --seed SEED\n"
            "    Seed for the pseudo-random generator\n"
            " --legacy\n"
            "    Bench legacy server API (xkb_state)\n"
            " --modern\n"
            "    Bench modern server API (xkb_machine)\n"
+           "Note: --iter and --stdev are mutually exclusive.\n"
            "\n",
-           argv[0], DEFAULT_WARM_UP, DEFAULT_ITERATIONS);
+           argv[0], DEFAULT_WARM_UP, DEFAULT_ITERATIONS, DEFAULT_STDEV * 100);
 }
 
 static void
 parse_args(int argc, char **argv, unsigned int *warm_up_iter,
-           unsigned int *max_iterations,
+           unsigned int *max_iterations, double *stdev,
            unsigned int *seed, enum api *api)
 {
     enum options {
         OPT_WARM_UP,
         OPT_ITERATIONS,
+        OPT_STDEV,
         OPT_SEED,
         OPT_LEGACY_API,
         OPT_MODERN_API,
@@ -91,11 +97,14 @@ parse_args(int argc, char **argv, unsigned int *warm_up_iter,
         {"help",             no_argument,            0, 'h'},
         {"warm-up",          required_argument,      0, OPT_WARM_UP},
         {"iter",             optional_argument,      0, OPT_ITERATIONS},
+        {"stdev",            optional_argument,      0, OPT_STDEV},
         {"seed",             required_argument,      0, OPT_SEED},
         {"legacy",           no_argument,            0, OPT_LEGACY_API},
         {"modern",           no_argument,            0, OPT_MODERN_API},
         {0, 0, 0, 0},
     };
+
+    bool explicit_iterations = false;
 
     for (;;) {
         int c;
@@ -119,6 +128,9 @@ parse_args(int argc, char **argv, unsigned int *warm_up_iter,
             break;
         }
         case OPT_ITERATIONS: {
+            if (*max_iterations == 0)
+                goto mutually_exclusive_iter_stdev;
+
             /* Accept `--iter 100` in addition to `--iter=100` */
             if (!optarg && optind < argc && argv[optind][0] != '-')
                 optarg = argv[optind++];
@@ -133,6 +145,29 @@ parse_args(int argc, char **argv, unsigned int *warm_up_iter,
             } else {
                 *max_iterations = DEFAULT_ITERATIONS;
             }
+            explicit_iterations = true;
+            break;
+        }
+        case OPT_STDEV: {
+            if (explicit_iterations)
+                goto mutually_exclusive_iter_stdev;
+
+            /* Accept `--stdev 100` in addition to `--stdev=100` */
+            if (!optarg && optind < argc && argv[optind][0] != '-')
+                optarg = argv[optind++];
+            if (optarg) {
+                errno = 0;
+                char *endp = optarg;
+                *stdev = strtod(optarg, &endp) / 100;
+                if (errno || optarg == endp || *endp != '\0' || *stdev <= 0) {
+                    fprintf(stderr, "ERROR: invalid 'stdev' parameter\n");
+                    usage(stderr, argv);
+                    exit(EXIT_INVALID_USAGE);
+                }
+            } else {
+                *stdev = DEFAULT_STDEV;
+            }
+            *max_iterations = 0;
             break;
         }
         case OPT_SEED: {
@@ -167,6 +202,12 @@ parse_args(int argc, char **argv, unsigned int *warm_up_iter,
     if (!*api) {
         *api = API_ALL;
     }
+    return;
+
+mutually_exclusive_iter_stdev:
+    fprintf(stderr, "ERROR: --iter and --stdev are mutually exclusive\n");
+    usage(stderr, argv);
+    exit(EXIT_INVALID_USAGE);
 }
 
 static void
@@ -179,6 +220,26 @@ report_iterations(unsigned int iterations,
     fprintf(stdout,
             "mean: %lld ns; processed %u input events in %ld.%06lds\n",
             est->elapsed, iterations,
+            total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
+}
+
+static void
+report_stdev(unsigned int iterations,
+             double stdev,
+             const struct bench *bench,
+             const struct bench_time *elapsed,
+             const struct estimate *est)
+{
+    struct bench_time total_elapsed;
+    bench_elapsed(bench, &total_elapsed);
+    fprintf(stdout,
+            "mean: %lld ns; stdev: %Lf%% (target: %f%%); "
+            "last run: processed %u input events in %ld.%06lds; "
+            "total time: %ld.%06lds\n",
+            est->elapsed,
+            (long double) est->stdev * 100.0 / (long double) est->elapsed,
+            stdev * 100.0, iterations,
+            elapsed->seconds, elapsed->nanoseconds / 1000,
             total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
 }
 
@@ -200,12 +261,13 @@ bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
         const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
         acc += (unsigned long)keysym;
     }
+
     return acc;
 }
 
 static void
 bench_legacy_api(bool warm_up, unsigned int max_iterations,
-                 unsigned int seed,
+                 double stdev, unsigned int seed,
                  struct xkb_keymap *keymap)
 {
     struct xkb_state *state = xkb_state_new(keymap);
@@ -219,16 +281,27 @@ bench_legacy_api(bool warm_up, unsigned int max_iterations,
     volatile unsigned long acc = 0;
     srandom(seed);
 
-    bench_start2(&bench);
-    for (size_t i = 0; i < max_iterations; i++) {
-        acc += bench_legacy_api_loop(keys, state);
-    }
-    bench_stop2(&bench);
-    bench_elapsed(&bench, &elapsed);
-    est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
-    est.stdev = 0;
-    if (!warm_up) {
-        report_iterations(max_iterations, &bench, &est);
+    if (max_iterations) {
+        bench_start2(&bench);
+        for (size_t i = 0; i < max_iterations; i++) {
+            acc += bench_legacy_api_loop(keys, state);
+        }
+        bench_stop2(&bench);
+        bench_elapsed(&bench, &elapsed);
+        est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
+        est.stdev = 0; /* unused */
+        if (!warm_up) {
+            report_iterations(max_iterations, &bench, &est);
+        }
+    } else {
+        bench_start2(&bench);
+        BENCH(stdev, max_iterations, elapsed, est,
+            acc += bench_legacy_api_loop(keys, state);
+        );
+        bench_stop2(&bench);
+        if (!warm_up) {
+            report_stdev(max_iterations, stdev, &bench, &elapsed, &est);
+        }
     }
 
     (void)acc;
@@ -263,13 +336,12 @@ bench_modern_api_loop(bool * restrict keys,
         const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
         acc += (unsigned long)keysym;
     }
+
     return acc;
 }
 
 static void
-bench_modern_api(bool warm_up, unsigned int max_iterations,
-                 unsigned int seed, struct xkb_context *ctx,
-                 struct xkb_keymap *keymap)
+bench_modern_api(bool warm_up, unsigned int max_iterations, double stdev,
                  unsigned int seed, struct xkb_context *ctx,
                  struct xkb_keymap *keymap)
 {
@@ -295,16 +367,27 @@ bench_modern_api(bool warm_up, unsigned int max_iterations,
     volatile unsigned long acc = 0;
     srandom(seed);
 
-    bench_start2(&bench);
-    for (size_t i = 0; i < max_iterations; i++) {
-        acc += bench_modern_api_loop(keys, sm, events, state);
-    }
-    bench_stop2(&bench);
-    bench_elapsed(&bench, &elapsed);
-    est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
-    est.stdev = 0;
-    if (!warm_up) {
-        report_iterations(max_iterations, &bench, &est);
+    if (max_iterations) {
+        bench_start2(&bench);
+        for (size_t i = 0; i < max_iterations; i++) {
+            acc += bench_modern_api_loop(keys, sm, events, state);
+        }
+        bench_stop2(&bench);
+        bench_elapsed(&bench, &elapsed);
+        est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
+        est.stdev = 0; /* unused */
+        if (!warm_up) {
+            report_iterations(max_iterations, &bench, &est);
+        }
+    } else {
+        bench_start2(&bench);
+        BENCH(stdev, max_iterations, elapsed, est,
+            acc += bench_modern_api_loop(keys, sm, events, state);
+        );
+        bench_stop2(&bench);
+        if (!warm_up) {
+            report_stdev(max_iterations, stdev, &bench, &elapsed, &est);
+        }
     }
 
     (void)acc;
@@ -319,10 +402,11 @@ main(int argc, char **argv)
 {
     unsigned int warm_up_iter = DEFAULT_WARM_UP;
     unsigned int max_iterations = DEFAULT_ITERATIONS;
+    double stdev = DEFAULT_STDEV;
     unsigned int seed = (unsigned int)time(NULL);
     enum api api = API_NONE;
 
-    parse_args(argc, argv, &warm_up_iter, &max_iterations, &seed, &api);
+    parse_args(argc, argv, &warm_up_iter, &max_iterations, &stdev, &seed, &api);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx)
@@ -360,19 +444,19 @@ main(int argc, char **argv)
         fprintf(stdout, "--- Legacy server API ---\n");
         if (warm_up_iter) {
             fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
-            bench_legacy_api(true, warm_up_iter, seed, keymap);
+            bench_legacy_api(true, warm_up_iter, 0, seed, keymap);
         }
         fprintf(stdout, "Benchmarking...\n");
-        bench_legacy_api(false, max_iterations, seed, keymap);
+        bench_legacy_api(false, max_iterations, stdev, seed, keymap);
     }
     if (api & API_MODERN) {
         fprintf(stdout, "--- Modern server API ---\n");
         if (warm_up_iter) {
             fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
-            bench_modern_api(true, warm_up_iter, seed, ctx, keymap);
+            bench_modern_api(true, warm_up_iter, 0, seed, ctx, keymap);
         }
         fprintf(stdout, "Benchmarking...\n");
-        bench_modern_api(false, max_iterations, seed, ctx, keymap);
+        bench_modern_api(false, max_iterations, stdev, seed, ctx, keymap);
     }
 
     xkb_keymap_unref(keymap);
