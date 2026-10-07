@@ -25,6 +25,13 @@
 
 #define DEFAULT_ITERATIONS 6000000
 
+enum api {
+    API_NONE = 0,
+    API_LEGACY = (1u << 0),
+    API_MODERN = (1u << 1),
+    API_ALL = API_LEGACY | API_MODERN,
+};
+
 static bool
 parse_uint(const char *name, unsigned int min, unsigned int max,
            char *raw, unsigned long *val)
@@ -55,6 +62,10 @@ usage(FILE *fp, char **argv)
            "    (default: %u)\n"
            " --seed SEED\n"
            "    Seed for the pseudo-random generator\n"
+           " --legacy\n"
+           "    Bench legacy server API (xkb_state)\n"
+           " --modern\n"
+           "    Bench modern server API (xkb_machine)\n"
            "\n",
            argv[0], DEFAULT_ITERATIONS);
 }
@@ -67,12 +78,16 @@ parse_args(int argc, char **argv,
     enum options {
         OPT_ITERATIONS,
         OPT_SEED,
+        OPT_LEGACY_API,
+        OPT_MODERN_API,
     };
 
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
         {"iter",             optional_argument,      0, OPT_ITERATIONS},
         {"seed",             required_argument,      0, OPT_SEED},
+        {"legacy",           no_argument,            0, OPT_LEGACY_API},
+        {"modern",           no_argument,            0, OPT_MODERN_API},
         {0, 0, 0, 0},
     };
 
@@ -114,6 +129,12 @@ parse_args(int argc, char **argv,
             }
             break;
         }
+        case OPT_LEGACY_API:
+            *api |= API_LEGACY;
+            break;
+        case OPT_MODERN_API:
+            *api |= API_MODERN;
+            break;
         default:
             usage(stderr, argv);
             exit(EXIT_INVALID_USAGE);
@@ -127,6 +148,9 @@ parse_args(int argc, char **argv,
         exit(EXIT_INVALID_USAGE);
     }
 
+    if (!*api) {
+        *api = API_ALL;
+    }
 }
 
 static void
@@ -273,8 +297,9 @@ main(int argc, char **argv)
 {
     unsigned int max_iterations = DEFAULT_ITERATIONS;
     unsigned int seed = (unsigned int)time(NULL);
+    enum api api = API_NONE;
 
-    parse_args(argc, argv, &max_iterations, &seed);
+    parse_args(argc, argv, &max_iterations, &seed, &api);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx)
@@ -308,17 +333,14 @@ main(int argc, char **argv)
 
     fprintf(stdout, "Seed: %u\n", seed);
 
-    /*
-     * Legacy server state machine API
-     */
-    fprintf(stdout, "--- Legacy server API ---\n");
-    bench_legacy_api(max_iterations, seed, keymap);
-
-    /*
-     * Full server state machine API
-     */
-    fprintf(stdout, "--- Modern server API ---\n");
-    bench_modern_api(max_iterations, seed, ctx, keymap);
+    if (api & API_LEGACY) {
+        fprintf(stdout, "--- Legacy server API ---\n");
+        bench_legacy_api(max_iterations, seed, keymap);
+    }
+    if (api & API_MODERN) {
+        fprintf(stdout, "--- Modern server API ---\n");
+        bench_modern_api(max_iterations, seed, ctx, keymap);
+    }
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
