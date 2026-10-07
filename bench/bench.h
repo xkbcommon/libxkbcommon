@@ -40,9 +40,9 @@ void
 bench_elapsed(const struct bench *bench, struct bench_time *result);
 
 #define bench_time_elapsed_microseconds(elapsed) \
-    ((elapsed)->nanoseconds / 1000 + 1000000 * (elapsed)->seconds)
+    ((elapsed)->nanoseconds / 1000 + 1000000LL * (elapsed)->seconds)
 #define bench_time_elapsed_nanoseconds(elapsed) \
-    ((elapsed)->nanoseconds + 1000000000 * (elapsed)->seconds)
+    ((elapsed)->nanoseconds + 1000000000LL * (elapsed)->seconds)
 
 /* The caller is responsibile to free() the returned string. */
 char *

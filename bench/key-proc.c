@@ -5,8 +5,15 @@
 
 #include "config.h"
 
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 #include "xkbcommon/xkbcommon.h"
 #include "test/test.h"
@@ -40,6 +47,9 @@ bench_legacy_api(struct xkb_state *state)
 
         keys[keycode] = !keys[keycode];
     }
+
+    (void)acc_changed;
+    (void)acc_keysym;
 }
 
 NOINLINE static void
@@ -57,7 +67,8 @@ bench_modern_api(struct xkb_machine *sm,
         const xkb_keycode_t keycode = (random() % (255 - 9)) + 9;
         const enum xkb_key_direction direction = (keys[keycode])
                                                ? XKB_KEY_UP : XKB_KEY_DOWN;
-        const int ret = xkb_machine_process_key(sm, keycode, direction, events);
+        const enum xkb_status ret =
+            xkb_machine_process_key(sm, keycode, direction, events);
         acc_ret += (unsigned long)ret;
 
         while ((event = xkb_events_next(events))) {
@@ -74,6 +85,10 @@ bench_modern_api(struct xkb_machine *sm,
 
         keys[keycode] = !keys[keycode];
     }
+
+    (void)acc_ret;
+    (void)acc_changed;
+    (void)acc_keysym;
 }
 
 int
