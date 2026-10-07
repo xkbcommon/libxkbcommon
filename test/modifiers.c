@@ -796,7 +796,6 @@ test_get_modifier_keycodes(struct xkb_context *context)
     assert(keymap);
 
 #define MAX_KEYCODES_COUNT 10
-#define KEY_LVL3 (92 - EVDEV_OFFSET)
     const struct {
         const char *mod;
         xkb_keycode_t keycodes[MAX_KEYCODES_COUNT];
