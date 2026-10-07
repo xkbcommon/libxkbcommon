@@ -243,22 +243,16 @@ report_stdev(unsigned int iterations,
             total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
 }
 
-enum { KEY_COUNT = 256 };
-
 static unsigned long
-bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
+bench_legacy_api_loop(struct xkb_typing_event key, struct xkb_state *state)
 {
-    const xkb_keycode_t keycode = (random() % (KEY_COUNT - 1 - 9)) + 9;
-    const enum xkb_key_direction direction = (keys[keycode])
-                                           ? XKB_KEY_UP : XKB_KEY_DOWN;
     const enum xkb_state_component changed =
-        xkb_state_update_key(state, keycode, direction);
+        xkb_state_update_key(state, key.keycode, key.direction);
     unsigned long acc = (unsigned long)changed;
 
-    keys[keycode] = !keys[keycode];
-
-    if (keys[keycode]) {
-        const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
+    if (key.direction == XKB_KEY_DOWN) {
+        const xkb_keysym_t keysym =
+            xkb_state_key_get_one_sym(state, key.keycode);
         acc += (unsigned long)keysym;
     }
 
@@ -266,8 +260,8 @@ bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
 }
 
 static void
-bench_legacy_api(bool warm_up, unsigned int max_iterations,
-                 double stdev, unsigned int seed,
+bench_legacy_api(bool warm_up, unsigned int max_iterations, double stdev,
+                 const struct xkb_typing_input * restrict input,
                  struct xkb_keymap *keymap)
 {
     struct xkb_state *state = xkb_state_new(keymap);
@@ -277,14 +271,19 @@ bench_legacy_api(bool warm_up, unsigned int max_iterations,
     struct bench bench;
     struct bench_time elapsed;
     struct estimate est;
-    bool keys[KEY_COUNT] = { 0 };
     volatile unsigned long acc = 0;
-    srandom(seed);
+    size_t input_idx = 0;
+    const size_t input_size = input->num_events;
 
     if (max_iterations) {
         bench_start2(&bench);
         for (size_t i = 0; i < max_iterations; i++) {
-            acc += bench_legacy_api_loop(keys, state);
+            const struct xkb_typing_event key = input->events[input_idx];
+            acc += bench_legacy_api_loop(key, state);
+            /* Wrap input */
+            input_idx = (input_idx + 1 == input_size)
+                      ? 0
+                      : input_idx + 1;
         }
         bench_stop2(&bench);
         bench_elapsed(&bench, &elapsed);
@@ -295,8 +294,13 @@ bench_legacy_api(bool warm_up, unsigned int max_iterations,
         }
     } else {
         bench_start2(&bench);
-        BENCH(stdev, max_iterations, elapsed, est,
-            acc += bench_legacy_api_loop(keys, state);
+        BENCH(stdev, max_iterations, elapsed, est, input_idx = 0,
+            const struct xkb_typing_event key = input->events[input_idx];
+            acc += bench_legacy_api_loop(key, state);
+            /* Wrap input */
+            input_idx = (input_idx + 1 == input_size)
+                      ? 0
+                      : input_idx + 1;
         );
         bench_stop2(&bench);
         if (!warm_up) {
@@ -310,17 +314,14 @@ bench_legacy_api(bool warm_up, unsigned int max_iterations,
 }
 
 static unsigned long
-bench_modern_api_loop(bool * restrict keys,
+bench_modern_api_loop(const struct xkb_typing_event key,
                       struct xkb_machine *sm,
                       struct xkb_events *events,
                       struct xkb_state *state)
 {
     unsigned long acc = 0;
-    const xkb_keycode_t keycode = (random() % (KEY_COUNT - 1 - 9)) + 9;
-    const enum xkb_key_direction direction = (keys[keycode])
-                                           ? XKB_KEY_UP : XKB_KEY_DOWN;
     const enum xkb_status ret =
-        xkb_machine_process_key(sm, keycode, direction, events);
+        xkb_machine_process_key(sm, key.keycode, key.direction, events);
     acc += (unsigned long)ret;
 
     const struct xkb_event *event;
@@ -330,10 +331,9 @@ bench_modern_api_loop(bool * restrict keys,
         acc += (unsigned long)changed;
     }
 
-    keys[keycode] = !keys[keycode];
-
-    if (keys[keycode]) {
-        const xkb_keysym_t keysym = xkb_state_key_get_one_sym(state, keycode);
+    if (key.direction == XKB_KEY_DOWN) {
+        const xkb_keysym_t keysym =
+            xkb_state_key_get_one_sym(state, key.keycode);
         acc += (unsigned long)keysym;
     }
 
@@ -342,7 +342,8 @@ bench_modern_api_loop(bool * restrict keys,
 
 static void
 bench_modern_api(bool warm_up, unsigned int max_iterations, double stdev,
-                 unsigned int seed, struct xkb_context *ctx,
+                 const struct xkb_typing_input * restrict input,
+                 struct xkb_context *ctx,
                  struct xkb_keymap *keymap)
 {
     struct xkb_machine_builder *builder =
@@ -363,14 +364,19 @@ bench_modern_api(bool warm_up, unsigned int max_iterations, double stdev,
     struct bench bench;
     struct bench_time elapsed;
     struct estimate est;
-    bool keys[KEY_COUNT] = { 0 };
     volatile unsigned long acc = 0;
-    srandom(seed);
+    size_t input_idx = 0;
+    const size_t input_size = input->num_events;
 
     if (max_iterations) {
         bench_start2(&bench);
         for (size_t i = 0; i < max_iterations; i++) {
-            acc += bench_modern_api_loop(keys, sm, events, state);
+            const struct xkb_typing_event key = input->events[input_idx];
+            acc += bench_modern_api_loop(key, sm, events, state);
+            /* Wrap input */
+            input_idx = (input_idx + 1 == input_size)
+                      ? 0
+                      : input_idx + 1;
         }
         bench_stop2(&bench);
         bench_elapsed(&bench, &elapsed);
@@ -381,8 +387,13 @@ bench_modern_api(bool warm_up, unsigned int max_iterations, double stdev,
         }
     } else {
         bench_start2(&bench);
-        BENCH(stdev, max_iterations, elapsed, est,
-            acc += bench_modern_api_loop(keys, sm, events, state);
+        BENCH(stdev, max_iterations, elapsed, est, input_idx = 0,
+            const struct xkb_typing_event key = input->events[input_idx];
+            acc += bench_modern_api_loop(key, sm, events, state);
+            /* Wrap input */
+            input_idx = (input_idx + 1 == input_size)
+                      ? 0
+                      : input_idx + 1;
         );
         bench_stop2(&bench);
         if (!warm_up) {
@@ -412,6 +423,10 @@ main(int argc, char **argv)
     if (!ctx)
         exit(EXIT_FAILURE);
 
+    /*
+     * Compile keymap
+     */
+
     const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const enum xkb_keymap_compile_flags flags = XKB_KEYMAP_COMPILE_NO_FLAGS;
 
@@ -436,27 +451,64 @@ main(int argc, char **argv)
     if (!keymap)
         exit(EXIT_FAILURE);
 
-    xkb_enable_quiet_logging(ctx);
+    /*
+     * Prepare key event sample
+     */
 
     fprintf(stdout, "Seed: %u\n", seed);
+    srandom(seed);
+
+    enum {
+        /** Small sample to fit 50% of 512KiB L2 cache */
+        DEFAULT_SAMPLE_SIZE = 0x8000 / sizeof(struct xkb_typing_event)
+    };
+
+    struct xkb_typing_input input;
+
+    input.num_events = DEFAULT_SAMPLE_SIZE;
+    input.events = calloc(DEFAULT_SAMPLE_SIZE, sizeof(*input.events));
+    if (!input.events)
+        exit(EXIT_FAILURE);
+
+    enum { KEY_COUNT = 256 };
+    bool keys[KEY_COUNT] = { 0 };
+    const xkb_keycode_t min = MAX(8, xkb_keymap_min_keycode(keymap));
+    const xkb_keycode_t max = MIN(KEY_COUNT - 1, xkb_keymap_max_keycode(keymap));
+    for (size_t e = 0; e < input.num_events; e++) {
+        const xkb_keycode_t keycode = (random() % (max - min + 1)) + min;
+        const enum xkb_key_direction direction = (keys[keycode])
+            ? XKB_KEY_UP
+            : XKB_KEY_DOWN;
+        input.events[e] = (struct xkb_typing_event) {
+            .keycode = keycode,
+            .direction = direction,
+        };
+        keys[keycode] = !keys[keycode];
+    }
+
+    /*
+     * Run the benchmark
+     */
+
+    xkb_enable_quiet_logging(ctx);
 
     if (api & API_LEGACY) {
         fprintf(stdout, "--- Legacy server API ---\n");
         if (warm_up_iter) {
             fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
-            bench_legacy_api(true, warm_up_iter, 0, seed, keymap);
+            bench_legacy_api(true, warm_up_iter, 0, &input, keymap);
         }
         fprintf(stdout, "Benchmarking...\n");
-        bench_legacy_api(false, max_iterations, stdev, seed, keymap);
+        bench_legacy_api(false, max_iterations, stdev, &input, keymap);
     }
     if (api & API_MODERN) {
         fprintf(stdout, "--- Modern server API ---\n");
         if (warm_up_iter) {
             fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
-            bench_modern_api(true, warm_up_iter, 0, seed, ctx, keymap);
+            bench_modern_api(true, warm_up_iter, 0, &input, ctx, keymap);
         }
         fprintf(stdout, "Benchmarking...\n");
-        bench_modern_api(false, max_iterations, stdev, seed, ctx, keymap);
+        bench_modern_api(false, max_iterations, stdev, &input, ctx, keymap);
     }
 
     xkb_keymap_unref(keymap);
