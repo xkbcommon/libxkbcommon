@@ -14,10 +14,6 @@
 #include "keymap.h"
 #include "utils.h"
 
-enum fake_keys {
-    KEY_LVL3 = 84
-};
-
 static const enum xkb_keymap_format keymap_formats[] = {
     XKB_KEYMAP_FORMAT_TEXT_V1,
     XKB_KEYMAP_FORMAT_TEXT_V2,

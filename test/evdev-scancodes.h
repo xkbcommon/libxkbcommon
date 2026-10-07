@@ -6,7 +6,15 @@
 
 /*
  * Copied from /usr/include/linux/input.h from Linux 3.16, for use
- * in xkbcommon. Modified to only contain scancode definitions.
+ * in xkbcommon. Modified to only contain scancode definitions and the
+ * following additions (defined in xkeyboard-config `evdev` keycodes):
+ *
+ * - KEY_LVL3
+ * - KEY_LVL5
+ * - KEY_ALT
+ * - KEY_META
+ * - KEY_SUPR
+ * - KEY_HYPR
  */
 
 /*
@@ -104,6 +112,8 @@
 #define KEY_KP3			81
 #define KEY_KP0			82
 #define KEY_KPDOT		83
+
+#define KEY_LVL3		84	/* ✨ xkbcommon addition */
 
 #define KEY_ZENKAKUHANKAKU	85
 #define KEY_102ND		86
@@ -220,6 +230,12 @@
 #define KEY_F22			192
 #define KEY_F23			193
 #define KEY_F24			194
+
+#define KEY_LVL5		195	/* ✨ xkbcommon addition */
+#define KEY_ALT			196	/* ✨ xkbcommon addition */
+#define KEY_META		197	/* ✨ xkbcommon addition */
+#define KEY_SUPR		198	/* ✨ xkbcommon addition */
+#define KEY_HYPR		199	/* ✨ xkbcommon addition */
 
 #define KEY_PLAYCD		200
 #define KEY_PAUSECD		201
