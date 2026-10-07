@@ -53,21 +53,26 @@ usage(FILE *fp, char **argv)
            " --iter[=ITER]\n"
            "    Exact number of iterations to run\n"
            "    (default: %u)\n"
+           " --seed SEED\n"
+           "    Seed for the pseudo-random generator\n"
            "\n",
            argv[0], DEFAULT_ITERATIONS);
 }
 
 static void
 parse_args(int argc, char **argv,
-           unsigned int *max_iterations)
+           unsigned int *max_iterations,
+           unsigned int *seed)
 {
     enum options {
         OPT_ITERATIONS,
+        OPT_SEED,
     };
 
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
         {"iter",             optional_argument,      0, OPT_ITERATIONS},
+        {"seed",             required_argument,      0, OPT_SEED},
         {0, 0, 0, 0},
     };
 
@@ -96,6 +101,16 @@ parse_args(int argc, char **argv,
                 }
             } else {
                 *max_iterations = DEFAULT_ITERATIONS;
+            }
+            break;
+        }
+        case OPT_SEED: {
+            unsigned long raw;
+            if (!parse_uint("seed", 0, UINT_MAX, optarg, &raw)) {
+                usage(stderr, argv);
+                exit(EXIT_INVALID_USAGE);
+            } else {
+                *seed = (unsigned int)raw;
             }
             break;
         }
@@ -149,7 +164,9 @@ bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
 }
 
 static void
-bench_legacy_api(unsigned int max_iterations, struct xkb_keymap *keymap)
+bench_legacy_api(unsigned int max_iterations,
+                 unsigned int seed,
+                 struct xkb_keymap *keymap)
 {
     struct xkb_state *state = xkb_state_new(keymap);
     if (!state)
@@ -160,6 +177,7 @@ bench_legacy_api(unsigned int max_iterations, struct xkb_keymap *keymap)
     struct estimate est;
     bool keys[KEY_COUNT] = { 0 };
     volatile unsigned long acc = 0;
+    srandom(seed);
 
     bench_start2(&bench);
     for (size_t i = 0; i < max_iterations; i++) {
@@ -208,7 +226,8 @@ bench_modern_api_loop(bool * restrict keys,
 
 static void
 bench_modern_api(unsigned int max_iterations,
-                 struct xkb_context *ctx, struct xkb_keymap *keymap)
+                 unsigned int seed, struct xkb_context *ctx,
+                 struct xkb_keymap *keymap)
 {
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, NULL, NULL);
@@ -230,6 +249,7 @@ bench_modern_api(unsigned int max_iterations,
     struct estimate est;
     bool keys[KEY_COUNT] = { 0 };
     volatile unsigned long acc = 0;
+    srandom(seed);
 
     bench_start2(&bench);
     for (size_t i = 0; i < max_iterations; i++) {
@@ -252,8 +272,9 @@ int
 main(int argc, char **argv)
 {
     unsigned int max_iterations = DEFAULT_ITERATIONS;
+    unsigned int seed = (unsigned int)time(NULL);
 
-    parse_args(argc, argv, &max_iterations);
+    parse_args(argc, argv, &max_iterations, &seed);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx)
@@ -285,19 +306,19 @@ main(int argc, char **argv)
 
     xkb_enable_quiet_logging(ctx);
 
-    srandom((unsigned) time(NULL));
+    fprintf(stdout, "Seed: %u\n", seed);
 
     /*
      * Legacy server state machine API
      */
     fprintf(stdout, "--- Legacy server API ---\n");
-    bench_legacy_api(max_iterations, keymap);
+    bench_legacy_api(max_iterations, seed, keymap);
 
     /*
      * Full server state machine API
      */
     fprintf(stdout, "--- Modern server API ---\n");
-    bench_modern_api(max_iterations, ctx, keymap);
+    bench_modern_api(max_iterations, seed, ctx, keymap);
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
