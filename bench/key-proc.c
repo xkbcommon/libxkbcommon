@@ -95,7 +95,9 @@ int
 main(void)
 {
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    assert(ctx);
+    if (!ctx)
+        exit(EXIT_FAILURE);
+
     const enum xkb_keymap_format format = XKB_KEYMAP_FORMAT_TEXT_V1;
     const enum xkb_keymap_compile_flags flags = XKB_KEYMAP_COMPILE_NO_FLAGS;
 
@@ -103,9 +105,9 @@ main(void)
     if (is_pipe_or_regular_file(STDIN_FILENO)) {
         fprintf(stderr, "Bench using keymap from stdin\n");
         FILE *file = tools_read_stdin();
-        assert(file);
+        if (!file)
+            exit(EXIT_FAILURE);
         keymap = xkb_keymap_new_from_file(ctx, file, format, flags);
-        assert(keymap);
     } else {
         fprintf(stderr, "Bench using keymap from fixed RMLVO\n");
         static const struct xkb_rule_names rmlvo = {
@@ -116,8 +118,9 @@ main(void)
             .options = "grp:menu_toggle"
         };
         keymap = xkb_keymap_new_from_names2(ctx, &rmlvo, format, flags);
-        assert(keymap);
     }
+    if (!keymap)
+        exit(EXIT_FAILURE);
 
     xkb_enable_quiet_logging(ctx);
 
@@ -133,7 +136,8 @@ main(void)
      */
 
     struct xkb_state *state = xkb_state_new(keymap);
-    assert(state);
+    if (!state)
+        exit(EXIT_FAILURE);
 
     bench_start2(&bench);
     bench_legacy_api(state);
@@ -154,14 +158,18 @@ main(void)
 
     struct xkb_machine_builder *builder =
         xkb_machine_builder_new(keymap, NULL, NULL);
-    assert(builder);
+    if (!builder)
+        exit(EXIT_FAILURE);
     struct xkb_machine *sm = xkb_machine_new(builder, NULL);
-    assert(sm);
+    if (!sm)
+        exit(EXIT_FAILURE);
     xkb_machine_builder_unref(builder);
     struct xkb_events *events = xkb_events_new(ctx, NULL, NULL);
-    assert(events);
+    if (!events)
+        exit(EXIT_FAILURE);
     state = xkb_state_new(keymap);
-    assert(state);
+    if (!state)
+        exit(EXIT_FAILURE);
 
     bench_start2(&bench);
     bench_modern_api(sm, events, state);
