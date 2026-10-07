@@ -12,6 +12,7 @@
 #include "../test/test.h"
 #include "xkbcomp/rules.h"
 #include "bench.h"
+#include "bench-utils.h"
 
 static const unsigned int DEFAULT_ITERATIONS = 20000;
 static const double       DEFAULT_STDEV = 0.05;
@@ -178,14 +179,16 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
 
     xkb_enable_quiet_logging(context);
+    bool acc = false;
 
     if (explicit_iterations) {
         stdev = 0;
+        bench_opaque_input(context);
         bench_start2(&bench);
         for (unsigned int i = 0; i < max_iterations; i++) {
             struct xkb_component_names kccgst;
 
-            assert(xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL));
+            acc = !xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL);
             free(kccgst.keycodes);
             free(kccgst.types);
             free(kccgst.compatibility);
@@ -193,6 +196,7 @@ main(int argc, char *argv[])
             free(kccgst.geometry);
         }
         bench_stop2(&bench);
+        bench_do_not_optimize(acc);
 
         bench_elapsed(&bench, &elapsed);
         est.elapsed = (bench_time_elapsed_nanoseconds(&elapsed)) / max_iterations;
@@ -200,9 +204,24 @@ main(int argc, char *argv[])
     } else {
         bench_start2(&bench);
         BENCH(stdev, max_iterations, elapsed, est,
+            /*
+             * Pre
+             */
+            bench_opaque_input(context),
+            /*
+             * Consume
+             */
+            bench_do_not_optimize(acc),
+            /*
+             * Post
+             */
+            ,
+            /*
+             * Benched code
+             */
             struct xkb_component_names kccgst;
 
-            assert(xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL));
+            acc |= !xkb_components_from_rules_names(context, &rmlvo, &kccgst, NULL);
             free(kccgst.keycodes);
             free(kccgst.types);
             free(kccgst.compatibility);
@@ -216,18 +235,18 @@ main(int argc, char *argv[])
     bench_elapsed(&bench, &total_elapsed);
     if (explicit_iterations) {
         fprintf(stderr,
-                "mean: %lld µs; compiled %u rules in %ld.%06lds\n",
-                est.elapsed / 1000, max_iterations,
-                total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
+                "mean: %lld µs; compiled %u rules in %ld.%06llds\n",
+                bench_pico_to_micro_rounded(est.elapsed), max_iterations,
+                total_elapsed.seconds, bench_pico_to_micro(total_elapsed.picoseconds));
     } else {
         fprintf(stderr,
                 "mean: %lld µs; stdev: %Lf%% (target: %f%%); "
-                "last run: compiled %u rules in %ld.%06lds; "
-                "total time: %ld.%06lds\n", est.elapsed / 1000,
+                "last run: compiled %u rules in %ld.%06llds; "
+                "total time: %ld.%06llds\n", bench_pico_to_micro_rounded(est.elapsed),
                 (long double) est.stdev * 100.0 / (long double) est.elapsed,
-                stdev * 100,
-                max_iterations, elapsed.seconds, elapsed.nanoseconds / 1000,
-                total_elapsed.seconds, total_elapsed.nanoseconds / 1000);
+                stdev * 100, max_iterations,
+                elapsed.seconds, bench_pico_to_micro(elapsed.picoseconds),
+                total_elapsed.seconds, bench_pico_to_micro(total_elapsed.picoseconds));
     }
 
     xkb_context_unref(context);

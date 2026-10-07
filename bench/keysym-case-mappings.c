@@ -5,6 +5,7 @@
 
 #include "config.h"
 
+#include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
 
@@ -13,6 +14,7 @@
 
 #include "../test/test.h"
 #include "bench.h"
+#include "bench-utils.h"
 
 #define BENCHMARK_ITERATIONS 300
 
@@ -47,9 +49,12 @@ main(void)
     for (size_t f = 0; f < ARRAY_SIZE(functions); f++) {
         for (int explicit = 1; explicit >= 0; explicit--) {
             fprintf(stderr, "Benchmarking %s...\n", functions[f].name);
+            bench_opaque_input(explicit);
             bench_start(&bench);
             for (int i = 0; i < BENCHMARK_ITERATIONS; i++) {
                 struct xkb_keysym_iterator *iter = xkb_keysym_iterator_new(explicit);
+                if (!iter)
+                    exit(EXIT_FAILURE);
                 while (xkb_keysym_iterator_next(iter)) {
                     xkb_keysym_t ks = xkb_keysym_iterator_get_keysym(iter);
                     functions[f].toLower(ks);
