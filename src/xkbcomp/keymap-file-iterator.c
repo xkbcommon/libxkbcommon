@@ -16,7 +16,7 @@
 #include "keymap-file-iterator.h"
 #include "messages-codes.h"
 #include "utils.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 #include "xkbcomp-priv.h"
 #include "xkbcomp/ast.h"
 

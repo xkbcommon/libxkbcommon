@@ -6,7 +6,7 @@
 #include "config.h"
 
 #include "utils.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 
 
 /* Caller must ensure that the input is not NULL or empty */

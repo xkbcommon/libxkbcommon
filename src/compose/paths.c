@@ -10,7 +10,7 @@
 #include "xkbcommon/xkbcommon.h"
 #include "messages-codes.h"
 #include "utils.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 #include "context.h"
 #include "paths.h"
 

@@ -27,7 +27,7 @@
 #include "test.h"
 #include "tools/tools-common.h"
 #include "utils.h"
-#include "utils-text.h"
+#include "util-text.h"
 #include "xvfb-wrapper.h"
 
 /* Offset between evdev keycodes (where KEY_ESCAPE is 1), and the evdev XKB

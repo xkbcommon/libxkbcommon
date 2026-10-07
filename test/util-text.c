@@ -10,8 +10,8 @@
 #include <string.h>
 #include "src/darray.h"
 #include "src/utils.h"
-#include "src/utils-random.h"
-#include "test/utils-text.h"
+#include "src/util-random.h"
+#include "test/util-text.h"
 
 /* For each line, drop substring starting from a given needle, then drop
  * the line if the rest are only whitespaces. The needle must not contain

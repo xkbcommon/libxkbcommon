@@ -27,7 +27,7 @@
 #include "messages-codes.h"
 #include "text.h"
 #include "util-mem.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 struct xkb_keymap *
 xkb_keymap_ref(struct xkb_keymap *keymap)

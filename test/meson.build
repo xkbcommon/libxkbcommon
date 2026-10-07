@@ -68,7 +68,7 @@ test_shared_lib = static_library(
         '../src/utils.c',
         'common.c',
         'compose-iter.c',
-        'utils-text.c',
+        'util-text.c',
     ],
     include_directories: include_directories(
         '..',  # required to #include "config.h" in subdirs

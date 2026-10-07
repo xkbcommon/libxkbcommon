@@ -41,7 +41,7 @@
 #include "utf8.h"
 #include "utils.h"
 #include "util-mem.h"
-#include "utils-numbers.h"
+#include "util-numbers.h"
 
 /*
  * @struct xkb_events

@@ -13,7 +13,7 @@
 
 #include "xkbcommon/xkbcommon.h"
 #include "test.h"
-#include "test/utils-text.h"
+#include "test/util-text.h"
 #include "utils.h"
 #include "keymap-compare.h"
 

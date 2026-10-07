@@ -20,7 +20,7 @@
 #include "xkbcomp-priv.h"
 #include "include.h"
 #include "scanner-utils.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 
 /**
  * Parse an include statement. Each call returns a file name, along with

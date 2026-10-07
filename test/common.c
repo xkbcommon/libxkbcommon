@@ -28,11 +28,11 @@
 #include "keymap.h"
 #include "test.h"
 #include "utils.h"
-#include "utils-paths.h"
+#include "util-paths.h"
 #include "src/features/enums.h"
 #include "src/keysym.h"
 #include "src/xkbcomp/rules.h"
-#include "src/utils-numbers.h"
+#include "src/util-numbers.h"
 
 #include "tools/tools-common.h"
 

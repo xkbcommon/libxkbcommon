@@ -10,7 +10,7 @@
 
 #include "test.h"
 #include "atom.h"
-#include "utils-random.h"
+#include "util-random.h"
 
 #define INTERN_LITERAL(table, literal) \
     atom_intern(table, literal, sizeof(literal) - 1, true)
