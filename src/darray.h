@@ -85,6 +85,12 @@ typedef darray (unsigned long)  darray_ulong;
 #define darray_size(arr)        ((arr).size)
 #define darray_empty(arr)       ((arr).size == 0)
 
+#define darray_last(arr, fallback) ( \
+    !(arr).size \
+        ? (fallback) \
+        : (arr).item[(arr).size - 1] \
+)
+
 /*** Insertion (single item) ***/
 
 #define darray_append(arr, ...)  do { \
