@@ -24,6 +24,7 @@
 #include "util-random.h"
 
 #define DEFAULT_ITERATIONS 6000000
+#define DEFAULT_WARM_UP (DEFAULT_ITERATIONS / 100)
 
 enum api {
     API_NONE = 0,
@@ -57,6 +58,9 @@ usage(FILE *fp, char **argv)
            "Options:\n"
            " --help\n"
            "    Print this help and exit\n"
+           " --warm-up WARM_UP\n"
+           "    Number of iterations for warm-up\n"
+           "    (default: %u)\n"
            " --iter[=ITER]\n"
            "    Exact number of iterations to run\n"
            "    (default: %u)\n"
@@ -67,15 +71,16 @@ usage(FILE *fp, char **argv)
            " --modern\n"
            "    Bench modern server API (xkb_machine)\n"
            "\n",
-           argv[0], DEFAULT_ITERATIONS);
+           argv[0], DEFAULT_WARM_UP, DEFAULT_ITERATIONS);
 }
 
 static void
-parse_args(int argc, char **argv,
+parse_args(int argc, char **argv, unsigned int *warm_up_iter,
            unsigned int *max_iterations,
-           unsigned int *seed)
+           unsigned int *seed, enum api *api)
 {
     enum options {
+        OPT_WARM_UP,
         OPT_ITERATIONS,
         OPT_SEED,
         OPT_LEGACY_API,
@@ -84,6 +89,7 @@ parse_args(int argc, char **argv,
 
     static struct option opts[] = {
         {"help",             no_argument,            0, 'h'},
+        {"warm-up",          required_argument,      0, OPT_WARM_UP},
         {"iter",             optional_argument,      0, OPT_ITERATIONS},
         {"seed",             required_argument,      0, OPT_SEED},
         {"legacy",           no_argument,            0, OPT_LEGACY_API},
@@ -102,6 +108,16 @@ parse_args(int argc, char **argv,
         case 'h':
             usage(stdout, argv);
             exit(EXIT_SUCCESS);
+        case OPT_WARM_UP: {
+            unsigned long raw;
+            if (!parse_uint("warm-up", 0, UINT_MAX, optarg, &raw)) {
+                usage(stderr, argv);
+                exit(EXIT_INVALID_USAGE);
+            } else {
+                *warm_up_iter = (unsigned int)raw;
+            }
+            break;
+        }
         case OPT_ITERATIONS: {
             /* Accept `--iter 100` in addition to `--iter=100` */
             if (!optarg && optind < argc && argv[optind][0] != '-')
@@ -188,7 +204,7 @@ bench_legacy_api_loop(bool * restrict keys, struct xkb_state *state)
 }
 
 static void
-bench_legacy_api(unsigned int max_iterations,
+bench_legacy_api(bool warm_up, unsigned int max_iterations,
                  unsigned int seed,
                  struct xkb_keymap *keymap)
 {
@@ -211,7 +227,9 @@ bench_legacy_api(unsigned int max_iterations,
     bench_elapsed(&bench, &elapsed);
     est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
     est.stdev = 0;
-    report_iterations(max_iterations, &bench, &est);
+    if (!warm_up) {
+        report_iterations(max_iterations, &bench, &est);
+    }
 
     (void)acc;
 
@@ -249,7 +267,9 @@ bench_modern_api_loop(bool * restrict keys,
 }
 
 static void
-bench_modern_api(unsigned int max_iterations,
+bench_modern_api(bool warm_up, unsigned int max_iterations,
+                 unsigned int seed, struct xkb_context *ctx,
+                 struct xkb_keymap *keymap)
                  unsigned int seed, struct xkb_context *ctx,
                  struct xkb_keymap *keymap)
 {
@@ -283,7 +303,9 @@ bench_modern_api(unsigned int max_iterations,
     bench_elapsed(&bench, &elapsed);
     est.elapsed = bench_time_elapsed_nanoseconds(&elapsed) / max_iterations;
     est.stdev = 0;
-    report_iterations(max_iterations, &bench, &est);
+    if (!warm_up) {
+        report_iterations(max_iterations, &bench, &est);
+    }
 
     (void)acc;
 
@@ -295,11 +317,12 @@ bench_modern_api(unsigned int max_iterations,
 int
 main(int argc, char **argv)
 {
+    unsigned int warm_up_iter = DEFAULT_WARM_UP;
     unsigned int max_iterations = DEFAULT_ITERATIONS;
     unsigned int seed = (unsigned int)time(NULL);
     enum api api = API_NONE;
 
-    parse_args(argc, argv, &max_iterations, &seed, &api);
+    parse_args(argc, argv, &warm_up_iter, &max_iterations, &seed, &api);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     if (!ctx)
@@ -335,11 +358,21 @@ main(int argc, char **argv)
 
     if (api & API_LEGACY) {
         fprintf(stdout, "--- Legacy server API ---\n");
-        bench_legacy_api(max_iterations, seed, keymap);
+        if (warm_up_iter) {
+            fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
+            bench_legacy_api(true, warm_up_iter, seed, keymap);
+        }
+        fprintf(stdout, "Benchmarking...\n");
+        bench_legacy_api(false, max_iterations, seed, keymap);
     }
     if (api & API_MODERN) {
         fprintf(stdout, "--- Modern server API ---\n");
-        bench_modern_api(max_iterations, seed, ctx, keymap);
+        if (warm_up_iter) {
+            fprintf(stdout, "Warm-up: %u iterations...\n", warm_up_iter);
+            bench_modern_api(true, warm_up_iter, seed, ctx, keymap);
+        }
+        fprintf(stdout, "Benchmarking...\n");
+        bench_modern_api(false, max_iterations, seed, ctx, keymap);
     }
 
     xkb_keymap_unref(keymap);
