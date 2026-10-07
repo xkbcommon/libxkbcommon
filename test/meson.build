@@ -352,6 +352,17 @@ test(
     executable('quick-guide', 'quick-guide.c', dependencies: test_dep),
     env: test_env,
 )
+test(
+    'typing',
+    executable(
+        'typing',
+        'typing.c',
+        '../src/typing.c',
+        evdev_scancodes_lookup,
+        dependencies: test_dep
+    ),
+    env: test_env,
+)
 if get_option('enable-x11')
     has_xvfb = find_program('Xvfb', required: false)
     has_xkbcomp = find_program('xkbcomp', required: false)

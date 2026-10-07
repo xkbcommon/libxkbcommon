@@ -353,6 +353,9 @@ if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
         configh_data.set10('HAVE_NEWLOCALE', true)
     endif
 endif
+if cc.has_header_symbol('wctype.h', 'iswprint_l', prefix: system_ext_define)
+    configh_data.set10('HAVE_ISWPRINT_L', true)
+endif
 
 # Silence some security & deprecation warnings on MSVC
 # for some unix/C functions we use.
