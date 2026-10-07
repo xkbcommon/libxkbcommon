@@ -55,6 +55,9 @@ struct xkb_event {
     };
 };
 
+XKB_EXPORT_PRIVATE void
+xkb_state_reset(struct xkb_state *state);
+
 XKB_EXPORT_PRIVATE xkb_led_mask_t
 xkb_state_serialize_leds(const struct xkb_state *state,
                          enum xkb_state_component type);
