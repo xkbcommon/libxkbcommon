@@ -395,8 +395,7 @@ tools_print_detailed_keycode_state(const char *prefix,
                                    struct xkb_compose_state *compose_state,
                                    xkb_keycode_t keycode,
                                    enum xkb_key_direction direction,
-                                   enum xkb_consumed_mode consumed_mode,
-                                   enum print_state_options options)
+                                   const struct tools_events_options *options)
 {
     printf("------------\n");
     if (prefix)
@@ -417,19 +416,19 @@ tools_print_detailed_keycode_state(const char *prefix,
 
     const xkb_layout_index_t layout = xkb_state_key_get_layout(state, keycode);
 
-    const bool verbose = options & PRINT_VERBOSE;
+    const bool verbose = (options->print & PRINT_VERBOSE);
 
-    if (options & PRINT_LAYOUT)
+    if (options->print & PRINT_LAYOUT)
         print_layouts(state, 0, keycode, verbose);
 
     if (verbose) {
-        print_modifiers(state, 0, keycode, true, consumed_mode, verbose);
+        print_modifiers(state, 0, keycode, true, options->consumed_mode, verbose);
         printf(INDENT "level: %"PRIu32"\n",
                xkb_state_key_get_level(state, keycode, layout));
     } else {
         printf(INDENT "level:  %"PRIu32",  ",
                xkb_state_key_get_level(state, keycode, layout));
-        print_modifiers(state, 0, keycode, true, consumed_mode, verbose);
+        print_modifiers(state, 0, keycode, true, options->consumed_mode, verbose);
     }
 
     enum xkb_compose_status status = XKB_COMPOSE_NOTHING;
@@ -478,7 +477,7 @@ tools_print_detailed_keycode_state(const char *prefix,
         assert(!"Unexpected compose state");
     }
 
-    if ((options & PRINT_UNICODE) && show_unicode) {
+    if ((options->print & PRINT_UNICODE) && show_unicode) {
         if (status == XKB_COMPOSE_COMPOSED)
             xkb_compose_state_get_utf8(compose_state, s, sizeof(s));
         else
@@ -530,8 +529,7 @@ tools_print_one_liner_keycode_state(const char *prefix,
                                     struct xkb_compose_state *compose_state,
                                     xkb_keycode_t keycode,
                                     enum xkb_key_direction direction,
-                                    enum xkb_consumed_mode consumed_mode,
-                                    enum print_state_options options)
+                                    const struct tools_events_options *options)
 {
     if (prefix)
         printf("%s", prefix);
@@ -581,7 +579,7 @@ tools_print_one_liner_keycode_state(const char *prefix,
     }
     printf("] ");
 
-    if (!(options & PRINT_UNICODE)) {
+    if (!(options->print & PRINT_UNICODE)) {
         /* Do nothing */
     } else if (status == XKB_COMPOSE_COMPOSING) {
         printf("composing [  ] ");
@@ -613,7 +611,7 @@ tools_print_one_liner_keycode_state(const char *prefix,
     }
 
     const xkb_layout_index_t layout = xkb_state_key_get_layout(state, keycode);
-    if (options & PRINT_LAYOUT) {
+    if (options->print & PRINT_LAYOUT) {
         const char * const layout_name =
             xkb_keymap_layout_get_name(keymap, layout);
         printf("layout [ #%"PRIu32" %s ] ",
@@ -625,7 +623,7 @@ tools_print_one_liner_keycode_state(const char *prefix,
 
     printf("mods [");
     print_modifiers_names(state, XKB_STATE_MODS_EFFECTIVE, keycode,
-                          consumed_mode);
+                          options->consumed_mode);
     printf(" ] ");
 
     printf("leds [ ");
@@ -639,24 +637,19 @@ tools_print_keycode_state(const char *prefix,
                           struct xkb_compose_state *compose_state,
                           xkb_keycode_t keycode,
                           enum xkb_key_direction direction,
-                          enum xkb_consumed_mode consumed_mode,
-                          enum print_state_options options)
+                          const struct tools_events_options *options)
 {
 
     if (keycode == XKB_KEYCODE_INVALID)
         return;
 
-    if (options & PRINT_UNILINE) {
-        tools_print_one_liner_keycode_state(
-            prefix, state, compose_state, keycode, direction,
-            consumed_mode, options
-        );
+    if (options->print & PRINT_UNILINE) {
+        tools_print_one_liner_keycode_state(prefix, state, compose_state,
+                                            keycode, direction, options);
         printf("\n");
     } else {
-        tools_print_detailed_keycode_state(
-            prefix, state, compose_state, keycode, direction,
-            consumed_mode, options
-        );
+        tools_print_detailed_keycode_state(prefix, state, compose_state,
+                                           keycode, direction, options);
     }
 }
 
@@ -818,8 +811,7 @@ void
 tools_print_events(const char *prefix, struct xkb_state *state,
                    struct xkb_events *events,
                    struct xkb_compose_state *compose_state,
-                   enum xkb_consumed_mode consumed_mode,
-                   enum print_state_options options, bool report_state_changes)
+                   const struct tools_events_options *options)
 {
     const struct xkb_event *event;
     while ((event = xkb_events_next(events)) != NULL) {
@@ -844,8 +836,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                     xkb_compose_state_feed(compose_state, keysym);
                 }
                 tools_print_keycode_state(prefix, state, compose_state, kc,
-                                        direction, consumed_mode,
-                                        options);
+                                          direction, options);
                 if (compose_state) {
                     const enum xkb_compose_status compose_status =
                         xkb_compose_state_get_status(compose_state);
@@ -860,8 +851,8 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 status = xkb_state_update_event(state, event, &changed);
                 if (status != XKB_SUCCESS)
                     goto event_error;
-                if (report_state_changes && changed)
-                    tools_print_state_changes(prefix, state, changed, options);
+                if ((options->report & REPORT_STATE_CHANGES) && changed)
+                    tools_print_state_changes(prefix, state, changed, options->print);
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_MOTION: {
@@ -871,7 +862,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 status = xkb_event_get_pointer_motion(event, &motion);
                 if (status != XKB_SUCCESS)
                     goto event_error;
-                tools_print_pointer_motion(prefix, &motion, options);
+                tools_print_pointer_motion(prefix, &motion, options->print);
                 break;
             }
             case XKB_EVENT_TYPE_POINTER_BUTTON: {
@@ -881,7 +872,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 status = xkb_event_get_pointer_button(event, &button);
                 if (status != XKB_SUCCESS)
                     goto event_error;
-                tools_print_pointer_button(prefix, &button, options);
+                tools_print_pointer_button(prefix, &button, options->print);
                 break;
             }
             case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
@@ -896,7 +887,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 if (status != XKB_SUCCESS)
                     goto event_error;
                 tools_print_switch_virtual_console(prefix, index_or_offset,
-                                                   is_offset, options);
+                                                   is_offset, options->print);
                 break;
             }
             default: {

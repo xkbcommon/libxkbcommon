@@ -257,9 +257,11 @@ test_key_seq_va(struct xkb_keymap *keymap, struct xkb_machine *sm,
                 : (op == REPEAT)
                     ? XKB_KEY_REPEATED
                     : XKB_KEY_UP;
-        tools_print_keycode_state("", state, NULL, kc, direction,
-                                  XKB_CONSUMED_MODE_XKB,
-                                  PRINT_ALL_FIELDS | PRINT_UNILINE);
+        static const struct tools_events_options tool_options = {
+            .consumed_mode = XKB_CONSUMED_MODE_XKB,
+            .print = PRINT_ALL_FIELDS | PRINT_UNILINE,
+        };
+        tools_print_keycode_state("", state, NULL, kc, direction, &tool_options);
 #endif
         fprintf(stderr, "#%02u op %-6s got %d syms for keycode %3"PRIu32,
                 ++count, opstr, nsyms, kc);
