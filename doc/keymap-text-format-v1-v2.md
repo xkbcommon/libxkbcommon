@@ -359,16 +359,19 @@ Some additional resources are:
   </dd>
   <dt><a name="keymap-def">Keymap</a></dt>
   <dd>
-  The _complete_ definition of the
+  <!-- [keymap-definition] -->
+  A keymap is the _complete_ definition of the
   mapping of raw keycodes to symbols and actions.
   It fully defines the behavior of a keyboard.
 
   Depending of the context, a keymap may refer to:
 
-  - the software object defined and managed by xkbcommon;
-  - the text configuration used to create this software object.
+  - the [software object](@ref xkb_keymap) defined and managed by xkbcommon;
+  - the [text configuration](@ref keymap-text-format-v1-v2) used to create
+    this software object.
 
-  See @ref keymap-components-intro and [xkb_keymap] for further details.
+  See `xkb_keymap` and @ref keymap-components-intro for further details.
+  <!-- [keymap-definition] -->
   </dd>
   <dt>Keyboard configuration database @anchor database-def</dt>
   <dd>

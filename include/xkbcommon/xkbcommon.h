@@ -71,6 +71,9 @@ struct xkb_context;
 /**
  * @struct xkb_keymap
  * @ingroup keymap
+ * @ingroup keymap-creation
+ * @ingroup keymap-serialization
+ * @ingroup keymap-components
  * Opaque compiled keymap object.
  *
  * The keymap object holds all of the static keyboard information obtained
@@ -1727,7 +1730,15 @@ xkb_context_set_log_fn(struct xkb_context *context,
 /** @} */
 
 /**
- * @defgroup keymap Keymap Creation
+ * @defgroup keymap Keymap
+ * Keyboard keymap.
+ *
+ * @snippet{doc} doc/keymap-text-format-v1-v2.md keymap-definition
+ */
+
+/**
+ * @defgroup keymap-creation Keymap Creation
+ * @ingroup keymap
  * Creating and destroying keymaps.
  *
  * @{
@@ -1759,13 +1770,14 @@ enum xkb_keymap_compile_flags {
     XKB_KEYMAP_COMPILE_STRICT_MODE = (1 << 0),
 };
 
-/** @} */
-
 /**
- * @defgroup xkb_keymap_format_enum Keymap formats
- * @ingroup keymap keymap-serialization
+ * @defgroup keymap-formats Keymap formats
+ * @ingroup keymap-creation
+ * @ingroup keymap-serialization
  * @brief Keymap formats for parsing and serializing keymaps
  * <!-- this group enables displaying keymap formats in multiple groups -->
+ *
+ * @{
  */
 
 /**
@@ -1843,8 +1855,6 @@ enum xkb_keymap_compile_flags {
  * </tbody>
  * </table>
  *
- * @ingroup xkb_keymap_format_enum
- *
  * [xkb_v1]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_keyboard-enum-keymap_format
  * [xkeyboard-config]: https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
  */
@@ -1889,10 +1899,7 @@ enum xkb_keymap_format {
     XKB_KEYMAP_FORMAT_TEXT_V2 = 2,
 };
 
-/**
- * @addtogroup keymap
- * @{
- */
+/** @} */
 
 /**
  * Create a keymap from a [RMLVO] [builder].
@@ -2094,6 +2101,7 @@ xkb_keymap_unref(struct xkb_keymap *keymap);
 
 /**
  * @defgroup keymap-serialization Keymap Serialization
+ * @ingroup keymap
  * Serializing keymaps.
  *
  * @{
@@ -2392,7 +2400,8 @@ xkb_keymap_get_as_string2(struct xkb_keymap *keymap,
 /** @} */
 
 /**
- * @defgroup components Keymap Components
+ * @defgroup keymap-components Keymap Components
+ * @ingroup keymap
  * Enumeration of state components in a keymap.
  *
  * @{
