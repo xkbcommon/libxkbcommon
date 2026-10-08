@@ -552,12 +552,16 @@ test_state_update_basics(struct xkb_context *ctx)
     );
     assert(status == XKB_SUCCESS);
     /* Press event is lost */
+    const struct xkb_event frame = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
     struct xkb_event event = {
         .ctx = ctx,
         .type = XKB_EVENT_TYPE_KEY,
         .key = { .keycode = KEY_A + EVDEV_OFFSET, .direction = XKB_KEY_UP }
     };
-    check_events_(events, event); /* only 1 event */
+    check_events_(events, event, frame); /* only 1 non-frame event */
     xkb_events_destroy(events);
 
     /* Check components update mask */
@@ -622,7 +626,7 @@ test_state_update_basics(struct xkb_context *ctx)
     status = xkb_machine_process_synthetic(sm, &state_update, events);
     assert(status == XKB_SUCCESS);
     event.type = XKB_EVENT_TYPE_STATE_COMPONENTS;
-    check_events_(events, event);
+    check_events_(events, event, frame);
     struct xkb_state * const state2 = xkb_state_new_from_machine(sm, &status);
     assert(state2 && status == XKB_SUCCESS);
 
@@ -681,7 +685,7 @@ test_state_update_basics(struct xkb_context *ctx)
             }
         }
     };
-    check_events_(events, event); /* only 1 event */
+    check_events_(events, event, frame); /* only 1 non-frame event */
     xkb_events_destroy(events);
     xkb_machine_unref(sm);
 
@@ -783,7 +787,7 @@ update_controls(struct xkb_machine *sm,
             const enum xkb_status status =
                 xkb_state_update_event(state, event, &changed);
             assert(status == XKB_SUCCESS);
-            changed_acc = changed;
+            changed_acc |= changed;
         }
         return changed_acc;
     } else {
@@ -1290,11 +1294,16 @@ test_redirect_key(struct xkb_context *ctx)
     xkb_machine_update_latched_locked(sm, events, 0, 0, false, 0,
                                       ctrl, ctrl, false, 0);
 
+    const struct xkb_event frame = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
+
     const struct {
         xkb_keycode_t keycode;
         bool repeats;
         struct test_events {
-            struct xkb_event events[3];
+            struct xkb_event events[5];
             unsigned int events_count;
         } down;
         struct test_events up;
@@ -1311,9 +1320,10 @@ test_redirect_key(struct xkb_context *ctx)
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1324,9 +1334,10 @@ test_redirect_key(struct xkb_context *ctx)
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
         {
@@ -1341,9 +1352,10 @@ test_redirect_key(struct xkb_context *ctx)
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1354,9 +1366,10 @@ test_redirect_key(struct xkb_context *ctx)
                             .keycode = KEY_A + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
         {
@@ -1380,6 +1393,7 @@ test_redirect_key(struct xkb_context *ctx)
                                      | XKB_STATE_MODS_EFFECTIVE
                         }
                     },
+                    frame,
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY,
@@ -1404,8 +1418,9 @@ test_redirect_key(struct xkb_context *ctx)
                                      | XKB_STATE_MODS_EFFECTIVE
                         }
                     },
+                    frame,
                 },
-                .events_count = 3
+                .events_count = 5
             },
             .up = {
                 .events = {
@@ -1425,6 +1440,7 @@ test_redirect_key(struct xkb_context *ctx)
                                      | XKB_STATE_MODS_EFFECTIVE
                         }
                     },
+                    frame,
                     {
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_KEY,
@@ -1449,8 +1465,9 @@ test_redirect_key(struct xkb_context *ctx)
                                      | XKB_STATE_MODS_EFFECTIVE
                         }
                     },
+                    frame,
                 },
-                .events_count = 3
+                .events_count = 5
             }
         },
     };
@@ -1471,7 +1488,11 @@ test_redirect_key(struct xkb_context *ctx)
         if (tests[t].repeats) {
             struct xkb_event ref[ARRAY_SIZE(tests->down.events)] = {0};
             memcpy(ref, tests[t].down.events, sizeof(tests->down.events));
-            ref[tests[t].down.events_count == 3].key.direction =
+            unsigned event_idx =
+                (tests[t].down.events_count == ARRAY_SIZE(tests[t].down.events))
+                    ? 2 /* has state events */
+                    : 0;
+            ref[event_idx].key.direction =
                 XKB_KEY_REPEATED;
             assert(check_events(events, ref, tests[t].down.events_count));
         } else {
@@ -1516,12 +1537,17 @@ test_mouse_keys(struct xkb_context *ctx)
         _xkb_keymap_led_get_index(keymap, "Mouse Keys");
     const xkb_led_mask_t mouse_keys = (UINT32_C(1) << mouse_keys_idx);
 
+    const struct xkb_event frame = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
+
     const struct {
         xkb_keycode_t keycode;
         enum key_directions directions;
         bool repeats;
         struct test_events {
-            struct xkb_event events[2];
+            struct xkb_event events[3];
             unsigned int events_count;
         } down;
         struct test_events repeat;
@@ -1558,9 +1584,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -1571,9 +1598,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1597,9 +1625,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -1629,9 +1658,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = 0,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -1642,9 +1672,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP7 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1655,9 +1686,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP7 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
 
@@ -1688,9 +1720,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -1715,9 +1748,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -1747,9 +1781,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = 0,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -1760,9 +1795,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP5 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1773,9 +1809,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP5 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
 
@@ -1806,9 +1843,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -1833,9 +1871,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -1865,9 +1904,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = 0,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -1878,9 +1918,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP0 + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -1891,9 +1932,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KP0 + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
 
@@ -1924,9 +1966,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -1951,9 +1994,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = level3,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -1983,9 +2027,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .mods = 0,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -1996,9 +2041,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -2009,9 +2055,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KPASTERISK + EVDEV_OFFSET,
                             .direction = XKB_KEY_UP
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
 
@@ -2043,9 +2090,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             },
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .up = {
                 .events = {
@@ -2057,8 +2105,9 @@ test_mouse_keys(struct xkb_context *ctx)
                             .direction = XKB_KEY_UP
                         }
                     },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
 
@@ -2090,9 +2139,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = {
                 .events = {
@@ -2103,9 +2153,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_RIGHTALT + EVDEV_OFFSET,
                             .direction = XKB_KEY_REPEATED
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -2131,9 +2182,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -2157,9 +2209,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .x = -1,
                             .y = -1,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = {
                 .events = {
@@ -2172,9 +2225,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .x = -1,
                             .y = -1,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = { .events_count = 0 }
         },
@@ -2209,9 +2263,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2225,9 +2280,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
 
@@ -2259,9 +2315,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2288,9 +2345,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -2324,9 +2382,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2360,9 +2419,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2389,9 +2449,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -2425,9 +2486,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2461,9 +2523,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2490,9 +2553,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -2516,9 +2580,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2532,9 +2597,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
 
@@ -2554,9 +2620,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2578,9 +2645,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
 
@@ -2612,9 +2680,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = {
@@ -2641,9 +2710,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             }
         },
 
@@ -2685,9 +2755,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2707,9 +2778,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2739,9 +2811,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2769,9 +2842,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2803,9 +2877,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
         {
@@ -2823,9 +2898,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_CLICK,
                             .count = 2,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2849,9 +2925,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .x = -1,
                             .y = -1,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -2871,9 +2948,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -2893,9 +2971,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2927,9 +3006,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_PRESSED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 },
@@ -2951,9 +3031,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .keycode = KEY_KPPLUSMINUS + EVDEV_OFFSET,
                             .direction = XKB_KEY_DOWN
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .up = {
                 .events = {
@@ -2976,9 +3057,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = 0,
                             },
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
         },
 
@@ -3010,9 +3092,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             }
         },
         {
@@ -3032,9 +3115,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
 
@@ -3066,9 +3150,10 @@ test_mouse_keys(struct xkb_context *ctx)
                                 .leds = mouse_keys,
                             },
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .up = {
                 .events = {
@@ -3080,8 +3165,9 @@ test_mouse_keys(struct xkb_context *ctx)
                             .direction = XKB_KEY_UP
                         }
                     },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
 
@@ -3105,9 +3191,10 @@ test_mouse_keys(struct xkb_context *ctx)
                             .state = XKB_POINTER_BUTTON_RELEASED,
                             .count = 0,
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
         },
     };
@@ -3180,12 +3267,17 @@ test_server_actions(struct xkb_context *ctx)
     const xkb_mod_mask_t alt =
         _xkb_keymap_mod_get_mask(keymap, XKB_VMOD_NAME_ALT);
 
+    const struct xkb_event frame = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
+
     const struct {
         xkb_keycode_t keycode;
         enum key_directions directions;
         bool repeats;
         struct test_events {
-            struct xkb_event events[2];
+            struct xkb_event events[3];
             unsigned int events_count;
         } down;
         struct test_events repeat;
@@ -3220,9 +3312,10 @@ test_server_actions(struct xkb_context *ctx)
                                 .mods = ctrl,
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -3252,9 +3345,10 @@ test_server_actions(struct xkb_context *ctx)
                                 .mods = (ctrl | alt),
                             }
                         }
-                    }
+                    },
+                    frame,
                 },
-                .events_count = 2
+                .events_count = 3
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -3269,8 +3363,9 @@ test_server_actions(struct xkb_context *ctx)
                         .ctx = ctx,
                         .type = XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
                     },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -3289,8 +3384,9 @@ test_server_actions(struct xkb_context *ctx)
                             .is_offset = false
                         }
                     },
+                    frame,
                 },
-                .events_count = 1
+                .events_count = 2
             },
             .repeat = { .events_count = 0 },
             .up = { .events_count = 0 }
@@ -3371,6 +3467,11 @@ test_shortcuts_tweak(struct xkb_context *context)
 
     struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
     assert(events);
+
+    const struct xkb_event frame = {
+        .ctx = context,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
 
     /*
      * xkb_machine_process_key
@@ -3541,6 +3642,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -3583,6 +3685,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -3597,6 +3700,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 .direction = XKB_KEY_REPEATED
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -3610,7 +3714,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_RIGHTCTRL + EVDEV_OFFSET,
@@ -3643,6 +3748,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_RIGHTCTRL + EVDEV_OFFSET,
@@ -3674,6 +3780,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -3718,6 +3825,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_102ND + EVDEV_OFFSET,
@@ -3741,6 +3849,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -3785,6 +3894,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -3809,6 +3919,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -3853,6 +3964,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -3866,7 +3978,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                 .keycode = KEY_Q + EVDEV_OFFSET,
                 .direction = XKB_KEY_UP
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_102ND + EVDEV_OFFSET,
@@ -3899,6 +4012,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     /*
@@ -3927,7 +4041,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /* Layout 1 locked, Ctrl locked */
@@ -3952,7 +4067,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -3977,6 +4093,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4003,6 +4120,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -4027,6 +4145,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4053,6 +4172,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -4077,6 +4197,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4103,6 +4224,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     /* Layout 1 latched, layout 2 locked, Ctrl locked */
@@ -4128,7 +4250,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /* Layout 1 latched, layout 2 locked, Ctrl disabled */
@@ -4153,7 +4276,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /* Layout 1 latched, layout 2 locked, Ctrl latched */
@@ -4178,7 +4302,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /*
@@ -4215,7 +4340,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .controls = CONTROL_STICKY_KEYS,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /* Enable already enabled sticky keys: no change */
@@ -4248,7 +4374,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .controls = 0,
                 }
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_update_enabled_controls(sm, events, controls, 0)
@@ -4282,7 +4409,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_C + EVDEV_OFFSET,
@@ -4307,6 +4435,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
@@ -4324,6 +4453,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4367,6 +4497,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     xkb_machine_unref(sm);
@@ -4412,6 +4543,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4438,6 +4570,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_C + EVDEV_OFFSET,
@@ -4462,6 +4595,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
@@ -4479,6 +4613,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4522,6 +4657,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -4546,7 +4682,8 @@ test_shortcuts_tweak(struct xkb_context *context)
                     .leds = group2,
                 }
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Q + EVDEV_OFFSET,
@@ -4572,6 +4709,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4599,6 +4737,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -4628,6 +4767,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4655,6 +4795,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_C + EVDEV_OFFSET,
@@ -4678,6 +4819,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -4703,6 +4845,7 @@ test_shortcuts_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     xkb_machine_unref(sm);
@@ -4825,6 +4968,10 @@ test_overlays(struct xkb_context *context)
         { 0x02, KEY_J, KEY_KP1, XKB_KEY_RELEASE }, /* key still uses overlay 1 */
         { 0x00, KEY_2, KEY_2, XKB_KEY_TAP },
     };
+    const struct xkb_event frame = {
+        .ctx = context,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
     uint32_t previous = 0x00;
     for (size_t t = 0; t < ARRAY_SIZE(actions_tests); t++) {
         fprintf(stderr, "------\n*** %s: key actions #%zu ***\n", __func__, t);
@@ -4857,9 +5004,9 @@ test_overlays(struct xkb_context *context)
                 sm, actions_tests[t].kc_in + EVDEV_OFFSET, XKB_KEY_DOWN, events
             ) == XKB_SUCCESS);
             if (changed && added) {
-                check_events_(events, event1, event2);
+                check_events_(events, event1, event2, frame);
             } else {
-                check_events_(events, event1);
+                check_events_(events, event1, frame);
             }
         }
 
@@ -4871,9 +5018,9 @@ test_overlays(struct xkb_context *context)
             ) == XKB_SUCCESS);
             event1.key.direction = XKB_KEY_UP;
             if (changed && !added) {
-                check_events_(events, event1, event2);
+                check_events_(events, event1, event2, frame);
             } else {
-                check_events_(events, event1);
+                check_events_(events, event1, frame);
             }
         }
 
@@ -4971,7 +5118,7 @@ test_overlays(struct xkb_context *context)
                 .components = { .controls = controls },
             },
         };
-        check_events_(events, event);
+        check_events_(events, event, frame);
         if (xkb_event_get_type(&event) == XKB_EVENT_TYPE_STATE_COMPONENTS) {
             assert(changed);
             struct xkb_event_components components = {
@@ -5001,7 +5148,7 @@ test_overlays(struct xkb_context *context)
                 .direction = api_tests[t].direction,
             },
         };
-        check_events_(events, event);
+        check_events_(events, event, frame);
     }
 
     xkb_events_destroy(events);
@@ -5067,6 +5214,11 @@ test_modifiers_tweak(struct xkb_context *context)
 
     struct xkb_events * const events = xkb_events_new(context, NULL, NULL);
     assert(events);
+
+    const struct xkb_event frame = {
+        .ctx = context,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
 
     assert(test_key_seq2(
         keymap, sm, events,
@@ -5157,7 +5309,8 @@ test_modifiers_tweak(struct xkb_context *context)
                     .leds = group2_led,
                 }
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Y + EVDEV_OFFSET,
@@ -5178,6 +5331,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5200,6 +5354,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Y + EVDEV_OFFSET,
@@ -5220,6 +5375,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5242,6 +5398,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Y + EVDEV_OFFSET,
@@ -5262,6 +5419,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5284,6 +5442,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -5307,7 +5466,8 @@ test_modifiers_tweak(struct xkb_context *context)
                     .leds = group2_led | num_led,
                 }
             }
-        }
+        },
+        frame
     );
 
     assert(xkb_machine_process_key(sm, KEY_Y + EVDEV_OFFSET,
@@ -5330,6 +5490,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5354,6 +5515,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_Y + EVDEV_OFFSET,
@@ -5377,6 +5539,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5401,6 +5564,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     /* Key type `CTRL+ALT` partially matches the remapping source: no remap */
@@ -5415,7 +5579,8 @@ test_modifiers_tweak(struct xkb_context *context)
                 .keycode = KEY_BACKSPACE + EVDEV_OFFSET,
                 .direction = XKB_KEY_DOWN
             }
-        }
+        },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_LEFTALT + EVDEV_OFFSET,
@@ -5438,6 +5603,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5476,7 +5642,8 @@ test_modifiers_tweak(struct xkb_context *context)
                     .leds = group2_led | num_led,
                 }
             }
-        }
+        },
+        frame
     );
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -5500,7 +5667,8 @@ test_modifiers_tweak(struct xkb_context *context)
                     .leds = group2_led | num_led | scroll_led,
                 }
             }
-        }
+        },
+        frame,
     );
 
     /* Ensure CAPS action is triggered */
@@ -5524,6 +5692,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5564,6 +5733,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_update_latched_locked(sm, events,
@@ -5592,6 +5762,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame, // FIXME: merge both state events
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
@@ -5607,6 +5778,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5646,6 +5818,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_C + EVDEV_OFFSET,
@@ -5668,6 +5841,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame, // FIXME: merge both state events
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
@@ -5683,6 +5857,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5722,6 +5897,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     assert(xkb_machine_process_key(sm, KEY_C + EVDEV_OFFSET,
@@ -5745,6 +5921,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame, // FIXME: merge both state events
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
@@ -5760,6 +5937,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
         {
             .ctx = context,
             .type = XKB_EVENT_TYPE_KEY,
@@ -5799,6 +5977,7 @@ test_modifiers_tweak(struct xkb_context *context)
                 }
             }
         },
+        frame,
     );
 
     xkb_events_destroy(events);

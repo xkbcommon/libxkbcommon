@@ -261,8 +261,11 @@ check_events(struct xkb_events *iter,
     const struct xkb_event *got = NULL;
     size_t got_count = 0;
     bool ok = true;
-    if (count == 1 && events[0].type == XKB_EVENT_TYPE_NONE)
+    if (count && events[0].type == XKB_EVENT_TYPE_NONE) {
+        assert((count == 1) ^
+               (count == 2 && events[1].type == XKB_EVENT_TYPE_FRAME));
         count = 0;
+    }
     while ((got = xkb_events_next(iter))) {
         if (++got_count > count) {
             fprintf(stderr, "%s() error at event #%zu:\n", __func__, got_count);

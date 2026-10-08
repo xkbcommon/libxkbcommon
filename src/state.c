@@ -1238,6 +1238,15 @@ append_redirect_key_events(struct xkb_server_state *state,
                     .changed = changed
                 }
             });
+            /*
+             * Commit the temporary modifiers change before the key event
+             * it was computed for: consumers must observe the key event
+             * under the *redirected* modifiers.
+             */
+            darray_append(events->queue, (struct xkb_event) {
+                .ctx = events->ctx, /* borrowed from events */
+                .type = XKB_EVENT_TYPE_FRAME,
+            });
         }
     }
 
@@ -3722,6 +3731,12 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
                 .components = state->base.components
             }
         });
+
+        /* Terminate the frame */
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_FRAME,
+        });
     }
 
     return XKB_SUCCESS;
@@ -3854,7 +3869,7 @@ do_shortcuts_tweak(const struct machine_shortcuts_config *config,
 
 static void
 undo_tweaks(const struct xkb_state *state,
-            const struct state_components *previous_components,
+            const struct state_components *initial_components,
             struct xkb_events *events)
 {
     /* Get last component event */
@@ -3868,14 +3883,14 @@ undo_tweaks(const struct xkb_state *state,
 
     /* Restore state */
     const enum xkb_state_component changed =
-        get_state_component_changes(previous_components,
+        get_state_component_changes(initial_components,
                                     &event->components.components);
     if (changed) {
         darray_append(events->queue, (struct xkb_event) {
             .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
             .components = {
-                .components = *previous_components,
+                .components = *initial_components,
                 .changed = changed
             }
         });
@@ -3989,7 +4004,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
     if (!key || (direction == XKB_KEY_REPEATED && !key->repeats))
         return XKB_SUCCESS;
 
-    const struct state_components previous_components = state->base.components;
+    const struct state_components initial_components = state->base.components;
 
     if (direction == XKB_KEY_DOWN &&
         (sm->base.base.components.controls & XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) &&
@@ -4008,7 +4023,15 @@ xkb_machine_process_key(struct xkb_machine *sm,
                                              &state->base, events, key);
 
     remap_event = do_shortcuts_tweak(&sm->config.shortcuts, &state->base,
-                                     &previous_components, events, remap_event);
+                                     &initial_components, events, remap_event);
+
+    if (remap_event >= 0) {
+        // TODO: what about merging state event for RedirectKey?
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_FRAME,
+        });
+    }
 
     state->update_flags = STATE_REQUIRE_KEY_EVENT;
     state->set_mods = 0;
@@ -4060,15 +4083,17 @@ xkb_machine_process_key(struct xkb_machine *sm,
 
     if (remap_event >= 0) {
         // FIXME: fragile if last state change does not restore the state to the remap event
-        undo_tweaks(&state->base, &previous_components, events);
+        undo_tweaks(&state->base, &initial_components, events);
     }
 
     const enum xkb_state_component changed = get_state_component_changes(
-        &previous_components, &state->base.components
+        &initial_components, &state->base.components
     );
     if (changed) {
         if (changed & XKB_STATE_CONTROLS_EFFECTIVE)
             machine_update_overlays(sm);
+
+        // TODO: merge with previous state event, if any
 
         darray_append(events->queue, (struct xkb_event) {
             .ctx = events->ctx, /* borrowed from events */
@@ -4079,6 +4104,17 @@ xkb_machine_process_key(struct xkb_machine *sm,
             }
         });
     }
+
+    if (!darray_empty(events->queue) &&
+        darray_item(events->queue, darray_size(events->queue) - 1).type !=
+        XKB_EVENT_TYPE_FRAME)
+    {
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_FRAME,
+        });
+    }
+
     return XKB_SUCCESS;
 }
 
