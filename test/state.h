@@ -150,6 +150,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
         return false;
     switch (event1->type) {
     case XKB_EVENT_TYPE_INVALID:
+    case XKB_EVENT_TYPE_FRAME:
         /* No parameters */
         return true;
     case XKB_EVENT_TYPE_KEY:
@@ -173,7 +174,7 @@ xkb_event_eq(const struct xkb_event *event1, const struct xkb_event *event2)
         break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 7 &&
                       XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                       (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                       "Missing state event type");
@@ -188,6 +189,9 @@ print_event(const char *prefix, const struct xkb_event *event)
     switch (event->type) {
     case XKB_EVENT_TYPE_INVALID:
         fprintf(stderr, "type: invalid\n");
+        break;
+    case XKB_EVENT_TYPE_FRAME:
+        fprintf(stderr, "type: end of frame\n");
         break;
     case XKB_EVENT_TYPE_KEY:
         fprintf(stderr, "type: key %s; keycode: %"PRIu32"\n",
@@ -243,7 +247,7 @@ print_event(const char *prefix, const struct xkb_event *event)
         break;
     default:
         {} /* Label followed by declaration requires C23 */
-        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+        static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 7 &&
                       XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                       (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                       "Missing state event type");
