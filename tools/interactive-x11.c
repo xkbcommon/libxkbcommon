@@ -67,11 +67,13 @@ static bool terminate = false;
 static enum xkb_keymap_compile_flags compile_flags =
     (enum xkb_keymap_compile_flags) DEFAULT_KEYMAP_COMPILE_FLAGS;
 static bool detect_repeat = false;
-static bool use_events_api = true;
-static enum xkb_consumed_mode consumed_mode = XKB_CONSUMED_MODE_XKB;
-static enum print_state_options print_options = DEFAULT_PRINT_OPTIONS;
-static bool report_state_changes = true;
-static bool use_local_state = false;
+static struct tools_events_options tool_options = {
+    .consumed_mode = XKB_CONSUMED_MODE_XKB,
+    .print = PRINT_DEFAULT_OPTIONS,
+    .report = REPORT_DEFAULT_OPTIONS,
+    .events_api = true,
+    .local_state = false,
+};
 static struct xkb_machine_options machine_options = xkb_machine_options_new();
 static struct xkb_keymap *custom_keymap = NULL;
 #endif
@@ -156,7 +158,7 @@ update_keymap(struct keyboard *kbd)
 #ifndef KEYMAP_DUMP
     }
 
-    if (!use_local_state) {
+    if (!tool_options.local_state) {
 #endif
         /* Reset state on keymap reset */
         xkb_state_unref(kbd->state);
@@ -182,7 +184,7 @@ update_keymap(struct keyboard *kbd)
             .size = sizeof(update),
             .components = &components_update,
         };
-        if (use_events_api) {
+        if (tool_options.events_api) {
             if (!kbd->machine) {
                 struct xkb_machine_builder * machine_builder =
                     xkb_machine_builder_new_from_options(kbd->keymap, &machine_options);
@@ -316,7 +318,7 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         break;
 
     case XCB_XKB_STATE_NOTIFY: {
-        if (use_local_state) {
+        if (tool_options.local_state) {
             /* Ignore state update if using a local state machine */
             break;
         }
@@ -329,8 +331,9 @@ process_xkb_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                                   event->state_notify.baseGroup,
                                   event->state_notify.latchedGroup,
                                   event->state_notify.lockedGroup);
-        if (report_state_changes)
-            tools_print_state_changes(NULL, kbd->state, changed, print_options);
+        if (tool_options.report & REPORT_STATE_CHANGES)
+            tools_print_state_changes(NULL, kbd->state, changed,
+                                      tool_options.print);
         break;
     }
 
@@ -355,7 +358,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                                                ? XKB_KEY_REPEATED
                                                : XKB_KEY_DOWN;
 
-        if (use_local_state && use_events_api) {
+        if (tool_options.local_state && tool_options.events_api) {
             /* Run our local state machine with the event API */
             const int ret = xkb_machine_process_key(kbd->machine,
                                                     keycode, direction,
@@ -365,8 +368,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                 // TODO: better error handling
             } else {
                 tools_print_events(NULL, kbd->state, kbd->events,
-                                   kbd->compose_state, consumed_mode,
-                                   print_options, report_state_changes);
+                                   kbd->compose_state, &tool_options);
             }
         } else {
             if (kbd->compose_state) {
@@ -376,8 +378,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
             }
 
             tools_print_keycode_state(NULL, kbd->state, kbd->compose_state,
-                                      keycode, direction,
-                                      consumed_mode, print_options);
+                                      keycode, direction, &tool_options);
 
             if (kbd->compose_state) {
                 enum xkb_compose_status status =
@@ -386,13 +387,13 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                     status == XKB_COMPOSE_COMPOSED)
                     xkb_compose_state_reset(kbd->compose_state);
             }
-            if (use_local_state) {
+            if (tool_options.local_state) {
                 /* Run our local state machine with the legacy API */
                 const enum xkb_state_component changed =
                     xkb_state_update_key(kbd->state, keycode, direction);
-                if (changed && report_state_changes)
+                if (changed && (tool_options.report & REPORT_STATE_CHANGES))
                     tools_print_state_changes(NULL, kbd->state,
-                                              changed, print_options);
+                                              changed, tool_options.print);
             }
         }
 
@@ -408,7 +409,7 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
         if (kbd->repeated_key == keycode)
             kbd->repeated_key = XKB_KEYCODE_INVALID;
 
-        if (use_local_state && use_events_api) {
+        if (tool_options.local_state && tool_options.events_api) {
             /* Run our local state machine */
             const int ret = xkb_machine_process_key(kbd->machine,
                                                     keycode, XKB_KEY_UP,
@@ -418,20 +419,18 @@ process_event(xcb_generic_event_t *gevent, struct keyboard *kbd)
                 // TODO: better error handling
             } else {
                 tools_print_events(NULL, kbd->state, kbd->events,
-                                   kbd->compose_state, consumed_mode,
-                                   print_options, report_state_changes);
+                                   kbd->compose_state, &tool_options);
             }
         } else {
             tools_print_keycode_state(NULL, kbd->state, kbd->compose_state,
-                                      keycode, XKB_KEY_UP, consumed_mode,
-                                      print_options);
-            if (use_local_state) {
+                                      keycode, XKB_KEY_UP, &tool_options);
+            if (tool_options.local_state) {
                 /* Run our local state machine with the legacy API */
                 const enum xkb_state_component changed =
                     xkb_state_update_key(kbd->state, keycode, XKB_KEY_UP);
-                if (changed && report_state_changes)
+                if (changed && (tool_options.report & REPORT_STATE_CHANGES))
                     tools_print_state_changes(NULL, kbd->state,
-                                              changed, print_options);
+                                              changed, tool_options.print);
             }
         }
         break;
@@ -659,8 +658,8 @@ main(int argc, char *argv[])
 
 #ifndef KEYMAP_DUMP
     /* Ensure synced with usage() and man page */
-    assert(use_events_api);
-    assert(consumed_mode == XKB_CONSUMED_MODE_XKB);
+    assert(tool_options.events_api);
+    assert(tool_options.consumed_mode == XKB_CONSUMED_MODE_XKB);
 #endif
 
     while (1) {
@@ -704,14 +703,14 @@ main(int argc, char *argv[])
             break;
         case OPT_LOCAL_STATE:
 local_state:
-            use_local_state = true;
+            tool_options.local_state = true;
             break;
         case OPT_LEGACY_STATE_API: {
             bool legacy_api = true;
             if (!tools_parse_bool(optarg, TOOLS_ARG_OPTIONAL, &legacy_api))
                 goto invalid_usage;
-            use_events_api = !legacy_api;
-            if (use_events_api)
+            tool_options.events_api = !legacy_api;
+            if (tool_options.events_api)
                 goto local_state;
             break;
         }
@@ -719,25 +718,25 @@ local_state:
             if (!tools_parse_controls(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
-            use_events_api = true;
+            tool_options.events_api = true;
             goto local_state;
         case OPT_MODIFIERS_TWEAK_MAPPING:
             if (!tools_parse_modifiers_mappings(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
-            use_events_api = true;
+            tool_options.events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MASK:
             if (!tools_parse_shortcuts_mask(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
-            use_events_api = true;
+            tool_options.events_api = true;
             goto local_state;
         case OPT_SHORTCUTS_TWEAK_MAPPING:
             if (!tools_parse_shortcuts_mappings(optarg, &machine_options))
                 goto invalid_usage;
             /* --local-state and --legacy-state-api=false are implied */
-            use_events_api = true;
+            tool_options.events_api = true;
             goto local_state;
         case OPT_KEYMAP:
             with_keymap_file = true;
@@ -754,17 +753,17 @@ local_state:
             goto local_state;
         case '1':
         case OPT_UNILINE:
-            print_options |= PRINT_UNILINE;
+            tool_options.print |= PRINT_UNILINE;
             break;
         case '*':
         case OPT_MULTILINE:
-            print_options &= ~PRINT_UNILINE;
+            tool_options.print &= ~PRINT_UNILINE;
             break;
         case OPT_CONSUMED_MODE:
             if (strcmp(optarg, "gtk") == 0) {
-                consumed_mode = XKB_CONSUMED_MODE_GTK;
+                tool_options.consumed_mode = XKB_CONSUMED_MODE_GTK;
             } else if (strcmp(optarg, "xkb") == 0) {
-                consumed_mode = XKB_CONSUMED_MODE_XKB;
+                tool_options.consumed_mode = XKB_CONSUMED_MODE_XKB;
             } else {
                 fprintf(stderr, "ERROR: invalid --consumed-mode \"%s\"\n",
                         optarg);
@@ -774,7 +773,7 @@ local_state:
             }
             break;
         case OPT_NO_STATE_REPORT:
-            report_state_changes = false;
+            tool_options.report &= ~REPORT_STATE_CHANGES;
             break;
 #endif
         case 'h':
@@ -813,7 +812,7 @@ too_much_arguments:
 
     if (with_keymap_file) {
         /* --local-state is implied with custom keymap */
-        use_local_state = true;
+        tool_options.local_state = true;
     }
 
     if (isempty(keymap_path) || strcmp(keymap_path, "-") == 0)
