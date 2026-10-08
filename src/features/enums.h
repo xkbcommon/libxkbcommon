@@ -42,6 +42,8 @@ static_assert(XKB_KEY_REPEATED >= 0 &&
               XKB_KEY_REPEATED < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_INVALID >= 0 &&
               XKB_EVENT_TYPE_INVALID < UINT32_WIDTH, "");
+static_assert(XKB_EVENT_TYPE_FRAME >= 0 &&
+              XKB_EVENT_TYPE_FRAME < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY >= 0 &&
               XKB_EVENT_TYPE_KEY < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_STATE_COMPONENTS >= 0 &&
@@ -150,6 +152,7 @@ enum xkb_enumerations_values {
     ,
     XKB_EVENT_TYPE_VALUES
         = (1u << XKB_EVENT_TYPE_INVALID)
+        | (1u << XKB_EVENT_TYPE_FRAME)
         | (1u << XKB_EVENT_TYPE_KEY)
         | (1u << XKB_EVENT_TYPE_STATE_COMPONENTS)
         | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
@@ -387,6 +390,7 @@ enum xkb_keyboard_control_flags_bounds {
 #ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_event_type_values[] = {
     XKB_EVENT_TYPE_INVALID,
+    XKB_EVENT_TYPE_FRAME,
     XKB_EVENT_TYPE_KEY,
     XKB_EVENT_TYPE_STATE_COMPONENTS,
     XKB_EVENT_TYPE_POINTER_MOTION,
@@ -399,7 +403,7 @@ static const uint32_t xkb_event_type_values[] = {
 enum xkb_event_type_bounds {
     _XKB_EVENT_TYPE_MIN = XKB_EVENT_TYPE_INVALID,
     _XKB_EVENT_TYPE_MAX = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
-    _XKB_EVENT_TYPE_NUM = 7,
+    _XKB_EVENT_TYPE_NUM = 8,
 };
 
 #ifdef ENABLE_PRIVATE_APIS

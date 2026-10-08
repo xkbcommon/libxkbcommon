@@ -104,6 +104,8 @@ consume_events(struct xkb_machine *sm,
         case XKB_EVENT_TYPE_INVALID:
             assert(!"invalid event");
             break;
+        case XKB_EVENT_TYPE_FRAME:
+            break;
         case XKB_EVENT_TYPE_KEY: {
             enum xkb_key_direction direction;
             status = xkb_event_get_keycode(event, kc, &direction);
@@ -151,7 +153,7 @@ consume_events(struct xkb_machine *sm,
         }
         default:
             {} /* Label followed by declaration requires C23 */
-            static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+            static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 7 &&
                           XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                           (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                           "Missing state event type");

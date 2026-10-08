@@ -3397,6 +3397,8 @@ enum xkb_keyboard_control_flags {
  *
  * | Event type                                  | Getter |
  * | ------------------------------------------- | ------ |
+ * | `::XKB_EVENT_TYPE_INVALID`                  | (no getter: denotes an error) |
+ * | `::XKB_EVENT_TYPE_FRAME`                    | (no getter: denotes a frame boundary) |
  * | `::XKB_EVENT_TYPE_KEY`                      | `xkb_event::xkb_event_get_keycode()` |
  * | `::XKB_EVENT_TYPE_STATE_COMPONENTS`         | `xkb_event::xkb_event_get_components()` |
  * | `::XKB_EVENT_TYPE_POINTER_MOTION`           | `xkb_event::xkb_event_get_pointer_motion()` |
@@ -3433,6 +3435,17 @@ enum xkb_event_type {
      * @since 1.14.0
      */
     XKB_EVENT_TYPE_INVALID = 0,
+    /**
+     * **Frame** boundary.
+     *
+     * This is *not* a real event type but an indicator for the consumer
+     * (a server) to commit current transaction.
+     *
+     * @sa [Frame-borrowed](@ref transfer-framed)
+     *
+     * @since 1.14.0
+     */
+    XKB_EVENT_TYPE_FRAME,
     /**
      * **Key** event
      *

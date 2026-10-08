@@ -829,6 +829,9 @@ tools_print_events(const char *prefix, struct xkb_state *state,
             case XKB_EVENT_TYPE_INVALID:
                 status = XKB_ERROR_INVALID;
                 goto event_error;
+            case XKB_EVENT_TYPE_FRAME:
+                // TODO: optionally print frame boundaries
+                break;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;
                 enum xkb_key_direction direction;
@@ -897,7 +900,7 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 break;
             }
             default: {
-                static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 6 &&
+                static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 7 &&
                               XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
                               (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
                               "Missing event type");
