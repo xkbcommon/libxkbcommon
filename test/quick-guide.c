@@ -14,7 +14,8 @@
 #include "xkbcommon/xkbcommon-keysyms.h"
 #include "xkbcommon/xkbcommon.h"
 
-#include "context.h"
+#include "src/context.h"
+#include "src/features/enums.h"
 #include "evdev-scancodes.h"
 #include "test.h"
 
@@ -177,6 +178,10 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 /* Report error */
                 // ...
                 exit(EXIT_FAILURE);
+            case XKB_EVENT_TYPE_FRAME:
+                /* Commit transaction */
+                // ...
+                break;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc = XKB_KEYCODE_INVALID;
                 status = xkb_event_get_keycode(event, &kc, &direction);
@@ -235,6 +240,22 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
                 // ...
                 break;
             }
+            case XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER:
+                /* Handle display server shutdown */
+                // ...
+                break;
+            case XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE: {
+                int8_t index_or_offset;
+                bool is_offset;
+                status = xkb_event_get_virtual_console(event, &index_or_offset,
+                                                       &is_offset);
+                if (status != XKB_SUCCESS) {
+                    /* Handle error */
+                    // ...
+                    exit(EXIT_FAILURE);
+                }
+                break;
+            }
             default:
                 /* Report unhandled event */
                 // ...
@@ -245,6 +266,11 @@ handle_key(struct my_keyboard *keyboard, uint32_t key, uint32_t state)
 }
 //! [wayland-server-example]
 // NOLINTEND(readability-duplicate-include)
+
+static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE == 7 &&
+              XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE ==
+              (enum xkb_event_type) _XKB_EVENT_TYPE_MAX,
+              "Missing event type case statements");
 
 static void
 test_server(void)
