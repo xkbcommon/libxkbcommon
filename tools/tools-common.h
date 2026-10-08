@@ -49,6 +49,7 @@ enum print_state_options {
 enum report_options {
     REPORT_NO_FLAGS = 0,
     REPORT_STATE_CHANGES = (1u << 0),
+    REPORT_FRAMES = (1u << 1),
 
     REPORT_DEFAULT_OPTIONS = REPORT_STATE_CHANGES,
 };

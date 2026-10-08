@@ -175,17 +175,22 @@ Specify a keymap path.
 This option is mutually exclusive with the RMLVO options.
 .
 .It Fl \-enable\-compose
-Enable Compose functionality
+Enable Compose functionality.
 .
 .It Fl \-consumed\-mode Brq xkb|gtk
-Set the consumed modifiers mode (default: xkb)
+Set the consumed modifiers mode (default: xkb).
 .
 .It Fl \-without\-x11\-offset
 Don't add an offset of 8 when converting an evdev keycode to an XKB keycode.
 You probably don't want this option.
 .
+.It Fl \-report\-frames
+Report frame boundaries. It implies
+.Fl \-legacy\-state\-api=false
+\&.
+.
 .It Fl \-report\-state\-changes
-Report changes to the keyboard state
+Report changes to the keyboard state.
 .It Fl 1, \-uniline
 Enable uniline event output.
 .
@@ -196,7 +201,7 @@ Enable multiline event output.
 Print shorter event output.
 .
 .It Fl \-no-state-report
-Do not report state changes
+Do not report state changes.
 .
 .El
 .
