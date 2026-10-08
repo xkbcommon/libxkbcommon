@@ -60,21 +60,6 @@ xkb_keymap_key_iterator_flags:
     value: 1
   - name: XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND
     value: 2
-xkb_event_type:
-  - name: XKB_EVENT_TYPE_INVALID
-    value: 0
-  - name: XKB_EVENT_TYPE_KEY
-    value: 1
-  - name: XKB_EVENT_TYPE_STATE_COMPONENTS
-    value: 2
-  - name: XKB_EVENT_TYPE_POINTER_MOTION
-    value: 3
-  - name: XKB_EVENT_TYPE_POINTER_BUTTON
-    value: 4
-  - name: XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER
-    value: 5
-  - name: XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE
-    value: 6
 xkb_key_direction:
   - name: XKB_KEY_UP
     value: 0
@@ -112,6 +97,21 @@ xkb_keyboard_control_flags:
     value: 1
   - name: XKB_KEYBOARD_CONTROL_MOUSE_KEYS
     value: 2
+xkb_event_type:
+  - name: XKB_EVENT_TYPE_INVALID
+    value: 0
+  - name: XKB_EVENT_TYPE_KEY
+    value: 1
+  - name: XKB_EVENT_TYPE_STATE_COMPONENTS
+    value: 2
+  - name: XKB_EVENT_TYPE_POINTER_MOTION
+    value: 3
+  - name: XKB_EVENT_TYPE_POINTER_BUTTON
+    value: 4
+  - name: XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER
+    value: 5
+  - name: XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE
+    value: 6
 xkb_pointer_motion_flags:
   - name: XKB_POINTER_MOTION_NO_FLAGS
     value: 0
