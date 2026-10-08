@@ -34,6 +34,12 @@ static_assert(XKB_KEYMAP_FORMAT_TEXT_V1 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V1 < UINT32_WIDTH, "");
 static_assert(XKB_KEYMAP_FORMAT_TEXT_V2 >= 0 &&
               XKB_KEYMAP_FORMAT_TEXT_V2 < UINT32_WIDTH, "");
+static_assert(XKB_KEY_UP >= 0 &&
+              XKB_KEY_UP < UINT32_WIDTH, "");
+static_assert(XKB_KEY_DOWN >= 0 &&
+              XKB_KEY_DOWN < UINT32_WIDTH, "");
+static_assert(XKB_KEY_REPEATED >= 0 &&
+              XKB_KEY_REPEATED < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_INVALID >= 0 &&
               XKB_EVENT_TYPE_INVALID < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_KEY >= 0 &&
@@ -48,12 +54,6 @@ static_assert(XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER >= 0 &&
               XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER < UINT32_WIDTH, "");
 static_assert(XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE >= 0 &&
               XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE < UINT32_WIDTH, "");
-static_assert(XKB_KEY_UP >= 0 &&
-              XKB_KEY_UP < UINT32_WIDTH, "");
-static_assert(XKB_KEY_DOWN >= 0 &&
-              XKB_KEY_DOWN < UINT32_WIDTH, "");
-static_assert(XKB_KEY_REPEATED >= 0 &&
-              XKB_KEY_REPEATED < UINT32_WIDTH, "");
 static_assert(XKB_POINTER_BUTTON_RELEASED >= 0 &&
               XKB_POINTER_BUTTON_RELEASED < UINT32_WIDTH, "");
 static_assert(XKB_POINTER_BUTTON_PRESSED >= 0 &&
@@ -125,15 +125,6 @@ enum xkb_enumerations_values {
         | XKB_KEYMAP_KEY_ITERATOR_DESCENDING_ORDER
         | XKB_KEYMAP_KEY_ITERATOR_INCLUDE_UNBOUND
     ,
-    XKB_EVENT_TYPE_VALUES
-        = (1u << XKB_EVENT_TYPE_INVALID)
-        | (1u << XKB_EVENT_TYPE_KEY)
-        | (1u << XKB_EVENT_TYPE_STATE_COMPONENTS)
-        | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
-        | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
-        | (1u << XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER)
-        | (1u << XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
-    ,
     XKB_KEY_DIRECTION_VALUES
         = (1u << XKB_KEY_UP)
         | (1u << XKB_KEY_DOWN)
@@ -156,6 +147,15 @@ enum xkb_enumerations_values {
         = XKB_KEYBOARD_CONTROL_NO_FLAGS
         | XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS
         | XKB_KEYBOARD_CONTROL_MOUSE_KEYS
+    ,
+    XKB_EVENT_TYPE_VALUES
+        = (1u << XKB_EVENT_TYPE_INVALID)
+        | (1u << XKB_EVENT_TYPE_KEY)
+        | (1u << XKB_EVENT_TYPE_STATE_COMPONENTS)
+        | (1u << XKB_EVENT_TYPE_POINTER_MOTION)
+        | (1u << XKB_EVENT_TYPE_POINTER_BUTTON)
+        | (1u << XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER)
+        | (1u << XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE)
     ,
     XKB_POINTER_MOTION_FLAGS_VALUES
         = XKB_POINTER_MOTION_NO_FLAGS
@@ -337,24 +337,6 @@ enum xkb_keymap_key_iterator_flags_bounds {
 };
 
 #ifdef ENABLE_PRIVATE_APIS
-static const uint32_t xkb_event_type_values[] = {
-    XKB_EVENT_TYPE_INVALID,
-    XKB_EVENT_TYPE_KEY,
-    XKB_EVENT_TYPE_STATE_COMPONENTS,
-    XKB_EVENT_TYPE_POINTER_MOTION,
-    XKB_EVENT_TYPE_POINTER_BUTTON,
-    XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
-    XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
-};
-#endif
-
-enum xkb_event_type_bounds {
-    _XKB_EVENT_TYPE_MIN = XKB_EVENT_TYPE_INVALID,
-    _XKB_EVENT_TYPE_MAX = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
-    _XKB_EVENT_TYPE_NUM = 7,
-};
-
-#ifdef ENABLE_PRIVATE_APIS
 static const uint32_t xkb_key_direction_values[] = {
     XKB_KEY_UP,
     XKB_KEY_DOWN,
@@ -400,6 +382,24 @@ static const uint32_t xkb_keyboard_control_flags_values[] = {
 enum xkb_keyboard_control_flags_bounds {
     _XKB_KEYBOARD_CONTROL_FLAGS_MIN = XKB_KEYBOARD_CONTROL_NO_FLAGS,
     _XKB_KEYBOARD_CONTROL_FLAGS_MAX = XKB_KEYBOARD_CONTROL_MOUSE_KEYS,
+};
+
+#ifdef ENABLE_PRIVATE_APIS
+static const uint32_t xkb_event_type_values[] = {
+    XKB_EVENT_TYPE_INVALID,
+    XKB_EVENT_TYPE_KEY,
+    XKB_EVENT_TYPE_STATE_COMPONENTS,
+    XKB_EVENT_TYPE_POINTER_MOTION,
+    XKB_EVENT_TYPE_POINTER_BUTTON,
+    XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
+    XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
+};
+#endif
+
+enum xkb_event_type_bounds {
+    _XKB_EVENT_TYPE_MIN = XKB_EVENT_TYPE_INVALID,
+    _XKB_EVENT_TYPE_MAX = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
+    _XKB_EVENT_TYPE_NUM = 7,
 };
 
 #ifdef ENABLE_PRIVATE_APIS

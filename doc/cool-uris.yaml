@@ -79,6 +79,12 @@ group__compose.html: []
 group__context.html: []
 group__error-api.html: []
 group__include-path.html: []
+group__keyboard-client-state.html: []
+group__keyboard-legacy-state.html: []
+group__keyboard-server-companion-state.html: []
+group__keyboard-server-state.html: []
+group__keyboard-state.html:
+- group__state.html
 group__keymap-components.html:
 - group__components.html
 group__keymap-creation.html: []
@@ -96,11 +102,12 @@ group__predefined-keysyms.html: []
 group__real-modifier-names.html: []
 group__registry.html: []
 group__rules-api.html: []
-group__state.html: []
 group__test-api.html: []
 group__virtual-modifier-names.html: []
 group__x11-support.html:
 - group__x11.html
+group__xkb-events.html: []
+group__xkb-state.html: []
 index.html: []
 keymap-text-format-v1-v2.html:
 - keymap-text-format-v1.html
