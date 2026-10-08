@@ -570,16 +570,20 @@ typedef uint32_t xkb_led_mask_t;
  * </tr>
  *
  * <tr>
- * <th>*Frame*-borrowed @anchor transfer-framed</th>
+ * <th>*Frame*-borrowed @anchor transfer-frame</th>
  * <td>
- * The object is *borrowed* for the lifetime of the corresponding **frame** and
- * must *not* be retained.
+ * The object is *borrowed* for the lifetime of the corresponding
+ * <strong>[frame]</strong> and must *not* be retained.
  *
  * It is stricter than the lifetime of the frame *container*, as a frame can be
  * overriden or reallocated by the container.
  *
  * The corresponding argument is `const`-qualified for an <em>[immutable]</em>
  * borrow; exceptions are documented for legacy API.
+ *
+ * @sa `xkb_events::xkb_events_next()`
+ *
+ * [frame]: @ref frame-def
  * </td>
  * <td>
  * <ul>
@@ -3375,17 +3379,117 @@ enum xkb_keyboard_control_flags {
  * @defgroup xkb-events Events
  * @ingroup keyboard-state
  * @brief Events and frames produced by the XKB state machine.
+ *
+ * @tableofcontents{html:2}
+ *
+ * @section events-overview Overview
+ *
+ * [Keyboard events] are the outputs of the [state machine]&zwnj;: they describe
+ * every *observable* change resulting from processing a [raw key event] or a
+ * [synthetic update].
+ *
+ * Events are produced by an `xkb_machine` via its `process_*` functions and
+ * collected into an `xkb_events` batch. The batch is a **flat sequence** of
+ * `xkb_event` entries, consumed sequentially with
+ * `xkb_events::xkb_events_next()`.
+ *
+ * @figure
+ * @figcaption Event pipeline @endfigcaption
+ * ```c
+ * xkb_machine_process_key(machine, keycode, direction, events);
+ * while ((event = xkb_events_next(events)) != NULL) {
+ *     switch (xkb_event_get_type(event)) {
+ *     case XKB_EVENT_TYPE_INVALID: ...          // error marker
+ *     case XKB_EVENT_TYPE_FRAME: ...            // frame boundary
+ *     case XKB_EVENT_TYPE_KEY: ...              // key event
+ *     case XKB_EVENT_TYPE_STATE_COMPONENTS: ... // state change
+ *     ...
+ *     }
+ * }
+ * ```
+ * @endfigure
+ *
+ * @section events-atomicity Events and frames
+ *
+ * Two levels of *atomicity* apply:
+ *
+ * <dl>
+ * <dt>[Event](@ref xkb_event) @anchor event-def</dt>
+ * <dd>
+ * An **atomic record**: a single, indivisible [state change], [hardware event],
+ * or [frame boundary]. Each event is self-contained and consistent.
+ * </dd>
+ * <dt>Frame @anchor frame-def</dt>
+ * <dd>
+ * An atomic **transaction**: the sequence of events between two
+ * `::XKB_EVENT_TYPE_FRAME` boundaries is applied *as a whole*. Querying the
+ * keyboard state *within* a frame is not guaranteed to be consistent with
+ * the events delivered so far; only the state after the complete frame is.
+ * A frame is thus the *commit point* of the event pipeline.
+ * </dd>
+ * </dl>
+ *
+ * @section events-guarantees Guarantees
+ *
+ * - A `process_*` call produces **zero or more complete frames**; a batch
+ *   never ends *mid-frame*. A key event may produce no frame at all for
+ *   some configurations.
+ * - Every frame is *terminated* by a `::XKB_EVENT_TYPE_FRAME` event; the
+ *   first frame of a batch begins at its start.
+ * - Events are consumed in order. A returned event is **[frame-borrowed]&zwnj;**:
+ *
+ *   @snippet{doc} include/xkbcommon/xkbcommon.h event-lifetime
+ * - The batch is *reset* on each `process_*` call.
+ *
+ * @remark The frame semantics match the Wayland `wl_pointer::frame` and the
+ * upcoming [`wl_keyboard::frame` request][wl_keyboard::frame], so that a
+ * Wayland compositor may forward event grouping without reinterpretation.
+ *
+ * @sa `struct xkb_machine`: the event *producer*.
+ * @sa `xkb_events::xkb_events_new()`, `xkb_events::xkb_events_next()`:
+ * the event *collection*.
+ * @sa `struct xkb_event`: the atomic record.
+ * @sa `enum xkb_event_type`
+ * @sa @ref server-client-state "".
+ * @sa @ref ownership-model "".
+ *
+ * @since 1.14.0
+ *
+ * [keyboard events]: @ref xkb_event
+ * [state machine]: @ref xkb_machine
+ * [raw key event]: @ref xkb_machine::xkb_machine_process_key
+ * [synthetic update]: @ref xkb_machine::xkb_machine_process_synthetic
+ * [state change]: @ref XKB_EVENT_TYPE_STATE_COMPONENTS
+ * [hardware event]: @ref XKB_EVENT_TYPE_KEY
+ * [frame boundary]: @ref XKB_EVENT_TYPE_FRAME
+ * [frame-borrowed]: @ref transfer-frame
+ * [wl_keyboard::frame]: https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/500
+ *
  * @{
  */
+
+/* [event-lifetime]
+@warning An event returned by `xkb_events::xkb_events_next()` is only valid
+during the corresponding [frame] lifetime, i.e. until the call that returns
+the event after the `::XKB_EVENT_TYPE_FRAME` terminating its [frame], and in
+any case until the next call on the same `xkb_events` to either:
+- `xkb_events::xkb_events_destroy()`
+- `xkb_machine::xkb_machine_process_key()`
+- `xkb_machine::xkb_machine_process_synthetic()`
+
+@warning Do not store the `xkb_event` pointers beyond that point!
+
+[frame]: @ref frame-def
+
+[event-lifetime]
+*/
 
 /**
  * @struct xkb_event
  * Opaque keyboard **state event** object.
  *
- * @heap_item_single_ownership{xkb_events,An event is *valid only inside a
- * frame*.}
- *
- * @todo Define what is a frame
+ * @heap_item_single_ownership{xkb_events,An event is <em>valid only inside a
+ * [frame]</em>.}
  *
  * Events are produced by `xkb_machine::xkb_machine_process_key()` and
  * `xkb_machine::xkb_machine_process_synthetic()` and collected into an
@@ -3406,15 +3510,14 @@ enum xkb_keyboard_control_flags {
  * | `::XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER` | (no getter) |
  * | `::XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE`   | `xkb_event::xkb_event_get_virtual_console()` |
  *
- * @warning Event pointers are only valid until the next call to
- * `xkb_machine::xkb_machine_process_key()` or
- * `xkb_machine::xkb_machine_process_synthetic()` on the
- * same state machine. Do not store them beyond that point.
+ * @snippet{doc} include/xkbcommon/xkbcommon.h event-lifetime
  *
  * @sa `enum xkb_event_type`
  * @sa `struct xkb_events`
  *
  * @since 1.14.0
+ *
+ * [frame]: @ref frame-def
  */
 struct xkb_event;
 
@@ -3441,7 +3544,8 @@ enum xkb_event_type {
      * This is *not* a real event type but an indicator for the consumer
      * (a server) to commit current transaction.
      *
-     * @sa [Frame-borrowed](@ref transfer-framed)
+     * @sa [Frame](@ref frame-def) definition
+     * @sa [Frame-borrowed](@ref transfer-frame)
      *
      * @since 1.14.0
      */
@@ -4159,14 +4263,15 @@ xkb_events_destroy(struct xkb_events *events);
  *
  * @param[in] events The [event] collection.
  *
- * @returns The **[borrowed](@ref transfer-framed)** next [event],
+ * @returns The **[borrowed](@ref transfer-frame)** next [event],
  * or `NULL` if there are no more events to read.
  *
- * @warning The event is only valid during the corresponding frame lifetime.
+ * @snippet{doc} include/xkbcommon/xkbcommon.h event-lifetime
  *
  * @since 1.14.0
  *
  * [event]: @ref xkb_event
+ * [frame]: @ref frame-def
  */
 XKB_EXPORT const struct xkb_event *
 xkb_events_next(struct xkb_events *events);
