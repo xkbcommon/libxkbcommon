@@ -137,6 +137,9 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 - `xkb_state::xkb_state_mod_names_are_active()` and
   `xkb_state::xkb_state_mod_indices_are_active()` now reject invalid
   `xkb_state_match` flags.
+- Updated keysyms case mappings to cover full <strong>[Unicode 18.0]</strong>.
+
+[Unicode 18.0]: https://www.unicode.org/versions/Unicode18.0.0/
 
 ### New
 

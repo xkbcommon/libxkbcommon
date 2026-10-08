@@ -1064,6 +1064,13 @@ main(void)
     assert(xkb_keysym_to_upper(XKB_KEY_SSHARP) == XKB_KEY_SSHARP);
     assert(xkb_keysym_to_lower(XKB_KEY_SSHARP) == XKB_KEY_ssharp);
 
+    /* U+1DF95 LATIN SMALL LIGATURE LONG S WITH DESCENDER S */
+    enum { U1DF95 = XKB_KEYSYM_UNICODE_OFFSET + 0x1DF95 };
+    assert(!xkb_keysym_is_upper_or_title(U1DF95));
+    assert(xkb_keysym_is_lower(U1DF95));
+    assert(xkb_keysym_to_upper(U1DF95) == U1DF95);
+    assert(xkb_keysym_to_lower(U1DF95) == U1DF95);
+
     /* Title case: simple mappings
      * • U+01F1 Ǳ: upper case
      * • U+01F2 ǲ: title case
