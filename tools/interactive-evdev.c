@@ -455,6 +455,8 @@ usage(FILE *fp, char *progname)
             "    Enable uniline event output\n"
             " --short\n"
             "    Shorter event output\n"
+            " --report-frames\n"
+            "    Report frame boundaries; implies --legacy-state-api=false.\n"
             " --report-state-changes\n"
             "    Report changes to the state\n"
             " --no-state-report\n"
@@ -535,6 +537,7 @@ main(int argc, char *argv[])
         OPT_CONSUMED_MODE,
         OPT_COMPOSE,
         OPT_SHORT,
+        OPT_REPORT_FRAMES,
         OPT_REPORT_STATE,
         OPT_NO_STATE_REPORT,
     };
@@ -563,6 +566,7 @@ main(int argc, char *argv[])
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"short",                no_argument,            0, OPT_SHORT},
+        {"report-frames",        no_argument,            0, OPT_REPORT_FRAMES},
         {"report-state-changes", no_argument,            0, OPT_REPORT_STATE},
         {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"without-x11-offset",   no_argument,            0, OPT_WITHOUT_X11_OFFSET},
@@ -660,6 +664,11 @@ main(int argc, char *argv[])
             break;
         case OPT_WITHOUT_X11_OFFSET:
             evdev_offset = 0;
+            break;
+        case OPT_REPORT_FRAMES:
+            tool_options.report |= REPORT_FRAMES;
+            /* --legacy-state-api=false is implied */
+            tool_options.events_api = true;
             break;
         case OPT_REPORT_STATE:
             tool_options.report |= REPORT_STATE_CHANGES;

@@ -167,6 +167,15 @@ print_keys_modmaps(struct xkb_keymap *keymap) {
 }
 
 static void
+print_frame(const char *prefix)
+{
+    if (prefix)
+        printf("%s", prefix);
+
+    printf("end of frame\n");
+}
+
+static void
 print_modifiers_names(struct xkb_state *state,
                       enum xkb_state_component components,
                       xkb_keycode_t keycode,
@@ -822,7 +831,8 @@ tools_print_events(const char *prefix, struct xkb_state *state,
                 status = XKB_ERROR_INVALID;
                 goto event_error;
             case XKB_EVENT_TYPE_FRAME:
-                // TODO: optionally print frame boundaries
+                if (options->report & REPORT_FRAMES)
+                    print_frame(prefix);
                 break;
             case XKB_EVENT_TYPE_KEY: {
                 xkb_keycode_t kc;

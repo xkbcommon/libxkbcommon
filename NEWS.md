@@ -428,6 +428,7 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 - Added `--strict` for parsing keymaps in *strict* mode.
   This is useful mainly for debugging.
 - Added `--consumed-mode`.
+- Added `--report-frames` to report frames boundaries.
 - Added `--no-state-report` to disable logging state changes.
 </dd>
 <dt>`xkbcli dump-keymap{wayland,x11}`</dt>

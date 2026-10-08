@@ -519,7 +519,7 @@ usage(FILE *fp, char *progname)
         fprintf(fp,
                 "Usage: %s [--help] [--version] [--verbose]"
 #ifndef KEYMAP_DUMP
-                " [--uniline] [--multiline] [--consumed-mode={xkb|gtk}] [--no-state-report]"
+                " [--uniline] [--multiline] [--consumed-mode={xkb|gtk}] [--report-frames] [--no-state-report]"
 #endif
                 " [--format FORMAT]"
 #ifdef KEYMAP_DUMP
@@ -580,6 +580,8 @@ usage(FILE *fp, char *progname)
                 "    -*, --multiline      enable multiline event output\n"
                 "    --consumed-mode={xkb|gtk}\n"
                 "                         select the consumed modifiers mode (default: xkb)\n"
+                "    --report-frames      report frame boundaries.\n"
+                "                         It implies --local-state and --legacy-state-api=false.\n"
                 "    --no-state-report    do not report changes to the state\n"
 #endif
                 "    --verbose            enable verbose debugging output\n"
@@ -614,6 +616,7 @@ main(int argc, char *argv[])
         OPT_UNILINE,
         OPT_MULTILINE,
         OPT_CONSUMED_MODE,
+        OPT_REPORT_FRAMES,
         OPT_NO_STATE_REPORT,
         OPT_COMPOSE,
         OPT_LOCAL_STATE,
@@ -641,6 +644,7 @@ main(int argc, char *argv[])
         {"uniline",              no_argument,            0, OPT_UNILINE},
         {"multiline",            no_argument,            0, OPT_MULTILINE},
         {"consumed-mode",        required_argument,      0, OPT_CONSUMED_MODE},
+        {"report-frames",        no_argument,            0, OPT_REPORT_FRAMES},
         {"no-state-report",      no_argument,            0, OPT_NO_STATE_REPORT},
         {"enable-compose",       no_argument,            0, OPT_COMPOSE},
         {"local-state",          no_argument,            0, OPT_LOCAL_STATE},
@@ -772,6 +776,11 @@ local_state:
                 goto error_parse_args;
             }
             break;
+        case OPT_REPORT_FRAMES:
+            tool_options.report |= REPORT_FRAMES;
+            /* --local-state and --legacy-state-api=false are implied */
+            tool_options.events_api = true;
+            goto local_state;
         case OPT_NO_STATE_REPORT:
             tool_options.report &= ~REPORT_STATE_CHANGES;
             break;
