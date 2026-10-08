@@ -75,11 +75,14 @@ globals_v.html: []
 globals_x.html: []
 graph_legend.html: []
 group__abi-struct-contract.html: []
-group__components.html: []
 group__compose.html: []
 group__context.html: []
 group__error-api.html: []
 group__include-path.html: []
+group__keymap-components.html:
+- group__components.html
+group__keymap-creation.html: []
+group__keymap-formats.html: []
 group__keymap-serialization.html: []
 group__keymap.html: []
 group__keysym-encoding.html: []
@@ -98,7 +101,6 @@ group__test-api.html: []
 group__virtual-modifier-names.html: []
 group__x11-support.html:
 - group__x11.html
-group__xkb__keymap__format__enum.html: []
 index.html: []
 keymap-text-format-v1-v2.html:
 - keymap-text-format-v1.html
