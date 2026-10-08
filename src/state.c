@@ -4116,20 +4116,34 @@ xkb_events_new(struct xkb_context * restrict context,
     }
 
     struct xkb_events *events = calloc(1, sizeof(*events));
-    if (events == NULL) {
+    if (!events) {
         log_err_func1(context, XKB_ERROR_ALLOCATION_FAILURE_,
                       "cannot allocate state events collection\n");
         if (status)
             *status = XKB_ERROR_ALLOCATION_FAILURE;
-        return events;
+        return NULL;
     }
+
+    /* Pre-allocate event queue */
+    darray_init(events->queue);
+    static const darray_size_t queue_initial_size = 16;
+    darray_resize(events->queue, queue_initial_size);
+    // TODO: proper safe darray_resize() with return value
+    if (!darray_items(events->queue)) {
+        log_err_func1(context, XKB_ERROR_ALLOCATION_FAILURE_,
+                      "cannot allocate state events queue\n");
+        xkb_events_destroy(events);
+        if (status)
+            *status = XKB_ERROR_ALLOCATION_FAILURE;
+        return NULL;
+    }
+    darray_size(events->queue) = 0;
+
+    events->ctx = xkb_context_ref(context);
+    events->next = 0;
 
     if (status)
         *status = XKB_SUCCESS;
-
-    events->ctx = xkb_context_ref(context);
-    darray_init(events->queue);
-    events->next = 0;
     return events;
 }
 
