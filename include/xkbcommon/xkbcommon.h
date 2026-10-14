@@ -99,6 +99,49 @@ struct xkb_keymap;
  *
  * This is the authoritative object for *server-side* XKB processing.
  *
+ * @section xkb-machine-auto-fixes Automatic behavior fixes
+ *
+ * xkbcommon automatically fixes some usual shortcomings of classic XKB:
+ *
+ * <table>
+ * <caption>Automatic behavior fixes</caption>
+ * <thead>
+ * <tr>
+ * <th>Title</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead>
+ * <tbody>
+ *
+ * <tr>
+ * <th>
+ * Layout switch on modifier key @anchor auto-fix-layout-switch-on-modifier-key
+ * </th>
+ * <td>
+ * Enables modifier-based layout switching (such as Alt+Shift) to function
+ * both as a standalone switch when pressed and released alone, and as a
+ * modifier in keyboard shortcuts when combined with other keys.
+ *
+ * @note This feature requires the `xkb_machine` API.
+ *
+ * Under the hood, this performs the following adjustments:
+ * 1. Add [`lockOnRelease=true`][lockOnRelease] to [`LockGroup`][LockGroup]
+ *    actions that satisfy the following conditions:
+ *    - it has no explicit [`lockOnRelease`][lockOnRelease];
+ *    - it is located on a level ≥ 2 (1-indexed);
+ *    - it is the sole action of the level;
+ *    - it is located on a key with [`SetMods`][SetMods] as the sole action of
+ *      its level 1.
+ * 2. Append the modifier action of level 1 after the [`LockGroup`][LockGroup]
+ *    action modified hereinbefore.
+ * </td>
+ * </tr>
+ *
+ * </tbody>
+ * </table>
+ *
+ * @section xkb-machine-querying-state Query the keyboard state
+ *
  * @note To query the resulting keyboard state (active modifiers, current
  * layout, LED states, etc.), pair this object with an `xkb_state` created via
  * `xkb_state::xkb_state_new_from_machine()` and updated via
@@ -106,6 +149,8 @@ struct xkb_keymap;
  * *observable state* of the machine and provides the full query API.
  *
  * See @ref server-client-state for details.
+ *
+ * @section xkb-machine-examples Examples
  *
  * See the [example for a Wayland server] in the quick guide.
  *
@@ -117,6 +162,9 @@ struct xkb_keymap;
  * [keycode]: @ref xkb_keycode_t
  * [direction]: @ref xkb_key_direction
  * [keyboard events]: @ref xkb_event
+ * [SetMods]: @ref set-mods-action
+ * [lockOnRelease]: @ref lockOnRelease
+ * [LockGroup]: @ref lock-group-action
  * [example for a Wayland server]: @ref quick-guide-wayland-server
  */
 struct xkb_machine;

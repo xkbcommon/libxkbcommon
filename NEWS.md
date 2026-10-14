@@ -297,6 +297,21 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 
   See the [example for a Wayland server](@ref quick-guide-wayland-server)
   in the quick guide.
+- Automatically enables modifier-based layout switching (such as `Alt+Shift`)
+  to work both as a standalone switch when pressed and released alone, and as a
+  modifier in keyboard shortcuts when combined with other keys.
+
+  This *completely* fixes the infamous, decade-old XKB shortcoming “need to kick
+  hotkeys on release, not press”,
+  [first reported](https://gitlab.freedesktop.org/xorg/xserver/-/work_items/258)
+  in the X.Org implementation, and inherited by xkbcommon (see
+  [#92](https://github.com/xkbcommon/libxkbcommon/issues/92) and
+  [#420](https://github.com/xkbcommon/libxkbcommon/issues/420)). While fixed in
+  xkbcommon v1.11, it required using the v2 keymap format and applying manual
+  tweaks to the keymap files. The new feature removes these requirements entirely,
+  but does require the new `xkb_machine` API.
+  See @ref auto-fix-layout-switch-on-modifier-key "Automatic behavior fixes" for
+  further details.
 - Enable the configuration of out-of-range layout handling using the
   following new API:
   - `xkb_synthetic_update::layout_policy`

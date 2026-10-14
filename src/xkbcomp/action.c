@@ -323,9 +323,13 @@ HandleSetLatchLockMods(const struct xkb_keymap_info *keymap_info,
         assert(type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LATCH ||
                type == ACTION_TYPE_MOD_LOCK);
         if (keymap_info->features.mods_unlock_on_press) {
-            return CheckBooleanFlag(ctx, keymap_info->strict, action->type,
-                                    field, ACTION_UNLOCK_ON_PRESS, array_ndx,
-                                    value, &act->flags);
+            const enum xkb_parser_error ret = CheckBooleanFlag(
+                ctx, keymap_info->strict, action->type, field,
+                ACTION_UNLOCK_ON_PRESS, array_ndx, value, &act->flags
+            );
+            if (ret == PARSER_SUCCESS)
+                act->flags |= ACTION_EXPLICIT_UNLOCK_ON_PRESS;
+            return ret;
         } else {
             return ReportFormatVersionMismatch(ctx, action->type, field,
                                                keymap_info->keymap.format,
