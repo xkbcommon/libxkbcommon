@@ -605,18 +605,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
         for (darray_size_t i = 0; i < keymap->num_sym_interprets; i++) {
             struct xkb_sym_interpret * restrict const interp =
                 &keymap->sym_interprets[i];
-            if (interp->num_actions <= 1) {
-                union xkb_action * restrict const act = &interp->a.action;
+            xkb_level_foreach_action(act, interp) {
                 if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID, act))
                     return false;
-            } else {
-                for (xkb_action_count_t a = 0; a < interp->num_actions; a++) {
-                    union xkb_action * restrict const act =
-                        &interp->a.actions[a];
-                    if (!update_pending_action_fields(info, XKB_KEYCODE_INVALID,
-                                                      act))
-                        return false;
-                }
             }
         }
     }
@@ -702,25 +693,14 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                 return false;
         for (xkb_layout_index_t i = 0; i < key->num_groups; i++) {
             for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
-                if (key->groups[i].levels[j].num_actions <= 1) {
-                    union xkb_action * restrict const act =
-                        &key->groups[i].levels[j].a.action;
+                struct xkb_level * const level = &key->groups[i].levels[j];
+                xkb_level_foreach_action(act, level) {
                     UpdateActionMods(keymap, act, key->modmap);
                     if ((pending_computations ||
                          act->type == ACTION_TYPE_REDIRECT_KEY) &&
                         !update_pending_action_fields(info, key->keycode, act))
+                    {
                         return false;
-                } else {
-                    for (xkb_action_count_t k = 0;
-                         k < key->groups[i].levels[j].num_actions; k++) {
-                        union xkb_action * restrict const act =
-                            &key->groups[i].levels[j].a.actions[k];
-                        UpdateActionMods(keymap, act, key->modmap);
-                        if ((pending_computations ||
-                             act->type == ACTION_TYPE_REDIRECT_KEY) &&
-                            !update_pending_action_fields(info, key->keycode,
-                                                          act))
-                            return false;
                     }
                 }
             }
