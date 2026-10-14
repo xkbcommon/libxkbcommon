@@ -3566,8 +3566,12 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
                           builder->controls.a11y.affect_flags,
                           builder->controls.a11y.flags);
     machine->flags = builder->machine_flags;
-    machine->base.update_flags |=
-        STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
+    if (!(machine->flags &
+          XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX))
+    {
+        machine->base.update_flags |=
+            STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
+    }
 
     enum xkb_status status_;
     if ((status_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
