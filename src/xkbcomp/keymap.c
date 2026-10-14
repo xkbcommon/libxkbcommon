@@ -476,6 +476,28 @@ enum {
     GROUP_MASK_NAME_LAST = 3,
 };
 
+static void
+update_auto_group_lock_on_modifier_release(struct xkb_level * restrict level0,
+                                           xkb_level_index_t l,
+                                           union xkb_action * restrict action)
+{
+    if (!(/* Must be level index 1+ */
+        l > 0 &&
+        /* level has a single action: LockGroup() */
+        level0[l].num_actions == 1 &&
+        action->type == ACTION_TYPE_GROUP_LOCK &&
+        /* unLockOnPress not set explicitly */
+        !(action->group.flags & ACTION_EXPLICIT_UNLOCK_ON_PRESS) &&
+        /* level 0 has a single action: SetMods() */
+        level0->num_actions == 1 &&
+        level0->a.action.type ==  ACTION_TYPE_MOD_SET))
+    {
+        return;
+    }
+
+    action->group.flags |= ACTION_AUTO_GROUP_LOCK_ON_MODIFIER_RELEASE;
+}
+
 /**
  * This collects a bunch of disparate functions which was done in the server
  * at various points that really should've been done within xkbcomp.  Turns out
@@ -690,7 +712,7 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
     /* Update action modifiers and fields with pending computations. */
     xkb_keys_foreach(key, keymap) {
         if (!update_pending_key_fields(info, key))
-                return false;
+            return false;
         for (xkb_layout_index_t i = 0; i < key->num_groups; i++) {
             for (xkb_level_index_t j = 0; j < XkbKeyNumLevels(key, i); j++) {
                 struct xkb_level * const level = &key->groups[i].levels[j];
@@ -702,6 +724,9 @@ UpdateDerivedKeymapFields(struct xkb_keymap_info *info)
                     {
                         return false;
                     }
+                    update_auto_group_lock_on_modifier_release(
+                        key->groups[i].levels, j, act
+                    );
                 }
             }
         }

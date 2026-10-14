@@ -129,6 +129,19 @@ enum xkb_action_flags {
     ACTION_UNLOCK_ON_PRESS = (1 << 11),
     ACTION_LATCH_ON_PRESS = (1 << 12),
     ACTION_PENDING_COMPUTATION = (1 << 13),
+    /**
+     * Indicate that the action has an explicit `unlockOnPress` value.
+     *
+     * Used *during* keymap compilation.
+     */
+    ACTION_EXPLICIT_UNLOCK_ON_PRESS = (1 << 14),
+    /**
+     * Indicate that the LockGroup action is elligible to
+     * @ref auto-fix-layout-switch-on-modifier-key "automatic behavior fixes".
+     *
+     * Used *after* keymap compilation.
+     */
+    ACTION_AUTO_GROUP_LOCK_ON_MODIFIER_RELEASE = (1 << 15),
 };
 
 enum {

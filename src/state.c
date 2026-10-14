@@ -156,6 +156,7 @@ struct xkb_client_state {
 enum state_flags {
     STATE_NO_FLAGS = 0,
     STATE_REQUIRE_KEY_EVENT = (1 << 0),
+    STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY = (1 << 1),
 };
 
 /**
@@ -428,7 +429,6 @@ xkb_filter_group_lock_new(struct xkb_server_state *state,
         /* Lock on key press */
         apply_group_delta(filter, &state->base, locked_group);
     }
-
 }
 
 static bool
@@ -1395,79 +1395,108 @@ xkb_filter_apply_all(struct xkb_server_state *state,
 
     /* No filter consumed this event, so proceed with the key actions */
     const union xkb_action *actions = NULL;
-    const xkb_action_count_t count = xkb_key_get_actions(&state->base, key,
+    xkb_action_count_t count = xkb_key_get_actions(&state->base, key,
                                                          &actions);
 
-    /*
-     * Process actions sequentially.
-     *
-     * NOTE: We rely on the parser to disallow multiple modifier or group
-     * actions (see `CheckMultipleActionsCategories`). Allowing multiple such
-     * actions requires a refactor of the state handling.
-     */
-    for (xkb_action_count_t k = 0; k < count; k++) {
+    for (struct {
+            xkb_action_count_t count;
+            const union xkb_action *actions;
+         } next = {0};
+         count;
+         count = next.count, next.count = 0, actions = next.actions
+    ) {
         /*
-         * It's possible for the keymap to set action->type explicitly, like so:
-         *     interpret XF86_Next_VMode {
-         *         action = Private(type=0x86, data="+VMode");
-         *     };
-         * We don't handle those.
+         * Process actions sequentially.
+         *
+         * NOTE: We rely on the parser to disallow multiple modifier or group
+         * actions (see `CheckMultipleActionsCategories`). Allowing multiple
+         * such actions requires a refactor of the state handling.
          */
-        if (actions[k].type >= _ACTION_TYPE_NUM_ENTRIES)
-            continue;
-
-        /* Go to next action if no corresponding action handler */
-        if (!filter_action_funcs[actions[k].type].new)
-            continue;
-
-        /* Add a new filter and run the corresponding initial action */
-        filter = xkb_filter_new(state);
-        filter->key = key;
-        filter->action = actions[k];
-
-        switch (filter->action.type) {
-        case ACTION_TYPE_MOD_SET:
-            if (state->base.components.controls & CONTROL_STICKY_KEYS) {
-                /* Convert modifier set action to a latch */
-                filter->action.type = ACTION_TYPE_MOD_LATCH;
-                if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
-                    filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
-                }
-            }
-            break;
-        case ACTION_TYPE_GROUP_SET:
-            if (state->base.components.controls & CONTROL_STICKY_KEYS) {
-                /* Convert group set action to a latch */
-                filter->action.type = ACTION_TYPE_GROUP_LATCH;
-                if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
-                    filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
-                }
-            }
-            break;
-        case ACTION_TYPE_PTR_MOVE:
-        case ACTION_TYPE_PTR_BUTTON:
-        case ACTION_TYPE_PTR_LOCK:
-        case ACTION_TYPE_PTR_DEFAULT:
-            if (!(state->base.components.controls & CONTROL_MOUSE_KEYS)) {
-                /* Convert pointer actions to NoAction */
-                assert(!filter_action_funcs[ACTION_TYPE_NONE].new);
-                filter->func = NULL;
+        for (xkb_action_count_t k = 0; k < count; k++) {
+            /*
+             * It's possible for the keymap to set action->type explicitly, like
+             * so:
+             *     interpret XF86_Next_VMode {
+             *         action = Private(type=0x86, data="+VMode");
+             *     };
+             * We don't handle those.
+             */
+            if (actions[k].type >= _ACTION_TYPE_NUM_ENTRIES)
                 continue;
+
+            /* Go to next action if no corresponding action handler */
+            if (!filter_action_funcs[actions[k].type].new)
+                continue;
+
+            /* Add a new filter and run the corresponding initial action */
+            filter = xkb_filter_new(state);
+            filter->key = key;
+            filter->action = actions[k];
+
+            switch (filter->action.type) {
+            case ACTION_TYPE_MOD_SET:
+                if (state->base.components.controls & CONTROL_STICKY_KEYS) {
+                    /* Convert modifier set action to a latch */
+                    filter->action.type = ACTION_TYPE_MOD_LATCH;
+                    if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
+                        filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
+                    }
+                }
+                break;
+            case ACTION_TYPE_GROUP_SET:
+                if (state->base.components.controls & CONTROL_STICKY_KEYS) {
+                    /* Convert group set action to a latch */
+                    filter->action.type = ACTION_TYPE_GROUP_LATCH;
+                    if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
+                        filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
+                    }
+                }
+                break;
+            case ACTION_TYPE_GROUP_LOCK:
+                if ((filter->action.group.flags &
+                     ACTION_AUTO_GROUP_LOCK_ON_MODIFIER_RELEASE) &&
+                    (state->update_flags &
+                     STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY) &&
+                    /*
+                     * FIXME: sticky keys may leave an unexpected modifier
+                     * from the level 0 latched, so disable for now.
+                     */
+                    !(state->base.components.controls & CONTROL_STICKY_KEYS))
+                {
+                    filter->action.group.flags |= ACTION_LOCK_ON_RELEASE;
+                    /* Add base level action */
+                    next.count = xkb_keymap_key_get_actions_by_level(
+                        state->base.keymap, key, state->base.components.group,
+                        0, &next.actions
+                    );
+                    assert(next.count == 1);
+                }
+                break;
+            case ACTION_TYPE_PTR_MOVE:
+            case ACTION_TYPE_PTR_BUTTON:
+            case ACTION_TYPE_PTR_LOCK:
+            case ACTION_TYPE_PTR_DEFAULT:
+                if (!(state->base.components.controls & CONTROL_MOUSE_KEYS)) {
+                    /* Convert pointer actions to NoAction */
+                    assert(!filter_action_funcs[ACTION_TYPE_NONE].new);
+                    filter->func = NULL;
+                    continue;
+                }
+                break;
+            case ACTION_TYPE_REDIRECT_KEY:
+                // FIXME: this is not efficient to resolve mods here each time
+                filter->action.redirect.affect_mods = mod_mask_get_effective(
+                    state->base.keymap, filter->action.redirect.affect_mods
+                );
+                filter->action.redirect.mods = mod_mask_get_effective(
+                    state->base.keymap, filter->action.redirect.mods
+                );
+                break;
+            default: ;
             }
-            break;
-        case ACTION_TYPE_REDIRECT_KEY:
-            // FIXME: this is not efficient to resolve mods here each time
-            filter->action.redirect.affect_mods = mod_mask_get_effective(
-                state->base.keymap, filter->action.redirect.affect_mods
-            );
-            filter->action.redirect.mods = mod_mask_get_effective(
-                state->base.keymap, filter->action.redirect.mods
-            );
-            break;
-        default: ;
+            filter->func = filter_action_funcs[filter->action.type].func;
+            filter_action_funcs[filter->action.type].new(state, events, filter);
         }
-        filter->func = filter_action_funcs[filter->action.type].func;
-        filter_action_funcs[filter->action.type].new(state, events, filter);
     }
 }
 
@@ -3537,6 +3566,8 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
                           builder->controls.a11y.affect_flags,
                           builder->controls.a11y.flags);
     machine->flags = builder->machine_flags;
+    machine->base.update_flags |=
+        STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
 
     enum xkb_status status_;
     if ((status_ = machine_set_mods(machine, &builder->mods)) != XKB_SUCCESS ||
@@ -4033,7 +4064,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
         });
     }
 
-    state->update_flags = STATE_REQUIRE_KEY_EVENT;
+    state->update_flags |= STATE_REQUIRE_KEY_EVENT;
     state->set_mods = 0;
     state->clear_mods = 0;
 
