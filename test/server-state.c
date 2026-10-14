@@ -1130,6 +1130,91 @@ test_auto_fixes(struct xkb_context *ctx)
     );
     xkb_machine_unref(sm);
 
+    /* Auto-fix: off */
+    struct xkb_machine_builder_config machine_config = {
+        .size = sizeof(machine_config),
+        .machine_flags = XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX,
+    };
+    builder = xkb_machine_builder_new(keymap, &machine_config, NULL);
+    assert(builder);
+    sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_builder_unref(builder);
+    assert(xkb_machine_process_key(sm, KEY_LEFTCTRL + EVDEV_OFFSET,
+                                   XKB_KEY_DOWN, events) == XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LEFTCTRL + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+                .components = {
+                    .base_mods = ctrl,
+                    .mods = ctrl,
+                    .locked_group = 0,
+                    .group = 0,
+                    .leds = 0,
+                }
+            }
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LEFTSHIFT + EVDEV_OFFSET,
+                                   XKB_KEY_DOWN, events) == XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LEFTSHIFT + EVDEV_OFFSET,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_LAYOUT_LOCKED | XKB_STATE_LAYOUT_EFFECTIVE
+                         | XKB_STATE_LEDS,
+                .components = {
+                    /* NOTE: Shift is not set */
+                    .base_mods = ctrl,
+                    .mods = ctrl,
+                    /* NOTE: group is changed on *press* */
+                    .locked_group = 1,
+                    .group = 1,
+                    .leds = group2_led,
+                }
+            }
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LEFTSHIFT + EVDEV_OFFSET,
+                                   XKB_KEY_UP, events) == XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LEFTSHIFT + EVDEV_OFFSET,
+                .direction = XKB_KEY_UP
+            }
+        },
+        frame,
+    );
+    xkb_machine_unref(sm);
+
     xkb_events_destroy(events);
     xkb_keymap_unref(keymap);
 }

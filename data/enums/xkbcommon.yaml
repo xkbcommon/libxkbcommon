@@ -139,6 +139,8 @@ xkb_machine_flags:
     value: 0
   - name: XKB_MACHINE_SERVER_ACTIONS
     value: 1
+  - name: XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX
+    value: 2
 xkb_a11y_flags:
   - name: XKB_A11Y_NO_FLAGS
     value: 0

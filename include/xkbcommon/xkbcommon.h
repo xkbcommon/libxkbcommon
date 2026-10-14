@@ -134,6 +134,9 @@ struct xkb_keymap;
  *      its level 1.
  * 2. Append the modifier action of level 1 after the [`LockGroup`][LockGroup]
  *    action modified hereinbefore.
+ *
+ * It may be deactivated using:
+ * `::XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX`.
  * </td>
  * </tr>
  *
@@ -162,7 +165,7 @@ struct xkb_keymap;
  * [keycode]: @ref xkb_keycode_t
  * [direction]: @ref xkb_key_direction
  * [keyboard events]: @ref xkb_event
- * [SetMods]: @ref set-mods-action
+ * [modifier action]: @ref modifiers-actions
  * [lockOnRelease]: @ref lockOnRelease
  * [LockGroup]: @ref lock-group-action
  * [example for a Wayland server]: @ref quick-guide-wayland-server
@@ -4401,6 +4404,16 @@ enum xkb_machine_flags {
      * [server actions]: @ref server-actions
      */
     XKB_MACHINE_SERVER_ACTIONS = (1 << 0),
+    /**
+     * Disable automated fix for keys combining modifiers and layout switch.
+     *
+     * This flag is intended for debugging. See
+     * @ref auto-fix-layout-switch-on-modifier-key "Automatic behavior fixes"
+     * for further details.
+     *
+     * @since 1.14.0
+     */
+    XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX = (1 << 1),
 };
 
 /**
