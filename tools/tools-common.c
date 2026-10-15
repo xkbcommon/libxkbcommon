@@ -1220,6 +1220,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         CONTROL_FIELD_STICKY_KEYS_NO_SIMULTANEOUS_KEYS,
         CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK,
         CONTROL_FIELD_LATCH_SIMULTANEOUS,
+        CONTROL_FIELD_UNLOCK_MODS_ON_PRESS,
         CONTROL_FIELD_MOUSE_KEYS,
         CONTROL_FIELD_SERVER_ACTIONS,
         _NUM_CONTROL_FIELDS,
@@ -1243,11 +1244,12 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
         [CONTROL_FIELD_STICKY_KEYS_NO_SIMULTANEOUS_KEYS] = "sticky-keys-no-simultaneous",
         [CONTROL_FIELD_STICKY_KEYS_LATCH_TO_LOCK] = "sticky-keys-latch-to-lock",
         [CONTROL_FIELD_LATCH_SIMULTANEOUS] = "latch-simultaneous",
+        [CONTROL_FIELD_UNLOCK_MODS_ON_PRESS] = "unlock-mods-on-press",
         [CONTROL_FIELD_MOUSE_KEYS] = "mouse-keys",
         [CONTROL_FIELD_SERVER_ACTIONS] = "server-actions",
     };
 
-    static_assert(CONTROL_FIELD_SERVER_ACTIONS == 13 &&
+    static_assert(CONTROL_FIELD_SERVER_ACTIONS == 14 &&
                   CONTROL_FIELD_SERVER_ACTIONS + 1 == _NUM_CONTROL_FIELDS &&
                   ARRAY_SIZE(fields) == _NUM_CONTROL_FIELDS, "");
 
@@ -1350,6 +1352,11 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
                     options, XKB_A11Y_LATCH_SIMULTANEOUS_KEYS, disable
                 );
                 break;
+            case CONTROL_FIELD_UNLOCK_MODS_ON_PRESS:
+                ok = xkb_machine_options_update_flags(
+                    options, XKB_MACHINE_UNLOCK_MODS_ON_PRESS, disable
+                );
+                break;
             case CONTROL_FIELD_MOUSE_KEYS:
                 ok = xkb_machine_options_update_boolean_ctrls(
                     options, XKB_KEYBOARD_CONTROL_MOUSE_KEYS, disable
@@ -1363,7 +1370,7 @@ tools_parse_controls(const char *raw, struct xkb_machine_options *options)
             default:
                 {} /* Label followed by declaration requires C23 */
                 static_assert(
-                    CONTROL_FIELD_SERVER_ACTIONS == 13 &&
+                    CONTROL_FIELD_SERVER_ACTIONS == 14 &&
                     CONTROL_FIELD_SERVER_ACTIONS + 1 == _NUM_CONTROL_FIELDS,
                     "missing case"
                 );

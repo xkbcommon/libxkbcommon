@@ -54,6 +54,7 @@ _xkbcli_controls() {
 		"sticky-keys-latch-to-lock:latch-to-lock option for sticky-keys"
 		"sticky-keys-no-simultaneous:deactivate sticky-keys if 2 keys or more are pressed simultaneously"
 		"latch-simultaneous:relax the strict tapping sequence requirement for operating key latches"
+		"unlock-mods-on-press:Unlock modifiers on press"
 		"overlay1:Overlay 1"
 		"overlay2:Overlay 2"
 		"overlay3:Overlay 3"
