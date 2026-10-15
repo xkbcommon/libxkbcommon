@@ -312,6 +312,19 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   but does require the new `xkb_machine` API.
   See @ref auto-fix-layout-switch-on-modifier-key "Automatic behavior fixes" for
   further details.
+- Added the option `::XKB_MACHINE_UNLOCK_MODS_ON_PRESS` to make
+  [modifier actions](@ref modifiers-actions) unlock on key *press* rather than
+  the default on key release.
+
+  This *completely* fixes the infamous, decade-old XKB-shortcoming “unlock
+  CapsLock on the second key press rather than release”,
+  [first reported](https://gitlab.freedesktop.org/xorg/xserver/-/work_items/312)
+  in the X.Org implementation, and inherited by xkbcommon (see
+  [#372](https://github.com/xkbcommon/libxkbcommon/issues/372)). While fixed in
+  xkbcommon v1.11, it required using the v2 keymap format and applying manual
+  tweaks to the keymap files. The new feature removes these requirements entirely,
+  but does require the new `xkb_machine` API and enabling the
+  [corresponding option](@ref XKB_MACHINE_UNLOCK_MODS_ON_PRESS).
 - Enable the configuration of out-of-range layout handling using the
   following new API:
   - `xkb_synthetic_update::layout_policy`

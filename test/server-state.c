@@ -1220,6 +1220,434 @@ test_auto_fixes(struct xkb_context *ctx)
 }
 
 static void
+test_unlock_caps_on_press(struct xkb_context *ctx)
+{
+    enum {
+        KEY_SET_CAPS = 64,
+        KEY_LATCH_CAPS = 65,
+        KEY_LOCK_CAPS = 66,
+    };
+
+    static const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <SET_CAPS>   = 64;\n"
+        "    <LATCH_CAPS> = 65;\n"
+        "    <LOCK_CAPS>  = 66;\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    key <SET_CAPS>   { [SetMods(modifiers=Lock, clearLocks)] };\n"
+        "    key <LATCH_CAPS> { [LatchMods(modifiers=Lock, clearLocks, latchToLock)] };\n"
+        "    key <LOCK_CAPS>  { [LockMods(modifiers=Lock)] };\n"
+        "  };\n"
+        "};";
+    struct xkb_keymap * const keymap = test_compile_buffer(
+        ctx, XKB_KEYMAP_FORMAT_TEXT_V2, keymap_str, sizeof(keymap_str)
+    );
+    assert(keymap);
+
+    const xkb_mod_mask_t caps = _xkb_keymap_mod_get_mask(keymap, XKB_MOD_NAME_CAPS);
+
+    const struct xkb_event frame = {
+        .ctx = ctx,
+        .type = XKB_EVENT_TYPE_FRAME,
+    };
+
+    struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
+    assert(events);
+
+    static const struct xkb_machine_builder_config machine_config = {
+        .size = sizeof(machine_config),
+        .machine_flags = XKB_MACHINE_UNLOCK_MODS_ON_PRESS,
+    };
+    struct xkb_machine_builder *builder =
+        xkb_machine_builder_new(keymap, &machine_config, NULL);
+    assert(builder);
+
+    static const struct xkb_machine_builder_a11y_update a11y_config = {
+        .size = sizeof(a11y_config),
+        .affect_flags = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
+        .flags = XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK,
+    };
+    assert(xkb_machine_builder_update_a11y(builder, &a11y_config) == XKB_SUCCESS);
+
+    struct xkb_machine * sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_builder_unref(builder);
+
+    /*
+     * LockMods()
+     */
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_DOWN, events) ==
+           XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                         | XKB_STATE_MODS_EFFECTIVE,
+                .components = {
+                    .base_mods = caps,
+                    .locked_mods = caps,
+                    .mods = caps,
+                }
+            },
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_UP, events) ==
+           XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_UP
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = caps,
+                    .mods = caps,
+                }
+            },
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_DOWN, events) ==
+           XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = 0,
+                    .mods = 0,
+                }
+            },
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_UP, events) ==
+           XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_UP
+            }
+        },
+        frame,
+    );
+    /* Lock caps again in order to test unlocking via SetMods() */
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_DOWN, events) ==
+    XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LOCKED
+                | XKB_STATE_MODS_EFFECTIVE,
+                .components = {
+                    .base_mods = caps,
+                    .locked_mods = caps,
+                    .mods = caps,
+                }
+            },
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_LOCK_CAPS, XKB_KEY_UP, events) ==
+    XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_LOCK_CAPS,
+                .direction = XKB_KEY_UP
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_DEPRESSED,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = caps,
+                    .mods = caps,
+                }
+            },
+        },
+        frame,
+    );
+
+    /*
+     * SetMods()
+     */
+    assert(xkb_machine_process_key(sm, KEY_SET_CAPS, XKB_KEY_DOWN, events) ==
+    XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_SET_CAPS,
+                .direction = XKB_KEY_DOWN
+            }
+        },
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
+                .components = {
+                    .base_mods = 0,
+                    .locked_mods = 0,
+                    .mods = 0,
+                }
+            },
+        },
+        frame,
+    );
+    assert(xkb_machine_process_key(sm, KEY_SET_CAPS, XKB_KEY_UP, events) ==
+    XKB_SUCCESS);
+    check_events_(
+        events,
+        {
+            .ctx = ctx,
+            .type = XKB_EVENT_TYPE_KEY,
+            .key = {
+                .keycode = KEY_SET_CAPS,
+                .direction = XKB_KEY_UP
+            }
+        },
+        frame,
+    );
+
+    /*
+     * LatchMods(), SetMods() + sticky-keys
+     */
+    /* Ensure sticky keys is on, so we can test SetMods() locking */
+    static const struct xkb_state_components_update components = {
+        .size = sizeof(components),
+        .components = XKB_STATE_CONTROLS_EFFECTIVE,
+        .affect_controls = XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+        .controls = XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS,
+    };
+    static const struct xkb_synthetic_update update = {
+        .size = sizeof(update),
+        .components = &components,
+    };
+    assert(xkb_machine_process_synthetic(sm, &update, events) == XKB_SUCCESS);
+    for (xkb_keycode_t key = KEY_LATCH_CAPS; key >= KEY_SET_CAPS; key--) {
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_DOWN, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_DOWN
+                }
+            },
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                .components = {
+                    .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_EFFECTIVE,
+                    .components = {
+                        .base_mods = caps,
+                        .latched_mods = 0,
+                        .locked_mods = 0,
+                        .mods = caps,
+                        .controls = CONTROL_STICKY_KEYS,
+                    }
+                },
+            },
+            frame,
+        );
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_UP, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_UP
+                }
+            },
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                .components = {
+                    .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED,
+                    .components = {
+                        .base_mods = 0,
+                        .latched_mods = caps,
+                        .locked_mods = 0,
+                        .mods = caps,
+                        .controls = CONTROL_STICKY_KEYS,
+                    }
+                },
+            },
+            frame,
+        );
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_DOWN, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_DOWN
+                }
+            },
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                .components = {
+                    .changed = XKB_STATE_MODS_DEPRESSED | XKB_STATE_MODS_LATCHED
+                             | XKB_STATE_MODS_LOCKED,
+                    .components = {
+                        .base_mods = caps,
+                        .latched_mods = 0,
+                        .locked_mods = caps,
+                        .mods = caps,
+                        .controls = CONTROL_STICKY_KEYS,
+                    }
+                },
+            },
+            frame,
+        );
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_UP, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_UP
+                }
+            },
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                .components = {
+                    .changed = XKB_STATE_MODS_DEPRESSED,
+                    .components = {
+                        .base_mods = 0,
+                        .latched_mods = 0,
+                        .locked_mods = caps,
+                        .mods = caps,
+                        .controls = CONTROL_STICKY_KEYS,
+                    }
+                },
+            },
+            frame,
+        );
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_DOWN, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_DOWN
+                }
+            },
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+                .components = {
+                    .changed = XKB_STATE_MODS_LOCKED | XKB_STATE_MODS_EFFECTIVE,
+                    .components = {
+                        .base_mods = 0,
+                        .locked_mods = 0,
+                        .mods = 0,
+                        .controls = CONTROL_STICKY_KEYS,
+                    }
+                },
+            },
+            frame,
+        );
+        assert(xkb_machine_process_key(sm, key, XKB_KEY_UP, events) ==
+               XKB_SUCCESS);
+        check_events_(
+            events,
+            {
+                .ctx = ctx,
+                .type = XKB_EVENT_TYPE_KEY,
+                .key = {
+                    .keycode = key,
+                    .direction = XKB_KEY_UP
+                }
+            },
+            frame,
+        );
+    }
+
+    xkb_machine_unref(sm);
+    xkb_events_destroy(events);
+    xkb_keymap_unref(keymap);
+}
+
+static void
 test_sticky_keys(struct xkb_context *ctx)
 {
     struct xkb_keymap * const keymap = test_compile_rmlvo(
@@ -6681,6 +7109,7 @@ main(void)
     test_state_update_basics(context);
     test_group_wrap(context);
     test_auto_fixes(context);
+    test_unlock_caps_on_press(context);
     test_sticky_keys(context);
     test_redirect_key(context);
     test_mouse_keys(context);

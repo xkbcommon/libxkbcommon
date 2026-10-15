@@ -4414,6 +4414,25 @@ enum xkb_machine_flags {
      * @since 1.14.0
      */
     XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX = (1 << 1),
+    /**
+     * Make [modifier actions] unlock on key press rather than the default
+     * on key release.
+     *
+     * It makes [`SetMods(…, clearLocks)`][SetMods],
+     * [`LatchMods(…, clearLocks)`][LatchMods] and
+     * [`LockMods(…, affect=unlock)`][LockMods] act if
+     * [`unlockOnPress=true`][unlockOnPress] for actions without an
+     * explicit [`unlockOnPress`][unlockOnPress] parameter.
+     *
+     * @since 1.14.0
+     *
+     * [modifier actions]: @ref modifiers-actions
+     * [SetMods]: @ref set-mods-action
+     * [LatchMods]: @ref latch-mods-action
+     * [LockMods]: @ref lock-mods-action
+     * [unlockOnPress]: @ref unlockOnPress
+     */
+    XKB_MACHINE_UNLOCK_MODS_ON_PRESS = (1 << 2),
 };
 
 /**

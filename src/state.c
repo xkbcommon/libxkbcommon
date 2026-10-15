@@ -157,6 +157,7 @@ enum state_flags {
     STATE_NO_FLAGS = 0,
     STATE_REQUIRE_KEY_EVENT = (1 << 0),
     STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY = (1 << 1),
+    STATE_UNLOCK_MODS_ON_PRESS = (1 << 2),
 };
 
 /**
@@ -1465,7 +1466,26 @@ xkb_filter_apply_all(struct xkb_server_state *state,
                         filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
                     }
                 }
+                /* fallthrough */
+            case ACTION_TYPE_MOD_LATCH:
+            case ACTION_TYPE_MOD_LOCK: {
+                static const enum xkb_action_flags unlock_mods_on_press
+                    = ACTION_LOCK_CLEAR     /* SetMods & LatchMods: can unlock */
+                    | ACTION_LOCK_NO_UNLOCK /* LockMods: cannot unlock */
+                    | ACTION_EXPLICIT_UNLOCK_ON_PRESS;
+                if ((state->flags & STATE_UNLOCK_MODS_ON_PRESS) &&
+                    /*
+                     * Ensure that the action can actually unlock and has
+                     * no *explicit* `unlockOnPress` parameter.
+                     */
+                    (filter->action.mods.flags & unlock_mods_on_press) ==
+                    (filter->action.type == ACTION_TYPE_MOD_LOCK
+                        ? 0 : ACTION_LOCK_CLEAR))
+                {
+                    filter->action.mods.flags |= ACTION_UNLOCK_ON_PRESS;
+                }
                 break;
+            }
             case ACTION_TYPE_GROUP_SET:
                 if (state->base.components.controls & CONTROL_STICKY_KEYS) {
                     /* Convert group set action to a latch */
@@ -3593,6 +3613,9 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
           XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX))
     {
         machine->base.flags |= STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
+    }
+    if (machine->flags & XKB_MACHINE_UNLOCK_MODS_ON_PRESS) {
+        machine->base.flags |= STATE_UNLOCK_MODS_ON_PRESS;
     }
 
     enum xkb_status status_;
