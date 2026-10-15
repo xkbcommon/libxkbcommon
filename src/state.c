@@ -593,7 +593,8 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
                     if (xkb_action_breaks_latch(&(actions[k]),
                                                 state->base.components.controls,
                                                 INTERNAL_BREAKS_GROUP_LATCH,
-                                                0)) {
+                                                0))
+                    {
                         latch = NO_LATCH;
                         break;
                     }
@@ -610,16 +611,25 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
              * flags and latchToLock option is enabled. */
             const bool sticky_keys = state->base.components.controls
                                    & CONTROL_STICKY_KEYS;
-            const enum xkb_action_flags flags = filter->action.group.flags &
-                                                ~ACTION_LATCH_TO_LOCK;
+            /*
+             * NOTE: Action’s flags other than `ACTION_ABSOLUTE_SWITCH` are
+             * not compared:
+             * - flags may have been modified by keyboard controls at the
+             *   creation of the filter;
+             * - it is unlikely to have two LatchGroup() actions on the same
+             *   key that differ only by their flags;
+             * - even if it were the case, one would most likely want both
+             *   actions to be considered compatible in this context.
+             */
             for (xkb_action_count_t k = 0; k < count; k++) {
-                if ((actions[k].type == ACTION_TYPE_GROUP_LATCH &&
+                if (((actions[k].type == ACTION_TYPE_GROUP_LATCH) ||
+                     (actions[k].type == ACTION_TYPE_GROUP_SET && sticky_keys)) &&
                      actions[k].group.group == filter->action.group.group &&
-                     actions[k].group.flags == filter->action.group.flags) ||
-                    (actions[k].type == ACTION_TYPE_GROUP_SET && sticky_keys &&
-                     actions[k].group.flags == flags)) {
+                     (actions[k].group.flags & ACTION_ABSOLUTE_SWITCH) ==
+                     (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)) {
                     if (filter->action.group.flags & ACTION_LATCH_TO_LOCK &&
-                        filter->action.group.group != 0) {
+                        filter->action.group.group != 0)
+                    {
                         /* Promote to lock */
                         filter->action.type = ACTION_TYPE_GROUP_LOCK;
                         filter->func = xkb_filter_group_lock_func;
@@ -639,7 +649,8 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
                 else if (xkb_action_breaks_latch(&(actions[k]),
                                                  state->base.components.controls,
                                                  INTERNAL_BREAKS_GROUP_LATCH,
-                                                 0)) {
+                                                 0))
+                {
                     /* Breaks the latch */
                     state->base.components.latched_group -= priv.group_delta;
                     filter->func = NULL;
@@ -882,7 +893,8 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
                     if (xkb_action_breaks_latch(&(actions[k]),
                                                 state->base.components.controls,
                                                 INTERNAL_BREAKS_MOD_LATCH,
-                                                filter->action.mods.mods.mask)) {
+                                                filter->action.mods.mods.mask))
+                    {
                         latch = NO_LATCH;
                         break;
                     }
@@ -899,14 +911,20 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
              * modifier. */
             const bool sticky_keys = state->base.components.controls
                                    & CONTROL_STICKY_KEYS;
-            const enum xkb_action_flags flags = filter->action.mods.flags &
-                                                ~ACTION_LATCH_TO_LOCK;
+            /*
+             * NOTE: Action’s flags are not compared:
+             * - flags may have been modified by keyboard controls at the
+             *   creation of the filter;
+             * - it is unlikely to have two LatchMods() actions on the same
+             *   key that differ only by their flags;
+             * - even if it were the case, one would most likely want both
+             *   actions to be considered compatible in this context.
+             */
             for (xkb_action_count_t k = 0; k < count; k++) {
-                if (((actions[k].type == ACTION_TYPE_MOD_LATCH &&
-                      actions[k].mods.flags == filter->action.mods.flags) ||
-                     (actions[k].type == ACTION_TYPE_MOD_SET && sticky_keys &&
-                      actions[k].mods.flags == flags)) &&
-                    actions[k].mods.mods.mask == filter->action.mods.mods.mask) {
+                if (((actions[k].type == ACTION_TYPE_MOD_LATCH) ||
+                     (actions[k].type == ACTION_TYPE_MOD_SET && sticky_keys)) &&
+                    actions[k].mods.mods.mask == filter->action.mods.mods.mask)
+                {
                     if (filter->action.mods.flags & ACTION_LATCH_TO_LOCK) {
                         /* Mutate the action to LockMods() */
                         filter->action.type = ACTION_TYPE_MOD_LOCK;
@@ -929,7 +947,8 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
                 else if (xkb_action_breaks_latch(&(actions[k]),
                                                  state->base.components.controls,
                                                  INTERNAL_BREAKS_MOD_LATCH,
-                                                 filter->action.mods.mods.mask)) {
+                                                 filter->action.mods.mods.mask))
+                {
                     /* XXX: This may be totally broken, we might need to break the
                      *      latch in the next run after this press? */
                     state->base.components.latched_mods &=
@@ -964,7 +983,8 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
         if ((filter->action.mods.flags & ACTION_LOCK_CLEAR) &&
             !(filter->action.mods.flags & unlockOnPress) &&
             (state->base.components.locked_mods &
-             filter->action.mods.mods.mask) == filter->action.mods.mods.mask) {
+             filter->action.mods.mods.mask) == filter->action.mods.mods.mask)
+        {
             /* XXX: We might be a bit overenthusiastic about clearing
              *      mods other filters have set here? */
             if (latch == LATCH_PENDING)
