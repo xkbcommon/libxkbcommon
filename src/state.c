@@ -173,10 +173,13 @@ struct xkb_server_state {
 
     darray(struct xkb_filter) filters;
 
-    /* NOTE: if we ever add other flags types, we could merge them internally */
-    enum xkb_a11y_flags flags;
+    /**
+     * Mix of constant configuration flags and
+     * variable state-processing flags.
+     */
+    enum state_flags flags;
 
-    enum state_flags update_flags;
+    enum xkb_a11y_flags a11y_flags;
 
     /*
      * At each event, we accumulate all the needed modifications to the base
@@ -581,7 +584,7 @@ xkb_filter_group_latch_func(struct xkb_server_state *state,
              *   xkb_filter_group_latch_new(), until the latch key is
              *   released.
              */
-            if (state->flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
+            if (state->a11y_flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
                 /*
                  * Prevent the latch to trigger only if some of the pressed
                  * key’s actions breaks latches, mirroring the behavior in the
@@ -881,7 +884,7 @@ xkb_filter_mod_latch_func(struct xkb_server_state *state,
              * • Prevent the latch to trigger and keep the base modifiers set
              *   by xkb_filter_mod_latch_new(), until the latch key is released.
              */
-            if (state->flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
+            if (state->a11y_flags & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS) {
                 /*
                  * Prevent the latch to trigger only if some of the pressed
                  * key’s actions breaks latches, mirroring the behavior in the
@@ -1048,7 +1051,7 @@ xkb_filter_pointer_move_new(struct xkb_server_state *state,
 
     assert(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS);
     append_pointer_move(events, filter);
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 }
 
 static bool
@@ -1061,7 +1064,7 @@ xkb_filter_pointer_move_func(struct xkb_server_state *state,
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
@@ -1291,7 +1294,7 @@ append_redirect_key_events(struct xkb_server_state *state,
         });
     }
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
     return true;
 }
 
@@ -1458,7 +1461,7 @@ xkb_filter_apply_all(struct xkb_server_state *state,
                 if (state->base.components.controls & CONTROL_STICKY_KEYS) {
                     /* Convert modifier set action to a latch */
                     filter->action.type = ACTION_TYPE_MOD_LATCH;
-                    if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
+                    if (state->a11y_flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                         filter->action.mods.flags |= ACTION_LATCH_TO_LOCK;
                     }
                 }
@@ -1467,7 +1470,7 @@ xkb_filter_apply_all(struct xkb_server_state *state,
                 if (state->base.components.controls & CONTROL_STICKY_KEYS) {
                     /* Convert group set action to a latch */
                     filter->action.type = ACTION_TYPE_GROUP_LATCH;
-                    if (state->flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
+                    if (state->a11y_flags & XKB_A11Y_STICKY_KEYS_LATCH_TO_LOCK) {
                         filter->action.group.flags |= ACTION_LATCH_TO_LOCK;
                     }
                 }
@@ -1475,7 +1478,7 @@ xkb_filter_apply_all(struct xkb_server_state *state,
             case ACTION_TYPE_GROUP_LOCK:
                 if ((filter->action.group.flags &
                      ACTION_AUTO_GROUP_LOCK_ON_MODIFIER_RELEASE) &&
-                    (state->update_flags &
+                    (state->flags &
                      STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY) &&
                     /*
                      * FIXME: sticky keys may leave an unexpected modifier
@@ -1554,11 +1557,11 @@ xkb_server_state_init(struct xkb_server_state * restrict state,
 {
     xkb_state_init(&state->base, keymap, mode);
 
-    state->flags = a11y_flags;
+    state->a11y_flags = a11y_flags;
     if (keymap->format != XKB_KEYMAP_FORMAT_TEXT_V1 &&
         !(a11y_affect & XKB_A11Y_LATCH_SIMULTANEOUS_KEYS)) {
              /* Keymap v2+: enable extension to XKB if not manually disabled */
-             state->flags |= XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
+             state->a11y_flags |= XKB_A11Y_LATCH_SIMULTANEOUS_KEYS;
     }
 }
 
@@ -1650,7 +1653,7 @@ xkb_state_reset(struct xkb_state *state)
         memset(state_, 0, sizeof(*state_));
 
         state_->base = prev.base;
-        state_->flags = prev.flags;
+        state_->a11y_flags = prev.a11y_flags;
         state_->filters = prev.filters;
         darray_size(state_->filters) = 0;
     }
@@ -1858,7 +1861,7 @@ xkb_state_update_key(struct xkb_state *base_state, xkb_keycode_t kc,
 
     if (direction == XKB_KEY_DOWN &&
         (state->base.components.controls & XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) &&
-        (state->flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
+        (state->a11y_flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
         state->base.components.base_mods) {
         /* Deactivate sticky keys if a modifier was already held down*/
         state_update_enabled_controls(state,
@@ -3589,8 +3592,7 @@ xkb_machine_new(const struct xkb_machine_builder * restrict builder,
     if (!(machine->flags &
           XKB_MACHINE_DISABLE_LAYOUT_SWITCH_ON_MODIFIER_KEY_FIX))
     {
-        machine->base.update_flags |=
-            STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
+        machine->base.flags |= STATE_FIX_LAYOUT_SWITCH_ON_MODIFIER_KEY;
     }
 
     enum xkb_status status_;
@@ -4063,7 +4065,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
 
     if (direction == XKB_KEY_DOWN &&
         (sm->base.base.components.controls & XKB_KEYBOARD_CONTROL_A11Y_STICKY_KEYS) &&
-        (sm->base.flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
+        (sm->base.a11y_flags & XKB_A11Y_STICKY_KEYS_NO_SIMULTANEOUS_KEYS) &&
         state->base.components.base_mods) {
         /* Deactivate sticky keys if a modifier was already held down*/
         state_update_enabled_controls(state,
@@ -4088,7 +4090,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
         });
     }
 
-    state->update_flags |= STATE_REQUIRE_KEY_EVENT;
+    state->flags |= STATE_REQUIRE_KEY_EVENT;
     state->set_mods = 0;
     state->clear_mods = 0;
 
@@ -4125,7 +4127,7 @@ xkb_machine_process_key(struct xkb_machine *sm,
      *   of key events;
      * - TerminateServer() generate a Server event instead of key events.
      */
-    if (state->update_flags & STATE_REQUIRE_KEY_EVENT) {
+    if (state->flags & STATE_REQUIRE_KEY_EVENT) {
         darray_append(events->queue, (struct xkb_event) {
             .ctx = events->ctx, /* borrowed from events */
             .type = XKB_EVENT_TYPE_KEY,
@@ -4441,7 +4443,7 @@ xkb_filter_pointer_button_new(struct xkb_server_state *state,
         XKB_POINTER_BUTTON_PRESSED;
     append_pointer_button(events, filter, button_state,
                           filter->action.btn.count);
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 }
 
 static bool
@@ -4454,7 +4456,7 @@ xkb_filter_pointer_button_func(struct xkb_server_state *state,
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
@@ -4507,7 +4509,7 @@ xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
         return;
     }
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     struct xkb_machine * const sm = (struct xkb_machine *)state;
 
@@ -4547,7 +4549,7 @@ xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
     if (key != filter->key || !events || state->base.mode != SERVER_STATE)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
@@ -4592,7 +4594,7 @@ xkb_filter_pointer_set_default_button_new(struct xkb_server_state *state,
         return;
     }
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     struct xkb_machine * const sm = (struct xkb_machine *)state;
 
@@ -4618,7 +4620,7 @@ xkb_filter_pointer_set_default_button_func(struct xkb_server_state *state,
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
@@ -4646,7 +4648,7 @@ xkb_filter_terminate_server_new(struct xkb_server_state *state,
         return;
     }
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     darray_append(events->queue, (struct xkb_event) {
         .ctx = events->ctx, /* borrowed from events */
@@ -4664,7 +4666,7 @@ xkb_filter_terminate_server_func(struct xkb_server_state *state,
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
@@ -4692,7 +4694,7 @@ xkb_filter_switch_virtual_console_new(struct xkb_server_state *state,
         return;
     }
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     darray_append(events->queue, (struct xkb_event) {
         .ctx = events->ctx, /* borrowed from events */
@@ -4714,7 +4716,7 @@ xkb_filter_switch_virtual_console_func(struct xkb_server_state *state,
     if (key != filter->key || !events)
         return XKB_FILTER_CONTINUE;
 
-    state->update_flags &= ~STATE_REQUIRE_KEY_EVENT;
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
 
     switch (direction) {
     case XKB_KEY_DOWN:
