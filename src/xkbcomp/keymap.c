@@ -486,8 +486,8 @@ update_auto_group_lock_on_modifier_release(struct xkb_level * restrict level0,
         /* level has a single action: LockGroup() */
         level0[l].num_actions == 1 &&
         action->type == ACTION_TYPE_GROUP_LOCK &&
-        /* unLockOnPress not set explicitly */
-        !(action->group.flags & ACTION_EXPLICIT_UNLOCK_ON_PRESS) &&
+        /* lockOnRelease not set explicitly */
+        !(action->group.flags & ACTION_EXPLICIT_LOCK_ON_RELEASE) &&
         /* level 0 has a single action: SetMods() */
         level0->num_actions == 1 &&
         level0->a.action.type ==  ACTION_TYPE_MOD_SET))

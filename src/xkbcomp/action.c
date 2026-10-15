@@ -461,9 +461,13 @@ HandleSetLatchLockGroup(const struct xkb_keymap_info *keymap_info,
         field == ACTION_FIELD_LOCK_ON_RELEASE) {
         /* TODO: support this for `ACTION_TYPE_MOD_LOCK` too? */
         if (keymap_info->features.group_lock_on_release) {
-            return CheckBooleanFlag(ctx, keymap_info->strict, action->type,
-                                    field, ACTION_LOCK_ON_RELEASE, array_ndx,
-                                    value, &act->flags);
+            const enum xkb_parser_error ret = CheckBooleanFlag(
+                ctx, keymap_info->strict, action->type, field,
+                ACTION_LOCK_ON_RELEASE, array_ndx, value, &act->flags
+            );
+            if (ret == PARSER_SUCCESS)
+                act->flags |= ACTION_EXPLICIT_LOCK_ON_RELEASE;
+            return ret;
         } else {
             return ReportFormatVersionMismatch(ctx, action->type, field,
                                                keymap_info->keymap.format,
