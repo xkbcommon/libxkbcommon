@@ -3047,6 +3047,94 @@ test_inactive_key_type_entry(struct xkb_context *context)
 }
 
 static void
+test_compatible_latch_same_key(struct xkb_context *context)
+{
+    enum {
+        KEY_SHIFT = 50,
+        KEY_LATCH_MODS = 1,
+        KEY_LATCH_GROUP = 2,
+    };
+
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes { <shift> = 50; <1> = 1; <2> = 2; };\n"
+        "  xkb_types {\n"
+        "    type \"TWO_LEVEL\" {\n"
+        "      modifiers = Shift;\n"
+        "      map[Shift] = Level2;\n"
+        "    };\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    LatchMods.clearLocks = true;\n"
+        "    LatchMods.latchToLock = true;\n"
+        "    LatchGroup.clearLocks = true;\n"
+        "    LatchGroup.latchToLock = true;\n"
+        "    key <shift> { [SetMods(modifiers=Shift)] };\n"
+        "    key <1> {\n"
+        /*       Actions only differ by their tags */
+        "      [LatchMods(modifiers=Control), LatchMods(modifiers=Control, !clearLocks)],\n"
+        "      [VoidAction(), VoidAction()]\n"
+        "    };\n"
+        "    key <2> {\n"
+        /*       Actions only differ by their tags */
+        "      [LatchGroup(group=+1), LatchGroup(group=+1, !clearLocks)]\n"
+        "    };\n"
+        "  };\n"
+        "};";
+    struct xkb_keymap *keymap =
+        test_compile_buffer(context, XKB_KEYMAP_FORMAT_TEXT_V1,
+                            keymap_str, sizeof(keymap_str));
+    assert(keymap);
+    assert(xkb_keymap_num_layouts(keymap) == 2);
+    const xkb_mod_mask_t shift = (UINT32_C(1) << XKB_MOD_INDEX_SHIFT);
+    const xkb_mod_mask_t ctrl = (UINT32_C(1) << XKB_MOD_INDEX_CTRL);
+
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+
+    /* LatchMods() */
+    xkb_state_update_key(state, KEY_LATCH_MODS, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_LATCH_MODS, XKB_KEY_UP);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == ctrl);
+    xkb_state_update_key(state, KEY_SHIFT, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == shift);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == ctrl);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == 0);
+    xkb_state_update_key(state, KEY_LATCH_MODS, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == (shift | ctrl));
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == 0);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == ctrl);
+    xkb_state_update_key(state, KEY_LATCH_MODS, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_SHIFT, XKB_KEY_UP);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED) == 0);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED) == 0);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED) == ctrl);
+
+    /* LatchGroup() */
+    xkb_state_update_key(state, KEY_LATCH_GROUP, XKB_KEY_DOWN);
+    xkb_state_update_key(state, KEY_LATCH_GROUP, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 1);
+    xkb_state_update_key(state, KEY_SHIFT, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == (shift | ctrl));
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 1);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 0);
+    xkb_state_update_key(state, KEY_LATCH_GROUP, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 1);
+    xkb_state_update_key(state, KEY_LATCH_GROUP, XKB_KEY_UP);
+    xkb_state_update_key(state, KEY_SHIFT, XKB_KEY_UP);
+    assert(xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE) == ctrl);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LATCHED) == 0);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_LOCKED) == 1);
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
+static void
 key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
     xkb_keycode_t *counter = data;
@@ -3881,6 +3969,7 @@ main(void)
 
     test_inactive_key_type_entry(context);
     test_overlapping_mods(context);
+    test_compatible_latch_same_key(context);
     test_caps_keysym_transformation(context);
     test_leds(context);
     test_multiple_actions(context);
