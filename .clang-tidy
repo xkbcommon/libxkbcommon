@@ -49,6 +49,7 @@ ImplementationFileExtensions:
   - c
 HeaderFilterRegex: ''
 ExcludeHeaderFilterRegex: ''
+SystemHeaders:   false
 FormatStyle:     none
 CheckOptions:
   cert-dcl16-c.NewSuffixes: 'L;LL;LU;LLU'
@@ -66,5 +67,5 @@ CheckOptions:
   llvm-qualified-auto.AddConstToQualified: 'false'
   bugprone-suspicious-enum-usage.StrictMode: 'true'
   bugprone-signed-char-misuse.CharTypdefsToIgnore: 'int8_t'
-SystemHeaders:   false
+  misc-header-include-cycle.IgnoredFilesList: '^/usr/(local/)?include/(libxml2|wayland)/.+'
 ...
