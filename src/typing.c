@@ -20,7 +20,6 @@
 #include <ctype.h>
 #endif
 
-#include "utils.h"
 #include "xkbcommon/xkbcommon-status.h"
 #include "xkbcommon/xkbcommon.h"
 #include "darray.h"
@@ -28,6 +27,7 @@
 #include "typing.h"
 #include "util-bits.h"
 #include "util-mem.h"
+#include "utils.h"
 
 enum xkb_status
 xkb_key_set_init(struct xkb_key_set *set,
@@ -158,6 +158,8 @@ error:
     #endif
 
     xkb_state_unref(state);
+    if (status != XKB_SUCCESS)
+        xkb_key_set_destroy(set);
 
     return status;
 }
@@ -500,7 +502,8 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
     const size_t keys_state_num = bit_array_words((size_t)keycode_max + 1);
     uintptr_t *keys_state = calloc(keys_state_num, sizeof(*keys_state));
 
-    struct xkb_typing_event *events = calloc(config->input_length, sizeof(*events));
+    const size_t num_events = config->input_length;
+    struct xkb_typing_event *events = calloc(num_events, sizeof(*events));
 
     struct xkb_typing_state state = {
         .keys = keys,
@@ -508,7 +511,7 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
         .prng = config->prng,
         .prng_state = config->prng_state,
         .events = events,
-        .num_events = config->input_length,
+        .num_events = num_events,
         .pending = darray_new(),
         .num_pending = 0,
     };
@@ -524,7 +527,7 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
      * Invariant: e + state.num_pending <= state.num_events
      */
 
-    for (size_t e = 0; e < state.num_events;) {
+    for (size_t e = 0; e < num_events;) {
         /*
          * Process pending events
          */
@@ -534,13 +537,16 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
         }
         struct xkb_typing_event *event;
         darray_foreach(event, pending) {
-            assert(e < state.num_events);
+            if (e >= num_events) {
+                /* invariant violated: should be unreachable */
+                PANIC_UNREACHABLE();
+            }
             events[e] = *event;
             bit_array_assign(keys_state, event->keycode, (bool)event->direction);
             e++;
         }
 
-        if (!state.num_pending && e == state.num_events - 1) {
+        if (!state.num_pending && e == num_events - 1) {
             /*
              * Cannot add press/release *pair*, so just use an invalid keycode
              * for the last event.
@@ -552,7 +558,7 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
             break;
         }
 
-        if (e + 1 + state.num_pending >= state.num_events) {
+        if (e + 1 + state.num_pending >= num_events) {
             /* Cannot add new pair of events: require flushing pending events */
             continue;
         }
@@ -599,7 +605,7 @@ xkb_typing_input_init(struct xkb_typing_input * restrict typing,
     assert(!state.num_pending);
 
     typing->events = steal(&state.events);
-    typing->num_events = state.num_events;
+    typing->num_events = num_events;
 
     status = XKB_SUCCESS;
 

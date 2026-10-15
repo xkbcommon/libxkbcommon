@@ -85,9 +85,9 @@ struct xkb_typing_state {
     xkb_prng_t prng;
     /** Borrowed */
     void *prng_state;
-    /** Realistic typing events */
-    struct xkb_typing_event *events;
     size_t num_events;
+    /** Realistic typing events */
+    struct xkb_typing_event *events ATTR_COUNTED_BY(num_events);
     /** Pending events */
     darray(struct xkb_pending_typing_event) pending;
     darray_size_t num_pending;
