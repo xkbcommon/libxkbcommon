@@ -3642,7 +3642,7 @@ enumeration:
 </td>
 </tr>
 <tr>
-<th>`unlockOnPress`</th>
+<th>`unlockOnPress` @anchor unlockOnPress</th>
 <td></td>
 <td>boolean</td>
 <td>`false`</td>
