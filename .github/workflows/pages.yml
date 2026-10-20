@@ -34,7 +34,7 @@ jobs:
           path: doxygen/
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v4
