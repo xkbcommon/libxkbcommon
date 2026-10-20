@@ -255,8 +255,10 @@ get_keyboards(struct xkb_context *ctx, struct xkb_keymap *keymap,
                            compose_table, &kbd);
         if (ret) {
             if (ret == -EACCES) {
-                fprintf(stderr, "Couldn't open /dev/input/%s: %s. "
-                                "You probably need root to run this.\n",
+                fprintf(stderr,
+                        "Couldn't open /dev/input/%s: %s. "
+                        "You probably need to add your user to the `input` "
+                        "group or run the command as root.\n",
                         ents[i]->d_name, strerror(-ret));
                 break;
             }
