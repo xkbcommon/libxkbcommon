@@ -198,6 +198,93 @@ struct xkb_server_state {
     int16_t mod_key_count[XKB_MAX_MODS];
 };
 
+/** Entry to keep track of the state of an overlaid key */
+struct xkb_overlaid_key {
+    /** The source key being overlaid */
+    const struct xkb_key *old;
+    /** The target key */
+    const struct xkb_key *new;
+    /** Counter of key currently down */
+    int refcnt;
+};
+
+struct xkb_shortcuts_config_entry {
+    /** Real modifier mask to trigger shortcuts tweaks */
+    xkb_mod_mask_t mods;
+    /** Target layout */
+    xkb_layout_index_t target;
+};
+
+/**
+ * `xkb_machine` have a similar role as the `xkb_state` state machine and is
+ * indeed currently only a simple wrapper. However, having a separate type:
+ *
+ * - Dissociates the *observable* state associated to an atomic event from
+ *   the *internal* state of the machine that generated it. Indeed, the later
+ *   may have been updated since the event generation.
+ * - Clearly draw a limit between the client and server APIs.
+ * - Add further features without modifying `xkb_state`, which is already
+ *   bloated for *clients* applications.
+ */
+struct xkb_machine {
+    /** Inherits from `xkb_server_state` */
+    struct xkb_server_state base;
+
+    /* Extra server-specific state data */
+
+    /** Keyboard overlays handling */
+    struct {
+        /**
+         * Current overlaid keys
+         *
+         * When a key is overlaid, it remained overlaid in this configuration
+         * until totally released, i.e. every key press was matched with the
+         * corresponding key release.
+         */
+        darray(struct xkb_overlaid_key) keys;
+        /**
+         * Activation order of the overlay
+         *
+         * Overlays indices are stored 1-indexed in nibbles: the lowest
+         * nibble corresponds to the latest activated index.
+         */
+        uint32_t order;
+        /** Current enabled overlays mask */
+        xkb_overlay_mask_t enabled;
+    } overlays;
+
+    /** Configuration */
+    struct machine_config {
+        /** Modifiers remapping */
+        struct machine_modifiers_config {
+            /** Real modifier mask */
+            xkb_mod_mask_t mask;
+            /** Modifiers re-mappings */
+            darray_size_t mappings_num;
+            struct machine_mods_mapping {
+                xkb_mod_mask_t source;
+                xkb_mod_mask_t target;
+            } * mappings ATTR_COUNTED_BY(mappings_num);
+        } modifiers;
+
+        /** Shortcuts tweak */
+        struct machine_shortcuts_config {
+            /** Substitution entries */
+            struct xkb_shortcuts_config_entry *entries;
+        } shortcuts;
+    } config;
+
+    /** Mouse keys handling */
+    struct {
+        /** Default pointer button */
+        xkb_pointer_button_index_t default_button;
+        /** Mask of the locked buttons */
+        xkb_pointer_button_mask_t locked_buttons;
+    } mouse;
+
+    enum xkb_machine_flags flags;
+};
+
 static const struct xkb_key_type_entry *
 get_entry_for_mods(const struct xkb_key_type *type, xkb_mod_mask_t mods)
 {
@@ -1085,73 +1172,338 @@ xkb_filter_pointer_move_func(struct xkb_server_state *state,
     return XKB_FILTER_CONSUME;
 }
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+static void
+append_pointer_button(struct xkb_events * restrict events,
+                      struct xkb_filter * restrict filter,
+                      enum xkb_pointer_button_state button_state,
+                      uint8_t count)
+{
+    darray_append(events->queue, (struct xkb_event) {
+        .ctx = events->ctx, /* borrowed from events */
+        .type = XKB_EVENT_TYPE_POINTER_BUTTON,
+        .pointer_button = {
+            .size = sizeof(((struct xkb_event*)0)->pointer_button),
+                  .button = filter->priv,
+                  .state = button_state,
+                  .count = count,
+        }
+    });
+}
+
 static void
 xkb_filter_pointer_button_new(struct xkb_server_state *state,
                               struct xkb_events *events,
-                              struct xkb_filter *filter);
+                              struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
+        filter->func = NULL;
+    return;
+        }
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+        struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+        /* Resolve button */
+        const xkb_pointer_button_index_t button =
+        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
+        ? sm->mouse.default_button
+        : filter->action.btn.button;
+        filter->priv = button;
+
+        const enum xkb_pointer_button_state button_state =
+        XKB_POINTER_BUTTON_PRESSED;
+        append_pointer_button(events, filter, button_state,
+                              filter->action.btn.count);
+        state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+}
+
 static bool
 xkb_filter_pointer_button_func(struct xkb_server_state *state,
                                struct xkb_events *events,
                                struct xkb_filter *filter,
                                const struct xkb_key *key,
-                               enum xkb_key_direction direction);
+                               enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+        case XKB_KEY_DOWN:
+            filter->refcnt++;
+            /* fallthrough */
+            case XKB_KEY_REPEATED:
+                return XKB_FILTER_CONSUME;
+            default:
+                if (--filter->refcnt > 0)
+                    return XKB_FILTER_CONSUME;
+    }
+
+    if (!filter->action.btn.count)
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
+
+struct xkb_filter_pointer_lock_button_priv {
+    uint32_t button:31;
+    #ifdef _WIN32
+    uint32_t locked:1; // MSVC requires matching types to pack bitfields
+    #else
+    bool locked:1;
+    #endif
+};
+
+enum {
+    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH =
+    sizeof(struct xkb_filter_pointer_lock_button_priv) * CHAR_BIT,
+    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX =
+    (UINT64_C(1) << XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH) - 1
+};
+
+static_assert(sizeof(struct xkb_filter_pointer_lock_button_priv) ==
+sizeof(((struct xkb_filter*)0)->priv),
+              "");
+static_assert((uint32_t)XKB_POINTER_BUTTON_MAX < (uint32_t)XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX,
+              "xkb_filter_pointer_lock_button_priv cannot store button");
+
 static void
 xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
                                    struct xkb_events *events,
-                                   struct xkb_filter *filter);
+                                   struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
+        filter->func = NULL;
+    return;
+        }
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+        state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+        struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+        /* Resolve button */
+        const xkb_pointer_button_index_t button =
+        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
+        ? sm->mouse.default_button
+        : filter->action.btn.button;
+
+        static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
+                      "invalid UINTx_C() macro");
+        static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
+                      "invalid left shift");
+        const xkb_pointer_button_mask_t mask = (UINT8_C(1) << button);
+
+        const bool locked = (sm->mouse.locked_buttons & mask);
+
+        if (!locked && !(filter->action.btn.flags & ACTION_LOCK_NO_LOCK)) {
+            sm->mouse.locked_buttons |= mask;
+            filter->priv = button;
+            append_pointer_button(events, filter, XKB_POINTER_BUTTON_PRESSED, 0);
+        }
+
+        struct xkb_filter_pointer_lock_button_priv *priv =
+        (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
+        priv->button = button,
+        priv->locked = locked;
+}
+
 static bool
 xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
                                     struct xkb_events *events,
                                     struct xkb_filter *filter,
                                     const struct xkb_key *key,
-                                    enum xkb_key_direction direction);
+                                    enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events || state->base.mode != SERVER_STATE)
+        return XKB_FILTER_CONTINUE;
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+        case XKB_KEY_DOWN:
+            filter->refcnt++;
+            /* fallthrough */
+            case XKB_KEY_REPEATED:
+                return XKB_FILTER_CONSUME;
+            default:
+                if (--filter->refcnt > 0)
+                    return XKB_FILTER_CONSUME;
+    }
+
+    const struct xkb_filter_pointer_lock_button_priv *priv =
+    (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
+
+    if (priv->locked && !(filter->action.btn.flags & ACTION_LOCK_NO_UNLOCK)) {
+        struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+        static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
+                      "invalid UINTx_C() macro");
+        static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
+                      "invalid left shift");
+        const xkb_pointer_button_mask_t mask = (UINT8_C(1) << priv->button);
+
+        sm->mouse.locked_buttons &= ~mask;
+        filter->priv = priv->button;
+        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
 static void
 xkb_filter_pointer_set_default_button_new(struct xkb_server_state *state,
                                           struct xkb_events *events,
-                                          struct xkb_filter *filter);
+                                          struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
+        filter->func = NULL;
+    return;
+        }
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+        state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+        struct xkb_machine * const sm = (struct xkb_machine *)state;
+
+        static_assert(2 * XKB_POINTER_BUTTON_MAX <= INT_MAX, "lossy conversion");
+        int button = (filter->action.dflt.flags & ACTION_ABSOLUTE_SWITCH)
+        ? filter->action.dflt.value
+        : sm->mouse.default_button + filter->action.dflt.value;
+
+        /* Wrap into range */
+        const int rem = button % XKB_POINTER_BUTTON_MAX;
+        sm->mouse.default_button = (rem >= 0)
+        ? (xkb_pointer_button_index_t)rem
+        : (xkb_pointer_button_index_t)(rem + XKB_POINTER_BUTTON_MAX);
+}
+
 static bool
 xkb_filter_pointer_set_default_button_func(struct xkb_server_state *state,
                                            struct xkb_events *events,
                                            struct xkb_filter *filter,
                                            const struct xkb_key *key,
-                                           enum xkb_key_direction direction);
+                                           enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+        case XKB_KEY_DOWN:
+            filter->refcnt++;
+            /* fallthrough */
+            case XKB_KEY_REPEATED:
+                return XKB_FILTER_CONSUME;
+            default:
+                if (--filter->refcnt > 0)
+                    return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONTINUE;
+}
 
 static void
 xkb_filter_terminate_server_new(struct xkb_server_state *state,
-                                 struct xkb_events *events,
-                                 struct xkb_filter *filter);
+                                struct xkb_events *events,
+                                struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
+        filter->func = NULL;
+    return;
+        }
+
+        state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
+        });
+}
 
 static bool
 xkb_filter_terminate_server_func(struct xkb_server_state *state,
-                                  struct xkb_events *events,
-                                  struct xkb_filter *filter,
-                                  const struct xkb_key *key,
-                                  enum xkb_key_direction direction);
+                                 struct xkb_events *events,
+                                 struct xkb_filter *filter,
+                                 const struct xkb_key *key,
+                                 enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+        case XKB_KEY_DOWN:
+            filter->refcnt++;
+            /* fallthrough */
+            case XKB_KEY_REPEATED:
+                return XKB_FILTER_CONSUME;
+            default:
+                if (--filter->refcnt > 0)
+                    return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
+
 static void
 xkb_filter_switch_virtual_console_new(struct xkb_server_state *state,
                                       struct xkb_events *events,
-                                      struct xkb_filter *filter);
+                                      struct xkb_filter *filter)
+{
+    if (!events || state->base.mode != SERVER_STATE ||
+        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
+        filter->func = NULL;
+    return;
+        }
 
-/* Implemented with xkb_machine API because it requires struct xkb_machine */
+        state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
+            .virtual_console = {
+                .index_or_offset = filter->action.screen.screen,
+                .is_offset = !(filter->action.screen.flags & ACTION_ABSOLUTE_SWITCH)
+            }
+        });
+}
+
 static bool
 xkb_filter_switch_virtual_console_func(struct xkb_server_state *state,
                                        struct xkb_events *events,
                                        struct xkb_filter *filter,
                                        const struct xkb_key *key,
-                                       enum xkb_key_direction direction);
+                                       enum xkb_key_direction direction)
+{
+    if (key != filter->key || !events)
+        return XKB_FILTER_CONTINUE;
+
+    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
+
+    switch (direction) {
+        case XKB_KEY_DOWN:
+            filter->refcnt++;
+            /* fallthrough */
+            case XKB_KEY_REPEATED:
+                return XKB_FILTER_CONSUME;
+            default:
+                if (--filter->refcnt > 0)
+                    return XKB_FILTER_CONSUME;
+    }
+
+    filter->func = NULL;
+    return XKB_FILTER_CONSUME;
+}
 
 static inline void
 clear_all_latches_and_locks(struct xkb_server_state *state,
@@ -3035,93 +3387,6 @@ xkb_state_key_get_consumed_mods(struct xkb_state *state, xkb_keycode_t kc)
  * Server state machine API
  ******************************************************************************/
 
-/** Entry to keep track of the state of an overlaid key */
-struct xkb_overlaid_key {
-    /** The source key being overlaid */
-    const struct xkb_key *old;
-    /** The target key */
-    const struct xkb_key *new;
-    /** Counter of key currently down */
-    int refcnt;
-};
-
-struct xkb_shortcuts_config_entry {
-    /** Real modifier mask to trigger shortcuts tweaks */
-    xkb_mod_mask_t mods;
-    /** Target layout */
-    xkb_layout_index_t target;
-};
-
-/*
- * `xkb_machine` have a similar role as the `xkb_state` state machine and is
- * indeed currently only a simple wrapper. However, having a separate type:
- *
- * - Dissociates the *observable* state associated to an atomic event from
- *   the *internal* state of the machine that generated it. Indeed, the later
- *   may have been updated since the event generation.
- * - Clearly draw a limit between the client and server APIs.
- * - Add further features without modifying `xkb_state`, which is already
- *   bloated for *clients* applications.
- */
-struct xkb_machine {
-    /** Inherits from `xkb_server_state` */
-    struct xkb_server_state base;
-
-    /* Extra server-specific state data */
-
-    /** Keyboard overlays handling */
-    struct {
-        /**
-         * Current overlaid keys
-         *
-         * When a key is overlaid, it remained overlaid in this configuration
-         * until totally released, i.e. every key press was matched with the
-         * corresponding key release.
-         */
-        darray(struct xkb_overlaid_key) keys;
-        /**
-         * Activation order of the overlay
-         *
-         * Overlays indices are stored 1-indexed in nibbles: the lowest
-         * nibble corresponds to the latest activated index.
-         */
-        uint32_t order;
-        /** Current enabled overlays mask */
-        xkb_overlay_mask_t enabled;
-    } overlays;
-
-    /** Configuration */
-    struct machine_config {
-        /** Modifiers remapping */
-        struct machine_modifiers_config {
-            /** Real modifier mask */
-            xkb_mod_mask_t mask;
-            /** Modifiers re-mappings */
-            darray_size_t mappings_num;
-            struct machine_mods_mapping {
-                xkb_mod_mask_t source;
-                xkb_mod_mask_t target;
-            } * mappings ATTR_COUNTED_BY(mappings_num);
-        } modifiers;
-
-        /** Shortcuts tweak */
-        struct machine_shortcuts_config {
-            /** Substitution entries */
-            struct xkb_shortcuts_config_entry *entries;
-        } shortcuts;
-    } config;
-
-    /** Mouse keys handling */
-    struct {
-        /** Default pointer button */
-        xkb_pointer_button_index_t default_button;
-        /** Mask of the locked buttons */
-        xkb_pointer_button_mask_t locked_buttons;
-    } mouse;
-
-    enum xkb_machine_flags flags;
-};
-
 typedef darray(struct machine_mods_mapping) machine_mods_mappings;
 
 struct xkb_machine_builder {
@@ -4422,336 +4687,4 @@ xkb_state_update_event(struct xkb_state * restrict base_state,
             *changed = 0;
     }
     return XKB_SUCCESS;
-}
-
-static void
-append_pointer_button(struct xkb_events * restrict events,
-                      struct xkb_filter * restrict filter,
-                      enum xkb_pointer_button_state button_state,
-                      uint8_t count)
-{
-    darray_append(events->queue, (struct xkb_event) {
-        .ctx = events->ctx, /* borrowed from events */
-        .type = XKB_EVENT_TYPE_POINTER_BUTTON,
-        .pointer_button = {
-            .size = sizeof(((struct xkb_event*)0)->pointer_button),
-            .button = filter->priv,
-            .state = button_state,
-            .count = count,
-        }
-    });
-}
-
-static void
-xkb_filter_pointer_button_new(struct xkb_server_state *state,
-                              struct xkb_events *events,
-                              struct xkb_filter *filter)
-{
-    if (!events || state->base.mode != SERVER_STATE ||
-        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
-        filter->func = NULL;
-        return;
-    }
-
-    struct xkb_machine * const sm = (struct xkb_machine *)state;
-
-    /* Resolve button */
-    const xkb_pointer_button_index_t button =
-        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
-            ? sm->mouse.default_button
-            : filter->action.btn.button;
-    filter->priv = button;
-
-    const enum xkb_pointer_button_state button_state =
-        XKB_POINTER_BUTTON_PRESSED;
-    append_pointer_button(events, filter, button_state,
-                          filter->action.btn.count);
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-}
-
-static bool
-xkb_filter_pointer_button_func(struct xkb_server_state *state,
-                               struct xkb_events *events,
-                               struct xkb_filter *filter,
-                               const struct xkb_key *key,
-                               enum xkb_key_direction direction)
-{
-    if (key != filter->key || !events)
-        return XKB_FILTER_CONTINUE;
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    switch (direction) {
-    case XKB_KEY_DOWN:
-        filter->refcnt++;
-        /* fallthrough */
-    case XKB_KEY_REPEATED:
-        return XKB_FILTER_CONSUME;
-    default:
-        if (--filter->refcnt > 0)
-            return XKB_FILTER_CONSUME;
-    }
-
-    if (!filter->action.btn.count)
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
-
-    filter->func = NULL;
-    return XKB_FILTER_CONSUME;
-}
-
-struct xkb_filter_pointer_lock_button_priv {
-    uint32_t button:31;
-#ifdef _WIN32
-    uint32_t locked:1; // MSVC requires matching types to pack bitfields
-#else
-    bool locked:1;
-#endif
-};
-
-enum {
-    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH =
-        sizeof(struct xkb_filter_pointer_lock_button_priv) * CHAR_BIT,
-    XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX =
-        (UINT64_C(1) << XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_WIDTH) - 1
-};
-
-static_assert(sizeof(struct xkb_filter_pointer_lock_button_priv) ==
-              sizeof(((struct xkb_filter*)0)->priv),
-              "");
-static_assert((uint32_t)XKB_POINTER_BUTTON_MAX < (uint32_t)XKB_FILTER_POINTER_LOCK_BUTTON_PRIV_MAX,
-              "xkb_filter_pointer_lock_button_priv cannot store button");
-
-static void
-xkb_filter_pointer_lock_button_new(struct xkb_server_state *state,
-                                   struct xkb_events *events,
-                                   struct xkb_filter *filter)
-{
-    if (!events || state->base.mode != SERVER_STATE ||
-        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
-        filter->func = NULL;
-        return;
-    }
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    struct xkb_machine * const sm = (struct xkb_machine *)state;
-
-    /* Resolve button */
-    const xkb_pointer_button_index_t button =
-        (filter->action.btn.button == XKB_POINTER_BUTTON_DEFAULT)
-            ? sm->mouse.default_button
-            : filter->action.btn.button;
-
-    static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
-                  "invalid UINTx_C() macro");
-    static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
-                  "invalid left shift");
-    const xkb_pointer_button_mask_t mask = (UINT8_C(1) << button);
-
-    const bool locked = (sm->mouse.locked_buttons & mask);
-
-    if (!locked && !(filter->action.btn.flags & ACTION_LOCK_NO_LOCK)) {
-        sm->mouse.locked_buttons |= mask;
-        filter->priv = button;
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_PRESSED, 0);
-    }
-
-    struct xkb_filter_pointer_lock_button_priv *priv =
-        (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
-    priv->button = button,
-    priv->locked = locked;
-}
-
-static bool
-xkb_filter_pointer_lock_button_func(struct xkb_server_state *state,
-                                    struct xkb_events *events,
-                                    struct xkb_filter *filter,
-                                    const struct xkb_key *key,
-                                    enum xkb_key_direction direction)
-{
-    if (key != filter->key || !events || state->base.mode != SERVER_STATE)
-        return XKB_FILTER_CONTINUE;
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    switch (direction) {
-    case XKB_KEY_DOWN:
-        filter->refcnt++;
-        /* fallthrough */
-    case XKB_KEY_REPEATED:
-        return XKB_FILTER_CONSUME;
-    default:
-        if (--filter->refcnt > 0)
-            return XKB_FILTER_CONSUME;
-    }
-
-    const struct xkb_filter_pointer_lock_button_priv *priv =
-        (struct xkb_filter_pointer_lock_button_priv*)&filter->priv;
-
-    if (priv->locked && !(filter->action.btn.flags & ACTION_LOCK_NO_UNLOCK)) {
-        struct xkb_machine * const sm = (struct xkb_machine *)state;
-
-        static_assert(XKB_POINTER_BUTTON_MASK_WIDTH <= 8,
-                    "invalid UINTx_C() macro");
-        static_assert(XKB_POINTER_BUTTON_MAX <= XKB_POINTER_BUTTON_MASK_WIDTH,
-                    "invalid left shift");
-        const xkb_pointer_button_mask_t mask = (UINT8_C(1) << priv->button);
-
-        sm->mouse.locked_buttons &= ~mask;
-        filter->priv = priv->button;
-        append_pointer_button(events, filter, XKB_POINTER_BUTTON_RELEASED, 0);
-    }
-
-    filter->func = NULL;
-    return XKB_FILTER_CONSUME;
-}
-
-static void
-xkb_filter_pointer_set_default_button_new(struct xkb_server_state *state,
-                                          struct xkb_events *events,
-                                          struct xkb_filter *filter)
-{
-    if (!events || state->base.mode != SERVER_STATE ||
-        !(state->base.components.controls & XKB_KEYBOARD_CONTROL_MOUSE_KEYS)) {
-        filter->func = NULL;
-        return;
-    }
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    struct xkb_machine * const sm = (struct xkb_machine *)state;
-
-    static_assert(2 * XKB_POINTER_BUTTON_MAX <= INT_MAX, "lossy conversion");
-    int button = (filter->action.dflt.flags & ACTION_ABSOLUTE_SWITCH)
-        ? filter->action.dflt.value
-        : sm->mouse.default_button + filter->action.dflt.value;
-
-    /* Wrap into range */
-    const int rem = button % XKB_POINTER_BUTTON_MAX;
-    sm->mouse.default_button = (rem >= 0)
-        ? (xkb_pointer_button_index_t)rem
-        : (xkb_pointer_button_index_t)(rem + XKB_POINTER_BUTTON_MAX);
-}
-
-static bool
-xkb_filter_pointer_set_default_button_func(struct xkb_server_state *state,
-                                           struct xkb_events *events,
-                                           struct xkb_filter *filter,
-                                           const struct xkb_key *key,
-                                           enum xkb_key_direction direction)
-{
-    if (key != filter->key || !events)
-        return XKB_FILTER_CONTINUE;
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    switch (direction) {
-    case XKB_KEY_DOWN:
-        filter->refcnt++;
-        /* fallthrough */
-    case XKB_KEY_REPEATED:
-        return XKB_FILTER_CONSUME;
-    default:
-        if (--filter->refcnt > 0)
-            return XKB_FILTER_CONSUME;
-    }
-
-    filter->func = NULL;
-    return XKB_FILTER_CONTINUE;
-}
-
-static void
-xkb_filter_terminate_server_new(struct xkb_server_state *state,
-                                 struct xkb_events *events,
-                                 struct xkb_filter *filter)
-{
-    if (!events || state->base.mode != SERVER_STATE ||
-        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
-        filter->func = NULL;
-        return;
-    }
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    darray_append(events->queue, (struct xkb_event) {
-        .ctx = events->ctx, /* borrowed from events */
-        .type = XKB_EVENT_TYPE_TERMINATE_DISPLAY_SERVER,
-    });
-}
-
-static bool
-xkb_filter_terminate_server_func(struct xkb_server_state *state,
-                                 struct xkb_events *events,
-                                 struct xkb_filter *filter,
-                                 const struct xkb_key *key,
-                                 enum xkb_key_direction direction)
-{
-    if (key != filter->key || !events)
-        return XKB_FILTER_CONTINUE;
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    switch (direction) {
-    case XKB_KEY_DOWN:
-        filter->refcnt++;
-        /* fallthrough */
-    case XKB_KEY_REPEATED:
-        return XKB_FILTER_CONSUME;
-    default:
-        if (--filter->refcnt > 0)
-            return XKB_FILTER_CONSUME;
-    }
-
-    filter->func = NULL;
-    return XKB_FILTER_CONSUME;
-}
-
-static void
-xkb_filter_switch_virtual_console_new(struct xkb_server_state *state,
-                                      struct xkb_events *events,
-                                      struct xkb_filter *filter)
-{
-    if (!events || state->base.mode != SERVER_STATE ||
-        !(((struct xkb_machine *)state)->flags & XKB_MACHINE_SERVER_ACTIONS)) {
-        filter->func = NULL;
-        return;
-    }
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    darray_append(events->queue, (struct xkb_event) {
-        .ctx = events->ctx, /* borrowed from events */
-        .type = XKB_EVENT_TYPE_SWITCH_VIRTUAL_CONSOLE,
-        .virtual_console = {
-            .index_or_offset = filter->action.screen.screen,
-            .is_offset = !(filter->action.screen.flags & ACTION_ABSOLUTE_SWITCH)
-        }
-    });
-}
-
-static bool
-xkb_filter_switch_virtual_console_func(struct xkb_server_state *state,
-                                       struct xkb_events *events,
-                                       struct xkb_filter *filter,
-                                       const struct xkb_key *key,
-                                       enum xkb_key_direction direction)
-{
-    if (key != filter->key || !events)
-        return XKB_FILTER_CONTINUE;
-
-    state->flags &= ~STATE_REQUIRE_KEY_EVENT;
-
-    switch (direction) {
-    case XKB_KEY_DOWN:
-        filter->refcnt++;
-        /* fallthrough */
-    case XKB_KEY_REPEATED:
-        return XKB_FILTER_CONSUME;
-    default:
-        if (--filter->refcnt > 0)
-            return XKB_FILTER_CONSUME;
-    }
-
-    filter->func = NULL;
-    return XKB_FILTER_CONSUME;
 }
