@@ -801,22 +801,26 @@ CompileKeymap(XkbFile *file, struct xkb_keymap *keymap)
      * Keymap augmented with compilation-specific data
      */
     pending_computation_array pending_computations = darray_new();
+
+    enum keymap_features features = FEATURE_NONE;
+    if (isGroupLockOnReleaseSupported(keymap->format))
+        features |= FEATURE_GROUP_LOCK_ON_RELEASE;
+    if (isModsUnLockOnPressSupported(keymap->format))
+        features |= FEATURE_MODS_UNLOCK_ON_PRESS;
+    if (isModsLatchOnPressSupported(keymap->format))
+        features |= FEATURE_MODS_LATCH_ON_PRESS;
+    if (areOverlappingOverlaysSupported(keymap->format))
+        features |= FEATURE_OVERLAPPING_OVERLAYS;
+
     struct xkb_keymap_info info = {
         /* Copy the keymap */
         .keymap = *keymap,
         .strict = parser_strict_flags_from_keymap(keymap),
         .features = {
+            .flags = features,
             .max_groups = format_max_groups(keymap->format),
             .max_overlays = format_max_overlays(keymap->format),
             .controls_name_offset = format_control_names_offset(keymap->format),
-            .group_lock_on_release =
-                isGroupLockOnReleaseSupported(keymap->format),
-            .mods_unlock_on_press =
-                isModsUnLockOnPressSupported(keymap->format),
-            .mods_latch_on_press =
-                isModsLatchOnPressSupported(keymap->format),
-            .overlapping_overlays =
-                areOverlappingOverlaysSupported(keymap->format),
         },
         /*
          * NOTE: `first` and `last` group constants are never used for

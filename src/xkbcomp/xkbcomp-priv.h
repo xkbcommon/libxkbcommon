@@ -85,6 +85,16 @@ struct parser_keymap_config {
     enum xkb_parser_strict_flags strict;
 };
 
+enum keymap_features {
+    FEATURE_NONE = 0,
+    /* Actions */
+    FEATURE_GROUP_LOCK_ON_RELEASE = (1u << 0),
+    FEATURE_MODS_UNLOCK_ON_PRESS = (1u << 6),
+    FEATURE_MODS_LATCH_ON_PRESS = (1u << 7),
+    /* Overlays */
+    FEATURE_OVERLAPPING_OVERLAYS = (1u << 14),
+};
+
 typedef union ExprDef ExprDef;
 struct pending_computation {
     ExprDef * expr;
@@ -103,18 +113,14 @@ struct xkb_keymap_info {
 
     /** Features */
     struct {
+        /** Individual features */
+        enum keymap_features flags;
         /** Maximum groups for the keymap format */
         xkb_layout_index_t max_groups;
         /** Maximum overlays for the keymap format */
         xkb_overlay_index_t max_overlays;
         /** Offset of the Controls names LUT for the keymap format */
         uint8_t controls_name_offset;
-        /* Actions */
-        bool group_lock_on_release;
-        bool mods_unlock_on_press;
-        bool mods_latch_on_press;
-        /* Overlays */
-        bool overlapping_overlays;
     } features;
 
     /* Non-static LUTs */

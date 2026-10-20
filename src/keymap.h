@@ -1156,14 +1156,14 @@ isModsUnLockOnPressSupported(enum xkb_keymap_format format)
 }
 
 static inline bool
-isGroupLockOnReleaseSupported(enum xkb_keymap_format format)
+isModsLatchOnPressSupported(enum xkb_keymap_format format)
 {
     /* Lax bound */
     return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
 }
 
 static inline bool
-isModsLatchOnPressSupported(enum xkb_keymap_format format)
+isGroupLockOnReleaseSupported(enum xkb_keymap_format format)
 {
     /* Lax bound */
     return format >= XKB_KEYMAP_FORMAT_TEXT_V2;
