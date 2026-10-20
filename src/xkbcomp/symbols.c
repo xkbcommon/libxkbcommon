@@ -673,7 +673,7 @@ merge_overlays(SymbolsInfo *info, KeyInfo *into, KeyInfo *from,
         /* Only cleared overlays: combine them */
         into->overlays |= from->overlays;
     } else {
-        if (info->keymap_info->features.overlapping_overlays) {
+        if (info->keymap_info->features.flags & FEATURE_OVERLAPPING_OVERLAYS) {
             /* Overlapping overlays */
 
             const xkb_overlay_mask_t result_mask =
@@ -1594,7 +1594,9 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
                                  ? KeyNameText(info->ctx, key->name)
                                  : "none"));
                 }
-            } else if (info->keymap_info->features.overlapping_overlays) {
+            } else if (info->keymap_info->features.flags &
+                       FEATURE_OVERLAPPING_OVERLAYS)
+            {
                 /* Handle overlapping overlays mode */
                 if (!overlays_insert(keyi, overlay, key))
                     return false;

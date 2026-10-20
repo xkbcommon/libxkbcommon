@@ -322,7 +322,7 @@ HandleSetLatchLockMods(const struct xkb_keymap_info *keymap_info,
         /* Ensure to update if a new modifier action is introduced. */
         assert(type == ACTION_TYPE_MOD_SET || type == ACTION_TYPE_MOD_LATCH ||
                type == ACTION_TYPE_MOD_LOCK);
-        if (keymap_info->features.mods_unlock_on_press) {
+        if (keymap_info->features.flags & FEATURE_MODS_UNLOCK_ON_PRESS) {
             const enum xkb_parser_error ret = CheckBooleanFlag(
                 ctx, keymap_info->strict, action->type, field,
                 ACTION_UNLOCK_ON_PRESS, array_ndx, value, &act->flags
@@ -347,7 +347,7 @@ HandleSetLatchLockMods(const struct xkb_keymap_info *keymap_info,
                                     field, ACTION_LATCH_TO_LOCK, array_ndx,
                                     value, &act->flags);
         if (field == ACTION_FIELD_LATCH_ON_PRESS) {
-            if (keymap_info->features.mods_latch_on_press) {
+            if (keymap_info->features.flags & FEATURE_MODS_LATCH_ON_PRESS) {
                 return CheckBooleanFlag(ctx, keymap_info->strict, action->type,
                                         field, ACTION_LATCH_ON_PRESS, array_ndx,
                                         value, &act->flags);
@@ -460,7 +460,7 @@ HandleSetLatchLockGroup(const struct xkb_keymap_info *keymap_info,
     if (type == ACTION_TYPE_GROUP_LOCK &&
         field == ACTION_FIELD_LOCK_ON_RELEASE) {
         /* TODO: support this for `ACTION_TYPE_MOD_LOCK` too? */
-        if (keymap_info->features.group_lock_on_release) {
+        if (keymap_info->features.flags & FEATURE_GROUP_LOCK_ON_RELEASE) {
             const enum xkb_parser_error ret = CheckBooleanFlag(
                 ctx, keymap_info->strict, action->type, field,
                 ACTION_LOCK_ON_RELEASE, array_ndx, value, &act->flags
