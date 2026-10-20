@@ -71,54 +71,6 @@
 /** @} */
 
 /**
- * @defgroup legacy-virtual-modifier-names Legacy virtual modifier names
- *
- * Usual [*virtual* modifiers][virtual modifiers] mappings to
- * [*real* modifiers][real modifiers].
- *
- * @deprecated Use @ref virtual-modifier-names instead
- *
- * [virtual modifiers]: @ref virtual-modifier-def
- * [real modifiers]: @ref real-modifier-def
- *
- * @{
- */
-/**
- * Usual [*real* modifier][real modifier] for the
- * [*virtual* modifier][virtual modifier] `Alt`.
- *
- * @deprecated Use `::XKB_VMOD_NAME_ALT` instead.
- * @since 1.10: deprecated
- *
- * [virtual modifier]: @ref virtual-modifier-def
- * [real modifier]: @ref real-modifier-def
- */
-#define XKB_MOD_NAME_ALT        "Mod1"
-/**
- * Usual [*real* modifier][real modifier] for the
- * [*virtual* modifier][virtual modifier] `Super`.
- *
- * @deprecated Use `::XKB_VMOD_NAME_SUPER` instead.
- * @since 1.10: deprecated
- *
- * [virtual modifier]: @ref virtual-modifier-def
- * [real modifier]: @ref real-modifier-def
- */
-#define XKB_MOD_NAME_LOGO       "Mod4"
-/**
- * Usual [*real* modifier][real modifier] for the
- * [*virtual* modifier][virtual modifier] `NumLock`.
- *
- * @deprecated Use `::XKB_VMOD_NAME_NUM` instead.
- * @since 1.10: deprecated
- *
- * [virtual modifier]: @ref virtual-modifier-def
- * [real modifier]: @ref real-modifier-def
- */
-#define XKB_MOD_NAME_NUM        "Mod2"
-/** @} */
-
-/**
  * @defgroup led-names LEDs names
  *
  * LEDs names are encoded in [xkeyboard-config], in the [keycodes] and [compat]
