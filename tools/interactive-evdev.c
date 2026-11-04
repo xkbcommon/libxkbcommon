@@ -52,7 +52,6 @@ static struct tools_events_options tool_options = {
 };
 static bool with_compose = false;
 
-#define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 #define NLONGS(n) (((n) + LONG_BIT - 1) / LONG_BIT)
 
 static bool

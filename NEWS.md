@@ -467,6 +467,11 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 - Added `--strict` for parsing keymaps in *strict* mode.
   This is useful mainly for debugging.
 </dd>
+<dt>`xkbcli how-to-type`</dt>
+<dd>
+- Added `--include` and `--include-defaults` to control
+  the XKB include paths.
+</dd>
 <dt>CLI completion</dt>
 <dd>
 - Added [zsh](https://zsh.sourceforge.io/) completions.
