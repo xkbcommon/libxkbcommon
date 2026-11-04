@@ -105,6 +105,16 @@ usage(FILE *fp, const char *argv0)
         "    Disable Compose support to query combinations involving e.g. dead keys\n"
         "\n"
         "XKB-specific options:\n"
+        " --include <path>\n"
+        "    Add the given <path> to the include path list. This option is\n"
+        "    order-dependent, include paths given first are searched first.\n"
+        "    If an include path is given, the default include path list is\n"
+        "    not used. Use --include-defaults to add the default include\n"
+        "    paths.\n"
+        " --include-defaults\n"
+        "    Add the default set of include directories.\n"
+        "    This option is order-dependent, include paths given first\n"
+        "    are searched first.\n"
         " --format <format>\n"
         "    The keymap format to use (default: '%s')\n"
         " --keymap=<file>\n"
@@ -143,6 +153,8 @@ enum input_keymap_source {
 
 struct cli_input {
     const char *keymap_path;
+    const char *includes[64];
+    size_t num_includes;
     struct xkb_rule_names names;
     xkb_keysym_t keysym;
     enum input_keymap_source keymap_source;
@@ -160,6 +172,8 @@ parse_options(int argc, char **argv, struct cli_input *input)
         OPT_VERBOSE,
         OPT_KEYSYM,
         OPT_DISABLE_COMPOSE,
+        OPT_INCLUDE,
+        OPT_INCLUDE_DEFAULTS,
         OPT_ENABLE_ENV_NAMES,
         OPT_KEYMAP_FORMAT,
         OPT_KEYMAP,
@@ -175,6 +189,8 @@ parse_options(int argc, char **argv, struct cli_input *input)
         {"verbose",              no_argument,            0, OPT_VERBOSE},
         {"keysym",               no_argument,            0, OPT_KEYSYM},
         {"disable-compose",      no_argument,            0, OPT_DISABLE_COMPOSE},
+        {"include",              required_argument,      0, OPT_INCLUDE},
+        {"include-defaults",     no_argument,            0, OPT_INCLUDE_DEFAULTS},
         {"enable-environment-names", no_argument,        0, OPT_ENABLE_ENV_NAMES},
         {"format",               required_argument,      0, OPT_KEYMAP_FORMAT},
         {"keymap",               optional_argument,      0, OPT_KEYMAP},
@@ -203,6 +219,16 @@ parse_options(int argc, char **argv, struct cli_input *input)
             break;
         case OPT_DISABLE_COMPOSE:
             input->use_compose = false;
+            break;
+        case OPT_INCLUDE:
+            if (input->num_includes >= ARRAY_SIZE(input->includes))
+                goto too_many_includes;
+            input->includes[input->num_includes++] = optarg;
+            break;
+        case OPT_INCLUDE_DEFAULTS:
+            if (input->num_includes >= ARRAY_SIZE(input->includes))
+                goto too_many_includes;
+            input->includes[input->num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
             break;
         case OPT_ENABLE_ENV_NAMES:
             if (input->keymap_source == KEYMAP_SOURCE_FILE)
@@ -319,6 +345,10 @@ keymap_env_error:
 keymap_source_error:
     fprintf(stderr, "ERROR: Cannot use RMLVO options with keymap input\n");
     goto invalid_usage;
+
+too_many_includes:
+    fprintf(stderr, "ERROR: too many includes (max: %zu)\n",
+            ARRAY_SIZE(input->includes));
 
 invalid_usage:
     usage(stderr, argv[0]);
@@ -585,11 +615,14 @@ main(int argc, char *argv[])
         ret = EXIT_FAILURE;
         goto err;
     }
+
     ret = EXIT_FAILURE;
 
-    const enum xkb_context_flags ctx_flags = (input.use_env_names)
-                                           ? XKB_CONTEXT_NO_FLAGS
-                                           : XKB_CONTEXT_NO_ENVIRONMENT_NAMES;
+    const enum xkb_context_flags ctx_flags = (
+        XKB_CONTEXT_NO_DEFAULT_INCLUDES |
+        ((input.use_env_names) ? XKB_CONTEXT_NO_FLAGS
+                               : XKB_CONTEXT_NO_ENVIRONMENT_NAMES)
+    );
     ctx = xkb_context_new(ctx_flags);
     if (!ctx) {
         fprintf(stderr, "ERROR: Failed to create XKB context\n");
@@ -598,6 +631,27 @@ main(int argc, char *argv[])
 
     if (input.verbose)
         tools_enable_verbose_logging(ctx);
+
+    if (input.num_includes == 0)
+        input.includes[input.num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
+
+    for (size_t i = 0; i < input.num_includes; i++) {
+        const char *include = input.includes[i];
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0) {
+            if (!xkb_context_include_path_append_default(ctx)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append default include paths\n");
+                goto err;
+            }
+        } else {
+            if (!xkb_context_include_path_append(ctx, include)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append include path: %s\n",
+                        include);
+                goto err;
+            }
+        }
+    }
 
     keymap = load_keymap(ctx, &input);
     if (!keymap) {
@@ -616,7 +670,7 @@ main(int argc, char *argv[])
                                               XKB_COMPOSE_COMPILE_NO_FLAGS);
         if (!compose_table) {
             fprintf(stderr, "Couldn't create compose from locale\n");
-            goto err;
+            goto compose_locale_error;
         }
 
         /* Get sequences producing the keysym */
@@ -834,6 +888,7 @@ skip:
 
     ret = EXIT_SUCCESS;
 
+compose_locale_error:
     darray_free(compose_entries);
     darray_keysym_entries_free(&keysym_entries);
 

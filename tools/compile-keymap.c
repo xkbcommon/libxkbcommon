@@ -20,8 +20,6 @@
 #include "src/utils.h"
 #include "src/keymap-formats.h"
 
-#define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
-
 enum input_format {
     INPUT_FORMAT_AUTO = 0,
     INPUT_FORMAT_RMLVO,

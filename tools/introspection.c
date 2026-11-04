@@ -997,7 +997,6 @@ usage(FILE *file, const char *progname)
            progname);
 }
 
-#define DEFAULT_INCLUDE_PATH_PLACEHOLDER "__defaults__"
 static const char *includes[64] = { 0 };
 static size_t num_includes = 0;
 

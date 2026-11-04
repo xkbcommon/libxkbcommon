@@ -575,7 +575,11 @@ class TestXkbcli(unittest.TestCase):
                 self.xkbcli_compile_compose.run_command_success(args)
 
     def test_how_to_type(self):
-        for args in (["--verbose", "1"],):
+        for args in (
+            ["--verbose", "1"],
+            ["--include", ".", "--include-defaults", "1"],
+            ["--include", "/tmp", "--include-defaults", "1"],
+        ):
             with self.subTest(args=args):
                 self.xkbcli_how_to_type.run_command_success(args)
 
