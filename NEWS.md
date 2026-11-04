@@ -476,6 +476,10 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 </dd>
 </dl>
 
+### Fixes
+
+- `xkbcli {compile-keymap,interactive-evdev}`: Fixed unchecked include
+  path appends, which did not raise an error on failure.
 
 ## Build system
 

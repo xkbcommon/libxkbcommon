@@ -957,12 +957,12 @@ usage(FILE *file, const char *progname)
            "    Enable verbose debugging output\n"
            "\n"
            "Input options:\n"
-           " --include\n"
-           "    Add the given path to the include path list. This option is\n"
+           " --include <path>\n"
+           "    Add the given <path> to the include path list. This option is\n"
            "    order-dependent, include paths given first are searched first.\n"
            "    If an include path is given, the default include path list is\n"
            "    not used. Use --include-defaults to add the default include\n"
-           "    paths\n"
+           "    paths.\n"
            " --include-defaults\n"
            "    Add the default set of include directories.\n"
            "    This option is order-dependent, include paths given first\n"
@@ -1163,7 +1163,7 @@ invalid_usage:
 int
 main(int argc, char **argv)
 {
-    struct xkb_context *ctx;
+    struct xkb_context *ctx = NULL;
     bool verbose = false;
     int paths_start = argc;
     char *map = NULL;
@@ -1174,7 +1174,7 @@ main(int argc, char **argv)
     bool recursive = false;
     enum output_format output_format = OUTPUT_FORMAT_YAML;
     enum output_options output_options = OUTPUT_YAML_SHORT_LABELS;
-    int rc = 1;
+    int rc = EXIT_FAILURE;
 
     setlocale(LC_ALL, "");
 
@@ -1203,10 +1203,20 @@ main(int argc, char **argv)
 
     for (size_t i = 0; i < num_includes; i++) {
         const char *include = includes[i];
-        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0)
-            xkb_context_include_path_append_default(ctx);
-        else
-            xkb_context_include_path_append(ctx, include);
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0) {
+            if (!xkb_context_include_path_append_default(ctx)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append default include paths\n");
+                goto out;
+            }
+        } else {
+            if (!xkb_context_include_path_append(ctx, include)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append include path: %s\n",
+                        include);
+                goto out;
+            }
+        }
     }
 
     static char * no_paths[] = { NULL };
@@ -1232,6 +1242,7 @@ main(int argc, char **argv)
 
     print_sections_footer(output_format);
 
+out:
     xkb_context_unref(ctx);
 
     return rc;
