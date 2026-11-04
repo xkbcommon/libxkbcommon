@@ -58,12 +58,12 @@ usage(FILE *file, const char *progname)
            "    Test compilation but do not print the keymap.\n"
            "\n"
            "Input options:\n"
-           " --include\n"
-           "    Add the given path to the include path list. This option is\n"
+           " --include <path>\n"
+           "    Add the given <path> to the include path list. This option is\n"
            "    order-dependent, include paths given first are searched first.\n"
            "    If an include path is given, the default include path list is\n"
            "    not used. Use --include-defaults to add the default include\n"
-           "    paths\n"
+           "    paths.\n"
            " --include-defaults\n"
            "    Add the default set of include directories.\n"
            "    This option is order-dependent, include paths given first\n"
@@ -691,18 +691,29 @@ main(int argc, char **argv)
     if (verbose)
         tools_enable_verbose_logging(ctx);
 
+    int rc = EXIT_FAILURE;
+
     if (num_includes == 0)
         includes[num_includes++] = DEFAULT_INCLUDE_PATH_PLACEHOLDER;
 
     for (size_t i = 0; i < num_includes; i++) {
         const char *include = includes[i];
-        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0)
-            xkb_context_include_path_append_default(ctx);
-        else
-            xkb_context_include_path_append(ctx, include);
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0) {
+            if (!xkb_context_include_path_append_default(ctx)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append default include paths\n");
+                goto out;
+            }
+        } else {
+            if (!xkb_context_include_path_append(ctx, include)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append include path: %s\n",
+                        include);
+                goto out;
+            }
+        }
     }
 
-    int rc = EXIT_FAILURE;
     switch (output_format) {
     case OUTPUT_FORMAT_RMLVO:
         assert(input_format != INPUT_FORMAT_KEYMAP);
@@ -732,6 +743,7 @@ main(int argc, char **argv)
     }
     }
 
+out:
     xkb_context_unref(ctx);
 
     return rc;

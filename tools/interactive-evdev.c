@@ -808,10 +808,20 @@ too_much_arguments:
 
     for (size_t i = 0; i < num_includes; i++) {
         const char *include = includes[i];
-        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0)
-            xkb_context_include_path_append_default(ctx);
-        else
-            xkb_context_include_path_append(ctx, include);
+        if (strcmp(include, DEFAULT_INCLUDE_PATH_PLACEHOLDER) == 0) {
+            if (!xkb_context_include_path_append_default(ctx)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append default include paths\n");
+                goto out;
+            }
+        } else {
+            if (!xkb_context_include_path_append(ctx, include)) {
+                fprintf(stderr,
+                        "ERROR: Failed to append include path: %s\n",
+                        include);
+                goto out;
+            }
+        }
     }
 
     if (with_keymap_file) {

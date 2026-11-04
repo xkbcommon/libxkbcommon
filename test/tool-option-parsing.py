@@ -555,13 +555,13 @@ class TestXkbcli(unittest.TestCase):
         args = ["--include", "/proc/version"]
         rc, stdout, stderr = self.xkbcli_compile_keymap.run_command(args)
         assert rc == 1, (stdout, stderr)
-        assert "There are no include paths to search" in stderr
+        assert "Failed to append include path" in stderr
 
         # A non-existing directory is rejected by default
         args = ["--include", "/tmp/does/not/exist"]
         rc, stdout, stderr = self.xkbcli_compile_keymap.run_command(args)
         assert rc == 1, (stdout, stderr)
-        assert "There are no include paths to search" in stderr
+        assert "Failed to append include path" in stderr
 
         # Valid dir, but missing files
         args = ["--include", "/tmp"]
