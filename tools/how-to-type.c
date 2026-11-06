@@ -5,12 +5,13 @@
 
 #include "config.h"
 
+#include <assert.h>
+#include <errno.h>
 #include <getopt.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
 
 #include "xkbcommon/xkbcommon.h"
 #include "xkbcommon/xkbcommon-compose.h"
@@ -560,14 +561,31 @@ add_compose_keysym_entry(struct xkb_keymap *keymap,
     return true;
 }
 
+enum { LAYOUT_NAME_MIN_WIDTH = 20 };
+
 static void
 print_combo(struct xkb_keymap *keymap, xkb_mod_index_t num_mods,
             xkb_keycode_t keycode, const char *key_name,
             xkb_layout_index_t layout, const char *layout_name,
             xkb_level_index_t level, xkb_mod_mask_t mask)
 {
-    printf("%-8u %-9s %-8u %-20s %-7u [ ",
-            keycode, key_name, layout + 1, layout_name, level + 1);
+    if (xkb_keymap_num_layouts(keymap) > 1 &&
+        xkb_keymap_num_layouts_for_key(keymap, keycode) == 1)
+    {
+        /*
+         * All layouts would default to the same mapping for the key,
+         * so prefer displaying this info.
+         */
+        static const char fallback_layout_name[] = "(any: fallback to 1)";
+        static_assert(sizeof(fallback_layout_name) - 1 <=
+                      (size_t)LAYOUT_NAME_MIN_WIDTH,
+                      "fallback layout name must fit the layout name column");
+        layout_name = fallback_layout_name;
+    }
+
+    printf("%-8u %-9s %-8u %-*s %-7u [ ",
+           keycode, key_name, layout + 1,
+           LAYOUT_NAME_MIN_WIDTH, layout_name, level + 1);
 
     for (xkb_mod_index_t mod = 0; mod < num_mods; mod++) {
         const xkb_mod_mask_t mod_mask = xkb_keymap_mod_get_mask2(keymap, mod);
@@ -690,8 +708,10 @@ main(int argc, char *argv[])
 
     printf("keysym: %s (%#06"PRIx32")\n\n", name, input.keysym);
     printf("=== Direct access ===\n\n");
-    printf("%-8s %-9s %-8s %-20s %-7s %-s\n",
-           "KEYCODE", "KEY NAME", "LAYOUT", "LAYOUT NAME", "LEVEL#", "MODIFIERS");
+    printf("%-8s %-9s %-8s %-*s %-7s %-s\n",
+           "KEYCODE", "KEY NAME", "LAYOUT",
+           LAYOUT_NAME_MIN_WIDTH, "LAYOUT NAME",
+           "LEVEL#", "MODIFIERS");
 
     /* Iterate over all the positions in the keymap */
     const xkb_keycode_t min_keycode = xkb_keymap_min_keycode(keymap);
@@ -772,9 +792,10 @@ next_level:
     /* Compose sequences */
     if (input.use_compose) {
         printf("\n=== Access via Compose sequences ===\n\n");
-        printf("#  %-*s %-8s %-9s %-8s %-20s %-7s %-s\n",
-                XKB_KEYSYM_NAME_MAX_SIZE - 1, "KEYSYM", "KEYCODE", "KEY NAME",
-                "LAYOUT", "LAYOUT NAME", "LEVEL#", "MODIFIERS");
+        printf("#  %-*s %-8s %-9s %-8s %-*s %-7s %-s\n",
+               XKB_KEYSYM_NAME_MAX_SIZE - 1, "KEYSYM", "KEYCODE", "KEY NAME",
+               "LAYOUT", LAYOUT_NAME_MIN_WIDTH, "LAYOUT NAME", "LEVEL#",
+               "MODIFIERS");
 
         /* Sort keysyms positions */
         struct keysym_entries *entry;
