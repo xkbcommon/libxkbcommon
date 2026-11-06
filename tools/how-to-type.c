@@ -61,7 +61,7 @@ parse_char_or_codepoint(const char *raw) {
             }
         }
         if (val < 0) {
-            fprintf(stderr, "ERROR: Failed to convert argument to Unicode code point\n");
+            /* Do not log error here, since we may try other parsers */
             return INVALID_UTF8_CODE_POINT;
         }
         codepoint = (uint32_t) val;
@@ -310,10 +310,14 @@ parse_options(int argc, char **argv, struct cli_input *input)
         /* Try to parse code point */
         const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
         if (codepoint != INVALID_UTF8_CODE_POINT) {
+            /* Valid Unicode codepoint */
+            assert(codepoint <= 0x10FFFF);
             input->keysym = xkb_utf32_to_keysym(codepoint);
             if (input->keysym == XKB_KEY_NoSymbol) {
+                assert(!codepoint || is_surrogate(codepoint));
                 fprintf(stderr,
-                        "ERROR: Failed to convert code point to keysym\n");
+                        "ERROR: Failed to convert code point U+%04"PRIX32" "
+                        "to keysym.\n", codepoint);
                 goto invalid_usage;
             }
         } else {
@@ -329,7 +333,11 @@ parse_options(int argc, char **argv, struct cli_input *input)
             errno = 0;
             const long int val = strtol(argv[optind], &endp, 10);
             if (errno != 0 || !isempty(endp) || val <= 0 || val > XKB_KEYSYM_MAX) {
-                fprintf(stderr, "ERROR: Failed to convert argument to keysym\n");
+                static const char unicode[] = "either a Unicode code point or ";
+                fprintf(stderr,
+                        "ERROR: Failed to convert the following argument to "
+                        "%sa keysym: \"%s\"\n",
+                        (input->keysym_mode ? "" : unicode), argv[optind]);
                 goto invalid_usage;
             }
             input->keysym = (uint32_t) val;
