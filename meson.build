@@ -250,6 +250,8 @@ if cc.compiles(
     };
     int main(void) {
         struct test t = {0};
+        /* Required by steal() */
+        __typeof__(t.items) p = t.items;
         return 0;
     }
     ''',
