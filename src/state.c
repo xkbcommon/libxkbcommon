@@ -436,7 +436,9 @@ xkb_filter_group_set_new(struct xkb_server_state *state,
     static_assert(sizeof(state->base.components.base_group) ==
                   sizeof(filter->priv),
                   "Max groups don't fit");
-    filter->priv = (uint32_t)state->base.components.base_group;
+    filter->priv = (uint32_t)filter->action.group.group;
+    if (filter->action.group.flags & ACTION_ABSOLUTE_SWITCH)
+        filter->priv -= (uint32_t)state->base.components.base_group;
     apply_group_delta(filter, &state->base, base_group);
 }
 
@@ -465,7 +467,7 @@ xkb_filter_group_set_func(struct xkb_server_state *state,
 
     static_assert(sizeof(state->base.components.base_group) == sizeof(filter->priv),
                   "Max groups don't fit");
-    state->base.components.base_group = (int32_t) filter->priv;
+    state->base.components.base_group -= (int32_t)filter->priv;
 
     if (filter->action.group.flags & ACTION_LOCK_CLEAR)
         state->base.components.locked_group = 0;
