@@ -3485,16 +3485,25 @@ main(int argc, char *argv[])
     struct xkb_context *ctx = test_get_context(CONTEXT_NO_FLAG);
     assert(ctx);
 
-    /* Reject unsupported flags */
+    /* Compile degenerated keymap */
     static const char buf[] = "xkb_keymap {};";
+    struct xkb_keymap *keymap = xkb_keymap_new_from_buffer(
+        ctx, buf, sizeof(buf),
+        XKB_KEYMAP_FORMAT_TEXT_V1,
+        XKB_KEYMAP_COMPILE_NO_FLAGS
+    );
+    assert(keymap);
+    assert(xkb_keymap_num_layouts(keymap) == 0);
+    xkb_keymap_unref(keymap);
+
+    /* Reject unsupported flags */
     assert(!xkb_keymap_new_from_buffer(ctx, buf, sizeof(buf),
                                        XKB_KEYMAP_FORMAT_TEXT_V1, -1));
     assert(!xkb_keymap_new_from_buffer(ctx, buf, sizeof(buf),
                                        XKB_KEYMAP_FORMAT_TEXT_V1, 0xffff));
 
     /* Make sure we can't (falsely claim to) compile an empty string. */
-    struct xkb_keymap *keymap =
-        test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "", 0);
+    keymap = test_compile_buffer(ctx, XKB_KEYMAP_FORMAT_TEXT_V1, "", 0);
     assert(!keymap);
 
     test_encodings(ctx);
