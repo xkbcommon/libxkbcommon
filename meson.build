@@ -334,12 +334,21 @@ if cc.has_header_symbol('locale.h', 'newlocale', prefix: system_ext_define)
     if meson.can_run_host_binaries()
         # Check newlocale implementation
         r = cc.run(
-            '''
-            #define _GNU_SOURCE
+            system_ext_define + '''
             #include <locale.h>
             int main(void){
-                locale_t loc = newlocale(LC_ALL_MASK, "¡NONSENSE!", (locale_t) 0);
-                return (loc != (locale_t) 0);
+                locale_t loc = newlocale(LC_ALL_MASK, "NONSENSE!", (locale_t) 0);
+                if (loc != (locale_t) 0) {
+                    freelocale(loc);
+                    return 1;
+                }
+                /* Test valid syntax, but non-existing locale */
+                loc = newlocale(LC_ALL_MASK, "jj_KK.UTF-8", (locale_t) 0);
+                if (loc != (locale_t) 0) {
+                    freelocale(loc);
+                    return 1;
+                }
+                return 0;
             }''',
             name: 'newlocale fails on invalid locales',
         )
