@@ -206,7 +206,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b)
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
-                      enum xkb_layout_out_of_range_policy out_of_range_group_policy,
+                      enum xkb_layout_out_of_range_mode out_of_range_group_mode,
                       xkb_layout_index_t out_of_range_group_number)
 {
     if (num_groups == 0)
@@ -215,7 +215,7 @@ XkbWrapGroupIntoRange(int32_t group,
     if (group >= 0 && (xkb_layout_index_t)group < num_groups)
         return (xkb_layout_index_t)group;
 
-    switch (out_of_range_group_policy) {
+    switch (out_of_range_group_mode) {
     case XKB_LAYOUT_OUT_OF_RANGE_REDIRECT:
         if (out_of_range_group_number >= num_groups)
             return 0;

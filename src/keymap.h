@@ -641,7 +641,7 @@ struct xkb_key {
     bool implicit_actions:1;
 
     bool out_of_range_pending_group:1;
-    enum xkb_layout_out_of_range_policy out_of_range_group_policy:4;
+    enum xkb_layout_out_of_range_mode out_of_range_group_mode:4;
     xkb_layout_index_t out_of_range_group_number:8;
 
     xkb_layout_index_t num_groups:8;
@@ -1103,7 +1103,7 @@ XkbLevelsSameActions(const struct xkb_level *a, const struct xkb_level *b);
 xkb_layout_index_t
 XkbWrapGroupIntoRange(int32_t group,
                       xkb_layout_index_t num_groups,
-                      enum xkb_layout_out_of_range_policy out_of_range_group_policy,
+                      enum xkb_layout_out_of_range_mode out_of_range_group_mode,
                       xkb_layout_index_t out_of_range_group_number);
 
 static inline xkb_layout_index_t
@@ -1113,7 +1113,7 @@ xkb_keymap_key_effective_layout(const struct xkb_key *key,
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     return XkbWrapGroupIntoRange((int32_t) layout,
                                  key->num_groups,
-                                 key->out_of_range_group_policy,
+                                 key->out_of_range_group_mode,
                                  key->out_of_range_group_number);
 }
 

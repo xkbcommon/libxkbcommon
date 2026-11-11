@@ -87,8 +87,8 @@ xkb_feature_supported(enum xkb_feature feature, uint32_t value)
         return is_supported_flag_value(
             XKB_STATE_COMPONENT_VALUES, true, value
         );
-    case XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY:
-        return is_supported_enum_value_mask(XKB_LAYOUT_OUT_OF_RANGE_POLICY_VALUES, value);
+    case XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE:
+        return is_supported_enum_value_mask(XKB_LAYOUT_OUT_OF_RANGE_MODE_VALUES, value);
     case XKB_FEATURE_ENUM_A11Y_FLAGS:
         return is_supported_flag_value(
             XKB_A11Y_FLAGS_VALUES, true, value

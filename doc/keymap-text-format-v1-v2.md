@@ -283,7 +283,7 @@ Some additional resources are:
   only a *single* layout is active at any time, the components being
   numeric *offsets* or *indices* rather than bits.
 
-  @todo out-of-range layout policy `xkb_layout_out_of_range_policy`
+  @todo out-of-range layout policy `struct xkb_layout_out_of_range_policy`
   @todo effective layout
 
   <dl>
@@ -2374,7 +2374,7 @@ section, but may be also set directly:
 
 - @ref key-virtual-modifiers "Virtual modifiers"
 - @ref key-repeat "Repeat"
-- group wrap control (see: `xkb_layout_out_of_range_policy`)
+- group wrap control (see: `xkb_layout_out_of_range_mode`)
 
 @todo `groupsWrap`, `groupsClamp`, `groupsRedirect`
 <!-- TODO: doc about special values First/Last -->
@@ -3903,7 +3903,7 @@ See further details [hereinafter](@ref lock-group-action-effects)
 
 In either case, the resulting *effective* keyboard group is brought back into
 range depending on the value of the `GroupsWrap` control for the keyboard.
-See `xkb_layout_out_of_range_policy` for further details.
+See `xkb_layout_out_of_range_mode` for further details.
 </td>
 <td>
 If *no* keys were operated simultaneously with this key and the `clearLocks`
@@ -3928,7 +3928,7 @@ additional effects:
   press to the locked keyboard group and subtracts it from the latched keyboard
   group. The *locked* and *effective* keyboard group are brought back into range
   according to the value of the global `GroupsWrap` control for the keyboard.
-  See `xkb_layout_out_of_range_policy` for further details.
+  See `xkb_layout_out_of_range_mode` for further details.
 - Otherwise, key release adds the key press *delta* to the latched keyboard
   group.
 </td>
@@ -3946,7 +3946,7 @@ additional effects:
 
   In either case, the resulting *locked* and *effective* group is brought back
   into range depending on the value of the `GroupsWrap` control for the keyboard.
-  See `xkb_layout_out_of_range_policy` for further details.
+  See `xkb_layout_out_of_range_mode` for further details.
 </td>
 <td>
 

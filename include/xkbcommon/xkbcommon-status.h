@@ -111,18 +111,18 @@ enum xkb_status {
      */
     XKB_ERROR_UNSUPPORTED_KEY_ITERATOR_FLAGS = 138,
     /**
-     * The given layout out-of-range policy is not supported
+     * The given layout out-of-range mode is not supported
      *
      * Use the following to check if the linked libxkbcommon supports a given
      * flag:
      *
      * ```c
-     * xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+     * xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE, flag)
      * ```
      *
      * @since 1.14.0
      */
-    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY = 214,
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE = 214,
     /**
      * Layout index is not supported
      *

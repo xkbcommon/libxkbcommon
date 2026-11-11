@@ -36,7 +36,7 @@ There are currently 99 entries.
 | [XKB-195] | `illegal-key-type-preserve-result` | The result of a key type “preserve” entry must be a subset of its input modifiers. | Warning |
 | [XKB-203] | `invalid-include-statement` | Syntax error in the include statement | Error |
 | [XKB-206] | `invalid-modmap-entry` | A modmap entry is invalid | Error |
-| [XKB-214] | `unsupported-layout-out-of-range-policy` | The given layout out-of-range policy is not supported | Error |
+| [XKB-214] | `unsupported-layout-out-of-range-mode` | The given layout out-of-range mode is not supported | Error |
 | [XKB-222] | `unknown-statement` | The statement is unknown | Error |
 | [XKB-237] | `unsupported-layout-index` | Layout index is not supported | Error |
 | [XKB-239] | `conflicting-key-type-level-names` | The name of a key type level is defined multiple times. | Warning |
@@ -372,18 +372,18 @@ xkb_feature_supported(XKB_FEATURE_ENUM_KEYMAP_KEY_ITERATOR_FLAGS, flag)
   <dt>Summary</dt><dd>A modmap entry is invalid</dd>
 </dl>
 
-### XKB-214 – Unsupported layout out of range policy {#XKB-214}
+### XKB-214 – Unsupported layout out of range mode {#XKB-214}
 
 <dl>
   <dt>Since</dt><dd>1.14.0</dd>
   <dt>Type</dt><dd>Error</dd>
-  <dt>Summary</dt><dd>The given layout out-of-range policy is not supported</dd>
+  <dt>Summary</dt><dd>The given layout out-of-range mode is not supported</dd>
 </dl>
 
 Use the following to check if the linked libxkbcommon supports a given flag:
 
 ```c
-xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE, flag)
 ```
 
 

@@ -76,8 +76,8 @@ typedef struct {
 } GroupInfo;
 
 enum {
-    XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH = 4 /* 3 bits + sign */,
-    KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD = 8,
+    XKB_LAYOUT_OUT_OF_RANGE_MODE_MIN_WIDTH = 4 /* 3 bits + sign */,
+    KEYINFO_OUT_OF_RANGE_GROUP_MODE_BIT_FIELD = 8,
     KEYINFO_DEFINED_BIT_FIELD = 16,
     KEYINFO_MERGE_BIT_FIELD = 8,
     KEYINFO_REPEAT_BIT_FIELD = 8,
@@ -88,10 +88,10 @@ static_assert(
     "Enum values were changed!"
 );
 static_assert(XKB_LAYOUT_OUT_OF_RANGE_REDIRECT <=
-              (1 << XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH) - 1,
+              (1 << XKB_LAYOUT_OUT_OF_RANGE_MODE_MIN_WIDTH) - 1,
               "Cannot encode out of range redirect");
-static_assert(KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD >=
-              XKB_LAYOUT_OUT_OF_RANGE_POLICY_MIN_WIDTH, "");
+static_assert(KEYINFO_OUT_OF_RANGE_GROUP_MODE_BIT_FIELD >=
+              XKB_LAYOUT_OUT_OF_RANGE_MODE_MIN_WIDTH, "");
 static_assert((unsigned)KEYINFO_DEFINED_BIT_FIELD >=
               (unsigned)KEY_FIELD_MIN_WIDTH, "Cannot encode KeyInfo field");
 static_assert((unsigned)KEYINFO_MERGE_BIT_FIELD >=
@@ -107,8 +107,8 @@ typedef struct {
 
     xkb_layout_index_t out_of_range_group_number;
     darray(GroupInfo) groups;
-    enum xkb_layout_out_of_range_policy
-        out_of_range_group_policy:KEYINFO_OUT_OF_RANGE_GROUP_POLICY_BIT_FIELD;
+    enum xkb_layout_out_of_range_mode
+        out_of_range_group_mode:KEYINFO_OUT_OF_RANGE_GROUP_MODE_BIT_FIELD;
 
     /* NOTE: this bitfield could be reduce to 1 byte, should we need it */
     enum key_field defined:KEYINFO_DEFINED_BIT_FIELD;
@@ -211,7 +211,7 @@ InitKeyInfo(struct xkb_context *ctx, KeyInfo *keyi)
     static_assert(!DEFAULT_KEY_REPEAT, "key repeat not initialized properly");
     static_assert(!DEFAULT_KEY_VMODMAP, "key vmodmap not initialized properly");
     keyi->name = xkb_atom_intern_literal(ctx, "*");
-    keyi->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
+    keyi->out_of_range_group_mode = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
     darray_init(keyi->groups);
     keyi->overlay_key = NULL;
 }
@@ -863,7 +863,7 @@ MergeKeys(SymbolsInfo *info, KeyInfo *into, KeyInfo *from, bool same_file)
     if (UseNewKeyField(KEY_FIELD_GROUPINFO, into->defined, from->defined,
                        clobber, report, &collide)) {
         into->out_of_range_pending_group = from->out_of_range_pending_group;
-        into->out_of_range_group_policy = from->out_of_range_group_policy;
+        into->out_of_range_group_mode = from->out_of_range_group_mode;
         into->out_of_range_group_number = from->out_of_range_group_number;
         into->defined |= KEY_FIELD_GROUPINFO;
     }
@@ -1662,7 +1662,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->out_of_range_group_policy = (set)
+        keyi->out_of_range_group_mode = (set)
             ? XKB_LAYOUT_OUT_OF_RANGE_WRAP
             : XKB_LAYOUT_OUT_OF_RANGE_CLAMP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
@@ -1679,7 +1679,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             return false;
         }
 
-        keyi->out_of_range_group_policy = (set)
+        keyi->out_of_range_group_mode = (set)
             ? XKB_LAYOUT_OUT_OF_RANGE_CLAMP
             : XKB_LAYOUT_OUT_OF_RANGE_WRAP;
         keyi->defined |= KEY_FIELD_GROUPINFO;
@@ -1721,7 +1721,7 @@ SetSymbolsField(SymbolsInfo *info, KeyInfo *keyi, const char *field,
             keyi->out_of_range_group_number = grp - 1;
         }
 
-        keyi->out_of_range_group_policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT;
+        keyi->out_of_range_group_mode = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT;
         keyi->defined |= KEY_FIELD_GROUPINFO;
     }
     else {
@@ -2400,7 +2400,7 @@ CopySymbolsDefToKeymap(struct xkb_keymap *keymap, SymbolsInfo *info,
 
     key->out_of_range_pending_group = keyi->out_of_range_pending_group;
     key->out_of_range_group_number = keyi->out_of_range_group_number;
-    key->out_of_range_group_policy = keyi->out_of_range_group_policy;
+    key->out_of_range_group_mode = keyi->out_of_range_group_mode;
 
 key_fields:
     if (keyi->defined & KEY_FIELD_VMODMAP) {
