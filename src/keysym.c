@@ -361,8 +361,9 @@ xkb_utf8_to_keysym(const char *buffer, size_t size)
         return 0;
 
     /* Try to parse the parameter as a single UTF-8 encoded character */
-    uint32_t codepoint = 0;
-    return (xkb_utf8_iterate(buffer, size, &codepoint) <= 0)
+    uint32_t codepoint;
+    const ssize_t count = xkb_utf8_iterate(buffer, size, &codepoint);
+    return (count <= 0 || (size_t)count != size)
         ? XKB_KEY_NoSymbol
         : xkb_utf32_to_keysym(codepoint);
 }
