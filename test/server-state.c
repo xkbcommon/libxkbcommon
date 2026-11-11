@@ -7138,6 +7138,21 @@ main(void)
     test_machine_builder(context);
     test_initial_derived_values(context);
 
+    /* Degenerated keymap */
+    static const char degenerated_keymap[] = "xkb_keymap {};";
+    struct xkb_keymap *keymap = xkb_keymap_new_from_buffer(
+        context, degenerated_keymap, sizeof(degenerated_keymap),
+        XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS
+    );
+    assert(keymap);
+    struct xkb_machine_builder *builder = xkb_machine_builder_new(keymap, NULL, NULL);
+    assert(builder);
+    struct xkb_machine *sm = xkb_machine_new(builder, NULL);
+    assert(sm);
+    xkb_machine_unref(sm);
+    xkb_machine_builder_unref(builder);
+    xkb_keymap_unref(keymap);
+
     enum xkb_status status;
     static const struct xkb_events_config config = {
         .size = sizeof(config),

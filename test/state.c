@@ -3999,12 +3999,23 @@ main(void)
     xkb_keymap_unref(NULL);
     xkb_state_unref(NULL);
 
+    /* Degenerated keymap */
+    static const char degenerated_keymap[] = "xkb_keymap {};";
+    struct xkb_keymap *keymap = xkb_keymap_new_from_buffer(
+        context, degenerated_keymap, sizeof(degenerated_keymap),
+        XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS
+    );
+    assert(keymap);
+    struct xkb_state *state = xkb_state_new(keymap);
+    assert(state);
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+
     test_group_wrap(context);
     test_state_modes(context);
     test_initial_derived_values(context);
 
     const char* rules[] = {"evdev", "evdev-pure-virtual-mods"};
-    struct xkb_keymap *keymap;
     for (size_t r = 0; r < ARRAY_SIZE(rules); r++) {
         fprintf(stderr, "=== Rules set: %s ===\n", rules[r]);
         keymap = test_compile_rules(context, XKB_KEYMAP_FORMAT_TEXT_V1, rules[r],
