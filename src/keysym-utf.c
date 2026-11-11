@@ -924,12 +924,12 @@ xkb_utf32_to_keysym(uint32_t ucs)
         return XKB_KEY_Delete;
 
     /*
-     * U+0000 NULL and invalid Unicode code points.
+     * U+0000 NULL and invalid Unicode scalar values.
      * Surrogates are invalid in UTF-32.
      * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
      * for further details.
      */
-    if (unlikely(ucs == 0 || is_surrogate(ucs) || ucs > 0x10ffff))
+    if (unlikely(ucs == 0 || !is_unicode_scalar(ucs)))
         return XKB_KEY_NoSymbol;
 
     /* search main table */

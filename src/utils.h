@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,12 +72,32 @@ is_valid_char(uint32_t cp)
     return cp != 0;
 }
 
-/* Check if a Unicode code point is a surrogate.
- * Those code points are used only in UTF-16 encodings. */
+/**
+ * Check if a Unicode code point is a surrogate.
+ * Those code points are used only in UTF-16 encodings and are
+ * invalid Unicode scalar values.
+ * See:
+ * - https://www.unicode.org/glossary/#high_surrogate_code_point
+ * - https://www.unicode.org/glossary/#low_surrogate_code_point
+ */
 static inline bool
 is_surrogate(uint32_t cp)
 {
     return (cp >= 0xd800 && cp <= 0xdfff);
+}
+
+/** See: https://www.unicode.org/glossary/#code_point */
+static inline bool
+is_unicode_cp(uint32_t cp)
+{
+    return cp <= 0x10ffff;
+}
+
+/** See: https://www.unicode.org/glossary/#unicode_scalar_value */
+static inline bool
+is_unicode_scalar(uint32_t cp)
+{
+    return is_unicode_cp(cp) && !is_surrogate(cp);
 }
 
 char

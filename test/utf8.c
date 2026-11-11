@@ -166,10 +166,10 @@ static void
 test_utf8_to_utf32(void)
 {
     char buffer[XKB_KEYSYM_UTF8_MAX_SIZE];
-    for (uint32_t cp = 0; cp < 0x10ffff; cp++) {
+    for (uint32_t cp = 0; cp <= 0x110000; cp++) {
         const int8_t length = (int8_t)((int)utf32_to_utf8(cp, buffer) - 1);
-        /* Check surrogates */
-        if (is_surrogate(cp)) {
+        /* Check that invalid Unicode scalar values are rejected */
+        if (!is_unicode_scalar(cp)) {
             assert(length == -1);
         } else {
             assert(length > 0);

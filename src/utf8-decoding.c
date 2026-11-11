@@ -73,7 +73,7 @@ utf8_next_code_point(const char *s, size_t max_size, size_t *size_out)
         cp |= (uint32_t)s[k] & 0x3f;
     }
 
-    /* Check surrogates */
+    /* Disallow surrogates */
     if (is_surrogate(cp))
         return INVALID_UTF8_CODE_POINT;
 

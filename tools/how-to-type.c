@@ -311,10 +311,10 @@ parse_options(int argc, char **argv, struct cli_input *input)
         const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
         if (codepoint != INVALID_UTF8_CODE_POINT) {
             /* Valid Unicode codepoint */
-            assert(codepoint <= 0x10FFFF);
+            assert(is_unicode_cp(codepoint));
             input->keysym = xkb_utf32_to_keysym(codepoint);
             if (input->keysym == XKB_KEY_NoSymbol) {
-                assert(!codepoint || is_surrogate(codepoint));
+                assert(!codepoint || !is_unicode_scalar(codepoint));
                 fprintf(stderr,
                         "ERROR: Failed to convert code point U+%04"PRIX32" "
                         "to keysym.\n", codepoint);

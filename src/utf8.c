@@ -11,11 +11,12 @@
 #include "utils.h"
 #include "utf8.h"
 
-/* Conformant encoding form conversion from UTF-32 to UTF-8.
+/**
+ * Conformant encoding form conversion from UTF-32 to UTF-8.
  *
  * See https://www.unicode.org/versions/Unicode15.0.0/ch03.pdf#G28875
  * for further details.
-*/
+ */
 uint8_t
 utf32_to_utf8(uint32_t unichar, char *buffer)
 {
@@ -31,8 +32,8 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         length = 2;
         head = 0xc0;
     }
-    /* Handle surrogates */
     else if (is_surrogate(unichar)) {
+        /* Disallow surrogates */
         goto ill_formed_code_unit_subsequence;
     }
     else if (unichar <= 0xffff) {
@@ -44,6 +45,7 @@ utf32_to_utf8(uint32_t unichar, char *buffer)
         head = 0xf0;
     }
     else {
+        /* Out of range */
         goto ill_formed_code_unit_subsequence;
     }
     /* NOLINTEND(bugprone-branch-clone) */
