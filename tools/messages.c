@@ -65,6 +65,7 @@ static const struct xkb_message_entry xkb_messages[] = {
     {XKB_ERROR_RECURSIVE_INCLUDE, "Recursive include"},
     {XKB_ERROR_UNEXPECTED_STATE_MODE_, "Unexpected state mode"},
     {XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS, "Conflicting key type definitions"},
+    {XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_, "Out of keymap range layout"},
     {XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE, "Global defaults wrong scope"},
     {XKB_WARNING_MISSING_DEFAULT_SECTION, "Missing default section"},
     {XKB_ERROR_ABI_INVALID_STRUCT_SIZE_, "Abi invalid struct size"},

@@ -25,6 +25,8 @@ xkb_status:
     value: 371
   - name: XKB_ERROR_UNEXPECTED_STATE_MODE
     value: 399
+  - name: XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT
+    value: 417
   - name: XKB_ERROR_ABI_INVALID_STRUCT_SIZE
     value: 450
   - name: XKB_ERROR_INVALID_KEYCODE
