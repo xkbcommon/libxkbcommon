@@ -783,7 +783,7 @@ interpret ISO_Last_Group {
 ```
 
 Note that contrary to `First`, `Last` cannot be used as an *array* index, i.e.
-`symbols[Last]` will be discarded or raise an error, depending of the API used.
+`symbols[Last]` will be discarded or raise an error, depending on the API used.
 <!-- NOTE: It may only work if using the RMLVO API with *one* layout -->
 
 These constants are parsed but never used for *serialization*, in order to

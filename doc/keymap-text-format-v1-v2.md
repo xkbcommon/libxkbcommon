@@ -220,7 +220,7 @@ Some additional resources are:
   <dt><a name="level-def">Shift Level</a></dt>
   <dd>
   A key may produce different
-  results depending of the active modifiers: e.g. for a Latin script,
+  results depending on the active modifiers: e.g. for a Latin script,
   pressing the key A produces “a” and holding Shift while pressing A
   produces “A”.
 
@@ -364,7 +364,7 @@ Some additional resources are:
   mapping of raw keycodes to symbols and actions.
   It fully defines the behavior of a keyboard.
 
-  Depending of the context, a keymap may refer to:
+  Depending on the context, a keymap may refer to:
 
   - the [software object](@ref xkb_keymap) defined and managed by xkbcommon;
   - the [text configuration](@ref keymap-text-format-v1-v2) used to create

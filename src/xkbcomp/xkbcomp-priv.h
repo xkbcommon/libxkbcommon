@@ -23,7 +23,7 @@ enum xkb_parser_error {
  * Flags to control where the parser strictness applies.
  *
  * This is probably overkill, but it could enable fine grained control
- * depending of the keymap format or other factors.
+ * depending on the keymap format or other factors.
  */
 enum xkb_parser_strict_flags {
     PARSER_NO_STRICT_FLAGS = 0,
