@@ -9,12 +9,30 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Check if a char is the start of a UTF-8 sequence */
-#define is_utf8_start(c) (((c) & 0xc0) != 0x80)
-#define INVALID_UTF8_CODE_POINT UINT32_MAX
+#include "utils.h"
 
-uint8_t
-utf8_sequence_length(const char *s);
-
-uint32_t
-utf8_next_code_point(const char *s, size_t max_size, size_t *size_out);
+/**
+ * Reads the next UTF-8 sequence in a string.
+ *
+ * @note Only well-formed sequences are accepted: no overlong encodings,
+ * no surrogates and no code point beyond U+10FFFF.
+ *
+ * @note Never reads more than @p buf_size bytes.
+ *
+ * @param[in]  buf
+ *   The buffer to read from.
+ * @param[in]  buf_size
+ *   Number of readable bytes in @p buf.
+ * @param[out] cp
+ *   The destination of the decoded code point.
+ *
+ * @return The outcome of the operation:
+ * - **a negative value** if the input is ill-formed or truncated;
+ * - **0** if @p buf_size is 0;
+ * - **1 to 4** (the length in bytes of the sequence) otherwise.
+ *
+ * @post The decoded code point is written to @p cp if and only if the
+ * return value is in 1..4.
+ */
+ssize_t
+xkb_utf8_iterate(const char *buf, size_t buf_size, uint32_t *cp);

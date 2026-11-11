@@ -10,6 +10,7 @@
 #include <getopt.h>
 #include <locale.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -27,20 +28,22 @@
 #define ARRAY_SIZE(arr) ((sizeof(arr) / sizeof(*(arr))))
 #define MAX_TYPE_MAP_ENTRIES 100
 
-static uint32_t
-parse_char_or_codepoint(const char *raw) {
+enum { INVALID_UTF8_CODE_POINT = -1 };
+
+static int32_t
+parse_char_or_codepoint(const char *raw)
+{
     size_t raw_length = strlen_safe(raw);
-    size_t length = 0;
 
     if (!raw_length)
         return INVALID_UTF8_CODE_POINT;
 
     /* Try to parse the parameter as a UTF-8 encoded single character */
-    uint32_t codepoint = utf8_next_code_point(raw, raw_length, &length);
+    uint32_t codepoint;
+    const ssize_t length = xkb_utf8_iterate(raw, raw_length, &codepoint);
 
     /* If parsing failed or did not consume all the string, then try other formats */
-    if (codepoint == INVALID_UTF8_CODE_POINT ||
-        length == 0 || length != raw_length) {
+    if (length <= 0 || (size_t)length != raw_length) {
         int base = 10;
         /* Detect U+NNNN format standard Unicode code point format */
         if (raw_length >= 2 && raw[0] == 'U' && raw[1] == '+') {
@@ -64,9 +67,9 @@ parse_char_or_codepoint(const char *raw) {
             /* Do not log error here, since we may try other parsers */
             return INVALID_UTF8_CODE_POINT;
         }
-        codepoint = (uint32_t) val;
+        codepoint = (uint32_t)val;
     }
-    return codepoint;
+    return (int32_t)codepoint;
 }
 
 static void
@@ -308,16 +311,16 @@ parse_options(int argc, char **argv, struct cli_input *input)
     input->keysym = XKB_KEY_NoSymbol;
     if (!input->keysym_mode) {
         /* Try to parse code point */
-        const uint32_t codepoint = parse_char_or_codepoint(argv[optind]);
+        const int32_t codepoint = parse_char_or_codepoint(argv[optind]);
         if (codepoint != INVALID_UTF8_CODE_POINT) {
             /* Valid Unicode codepoint */
-            assert(is_unicode_cp(codepoint));
-            input->keysym = xkb_utf32_to_keysym(codepoint);
+            assert(is_unicode_cp((uint32_t)codepoint));
+            input->keysym = xkb_utf32_to_keysym((uint32_t)codepoint);
             if (input->keysym == XKB_KEY_NoSymbol) {
-                assert(!codepoint || !is_unicode_scalar(codepoint));
+                assert(!codepoint || !is_unicode_scalar((uint32_t)codepoint));
                 fprintf(stderr,
                         "ERROR: Failed to convert code point U+%04"PRIX32" "
-                        "to keysym.\n", codepoint);
+                        "to keysym.\n", (uint32_t)codepoint);
                 goto invalid_usage;
             }
         } else {
