@@ -5068,8 +5068,6 @@ xkb_machine_get_keymap(const struct xkb_machine *machine);
  * [event batch].
  * @memberof xkb_machine
  *
- * The produced events form a single *frame*.
- *
  * Use this function for in-band (device) inputs.
  * Use `xkb_machine_process_synthetic()` instead to update the state machine in
  * response to out-of-band (non-device) inputs, such as UI layout switchers or
