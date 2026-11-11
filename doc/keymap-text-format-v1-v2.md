@@ -3340,76 +3340,74 @@ In order to define and use a modifier, one must:
     };
     ```
 
-3. Bind it to a [keycode] in the
-    <code>[xkb_symbols]</code> section:
+3. Bind it to a [keycode] in the <code>[xkb_symbols]</code> section:
 
-    1. Map [keysyms] used in the [`xkb_compat`][xkb_compat] section hereinabove.
-    2. Bind [real modifiers] to keys using these keysyms with
-       `modifier_map`.
+   1. Map [keysyms] used in the [`xkb_compat`][xkb_compat] section hereinabove.
+   2. Bind [real modifiers] to keys using these keysyms with `modifier_map`.
 
-    _Note:_ Only one key binding to real modifier is required.
-    The corresponding keysym must then be on the first level of
-    the first Group.
+   _Note:_ Only one key binding to real modifier is required.
+   The corresponding keysym must then be on the first level of
+   the first Group.
 
-    _Note:_ One can optionally bind directly a virtual modifier to a
-    key using `virtualmodifiers` instead of doing it in the
-    [`xkb_compat`][xkb_compat] section. But the recommended way is to
-    use the [`xkb_compat`][xkb_compat] section.
+   _Note:_ One can optionally bind directly a virtual modifier to a
+   key using `virtualmodifiers` instead of doing it in the
+   [`xkb_compat`][xkb_compat] section. But the recommended way is to
+   use the [`xkb_compat`][xkb_compat] section.
 
-    ```c
-    // Shift: defined in pc symbols
-    key <LFSH> {[  Shift_L    ]};
-    key <RTSH> {[  Shift_R    ]};
-    modifier_map Shift { Shift_L, Shift_R };
-    // The previous will resolve to:
-    // modifier_map Shift { <LFSH>, <RTSH> };
-    // Thus the real modifier Shift is added to the modmap of
-    // <LFSH> and <RTSH>.
-    // The “Any + Any” interpret statement matches <LFSH> and <RTSH>,
-    // therefore these keys set the Shift modifier.
+   ```c
+   // Shift: defined in pc symbols
+   key <LFSH> {[  Shift_L    ]};
+   key <RTSH> {[  Shift_R    ]};
+   modifier_map Shift { Shift_L, Shift_R };
+   // The previous will resolve to:
+   // modifier_map Shift { <LFSH>, <RTSH> };
+   // Thus the real modifier Shift is added to the modmap of
+   // <LFSH> and <RTSH>.
+   // The “Any + Any” interpret statement matches <LFSH> and <RTSH>,
+   // therefore these keys set the Shift modifier.
 
-    // LevelThree: defined in pc symbols
-    // With the following 2 lines:
-    // 1. The modifier keysym is on the first level of the first group.
-    // 2. The real modifier Mod5 is bound to <LVL3>,
-    //    i.e. Mod5 is added to its modmap.
-    // 3. It matches the interpret statement “ISO_Level3_Shift+Any”,
-    //    which adds the LevelThree modifier to the vmodmap of <LVL3>.
-    // 4. The mapping of LevelThree to real modifiers is the union
-    //    of modmaps with corresponding vmodmaps containing
-    //    LevelThree. In our case there is only one: therefore
-    //    LevelThree maps to Mod5.
-    key <LVL3> {[  ISO_Level3_Shift  ]};
-    modifier_map Mod5  { <LVL3> };
+   // LevelThree: defined in pc symbols
+   // With the following 2 lines:
+   // 1. The modifier keysym is on the first level of the first group.
+   // 2. The real modifier Mod5 is bound to <LVL3>,
+   //    i.e. Mod5 is added to its modmap.
+   // 3. It matches the interpret statement “ISO_Level3_Shift+Any”,
+   //    which adds the LevelThree modifier to the vmodmap of <LVL3>.
+   // 4. The mapping of LevelThree to real modifiers is the union
+   //    of modmaps with corresponding vmodmaps containing
+   //    LevelThree. In our case there is only one: therefore
+   //    LevelThree maps to Mod5.
+   key <LVL3> {[  ISO_Level3_Shift  ]};
+   modifier_map Mod5  { <LVL3> };
 
-    // LevelThree: defined in level3 symbols
-    // Not bound to a real modifier, so interpret statement
-    // “ISO_Level3_Shift” applies.
-    key <RALT> {[ISO_Level3_Shift], type[group1]="ONE_LEVEL" };
+   // LevelThree: defined in level3 symbols
+   // Not bound to a real modifier, so interpret statement
+   // “ISO_Level3_Shift” applies.
+   key <RALT> {[ISO_Level3_Shift], type[group1]="ONE_LEVEL" };
 
-    // Note: we could have the following line, but it is not necessary
-    // because we have the mappings of <LVL3>.
-    // modifier_map Mod5  { <RALT> };
+   // Note: we could have the following line, but it is not necessary
+   // because we have the mappings of <LVL3>.
+   // modifier_map Mod5  { <RALT> };
 
-    // Warning: if we had the for example the following line, the
-    // mapping of LevelThree to real modifiers would be “Mod1+Mod5”.
-    // modifier_map Mod1  { <RALT> };
+   // Warning: if we had the for example the following line, the
+   // mapping of LevelThree to real modifiers would be “Mod1+Mod5”.
+   // modifier_map Mod1  { <RALT> };
 
-    // Alternative definitions, without using interpret statements
-    virtual_modifiers LevelThree;
-    key <LVL3> { virtualmodifiers=LevelThree
-               , repeats=False
-               , symbols[Group1] = [ISO_Level3_Shift]
-               , actions[Group1] = [SetMods(modifiers=LevelThree)] };
-    modifier_map Mod5  { <LVL3> };
-    key <RALT> { repeat=False
-               , symbols[Group1] = [ISO_Level3_Shift]
-               , actions[Group1] = [SetMods(modifiers=LevelThree)]
-               , type[group1]="ONE_LEVEL" };
+   // Alternative definitions, without using interpret statements
+   virtual_modifiers LevelThree;
+   key <LVL3> { virtualmodifiers=LevelThree
+              , repeats=False
+              , symbols[Group1] = [ISO_Level3_Shift]
+              , actions[Group1] = [SetMods(modifiers=LevelThree)] };
+   modifier_map Mod5  { <LVL3> };
+   key <RALT> { repeat=False
+              , symbols[Group1] = [ISO_Level3_Shift]
+              , actions[Group1] = [SetMods(modifiers=LevelThree)]
+              , type[group1]="ONE_LEVEL" };
 
-    // FOUR_LEVEL key type example from latin symbols
-    key <AB05> {[b, B, leftdoublequotemark, leftsinglequotemark]};
-    ```
+   // FOUR_LEVEL key type example from latin symbols
+   key <AB05> {[b, B, leftdoublequotemark, leftsinglequotemark]};
+   ```
 
 ## Key actions {#key-actions}
 

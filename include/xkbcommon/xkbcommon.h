@@ -1294,7 +1294,7 @@ enum xkb_keysym_flags {
  * @param[in] name The name of a keysym. See remarks in `xkb_keysym_get_name()`;
  * this function will accept any name returned by that function.
  * @param[in] flags A set of flags controlling how the search is done. If
- * invalid flags are passed, this will fail with `XKB_KEY_NoSymbol`.
+ * invalid flags are passed, this will fail with `::XKB_KEY_NoSymbol`.
  *
  * If you use the `::XKB_KEYSYM_CASE_INSENSITIVE` flag and two keysym names
  * differ only by case, then the lower-case keysym name is returned.  For
@@ -1307,7 +1307,7 @@ enum xkb_keysym_flags {
  * Case folding is done according to the C locale; the current locale is not
  * consulted.
  *
- * @returns The keysym. If the name is invalid, returns `XKB_KEY_NoSymbol`.
+ * @returns The keysym. If the name is invalid, returns `::XKB_KEY_NoSymbol`.
  *
  * @sa `xkb_keysym_t`
  *
@@ -1412,7 +1412,7 @@ xkb_keysym_to_utf32(xkb_keysym_t keysym);
  * Get the keysym corresponding to a Unicode/UTF-32 codepoint.
  *
  * @returns The keysym corresponding to the specified Unicode
- * codepoint, or `XKB_KEY_NoSymbol` if there is none.
+ * codepoint, or `::XKB_KEY_NoSymbol` if there is none.
  *
  * This function is the inverse of `xkb_keysym_to_utf32()`. In cases
  * where a single codepoint corresponds to multiple keysyms, returns
@@ -6110,7 +6110,7 @@ xkb_state_key_get_utf32(struct xkb_state *state, xkb_keycode_t key);
  *   The keycode of the key.
  *
  * @returns The keysym.  If the key does not have exactly one keysym,
- * returns `XKB_KEY_NoSymbol`.
+ * returns `::XKB_KEY_NoSymbol`.
  *
  * This function performs Capitalization @ref keysym-transformations.
  *

@@ -230,7 +230,7 @@ ExprKeySymListAppendString(struct scanner *scanner,
         if (sym == XKB_KEY_NoSymbol) {
             scanner_err(scanner, XKB_LOG_MESSAGE_NO_ID,
                         "Cannot convert string to keysyms: Unicode code point "
-                        "U+04%"PRIX32" has no keysym equivalent"
+                        "U+%04"PRIX32" has no keysym equivalent "
                         "(byte position: %zu, code point position: %zu).",
                         cp, idx + 1, idx_cp);
             goto error;
