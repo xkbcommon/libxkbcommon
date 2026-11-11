@@ -220,6 +220,37 @@ static_assert(sizeof(struct xkb_event_pointer_button) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
+ * xkb_layout_out_of_range_policy
+ *****************************************************************************/
+
+/**
+ * Version 1 of `xkb_layout_out_of_range_policy`, used for ABI check only
+ *
+ * @since 1.14.0
+ */
+struct xkb_layout_out_of_range_policy_v1 {
+    uint32_t size;
+    uint32_t mode;
+    xkb_layout_index_t redirect;
+};
+
+/* Ensure there is no implicit padding */
+assert_no_padding(struct xkb_layout_out_of_range_policy, size, mode);
+assert_no_padding(struct xkb_layout_out_of_range_policy, mode, redirect);
+assert_no_padding(struct xkb_layout_out_of_range_policy, redirect);
+
+/* Current version is 1 */
+static_assert(sizeof(struct xkb_layout_out_of_range_policy) ==
+              sizeof(struct xkb_layout_out_of_range_policy_v1), "");
+assert_same_field(struct xkb_layout_out_of_range_policy, _v1, size);
+assert_same_field(struct xkb_layout_out_of_range_policy, _v1, mode);
+assert_same_field(struct xkb_layout_out_of_range_policy, _v1, redirect);
+
+/* Ensure reasonable margin to the upper size limit */
+static_assert(sizeof(struct xkb_layout_out_of_range_policy) * 30 <=
+              (size_t)XKB_ABI_MAX_SIZE, "");
+
+/******************************************************************************
  * xkb_state_components_update
  *****************************************************************************/
 
@@ -269,37 +300,6 @@ assert_same_field(struct xkb_state_components_update, _v1, controls);
 
 /* Ensure reasonable margin to the upper size limit */
 static_assert(sizeof(struct xkb_state_components_update) * 30 <=
-              (size_t)XKB_ABI_MAX_SIZE, "");
-
-/******************************************************************************
- * xkb_layout_out_of_range_policy
- *****************************************************************************/
-
-/**
- * Version 1 of `xkb_layout_out_of_range_policy`, used for ABI check only
- *
- * @since 1.14.0
- */
-struct xkb_layout_out_of_range_policy_v1 {
-    uint32_t size;
-    uint32_t mode;
-    xkb_layout_index_t redirect;
-};
-
-/* Ensure there is no implicit padding */
-assert_no_padding(struct xkb_layout_out_of_range_policy, size, mode);
-assert_no_padding(struct xkb_layout_out_of_range_policy, mode, redirect);
-assert_no_padding(struct xkb_layout_out_of_range_policy, redirect);
-
-/* Current version is 1 */
-static_assert(sizeof(struct xkb_layout_out_of_range_policy) ==
-              sizeof(struct xkb_layout_out_of_range_policy_v1), "");
-assert_same_field(struct xkb_layout_out_of_range_policy, _v1, size);
-assert_same_field(struct xkb_layout_out_of_range_policy, _v1, mode);
-assert_same_field(struct xkb_layout_out_of_range_policy, _v1, redirect);
-
-/* Ensure reasonable margin to the upper size limit */
-static_assert(sizeof(struct xkb_layout_out_of_range_policy) * 30 <=
               (size_t)XKB_ABI_MAX_SIZE, "");
 
 /******************************************************************************
