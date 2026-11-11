@@ -110,7 +110,7 @@ xkb_rmlvo_builder_append_layout(struct xkb_rmlvo_builder *rmlvo,
 
     static_assert(XKB_MAX_GROUPS == 32, "Invalid shift for layout mask");
     if (idx >= XKB_MAX_GROUPS) {
-        log_err(rmlvo->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+        log_err(rmlvo->ctx, XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED_,
                 "Maximum layout count reached: %u; "
                 "cannot add layout \"%s(%s)\" to the RMLVO builder.\n",
                 XKB_MAX_GROUPS, layout, (variant) ? variant : "");

@@ -148,6 +148,8 @@ enum xkb_message_code {
     XKB_ERROR_UNEXPECTED_STATE_MODE_ = 399,
     /** Conflicting definitions of a key type */
     XKB_WARNING_CONFLICTING_KEY_TYPE_DEFINITIONS = 407,
+    /** Layout index or mask is out of range for the keymap */
+    XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_ = 417,
     /** A global defaults statement is in a wrong scope and should be moved */
     XKB_ERROR_GLOBAL_DEFAULTS_WRONG_SCOPE = 428,
     /** Missing default section in included file */

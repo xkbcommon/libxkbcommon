@@ -613,6 +613,7 @@ static const uint32_t xkb_status_values[] = {
     XKB_ERROR_LAYOUT_COUNT_LIMIT_EXCEEDED,
     XKB_ERROR_UNSUPPORTED_A11Y_FLAGS,
     XKB_ERROR_UNEXPECTED_STATE_MODE,
+    XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT,
     XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
     XKB_ERROR_INVALID_KEYCODE,
     XKB_ERROR_ALLOCATION_FAILURE,
@@ -627,7 +628,7 @@ static const uint32_t xkb_status_values[] = {
 enum xkb_status_bounds {
     _XKB_STATUS_MIN = XKB_ERROR_INVALID,
     _XKB_STATUS_MAX = XKB_ERROR_ABI_BACKWARD_COMPAT,
-    _XKB_STATUS_NUM = 21,
+    _XKB_STATUS_NUM = 22,
 };
 static const uint32_t xkb_feature_values[] = {
     XKB_FEATURE_ENUM_FEATURE,

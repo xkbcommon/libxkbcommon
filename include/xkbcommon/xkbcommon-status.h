@@ -169,6 +169,31 @@ enum xkb_status {
      */
     XKB_ERROR_UNEXPECTED_STATE_MODE = 399,
     /**
+     * Layout index or mask is out of range for the keymap
+     *
+     * The layout index or mask may be valid for the keymap format, but it
+     * refers to
+     * a layout that is not defined in this keymap. Valid values are:
+     *
+     * <dl>
+     * <dt>Layout *index*</dt>
+     * <dd>`0 .. xkb_keymap_num_layouts(keymap) - 1`</dd>
+     * <dt>Layout *mask*</dt>
+     * <dd>Any submask of `(UINT64_C(1) << xkb_keymap_num_layouts(keymap)) -
+     * 1`.</dd>
+     * </dl>
+     *
+     * @sa `xkb_keymap::xkb_keymap_num_layouts()`
+     * @sa @ref XKB-237 "" for values beyond the limits of the keymap format
+     * itself
+     * @sa [Out-of-range layout policy](@ref xkb_layout_out_of_range_policy) for
+     * the
+     * policy that governs out-of-range layouts.
+     *
+     * @since 1.14.0
+     */
+    XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT = 417,
+    /**
      * ABI struct size check failed
      *
      * The `size` field of a versioned structure does not match any known

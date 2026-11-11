@@ -320,11 +320,11 @@ xkb_keymap_serialize(const struct xkb_keymap *keymap,
     }
 
     if (new_config.layouts & ~all_layouts) {
-        log_err_func(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+        log_err_func(keymap->ctx, XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_,
                      "unsupported layout mask: "
                      "expected subset of 0x%08"PRIx32", got: 0x%08"PRIx32"\n",
                      all_layouts, new_config.layouts);
-        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
+        return XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT;
     }
 
     const xkb_layout_index_t max_groups = format_max_groups(config->format);

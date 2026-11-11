@@ -2518,11 +2518,11 @@ state_update_layout_policy(struct xkb_server_state *state,
                     update->redirect;
             } else {
                 log_err(state->base.keymap->ctx,
-                        XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+                        XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_,
                         "Layout policy: "
                         "unsupported layout index %"PRIu32" > %"PRIu32"\n",
                         update->redirect + 1, state->base.keymap->num_groups);
-                return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
+                return XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT;
             }
         }
         state->base.out_of_range_group.policy = update->policy;
@@ -3647,20 +3647,20 @@ xkb_machine_builder_update_shortcut_override(
     if (update->source >= keymap->num_groups &&
         update->source != XKB_LAYOUT_INVALID) {
         static_assert(XKB_LAYOUT_INVALID == UINT32_MAX, "integer overflow");
-        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+        log_err(keymap->ctx, XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_,
                 "%s: Invalid source layout: "
                 "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
                 __func__, keymap->num_groups, update->source + 1);
-        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
+        return XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT;
     }
     if (update->target >= keymap->num_groups &&
         update->target != XKB_LAYOUT_INVALID) {
         static_assert(XKB_LAYOUT_INVALID == UINT32_MAX, "integer overflow");
-        log_err(keymap->ctx, XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX_,
+        log_err(keymap->ctx, XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_,
                 "%s: Invalid target layout: "
                 "expected index in range 1..%"PRIu32", but got %"PRIu32"\n",
                 __func__, keymap->num_groups, update->target + 1);
-        return XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX;
+        return XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT;
     }
 
     struct xkb_shortcuts_config_options * const config = &builder->shortcuts;
