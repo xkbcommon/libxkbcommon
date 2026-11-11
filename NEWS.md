@@ -153,7 +153,8 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 
 #### Keysyms
 
-- Added `xkb_utf8_to_keysym()` as the counterpart of `xkb_keysym_to_utf8()`
+- Added `xkb_utf8_to_keysym()` for iterative conversion of a UTF-8 encoded buffer
+  into keysyms. It is the counterpart of `xkb_keysym_to_utf8()`
   ([#993](https://github.com/xkbcommon/libxkbcommon/issues/993)).
 - Added keysyms from latest [xorgproto]
         \(commit: `fcb7e9a1a0b593a44740d83b0babddd331fea830`):

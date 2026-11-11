@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <locale.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -409,6 +410,74 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
     return expected == actual;
 }
 
+// NOLINTBEGIN(readability-duplicate-include)
+#if !HAVE_UNISTD_H
+/* Fallback for ssize_t in the snippet */
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+/* Avoid missing include error in the snippet */
+#pragma include_alias(<sys/types.h>, <BaseTsd.h>)
+#else
+#error "No fallback for ssize_t on this platform"
+#endif
+#endif
+
+//! [xkb_utf8_to_keysym-iterative-conversion]
+#include <stddef.h>
+#include <sys/types.h>
+
+/*
+ * Convert a UTF-8 encoded buffer into an array of the corresponding keysyms.
+ *
+ * @param[in]  buf
+ *   A buffer to read the UTF-8 encoded code points from, or `NULL`.
+ * @param[in]  buf_size
+ *   Number of readable bytes in @p buf.
+ *   For a NUL-terminated string, pass its length without the terminator.
+ * @param[out] out
+ *   The destination to write the corresponding keysyms to.
+ * @param[in,out] out_count
+ *   Caller must initialize `*out_count` with the capacity of @p out. On return
+ *   it is set to the number of written keysyms in @p out.
+ *
+ * @return The number of bytes parsed from @p buf on success,
+ * otherwise a negative value.
+ */
+static ssize_t
+convert_utf8_buffer_to_keysym_array(const char *buf, size_t buf_size,
+                                    xkb_keysym_t *out, size_t *out_count)
+{
+    if (!buf || !buf_size) {
+        if (out_count)
+            *out_count = 0;
+        return 0;
+    }
+
+    if (!out || !out_count || !(*out_count)) {
+        if (out_count)
+            *out_count = 0;
+        return -1;
+    }
+
+    const char *s = buf;
+    const char *s_max = buf + buf_size;
+    xkb_keysym_t * const out_max = out + *out_count;
+    size_t count = 0;
+
+    for (; out < out_max && s < s_max; out++, count++) {
+        const int consumed = xkb_utf8_to_keysym(s, (size_t)(s_max - s), out);
+        if (consumed < 0)
+            break;
+        s += consumed;
+    }
+
+    *out_count = count;
+    return (s == s_max) ? (ssize_t)(s - buf) : -1;
+}
+//! [xkb_utf8_to_keysym-iterative-conversion]
+// NOLINTEND(readability-duplicate-include)
+
 static void
 test_utf8_to_keysym(void)
 {
@@ -419,39 +488,109 @@ test_utf8_to_keysym(void)
     static const struct {
         const char *input;
         size_t input_size;
+        int ret;
         xkb_keysym_t keysym;
     } tests[] = {
-        {NULL, 0, XKB_KEY_NoSymbol},
-        {"", 0, XKB_KEY_NoSymbol},
-        {"", 1, XKB_KEY_NoSymbol},
-        {"\0", 2, XKB_KEY_NoSymbol},
-        {"1", 1, XKB_KEY_1},
-        {"1", 2, XKB_KEY_NoSymbol}, /* NUL-terminated */
-        {"\xC3\xBF", 2, XKB_KEY_ydiaeresis}, /* U+00FF ÿ */
-        {"\xC3\xBF", 3, XKB_KEY_NoSymbol}, /* NUL-terminated */
-        {"\xE2\x88\x9E", 3, XKB_KEY_infinity}, /* U+221E ∞ */
-        {"\xE2\x88\x9E", 4, XKB_KEY_NoSymbol}, /* NUL-terminated */
-        {"\xF0\x9F\x95\x8A", 4, UINT32_C(0x101f54a)}, /* U+1F54A 🕊 */
-        {"\xF0\x9F\x95\x8A", 5, XKB_KEY_NoSymbol}, /* NUL-terminated */
-        {"12", 2, XKB_KEY_NoSymbol},   /* 2 code points */
-        {"123", 3, XKB_KEY_NoSymbol},  /* 3 code points */
-        {"1\0x", 3, XKB_KEY_NoSymbol}, /* 3 code points */
-        {"\xC3\xBFxy", 4, XKB_KEY_NoSymbol}, /* 3 code points */
+        {NULL, 0, 0, XKB_KEY_NoSymbol},
+        {"", 0, 0, XKB_KEY_NoSymbol},
+        {"", 1, 1, XKB_KEY_NoSymbol},
+        {"\0", 2, 1, XKB_KEY_NoSymbol},
+        {"1", 1, 1, XKB_KEY_1},
+        {"1", 2, 1, XKB_KEY_1}, /* NUL-terminated */
+        {"\xC3\xBF", 2, 2, XKB_KEY_ydiaeresis}, /* U+00FF ÿ */
+        {"\xC3\xBF", 3, 2, XKB_KEY_ydiaeresis}, /* NUL-terminated */
+        {"\xE2\x88\x9E", 3, 3, XKB_KEY_infinity}, /* U+221E ∞ */
+        {"\xE2\x88\x9E", 4, 3, XKB_KEY_infinity}, /* NUL-terminated */
+        {"\xF0\x9F\x95\x8A", 4, 4, UINT32_C(0x101f54a)}, /* U+1F54A 🕊 */
+        {"\xF0\x9F\x95\x8A", 5, 4, UINT32_C(0x101f54a)}, /* NUL-terminated */
+        {"12", 2, 1, XKB_KEY_1},   /* 2 code points */
+        {"123", 3, 1, XKB_KEY_1},  /* 3 code points */
+        {"1\0x", 3, 1, XKB_KEY_1}, /* 3 code points */
+        {"\xC3\xBFxy", 4, 2, XKB_KEY_ydiaeresis}, /* 3 code points */
 
-        {"\xC3\xBF", 1, XKB_KEY_NoSymbol},     /* incomplete byte sequence */
-        {"\xE2\x88\x9E", 2, XKB_KEY_NoSymbol}, /* incomplete byte sequence */
-        {"\xF5", 1, XKB_KEY_NoSymbol},         /* invalid byte sequence start */
-        {"\xE0\x80\xAF", 3, XKB_KEY_NoSymbol}, /* Overlong Encoding of U+002F */
-        {"\xED\xA0\x80", 3, XKB_KEY_NoSymbol},     /* Surrogate U+D800 */
-        {"\xF4\x90\x80\x80", 4, XKB_KEY_NoSymbol}, /* Out-of-range U+110000 */
+        {"\xC3\xBF", 1, -1, XKB_KEY_NoSymbol},     /* incomplete byte sequence */
+        {"\xE2\x88\x9E", 2, -1, XKB_KEY_NoSymbol}, /* incomplete byte sequence */
+        {"\xF5", 1, -1, XKB_KEY_NoSymbol},         /* invalid byte sequence start */
+        {"\xE0\x80\xAF", 3, -1, XKB_KEY_NoSymbol}, /* Overlong Encoding of U+002F */
+        {"\xED\xA0\x80", 3, -1, XKB_KEY_NoSymbol},     /* Surrogate U+D800 */
+        {"\xF4\x90\x80\x80", 4, -1, XKB_KEY_NoSymbol}, /* Out-of-range U+110000 */
     };
 
     for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
         fprintf(stderr, "------\n*** %s: xkb_utf8_to_keysym() #%zu ***\n", __func__, t);
-        xkb_keysym_t ks = xkb_utf8_to_keysym(tests[t].input, tests[t].input_size);
-        assert_eq("xkb_utf8_to_keysym(\"%s\", %zu)",
+        xkb_keysym_t ks;
+        assert_eq("xkb_utf8_to_keysym(\"%s\", %zu, &ks) count", tests[t].ret,
+                  xkb_utf8_to_keysym(tests[t].input, tests[t].input_size, &ks),
+                  "%d", (tests[t].input ? tests[t].input : ""), tests[t].input_size);
+        assert_eq("xkb_utf8_to_keysym(\"%s\", %zu, &ks) keysym",
                   tests[t].keysym, ks, KEYSYM,
                   (tests[t].input ? tests[t].input : ""), tests[t].input_size);
+    }
+
+    /*
+     * convert_utf8_buffer_to_keysym_array()
+     */
+
+    size_t count;
+    xkb_keysym_t keysyms[4] = {0};
+    assert(convert_utf8_buffer_to_keysym_array(NULL, 0, NULL, NULL) == 0);
+    assert(convert_utf8_buffer_to_keysym_array(NULL, 1, keysyms, &count) == 0);
+    assert(count == 0 && keysyms[0] == XKB_KEY_NoSymbol);
+    assert(convert_utf8_buffer_to_keysym_array("", 0, NULL, NULL) == 0);
+    assert(convert_utf8_buffer_to_keysym_array("", 1, NULL, NULL) == -1);
+    assert(convert_utf8_buffer_to_keysym_array("", 1, keysyms, NULL) == -1);
+    count = 0;
+    assert(convert_utf8_buffer_to_keysym_array("", 1, keysyms, &count) == -1);
+    assert(!count);
+    /* incomplete byte sequence */
+    count = ARRAY_SIZE(keysyms);
+    assert(convert_utf8_buffer_to_keysym_array("\xC3", 1, keysyms, &count) == -1);
+    assert(!count);
+    /* invalid byte sequence start */
+    count = ARRAY_SIZE(keysyms);
+    assert(convert_utf8_buffer_to_keysym_array("\xF5", 1, keysyms, &count) == -1);
+    assert(!count);
+    /* Overlong Encoding of U+002F */
+    count = ARRAY_SIZE(keysyms);
+    assert(convert_utf8_buffer_to_keysym_array("\xE0\x80\xAF", 3, keysyms, &count) == -1);
+    assert(!count);
+    /* Surrogate U+D800 */
+    count = ARRAY_SIZE(keysyms);
+    assert(convert_utf8_buffer_to_keysym_array("\xED\xA0\x80", 3, keysyms, &count) == -1);
+    assert(!count);
+    /* Out-of-range U+110000 */
+    count = ARRAY_SIZE(keysyms);
+    assert(convert_utf8_buffer_to_keysym_array("\xF4\x90\x80\x80", 4, keysyms, &count) == -1);
+    assert(!count);
+
+    static const char string[] = u8"1ÿ∞🕊";
+    static const xkb_keysym_t expected[] = {
+        XKB_KEY_1,
+        XKB_KEY_ydiaeresis,
+        XKB_KEY_infinity,
+        UINT32_C(0x101f54a),
+    };
+    static_assert(sizeof(expected) == sizeof(keysyms), "");
+    /* Output too small */
+    count = 2;
+    assert(convert_utf8_buffer_to_keysym_array(
+        string, sizeof(string) - 1, keysyms, &count) == -1
+    );
+    assert(count == 2 && keysyms[0] == expected[0] && keysyms[1] == expected[1]);
+
+    /* Finally, valid conversion! */
+    count = ARRAY_SIZE(keysyms);
+    const ssize_t consumed = convert_utf8_buffer_to_keysym_array(
+        string, sizeof(string) - 1, keysyms, &count
+    );
+    assert(consumed > 0);
+    assert((size_t)consumed == sizeof(string) - 1);
+    assert(count == ARRAY_SIZE(keysyms));
+    for (size_t k = 0; k < count; k++) {
+        fprintf(stderr,
+                "------\n*** %s: convert_utf8_buffer_to_keysym_array() #%zu ***\n",
+                __func__, k);
+        assert(keysyms[k] == expected[k]);
     }
 }
 
@@ -574,8 +713,11 @@ main(void)
         assert(0 <= needed && needed <= XKB_KEYSYM_UTF8_MAX_SIZE);
         if (needed) {
             /* UTF-8 Roundtrip */
-            const xkb_keysym_t ks_from_utf8 =
-                xkb_utf8_to_keysym(utf8, (size_t)needed - 1);
+            xkb_keysym_t ks_from_utf8;
+            const int consumed =
+                xkb_utf8_to_keysym(utf8, (size_t)needed, &ks_from_utf8);
+            assert(consumed >= 0);
+            assert(consumed == needed - 1);
             if (ks_from_utf8 != ks) {
                 /* Non canonical mapping */
                 const uint32_t expected = xkb_keysym_to_utf32(ks);
@@ -583,6 +725,10 @@ main(void)
                 assert_eq("UTF-8 roundtrip for 0x%04"PRIx32,
                         expected, got, "0x%04"PRIx32, ks);
             }
+            /* Consume terminating NUL byte */
+            assert(xkb_utf8_to_keysym(utf8 + consumed, (size_t)(needed - consumed),
+                                      &ks_from_utf8) == 1);
+            assert(ks_from_utf8 == XKB_KEY_NoSymbol);
         }
         /* Check maximum name length (`needed` does not include the ending NULL) */
         char name[XKB_KEYSYM_NAME_MAX_SIZE];

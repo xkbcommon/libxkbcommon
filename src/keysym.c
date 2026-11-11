@@ -354,18 +354,25 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags)
     return XKB_KEY_NoSymbol;
 }
 
-xkb_keysym_t
-xkb_utf8_to_keysym(const char *buffer, size_t size)
+int
+xkb_utf8_to_keysym(const char *buffer, size_t size, xkb_keysym_t *keysym_out)
 {
-    if (!buffer || !size)
+    if (!buffer || !size) {
+        *keysym_out = XKB_KEY_NoSymbol;
         return 0;
+    }
 
-    /* Try to parse the parameter as a single UTF-8 encoded character */
+    /* Try to parse the first bytes of the input as a UTF-8 encoded character */
     uint32_t codepoint;
     const ssize_t count = xkb_utf8_iterate(buffer, size, &codepoint);
-    return (count <= 0 || (size_t)count != size)
-        ? XKB_KEY_NoSymbol
-        : xkb_utf32_to_keysym(codepoint);
+    if (count < 0) {
+        *keysym_out = XKB_KEY_NoSymbol;
+        return -1;
+    }
+
+    *keysym_out = xkb_utf32_to_keysym(codepoint);
+    assert(count <= 4);
+    return (int)count;
 }
 
 /*

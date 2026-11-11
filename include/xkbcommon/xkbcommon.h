@@ -1320,22 +1320,42 @@ XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
 
 /**
- * Get the keysym corresponding to a *single* UTF-8 encoded Unicode code point.
+ * Get the keysym corresponding to a UTF-8 encoded Unicode code point.
  *
- * @param[in] buffer
- *   A buffer to read the UTF-8 encoded code point from, or `NULL`.
- * @param[in] size
- *   Number of readable bytes in @p buffer.
+ * It may be used iteratively to convert a UTF-8 buffer into an array of
+ * keysyms:
  *
- * @pre The first @p size bytes of @p buffer contains exactly a *single* UTF-8
- * encoded Unicode code point.
+ * @figure@figcaption
+ * Iterative conversion of a UTF-8 buffer into an array of keysyms
+ * @endfigcaption
+ * @snippet{trimleft} "test/keysym.c" xkb_utf8_to_keysym-iterative-conversion
+ * @endfigure
  *
- * @returns The keysym corresponding to the specified Unicode code point, or
- * `::XKB_KEY_NoSymbol` if is there is none or if the input is invalid.
+ * @param[in]  buffer
+ *   A buffer to read the UTF-8 encoded code points from, or `NULL`.
+ * @param[in]  size
+ *   Number of readable bytes in @p buffer; ignored if @p buffer is `NULL`.
+ * @param[out] keysym_out
+ *   The destination to write the corresponding keysym to.
+ *
+ * @pre @p keysym_out must be non-`NULL`.
+ *
+ * @returns The number of consumed bytes (0-4; 0 means an empty input) on
+ * success, otherwise a negative value if the input is ill-formed or truncated:
+ * e.g. overlong byte sequences, code points beyond `U+10FFFF` or truncated
+ * byte sequence.
+ *
+ * @post @p keysym_out is written either with the keysym corresponding to the
+ * Unicode code point at the beginning of @p buffer if any, or with
+ * `::XKB_KEY_NoSymbol` if there is no such keysym or if the input is invalid.
+ *
+ * @warning Use the *return value* rather than the keysym `::XKB_KEY_NoSymbol`
+ * as the sentinel for errors, as both invalid input and the valid `U+0000`
+ * code point convert to `::XKB_KEY_NoSymbol`.
  *
  * This function is the counterpart of `xkb_keysym_to_utf8()`. In cases
- * where a single code point corresponds to multiple keysyms, returns
- * the keysym with the lowest value.
+ * where a single code point corresponds to multiple keysyms, it writes
+ * the keysym with the lowest value to @p keysym_out.
  *
  * Unicode code points which do not have a special (legacy) keysym
  * encoding use a [direct encoding scheme](@ref unicode-keysyms).
@@ -1347,8 +1367,8 @@ xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
  *
  * @since 1.14.0
  */
-XKB_EXPORT xkb_keysym_t
-xkb_utf8_to_keysym(const char *buffer, size_t size);
+XKB_EXPORT int
+xkb_utf8_to_keysym(const char *buffer, size_t size, xkb_keysym_t *keysym_out);
 
 /**
  * Get the Unicode/UTF-8 representation of a keysym.
