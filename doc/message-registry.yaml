@@ -192,17 +192,17 @@
   added: ALWAYS
   type: error
   description: "A modmap entry is invalid"
-- id: "unsupported-layout-out-of-range-policy"
+- id: "unsupported-layout-out-of-range-mode"
   code: 214
   type: error
   visibility: public
   added: 1.14.0
-  description: The given layout out-of-range policy is not supported
+  description: The given layout out-of-range mode is not supported
   details: |
     Use the following to check if the linked libxkbcommon supports a given flag:
 
     ```c
-    xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY, flag)
+    xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE, flag)
     ```
 - id: "unknown-statement"
   code: 222

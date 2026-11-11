@@ -248,6 +248,7 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
     - `xkb_machine::xkb_machine_ref()`
     - `xkb_machine::xkb_machine_unref()`
     - `xkb_machine::xkb_machine_get_keymap()`
+    - `xkb_machine::xkb_machine_set_layout_out_of_range_policy()`
     - `xkb_machine::xkb_machine_process_key()`
     - `xkb_machine::xkb_machine_process_synthetic()`
   - `enum xkb_machine_flags` (new)
@@ -328,9 +329,9 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
   [corresponding option](@ref XKB_MACHINE_UNLOCK_MODS_ON_PRESS).
 - Enable the configuration of out-of-range layout handling using the
   following new API:
-  - `xkb_synthetic_update::layout_policy`
-  - `struct xkb_layout_policy_update`
-  - `enum xkb_layout_out_of_range_policy`, with values:
+  - `xkb_machine::xkb_machine_set_layout_out_of_range_policy()`
+  - `struct xkb_layout_out_of_range_policy`
+  - `enum xkb_layout_out_of_range_mode`, with values:
     - `XKB_LAYOUT_OUT_OF_RANGE_WRAP`: wrap into range using integer
       modulus (default, as before).
     - `XKB_LAYOUT_OUT_OF_RANGE_CLAMP`: clamp into range, i.e.

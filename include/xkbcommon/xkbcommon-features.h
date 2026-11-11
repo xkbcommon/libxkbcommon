@@ -163,11 +163,11 @@ enum xkb_feature {
      */
     XKB_FEATURE_ENUM_STATE_COMPONENT = 24000,
     /**
-     * The enumeration @ref xkb_layout_out_of_range_policy
+     * The enumeration @ref xkb_layout_out_of_range_mode
      *
      * @since 1.14.0
      */
-    XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY = 24020,
+    XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE = 24020,
     /**
      * The enumeration @ref xkb_a11y_flags
      *

@@ -5063,6 +5063,138 @@ XKB_EXPORT struct xkb_keymap *
 xkb_machine_get_keymap(const struct xkb_machine *machine);
 
 /**
+ * @enum xkb_layout_out_of_range_mode
+ * Modes defining how to bring out-of-range [layout indices] into range.
+ *
+ * @sa `xkb_machine::xkb_machine_set_layout_out_of_range_policy()`
+ *
+ * @since 1.14.0
+ *
+ * [layout indices]: @ref xkb_layout_index_t
+ */
+enum xkb_layout_out_of_range_mode {
+    /**
+     * Wrap into range using integer modulus (default).
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
+    /**
+     * @parblock
+     * Clamp into range, i.e. invalid indices are corrected to the closest
+     * valid bound (0 or highest [layout index](@ref xkb_layout_index_t)).
+     * @endparblock
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+    /**
+     * Redirect to a specific [layout index](@ref xkb_layout_index_t).
+     *
+     * @sa `xkb_layout_out_of_range_policy::redirect`
+     *
+     * @since 1.14.0
+     */
+    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
+};
+
+/**
+ * @struct xkb_layout_out_of_range_policy
+ * @ingroup abi-struct-contract
+ * Configures the policy used to bring out-of-range layout indices into range.
+ *
+ * If #mode is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
+ * the target layout index; otherwise `redirect` is ignored.
+ *
+ * @note This struct uses a **size-based versioning**;
+ * see @ref abi-struct-contract for further details.
+ *
+ * @sa `enum xkb_layout_out_of_range_mode`
+ * @sa `xkb_machine::xkb_machine_set_layout_out_of_range_policy()`
+ *
+ * @since 1.14.0
+ */
+struct xkb_layout_out_of_range_policy {
+    /**
+     * Size of this structure in bytes.
+     *
+     * @sa @ref abi-struct-contract
+     *
+     * @since 1.14.0
+     */
+    uint32_t size;
+    /**
+     * [Policy] to use to handle out-of-range layout indices.
+     *
+     * @sa `enum xkb_layout_out_of_range_mode`
+     *
+     * @since 1.14.0
+     *
+     * [Policy]: @ref xkb_layout_out_of_range_mode
+     */
+    uint32_t mode;
+    /**
+     * [Layout index to redirect] to when #mode is
+     * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
+     *
+     * @sa `xkb_layout_index_t`
+     *
+     * @since 1.14.0
+     *
+     * [Layout index to redirect]: @ref xkb_layout_index_t
+     */
+    xkb_layout_index_t redirect;
+};
+
+/**
+ * Set the [layout out-of-range policy] of a [state machine].
+ * @memberof xkb_machine
+ *
+ * @par Layout out of range
+ * @parblock
+ * If the effective layout, after taking into account the [depressed], [latched]
+ * and [locked] layout, is out of range (negative or greater than the maximum
+ * layout index), it is brought into range according to the current
+ * [out-of-range layout policy](@ref xkb_layout_out_of_range_policy).
+ * @endparblock
+ *
+ * @param[in,out] machine
+ *   The XKB [state machine] object.
+ * @param[in] policy
+ *   The [policy] to apply.
+ * @param[out] events
+ *   The event batch to collect events into. It will be reset before collecting.
+ *
+ * @pre @p policy must point to a zero-initialized struct with
+ * [`policy->size`](@ref xkb_layout_out_of_range_policy::size) set per
+ * @ref abi-struct-contract.
+ *
+ * @returns `::XKB_SUCCESS` on success, otherwise an error code.
+ * Possible errors are:
+ * - Errors from ABI @ref abi-struct-resolution.
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE`
+ * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
+ *
+ * @sa `enum xkb_layout_out_of_range_mode`
+ * @sa `struct xkb_layout_out_of_range_policy`
+ *
+ * @since 1.14.0
+ *
+ * [state machine]: @ref xkb_machine
+ * [policy]: @ref xkb_layout_out_of_range_policy
+ * [layout out-of-range policy]: @ref xkb_layout_out_of_range_policy
+ * [depressed]: @ref depressed-group-def
+ * [latched]: @ref latched-group-def
+ * [locked]: @ref locked-group-def
+ */
+XKB_EXPORT enum xkb_status
+xkb_machine_set_layout_out_of_range_policy(
+    struct xkb_machine *machine,
+    const struct xkb_layout_out_of_range_policy *policy,
+    struct xkb_events *events
+);
+
+/**
  * Process a key event – a pair ([keycode], [direction]) – through the XKB
  * [state machine], and collect the resulting [keyboard events] into an
  * [event batch].
@@ -5252,91 +5384,6 @@ struct xkb_state_components_update {
 };
 
 /**
- * @enum xkb_layout_out_of_range_policy
- * Policies defining how to bring out-of-range [layout indices] into range.
- *
- * @sa `struct xkb_synthetic_update`
- * @sa `xkb_machine::xkb_machine_process_synthetic()`
- *
- * @since 1.14.0
- *
- * [layout indices]: @ref xkb_layout_index_t
- */
-enum xkb_layout_out_of_range_policy {
-    /**
-     * Wrap into range using integer modulus (default).
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_WRAP = 0,
-    /**
-     * @parblock
-     * Clamp into range, i.e. invalid indices are corrected to the closest
-     * valid bound (0 or highest [layout index](@ref xkb_layout_index_t)).
-     * @endparblock
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
-    /**
-     * Redirect to a specific [layout index](@ref xkb_layout_index_t).
-     *
-     * @since 1.14.0
-     */
-    XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
-};
-
-/**
- * @struct xkb_layout_policy_update
- * @ingroup abi-struct-contract
- * Configures the policy used to bring out-of-range layout indices into range.
- *
- * If `policy` is `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`, `redirect` specifies
- * the target layout index; otherwise `redirect` is ignored.
- *
- * @note This struct uses a **size-based versioning**;
- * see @ref abi-struct-contract for further details.
- *
- * @sa `enum xkb_layout_out_of_range_policy`
- * @sa `xkb_synthetic_update::layout_policy`
- * @sa `struct xkb_synthetic_update`
- * @sa `xkb_machine::xkb_machine_process_synthetic()`
- *
- * @since 1.14.0
- */
-struct xkb_layout_policy_update {
-    /**
-     * Size of this structure in bytes.
-     *
-     * @sa @ref abi-struct-contract
-     *
-     * @since 1.14.0
-     */
-    uint32_t size;
-    /**
-     * [Policy] to use to handle out-of-range layout indices.
-     *
-     * @sa `enum xkb_layout_out_of_range_policy`
-     *
-     * @since 1.14.0
-     *
-     * [Policy]: @ref xkb_layout_out_of_range_policy
-     */
-    uint32_t policy;
-    /**
-     * [Layout index to redirect] to when `policy` is
-     * `::XKB_LAYOUT_OUT_OF_RANGE_REDIRECT`. Ignored otherwise.
-     *
-     * @sa `xkb_layout_index_t`
-     *
-     * @since 1.14.0
-     *
-     * [Layout index to redirect]: @ref xkb_layout_index_t
-     */
-    xkb_layout_index_t redirect;
-};
-
-/**
  * @struct xkb_synthetic_update
  * @ingroup abi-struct-contract
  * Request to process an out-of-band atomic update through an `xkb_machine` or
@@ -5347,7 +5394,6 @@ struct xkb_layout_policy_update {
  * apply any combination of:
  * - Latched and locked modifier and layout changes (via `components`)
  * - Boolean keyboard control changes (via `components`)
- * - Parameterized keyboard control changes (via `layout_policy`)
  *
  * A `NULL` pointer means “not set / no change”.
  *
@@ -5357,7 +5403,6 @@ struct xkb_layout_policy_update {
  * @sa `xkb_state::xkb_state_update_synthetic()`
  * @sa `xkb_machine::xkb_machine_process_synthetic()`
  * @sa `struct xkb_state_components_update`
- * @sa `struct xkb_layout_policy_update`
  *
  * @since 1.14.0
  */
@@ -5386,14 +5431,6 @@ struct xkb_synthetic_update {
      * @since 1.14.0
      */
     const struct xkb_state_components_update *components;
-    /**
-     * Out-of-range layout policy update, or `NULL` for no change.
-     *
-     * @sa `enum xkb_layout_out_of_range_policy`
-     *
-     * @since 1.14.0
-     */
-    const struct xkb_layout_policy_update *layout_policy;
 };
 
 /**
@@ -5418,14 +5455,6 @@ struct xkb_synthetic_update {
  * depressed components can only change through key presses via
  * `xkb_machine_process_key()`.
  *
- * @par Layout out of range
- * @parblock
- * If the effective layout, after taking into account the depressed, latched
- * and locked layout, is out of range (negative or greater than the maximum
- * layout index), it is brought into range according to the current
- * out-of-range layout policy (see `xkb_layout_out_of_range_policy`).
- * @endparblock
- *
  * @param[in,out] machine The XKB [state machine] object.
  * @param[in]     update  The update to apply.
  * @param[out]    events  The event batch to collect events into. It will be
@@ -5439,11 +5468,9 @@ struct xkb_synthetic_update {
  * Possible errors are:
  * - Errors from ABI @ref abi-struct-resolution.
  * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_INDEX`
- * - `::XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY`
  *
  * @sa `struct xkb_synthetic_update`
  * @sa `struct xkb_state_components_update`
- * @sa `struct xkb_layout_policy_update`
  * @sa `xkb_machine_process_key()`
  *
  * @since 1.14.0
@@ -5888,7 +5915,7 @@ xkb_state_update_key(struct xkb_state *state, xkb_keycode_t key,
  * If the effective layout, after taking into account the depressed, latched
  * and locked layout, is out of range (negative or greater than the maximum
  * layout index), it is brought into range according to the current
- * out-of-range layout policy (see `xkb_layout_out_of_range_policy`).
+ * [out-of-range layout policy](@ref xkb_layout_out_of_range_policy).
  * @endparblock
  *
  * @note This entry point serves the legacy server use case and only supports a

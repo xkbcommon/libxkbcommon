@@ -152,7 +152,7 @@ xkb_a11y_flags:
     value: 2
   - name: XKB_A11Y_LATCH_SIMULTANEOUS_KEYS
     value: 4
-xkb_layout_out_of_range_policy:
+xkb_layout_out_of_range_mode:
   - name: XKB_LAYOUT_OUT_OF_RANGE_WRAP
     value: 0
   - name: XKB_LAYOUT_OUT_OF_RANGE_CLAMP

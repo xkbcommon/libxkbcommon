@@ -1453,7 +1453,7 @@ write_key(const struct xkb_keymap *keymap,
 
     #undef require_explicit
 
-    switch (key->out_of_range_group_policy) {
+    switch (key->out_of_range_group_mode) {
     case XKB_LAYOUT_OUT_OF_RANGE_CLAMP:
         copy_to_buf(buf, "\n\t\tgroupsClamp,");
         simple = false;

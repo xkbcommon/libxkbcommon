@@ -102,8 +102,8 @@ enum xkb_message_code {
     XKB_ERROR_INVALID_INCLUDE_STATEMENT = 203,
     /** A modmap entry is invalid */
     XKB_ERROR_INVALID_MODMAP_ENTRY = 206,
-    /** The given layout out-of-range policy is not supported */
-    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY_ = 214,
+    /** The given layout out-of-range mode is not supported */
+    XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE_ = 214,
     /** The statement is unknown */
     XKB_ERROR_UNKNOWN_STATEMENT = 222,
     /** Layout index is not supported */

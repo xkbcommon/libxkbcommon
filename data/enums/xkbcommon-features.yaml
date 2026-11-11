@@ -23,7 +23,7 @@ xkb_feature:
     value: 21600
   - name: XKB_FEATURE_ENUM_STATE_COMPONENT
     value: 24000
-  - name: XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY
+  - name: XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE
     value: 24020
   - name: XKB_FEATURE_ENUM_A11Y_FLAGS
     value: 24040

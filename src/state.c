@@ -110,11 +110,11 @@ static_assert(CLIENT_STATE == 0 &&
 
 enum { XKB_LAYOUT_INDEX_T_MIN_WIDTH = 6 };
 static_assert(XKB_MAX_GROUPS < (1 << XKB_LAYOUT_INDEX_T_MIN_WIDTH),
-              "Cannot encode out_of_range_group::redirect_group");
+              "Cannot encode out_of_range_group_policy::redirect_group");
 
-struct out_of_range_group {
-    enum xkb_layout_out_of_range_policy policy :
-        (sizeof(enum xkb_layout_out_of_range_policy) * CHAR_BIT -
+struct out_of_range_group_policy {
+    enum xkb_layout_out_of_range_mode mode :
+        (sizeof(enum xkb_layout_out_of_range_mode) * CHAR_BIT -
          XKB_LAYOUT_INDEX_T_MIN_WIDTH);
     xkb_layout_index_t redirect_group : XKB_LAYOUT_INDEX_T_MIN_WIDTH;
 };
@@ -137,7 +137,7 @@ struct xkb_state {
      * allows us to report which components of the state have changed.
      */
     struct state_components components;
-    struct out_of_range_group out_of_range_group;
+    struct out_of_range_group_policy out_of_range_group;
 
     enum xkb_state_mode_internal mode : XKB_STATE_MODE_INTERNAL_MIN_WIDTH;
     int refcnt : (sizeof(int) * CHAR_BIT - XKB_STATE_MODE_INTERNAL_MIN_WIDTH);
@@ -1908,7 +1908,7 @@ xkb_state_init(struct xkb_state * restrict state,
     state->mode = mode;
     state->refcnt = 1;
     state->keymap = xkb_keymap_ref(keymap);
-    state->out_of_range_group.policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
+    state->out_of_range_group.mode = XKB_LAYOUT_OUT_OF_RANGE_WRAP;
 
     /* Ensure that derived state is correctly initialized */
     xkb_state_update_derived(state);
@@ -2160,7 +2160,7 @@ xkb_state_update_derived(struct xkb_state *state)
     /* Lock group must be adjusted, but not base nor latched groups */
     wrapped = XkbWrapGroupIntoRange(state->components.locked_group,
                                     state->keymap->num_groups,
-                                    state->out_of_range_group.policy,
+                                    state->out_of_range_group.mode,
                                     state->out_of_range_group.redirect_group);
     static_assert(XKB_MAX_GROUPS < INT32_MAX, "Max groups don't fit");
     state->components.locked_group =
@@ -2171,7 +2171,7 @@ xkb_state_update_derived(struct xkb_state *state)
                                     state->components.latched_group +
                                     state->components.locked_group,
                                     state->keymap->num_groups,
-                                    state->out_of_range_group.policy,
+                                    state->out_of_range_group.mode,
                                     state->out_of_range_group.redirect_group);
     state->components.group =
         (wrapped == XKB_LAYOUT_INVALID ? 0 : wrapped);
@@ -2509,31 +2509,33 @@ clear_all_latches_and_locks(struct xkb_server_state *state,
 }
 
 static enum xkb_status
-state_update_layout_policy(struct xkb_server_state *state,
-                           const struct xkb_layout_policy_update *update)
+state_update_layout_policy(struct xkb_server_state *state, const char *func,
+                           const struct xkb_layout_out_of_range_policy *policy)
 {
-    if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_POLICY,
-                              update->policy)) {
-        if (update->policy == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
-            if (update->redirect < state->base.keymap->num_groups) {
+    if (xkb_feature_supported(XKB_FEATURE_ENUM_LAYOUT_OUT_OF_RANGE_MODE,
+                              policy->mode)) {
+        if (policy->mode == XKB_LAYOUT_OUT_OF_RANGE_REDIRECT) {
+            if (policy->redirect < state->base.keymap->num_groups) {
                 state->base.out_of_range_group.redirect_group =
-                    update->redirect;
+                    policy->redirect;
             } else {
                 log_err(state->base.keymap->ctx,
                         XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT_,
-                        "Layout policy: "
-                        "unsupported layout index %"PRIu32" > %"PRIu32"\n",
-                        update->redirect + 1, state->base.keymap->num_groups);
+                        "%s: Unsupported layout index %"PRIu32" > %"PRIu32"\n",
+                        func, policy->redirect + 1,
+                        state->base.keymap->num_groups);
                 return XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT;
             }
         }
-        state->base.out_of_range_group.policy = update->policy;
+        state->base.out_of_range_group.mode = policy->mode;
+        xkb_state_update_derived(&state->base);
         return XKB_SUCCESS;
     } else {
         log_err(state->base.keymap->ctx,
-                XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY_,
-                "Unsupported layout policy: %d\n", update->policy);
-        return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_POLICY;
+                XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE_,
+                "%s: Unsupported layout out-of-range mode: %d\n",
+                func, policy->mode);
+        return XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE;
     }
 }
 
@@ -2549,9 +2551,7 @@ check_state_update_abi_(struct xkb_context * restrict ctx,
         (update->reserved0 != 0 &&
          (status = XKB_ERROR_ABI_FORWARD_COMPAT)) ||
         (update->components &&
-         (status = xkb_check_state_abi(update->components))) ||
-        (update->layout_policy &&
-         (status = xkb_check_state_abi(update->layout_policy)))) {
+         (status = xkb_check_state_abi(update->components)))) {
         xkb_log_abi_error(ctx, func, status);
     }
     return status;
@@ -2586,13 +2586,6 @@ xkb_state_update_synthetic(struct xkb_state * base_state,
 
     // TODO: use a *transaction* mechanism: either the whole update succeeds
     //       or rollback
-
-    /* Update parametrized controls first */
-    if (update->layout_policy) {
-        status = state_update_layout_policy(state, update->layout_policy);
-        if (status != XKB_SUCCESS)
-            return status;
-    }
 
     if (update->components) {
         const struct xkb_state_components_update * const components =
@@ -3974,6 +3967,52 @@ xkb_state_new_from_machine(const struct xkb_machine * restrict machine,
     return state;
 }
 
+enum xkb_status
+xkb_machine_set_layout_out_of_range_policy(
+    struct xkb_machine *machine,
+    const struct xkb_layout_out_of_range_policy *policy,
+    struct xkb_events *events
+)
+{
+    /* Check ABI compatibility */
+    enum xkb_status status = xkb_check_state_abi(policy);
+    if (status != XKB_SUCCESS) {
+        xkb_log_abi_error(machine->base.base.keymap->ctx, __func__, status);
+        return status;
+    }
+
+    darray_size(events->queue) = 0;
+    events->next = 0;
+
+    const struct state_components previous_components =
+        machine->base.base.components;
+    status = state_update_layout_policy(&machine->base, __func__, policy);
+    if (status != XKB_SUCCESS)
+        return status;
+
+    const enum xkb_state_component changed = get_state_component_changes(
+        &previous_components, &machine->base.base.components
+    );
+    if (changed) {
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_STATE_COMPONENTS,
+            .components = {
+                .changed = changed,
+                .components = machine->base.base.components
+            }
+        });
+
+        /* Terminate the frame */
+        darray_append(events->queue, (struct xkb_event) {
+            .ctx = events->ctx, /* borrowed from events */
+            .type = XKB_EVENT_TYPE_FRAME,
+        });
+    }
+
+    return XKB_SUCCESS;
+}
+
 static void
 machine_update_overlays(struct xkb_machine *sm)
 {
@@ -4038,13 +4077,6 @@ xkb_machine_process_synthetic(struct xkb_machine *sm,
 
     darray_size(events->queue) = 0;
     events->next = 0;
-
-    /* Update parametrized controls first */
-    if (update->layout_policy) {
-        status = state_update_layout_policy(state, update->layout_policy);
-        if (status != XKB_SUCCESS)
-            return status;
-    }
 
     if (update->components) {
         const struct xkb_state_components_update * const components =

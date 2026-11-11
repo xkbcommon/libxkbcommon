@@ -304,13 +304,6 @@ test_state_update_abi(struct xkb_context *ctx)
     };
     assert_no_padding(struct xkb_state_components_update_newer, current, extra);
 
-    /* Simulate a new version with some new fields */
-    struct xkb_layout_policy_update_newer {
-        struct xkb_layout_policy_update current;
-        uint32_t extra;
-    };
-    assert_no_padding(struct xkb_layout_policy_update_newer, current, extra);
-
     static const struct {
         struct params {
             size_t size;
@@ -319,7 +312,6 @@ test_state_update_abi(struct xkb_context *ctx)
             bool enabled;
         } root;
         struct params components;
-        struct params layout_policy;
         enum xkb_status status;
     } tests[] = {
         /*
@@ -329,37 +321,21 @@ test_state_update_abi(struct xkb_context *ctx)
         {
             .root = { 0, 0 },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { 1, 0 },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 0, .enabled = true },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .size = 1, .enabled = true },
-            .layout_policy = { .enabled = false },
-            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
-        },
-        {
-            .root = { sizeof(struct xkb_synthetic_update), 0 },
-            .components = { .enabled = false },
-            .layout_policy = { .size = 0, .enabled = true },
-            .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
-        },
-        {
-            .root = { sizeof(struct xkb_synthetic_update), 0 },
-            .components = { .enabled = false },
-            .layout_policy = { .size = 1, .enabled = true },
             .status = XKB_ERROR_ABI_INVALID_STRUCT_SIZE,
         },
 
@@ -370,23 +346,12 @@ test_state_update_abi(struct xkb_context *ctx)
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = {
                 .size = sizeof(struct xkb_state_components_update),
-                .enabled = true
-            },
-            .layout_policy = { .enabled = false },
-            .status = XKB_SUCCESS,
-        },
-        {
-            .root = { sizeof(struct xkb_synthetic_update), 0 },
-            .components = { .enabled = false },
-            .layout_policy = {
-                .size = sizeof(struct xkb_layout_policy_update),
                 .enabled = true
             },
             .status = XKB_SUCCESS,
@@ -399,7 +364,6 @@ test_state_update_abi(struct xkb_context *ctx)
         {
             .root = { sizeof(struct xkb_synthetic_update), 0, .reserved0 = 1 },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
 
@@ -410,23 +374,12 @@ test_state_update_abi(struct xkb_context *ctx)
         {
             .root = { sizeof(struct xkb_state_update_newer), 0 },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_SUCCESS,
         },
         {
             .root = { sizeof(struct xkb_synthetic_update), 0 },
             .components = {
                 .size = sizeof(struct xkb_state_components_update_newer),
-                .enabled = true
-            },
-            .layout_policy = { .enabled = false },
-            .status = XKB_SUCCESS,
-        },
-        {
-            .root = { sizeof(struct xkb_synthetic_update), 0 },
-            .components = { .enabled = false },
-            .layout_policy = {
-                .size = sizeof(struct xkb_layout_policy_update_newer),
                 .enabled = true
             },
             .status = XKB_SUCCESS,
@@ -442,7 +395,6 @@ test_state_update_abi(struct xkb_context *ctx)
                 (UINT32_C(1) << 0)
             },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
@@ -451,7 +403,6 @@ test_state_update_abi(struct xkb_context *ctx)
                 (UINT32_C(1) << 31)
             },
             .components = { .enabled = false },
-            .layout_policy = { .enabled = false },
             .status = XKB_ERROR_ABI_FORWARD_COMPAT,
         },
         {
@@ -459,17 +410,6 @@ test_state_update_abi(struct xkb_context *ctx)
             .components = {
                 .enabled = true,
                 .size = sizeof(struct xkb_state_components_update_newer),
-                .extra = (UINT32_C(1) << 31),
-            },
-            .layout_policy = { .enabled = false },
-            .status = XKB_ERROR_ABI_FORWARD_COMPAT,
-        },
-        {
-            .root = { sizeof(struct xkb_synthetic_update), 0 },
-            .components = { .enabled = false },
-            .layout_policy = {
-                .enabled = true,
-                .size = sizeof(struct xkb_layout_policy_update_newer),
                 .extra = (UINT32_C(1) << 31),
             },
             .status = XKB_ERROR_ABI_FORWARD_COMPAT,
@@ -484,21 +424,12 @@ test_state_update_abi(struct xkb_context *ctx)
             },
             .extra = tests[s].components.extra
         };
-        const struct xkb_layout_policy_update_newer layout_policy = {
-            .current = {
-                .size = tests[s].layout_policy.size,
-            },
-            .extra = tests[s].layout_policy.extra
-        };
         const struct xkb_state_update_newer update = {
             .current = {
                 .size = tests[s].root.size,
                 .reserved0 = tests[s].root.reserved0,
                 .components = (tests[s].components.enabled)
                     ? (struct xkb_state_components_update*)&components
-                    : NULL,
-                .layout_policy = (tests[s].layout_policy.enabled)
-                    ? (struct xkb_layout_policy_update*)&layout_policy
                     : NULL,
             },
             .extra = tests[s].root.extra
@@ -822,82 +753,138 @@ test_group_wrap(struct xkb_context *ctx)
     assert(sm && status == XKB_SUCCESS);
     xkb_machine_builder_unref(builder);
 
-    struct xkb_state * const state = xkb_state_new_from_machine(sm, &status);
-    assert(state && status == XKB_SUCCESS);
-
     struct xkb_events * const events = xkb_events_new(ctx, NULL, NULL);
     assert(events);
+
+    assert(xkb_machine_set_layout_out_of_range_policy(
+        sm, &(struct xkb_layout_out_of_range_policy) {
+            .size = 0,
+        }, events) == XKB_ERROR_ABI_INVALID_STRUCT_SIZE
+    );
+    struct xkb_layout_out_of_range_policy_newer {
+        struct xkb_layout_out_of_range_policy current;
+        uint32_t extra;
+    };
+    assert(xkb_machine_set_layout_out_of_range_policy(
+        sm, (struct xkb_layout_out_of_range_policy *)
+        &(struct xkb_layout_out_of_range_policy_newer) {
+            .current = {
+                .size = sizeof(struct xkb_layout_out_of_range_policy_newer),
+                .mode = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+            },
+            .extra = 0,
+        }, events) == XKB_SUCCESS
+    );
+    assert(xkb_machine_set_layout_out_of_range_policy(
+        sm, (struct xkb_layout_out_of_range_policy *)
+        &(struct xkb_layout_out_of_range_policy_newer) {
+            .current = {
+                .size = sizeof(struct xkb_layout_out_of_range_policy_newer)
+            },
+            .extra = 0xff00,
+        }, events) == XKB_ERROR_ABI_FORWARD_COMPAT
+    );
+
+    assert(xkb_machine_set_layout_out_of_range_policy(
+        sm, &(struct xkb_layout_out_of_range_policy) {
+            .size = sizeof(struct xkb_layout_out_of_range_policy),
+            .mode = 0xfff,
+        }, events) == XKB_ERROR_UNSUPPORTED_LAYOUT_OUT_OF_RANGE_MODE
+    );
+
+    assert(xkb_machine_set_layout_out_of_range_policy(
+        sm, &(struct xkb_layout_out_of_range_policy) {
+            .size = sizeof(struct xkb_layout_out_of_range_policy),
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
+            .redirect = 5,
+        }, events) == XKB_ERROR_OUT_OF_KEYMAP_RANGE_LAYOUT
+    );
+
+    struct xkb_state * const state = xkb_state_new_from_machine(sm, &status);
+    assert(state && status == XKB_SUCCESS);
 
     const struct xkb_event *event;
 
     struct {
-        enum xkb_layout_out_of_range_policy policy;
+        enum xkb_layout_out_of_range_mode mode;
         xkb_layout_index_t redirect_group;
-        xkb_layout_index_t locked_group;
+        int32_t locked_group;
         xkb_layout_index_t expected_group;
-    } tests[] = {
+    } tests1[] = {
         /*
          * Explicit: wrap
          */
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
             .redirect_group = 0,
-            .locked_group = (xkb_layout_index_t)-1,
+            .locked_group = -1,
             .expected_group = num_layouts - 1,
         },
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
             .redirect_group = 0,
-            .locked_group = num_layouts + 1,
+            .locked_group = (int32_t)num_layouts + 1,
             .expected_group = 1,
         },
         /*
          * Explicit: clamp
          */
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
             .redirect_group = 0,
-            .locked_group = (xkb_layout_index_t)-1,
+            .locked_group = -1,
             .expected_group = 0,
         },
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
             .redirect_group = 0,
-            .locked_group = num_layouts + 1,
+            .locked_group = (int32_t)num_layouts + 1,
             .expected_group = num_layouts - 1,
         },
         /*
          * Explicit: redirect
          */
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
             .redirect_group = 2,
-            .locked_group = (xkb_layout_index_t)-1,
+            .locked_group = -1,
             .expected_group = 2,
         },
         {
-            .policy = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
             .redirect_group = 2,
-            .locked_group = num_layouts + 1,
+            .locked_group = (int32_t)num_layouts + 1,
             .expected_group = 2,
         },
     };
 
-    for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests); t++) {
-        fprintf(stderr, "------\n*** %s: #%u ***\n", __func__, t);
-        struct xkb_layout_policy_update layout_policy = {
-            .size = sizeof(layout_policy),
-            .policy = tests[t].policy,
-            .redirect = tests[t].redirect_group,
+    for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests1); t++) {
+        fprintf(stderr, "------\n*** %s(test1): #%u ***\n", __func__, t);
+        const xkb_layout_index_t layout =
+            xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE);
+        struct xkb_layout_out_of_range_policy policy = {
+            .size = sizeof(policy),
+            .mode = tests1[t].mode,
+            .redirect = tests1[t].redirect_group,
         };
+        assert(xkb_machine_set_layout_out_of_range_policy(sm, &policy, events) ==
+               XKB_SUCCESS);
+        while ((event = xkb_events_next(events))) {
+            status = xkb_state_update_event(state, event, NULL);
+            assert(status == XKB_SUCCESS);
+        }
+        /* Only locked group is set and it is already in range, so expect no change */
+        assert_eq("unexpected effective group", layout,
+                  xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
+                  "%"PRIu32);
+
         const struct xkb_state_components_update components = {
             .size = sizeof(components),
             .components = XKB_STATE_LAYOUT_LOCKED,
-            .locked_layout = (int32_t)tests[t].locked_group
+            .locked_layout = tests1[t].locked_group
         };
         const struct xkb_synthetic_update req = {
             .size = sizeof(req),
-            .layout_policy = &layout_policy,
             .components = &components,
         };
         assert(xkb_machine_process_synthetic(sm, &req, events) == XKB_SUCCESS);
@@ -905,7 +892,66 @@ test_group_wrap(struct xkb_context *ctx)
             status = xkb_state_update_event(state, event, NULL);
             assert(status == XKB_SUCCESS);
         }
-        assert_eq("unexpected effective group", tests[t].expected_group,
+        assert_eq("unexpected effective group", tests1[t].expected_group,
+                  xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
+                  "%"PRIu32);
+    }
+
+    /*
+     * Check that xkb_machine_set_layout_out_of_range_policy() may change
+     * effective layout
+     */
+    const struct xkb_state_components_update components = {
+        .size = sizeof(components),
+        .components = XKB_STATE_LAYOUT_LATCHED | XKB_STATE_LAYOUT_LOCKED,
+        .locked_layout = (int32_t)num_layouts - 1,
+        .latched_layout = 1,
+    };
+    const struct xkb_synthetic_update req = {
+        .size = sizeof(req),
+        .components = &components,
+    };
+    assert(xkb_machine_process_synthetic(sm, &req, events) == XKB_SUCCESS);
+    while ((event = xkb_events_next(events))) {
+        status = xkb_state_update_event(state, event, NULL);
+        assert(status == XKB_SUCCESS);
+    }
+    assert_eq("unexpected effective group", 2,
+              xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
+              "%"PRIu32);
+    struct {
+        enum xkb_layout_out_of_range_mode mode;
+        xkb_layout_index_t redirect;
+        xkb_layout_index_t effective_layout;
+    } tests2[] = {
+        {
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_WRAP,
+            .effective_layout = 0,
+        },
+        {
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_CLAMP,
+            .effective_layout = num_layouts - 1,
+        },
+        {
+            .mode = XKB_LAYOUT_OUT_OF_RANGE_REDIRECT,
+            .redirect = 1,
+            .effective_layout = 1,
+        },
+    };
+    for (uint8_t t = 0; t < (uint8_t) ARRAY_SIZE(tests2); t++) {
+        fprintf(stderr, "------\n*** %s(test2): #%u ***\n", __func__, t);
+        const struct xkb_layout_out_of_range_policy policy = {
+            .size = sizeof(policy),
+            .mode = tests2[t].mode,
+            .redirect = tests2[t].redirect,
+        };
+        assert(xkb_machine_set_layout_out_of_range_policy(sm, &policy, events) ==
+               XKB_SUCCESS);
+        while ((event = xkb_events_next(events))) {
+            status = xkb_state_update_event(state, event, NULL);
+            assert(status == XKB_SUCCESS);
+        }
+        assert_eq("unexpected effective group", tests2[t].effective_layout,
                   xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_EFFECTIVE),
                   "%"PRIu32);
     }
