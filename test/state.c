@@ -3047,6 +3047,69 @@ test_inactive_key_type_entry(struct xkb_context *context)
 }
 
 static void
+test_simultaneous_set_latch_group(struct xkb_context *context)
+{
+    enum {
+        KEY_SET_PREV_GROUP = KEY_LEFTSHIFT + EVDEV_OFFSET,
+        KEY_SET_NEXT_GROUP = KEY_RIGHTSHIFT + EVDEV_OFFSET,
+        KEY_LATCH_PREV_GROUP = KEY_LEFTCTRL + EVDEV_OFFSET,
+        KEY_LATCH_NEXT_GROUP = KEY_RIGHTCTRL + EVDEV_OFFSET,
+    };
+
+    const char keymap_str[] =
+        "xkb_keymap {\n"
+        "  xkb_keycodes {\n"
+        "    <LFSH> = 50;\n"
+        "    <RTSH> = 62;\n"
+        "    <LCTL> = 37;\n"
+        "    <RCTL> = 105;\n"
+        "    <LSGT> = 94;\n"
+        "  };\n"
+        "  xkb_symbols {\n"
+        "    key <LFSH> {[SetGroup(group=-1)]};\n"
+        "    key <RTSH> {[SetGroup(group=+2)]};\n"
+        "    key <LCTL> {[LatchGroup(group=-1)]};\n"
+        "    key <RCTL> {[LatchGroup(group=+2)]};\n"
+        "    key <LSGT> {[1], [2], [3]};\n"
+        "  };\n"
+        "};";
+
+    struct xkb_keymap * const keymap = test_compile_buffer(
+        context, XKB_KEYMAP_FORMAT_TEXT_V1,
+        keymap_str, sizeof(keymap_str)
+    );
+    assert(keymap);
+    assert(xkb_keymap_num_layouts(keymap) == 3);
+
+    struct xkb_state * const state =
+        xkb_state_new_with_mode(keymap, XKB_STATE_MODE_SERVER, NULL);
+    assert(state);
+
+    /* SetGroup */
+    xkb_state_update_key(state, KEY_SET_NEXT_GROUP, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 2);
+    xkb_state_update_key(state, KEY_SET_PREV_GROUP, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 1);
+    xkb_state_update_key(state, KEY_SET_NEXT_GROUP, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == (uint32_t)-1);
+    xkb_state_update_key(state, KEY_SET_PREV_GROUP, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+
+    /* LatchGroup (set) */
+    xkb_state_update_key(state, KEY_LATCH_NEXT_GROUP, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 2);
+    xkb_state_update_key(state, KEY_LATCH_PREV_GROUP, XKB_KEY_DOWN);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 1);
+    xkb_state_update_key(state, KEY_LATCH_NEXT_GROUP, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == (uint32_t)-1);
+    xkb_state_update_key(state, KEY_LATCH_PREV_GROUP, XKB_KEY_UP);
+    assert(xkb_state_serialize_layout(state, XKB_STATE_LAYOUT_DEPRESSED) == 0);
+
+    xkb_state_unref(state);
+    xkb_keymap_unref(keymap);
+}
+
+static void
 test_compatible_latch_same_key(struct xkb_context *context)
 {
     enum {
@@ -3969,6 +4032,7 @@ main(void)
 
     test_inactive_key_type_entry(context);
     test_overlapping_mods(context);
+    test_simultaneous_set_latch_group(context);
     test_compatible_latch_same_key(context);
     test_caps_keysym_transformation(context);
     test_leds(context);
