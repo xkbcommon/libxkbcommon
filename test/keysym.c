@@ -27,6 +27,9 @@
 #include "utils.h"
 #include "util-numbers.h"
 
+#define KEYSYM     "0x%04"PRIx32
+#define CODE_POINT "U+%04"PRIX32
+
 /* Explicit ordered list of modifier keysyms */
 static const xkb_keysym_t modifier_keysyms[] = {
     XKB_KEY_ISO_Lock,
@@ -231,9 +234,6 @@ compare_unicode_version(const UVersionInfo v1, const UVersionInfo v2)
       }                                                                                   \
    }
 
-#define KEYSYM     "0x%04"PRIx32
-#define CODE_POINT "U+%04"PRIX32
-
 static void
 test_icu_case_mappings(xkb_keysym_t ks)
 {
@@ -407,6 +407,52 @@ test_utf32_to_keysym(uint32_t ucs, xkb_keysym_t expected)
     fprintf(stderr, "Code point %#"PRIx32": expected keysym: %s, actual: %s\n\n",
             ucs, expected_name, actual_name);
     return expected == actual;
+}
+
+static void
+test_utf8_to_keysym(void)
+{
+    /*
+     * xkb_utf8_to_keysym()
+     */
+
+    static const struct {
+        const char *input;
+        size_t input_size;
+        xkb_keysym_t keysym;
+    } tests[] = {
+        {NULL, 0, XKB_KEY_NoSymbol},
+        {"", 0, XKB_KEY_NoSymbol},
+        {"", 1, XKB_KEY_NoSymbol},
+        {"\0", 2, XKB_KEY_NoSymbol},
+        {"1", 1, XKB_KEY_1},
+        {"1", 2, XKB_KEY_NoSymbol}, /* NUL-terminated */
+        {"\xC3\xBF", 2, XKB_KEY_ydiaeresis}, /* U+00FF ÿ */
+        {"\xC3\xBF", 3, XKB_KEY_NoSymbol}, /* NUL-terminated */
+        {"\xE2\x88\x9E", 3, XKB_KEY_infinity}, /* U+221E ∞ */
+        {"\xE2\x88\x9E", 4, XKB_KEY_NoSymbol}, /* NUL-terminated */
+        {"\xF0\x9F\x95\x8A", 4, UINT32_C(0x101f54a)}, /* U+1F54A 🕊 */
+        {"\xF0\x9F\x95\x8A", 5, XKB_KEY_NoSymbol}, /* NUL-terminated */
+        {"12", 2, XKB_KEY_NoSymbol},   /* 2 code points */
+        {"123", 3, XKB_KEY_NoSymbol},  /* 3 code points */
+        {"1\0x", 3, XKB_KEY_NoSymbol}, /* 3 code points */
+        {"\xC3\xBFxy", 4, XKB_KEY_NoSymbol}, /* 3 code points */
+
+        {"\xC3\xBF", 1, XKB_KEY_NoSymbol},     /* incomplete byte sequence */
+        {"\xE2\x88\x9E", 2, XKB_KEY_NoSymbol}, /* incomplete byte sequence */
+        {"\xF5", 1, XKB_KEY_NoSymbol},         /* invalid byte sequence start */
+        {"\xE0\x80\xAF", 3, XKB_KEY_NoSymbol}, /* Overlong Encoding of U+002F */
+        {"\xED\xA0\x80", 3, XKB_KEY_NoSymbol},     /* Surrogate U+D800 */
+        {"\xF4\x90\x80\x80", 4, XKB_KEY_NoSymbol}, /* Out-of-range U+110000 */
+    };
+
+    for (size_t t = 0; t < ARRAY_SIZE(tests); t++) {
+        fprintf(stderr, "------\n*** %s: xkb_utf8_to_keysym() #%zu ***\n", __func__, t);
+        xkb_keysym_t ks = xkb_utf8_to_keysym(tests[t].input, tests[t].input_size);
+        assert_eq("xkb_utf8_to_keysym(\"%s\", %zu)",
+                  tests[t].keysym, ks, KEYSYM,
+                  (tests[t].input ? tests[t].input : ""), tests[t].input_size);
+    }
 }
 
 int
@@ -854,10 +900,7 @@ main(void)
     assert(test_string("", XKB_KEY_NoSymbol));
     assert(test_casestring("", XKB_KEY_NoSymbol));
 
-    assert(xkb_utf8_to_keysym(NULL, 0) == XKB_KEY_NoSymbol);
-    assert(xkb_utf8_to_keysym("", 1) == XKB_KEY_NoSymbol);
-    assert(xkb_utf8_to_keysym("1", 2) == XKB_KEY_1);
-    assert(xkb_utf8_to_keysym("12", 2) == XKB_KEY_1); /* Only first codepoint */
+    test_utf8_to_keysym();
 
     /* Latin-1 keysyms (1:1 mapping in UTF-32) */
     assert(test_utf8(0x0020, "\x20"));

@@ -1320,24 +1320,30 @@ XKB_EXPORT xkb_keysym_t
 xkb_keysym_from_name(const char *name, enum xkb_keysym_flags flags);
 
 /**
- * Get the keysym corresponding to a *single* Unicode/UTF-8 encoded codepoint.
+ * Get the keysym corresponding to a *single* UTF-8 encoded Unicode code point.
  *
- * @param[in] buffer A buffer to read the UTF-8 encoded codepoint from.
- * @param[in] size   Capacity of @p buffer.
+ * @param[in] buffer
+ *   A buffer to read the UTF-8 encoded code point from, or `NULL`.
+ * @param[in] size
+ *   Number of readable bytes in @p buffer.
  *
- * @returns The keysym corresponding to the specified Unicode codepoint, or
- * `XKB_KEY_NoSymbol` if is there is none or if the input is invalid.
+ * @pre The first @p size bytes of @p buffer contains exactly a *single* UTF-8
+ * encoded Unicode code point.
  *
- * This function is the inverse of `xkb_keysym_to_utf8()`. In cases
- * where a single codepoint corresponds to multiple keysyms, returns
+ * @returns The keysym corresponding to the specified Unicode code point, or
+ * `::XKB_KEY_NoSymbol` if is there is none or if the input is invalid.
+ *
+ * This function is the counterpart of `xkb_keysym_to_utf8()`. In cases
+ * where a single code point corresponds to multiple keysyms, returns
  * the keysym with the lowest value.
  *
- * Unicode codepoints which do not have a special (legacy) keysym
- * encoding use a direct encoding scheme. These keysyms don’t usually
- * have an associated keysym constant (`XKB_KEY_*`).
+ * Unicode code points which do not have a special (legacy) keysym
+ * encoding use a [direct encoding scheme](@ref unicode-keysyms).
+ * These keysyms don’t usually have an associated keysym constant (`XKB_KEY_*`).
  *
  * @sa `xkb_keysym_to_utf8()`
  * @sa `xkb_utf32_to_keysym()`
+ * @sa @ref keysym-encoding ""
  *
  * @since 1.14.0
  */
