@@ -444,11 +444,12 @@ tools_print_detailed_keycode_state(const char *prefix,
     if (compose_state)
         status = xkb_compose_state_get_status(compose_state);
 
-#define BUFFER_SIZE MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)
+    enum {
+        BUFFER_SIZE = MAX(XKB_COMPOSE_MAX_STRING_SIZE, XKB_KEYSYM_NAME_MAX_SIZE)
+    };
     static_assert(XKB_KEYSYM_UTF8_MAX_SIZE <= BUFFER_SIZE,
                   "buffer too small");
     char s[BUFFER_SIZE];
-#undef BUFFER_SIZE
 
     bool show_unicode = false;
     const xkb_keysym_t *syms;
@@ -505,17 +506,19 @@ tools_print_detailed_keycode_state(const char *prefix,
                 printf(" \"%s\" (", s);
 
             /* Print Unicode code points */
-            size_t offset = 0;
-            size_t count = 0;
-            uint32_t cp = utf8_next_code_point(s, sizeof(s), &offset);
-            while (cp && cp != INVALID_UTF8_CODE_POINT) {
-                if (count++ > 0)
+            size_t num_cp = 0;
+            char *str = s;
+            size_t size = sizeof(s);
+            uint32_t cp;
+            ssize_t count;
+            while ((count = xkb_utf8_iterate(str, size, &cp)) > 0 && cp) {
+                if (num_cp++ > 0)
                     printf(" ");
                 printf("U+%04"PRIX32, cp);
-                cp = utf8_next_code_point(s + offset, sizeof(s) - offset,
-                                          &offset);
+                str += count;
+                size -= (size_t)count;
             }
-            printf(", %zu code point%s)\n", count, (count > 1 ? "s" : ""));
+            printf(", %zu code point%s)\n", num_cp, (num_cp > 1 ? "s" : ""));
         }
     } else if (show_unicode) {
         printf("\n");

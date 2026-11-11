@@ -411,6 +411,8 @@ xkbcommon [1.14.0-beta2] – 2026-09-10
 - Fixed include statements silently accepting invalid group indices.
 - rules: Fixed parsing `+` as `<some>`.
 - rules: Fixed token right boundaries for `=`, `*` and extended wild cards.
+- Fixed UTF-8 decoding accepting ill-formed input: overlong encodings and
+  code points beyond U+10FFFF are now rejected.
 
 
 ## Tools

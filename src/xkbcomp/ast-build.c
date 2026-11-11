@@ -216,9 +216,9 @@ ExprKeySymListAppendString(struct scanner *scanner,
     size_t idx = 0;
     size_t idx_cp = 1;
     while (idx < len) {
-        size_t count = 0;
-        uint32_t cp = utf8_next_code_point(string + idx, len - idx, &count);
-        if (cp == INVALID_UTF8_CODE_POINT) {
+        uint32_t cp;
+        const ssize_t count = xkb_utf8_iterate(string + idx, len - idx, &cp);
+        if (count <= 0) {
             scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                         "Cannot convert string to keysyms: "
                         "Invalid UTF-8 encoding starting at byte position %zu "
@@ -236,7 +236,7 @@ ExprKeySymListAppendString(struct scanner *scanner,
             goto error;
         }
         darray_append(expr->keysym_list.syms, sym);
-        idx += count;
+        idx += (size_t)count;
         idx_cp++;
     }
     assert(string[idx] == '\0');
@@ -255,14 +255,14 @@ KeysymParseString(struct scanner *scanner, const char *string)
                     "Cannot convert string to single keysym: empty string.");
         return XKB_KEY_NoSymbol;
     }
-    size_t count = 0;
-    const uint32_t cp = utf8_next_code_point(string, len, &count);
-    if (cp == INVALID_UTF8_CODE_POINT) {
+    uint32_t cp;
+    const ssize_t count = xkb_utf8_iterate(string, len, &cp);
+    if (count <= 0) {
         scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "Cannot convert string to single keysym: "
                     "Invalid UTF-8 encoding.");
         return XKB_KEY_NoSymbol;
-    } else if (count != len) {
+    } else if ((size_t)count != len) {
         scanner_err(scanner, XKB_ERROR_INVALID_FILE_ENCODING,
                     "Cannot convert string to single keysym: "
                     "Expected a single Unicode code point, got: \"%s\".",

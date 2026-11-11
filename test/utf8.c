@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "src/keysym.h"
@@ -18,47 +19,60 @@
 #include "utf8-decoding.h"
 #include "utils.h"
 
-#define VALID(lit) assert(is_valid_utf8(lit, sizeof(lit)-1))
-#define INVALID(lit) assert(!is_valid_utf8(lit, sizeof(lit)-1))
+#define VALID(lit, cp_expected, count_expected)         \
+    assert(is_valid_utf8(lit, sizeof(lit)-1));          \
+    assert(xkb_utf8_iterate(lit, sizeof(lit)-1, &cp) == \
+           (count_expected));                           \
+    assert(cp == (cp_expected))
+#define INVALID(lit)                                     \
+    assert(!is_valid_utf8(lit, sizeof(lit)-1));          \
+    assert(xkb_utf8_iterate(lit, sizeof(lit)-1, &cp) <= 0)
 
 static void
-test_is_valid_utf8(void)
+test_parse_utf8(void)
 {
     /*
      * Mostly taken from:
      * https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
      */
+    uint32_t cp = 0;
 
-    VALID("ascii");
-    VALID("\xCE\xBA\xE1\xBD\xB9\xCF\x83\xCE\xBC\xCE\xB5");
+    VALID("ascii", 'a', 1);
+    VALID("\xCE\xBA\xE1\xBD\xB9\xCF\x83\xCE\xBC\xCE\xB5", 0x3BA, 2);
 
-    VALID("");
-    VALID("\x00");
-    VALID("\x00\x00");
+    /* Empty input: valid string, but there is no code point to decode */
+    const uint32_t cp_prev = cp;
+    VALID("", cp_prev, 0);
+    VALID("\x00", 0, 1);
+    VALID("\x00\x00", 0, 1);
 
-    VALID("\x50");
-    VALID("\xC2\x80");
-    VALID("\xE0\xA0\x80");
-    VALID("\xF0\x90\x80\x80");
+    VALID("\x50", 0x50, 1);
+    VALID("\xC2\x80", 0x80, 2);
+    VALID("\xE0\xA0\x80", 0x800, 3);
+    VALID("\xF0\x90\x80\x80", 0x10000, 4);
 
     /* 5/6-byte continuations aren't allowed (unlike UTF-8-test). */
     INVALID("\xF8\x88\x80\x80\x80");
     INVALID("\xFC\x84\x80\x80\x80\x80");
 
-    VALID("\x7F");
-    VALID("\xDF\xBF");
-    VALID("\xEF\xBF\xBF");
-    /* VALID("\xF7\xBF\xBF\xBF"); */
+    VALID("\x7F", 0x7F, 1);
+    VALID("\xDF\xBF", 0x7FF, 2);
+    VALID("\xEF\xBF\xBE", 0xFFFE, 3);
+    VALID("\xEF\xBF\xBF", 0xFFFF, 3);
+    /* Beyond U+10FFFF (unlike UTF-8-test) */
+    INVALID("\xF7\xBF\xBF\xBF");
 
     /* 5/6-byte continuations aren't allowed (unlike UTF-8-test). */
     INVALID("\xFB\xBF\xBF\xBF\xBF");
-    INVALID("\xFD\xBFxBF\xBF\xBF");
+    INVALID("\xFD\xBF\xBF\xBF\xBF\xBF");
 
-    VALID("\xED\x9F\xBF");
-    VALID("\xEE\x80\x80");
-    VALID("\xEF\xBF\xBD");
-    VALID("\xF4\x8F\xBF\xBF");
-    /* VALID("\xF4\x90\x80\x80"); */
+    VALID("\xED\x9F\xBF", 0xD7FF, 3);
+    VALID("\xEE\x80\x80", 0xE000, 3);
+    VALID("\xEF\xBF\xBD", 0xFFFD, 3);
+    VALID("\xF4\x8F\xBF\xBF", 0x10FFFF, 4);
+
+    /* Beyond U+10FFFF */
+    INVALID("\xF4\x90\x80\x80");
 
     INVALID("\x80");
     INVALID("\xBF");
@@ -133,9 +147,6 @@ test_is_valid_utf8(void)
     INVALID("\xED\xAE\x80\xED\xBF\xBF");
     INVALID("\xED\xAF\xBF\xED\xB0\x80");
     INVALID("\xED\xAF\xBF\xED\xBF\xBF");
-
-    /* INVALID("\xEF\xBF\xBE"); */
-    /* INVALID("\xEF\xBF\xBF"); */
 }
 
 static void
@@ -167,16 +178,16 @@ test_utf8_to_utf32(void)
 {
     char buffer[XKB_KEYSYM_UTF8_MAX_SIZE];
     for (uint32_t cp = 0; cp <= 0x110000; cp++) {
-        const int8_t length = (int8_t)((int)utf32_to_utf8(cp, buffer) - 1);
+        const ssize_t length = (ssize_t)utf32_to_utf8(cp, buffer) - 1;
         /* Check that invalid Unicode scalar values are rejected */
         if (!is_unicode_scalar(cp)) {
             assert(length == -1);
         } else {
             assert(length > 0);
-            size_t length2 = 0;
-            uint32_t cp2 = utf8_next_code_point(buffer, (size_t)length, &length2);
-            assert(cp2 != INVALID_UTF8_CODE_POINT && cp2 == cp &&
-                   length2 == (size_t)length);
+            uint32_t cp2;
+            const ssize_t length2 =
+                xkb_utf8_iterate(buffer, (size_t)length, &cp2);
+            assert(length2 > 0 && length2 == length && cp2 == cp);
         }
     }
 }
@@ -186,7 +197,7 @@ main(void)
 {
     test_init();
 
-    test_is_valid_utf8();
+    test_parse_utf8();
     test_utf32_to_utf8();
     test_utf8_to_utf32();
 
