@@ -42,9 +42,9 @@ test_unicode_keysyms_consistency(uint32_t start, uint32_t end)
         xkb_keysym_t canonical = xkb_utf32_to_keysym(cp);
         int count = xkb_keysym_get_name(unicode, buffer, sizeof(buffer));
         assert(count > 0);
-        if (cp == 0 || is_surrogate(cp)) {
+        if (cp == 0 || !is_unicode_scalar(cp)) {
             /*
-             * Invalid code points
+             * Invalid Unicode scalar values
              */
 
             /* No conversion from code point */
@@ -68,7 +68,7 @@ test_unicode_keysyms_consistency(uint32_t start, uint32_t end)
             snprintf(buffer, sizeof(buffer), "U%"PRIX32, cp);
             ks = xkb_keysym_from_name(buffer, XKB_KEYSYM_NO_FLAGS);
             assert((cp == 0 && ks == XKB_KEY_NoSymbol) ^
-                   (is_surrogate(cp) && ks == unicode));
+                   (!is_unicode_scalar(cp) && ks == unicode));
             /* Cannot convert to UTF-8 */
             count = xkb_keysym_to_utf8(unicode, buffer, sizeof(buffer));
             assert(count == 0);
